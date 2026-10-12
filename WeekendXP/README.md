@@ -2,7 +2,7 @@
 
 Version: **1.0.2**, restored and repaired from **1.0.0**.
 
-**Installed on Wink Reyes Valley on October 12, 2026**, paired with mcMMO **2.3.003-WRV-XP-1**. Startup and the Monday weekday reset were verified; actual Java/Bedrock display, XP pickups, and weekend/Together gameplay acceptance remain pending. See the [deployment record](../mcMMO-TogetherBonus/DEPLOYMENT-2026-10-12.md). This docs-only status update preserves the tested build provenance and does not change binaries or merge the draft review.
+**Installed on Wink Reyes Valley on October 12, 2026**, initially paired with mcMMO **2.3.003-WRV-XP-1**, then retained unchanged with installed **2.3.003-WRV-XP-2** later that day. The XP-2 indicator appears after eligible accepted XP and hides three seconds after the latest gain by default; human display acceptance remains pending. Startup and the Monday weekday reset were verified; actual Java/Bedrock display, XP pickups, and weekend/Together gameplay acceptance remain pending. See the [deployment record](../mcMMO-TogetherBonus/DEPLOYMENT-2026-10-12.md). This docs-only status update preserves the tested build provenance and does not change binaries or merge the draft review.
 
 Automatically applies the weekend XP schedule in `America/Chicago` to mcMMO skill XP and Minecraft's green XP bar:
 - Saturday–Sunday: `mcmmo:xprate 1.2 true`, then vanilla XP event multiplier `1.2`

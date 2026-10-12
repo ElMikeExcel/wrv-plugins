@@ -1,12 +1,12 @@
 # XP feature verification and staging plan
 
-This feature is a **candidate for review and staging**, not a claim of live activation. No server files, player data, permissions, startup settings, or restart state were changed while implementing it.
+This document preserves build and isolated-test evidence. Implementation/testing did not change production. A separately approved October 12 deployment has now installed XP-2; see the [live deployment record](DEPLOYMENT-2026-10-12.md). Human client and gameplay acceptance remains pending.
 
-## Current indicator-only candidate
+## Current indicator-only build
 
-mcMMO **2.3.003-WRV-XP-2** appends patch 0004 to the unchanged first three patches, and pairs with unchanged WeekendXP **1.0.2**. It is not deployed. The installed XP-1 pair remains documented in [the deployment record](DEPLOYMENT-2026-10-12.md).
+mcMMO **2.3.003-WRV-XP-2** appends patch 0004 to the unchanged first three patches, and pairs with unchanged WeekendXP **1.0.2**. XP-2 is now installed. Both the initial XP-1 installation and the later XP-2 update are documented in [the deployment record](DEPLOYMENT-2026-10-12.md).
 
-Local and remote verification for this update is recorded in `verification/xp-indicator-fix.json`. The original results below are historical evidence for XP-1, not a substitute for testing XP-2. No production server access, upload, restart or player-data changes are part of this indicator fix.
+The pre-deployment verification snapshot is preserved unchanged in `verification/xp-indicator-fix.json`. Its deployment status describes the snapshot time; the deployment record above is current. The original results below are historical evidence for XP-1, not a substitute for testing XP-2. Implementation and isolated testing involved no production server access, upload, restart or player-data changes; the later approved live update is recorded separately.
 
 ### Isolated runtime verification
 
@@ -51,7 +51,7 @@ The first complete test run exposed one old command-alias test fixture that did 
 - Whitespace and YAML checks
 - Repeat build hash comparison when feasible; snapshot Maven dependencies are not a permanent byte-for-byte lock across environments
 
-GitHub workflow changes add a separate pinned-upstream mcMMO patch/build job. That job has not run remotely until the feature branch is published; local success is not remote CI success.
+Historical pre-publication note: the workflow added a separate pinned-upstream mcMMO patch/build job; it had not yet run remotely when the original local checks were written. The branch has since been published and the CI results are recorded above. Local success alone is not remote CI success.
 
 ## Authorized staging checklist
 

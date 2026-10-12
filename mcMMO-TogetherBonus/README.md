@@ -1,13 +1,13 @@
 # Excel XP: Together + Weekend XP
 
-**Current candidate: mcMMO 2.3.003-WRV-XP-2**, paired with unchanged **WeekendXP 1.0.2**. The fourth patch changes only when the XP indicator is visible. This candidate is not installed. mcMMO retains its upstream plugin identity, commands, permissions and data directory.
+**Installed on Wink Reyes Valley: mcMMO 2.3.003-WRV-XP-2**, paired with unchanged **WeekendXP 1.0.2**, updated October 12, 2026. Runtime versions, host artifact hashes, startup, weekday factors and the enabled three-second display setting were verified. Real Java/Bedrock transient-display and gameplay acceptance remains pending. The fourth patch changes only when the XP indicator is visible. mcMMO retains its upstream plugin identity, commands, permissions and data directory.
 
 Verification: 2,308 mcMMO tests and 85 WRV tests passed in GitHub CI. The unchanged candidate also passed 38 isolated native-Paper runtime assertions on exact Paper 26.2 build 123 / Temurin 25.0.4 with WeekendXP 1.0.2; [scope and limits](verification/runtime-harness/README.md). Real Java/Bedrock client acceptance remains pending.
 
 Previous custom mcMMO build **2.3.003-WRV-XP-1**, paired with **WeekendXP 1.0.2**.
-**Wink Reyes Valley deployment:** this exact pair was installed on October 12, 2026. Runtime versions, artifact hashes, startup, command registration, enabled settings, and the weekday reset were checked. Real Java/Bedrock visual and gameplay acceptance remains pending. See the [deployment record](DEPLOYMENT-2026-10-12.md).
+**Earlier deployment:** this XP-1 pair was installed earlier on October 12, 2026 and was superseded by XP-2 that day. Runtime versions, artifact hashes, startup, command registration, enabled settings, and the weekday reset were checked. Real Java/Bedrock visual and gameplay acceptance remains pending. See the [deployment record](DEPLOYMENT-2026-10-12.md).
 
-The source and build instructions below preserve the installed pair's provenance and append the new indicator-only patch. The draft review remains unmerged. Running these build instructions alone does not install plugins or restart a server.
+The source and build instructions below preserve both installed builds' provenance, including the fourth indicator-only patch. The draft review remains unmerged. Running these build instructions alone does not install plugins or restart a server.
 
 ## Gameplay rules
 
