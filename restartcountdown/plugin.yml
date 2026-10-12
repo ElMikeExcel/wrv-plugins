@@ -1,0 +1,15 @@
+name: RestartCountdown
+version: 1.1.0
+author: Argus
+main: com.winkreyes.restartcountdown.RestartCountdown
+api-version: "1.13"
+description: True 2-minute in-game restart countdown with shutdown.
+commands:
+  restartwarn:
+    description: Start (or cancel) the 2-minute restart countdown
+    usage: /restartwarn [cancel/reason]
+    permission: restartcountdown.warn
+permissions:
+  restartcountdown.warn:
+    description: Allows starting the restart countdown
+    default: op

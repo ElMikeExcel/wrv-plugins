@@ -1,22 +1,34 @@
-# Wink Reyes Valley – custom plugins
+# Wink Reyes Valley — Custom Plugins
 
-Source for every custom plugin on the Wink Reyes Valley Minecraft server (Paper 26.2, Java 25 runtime, Geyser/Floodgate for Bedrock). Built jars live on Google Drive in **Minecraft Wink Reyes Valley / Build files**.
+Custom Bukkit/Paper plugins built for the Wink Reyes Valley family Minecraft server (Paper 26.2, Java 21).
 
-| Folder | Plugin | Version | Status | Java target | Source quality |
-|---|---|---|---|---|---|
-| BedrockMenu/ | BedrockMenu (/menu, Bedrock forms + Java GUI, teleport menu, Spawn Shop button) | 1.4.2 (staged; 1.4.1 live) | build.sh reproduces the staged jar byte-for-byte | 21 (1.4.2); 1.4.1 was 25 | No original 1.4.1 .java exists (Argus built it). Repo has the 1.4.1 compiled classes, CFR-decompiled reference source, the ASM patch that made 1.4.2, and Steve's 1.3.0 Maven source as history |
-| MenuJoin/ | MenuJoin (menu compass, respawn compass, /compass, auto-open toggle, PAPI %menujoin_status%) | 1.2.0 (live) | build.sh | 21 | Original source |
-| ShopVillager/ | ShopVillager (tap spawn villager -> Spawn Shop, /shopvillager create) | 1.0.0 (staged) | build.sh | 21 | Original source |
-| SpawnShop-DeluxeMenus/ | Spawn Shop (DeluxeMenus menu, not a jar) + server_menu.yml + DeluxeMenus config.yml + generator | staged | `python3 make_spawnshop.py [multiplier]` | n/a | Original |
-| mcMMO-TogetherBonus/ | mcMMO fork: party "Together" XP bonus | 2.3.002 + 2 commits | git format-patch against upstream | per mcMMO pom | Patches only (no mcMMO copy) |
-| Leaderboard/ | Leaderboard (/leaderboard) by Argus | 1.0.0 | – | – | Decompiled only; original source not found |
-| WeekendXP/ | WeekendXP (mcMMO 1.2x XP Sat–Sun) by Argus | 1.0.0 | – | – | Decompiled only; original source not found |
+Each plugin lives in its own folder with source, `plugin.yml`, and a README. Built jars are **not** committed here — they live in Google Drive under `Minecraft Wink Reyes Valley > Build files`.
 
-Not found anywhere on the box or Drive (no source, no jar): **NoPhantoms, RestartCountdown, WealthBoard**. Ask Argus whether these are custom and where the source is (RestartCountdown may be a third-party plugin).
+## Plugins
 
-Third-party plugin used by tonight's update (not custom, jar on Drive only): ChestShop 3.13-pre-1.
+| Plugin | Version | What it does |
+|---|---|---|
+| [BedrockMenu](bedrockmenu/) | 1.4.1 | `/menu` that works on Bedrock via native Geyser forms (reflection, no compile-time Geyser dep), DeluxeMenus fallback for Java |
+| [Leaderboard](leaderboard/) | 1.0.0 | `/leaderboard` shows wealth + mcMMO boards together |
+| [MenuJoin](menujoin/) | 1.1.0 | Auto-opens `/menu` on join, gives Server Menu compass, `/menujoin` opt-out toggle |
+| [NoPhantoms](nophantoms/) | 1.0.0 | Cancels all phantom spawns |
+| [RestartCountdown](restartcountdown/) | 1.1.0 | `/restartwarn [reason]` — true 2-minute in-game restart countdown with shutdown |
+| [WealthBoard](wealthboard/) | 1.3.0 | Top-3 richest title popup on join, auto-enrolls players in all Jobs |
+| [WeekendXP](weekendxp/) | 1.0.0 | Sets mcMMO 1.2x XP on Sat–Sun (America/Chicago), resets on weekdays |
 
 ## Building
-Each plugin folder has its own `build.sh` (JDK 21+). Dependencies are taken from `~/.m2` (paper-api 1.21.4, PlaceholderAPI 2.11.6, ASM 9.9.1); override with env vars shown in each script. Output goes to `<plugin>/build/`.
 
-Compile with `--release 21` so jars run on Java 21 and 25. No secrets, passwords, or server addresses are in this repo.
+Each plugin compiles against the Paper API. Example:
+
+```bash
+javac -cp paper-api.jar -d classes $(find src -name "*.java")
+cp plugin.yml classes/
+jar cf PluginName-1.0.0.jar -C classes .
+```
+
+No build tool required — plain `javac` + `jar`. Paper API 1.21.x is the target.
+
+## Notes
+
+- No passwords, IP addresses, or credentials anywhere in this repo.
+- BedrockMenu intentionally avoids a compile-time Geyser dependency (uses reflection with Geyser's own classloader) to dodge `LinkageError` loader constraint violations.
