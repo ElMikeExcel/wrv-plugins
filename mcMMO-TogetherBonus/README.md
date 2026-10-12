@@ -1,7 +1,9 @@
 # Together + Weekend XP
 
 Custom mcMMO build **2.3.003-WRV-XP-1**, paired with **WeekendXP 1.0.2**.
-This is a review/staging candidate. Nothing here installs plugins, changes the live server, or restarts it.
+**Wink Reyes Valley deployment:** this exact pair was installed on October 12, 2026. Runtime versions, artifact hashes, startup, command registration, enabled settings, and the weekday reset were checked. Real Java/Bedrock visual and gameplay acceptance remains pending. See the [deployment record](DEPLOYMENT-2026-10-12.md).
+
+The source and build instructions below preserve the reviewed candidate's provenance. This documentation update changes no binaries and does not merge the draft review. Running these build instructions alone does not install plugins or restart a server.
 
 ## Gameplay rules
 
