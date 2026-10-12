@@ -17,7 +17,7 @@ final class MapRegistry {
     void load() throws IOException, InvalidConfigurationException {
         if (!Files.exists(path)) return;
         YamlConfiguration yaml = new YamlConfiguration(); yaml.load(path.toFile());
-        if (yaml.getInt("format", -1) != 2 || !(yaml.get("maps") instanceof List<?> rows))
+        if (!Integer.valueOf(2).equals(yaml.get("format")) || !(yaml.get("maps") instanceof List<?> rows))
             throw new InvalidConfigurationException("Expected format 2 map registry. Preserve any older prototype registry separately; do not overwrite world map data.");
         Map<Integer, Entry> loaded = new HashMap<>();
         for (Object row : rows) {

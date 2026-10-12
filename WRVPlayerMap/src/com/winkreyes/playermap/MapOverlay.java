@@ -16,7 +16,7 @@ final class MapOverlay {
         sorted.sort(Comparator.comparing(PlayerDot::self).reversed().thenComparing(PlayerDot::name).thenComparing(PlayerDot::id));
         List<Marker> markers = new ArrayList<>();
         List<Rect> occupied = new ArrayList<>();
-        int bottom = 116; // Reserve room even when only an overflow footer becomes necessary.
+        int bottom = 119; // Leave a clear row before the compact five-pixel footer.
         for (PlayerDot player : sorted) {
             MapGeometry.Point p = MapGeometry.project(player.x, player.z, centerX, centerZ, scale);
             int x = p.x(), y = p.y();
@@ -25,11 +25,11 @@ final class MapOverlay {
                 for (int direction = 0; direction < (radius == 0 ? 1 : 8); direction++) {
                     int cx = MapGeometry.clamp(p.x() + (int) Math.round(radius * Math.cos(direction * Math.PI / 4)), 4, 123);
                     int cy = MapGeometry.clamp(p.y() + (int) Math.round(radius * Math.sin(direction * Math.PI / 4)), 4, 123);
-                    Rect r = new Rect(cx - 3, cy - 3, 7, 7);
+                    Rect r = new Rect(cx - 3, cy - 3, 8, 8);
                     if (occupied.stream().noneMatch(r::intersects)) { x = cx; y = cy; break outer; }
                 }
             }
-            occupied.add(new Rect(x - 3, y - 3, 7, 7));
+            occupied.add(new Rect(x - 3, y - 3, 8, 8));
             markers.add(new Marker(player, p, x, y));
         }
         List<Marker> labelOrder = new ArrayList<>(markers);
@@ -46,22 +46,23 @@ final class MapOverlay {
             int nearestY = MapGeometry.clamp(marker.y, label.y, label.y + label.h - 1);
             frame.line(marker.x, marker.y, nearestX, nearestY, PixelFrame.GRAY);
         }
+        // Transparent letter holes should show terrain, not another label's leader.
+        for (Rect label : labels.values()) frame.clear(label.x,label.y,label.w,label.h);
         for (var entry : labels.entrySet()) {
             Marker marker = entry.getKey(); Rect label = entry.getValue();
             String name = PixelFrame.fit((marker.player.self ? "*" : "") + marker.player.name, 122);
-            frame.box(label.x, label.y, label.w, label.h, PixelFrame.BLACK);
             frame.text(label.x + 1, label.y + 1, name, marker.player.self ? PixelFrame.GREEN : PixelFrame.YELLOW);
         }
         int overflow = markers.size() - labels.size();
         String status = footer;
         if (overflow > 0) status = "+" + overflow + " labels (cycling)";
         if (!status.isEmpty()) {
-            frame.box(0, 118, 128, 10, PixelFrame.BLACK);
-            frame.text(1, 119, PixelFrame.fit(status, 126), PixelFrame.WHITE);
+            frame.text(1, 122, PixelFrame.fit(status, 126), PixelFrame.WHITE);
         }
-        // Symbols are last so a south-edge arrow cannot disappear behind the status strip.
+        // Symbols are last so footer glyphs cannot erase a south-edge arrow.
         for (Marker marker : markers) if (!marker.player.self) drawMarker(frame, marker);
         for (Marker marker : markers) if (marker.player.self) drawMarker(frame, marker);
+        frame.shadow();
         return new Result(frame, labels.size(), overflow);
     }
     private static Map<Marker, Rect> layoutLabels(List<Marker> markers, int bottom, List<Rect> initial) {
@@ -69,7 +70,7 @@ final class MapOverlay {
         Map<Marker, Rect> labels = new LinkedHashMap<>();
         for (Marker marker : markers) {
             String name = PixelFrame.fit((marker.player.self ? "*" : "") + marker.player.name, 122);
-            Rect label = labelPosition(marker.x, marker.y, PixelFrame.width(name) + 2, 10, bottom, occupied);
+            Rect label = labelPosition(marker.x, marker.y, PixelFrame.width(name) + 2, CompactFont.HEIGHT + 2, bottom, occupied);
             if (label != null) { occupied.add(label); labels.put(marker, label); }
         }
         return labels;
@@ -101,7 +102,6 @@ final class MapOverlay {
         int tipX = m.x + (int) Math.round(dx * 3), tipY = m.y + (int) Math.round(dy * 3);
         int leftX = m.x + (int) Math.round(-dx * 2 - dy * 2), leftY = m.y + (int) Math.round(-dy * 2 + dx * 2);
         int rightX = m.x + (int) Math.round(-dx * 2 + dy * 2), rightY = m.y + (int) Math.round(-dy * 2 - dx * 2);
-        frame.box(m.x - 3, m.y - 3, 7, 7, PixelFrame.BLACK);
         frame.line(tipX, tipY, leftX, leftY, color); frame.line(tipX, tipY, rightX, rightY, color);
         frame.line(leftX, leftY, rightX, rightY, color); frame.pixel(m.x, m.y, color);
     }

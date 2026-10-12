@@ -1,11 +1,14 @@
-WRVPlayerMap 0.2.0 ordinary-map adaptation
-Accepted candidate SHA-256: 382e40bdb3eae37d2c5dc6b6344d57749701f4b589bcdfd77919aac2750b9dc9
+ExcelPlayerMap 0.2.1 compact labels and safe brand migration candidate
+Candidate SHA-256: b0194ef2612f3bddd6ca698dab8462a518677f9ab5bb3191e858e75c6b570527
 Paper: 26.2 build 123, commit 50018799f282010f7eb15d32c29cadbbe7c9d740
 API: 26.2.build.123-stable
-Java: Temurin 25.0.4+7-LTS
-Final candidate boot: 9 groups, 111 assertions, 0 failures
-Final clean restart: 9 groups, 111 assertions, 0 failures
-Persisted native map ID 15 restored and overlay reattached
-Exact-API Java 25 javac --release 21: passed
-Real Java/Bedrock clients, UI transactions, Geyser/Floodgate and host performance: not tested
-No live installation. All disposable test servers stopped.
+Java runtime: Temurin 25.0.4+7-LTS; Maven build: Temurin 21.0.12.1+1
+Old WRVPlayerMap 0.2 seed: 9 groups, 104 assertions, 0 failures
+Upgrade candidate: 11 groups, 138 assertions, 0 failures
+Clean candidate restart: 11 groups, 137 assertions, 0 failures
+Original serialized map ID 15 and item bytes retained; old config/registry unchanged
+Custom refresh interval 37 and extra config value preserved in Excel data folder
+Exact API javac --release 21: passed
+Local complete reactor: 121 Java tests; 5 repository + 9 shop generator tests passed
+Synthetic preview of same two names: old 1,442 / new 393 opaque pixels, including shadows
+No real client or candidate live deployment; original0.2.0 remains live

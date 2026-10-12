@@ -58,9 +58,11 @@ public final class RuntimeHarness extends JavaPlugin {
         });
         test("native-map-layer-and-transparent-pixels", this::nativeMapAndCanvas);
         test("plugin-enabled", () -> {
-            Plugin plugin = Bukkit.getPluginManager().getPlugin("WRVPlayerMap");
-            check(plugin != null && plugin.isEnabled(), "WRVPlayerMap enabled");
+            Plugin plugin = Bukkit.getPluginManager().getPlugin("ExcelPlayerMap");
+            check(plugin != null && plugin.isEnabled(), "ExcelPlayerMap enabled");
+            check(Bukkit.getPluginManager().getPlugin("WRVPlayerMap") == plugin, "legacy plugin lookup alias resolves to the same instance");
         });
+        test("legacy-brand-upgrade-preserves-config-registry-and-item", this::legacyUpgrade);
         pluginTests();
         try {
             Path folder = getDataFolder().toPath(); Files.createDirectories(folder);
@@ -104,9 +106,10 @@ public final class RuntimeHarness extends JavaPlugin {
         test("delta-pixels-and-native-terrain-restoration", this::prototypeCanvasTests);
         test("sharing-hands-dimensions-and-frame-id-semantics", this::simulatedPlayerTests);
         test("visibility-and-disconnected-player-filtering", this::visibilityTests);
+        test("compact-glyphs-and-moving-label-terrain-restoration", this::compactLabelsAndMovement);
     }
     private Plugin prototype() {
-        Plugin plugin = Bukkit.getPluginManager().getPlugin("WRVPlayerMap");
+        Plugin plugin = Bukkit.getPluginManager().getPlugin("ExcelPlayerMap");
         check(plugin != null && plugin.isEnabled(), "prototype must be enabled"); return plugin;
     }
     private Object registry() throws Exception { return field(prototype(), "registry"); }
@@ -273,6 +276,65 @@ public final class RuntimeHarness extends JavaPlugin {
     private int opaquePixels(MapCanvas canvas) {
         int count = 0; for (int y = 0; y < 128; y++) for (int x = 0; x < 128; x++) if (canvas.getPixelColor(x, y) != null) count++;
         return count;
+    }
+    private void legacyUpgrade() throws Exception {
+        Plugin plugin=prototype(); Path current=plugin.getDataFolder().toPath(), legacy=current.resolveSibling("WRVPlayerMap");
+        check(current.getFileName().toString().equals("ExcelPlayerMap"),"branded data folder is active");
+        if (!Files.exists(legacy.resolve("maps.yml"))) { check(true,"fresh install has no legacy registry to import"); return; }
+        Path fixture=getDataFolder().toPath().resolve("native-restart-item.bin");
+        check(Files.exists(fixture),"real serialized WRV0.2 item exists before branded upgrade");
+        check(Arrays.equals(Files.readAllBytes(legacy.resolve("config.yml")), Files.readAllBytes(current.resolve("config.yml"))),"legacy custom configuration preserved byte for byte");
+        check(plugin.getConfig().getLong("update-interval-ticks")==37,"custom legacy refresh interval survives branding");
+        check(plugin.getConfig().getString("migration-test-value").equals("preserved"),"unrecognized legacy config values retained");
+        Path checked=getDataFolder().toPath().resolve("brand-upgrade-checked.txt");
+        if (!Files.exists(checked)) {
+            check(Arrays.equals(Files.readAllBytes(legacy.resolve("maps.yml")),Files.readAllBytes(current.resolve("maps.yml"))),"first upgraded registry is an exact copy, not reset");
+            Files.writeString(checked,"verified\n");
+        }
+        ItemStack old=ItemStack.deserializeBytes(Files.readAllBytes(fixture)); MapView map=view(old); int id=map.getId();
+        Integer root=old.getItemMeta().getPersistentDataContainer().get(new NamespacedKey("wrvplayermap","lineage_root"),PersistentDataType.INTEGER);
+        check(root!=null,"serialized old item retains old PDC namespace");
+        FakePlayer holder=person(map.getWorld(),"UpgradeHolder"); holder.items[0]=old;
+        int count=registrySize(); check(ensure(holder,old)&&registrySize()==count&&view(old).getId()==id,"old item restores without replacement, new ID or reenrollment");
+        checkLayers(map); setPositions(plugin,holder); MapCanvas canvas=realCanvas(map); map.getRenderers().get(1).render(map,canvas,holder.player);
+        check(opaquePixels(canvas)>0,"old item displays new compact labels after rename");
+        setField(plugin,"positions",List.of());
+        getLogger().info("WRV_HARNESS_LEGACY_UPGRADE verified map="+id+" interval=37");
+    }
+    private void compactLabelsAndMovement() throws Exception {
+        Plugin plugin=prototype(); World world=Bukkit.getWorlds().getFirst();
+        FakePlayer viewer=person(world,".MapViewer"), peer=person(world,"SampleFriend01");
+        viewer.x=28; viewer.z=-28; peer.x=34; peer.z=-38;
+        ItemStack item=activated(viewer); viewer.items[0]=item; MapView map=view(item);
+        setPositions(plugin,viewer,peer); byte[] before=overlayPixels(plugin,map,viewer.player);
+        check(nonzero(before)<550,"screenshot pair including shadows draws fewer than 550 of 16384 pixels");
+        boolean shadowOnly=true;
+        for(int y=0;y<128;y++)for(int x=0;x<128;x++)if(before[y*128+x]==1){
+            boolean adjacent=false;for(int dy=-1;dy<=1;dy++)for(int dx=-1;dx<=1;dx++)if(x+dx>=0&&x+dx<128&&y+dy>=0&&y+dy<128){
+                byte p=before[(y+dy)*128+x+dx];if(p==2||p==3||p==4)adjacent=true;
+            }if(!adjacent)shadowOnly=false;
+        }
+        check(shadowOnly,"dark pixels are only thin glyph/arrow shadows, never solid backings");
+        MapCanvas canvas=realCanvas(map); MapRenderer renderer=map.getRenderers().get(1);
+        byte[] terrain=new byte[16384]; for(int i=0;i<terrain.length;i++) terrain[i]=(byte)(4+i%120);
+        Method setBase=canvas.getClass().getDeclaredMethod("setBase",byte[].class);setBase.setAccessible(true);setBase.invoke(canvas,(Object)terrain);
+        byte[] savedTerrain=terrain.clone(); renderer.render(map,canvas,viewer.player);
+        check(opaquePixels(canvas)==nonzero(before),"real canvas paints glyph/arrow/leader strokes only");
+        peer.x=-35;peer.z=45;viewer.x=-20;viewer.z=0;setPositions(plugin,viewer,peer);
+        byte[] after=overlayPixels(plugin,map,viewer.player); renderer.render(map,canvas,viewer.player);
+        int cleared=0;boolean correct=true, baseUnchanged=true;
+        for(int i=0;i<after.length;i++) {
+            if(before[i]!=0&&after[i]==0) cleared++;
+            if((canvas.getPixelColor(i%128,i/128)==null)!=(after[i]==0)) correct=false;
+            if(!canvas.getBasePixelColor(i%128,i/128).equals(org.bukkit.map.MapPalette.getColor(savedTerrain[i])))baseUnchanged=false;
+        }
+        check(cleared>50,"movement vacates many previously painted glyph pixels");
+        check(correct,"every vacated glyph pixel is genuinely null on exact Paper canvas");
+        check(baseUnchanged&&Arrays.equals(savedTerrain,terrain),"all original underlying terrain pixels remain intact");
+        peer.online=false;setPositions(plugin,viewer,peer);byte[] left=overlayPixels(plugin,map,viewer.player);renderer.render(map,canvas,viewer.player);
+        check(opaquePixels(canvas)==nonzero(left),"disconnected player's strokes disappear from native canvas");
+        viewer.items[0]=null;renderer.render(map,canvas,viewer.player);check(opaquePixels(canvas)==0,"putting map away clears every remaining stroke");
+        setField(plugin,"positions",List.of());
     }
     private static void setField(Object target, String name, Object value) throws Exception {
         Field field = target.getClass().getDeclaredField(name); field.setAccessible(true); field.set(target, value);

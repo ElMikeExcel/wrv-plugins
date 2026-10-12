@@ -1,10 +1,3 @@
-PASS exact-server-version
-PASS native-map-layer-and-transparent-pixels
-PASS plugin-enabled
-PASS native-empty-map-activation-preserves-id-and-terrain
-PASS vanilla-clone-zoom-and-lock-provenance
-PASS tracked-map-restored-after-restart
-PASS delta-pixels-and-native-terrain-restoration
-PASS sharing-hands-dimensions-and-frame-id-semantics
-PASS visibility-and-disconnected-player-filtering
-SUMMARY passed=9 failed=0 assertions=111
+seed: passed=True groups=9 assertions=104 native-map-id=15 SHA256=382e40bdb3eae37d2c5dc6b6344d57749701f4b589bcdfd77919aac2750b9dc9
+upgrade: passed=True groups=11 assertions=138 native-map-id=15 SHA256=b0194ef2612f3bddd6ca698dab8462a518677f9ab5bb3191e858e75c6b570527
+restart: passed=True groups=11 assertions=137 native-map-id=15 SHA256=b0194ef2612f3bddd6ca698dab8462a518677f9ab5bb3191e858e75c6b570527

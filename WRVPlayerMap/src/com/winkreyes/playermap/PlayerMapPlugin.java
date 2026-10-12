@@ -31,7 +31,26 @@ public final class PlayerMapPlugin extends JavaPlugin implements Listener, Comma
     private List<Position> positions = List.of();
     private long revision;
     @Override public void onEnable() {
-        saveDefaultConfig(); rootKey = new NamespacedKey(this,"lineage_root");
+        var manager = getServer().getPluginManager();
+        var legacyPlugin = manager.getPlugin("WRVPlayerMap");
+        var installedPlugins = manager.getPlugins();
+        boolean legacyInstalled = legacyPlugin != null && legacyPlugin != this;
+        if (installedPlugins != null) legacyInstalled |= Arrays.stream(installedPlugins)
+                .anyMatch(plugin -> plugin != null && plugin != this && "WRVPlayerMap".equalsIgnoreCase(plugin.getName()));
+        if (legacyInstalled) {
+            getLogger().severe("WRVPlayerMap is also installed. Remove its old JAR before enabling ExcelPlayerMap; keep both data folders and all world map data.");
+            getServer().getPluginManager().disablePlugin(this); return;
+        }
+        try {
+            if (LegacyStorage.prepare(getDataFolder().toPath()) == LegacyStorage.Result.MIGRATED)
+                getLogger().info("Copied WRVPlayerMap storage to ExcelPlayerMap; the legacy folder remains untouched as a backup.");
+            saveDefaultConfig();
+        } catch (Exception error) {
+            getLogger().log(Level.SEVERE,"Cannot safely prepare ExcelPlayerMap storage; disabling without replacing existing data",error);
+            getServer().getPluginManager().disablePlugin(this); return;
+        }
+        // Keep the deployed item tag stable across plugin renames, copies and native zooms.
+        rootKey = new NamespacedKey("wrvplayermap","lineage_root");
         registry = new MapRegistry(getDataFolder().toPath().resolve("maps.yml"));
         try { registry.load(); }
         catch (Exception error) { getLogger().log(Level.SEVERE,"Cannot safely load map registry; disabling",error); getServer().getPluginManager().disablePlugin(this); return; }

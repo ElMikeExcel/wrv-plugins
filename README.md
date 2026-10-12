@@ -54,4 +54,4 @@ Nothing here merges, deploys, restarts or changes the live server. Keep backups 
 
 ## Player-map prototype
 
-[WRVPlayerMap](WRVPlayerMap/README.md) enhances newly activated ordinary maps with pixel-rendered names and distant-player arrows while retaining their vanilla identities, terrain, sharing and cartography. It is independently tested and remains a prototype pending real Java/Bedrock client acceptance; it is not deployed by this repository.
+[ExcelPlayerMap](WRVPlayerMap/README.md) enhances newly activated ordinary maps with pixel-rendered names and distant-player arrows while retaining their vanilla identities, terrain, sharing and cartography. WRVPlayerMap 0.2.0 is installed; the smaller-label, safely renamed ExcelPlayerMap 0.2.1 candidate is not installed. See its README for exact acceptance limits.

@@ -4,17 +4,20 @@
 
 ## Verified result
 
-Final prototype JAR SHA-256:
+Candidate **ExcelPlayerMap-0.2.1.jar** SHA-256:
 
-`382e40bdb3eae37d2c5dc6b6344d57749701f4b589bcdfd77919aac2750b9dc9`
+`b0194ef2612f3bddd6ca698dab8462a518677f9ab5bb3191e858e75c6b570527`
 
-The exact runtime and a subsequent clean restart each passed **9 test groups / 111 assertions** on 2026-10-12 UTC:
+On 2026-10-12 UTC, the original WRVPlayerMap 0.2.0 seeded a real serialized native map item (ID 15) and nondefault configuration in a disposable world. The Excel candidate upgraded that same server, then survived a clean full restart:
 
-- Paper 26.2 build 123, commit `50018799f282010f7eb15d32c29cadbbe7c9d740`
-- API `26.2.build.123-stable`
-- Eclipse Temurin Java 25.0.4+7-LTS
+- Original seed: **9 groups / 104 assertions / 0 failures**
+- Excel upgrade: **11 groups / 138 assertions / 0 failures**
+- Excel restart: **11 groups / 137 assertions / 0 failures** (the one-time byte-copy assertion runs only on first upgrade)
+- Paper 26.2 build 123, commit `50018799f282010f7eb15d32c29cadbbe7c9d740`, API `26.2.build.123-stable`
+- Eclipse Temurin Java 25.0.4+7-LTS; exact API compilation with `javac --release 21` also passed
+- Local full reactor: **121 Java tests**, including 56 map tests, plus 14 Python audits
 
-The production source also compiled with Java 25 `javac --release 21` against this exact API. It emitted only deprecated-API notes.
+The original serialized item and its ID survived unchanged, old WRV config/registry bytes stayed untouched, and custom interval 37/extra config were copied exactly. New pixel rendering was exercised on real native canvases, including complete per-pixel null restoration after movement. All disposable processes stopped cleanly. This is not a real phone/client test and the candidate is not installed live.
 
 ## Coverage
 
@@ -28,6 +31,9 @@ The production source also compiled with Java 25 `javac --release 21` against th
 8. Synthetic players with real server items/map views verify sharing without owner binding, main/offhand versus stored items, permission clearing, fixed map world/ID across dimensions, and shared-ID identity of held/framed copies.
 9. Added overlay labels/markers respect visibility permission, `canSee`, and online status. Native Minecraft cursor behavior is preserved and is not hidden by this add-on's visibility permission.
 
+10. Branding migration retains config, native map registry and legacy item tags. New plugin name and old dependency alias refer to one instance.
+11. Compact text and glyph-shaped shadows draw no solid backing; movement clears all vacated pixels while preserving every underlying terrain color.
+
 ## Reproduce safely
 
 Requirements: Python 3, a Java 25 JDK (Temurin 25.0.4+7 for an exact match), the built prototype JAR, and a **new disposable server folder**. Use no production world or other production plugins.
@@ -36,7 +42,7 @@ Requirements: Python 3, a Java 25 JDK (Temurin 25.0.4+7 for an exact match), the
 
    `7b7b3b43c009103e1971a0576c26f655a7dd9b56a0a2a4438e352c03a7fecd08`
 
-2. Copy `server.properties.loopback` to that folder as `server.properties`. It binds only `127.0.0.1:25578`, enables authentication and a whitelist, and disables RCON/query. The runner checks these settings and rejects extra plugin JARs.
+2. Copy `server.properties.loopback` to that folder as `server.properties`. It binds only `127.0.0.1:25579`, enables authentication and a whitelist, and disables RCON/query. The runner checks these settings and rejects extra plugin JARs.
 
 3. Set `JAVA_HOME` to the Java 25 JDK. In the disposable folder, run official Paperclip's preparation-only mode to download/patch the server and extract runtime libraries without starting Minecraft:
 
@@ -57,12 +63,26 @@ Requirements: Python 3, a Java 25 JDK (Temurin 25.0.4+7 for an exact match), the
    ```sh
    python3 verification/runtime-harness/run.py \
      --server-dir /path/to/disposable-server \
-     --plugin target/WRVPlayerMap-0.2.0.jar \
+     --plugin target/ExcelPlayerMap-0.2.1.jar \
      --annotations-jar /path/to/annotations-26.0.2.jar \
      --java-home "$JAVA_HOME"
    ```
 
 The runner compiles the test harness, copies only the supplied prototype/harness into the disposable server, runs two complete boots, and requires a successful persisted-ID check on the second boot. Each boot writes a console log and SHA-256 manifest. A 180-second timeout requests a normal stop before attempting process termination. Restart fixtures are retained for reproducibility. Re-running against the same disposable folder reuses them.
+
+## Reproduce the old-to-new upgrade
+
+Use `upgrade.py` instead of `run.py` when testing migration. Prepare the same exact disposable runtime above with an initially empty plugins directory. Obtain the original WRVPlayerMap 0.2.0 JAR (SHA256 `382e40bdb3eae37d2c5dc6b6344d57749701f4b589bcdfd77919aac2750b9dc9`) and original harness sources from commit `a92ac702452a684000f860e1667e384d763961e2` in a separate checkout.
+
+For each command pass `--server-dir /path/to/disposable-server --java-home "$JAVA_HOME" --annotations-jar /path/to/annotations-26.0.2.jar`:
+
+1. `python3 upgrade.py ... --stage seed --plugin /path/to/WRVPlayerMap-0.2.0.jar --harness-source /path/to/old/verification/runtime-harness`
+2. `python3 upgrade.py ... --stage upgrade --plugin /path/to/ExcelPlayerMap-0.2.1.jar --harness-source /path/to/current/verification/runtime-harness`
+3. `python3 upgrade.py ... --stage restart --plugin /path/to/ExcelPlayerMap-0.2.1.jar --harness-source /path/to/current/verification/runtime-harness`
+
+Seed writes a custom disposable configuration (interval 37 plus an extra value), creates the native item, and stops. Upgrade archives the old disposable JARs and installs only the supplied candidate plus test harness; restart requires exactly the same candidate hash. Checks include old item identity, untouched legacy bytes, exact copied configuration and a closed listener. Every stage snapshots evidence. An existing stage directory is refused rather than silently overwritten. The helper never downloads files, accepts the EULA or touches a live server.
+
+The ordinary `run.py` above verifies a fresh installation and restart without legacy data. Both runners reject extra JARs and require loopback-only authenticated/whitelisted settings.
 
 ## Evidence
 
@@ -72,4 +92,4 @@ The `evidence/` folder records the tested artifact hashes, the accepted boot/res
 
 No real Java/Bedrock client, phone display, UI inventory/crafting clicks, client packets, Geyser/Floodgate combination, or production plugin stack was exercised. Players/inventories are synthetic. Event dispatch, native map creation and clone/zoom/lock post-processing, map views/canvas, item metadata, serialization and full restarts are real. Shared frame identity is checked server-side, not through a client screenshot. The cloud JVM produced external Minecraft-authentication/Paper-update DNS warnings; local tests passed, but authenticated client connectivity is unverified.
 
-This harness intentionally imports exact-version server internals to verify native map operations. The runner includes the patched server JAR in its test classpath. The production plugin itself has no NMS dependency. Both final runs use the same SHA-pinned 0.2.0 candidate, including the registry and lineage-hardening fixes.
+This harness intentionally imports exact-version server internals to verify native map operations. The runner includes the patched server JAR in its test classpath. The production plugin itself has no NMS dependency. Both final candidate runs use the same SHA-pinned Excel 0.2.1 JAR. Historical 0.2.0 evidence remains under `evidence/0.2.0/`.

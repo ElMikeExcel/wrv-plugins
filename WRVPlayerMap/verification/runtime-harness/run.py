@@ -47,9 +47,9 @@ def main():
     if not plugin.is_file():
         parser.error('Plugin JAR missing')
     config = properties(root / 'server.properties')
-    required = {'server-ip': '127.0.0.1', 'server-port': '25578', 'online-mode': 'true',
+    required = {'server-ip': '127.0.0.1', 'server-port': '25579', 'online-mode': 'true',
                 'white-list': 'true', 'enforce-whitelist': 'true', 'enable-rcon': 'false',
-                'enable-query': 'false', 'level-name': 'wrv-harness-world'}
+                'enable-query': 'false', 'management-server-enabled': 'false', 'level-name': 'wrv-harness-world'}
     for key, expected in required.items():
         if config.get(key) != expected:
             parser.error(f'Isolated config required: {key}={expected}')
@@ -60,7 +60,7 @@ def main():
         parser.error('Run official Paperclip patch-only setup first to extract exact runtime libraries')
     plugins = root / 'plugins'
     plugins.mkdir(exist_ok=True)
-    unexpected = [p.name for p in plugins.glob('*.jar') if p.name not in {'WRVPlayerMap-0.2.0.jar', 'WRVRuntimeHarness.jar'}]
+    unexpected = [p.name for p in plugins.glob('*.jar') if p.name not in {'ExcelPlayerMap-0.2.1.jar', 'WRVRuntimeHarness.jar'}]
     if unexpected:
         parser.error('Use a disposable test folder with only this prototype/harness: ' + ', '.join(unexpected))
     build = root / 'harness-build'
@@ -71,7 +71,7 @@ def main():
     shutil.copyfile(here / 'plugin.yml', build / 'plugin.yml')
     harness = plugins / 'WRVRuntimeHarness.jar'
     subprocess.run([str(java_home / 'bin/jar'), '--create', '--file', str(harness), '-C', str(build), '.'], check=True)
-    target = plugins / 'WRVPlayerMap-0.2.0.jar'
+    target = plugins / 'ExcelPlayerMap-0.2.1.jar'
     if target.resolve() != plugin:
         shutil.copyfile(plugin, target)
     version = subprocess.run([str(java_home / 'bin/java'), '-version'], capture_output=True, text=True, check=True).stderr.strip()

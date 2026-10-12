@@ -36,7 +36,7 @@ class RepositoryTests(unittest.TestCase):
             with self.subTest(module=module):
                 d = descriptor(module)
                 pom = ET.parse(ROOT / module / 'pom.xml')
-                self.assertEqual(module, d['name'])
+                self.assertEqual('ExcelPlayerMap' if module == 'WRVPlayerMap' else module, d['name'])
                 self.assertEqual(pom.find('m:version', NS).text, d['version'])
                 self.assertTrue((ROOT / module / 'src' / (d['main'].replace('.', '/') + '.java')).is_file())
                 self.assertEqual('1.21.5' if module == 'WRVPlayerMap' else '1.21', d['api-version'])
@@ -46,7 +46,7 @@ class RepositoryTests(unittest.TestCase):
         for module in MODULES:
             with self.subTest(module=module):
                 d = descriptor(module)
-                jar = ROOT / module / 'target' / f"{module}-{d['version']}.jar"
+                jar = ROOT / module / 'target' / f"{d['name']}-{d['version']}.jar"
                 self.assertTrue(jar.is_file(), f'Run ./mvnw clean verify first: {jar}')
                 with zipfile.ZipFile(jar) as z:
                     self.assertIn(d['main'].replace('.', '/') + '.class', z.namelist())

@@ -1,6 +1,6 @@
 name: WRVRuntimeHarness
-version: 0.1.0
+version: 0.2.1
 main: wrv.harness.RuntimeHarness
 api-version: '26.2'
-softdepend: [WRVPlayerMap]
+softdepend: [ExcelPlayerMap]
 description: Disposable isolated runtime tests; never deploy to production.
