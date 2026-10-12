@@ -1,0 +1,464 @@
+From 4025d7625ea81dd6772ef0bda4240a83d58810ad Mon Sep 17 00:00:00 2001
+From: GrokBot <bot@local>
+Date: Thu, 8 Oct 2026 19:42:38 -0500
+Subject: [PATCH 1/2] Add party Together XP bonus
+
+---
+ Changelog.txt                                 |   2 +
+ .../commands/party/PartyInfoCommand.java      |  18 ++
+ .../gmail/nossr50/config/GeneralConfig.java   |  28 +++
+ .../nossr50/datatypes/player/McMMOPlayer.java |   6 +
+ .../com/gmail/nossr50/party/PartyManager.java |  41 ++++
+ .../com/gmail/nossr50/util/Permissions.java   |   4 +
+ src/main/resources/config.yml                 |  10 +
+ .../resources/locale/locale_en_US.properties  |   3 +
+ src/main/resources/plugin.yml                 |   4 +
+ .../nossr50/party/PartyTogetherBonusTest.java | 195 ++++++++++++++++++
+ 10 files changed, 311 insertions(+)
+ create mode 100644 src/test/java/com/gmail/nossr50/party/PartyTogetherBonusTest.java
+
+diff --git a/Changelog.txt b/Changelog.txt
+index e3941fbe9..672ea5d98 100644
+--- a/Changelog.txt
++++ b/Changelog.txt
+@@ -1,4 +1,6 @@
+ Version 2.3.003
++    Added an optional party Together bonus: extra skill XP when party members play near each other (Party.Together_Bonus in config.yml, off by default)
++    Added permission node mcmmo.perks.partybonus (default true)
+ 
+ Version 2.3.002
+     Fixed mcMMO failing to start on Spigot 26.3 servers
+diff --git a/src/main/java/com/gmail/nossr50/commands/party/PartyInfoCommand.java b/src/main/java/com/gmail/nossr50/commands/party/PartyInfoCommand.java
+index 52787f628..69068eeec 100644
+--- a/src/main/java/com/gmail/nossr50/commands/party/PartyInfoCommand.java
++++ b/src/main/java/com/gmail/nossr50/commands/party/PartyInfoCommand.java
+@@ -1,5 +1,6 @@
+ package com.gmail.nossr50.commands.party;
+ 
++import com.gmail.nossr50.config.GeneralConfig;
+ import com.gmail.nossr50.datatypes.party.Party;
+ import com.gmail.nossr50.datatypes.party.PartyFeature;
+ import com.gmail.nossr50.datatypes.party.ShareMode;
+@@ -34,6 +35,7 @@ public class PartyInfoCommand implements CommandExecutor {
+                 displayPartyHeader(player, party);
+                 displayShareModeInfo(player, party);
+                 displayPartyFeatures(player, party);
++                displayTogetherBonusInfo(mmoPlayer);
+                 displayMemberInfo(player, mmoPlayer, party);
+                 return true;
+ 
+@@ -127,6 +129,22 @@ public class PartyInfoCommand implements CommandExecutor {
+         }
+     }
+ 
++    private void displayTogetherBonusInfo(McMMOPlayer mmoPlayer) {
++        final GeneralConfig generalConfig = mcMMO.p.getGeneralConfig();
++
++        if (!generalConfig.isPartyTogetherBonusEnabled()) {
++            return;
++        }
++
++        final String status = LocaleLoader.getString("Commands.Party.TogetherBonus."
++                + (mcMMO.p.getPartyManager().isTogetherBonusActive(mmoPlayer)
++                ? "Active" : "Inactive"));
++        mmoPlayer.getPlayer().sendMessage(LocaleLoader.getString("Commands.Party.TogetherBonus",
++                status, generalConfig.getPartyTogetherBonusMultiplier(),
++                generalConfig.getPartyTogetherBonusMinNearbyMembers(),
++                generalConfig.getPartyTogetherBonusRange()));
++    }
++
+     private void displayMemberInfo(Player player, McMMOPlayer mmoPlayer, Party party) {
+         /*
+          * Only show members of the party that this member can see
+diff --git a/src/main/java/com/gmail/nossr50/config/GeneralConfig.java b/src/main/java/com/gmail/nossr50/config/GeneralConfig.java
+index bf8c2c566..067f9243b 100644
+--- a/src/main/java/com/gmail/nossr50/config/GeneralConfig.java
++++ b/src/main/java/com/gmail/nossr50/config/GeneralConfig.java
+@@ -161,6 +161,18 @@ public class GeneralConfig extends BukkitConfig {
+             reason.add("Party.Sharing.Range should be greater than 0!");
+         }
+ 
++        if (getPartyTogetherBonusMultiplier() < 1) {
++            reason.add("Party.Together_Bonus.Multiplier should be at least 1!");
++        }
++
++        if (getPartyTogetherBonusRange() <= 0) {
++            reason.add("Party.Together_Bonus.Range should be greater than 0!");
++        }
++
++        if (getPartyTogetherBonusMinNearbyMembers() < 1) {
++            reason.add("Party.Together_Bonus.Min_Nearby_Members should be at least 1!");
++        }
++
+         if (getPartyXpCurveMultiplier() < 1) {
+             reason.add("Party.Leveling.Xp_Curve_Modifier should be at least 1!");
+         }
+@@ -692,6 +704,22 @@ public class GeneralConfig extends BukkitConfig {
+         return config.getDouble("Party.Sharing.Range", 75.0D);
+     }
+ 
++    public boolean isPartyTogetherBonusEnabled() {
++        return config.getBoolean("Party.Together_Bonus.Enabled", false);
++    }
++
++    public double getPartyTogetherBonusMultiplier() {
++        return config.getDouble("Party.Together_Bonus.Multiplier", 1.25D);
++    }
++
++    public double getPartyTogetherBonusRange() {
++        return config.getDouble("Party.Together_Bonus.Range", 32.0D);
++    }
++
++    public int getPartyTogetherBonusMinNearbyMembers() {
++        return config.getInt("Party.Together_Bonus.Min_Nearby_Members", 1);
++    }
++
+     public int getPartyLevelCap() {
+         int cap = config.getInt("Party.Leveling.Level_Cap", 10);
+         return (cap <= 0) ? Integer.MAX_VALUE : cap;
+diff --git a/src/main/java/com/gmail/nossr50/datatypes/player/McMMOPlayer.java b/src/main/java/com/gmail/nossr50/datatypes/player/McMMOPlayer.java
+index f4e9f2858..8a7499c3b 100644
+--- a/src/main/java/com/gmail/nossr50/datatypes/player/McMMOPlayer.java
++++ b/src/main/java/com/gmail/nossr50/datatypes/player/McMMOPlayer.java
+@@ -698,6 +698,12 @@ public class McMMOPlayer implements Identified {
+             return;
+         }
+ 
++        // Applied once here, before sharing: shared members receive their split through
++        // beginUnsharedXpGain, so the bonus is never stacked by party XP share
++        if (party != null && mcMMO.p.getPartyManager().isTogetherBonusActive(this)) {
++            xp *= (float) mcMMO.p.getGeneralConfig().getPartyTogetherBonusMultiplier();
++        }
++
+         // Return if the experience has been shared
+         if (party != null && ShareHandler.handleXpShare(xp, this, skill,
+                 ShareHandler.getSharedXpGainReason(xpGainReason))) {
+diff --git a/src/main/java/com/gmail/nossr50/party/PartyManager.java b/src/main/java/com/gmail/nossr50/party/PartyManager.java
+index d44908a81..cb6cf522f 100644
+--- a/src/main/java/com/gmail/nossr50/party/PartyManager.java
++++ b/src/main/java/com/gmail/nossr50/party/PartyManager.java
+@@ -2,6 +2,7 @@ package com.gmail.nossr50.party;
+ 
+ import static java.util.Objects.requireNonNull;
+ 
++import com.gmail.nossr50.config.GeneralConfig;
+ import com.gmail.nossr50.datatypes.chat.ChatChannel;
+ import com.gmail.nossr50.datatypes.interactions.NotificationType;
+ import com.gmail.nossr50.datatypes.party.ItemShareType;
+@@ -88,6 +89,46 @@ public final class PartyManager {
+         return firstParty.equals(secondParty.getAlly()) && secondParty.equals(firstParty.getAlly());
+     }
+ 
++    /**
++     * Check whether the party Together bonus applies to this player right now: the feature is
++     * enabled, the player has the perk, and enough other online party members are close by in
++     * the same world.
++     *
++     * @param mmoPlayer The player earning XP
++     * @return true if the player's XP gains should be multiplied by the Together bonus
++     */
++    public boolean isTogetherBonusActive(@NotNull McMMOPlayer mmoPlayer) {
++        requireNonNull(mmoPlayer, "mmoPlayer cannot be null!");
++        final GeneralConfig generalConfig = pluginRef.getGeneralConfig();
++        final Party party = mmoPlayer.getParty();
++
++        if (party == null || !pluginRef.getPartyConfig().isPartyEnabled()
++                || !generalConfig.isPartyTogetherBonusEnabled()) {
++            return false;
++        }
++
++        final Player player = mmoPlayer.getPlayer();
++
++        if (!Permissions.hasPartyTogetherBonusPerk(player)) {
++            return false;
++        }
++
++        final int needed = generalConfig.getPartyTogetherBonusMinNearbyMembers();
++        final double range = generalConfig.getPartyTogetherBonusRange();
++        int nearby = 0;
++
++        // Count without building a list since this runs on every XP gain
++        for (Player member : party.getOnlineMembers()) {
++            if (!player.equals(member) && member.isValid()
++                    && Misc.isNear(player.getLocation(), member.getLocation(), range)
++                    && ++nearby >= needed) {
++                return true;
++            }
++        }
++
++        return false;
++    }
++
+     /**
+      * Get the near party members.
+      *
+diff --git a/src/main/java/com/gmail/nossr50/util/Permissions.java b/src/main/java/com/gmail/nossr50/util/Permissions.java
+index a0ea50e54..1d9266d25 100644
+--- a/src/main/java/com/gmail/nossr50/util/Permissions.java
++++ b/src/main/java/com/gmail/nossr50/util/Permissions.java
+@@ -321,6 +321,10 @@ public final class Permissions {
+         return permissible.hasPermission("mcmmo.perks.bypass.salvageenchant");
+     }
+ 
++    public static boolean hasPartyTogetherBonusPerk(Permissible permissible) {
++        return permissible.hasPermission("mcmmo.perks.partybonus");
++    }
++
+     public static boolean lucky(Permissible permissible, PrimarySkillType skill) {
+         return permissible.hasPermission(LUCKY_PERK_NODES.get(skill));
+     }
+diff --git a/src/main/resources/config.yml b/src/main/resources/config.yml
+index 5c3815a56..1e348711b 100644
+--- a/src/main/resources/config.yml
++++ b/src/main/resources/config.yml
+@@ -323,6 +323,16 @@ Party:
+         ExpShare_bonus_cap: 1.5
+         Range: 75.0
+ 
++    # Bonus skill XP for playing near your party, e.g. family members working on a build together
++    Together_Bonus:
++        Enabled: false
++        # XP is multiplied by this amount while the bonus is active
++        Multiplier: 1.25
++        # How close (in blocks) other party members must be, in the same world
++        Range: 32.0
++        # How many other party members must be in range for the bonus to apply
++        Min_Nearby_Members: 1
++
+     # Party members level up their party by earning individual experience
+     # Newly created parties will not immediately have access to all the party features
+     # and have to level up the party a bit before they can use them.
+diff --git a/src/main/resources/locale/locale_en_US.properties b/src/main/resources/locale/locale_en_US.properties
+index c1e4be59f..b8ae3aaa1 100644
+--- a/src/main/resources/locale/locale_en_US.properties
++++ b/src/main/resources/locale/locale_en_US.properties
+@@ -725,6 +725,9 @@ Commands.Party.ItemShare=&7ITEM &3({0})
+ Commands.Party.ExpShare=&7EXP &3({0})
+ Commands.Party.ItemShareCategories=&8Sharing Items: &7&o{0}
+ Commands.Party.MembersNear=&8NEAR YOU &3{0}&8/&3{1}
++Commands.Party.TogetherBonus=&8TOGETHER BONUS: {0} &7(&ax{1} XP&7 with {2}+ party members within {3} blocks)
++Commands.Party.TogetherBonus.Active=&aACTIVE
++Commands.Party.TogetherBonus.Inactive=&7INACTIVE
+ Commands.Party.Accept=&3 /party accept &a- Accept party invite
+ Commands.Party.Chat.Off=Party Chat only &cOff
+ Commands.Party.Chat.On=Party Chat only &aOn
+diff --git a/src/main/resources/plugin.yml b/src/main/resources/plugin.yml
+index afef57abb..7a23c1193 100644
+--- a/src/main/resources/plugin.yml
++++ b/src/main/resources/plugin.yml
+@@ -1456,7 +1456,11 @@ permissions:
+             mcmmo.perks.activationtime.all: true
+             mcmmo.perks.cooldowns.all: true
+             mcmmo.perks.lucky.all: true
++            mcmmo.perks.partybonus: true
+             mcmmo.perks.xp.all: true
++    mcmmo.perks.partybonus:
++        default: true
++        description: Allows earning the party Together bonus XP when near party members
+     mcmmo.perks.activationtime.*:
+         default: false
+         description: Increased activation time perks typically given to donors or VIPs
+diff --git a/src/test/java/com/gmail/nossr50/party/PartyTogetherBonusTest.java b/src/test/java/com/gmail/nossr50/party/PartyTogetherBonusTest.java
+new file mode 100644
+index 000000000..4a68800f7
+--- /dev/null
++++ b/src/test/java/com/gmail/nossr50/party/PartyTogetherBonusTest.java
+@@ -0,0 +1,195 @@
++package com.gmail.nossr50.party;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.anyDouble;
++import static org.mockito.ArgumentMatchers.anyFloat;
++import static org.mockito.ArgumentMatchers.eq;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.never;
++import static org.mockito.Mockito.verify;
++import static org.mockito.Mockito.when;
++
++import com.gmail.nossr50.MMOTestEnvironment;
++import com.gmail.nossr50.datatypes.experience.XPGainReason;
++import com.gmail.nossr50.datatypes.experience.XPGainSource;
++import com.gmail.nossr50.datatypes.party.Party;
++import com.gmail.nossr50.datatypes.party.ShareMode;
++import com.gmail.nossr50.datatypes.player.McMMOPlayer;
++import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
++import com.gmail.nossr50.mcMMO;
++import com.gmail.nossr50.util.Misc;
++import com.gmail.nossr50.util.Permissions;
++import com.gmail.nossr50.util.TestPlayerMock;
++import java.util.logging.Logger;
++import org.bukkit.Location;
++import org.bukkit.World;
++import org.bukkit.entity.Player;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Nested;
++import org.junit.jupiter.api.Test;
++
++/**
++ * Covers the party Together bonus: extra skill XP while other party members are close by.
++ */
++class PartyTogetherBonusTest extends MMOTestEnvironment {
++    private static final Logger logger = Logger.getLogger(PartyTogetherBonusTest.class.getName());
++    private static final double RANGE = 32.0D;
++    private static final double MULTIPLIER = 1.25D;
++
++    private PartyManager partyManager;
++    private Party party;
++    private Player member;
++    private McMMOPlayer memberMmoPlayer;
++
++    @BeforeEach
++    void setUp() {
++        mockBaseEnvironment(logger);
++
++        // Given - parties on, Together bonus enabled with defaults, everyone holding the perk
++        when(partyConfig.isPartyEnabled()).thenReturn(true);
++        when(generalConfig.isPartyTogetherBonusEnabled()).thenReturn(true);
++        when(generalConfig.getPartyTogetherBonusMultiplier()).thenReturn(MULTIPLIER);
++        when(generalConfig.getPartyTogetherBonusRange()).thenReturn(RANGE);
++        when(generalConfig.getPartyTogetherBonusMinNearbyMembers()).thenReturn(1);
++        when(Permissions.hasPartyTogetherBonusPerk(any(Player.class))).thenReturn(true);
++        mockedMisc.when(() -> Misc.isNear(any(Location.class), any(Location.class), anyDouble()))
++                .thenCallRealMethod();
++
++        partyManager = new PartyManager(mcMMO.p);
++        when(mcMMO.p.getPartyManager()).thenReturn(partyManager);
++
++        final TestPlayerMock memberMock = mockPlayer();
++        member = memberMock.player();
++        memberMmoPlayer = memberMock.mmoPlayer();
++
++        party = new Party("Family");
++        party.getOnlineMembers().add(player);
++        party.getOnlineMembers().add(member);
++        mmoPlayer.setParty(party);
++        memberMmoPlayer.setParty(party);
++
++        when(player.getLocation()).thenReturn(new Location(world, 0, 64, 0));
++        placeMember(world, 10);
++    }
++
++    @AfterEach
++    void tearDown() {
++        cleanUpStaticMocks();
++        when(partyConfig.isPartyEnabled()).thenReturn(false);
++    }
++
++    private void placeMember(World memberWorld, double x) {
++        when(member.getLocation()).thenReturn(new Location(memberWorld, x, 64, 0));
++    }
++
++    @Nested
++    class IsTogetherBonusActive {
++        @Test
++        void bonusShouldApplyWhenAPartyMemberIsInRange() {
++            // Given - a party member 10 blocks away (setUp)
++
++            // When / Then
++            assertThat(partyManager.isTogetherBonusActive(mmoPlayer)).isTrue();
++        }
++
++        @Test
++        void bonusShouldNotApplyWhenDisabledInConfig() {
++            // Given - the feature is turned off
++            when(generalConfig.isPartyTogetherBonusEnabled()).thenReturn(false);
++
++            // When / Then
++            assertThat(partyManager.isTogetherBonusActive(mmoPlayer)).isFalse();
++        }
++
++        @Test
++        void bonusShouldNotApplyWhenTheMemberIsOutOfRange() {
++            // Given - the only other member is farther away than the range
++            placeMember(world, RANGE + 1);
++
++            // When / Then
++            assertThat(partyManager.isTogetherBonusActive(mmoPlayer)).isFalse();
++        }
++
++        @Test
++        void bonusShouldNotApplyWhenTheMemberIsInAnotherWorld() {
++            // Given - same coordinates, but in the Nether
++            placeMember(mock(World.class), 0);
++
++            // When / Then
++            assertThat(partyManager.isTogetherBonusActive(mmoPlayer)).isFalse();
++        }
++
++        @Test
++        void bonusShouldNotApplyWithoutThePermission() {
++            // Given - the earning player lacks mcmmo.perks.partybonus
++            when(Permissions.hasPartyTogetherBonusPerk(player)).thenReturn(false);
++
++            // When / Then
++            assertThat(partyManager.isTogetherBonusActive(mmoPlayer)).isFalse();
++        }
++
++        @Test
++        void bonusShouldNotApplyWhenFewerMembersThanRequiredAreNearby() {
++            // Given - two nearby members are required but only one is close
++            when(generalConfig.getPartyTogetherBonusMinNearbyMembers()).thenReturn(2);
++
++            // When / Then
++            assertThat(partyManager.isTogetherBonusActive(mmoPlayer)).isFalse();
++        }
++    }
++
++    @Nested
++    class XpGain {
++        @Test
++        void beginXpGainShouldMultiplyTheGainWhenTheBonusIsActive() {
++            // Given - a member nearby and no XP share (setUp)
++
++            // When
++            mmoPlayer.beginXpGain(PrimarySkillType.MINING, 10F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++
++            // Then - the gain is boosted by the multiplier
++            verify(mmoPlayer).beginUnsharedXpGain(PrimarySkillType.MINING, 12.5F,
++                    XPGainReason.PVE, XPGainSource.SELF);
++        }
++
++        @Test
++        void beginXpGainShouldNotMultiplyTheGainWhenTheBonusIsDisabled() {
++            // Given
++            when(generalConfig.isPartyTogetherBonusEnabled()).thenReturn(false);
++
++            // When
++            mmoPlayer.beginXpGain(PrimarySkillType.MINING, 10F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++
++            // Then
++            verify(mmoPlayer).beginUnsharedXpGain(PrimarySkillType.MINING, 10F,
++                    XPGainReason.PVE, XPGainSource.SELF);
++        }
++
++        @Test
++        void sharedXpShouldBeBoostedOnceAndNotAgainForReceivingMembers() {
++            // Given - equal XP share with a neutral share bonus, so each player gets half
++            party.setXpShareMode(ShareMode.EQUAL);
++            when(player.canSee(member)).thenReturn(true);
++            when(generalConfig.getPartyShareRange()).thenReturn(75.0D);
++            when(generalConfig.getPartyShareBonusBase()).thenReturn(1.0D);
++            when(generalConfig.getPartyShareBonusIncrease()).thenReturn(0.0D);
++            when(generalConfig.getPartyShareBonusCap()).thenReturn(1.0D);
++
++            // When
++            mmoPlayer.beginXpGain(PrimarySkillType.MINING, 10F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++
++            // Then - 10 XP boosted to 12.5 and split in two; the member is not boosted again
++            verify(mmoPlayer).beginUnsharedXpGain(eq(PrimarySkillType.MINING), eq(6.25F),
++                    any(XPGainReason.class), eq(XPGainSource.PARTY_MEMBERS));
++            verify(memberMmoPlayer).beginUnsharedXpGain(eq(PrimarySkillType.MINING), eq(6.25F),
++                    any(XPGainReason.class), eq(XPGainSource.PARTY_MEMBERS));
++            verify(memberMmoPlayer, never()).beginXpGain(any(PrimarySkillType.class), anyFloat(),
++                    any(XPGainReason.class), any(XPGainSource.class));
++        }
++    }
++}
+-- 
+2.47.3
+

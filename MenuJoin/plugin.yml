@@ -1,0 +1,24 @@
+name: MenuJoin
+version: 1.2.0
+main: com.winkreyesvalley.menujoin.MenuJoin
+api-version: '1.13'
+author: WinkReyesValley
+description: Opens the DeluxeMenus server menu on join, with a per-player toggle.
+depend: [DeluxeMenus]
+softdepend: [PlaceholderAPI]
+commands:
+  menujoin:
+    description: Toggle whether the server menu opens automatically when you join.
+    usage: /menujoin
+    permission: menujoin.toggle
+  compass:
+    description: Get a new server menu compass if you lost yours.
+    usage: /compass
+    permission: menujoin.compass
+permissions:
+  menujoin.toggle:
+    description: Allows toggling the join menu.
+    default: true
+  menujoin.compass:
+    description: Allows getting a new server menu compass with /compass.
+    default: true

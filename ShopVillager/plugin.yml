@@ -1,0 +1,15 @@
+name: ShopVillager
+version: 1.0.0
+author: Steve
+main: com.winkreyes.shopvillager.ShopVillager
+api-version: "1.21"
+description: Tap the tagged 'Spawn Shop' villager to open the DeluxeMenus Spawn Shop (Java and Bedrock).
+softdepend: [DeluxeMenus]
+commands:
+  shopvillager:
+    description: Create, remove or tag Spawn Shop villagers
+    usage: /shopvillager <create|remove|tag>
+    permission: shopvillager.admin
+permissions:
+  shopvillager.admin:
+    default: op

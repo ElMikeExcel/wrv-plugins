@@ -1,0 +1,59 @@
+menu_title: '&6&lServer Menu'
+# Note: /menu is owned by the BedrockMenu plugin (native Bedrock dialogs).
+# Java players are routed here via "dm open server_menu <player>".
+size: 27
+items:
+  spawn:
+    material: COMPASS
+    slot: 10
+    display_name: '&a&lSpawn'
+    lore:
+      - '&7Teleport back to the village'
+    left_click_commands:
+      - '[player] spawn'
+  shop:
+    material: EMERALD
+    slot: 11
+    display_name: '&a&lSpawn Shop'
+    lore:
+      - '&7Spend your Jobs money'
+      - '&7on useful items'
+    left_click_commands:
+      - '[player] shop'
+    right_click_commands:
+      - '[player] shop'
+  mcmmo:
+    material: EXPERIENCE_BOTTLE
+    slot: 14
+    display_name: '&a&lmcMMO Stats'
+    lore:
+      - '&7See your skill levels'
+    left_click_commands:
+      - '[player] mcstats'
+  jobs:
+    material: GOLD_INGOT
+    slot: 13
+    display_name: '&a&lJobs & Money'
+    lore:
+      - '&7You earn money for playing'
+      - '&7/baltop shows the richest'
+    left_click_commands:
+      - '[player] jobs browse'
+  info:
+    material: BOOK
+    slot: 15
+    display_name: '&a&lServer Info'
+    lore:
+      - '&7What runs on this server'
+    left_click_commands:
+      - '[player] motd'
+  autojoin:
+    material: LEVER
+    slot: 16
+    display_name: '&e&lAuto-open on join: %menujoin_status%'
+    lore:
+      - '&7This menu opens when you join'
+      - '&7Click to turn it on or off'
+    left_click_commands:
+      - '[player] menujoin'
+      - '[refresh]'
