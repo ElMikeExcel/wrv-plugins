@@ -54,4 +54,4 @@ Nothing here merges, deploys, restarts or changes the live server. Keep backups 
 
 ## Player-map prototype
 
-[ExcelPlayerMap](WRVPlayerMap/README.md) enhances newly activated ordinary maps with pixel-rendered names and distant-player arrows while retaining their vanilla identities, terrain, sharing and cartography. ExcelPlayerMap 0.2.1 is installed; its compact-label update and safe migration from WRVPlayerMap 0.2.0 passed server checks. Human post-upgrade display and gameplay acceptance remains pending. See its README for exact acceptance limits.
+[ExcelPlayerMap](WRVPlayerMap/README.md) enhances newly activated ordinary maps with pixel-rendered names and distant-player arrows while retaining their vanilla identities, terrain, sharing and cartography. ExcelPlayerMap 0.2.1 is installed; its compact-label update and safe migration from WRVPlayerMap 0.2.0 passed server checks. The owner personally tested and accepted the updated map appearance on October 12; platform-specific and wider gameplay acceptance remain pending. See its README for exact acceptance limits.

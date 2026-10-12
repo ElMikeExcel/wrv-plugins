@@ -2,7 +2,7 @@
 
 An enhancement to **ordinary Minecraft maps**: use a new empty map normally, then see nearby players' names and distant-player arrows over its native terrain.
 
-**ExcelPlayerMap 0.2.1 is installed on Wink Reyes Valley**, updated October 12, 2026. Runtime version, approved host hash, safe legacy-folder copy, matching map registry and preserved update interval were verified. It replaces WRVPlayerMap 0.2.0 with compact labels and the Excel name. Existing enrolled maps retain their native identities; no replacement map is needed. **Human compact-label and post-upgrade gameplay acceptance remains pending.** The [deployment record](DEPLOYMENT-2026-10-12.md) preserves the earlier 0.2.0 installation, basic player reports and reported oversized-label defect separately from this update.
+**ExcelPlayerMap 0.2.1 is installed on Wink Reyes Valley**, updated October 12, 2026. Runtime version, approved host hash, safe legacy-folder copy, matching map registry and preserved update interval were verified. It replaces WRVPlayerMap 0.2.0 with compact labels and the Excel name. Existing enrolled maps retain their native identities; no replacement map is needed. **Human report, October 12: the server owner personally tested the update and accepted the map appearance.** This is a narrow user-reported compact-label visual pass; the client platform was not supplied, and detailed gameplay/cross-platform checks remain pending. The [deployment record](DEPLOYMENT-2026-10-12.md) preserves the earlier 0.2.0 installation, basic player reports and reported oversized-label defect separately from this update.
 
 ## Smaller labels, clear terrain
 

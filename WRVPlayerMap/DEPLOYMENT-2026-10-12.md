@@ -18,7 +18,9 @@ Times are UTC, followed by America/Chicago daylight time (UTC−5).
 
 The installed update uses compact five-pixel names, glyph-shaped shadows and no solid label/arrow/footer backing rectangles. `/playermap` and existing permissions remain compatible; `/excelplayermap` is an alias. Existing enrolled map items and identities are preserved; creating replacement maps is unnecessary.
 
-**Human acceptance remains pending:** reopen an existing enrolled map and check compact names/clear terrain on an identified Java or Bedrock client. The migration checks establish preserved storage and successful startup, not client rendering. Earlier human reports below concern 0.2.0; they do not establish a pass for 0.2.1. Automated and isolated exact-Paper evidence remains build evidence. This documentation update changes no code/binaries and does not merge the draft PR.
+**Human report, October 12: compact-label appearance passed.** The server owner personally tested the live update and reported that the map looked perfect. This records acceptance of the new map-label appearance, based on the user report. Java/Bedrock, device and client version were not specified. It does not establish cross-platform coverage, distant edge arrows, cartography/sharing/dimension edge cases, or long-session performance.
+
+The migration checks independently establish preserved storage and successful startup. Earlier human reports below concern 0.2.0 and remain historical evidence. Automated and isolated exact-Paper evidence remains build evidence. This documentation update changes no code/binaries and does not merge the draft PR.
 
 ## Earlier WRVPlayerMap 0.2.0 installation
 
