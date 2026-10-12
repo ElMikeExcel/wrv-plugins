@@ -17,7 +17,7 @@ On 2026-10-12 UTC, the original WRVPlayerMap 0.2.0 seeded a real serialized nati
 - Eclipse Temurin Java 25.0.4+7-LTS; exact API compilation with `javac --release 21` also passed
 - Local full reactor: **121 Java tests**, including 56 map tests, plus 14 Python audits
 
-The original serialized item and its ID survived unchanged, old WRV config/registry bytes stayed untouched, and custom interval 37/extra config were copied exactly. New pixel rendering was exercised on real native canvases, including complete per-pixel null restoration after movement. All disposable processes stopped cleanly. This is not a real phone/client test and the candidate is not installed live.
+The original serialized item and its ID survived unchanged, old WRV config/registry bytes stayed untouched, and custom interval 37/extra config were copied exactly. New pixel rendering was exercised on real native canvases, including complete per-pixel null restoration after movement. All disposable processes stopped cleanly. This is not a real phone/client test. The candidate was not installed live at the time of these isolated runs; its later approved installation is recorded in the [deployment record](../../DEPLOYMENT-2026-10-12.md).
 
 ## Coverage
 

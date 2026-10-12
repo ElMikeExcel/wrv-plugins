@@ -1,8 +1,8 @@
-# Excel Player Map 0.2.1 candidate
+# Excel Player Map 0.2.1
 
 An enhancement to **ordinary Minecraft maps**: use a new empty map normally, then see nearby players' names and distant-player arrows over its native terrain.
 
-**Live version remains WRVPlayerMap 0.2.0.** Its October 12 installation and player-reported map creation, self-tracking and terrain checks are recorded in [the deployment record](DEPLOYMENT-2026-10-12.md). Subsequent phone feedback showed working labels but oversized text and opaque backings hiding terrain. **This 0.2.1 candidate is not installed.** It addresses that visual defect and changes the public plugin name to **ExcelPlayerMap**, with an explicit compatibility migration.
+**ExcelPlayerMap 0.2.1 is installed on Wink Reyes Valley**, updated October 12, 2026. Runtime version, approved host hash, safe legacy-folder copy, matching map registry and preserved update interval were verified. It replaces WRVPlayerMap 0.2.0 with compact labels and the Excel name. Existing enrolled maps retain their native identities; no replacement map is needed. **Human compact-label and post-upgrade gameplay acceptance remains pending.** The [deployment record](DEPLOYMENT-2026-10-12.md) preserves the earlier 0.2.0 installation, basic player reports and reported oversized-label defect separately from this update.
 
 ## Smaller labels, clear terrain
 
@@ -62,7 +62,7 @@ On its first start, ExcelPlayerMap validates and copies the old `config.yml` and
 
 The destination marker prevents future imports from the now-stale old folder. Back up/restore the new folder and marker together. Existing map IDs, world/region/scale/history and the `wrvplayermap:lineage_root` item tag remain unchanged; previously activated maps need no replacement. Existing `wrv.playermap.*` permissions and `/playermap` remain stable. Paper's `provides: [WRVPlayerMap]` supports old plugin dependency/look-up names; it is not a promise about the old namespaced command prefix.
 
-To disable the enhancement, remove the new JAR during an authorized stop/start and retain all registry/world data; vanilla terrain remains. To roll back to the old **plugin version** after using the new one, first back up both folders, then carry the **latest** ExcelPlayerMap config/format-2 registry into the legacy folder before restoring the old JAR. Do not restore a stale legacy registry over newer map history. This candidate is not a world migration and creates no new map IDs itself.
+To disable the enhancement, remove the new JAR during an authorized stop/start and retain all registry/world data; vanilla terrain remains. To roll back to the old **plugin version** after using the new one, first back up both folders, then carry the **latest** ExcelPlayerMap config/format-2 registry into the legacy folder before restoring the old JAR. Do not restore a stale legacy registry over newer map history. This update is not a world migration and creates no new map IDs itself.
 
 ## Build, verification and remaining checks
 
@@ -74,7 +74,7 @@ See `verification/runtime-harness/` for original, reproducible isolated tests an
 
 **Still unverified:** real Java and Bedrock phone display, UI clicks/shift-click crafting/inventory packet synchronization, actual Geyser `2.11.3-b1251` (`50a464d`) / Floodgate `2.2.5-SNAPSHOT` (`b141-81b65cc`) together, installed vanish integration, and live-host tick/memory performance. No headless test is presented as phone acceptance.
 
-For human acceptance of this candidate, use Java and at least two Bedrock phones when available. First compare compact names over grass, water, snow/sand and a busy base; check that no rectangular backing remains and terrain reappears as the players move. Confirm old already-enrolled maps still work after the name migration. Then Activate an ordinary map; share/clone/zoom/lock it; visit another region and dimension; test main/offhand, overlaps, long names, reconnect, full restart, and existing treasure/art maps. Specifically check an unlocked framed copy while holding its twin, then a locked copy. Observe a normal family gameplay session for readability and performance. Removal only needs the plugin JAR removed during an authorized stop/restart: maps retain vanilla terrain; preserve registry/world data for rollback.
+For human acceptance of this installed update, use Java and at least two Bedrock phones when available. First compare compact names over grass, water, snow/sand and a busy base; check that no rectangular backing remains and terrain reappears as the players move. Confirm old already-enrolled maps still work after the name migration. Then Activate an ordinary map; share/clone/zoom/lock it; visit another region and dimension; test main/offhand, overlaps, long names, reconnect, full restart, and existing treasure/art maps. Specifically check an unlocked framed copy while holding its twin, then a locked copy. Observe a normal family gameplay session for readability and performance. Removal only needs the plugin JAR removed during an authorized stop/restart: maps retain vanilla terrain; preserve registry/world data for rollback.
 
 ## Primary-source rationale
 
