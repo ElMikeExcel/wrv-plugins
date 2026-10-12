@@ -1,9 +1,11 @@
-# Together + Weekend XP
+# Excel XP: Together + Weekend XP
 
-Custom mcMMO build **2.3.003-WRV-XP-1**, paired with **WeekendXP 1.0.2**.
+**Current candidate: mcMMO 2.3.003-WRV-XP-2**, paired with unchanged **WeekendXP 1.0.2**. The fourth patch changes only when the XP indicator is visible. This candidate is not installed. mcMMO retains its upstream plugin identity, commands, permissions and data directory.
+
+Previous custom mcMMO build **2.3.003-WRV-XP-1**, paired with **WeekendXP 1.0.2**.
 **Wink Reyes Valley deployment:** this exact pair was installed on October 12, 2026. Runtime versions, artifact hashes, startup, command registration, enabled settings, and the weekday reset were checked. Real Java/Bedrock visual and gameplay acceptance remains pending. See the [deployment record](DEPLOYMENT-2026-10-12.md).
 
-The source and build instructions below preserve the reviewed candidate's provenance. This documentation update changes no binaries and does not merge the draft review. Running these build instructions alone does not install plugins or restart a server.
+The source and build instructions below preserve the installed pair's provenance and append the new indicator-only patch. The draft review remains unmerged. Running these build instructions alone does not install plugins or restart a server.
 
 ## Gameplay rules
 
@@ -47,21 +49,25 @@ Existing keys under `Party.Together_Bonus` are preserved: `Enabled` (default fal
 
 WeekendXP controls mcMMO's existing global skill rate through the same namespaced commands, plus the separate runtime vanilla event factor through a capability-checked API. It never listens to pickup events or independently rounds a bonus. Its setter result is read back before a schedule state is cached as successful. The vanilla rate starts at 1.0 when mcMMO starts and WeekendXP reapplies the current schedule afterward.
 
-`/party info` retains the existing Together skill-bonus status. A dedicated green boss bar shows the current XP bonus factors, including the base ×1.00 state, and refreshes roughly once per second. It uses its own bar so it does not overwrite mcMMO action-bar alerts or temporary skill progress bars.
+`/party info` retains the existing Together skill-bonus status. A dedicated green boss bar appears **only after positive accepted XP is earned**, including the base ×1.00 state. It disappears **3 seconds after the latest gain** by default. More gains extend the same bar rather than creating duplicates. Its title refreshes roughly once per second only while visible. It uses its own bar so it does not overwrite mcMMO action-bar alerts or temporary skill progress bars.
 
 - `/xpbonus` or `/xpbonus status`: current factors, permitted per-skill rates and relevant restrictions
-- `/xpbonus hide`, `/xpbonus show`, `/xpbonus toggle`: change only this player's indicator visibility, saved in player persistent data
+- `/xpbonus hide`: opt out and immediately remove any active or pending notification; the preference is saved in player persistent data
+- `/xpbonus show`, `/xpbonus toggle`: opt into/out of future brief notifications; showing does not create a permanent bar or display one without a new gain
 - `General.XP_Bonus_Indicator.Enabled` (default true): server-wide display switch, independent of awarding XP
+- `General.XP_Bonus_Indicator.Display_Seconds` (default 3.0): time after the latest gain, 0.1–60 seconds at 20 ticks/second; absent or invalid values use 3 seconds. Server lag stretches tick-based durations.
 
 When mcMMO and green-bar rates differ, the display shows each separately. Per-skill event overrides appear as a range in the bar and exact values in the command. Unsupported green-bar bonuses say unavailable; Spectator mode marks green-bar bonuses inactive without claiming that pending mcMMO passive gains are impossible. A denied WorldGuard gameplay-XP flag is identified separately from the independently eligible green-bar channel. The displayed numbers are bonus factors; action-specific base XP, formula modifiers, perks, caps and plugin award restrictions still apply.
 
-The indicator cleans up on quit/disable and refreshes immediately after a world change. On Folia it is disabled to avoid unsafe cross-region party queries. Java and Geyser/Bedrock use the standard Bukkit bossbar path, but actual client rendering and overlap with other bossbars remain staging checks.
+Joining, standing still, moving into party range, schedule changes and `/xpbonus status` never create a notification. Skill notifications observe actual stored positive XP after both cancellable XP events. Orb notifications observe the final positive post-Mending amount on the next server tick, including later event-listener changes, and retain the existing source/profile/world/mode gates. Zero, cancelled and rejected awards do not flash. Direct vanilla XP/API grants remain outside the orb hook.
+
+The indicator clears active bars and pending pickups on world change, quit and disable. One timer manages only active/pending notifications; it never scans all online players. Normal restart starts with no visible bars while preserving opt-out preferences; plugin hot reload remains unsupported. On Folia it is disabled to avoid unsafe cross-region party queries. Java and Geyser/Bedrock use the standard Bukkit bossbar path, but actual client rendering and overlap with other bossbars remain staging checks.
 
 ## Reproducible source base and build
 
 Upstream: https://github.com/mcMMO-Dev/mcMMO
 
-Pinned upstream commit: `058279c148a65bd708dc85067d3858f6adde1173` ("back to dev", immediately after 2.3.002). Apply the patches in filename order; the first two historical patches are unchanged, and the third is the feature extension.
+Pinned upstream commit: `058279c148a65bd708dc85067d3858f6adde1173` ("back to dev", immediately after 2.3.002). Apply the patches in filename order; the first three patches are unchanged. The third adds coordinated XP bonuses and status; the fourth makes the indicator temporary.
 
 ```sh
 git clone https://github.com/mcMMO-Dev/mcMMO.git

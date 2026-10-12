@@ -1,0 +1,988 @@
+From ad67d10c4a7444bcc99bbc81a9585e8c57c6aaf8 Mon Sep 17 00:00:00 2001
+From: WRV Development <dev@local.invalid>
+Date: Mon, 12 Oct 2026 11:38:38 -0500
+Subject: [PATCH] Show XP bonus indicator briefly after accepted gains
+
+---
+ Changelog.txt                                 |   6 +
+ pom.xml                                       |   2 +-
+ .../gmail/nossr50/config/GeneralConfig.java   |   7 +
+ .../nossr50/listeners/PlayerListener.java     |  12 +
+ .../gmail/nossr50/party/VanillaXpBonus.java   |   3 +-
+ .../com/gmail/nossr50/util/EventUtils.java    |   7 +
+ .../util/experience/XpBonusIndicator.java     | 108 ++++++--
+ src/main/resources/config.yml                 |   3 +
+ .../resources/locale/locale_en_US.properties  |   6 +-
+ .../commands/player/XpBonusCommandTest.java   |   4 +
+ .../config/XpBonusIndicatorConfigTest.java    |  52 ++++
+ .../nossr50/party/VanillaXpBonusTest.java     |  47 ++++
+ .../XpBonusAwardNotificationTest.java         | 129 ++++++++++
+ .../util/experience/XpBonusIndicatorTest.java | 234 ++++++++++++++----
+ 14 files changed, 545 insertions(+), 75 deletions(-)
+ create mode 100644 src/test/java/com/gmail/nossr50/config/XpBonusIndicatorConfigTest.java
+ create mode 100644 src/test/java/com/gmail/nossr50/util/experience/XpBonusAwardNotificationTest.java
+
+diff --git a/Changelog.txt b/Changelog.txt
+index 1db9501..7729815 100644
+--- a/Changelog.txt
++++ b/Changelog.txt
+@@ -1,3 +1,9 @@
++Version 2.3.003-WRV-XP-2
++    Changed the XP bonus indicator to appear only after positive accepted XP gains and hide after three seconds by default
++    Added General.XP_Bonus_Indicator.Display_Seconds; repeated gains refresh the brief display without duplicating bars
++    Preserved hidden preferences; joining, movement and show/status commands no longer create a persistent bar
++    Ignored cancelled, zero and rejected awards and cleared notifications on world change, quit and shutdown
++
+ Version 2.3.003-WRV-XP-1
+     Added a source-guarded Paper green-bar XP bonus that stacks the Together multiplier with the WeekendXP event rate
+     Preserved fractional green-bar bonuses across pickups and reconnects instead of rounding every small orb down
+diff --git a/pom.xml b/pom.xml
+index 08c2251..8ff35ec 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -4,7 +4,7 @@
+     <modelVersion>4.0.0</modelVersion>
+     <groupId>com.gmail.nossr50.mcMMO</groupId>
+     <artifactId>mcMMO</artifactId>
+-    <version>2.3.003-WRV-XP-1</version>
++    <version>2.3.003-WRV-XP-2</version>
+     <name>mcMMO</name>
+     <url>https://github.com/mcMMO-Dev/mcMMO</url>
+     <scm>
+diff --git a/src/main/java/com/gmail/nossr50/config/GeneralConfig.java b/src/main/java/com/gmail/nossr50/config/GeneralConfig.java
+index 4bd9d1f..3b1df8a 100644
+--- a/src/main/java/com/gmail/nossr50/config/GeneralConfig.java
++++ b/src/main/java/com/gmail/nossr50/config/GeneralConfig.java
+@@ -710,6 +710,13 @@ public class GeneralConfig extends BukkitConfig {
+         return config.getBoolean("General.XP_Bonus_Indicator.Enabled", true);
+     }
+ 
++    /** Display duration after the latest gain; invalid values use the three-second default. */
++    public long getXpBonusIndicatorDisplayTicks() {
++        final double seconds = config.getDouble("General.XP_Bonus_Indicator.Display_Seconds", 3.0D);
++        return Double.isFinite(seconds) && seconds >= 0.1D && seconds <= 60.0D
++                ? Math.max(1L, Math.round(seconds * 20.0D)) : 60L;
++    }
++
+     public boolean isPartyTogetherBonusEnabled() {
+         return config.getBoolean("Party.Together_Bonus.Enabled", false);
+     }
+diff --git a/src/main/java/com/gmail/nossr50/listeners/PlayerListener.java b/src/main/java/com/gmail/nossr50/listeners/PlayerListener.java
+index e43237e..9401ae4 100644
+--- a/src/main/java/com/gmail/nossr50/listeners/PlayerListener.java
++++ b/src/main/java/com/gmail/nossr50/listeners/PlayerListener.java
+@@ -115,6 +115,18 @@ public class PlayerListener implements Listener {
+         }
+     }
+ 
++    /** Observe only eligible gameplay pickups; the indicator reads the final amount next tick. */
++    @EventHandler(priority = EventPriority.MONITOR)
++    public void onPlayerExpChangeMonitor(PlayerExpChangeEvent event) {
++        if (plugin.getXpBonusIndicator() != null && vanillaXpBonus.isSupported()
++                && ListenerGuards.resolveEligiblePlayer(event.getPlayer()) != null
++                && event.getPlayer().getGameMode() != GameMode.CREATIVE
++                && event.getPlayer().getGameMode() != GameMode.SPECTATOR
++                && vanillaXpBonus.isGameplayPickup(event)) {
++            plugin.getXpBonusIndicator().queueVanillaGain(event);
++        }
++    }
++
+     /**
+      * Localized-skill-command lookup derived from the loaded locale; rebuilt whenever the
+      * locale generation changes (e.g. after /mcmmoreloadlocale).
+diff --git a/src/main/java/com/gmail/nossr50/party/VanillaXpBonus.java b/src/main/java/com/gmail/nossr50/party/VanillaXpBonus.java
+index d990f5b..8d02e77 100644
+--- a/src/main/java/com/gmail/nossr50/party/VanillaXpBonus.java
++++ b/src/main/java/com/gmail/nossr50/party/VanillaXpBonus.java
+@@ -97,7 +97,8 @@ public final class VanillaXpBonus {
+         orb.getPersistentDataContainer().set(GAMEPLAY_ORB_KEY, PersistentDataType.BYTE, (byte) 1);
+     }
+ 
+-    boolean isGameplayPickup(PlayerExpChangeEvent event) {
++    /** Whether the source is an eligible gameplay orb, independent of the current multiplier. */
++    public boolean isGameplayPickup(PlayerExpChangeEvent event) {
+         if (!isSupported()) {
+             return false;
+         }
+diff --git a/src/main/java/com/gmail/nossr50/util/EventUtils.java b/src/main/java/com/gmail/nossr50/util/EventUtils.java
+index 349d32f..bff6ff8 100644
+--- a/src/main/java/com/gmail/nossr50/util/EventUtils.java
++++ b/src/main/java/com/gmail/nossr50/util/EventUtils.java
+@@ -465,8 +465,15 @@ public final class EventUtils {
+         boolean isCancelled = event.isCancelled();
+ 
+         if (!isCancelled) {
++            final float previousXp = mmoPlayer.getProfile().getSkillXpLevelRaw(skill);
+             mmoPlayer.getProfile().addXp(skill, event.getRawXpGained());
+             mmoPlayer.getProfile().registerXpGain(skill, event.getRawXpGained());
++            // Observe the actual stored award after all cancellable listeners; never change XP math.
++            if (Float.isFinite(event.getRawXpGained()) && event.getRawXpGained() > 0.0F
++                    && mmoPlayer.getProfile().getSkillXpLevelRaw(skill) > previousXp
++                    && mcMMO.p.getXpBonusIndicator() != null) {
++                mcMMO.p.getXpBonusIndicator().onXpGain(player);
++            }
+         }
+ 
+         return !isCancelled;
+diff --git a/src/main/java/com/gmail/nossr50/util/experience/XpBonusIndicator.java b/src/main/java/com/gmail/nossr50/util/experience/XpBonusIndicator.java
+index 42d75f1..7998931 100644
+--- a/src/main/java/com/gmail/nossr50/util/experience/XpBonusIndicator.java
++++ b/src/main/java/com/gmail/nossr50/util/experience/XpBonusIndicator.java
+@@ -3,6 +3,8 @@ package com.gmail.nossr50.util.experience;
+ import com.gmail.nossr50.mcMMO;
+ import com.gmail.nossr50.util.PaperUtil;
+ import com.tcoded.folialib.wrapper.task.WrappedTask;
++import java.util.ArrayList;
++import java.util.List;
+ import java.util.Map;
+ import java.util.UUID;
+ import java.util.concurrent.ConcurrentHashMap;
+@@ -12,31 +14,35 @@ import org.bukkit.boss.BarColor;
+ import org.bukkit.boss.BarStyle;
+ import org.bukkit.boss.BossBar;
+ import org.bukkit.entity.Player;
++import org.bukkit.event.Cancellable;
+ import org.bukkit.event.EventHandler;
+ import org.bukkit.event.Listener;
+ import org.bukkit.event.player.PlayerChangedWorldEvent;
++import org.bukkit.event.player.PlayerExpChangeEvent;
+ import org.bukkit.event.player.PlayerQuitEvent;
+ import org.bukkit.persistence.PersistentDataType;
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
+ 
+-/** Owns only the persistent XP-bonus indicator; ordinary skill progress bars remain independent. */
++/** Owns the temporary XP-bonus indicator; ordinary skill progress bars remain independent. */
+ public final class XpBonusIndicator implements Listener {
+     private static final NamespacedKey HIDDEN_KEY = NamespacedKey.fromString("mcmmo:xp_bonus_indicator_hidden");
+-    private static final long REFRESH_TICKS = 20L;
++    private static final long TITLE_REFRESH_TICKS = 20L;
+ 
+     private final mcMMO plugin;
+     private final Map<UUID, Entry> bars = new ConcurrentHashMap<>();
++    private final Map<UUID, List<PlayerExpChangeEvent>> pendingPickups = new ConcurrentHashMap<>();
+     private @Nullable WrappedTask refreshTask;
++    private long currentTick;
+ 
+-    private record Entry(@NotNull BossBar bar, @NotNull String title) {
++    private record Entry(@NotNull Player player, @NotNull BossBar bar, @NotNull String title, long expiresAt) {
+     }
+ 
+     public XpBonusIndicator(@NotNull mcMMO plugin) {
+         this.plugin = plugin;
+     }
+ 
+-    /** Starts a single lightweight main-thread refresh on Bukkit/Paper. Folia fails closed. */
++    /** One timer expires active bars and observes completed orb events. Idle players are never scanned. */
+     public void start() {
+         if (refreshTask != null || !plugin.getGeneralConfig().isXpBonusIndicatorEnabled()) {
+             return;
+@@ -46,78 +52,128 @@ public final class XpBonusIndicator implements Listener {
+                     + "party proximity queries are not region-safe.");
+             return;
+         }
+-        refreshTask = plugin.getFoliaLib().getScheduler().runTimer(this::refreshAll, REFRESH_TICKS, REFRESH_TICKS);
++        refreshTask = plugin.getFoliaLib().getScheduler().runTimer(this::tick, 1L, 1L);
+     }
+ 
+-    private void refreshAll() {
+-        for (final Player player : plugin.getServer().getOnlinePlayers()) {
+-            refresh(player);
++    private void tick() {
++        currentTick++;
++        for (final var pending : pendingPickups.entrySet()) {
++            final List<PlayerExpChangeEvent> events = pendingPickups.remove(pending.getKey());
++            if (events == null) {
++                continue;
++            }
++            // Waiting until event dispatch has finished also honors later HIGHEST/MONITOR changes.
++            for (final PlayerExpChangeEvent event : events) {
++                if (event.getAmount() > 0 && (!(event instanceof Cancellable cancellable)
++                        || !cancellable.isCancelled())) {
++                    onXpGain(event.getPlayer());
++                    break;
++                }
++            }
++        }
++        for (final Entry entry : bars.values()) {
++            if (currentTick >= entry.expiresAt() || !canDisplay(entry.player())) {
++                remove(entry.player().getUniqueId());
++            } else if (currentTick % TITLE_REFRESH_TICKS == 0) {
++                refresh(entry.player());
++            }
+         }
+     }
+ 
+-    /** Defaults to shown; only an explicit per-player hide preference is persisted. */
++    /** Defaults to opted in; this preference does not mean a bar is currently on screen. */
+     public boolean isVisible(@NotNull Player player) {
+         return !Byte.valueOf((byte) 1).equals(player.getPersistentDataContainer()
+                 .get(HIDDEN_KEY, PersistentDataType.BYTE));
+     }
+ 
+-    /** Persists the player's preference and immediately reflects it in this indicator only. */
++    /** Showing opts into future gain notifications; hiding immediately clears this indicator only. */
+     public void setVisible(@NotNull Player player, boolean visible) {
+         if (visible) {
+             player.getPersistentDataContainer().remove(HIDDEN_KEY);
+         } else {
+             player.getPersistentDataContainer().set(HIDDEN_KEY, PersistentDataType.BYTE, (byte) 1);
++            remove(player.getUniqueId());
+         }
+-        refresh(player);
+     }
+ 
+-    /** Refreshes after commands; the regular one-second refresh also picks up movement and party changes. */
+-    public void refresh(@NotNull Player player) {
+-        if (PaperUtil.isFolia() || !plugin.getGeneralConfig().isXpBonusIndicatorEnabled()
+-                || !player.isOnline() || !isVisible(player)) {
+-            remove(player.getUniqueId());
++    /** Called only after positive skill XP was stored, or a positive gameplay pickup completed. */
++    public void onXpGain(@NotNull Player player) {
++        if (!canDisplay(player)) {
++            return;
++        }
++        final UUID id = player.getUniqueId();
++        final Entry existing = bars.get(id);
++        final long expiresAt = currentTick + plugin.getGeneralConfig().getXpBonusIndicatorDisplayTicks();
++        if (existing != null) {
++            // Frequent awards only extend the deadline; the regular refresh updates the title.
++            bars.put(id, new Entry(player, existing.bar(), existing.title(), expiresAt));
+             return;
+         }
+         final String title = XpBonusStatus.capture(plugin, player).title();
++        final BossBar bar = Bukkit.createBossBar(title, BarColor.GREEN, BarStyle.SOLID);
++        bar.setProgress(1.0D);
++        bar.addPlayer(player);
++        bars.put(id, new Entry(player, bar, title, expiresAt));
++    }
++
++    /** Queues an already eligible orb event for final-amount observation on the next server tick. */
++    public void queueVanillaGain(@NotNull PlayerExpChangeEvent event) {
++        if (canDisplay(event.getPlayer())) {
++            pendingPickups.computeIfAbsent(event.getPlayer().getUniqueId(), key -> new ArrayList<>()).add(event);
++        }
++    }
++
++    /** Updates an existing notification without creating one or extending its expiry. */
++    public void refresh(@NotNull Player player) {
+         final UUID id = player.getUniqueId();
+         final Entry existing = bars.get(id);
+         if (existing == null) {
+-            final BossBar bar = Bukkit.createBossBar(title, BarColor.GREEN, BarStyle.SOLID);
+-            bar.setProgress(1.0D);
+-            bar.addPlayer(player);
+-            bars.put(id, new Entry(bar, title));
+-        } else if (!existing.title().equals(title)) {
++            return;
++        }
++        if (!canDisplay(player)) {
++            remove(id);
++            return;
++        }
++        final String title = XpBonusStatus.capture(plugin, player).title();
++        if (!existing.title().equals(title)) {
+             existing.bar().setTitle(title);
+-            bars.put(id, new Entry(existing.bar(), title));
++            bars.put(id, new Entry(player, existing.bar(), title, existing.expiresAt()));
+         }
+     }
+ 
+-    /** Immediately drops the previous world's factors, including blacklist and region gates. */
++    private boolean canDisplay(@NotNull Player player) {
++        return refreshTask != null && !PaperUtil.isFolia()
++                && plugin.getGeneralConfig().isXpBonusIndicatorEnabled() && player.isOnline() && isVisible(player);
++    }
++
++    /** Never carry a pending award or stale factors into another world. */
+     @EventHandler
+     public void onWorldChange(@NotNull PlayerChangedWorldEvent event) {
+-        refresh(event.getPlayer());
++        remove(event.getPlayer().getUniqueId());
+     }
+ 
+-    /** Removes references promptly rather than waiting for the next timer tick. */
+     @EventHandler
+     public void onQuit(@NotNull PlayerQuitEvent event) {
+         remove(event.getPlayer().getUniqueId());
+     }
+ 
+     private void remove(@NotNull UUID playerId) {
++        pendingPickups.remove(playerId);
+         final Entry removed = bars.remove(playerId);
+         if (removed != null) {
+             removed.bar().removeAll();
+         }
+     }
+ 
+-    /** Cancels the timer and removes every indicator before plugin shutdown. */
++    /** Cancels the timer and drops every bar/pending event before plugin shutdown. */
+     public void shutdown() {
+         if (refreshTask != null) {
+             refreshTask.cancel();
+             refreshTask = null;
+         }
++        pendingPickups.clear();
+         bars.values().forEach(entry -> entry.bar().removeAll());
+         bars.clear();
++        currentTick = 0L;
+     }
+ }
+diff --git a/src/main/resources/config.yml b/src/main/resources/config.yml
+index 1dac40b..66505fb 100644
+--- a/src/main/resources/config.yml
++++ b/src/main/resources/config.yml
+@@ -12,6 +12,9 @@ General:
+     # Refreshes every second on Bukkit/Paper; disabled on Folia for region safety.
+     XP_Bonus_Indicator:
+         Enabled: true
++        # Show briefly after XP is earned, then hide. Repeated gains restart this duration.
++        # Valid range: 0.1-60 seconds (at 20 ticks/second); invalid values use 3 seconds.
++        Display_Seconds: 3.0
+     # When players reach certain level milestones messages will be broadcast
+     Level_Up_Chat_Broadcasts:
+         # Whether level up broadcasts are enabled
+diff --git a/src/main/resources/locale/locale_en_US.properties b/src/main/resources/locale/locale_en_US.properties
+index 5bba91a..cf8f34d 100644
+--- a/src/main/resources/locale/locale_en_US.properties
++++ b/src/main/resources/locale/locale_en_US.properties
+@@ -1261,9 +1261,9 @@ XPBonus.Factors=&7mcMMO global rate: {0}; Together: {1}. Per-skill overrides are
+ XPBonus.Green=&aGreen-bar gameplay orb bonus: {0}
+ XPBonus.GreenUnavailable=&7Green-bar bonuses are unavailable on this server; normal XP is unchanged.
+ XPBonus.Skill=&b{0}: &f{1}
+-XPBonus.Scope=&7Bonus factors only. Base action XP, formula modifiers, perks, caps and award restrictions still apply. Child-skill XP follows parent skills. /xpbonus hide hides this indicator.
+-XPBonus.Show=&aXP bonus indicator preference: shown.
+-XPBonus.Hide=&7XP bonus indicator hidden. Use /xpbonus show to restore it.
++XPBonus.Scope=&7Bonus factors only. Base action XP, formula modifiers, perks, caps and award restrictions still apply. Child-skill XP follows parent skills. The indicator appears briefly after XP gains. /xpbonus hide disables it.
++XPBonus.Show=&aXP bonus notifications enabled. The indicator appears briefly when you earn XP.
++XPBonus.Hide=&7XP bonus notifications hidden. Use /xpbonus show to enable them.
+ XPBonus.IndicatorUnavailable=&7The live indicator is disabled or unsupported on this server. Your visibility preference is saved.
+ XPBonus.Inactive=inactive
+ XPBonus.GreenInactive=&7Green-bar bonuses are inactive in Spectator. Eligible passive mcMMO gains may still use the skill factors below.
+diff --git a/src/test/java/com/gmail/nossr50/commands/player/XpBonusCommandTest.java b/src/test/java/com/gmail/nossr50/commands/player/XpBonusCommandTest.java
+index fc8c7a1..dfa8ac2 100644
+--- a/src/test/java/com/gmail/nossr50/commands/player/XpBonusCommandTest.java
++++ b/src/test/java/com/gmail/nossr50/commands/player/XpBonusCommandTest.java
+@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mockStatic;
+ import static org.mockito.Mockito.never;
+ import static org.mockito.Mockito.times;
+ import static org.mockito.Mockito.verify;
++import static org.mockito.Mockito.verifyNoInteractions;
+ import static org.mockito.Mockito.when;
+ 
+ import com.gmail.nossr50.MMOTestEnvironment;
+@@ -76,12 +77,15 @@ class XpBonusCommandTest extends MMOTestEnvironment {
+         verify(player, atLeastOnce()).sendMessage(contains("×2.50"));
+         verify(player).sendMessage(contains("Green-bar gameplay orb bonus: ×1.50"));
+         verify(player).sendMessage(contains("Bonus factors only"));
++        verifyNoInteractions(indicator);
+     }
+ 
+     @Test
+     void showHideAndToggleShouldChangeOnlyThePlayersPreference() {
+         executor.onCommand(player, command, "xpbonus", new String[]{"show"});
+         verify(indicator).setVisible(player, true);
++        verify(player).sendMessage(contains("appears briefly when you earn XP"));
++        verify(indicator, never()).onXpGain(player);
+         executor.onCommand(player, command, "xpbonus", new String[]{"hide"});
+         verify(indicator).setVisible(player, false);
+         when(indicator.isVisible(player)).thenReturn(true);
+diff --git a/src/test/java/com/gmail/nossr50/config/XpBonusIndicatorConfigTest.java b/src/test/java/com/gmail/nossr50/config/XpBonusIndicatorConfigTest.java
+new file mode 100644
+index 0000000..c6877b6
+--- /dev/null
++++ b/src/test/java/com/gmail/nossr50/config/XpBonusIndicatorConfigTest.java
+@@ -0,0 +1,52 @@
++package com.gmail.nossr50.config;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.mockito.Answers.CALLS_REAL_METHODS;
++import static org.mockito.Mockito.mock;
++
++import java.io.InputStreamReader;
++import java.lang.reflect.Field;
++import java.nio.charset.StandardCharsets;
++import org.bukkit.configuration.file.YamlConfiguration;
++import org.junit.jupiter.api.Test;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.CsvSource;
++import org.junit.jupiter.params.provider.ValueSource;
++
++class XpBonusIndicatorConfigTest {
++    private GeneralConfig config(YamlConfiguration yaml) throws Exception {
++        GeneralConfig config = mock(GeneralConfig.class, CALLS_REAL_METHODS);
++        Field field = BukkitConfig.class.getDeclaredField("config");
++        field.setAccessible(true);
++        field.set(config, yaml);
++        return config;
++    }
++
++    @Test
++    void oldConfigWithoutDurationAndShippedConfigShouldDefaultToThreeSeconds() throws Exception {
++        assertThat(config(new YamlConfiguration()).getXpBonusIndicatorDisplayTicks()).isEqualTo(60L);
++        var resource = GeneralConfig.class.getClassLoader().getResourceAsStream("config.yml");
++        assertThat(resource).isNotNull();
++        try (var reader = new InputStreamReader(resource, StandardCharsets.UTF_8)) {
++            var yaml = YamlConfiguration.loadConfiguration(reader);
++            assertThat(yaml.getDouble("General.XP_Bonus_Indicator.Display_Seconds")).isEqualTo(3.0D);
++            assertThat(config(yaml).getXpBonusIndicatorDisplayTicks()).isEqualTo(60L);
++        }
++    }
++
++    @ParameterizedTest
++    @CsvSource({"0.1, 2", "0.5, 10", "1.25, 25", "3, 60", "60, 1200"})
++    void supportedDurationsShouldConvertToTicks(double seconds, long ticks) throws Exception {
++        var yaml = new YamlConfiguration();
++        yaml.set("General.XP_Bonus_Indicator.Display_Seconds", seconds);
++        assertThat(config(yaml).getXpBonusIndicatorDisplayTicks()).isEqualTo(ticks);
++    }
++
++    @ParameterizedTest
++    @ValueSource(doubles = {-1, 0, 0.01, 61, Double.NaN, Double.POSITIVE_INFINITY})
++    void invalidDurationsShouldFailToShortDefault(double seconds) throws Exception {
++        var yaml = new YamlConfiguration();
++        yaml.set("General.XP_Bonus_Indicator.Display_Seconds", seconds);
++        assertThat(config(yaml).getXpBonusIndicatorDisplayTicks()).isEqualTo(60L);
++    }
++}
+diff --git a/src/test/java/com/gmail/nossr50/party/VanillaXpBonusTest.java b/src/test/java/com/gmail/nossr50/party/VanillaXpBonusTest.java
+index 41621ed..9abf6d4 100644
+--- a/src/test/java/com/gmail/nossr50/party/VanillaXpBonusTest.java
++++ b/src/test/java/com/gmail/nossr50/party/VanillaXpBonusTest.java
+@@ -20,6 +20,7 @@ import com.gmail.nossr50.mcMMO;
+ import com.gmail.nossr50.util.Misc;
+ import com.gmail.nossr50.util.Permissions;
+ import com.gmail.nossr50.util.player.UserManager;
++import com.gmail.nossr50.util.experience.XpBonusIndicator;
+ import java.lang.reflect.Method;
+ import java.util.HashMap;
+ import java.util.Map;
+@@ -348,4 +349,50 @@ class VanillaXpBonusTest extends MMOTestEnvironment {
+                     .isInstanceOf(IllegalArgumentException.class);
+         }
+     }
++    @Test
++    void monitorShouldObserveAtMonitorWithoutChangingTheAward() throws Exception {
++        Method method = PlayerListener.class.getMethod("onPlayerExpChangeMonitor", PlayerExpChangeEvent.class);
++        assertThat(method.getAnnotation(EventHandler.class).priority()).isEqualTo(EventPriority.MONITOR);
++        XpBonusIndicator indicator = mock(XpBonusIndicator.class);
++        when(mcMMO.p.getXpBonusIndicator()).thenReturn(indicator);
++        when(generalConfig.isPartyTogetherBonusEnabled()).thenReturn(false);
++        PlayerListener listener = new PlayerListener(mcMMO.p, bonus);
++        PaperXpEvent event = new PaperXpEvent(player, orb, 1);
++        listener.onPlayerExpChange(event);
++        listener.onPlayerExpChangeMonitor(event);
++        assertThat(event.getAmount()).isEqualTo(1);
++        verify(indicator).queueVanillaGain(event);
++    }
++
++    @ParameterizedTest
++    @EnumSource(value = SpawnReason.class, names = {"PLAYER_DEATH", "UNKNOWN", "CUSTOM", "FUTURE_UNRECOGNIZED"})
++    void excludedSourcesShouldNotQueueNotifications(SpawnReason reason) {
++        XpBonusIndicator indicator = mock(XpBonusIndicator.class);
++        when(mcMMO.p.getXpBonusIndicator()).thenReturn(indicator);
++        when(orb.getSpawnReason()).thenReturn(reason);
++        new PlayerListener(mcMMO.p, bonus).onPlayerExpChangeMonitor(new PaperXpEvent(player, orb, 5));
++        verify(indicator, never()).queueVanillaGain(any());
++    }
++
++    @ParameterizedTest
++    @EnumSource(value = GameMode.class, names = {"CREATIVE", "SPECTATOR"})
++    void excludedGameModesShouldNotQueueNotifications(GameMode gameMode) {
++        XpBonusIndicator indicator = mock(XpBonusIndicator.class);
++        when(mcMMO.p.getXpBonusIndicator()).thenReturn(indicator);
++        when(player.getGameMode()).thenReturn(gameMode);
++        new PlayerListener(mcMMO.p, bonus).onPlayerExpChangeMonitor(new PaperXpEvent(player, orb, 5));
++        verify(indicator, never()).queueVanillaGain(any());
++    }
++
++    @Test
++    void unloadedProfileOrMissingSourceShouldNotQueueNotifications() {
++        XpBonusIndicator indicator = mock(XpBonusIndicator.class);
++        when(mcMMO.p.getXpBonusIndicator()).thenReturn(indicator);
++        PlayerListener listener = new PlayerListener(mcMMO.p, bonus);
++        listener.onPlayerExpChangeMonitor(new PaperXpEvent(player, null, 5));
++        when(UserManager.hasPlayerDataKey(player)).thenReturn(false);
++        listener.onPlayerExpChangeMonitor(new PaperXpEvent(player, orb, 5));
++        verify(indicator, never()).queueVanillaGain(any());
++    }
++
+ }
+diff --git a/src/test/java/com/gmail/nossr50/util/experience/XpBonusAwardNotificationTest.java b/src/test/java/com/gmail/nossr50/util/experience/XpBonusAwardNotificationTest.java
+new file mode 100644
+index 0000000..37b10bc
+--- /dev/null
++++ b/src/test/java/com/gmail/nossr50/util/experience/XpBonusAwardNotificationTest.java
+@@ -0,0 +1,129 @@
++package com.gmail.nossr50.util.experience;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.eq;
++import static org.mockito.Mockito.doAnswer;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.never;
++import static org.mockito.Mockito.verify;
++import static org.mockito.Mockito.when;
++
++import com.gmail.nossr50.MMOTestEnvironment;
++import com.gmail.nossr50.datatypes.experience.XPGainReason;
++import com.gmail.nossr50.datatypes.experience.XPGainSource;
++import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
++import com.gmail.nossr50.events.experience.McMMOPlayerPreXpGainEvent;
++import com.gmail.nossr50.events.experience.McMMOPlayerXpGainEvent;
++import com.gmail.nossr50.mcMMO;
++import com.gmail.nossr50.util.Permissions;
++import java.util.logging.Logger;
++import org.bukkit.event.Event;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.ValueSource;
++
++class XpBonusAwardNotificationTest extends MMOTestEnvironment {
++    private XpBonusIndicator indicator;
++
++    @BeforeEach
++    void setUp() {
++        mockBaseEnvironment(Logger.getLogger(getClass().getName()));
++        when(Permissions.skillEnabled(eq(player), any(PrimarySkillType.class))).thenReturn(true);
++        indicator = mock(XpBonusIndicator.class);
++        when(mcMMO.p.getXpBonusIndicator()).thenReturn(indicator);
++    }
++
++    @AfterEach
++    void tearDown() { cleanUpStaticMocks(); }
++
++    private void gain(float xp) {
++        mmoPlayer.applyXpGain(PrimarySkillType.MINING, xp, XPGainReason.PVE, XPGainSource.SELF);
++    }
++
++    @Test
++    void positiveFractionShouldNotifyOnlyAfterStorage() {
++        doAnswer(call -> {
++            assertThat(mmoPlayer.getProfile().getSkillXpLevelRaw(PrimarySkillType.MINING)).isEqualTo(0.25F);
++            return null;
++        }).when(indicator).onXpGain(player);
++        gain(0.25F);
++        verify(indicator).onXpGain(player);
++    }
++
++    @ParameterizedTest
++    @ValueSource(floats = {0F, -1F, Float.NaN, Float.POSITIVE_INFINITY})
++    void nonPositiveOrNonFiniteShouldNotNotify(float xp) {
++        gain(xp);
++        verify(indicator, never()).onXpGain(player);
++    }
++
++    @Test
++    void preEventCancellationShouldNotNotify() {
++        doAnswer(call -> {
++            if (call.getArgument(0) instanceof McMMOPlayerPreXpGainEvent event) event.setCancelled(true);
++            return null;
++        }).when(pluginManager).callEvent(any(Event.class));
++        gain(10F);
++        assertThat(mmoPlayer.getProfile().getSkillXpLevelRaw(PrimarySkillType.MINING)).isZero();
++        verify(indicator, never()).onXpGain(player);
++    }
++
++    @Test
++    void gainEventCancellationShouldNotNotify() {
++        doAnswer(call -> {
++            if (call.getArgument(0) instanceof McMMOPlayerXpGainEvent event) event.setCancelled(true);
++            return null;
++        }).when(pluginManager).callEvent(any(Event.class));
++        gain(10F);
++        assertThat(mmoPlayer.getProfile().getSkillXpLevelRaw(PrimarySkillType.MINING)).isZero();
++        verify(indicator, never()).onXpGain(player);
++    }
++
++    @Test
++    void gainEventChangedToZeroShouldNotNotify() {
++        doAnswer(call -> {
++            if (call.getArgument(0) instanceof McMMOPlayerXpGainEvent event) event.setRawXpGained(0F);
++            return null;
++        }).when(pluginManager).callEvent(any(Event.class));
++        gain(10F);
++        verify(indicator, never()).onXpGain(player);
++    }
++
++    @Test
++    void preEventChangedToZeroShouldNotNotify() {
++        doAnswer(call -> {
++            if (call.getArgument(0) instanceof McMMOPlayerPreXpGainEvent event) event.setRawXpGained(0F);
++            return null;
++        }).when(pluginManager).callEvent(any(Event.class));
++        gain(10F);
++        verify(indicator, never()).onXpGain(player);
++    }
++
++    @Test
++    void deniedSkillShouldNotNotify() {
++        when(Permissions.skillEnabled(player, PrimarySkillType.MINING)).thenReturn(false);
++        gain(10F);
++        verify(indicator, never()).onXpGain(player);
++    }
++
++    @Test
++    void acceptedExternalModificationShouldStillNotify() {
++        doAnswer(call -> {
++            if (call.getArgument(0) instanceof McMMOPlayerXpGainEvent event) event.setRawXpGained(0.5F);
++            return null;
++        }).when(pluginManager).callEvent(any(Event.class));
++        gain(10F);
++        assertThat(mmoPlayer.getProfile().getSkillXpLevelRaw(PrimarySkillType.MINING)).isEqualTo(0.5F);
++        verify(indicator).onXpGain(player);
++    }
++    @Test
++    void floatRoundedAwayGainShouldNotNotify() {
++        mmoPlayer.getProfile().setSkillXpLevel(PrimarySkillType.MINING, 16777216F);
++        com.gmail.nossr50.util.EventUtils.handleXpGainEvent(player, PrimarySkillType.MINING, 0.25F, XPGainReason.PVE);
++        verify(indicator, never()).onXpGain(player);
++    }
++
++}
+diff --git a/src/test/java/com/gmail/nossr50/util/experience/XpBonusIndicatorTest.java b/src/test/java/com/gmail/nossr50/util/experience/XpBonusIndicatorTest.java
+index 7ac0249..4ab0956 100644
+--- a/src/test/java/com/gmail/nossr50/util/experience/XpBonusIndicatorTest.java
++++ b/src/test/java/com/gmail/nossr50/util/experience/XpBonusIndicatorTest.java
+@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
+ import static org.mockito.ArgumentMatchers.anyString;
+ import static org.mockito.ArgumentMatchers.eq;
+ import static org.mockito.Mockito.doAnswer;
+-import static org.mockito.Mockito.doReturn;
+ import static org.mockito.Mockito.mock;
+ import static org.mockito.Mockito.mockStatic;
+ import static org.mockito.Mockito.never;
+@@ -22,7 +21,6 @@ import com.gmail.nossr50.util.player.UserManager;
+ import com.gmail.nossr50.worldguard.WorldGuardUtils;
+ import com.tcoded.folialib.wrapper.task.WrappedTask;
+ import java.util.HashMap;
+-import java.util.List;
+ import java.util.Map;
+ import java.util.logging.Logger;
+ import org.bukkit.Bukkit;
+@@ -31,14 +29,17 @@ import org.bukkit.NamespacedKey;
+ import org.bukkit.boss.BarColor;
+ import org.bukkit.boss.BarStyle;
+ import org.bukkit.boss.BossBar;
++import org.bukkit.event.Cancellable;
+ import org.bukkit.event.player.PlayerChangedWorldEvent;
++import org.bukkit.event.player.PlayerExpChangeEvent;
+ import org.bukkit.event.player.PlayerQuitEvent;
+ import org.bukkit.persistence.PersistentDataContainer;
+ import org.bukkit.persistence.PersistentDataType;
+ import org.junit.jupiter.api.AfterEach;
+ import org.junit.jupiter.api.BeforeEach;
+ import org.junit.jupiter.api.Test;
+-import org.mockito.ArgumentCaptor;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.ValueSource;
+ import org.mockito.MockedStatic;
+ 
+ class XpBonusIndicatorTest extends MMOTestEnvironment {
+@@ -47,10 +48,11 @@ class XpBonusIndicatorTest extends MMOTestEnvironment {
+     private XpBonusIndicator indicator;
+     private BossBar bar;
+     private WrappedTask task;
++    private Runnable tick;
+     private Map<NamespacedKey, Byte> saved;
+ 
+     @BeforeEach
+-    void setUp() throws Exception {
++    void setUp() {
+         mockBaseEnvironment(Logger.getLogger(getClass().getName()));
+         paper = mockStatic(PaperUtil.class);
+         worldGuard = mockStatic(WorldGuardUtils.class);
+@@ -61,12 +63,13 @@ class XpBonusIndicatorTest extends MMOTestEnvironment {
+         when(mcMMO.p.isVanillaXpBonusSupported()).thenReturn(true);
+         when(experienceConfigInstance.getExperienceGainsMultiplier(any())).thenReturn(1.0D);
+         when(generalConfig.isXpBonusIndicatorEnabled()).thenReturn(true);
+-        doReturn(List.of(player)).when(server).getOnlinePlayers();
++        when(generalConfig.getXpBonusIndicatorDisplayTicks()).thenReturn(60L);
+         bar = mock(BossBar.class);
+         mockedBukkit.when(() -> Bukkit.createBossBar(anyString(), eq(BarColor.GREEN), eq(BarStyle.SOLID)))
+                 .thenReturn(bar);
+         task = mock(WrappedTask.class);
+-        when(foliaLib.getScheduler().runTimer(any(Runnable.class), eq(20L), eq(20L))).thenReturn(task);
++        when(foliaLib.getScheduler().runTimer(any(Runnable.class), eq(1L), eq(1L)))
++                .thenAnswer(call -> { tick = call.getArgument(0); return task; });
+         saved = new HashMap<>();
+         final PersistentDataContainer data = mock(PersistentDataContainer.class);
+         when(player.getPersistentDataContainer()).thenReturn(data);
+@@ -76,90 +79,233 @@ class XpBonusIndicatorTest extends MMOTestEnvironment {
+                 .when(data).set(any(), eq(PersistentDataType.BYTE), any(Byte.class));
+         doAnswer(call -> { saved.remove(call.getArgument(0)); return null; }).when(data).remove(any());
+         indicator = new XpBonusIndicator(mcMMO.p);
++        indicator.start();
+     }
+ 
+     @AfterEach
+     void tearDown() {
+-        if (worldGuard != null) {
+-            worldGuard.close();
+-        }
+-        if (paper != null) {
+-            paper.close();
+-        }
++        if (worldGuard != null) worldGuard.close();
++        if (paper != null) paper.close();
+         cleanUpStaticMocks();
+     }
+ 
++    private void advance(int ticks) {
++        for (int i = 0; i < ticks; i++) tick.run();
++    }
++
+     @Test
+-    void shouldShowByDefaultAndUpdateOnlyWhenTitleChanges() {
++    void standingJoiningProximityAndShowingShouldNotCreateABar() {
++        advance(100);
+         indicator.refresh(player);
++        when(mcMMO.p.getVanillaXpEventMultiplier()).thenReturn(1.2D);
+         indicator.refresh(player);
+-        verify(bar, times(1)).addPlayer(player);
++        indicator.onWorldChange(new PlayerChangedWorldEvent(player, world));
++        indicator.setVisible(player, true);
++        advance(100);
++        verify(bar, never()).addPlayer(player);
++        verify(server, never()).getOnlinePlayers();
++    }
++
++    @Test
++    void positiveGainShouldShowOnceAndExpireAtThreeSeconds() {
++        indicator.onXpGain(player);
++        verify(bar).addPlayer(player);
+         verify(bar).setProgress(1.0D);
+-        verify(bar, never()).setTitle(anyString());
++        advance(59);
++        verify(bar, never()).removeAll();
++        advance(1);
++        verify(bar).removeAll();
++        advance(120);
++        verify(bar, times(1)).addPlayer(player);
++    }
++
++    @Test
++    void repeatedGainsShouldExtendSameBarWithoutAnOlderTimeoutHidingIt() {
++        indicator.onXpGain(player);
++        advance(59);
++        indicator.onXpGain(player);
++        advance(59);
++        verify(bar, never()).removeAll();
++        verify(bar, times(1)).addPlayer(player);
++        advance(1);
++        verify(bar).removeAll();
++    }
++
++    @Test
++    void configuredDurationShouldBeUsed() {
++        when(generalConfig.getXpBonusIndicatorDisplayTicks()).thenReturn(25L);
++        indicator.onXpGain(player);
++        advance(24);
++        verify(bar, never()).removeAll();
++        advance(1);
++        verify(bar).removeAll();
++    }
++
++    @Test
++    void titleRefreshShouldNotExtendTimeoutOrDuplicateBar() {
++        indicator.onXpGain(player);
+         when(mcMMO.p.getVanillaXpEventMultiplier()).thenReturn(1.2D);
+-        when(experienceConfigInstance.getExperienceGainsMultiplier(any())).thenReturn(1.2D);
+-        indicator.refresh(player);
++        advance(20);
+         verify(bar).setTitle(XpBonusStatus.capture(mcMMO.p, player).title());
++        advance(40);
++        verify(bar).removeAll();
++        verify(bar, times(1)).addPlayer(player);
+     }
+ 
+     @Test
+-    void hidingShouldPersistAcrossManagerRecreationAndShowingShouldRestoreIt() {
+-        indicator.refresh(player);
++    void hidingShouldPersistAndShowingShouldWaitForTheNextGain() {
++        indicator.onXpGain(player);
+         indicator.setVisible(player, false);
+         verify(bar).removeAll();
++        indicator.shutdown();
+         indicator = new XpBonusIndicator(mcMMO.p);
++        indicator.start();
+         assertThat(indicator.isVisible(player)).isFalse();
+-        indicator.refresh(player);
++        indicator.onXpGain(player);
++        indicator.queueVanillaGain(new PlayerExpChangeEvent(player, 5));
++        advance(1);
+         verify(bar, times(1)).addPlayer(player);
+         indicator.setVisible(player, true);
+         assertThat(saved).isEmpty();
++        advance(60);
++        verify(bar, times(1)).addPlayer(player);
++        indicator.onXpGain(player);
+         verify(bar, times(2)).addPlayer(player);
+     }
+ 
+     @Test
+-    void quitAndShutdownShouldRemoveOnlyOwnedBarsAndCancelTimer() {
+-        indicator.start();
+-        indicator.refresh(player);
++    void quitShouldClearBarAndPendingPickup() {
++        indicator.onXpGain(player);
++        indicator.queueVanillaGain(new PlayerExpChangeEvent(player, 5));
+         indicator.onQuit(new PlayerQuitEvent(player, ""));
++        advance(80);
+         verify(bar).removeAll();
+-        indicator.refresh(player);
+-        indicator.shutdown();
+-        verify(bar, times(2)).removeAll();
+-        verify(task).cancel();
+-        indicator.shutdown();
+-        verify(task, times(1)).cancel();
++        verify(bar, times(1)).addPlayer(player);
++    }
++
++    @Test
++    void worldChangeShouldClearBarAndPendingPickup() {
++        indicator.onXpGain(player);
++        indicator.queueVanillaGain(new PlayerExpChangeEvent(player, 5));
++        indicator.onWorldChange(new PlayerChangedWorldEvent(player, world));
++        advance(80);
++        verify(bar).removeAll();
++        verify(bar, times(1)).addPlayer(player);
+     }
+ 
+     @Test
+-    void oneSecondFoliaLibTaskShouldRefreshOnlinePlayersWithoutDuplicatingTimers() {
++    void shutdownAndRestartShouldClearNotificationsAndCancelOnlyOneTimer() {
+         indicator.start();
++        indicator.onXpGain(player);
++        indicator.queueVanillaGain(new PlayerExpChangeEvent(player, 5));
++        indicator.shutdown();
++        indicator.shutdown();
++        verify(task, times(1)).cancel();
++        indicator.onXpGain(player);
+         indicator.start();
+-        final ArgumentCaptor<Runnable> callback = ArgumentCaptor.forClass(Runnable.class);
+-        verify(foliaLib.getScheduler(), times(1)).runTimer(callback.capture(), eq(20L), eq(20L));
+-        callback.getValue().run();
+-        verify(bar).addPlayer(player);
++        advance(80);
++        verify(bar).removeAll();
++        verify(bar, times(1)).addPlayer(player);
++        verify(foliaLib.getScheduler(), times(2)).runTimer(any(Runnable.class), eq(1L), eq(1L));
+     }
+ 
+     @Test
+-    void disabledConfigAndFoliaShouldNotScheduleOrReadStatus() {
++    void disabledOrFoliaShouldNotScheduleOrShow() {
++        indicator.shutdown();
+         when(generalConfig.isXpBonusIndicatorEnabled()).thenReturn(false);
+         indicator.start();
+-        indicator.refresh(player);
++        indicator.onXpGain(player);
+         when(generalConfig.isXpBonusIndicatorEnabled()).thenReturn(true);
+         paper.when(PaperUtil::isFolia).thenReturn(true);
+         indicator.start();
+-        indicator.refresh(player);
+-        verify(foliaLib.getScheduler(), never()).runTimer(any(Runnable.class), eq(20L), eq(20L));
+-        mockedUserManager.verify(() -> UserManager.hasPlayerDataKey(player), never());
++        indicator.onXpGain(player);
++        verify(foliaLib.getScheduler(), times(1)).runTimer(any(Runnable.class), eq(1L), eq(1L));
+         verify(bar, never()).addPlayer(player);
+     }
+ 
+     @Test
+-    void worldChangeShouldImmediatelyRefreshTheTitle() {
+-        indicator.refresh(player);
+-        when(UserManager.hasPlayerDataKey(player)).thenReturn(false);
+-        indicator.onWorldChange(new PlayerChangedWorldEvent(player, world));
+-        verify(bar).setTitle(XpBonusStatus.capture(mcMMO.p, player).title());
++    void offlineOrNewlyDisabledShouldRemoveExistingNotification() {
++        indicator.onXpGain(player);
++        when(player.isOnline()).thenReturn(false);
++        advance(1);
++        verify(bar).removeAll();
++        when(player.isOnline()).thenReturn(true);
++        indicator.onXpGain(player);
++        when(generalConfig.isXpBonusIndicatorEnabled()).thenReturn(false);
++        advance(1);
++        verify(bar, times(2)).removeAll();
++    }
++
++    @Test
++    void orbGainShouldWaitForDispatchAndThenShowForFullDuration() {
++        indicator.queueVanillaGain(new PlayerExpChangeEvent(player, 1));
++        verify(bar, never()).addPlayer(player);
++        advance(1);
++        verify(bar).addPlayer(player);
++        advance(59);
++        verify(bar, never()).removeAll();
++        advance(1);
++        verify(bar).removeAll();
++    }
++
++    @ParameterizedTest
++    @ValueSource(ints = {0, -1})
++    void zeroOrNegativeOrbAwardShouldNotShow(int amount) {
++        indicator.queueVanillaGain(new PlayerExpChangeEvent(player, amount));
++        advance(1);
++        verify(bar, never()).addPlayer(player);
+     }
+ 
++    @Test
++    void orbChangedToZeroByLaterListenerShouldNotShow() {
++        final PlayerExpChangeEvent event = new PlayerExpChangeEvent(player, 5);
++        indicator.queueVanillaGain(event);
++        event.setAmount(0);
++        advance(1);
++        verify(bar, never()).addPlayer(player);
++    }
++
++    @Test
++    void laterRestoredPositiveAmountShouldShow() {
++        final PlayerExpChangeEvent event = new PlayerExpChangeEvent(player, 0);
++        indicator.queueVanillaGain(event);
++        event.setAmount(1);
++        advance(1);
++        verify(bar).addPlayer(player);
++    }
++
++    @Test
++    void laterCancelledOrbSubclassShouldNotShow() {
++        final CancellablePickup event = new CancellablePickup(player);
++        indicator.queueVanillaGain(event);
++        event.setCancelled(true);
++        advance(1);
++        verify(bar, never()).addPlayer(player);
++    }
++
++    @Test
++    void laterZeroPickupMustNotEraseAnotherAcceptedGainInSameTick() {
++        indicator.queueVanillaGain(new PlayerExpChangeEvent(player, 1));
++        final PlayerExpChangeEvent event = new PlayerExpChangeEvent(player, 5);
++        indicator.queueVanillaGain(event);
++        event.setAmount(0);
++        advance(1);
++        verify(bar).addPlayer(player);
++    }
++
++    @Test
++    void hidingWhilePickupIsPendingShouldDropItEvenAfterShow() {
++        indicator.queueVanillaGain(new PlayerExpChangeEvent(player, 5));
++        indicator.setVisible(player, false);
++        indicator.setVisible(player, true);
++        advance(1);
++        verify(bar, never()).addPlayer(player);
++    }
++
++    private static final class CancellablePickup extends PlayerExpChangeEvent implements Cancellable {
++        private boolean cancelled;
++        CancellablePickup(org.bukkit.entity.Player player) { super(player, 5); }
++        public boolean isCancelled() { return cancelled; }
++        public void setCancelled(boolean cancelled) { this.cancelled = cancelled; }
++    }
+ }
+-- 
+2.52.0
+

@@ -2,13 +2,30 @@
 
 This feature is a **candidate for review and staging**, not a claim of live activation. No server files, player data, permissions, startup settings, or restart state were changed while implementing it.
 
-## Deliverables
+## Current indicator-only candidate
+
+mcMMO **2.3.003-WRV-XP-2** appends patch 0004 to the unchanged first three patches, and pairs with unchanged WeekendXP **1.0.2**. It is not deployed. The installed XP-1 pair remains documented in [the deployment record](DEPLOYMENT-2026-10-12.md).
+
+Local and remote verification for this update is recorded in `verification/xp-indicator-fix.json`. The original results below are historical evidence for XP-1, not a substitute for testing XP-2. No production server access, upload, restart or player-data changes are part of this indicator fix.
+
+### Player acceptance checklist for XP-2
+
+1. Join and stand still, change worlds and move in/out of Together range: no indicator until XP is earned. `/xpbonus status` stays available in chat.
+2. Earn positive Mining or another mcMMO skill XP, then stop: one indicator appears and disappears after about 3 seconds at normal tick rate.
+3. Pick up positive gameplay XP orbs, including a source without a simultaneous skill award (for example furnace extraction): same temporary behavior. A fully Mended/zero award produces no bar.
+4. Keep earning XP: the one bar stays briefly after the most recent gain. Stop earning: it disappears. Check ×1.00, ×1.25 Together, ×1.20 weekend, and ×1.50 combined without changing XP amounts.
+5. Hide, earn, reconnect and earn: still hidden. Show/toggle on: wait for the next gain; no persistent bar. Status alone must not create one.
+6. Confirm cancelled/zero skill awards, rejected sources, Creative/Spectator and unloaded profiles do not cause false gain flashes; an independently valid skill award may still notify when its orb is excluded.
+7. Quit or change worlds with the bar active; no stale bar remains. Normal server restart clears pending notifications and keeps visibility preferences. No hot reload.
+8. Repeat on Java and Geyser/Bedrock with skill progress bars and other bossbars active. Client rendering and the exact live Paper 26.2 build 123 / Java 25 plugin stack require authorized runtime acceptance.
+
+## Previous XP-1 deliverables
 
 Install the paired custom mcMMO `2.3.003-WRV-XP-1` and WeekendXP `1.0.2` builds only after approval and staging. Existing repaired plugins outside this pair are a separate rollout. Keep the original two Together patches unchanged; apply the new third patch after them to the pinned upstream base.
 
 The associated delivery report records final build commands, test totals, source identities and candidate SHA-256 hashes. Do not substitute the upstream Maven `-bin.zip` without checking its contents; the reviewed deployment candidate is the final shaded `target/mcMMO.jar`.
 
-## Verified local results (2026-10-12)
+## Previous XP-1 verified local results (2026-10-12)
 
 - mcMMO clean `verify`: **2,263 tests**, zero failures/errors/skips in the normal upstream profile. Default `skip`, `stress` and `docker` tags remain excluded.
 - Included **308** Together/all-skill/precision cases, **45** green-bar cases, and **27** focused status/indicator/command/registration/WorldGuard cases.

@@ -15,7 +15,7 @@ Source and recovery material for the family's Minecraft plugins. Each plugin has
 | [WealthBoard](WealthBoard/) | 1.3.1 | Join wealth popup and optional Jobs enrollment |
 | [WeekendXP](WeekendXP/) | 1.0.2 | Chicago Saturday/Sunday skill + green-bar XP rate |
 
-[Spawn Shop](SpawnShop-DeluxeMenus/) is a DeluxeMenus configuration/generator, not a Java plugin. [mcMMO Together + Weekend XP](mcMMO-TogetherBonus/) is a patch series for a separately pinned upstream repository. It adds coordinated skill/green-bar multipliers and a live `/xpbonus` indicator; build and stage it together with WeekendXP 1.0.2. The first two historical patches remain unchanged.
+[Spawn Shop](SpawnShop-DeluxeMenus/) is a DeluxeMenus configuration/generator, not a Java plugin. [mcMMO Together + Weekend XP](mcMMO-TogetherBonus/) is a patch series for a separately pinned upstream repository. It adds coordinated skill/green-bar multipliers and a gain-triggered temporary `/xpbonus` indicator; build and stage it together with WeekendXP 1.0.2. The first two historical patches remain unchanged.
 
 ## Build and test
 

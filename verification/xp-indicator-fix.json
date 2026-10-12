@@ -1,0 +1,26 @@
+{
+  "candidate": "mcMMO-2.3.003-WRV-XP-2",
+  "paired_plugin": "WeekendXP-1.0.2 (unchanged)",
+  "deployment_status": "Not deployed; XP-1 remains installed.",
+  "scope": "Temporary XP indicator only; XP multiplier/rounding calculations and third-party mcMMO identity unchanged.",
+  "wrv_parent_commit": "931b9039ce409573672ac9a83b5ad20c5b10ece8",
+  "upstream_commit": "058279c148a65bd708dc85067d3858f6adde1173",
+  "upstream_archive_sha256": "5b703b61d8510910b014f649398dae8c96f192ab3d20927ec86b7d9f0a63cade",
+  "reconstructed_source_tree": "ceebdeec5e9636d050a6102ee91aaf1be4a49f65",
+  "patch_sha256": "386330b56db385286b88d14bee24054f3a322e8e48d10efb69106668a9866e0b",
+  "first_three_patches_unchanged": true,
+  "clean_four_patch_application_tree_equal": true,
+  "static_repository_checks_passed": 4,
+  "shop_generator_checks_passed": 9,
+  "local_maven_execution": "Blocked before compilation/test execution by HTTP 403 dependency downloads and network approval cancellation; no local Java test pass or local candidate JAR is claimed.",
+  "remote_verification": "Existing draft PR 2 runs full default mcMMO and eight-module WRV test jobs and uploads commit-identified JARs. Refer to the exact commit Checks and Actions artifacts for final results.",
+  "pull_request": "https://github.com/ElMikeExcel/wrv-plugins/pull/2",
+  "runtime_acceptance": "Not performed on exact Paper 26.2 build 123 / Java 25 or real Java/Bedrock clients; see player acceptance checklist.",
+  "default_display_ticks": 60,
+  "default_display_seconds_at_20tps": 3,
+  "duration_config": "General.XP_Bonus_Indicator.Display_Seconds",
+  "valid_duration_seconds": [
+    0.1,
+    60
+  ]
+}
