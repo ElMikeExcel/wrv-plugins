@@ -1,0 +1,20 @@
+name: ExcelPlayerMap
+provides: [WRVPlayerMap]
+version: 0.2.1
+main: com.winkreyes.playermap.PlayerMapPlugin
+api-version: '1.21.5'
+author: Wink Reyes Valley
+description: Native newly activated maps with terrain-preserving pixel player labels.
+commands:
+  playermap:
+    aliases: [excelplayermap]
+    description: Explain native player maps or list visible online players.
+    usage: /playermap [list]
+    permission: wrv.playermap.use
+permissions:
+  wrv.playermap.use:
+    description: Activate and view improved ordinary maps.
+    default: true
+  wrv.playermap.visible:
+    description: Appear in added labels and markers; native Minecraft cursors are unaffected.
+    default: true
