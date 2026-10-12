@@ -18,7 +18,9 @@ Times are UTC, followed by America/Chicago daylight time (UTC−5).
 
 The installed indicator appears only after positive accepted skill XP or eligible positive gameplay-orb XP after Mending. Further gains refresh one notification; it hides three seconds after the latest gain at normal tick rate. `/xpbonus show` enables future notifications rather than immediately showing a permanent bar. `/xpbonus hide` opts out without changing rewards, and `/xpbonus status` reports factors in chat.
 
-**Human acceptance is still pending:** use an identified Java/Bedrock client, earn eligible XP, stop and observe the three-second disappearance, then repeat gains and test controls. The installed plugin-stack reward checks below remain open. The prior 2,308 mcMMO tests, 85 WRV tests, and 38 isolated exact-Paper runtime assertions are build evidence, not phone acceptance. This docs-only record does not alter binaries or merge the draft PR.
+**Human report, October 12: basic indicator behavior passed.** After personally testing the live updates, the server owner reported that XP worked. This records a narrow user-reported pass for the temporary indicator, not an independently observed or precisely timed measurement. The report did not identify Java/Bedrock, device, client version, tested XP source, or measured multiplier.
+
+**Remaining acceptance:** identified Java/Bedrock coverage, precise timing/repeated-gain and command-control edge cases, plus the installed plugin-stack reward checks below remain open. The prior 2,308 mcMMO tests, 85 WRV tests, and 38 isolated exact-Paper runtime assertions are build evidence, not phone acceptance. This docs-only record does not alter binaries or merge the draft PR.
 
 ## Earlier XP-1 installation and provenance
 
@@ -46,9 +48,9 @@ The installed source uses the same mcMMO party and world, an online teammate str
 
 No XP-specific startup errors were observed. Existing unrelated Essentials version-support, DeluxeMenus NMS, and query-port warnings remained; this deployment did not resolve or suppress them. World and player data were preserved.
 
-## Still pending: human acceptance
+## Remaining detailed acceptance
 
-These checks were **not** completed by startup or console verification:
+The owner-reported basic indicator pass above does not establish these remaining checks:
 
 - Real Java and Bedrock phone bossbar visibility/readability, overlap with other bars, and `/xpbonus status|show|hide|toggle` interaction.
 - Two real nearby party members entering/leaving the range, changing worlds, or losing eligibility, with measured skill and green-bar rewards.

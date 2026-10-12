@@ -1,6 +1,6 @@
 # XP feature verification and staging plan
 
-This document preserves build and isolated-test evidence. Implementation/testing did not change production. A separately approved October 12 deployment has now installed XP-2; see the [live deployment record](DEPLOYMENT-2026-10-12.md). Human client and gameplay acceptance remains pending.
+This document preserves build and isolated-test evidence. Implementation/testing did not change production. A separately approved October 12 deployment has now installed XP-2; see the [live deployment record](DEPLOYMENT-2026-10-12.md). The owner reported basic XP-indicator behavior working after personal testing on October 12. Identified-platform coverage and detailed gameplay acceptance remain pending.
 
 ## Current indicator-only build
 
