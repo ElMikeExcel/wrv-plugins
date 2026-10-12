@@ -9,7 +9,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULES = ('BedrockMenu', 'Leaderboard', 'MenuJoin', 'NoPhantoms',
-           'RestartCountdown', 'ShopVillager', 'WealthBoard', 'WeekendXP')
+           'RestartCountdown', 'ShopVillager', 'WealthBoard', 'WeekendXP', 'WRVShops')
 NS = {'m': 'http://maven.apache.org/POM/4.0.0'}
 
 

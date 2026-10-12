@@ -1,0 +1,6 @@
+name: WRVShopsProtectionHarness
+version: 0.1.0
+main: wrv.harness.ProtectionOnlyHarness
+api-version: '26.2'
+depend: [GriefPrevention, WRVShops]
+description: Disposable missing-Vault startup safety probe. No Vault classes. NEVER deploy.

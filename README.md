@@ -14,6 +14,7 @@ Source and recovery material for the family's Minecraft plugins. Each plugin has
 | [ShopVillager](ShopVillager/) | 1.0.1 | Tagged spawn-shop villager opens DeluxeMenus |
 | [WealthBoard](WealthBoard/) | 1.3.1 | Join wealth popup and optional Jobs enrollment |
 | [WeekendXP](WeekendXP/) | 1.0.1 | Chicago Saturday/Sunday mcMMO XP rate |
+| [WRVShops](WRVShops/) | 0.1.0 draft | Guided chest setup and explicit final-confirm checkout |
 
 [Spawn Shop](SpawnShop-DeluxeMenus/) is a DeluxeMenus configuration/generator, not a Java plugin. [mcMMO Together bonus](mcMMO-TogetherBonus/) is an unchanged patch series for a separately pinned upstream repository.
 
@@ -51,3 +52,7 @@ Nothing here merges, deploys, restarts or changes the live server. Keep backups 
 - RestartCountdown calls server shutdown after warnings. It does not start the process again; restart behavior belongs to the host or supervisor.
 - Don't overwrite a populated DeluxeMenus config wholesale. Merge this repository's menu registration into the existing file.
 - Never commit credentials, server secrets, world saves, player databases or local dependency caches.
+
+## Confirmed shops candidate
+
+[WRVShops](WRVShops/README.md) adds guided sign-on-chest setup, read-only item browsing, quantity and price review, and a separate final purchase confirmation. Its paired [Spawn Shop menu](SpawnShop-DeluxeMenus/README.md) preserves existing bundle prices while removing immediate money/give commands. This draft candidate is not installed live; follow its staged deployment and Java/Bedrock validation checklist. Existing ChestShop shops are not silently migrated.

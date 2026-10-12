@@ -1,0 +1,6 @@
+name: WRVShopsRuntimeHarness
+version: 0.1.0
+main: wrv.harness.RuntimeHarness
+api-version: '26.2'
+depend: [Vault, GriefPrevention, WRVShops]
+description: Disposable isolated tests; creates fixtures and shuts server down. NEVER deploy.

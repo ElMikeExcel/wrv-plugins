@@ -2,7 +2,7 @@
 
 ## Automated
 
-`./build.sh` compiles all eight plugins with Java 21, runs JUnit/Mockito behavior tests, packages JARs, and runs repository and shop-generator tests. Mocks verify code paths without a running Minecraft server. They do not prove client rendering, permissions from the installed permission manager, plugin classloader behavior, host restart policy, or external plugin command acceptance.
+`./build.sh` compiles all nine plugins with Java 21, runs JUnit/Mockito behavior tests, packages JARs, and runs repository and shop-generator tests. Mocks verify code paths without a running Minecraft server. They do not prove client rendering, permissions from the installed permission manager, plugin classloader behavior, host restart policy, or external plugin command acceptance.
 
 The Maven release property emits Java 21 bytecode; the JAR audit checks class version 65, descriptor/main-class/version consistency, required config resources and that no test/server API classes are bundled. Archive checks protect the unchanged recovery artifacts. CI uses read-only repository permission and uploads candidate JARs only.
 
@@ -20,3 +20,10 @@ Use a disposable staging copy with the exact intended server, Java, EssentialsX/
 8. mcMMO: build the exact pinned upstream plus both patches separately. On staging verify Together bonus range/member count, gameplay-only XP sources, disabled defaults and `/party info` text. The eight-module build does not package mcMMO.
 
 No production readiness or source-to-installed-JAR identity should be inferred until the relevant runtime checks and installed artifact comparison have actually been performed.
+
+
+## Confirmed shops draft candidate
+
+WRVShops and the paired generated Spawn Shop menu are a separate, undeployed candidate. The full current build passes 257 Java tests (192 for WRVShops) and 16 Python checks. Its [usage/setup guide](WRVShops/README.md) includes buyer controls, owner setup and maintenance, migration and manual recovery. Its [portable exact-runtime harness](WRVShops/verification/runtime-harness/README.md) records the candidate hash and the separate normal/restart/missing-economy/missing-Vault runs.
+
+Keep the verification layers separate: the harness uses real Paper 26.2 #123, Java 25.0.4+7, chest inventories, item metadata and event scheduling, but synthetic players/economy/claims. Actual Essentials/Vault/GriefPrevention/Geyser/Floodgate behavior and phone/Java clients remain unverified. The default protection settings require an actual owner claim, and existing legacy ChestShop shops are untouched. Replacing the old DeluxeMenus immediate-purchase file and installing its matching authoritative catalog are required deployment steps; a plugin JAR by itself does not change an old live menu.

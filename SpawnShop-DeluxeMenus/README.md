@@ -1,14 +1,9 @@
-# Spawn Shop (DeluxeMenus)
-- spawnshop.yml -> plugins/DeluxeMenus/gui_menus/spawnshop.yml (generated; don't hand-edit prices)
-- server_menu.yml -> plugins/DeluxeMenus/gui_menus/server_menu.yml (adds Spawn Shop at slot 11)
-- deluxemenus-config.yml -> plugins/DeluxeMenus/config.yml (registers spawnshop)
-- make_spawnshop.py regenerates spawnshop.yml. `python3 make_spawnshop.py 1.25` scales all base prices by 25% before rounding.
-Needs PAPI Player and Vault expansions. Buys take Vault money (Jobs earnings); no sell-to-server, no netherite/elytra. Prices are tuned to ~$600/hr for an all-jobs player.
+# Spawn Shop entry menu
 
-## Regeneration and checks
+**Draft confirmation upgrade; not installed live.** The generated DeluxeMenus file is now display-only. Every item opens WRVShops' server-side quantity, review and final-confirmation flow. Neither click side withdraws money or issues a give command.
 
-Run from this directory, for example `python3 make_spawnshop.py 1.25`. Prices retain the original rounding to friendly 5/10/50 increments, so a multiplier is applied before rounding. `--output /path/to/menu.yml` can write somewhere explicit without replacing the local menu.
+Read [WRVShops usage and deployment instructions](../WRVShops/README.md) for the complete Java/Bedrock buyer flow, guided chest-shop setup, preserved bundle prices, administrator migration and safety limits.
 
-The multiplier must be finite and greater than zero; invalid or overflowing values fail before writing the output file. The default `1.0` generation is byte-for-byte identical to the preserved menu, including all 18 items, commands, amounts, and prices.
+Generate the paired files with `python3 make_spawnshop.py [multiplier]`. Outputs default to `spawnshop.yml` and `spawn-catalog.yml` in the current directory; optional `--output` and `--catalog-output` select separate paths. Review and install both together: the menu goes to DeluxeMenus, and the authoritative catalog goes to WRVShops. Restart the staged plugin/server after catalog changes.
 
-From the repository root run `python3 -m unittest discover -s SpawnShop-DeluxeMenus/tests -v`. These tests check generation, rounding, invalid-input safety, both click paths, and the preserved economy. They do not exercise a live Vault, PlaceholderAPI, DeluxeMenus, or Minecraft server. Verify the enchanted-book give commands against the exact server version in staging before deployment.
+The old live menu must be replaced during approved deployment. Installing this plugin alone does not rewrite old immediate-purchase commands. Existing ChestShop signs and physical stock are not migrated.
