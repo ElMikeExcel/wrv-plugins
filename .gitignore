@@ -2,3 +2,7 @@ build/
 target/
 *.class
 !BedrockMenu/classes-1.4.1/**/*.class
+__pycache__/
+*.pyc
+.DS_Store
+.attach_pid*

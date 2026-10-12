@@ -1,0 +1,98 @@
+"""Standard-library tests for the preserved shop economy and generator."""
+import importlib.util
+from pathlib import Path
+import re
+import subprocess
+import sys
+import tempfile
+import unittest
+
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = ROOT / "make_spawnshop.py"
+spec = importlib.util.spec_from_file_location("make_spawnshop", SCRIPT)
+shop = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(shop)
+
+
+class SpawnShopTest(unittest.TestCase):
+    def test_default_output_matches_preserved_menu_byte_for_byte(self):
+        self.assertEqual(shop.render().encode("utf-8"), (ROOT / "spawnshop.yml").read_bytes())
+
+    def test_import_does_not_generate_a_menu(self):
+        with tempfile.TemporaryDirectory() as directory:
+            result = subprocess.run([sys.executable, "-c", f"import runpy; runpy.run_path({str(SCRIPT)!r})"], cwd=directory, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(list(Path(directory).iterdir()), [])
+
+    def test_default_cli_preserves_menu(self):
+        with tempfile.TemporaryDirectory() as directory:
+            result = subprocess.run([sys.executable, str(SCRIPT)], cwd=directory, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual((Path(directory) / "spawnshop.yml").read_bytes(), (ROOT / "spawnshop.yml").read_bytes())
+
+    def test_invalid_cli_prices_do_not_overwrite_existing_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "spawnshop.yml"
+            for value in ("0", "-1", "nan", "inf", "-inf", "1e309", "1e308", "invalid"):
+                with self.subTest(multiplier=value):
+                    output.write_text("preserve me", encoding="utf-8")
+                    result = subprocess.run([sys.executable, str(SCRIPT), value], cwd=directory, capture_output=True, text=True)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertEqual(output.read_text(encoding="utf-8"), "preserve me")
+                    self.assertNotIn("Traceback", result.stderr)
+
+    def test_explicit_output_and_scaled_prices(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "retuned.yml"
+            result = subprocess.run([sys.executable, str(SCRIPT), "1.25", "--output", str(output)], cwd=directory, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(output.read_text(encoding="utf-8"), shop.render(1.25))
+            self.assertFalse((Path(directory) / "spawnshop.yml").exists())
+
+    def test_original_catalog_and_prices_are_preserved(self):
+        self.assertEqual({item[0]: item[6] for item in shop.ITEMS}, {
+            "bread": 40, "steak": 80, "gcarrot": 250, "gapple": 300,
+            "torch": 40, "logs": 150, "glass": 180, "iron": 300,
+            "water": 100, "saddle": 400, "nametag": 350, "lead": 150,
+            "pearl": 400, "rocket": 200, "xp": 500, "mending": 600,
+            "unbreaking": 450, "efficiency": 450,
+        })
+        slots = [4, 40] + [item[1] for item in shop.ITEMS]
+        self.assertEqual(len(slots), len(set(slots)))
+        self.assertTrue(all(0 <= slot < 45 for slot in slots))
+        self.assertNotIn("netherite", shop.render())
+        self.assertNotIn("elytra", shop.render())
+        self.assertNotIn("[givemoney]", shop.render())
+
+    def test_buy_requirements_match_commands_for_both_click_sides(self):
+        for multiplier in (0.5, 1.0, 1.25, 2.0):
+            rendered = shop.render(multiplier)
+            for key, slot, icon, name, give, amount, base, lore in shop.ITEMS:
+                with self.subTest(multiplier=multiplier, item=key):
+                    block = re.search(rf"^  {key}:\n(.*?)(?=^  \w+:|\Z)", rendered, re.M | re.S).group(1)
+                    price = shop.price(base, multiplier)
+                    self.assertGreater(price, 0)
+                    self.assertIn(f"&ePrice: &f${price}", block)
+                    for side in ("left", "right"):
+                        requirement = block.split(f"    {side}_click_requirement:\n", 1)[1].split(f"    {side}_click_commands:\n", 1)[0]
+                        self.assertIn(f"          amount: {price}\n", requirement)
+                        self.assertIn("type: has money", requirement)
+                        self.assertIn("input: '%player_has_empty_slot%'", requirement)
+                        commands = block.split(f"    {side}_click_commands:\n", 1)[1].split("    right_click_requirement:", 1)[0]
+                        self.assertIn(f"'[takemoney] {price}'", commands)
+                        self.assertIn(f"'[console] minecraft:give %player_name% {give} {amount}'", commands)
+                        self.assertLess(commands.index("[takemoney]"), commands.index("[console] minecraft:give"))
+
+    def test_rounding_matches_existing_friendly_steps(self):
+        for base, multiplier, expected in ((40, 1.25, 50), (80, 1.25, 100), (250, 1.25, 320), (600, 1.25, 750), (600, 2.0, 1200)):
+            with self.subTest(base=base, multiplier=multiplier):
+                self.assertEqual(shop.price(base, multiplier), expected)
+
+    def test_yaml_single_quote_escaping(self):
+        self.assertEqual(shop.q("Bottles o' Enchanting"), "'Bottles o'' Enchanting'")
+        self.assertIn("display_name: '&a&l16 Bottles o'' Enchanting'", shop.render())
+
+
+if __name__ == "__main__":
+    unittest.main()
