@@ -1,0 +1,23 @@
+{
+  "candidate": "ExcelShops 0.1.4",
+  "build_command": "./build.sh (offline with verified pre-resolved dependencies)",
+  "build_exit_code": 0,
+  "java_tests": {
+    "tests": 686,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python_tests": 55,
+  "java_release": 21,
+  "jar_sha256": "d4c1a0f8e21ad536577242f5b6522e24d8e03255985b359d765da2886ec2374c",
+  "jar_bytes": 201734,
+  "repeat_build_identical": true,
+  "java_production_paths": [
+    "WRVShops/src/com/winkreyes/shops/ShopUi.java",
+    "WRVShops/src/com/winkreyes/shops/JavaNumberDialogs.java"
+  ],
+  "independent_review": "No blocking findings; recommended interruption tests added and passed.",
+  "live_deployed": false,
+  "human_java_bedrock_rendering_verified": false
+}

@@ -25,6 +25,10 @@ public final class FakePlayer {
     public ItemStack cursor = new ItemStack(Material.AIR), offhand = new ItemStack(Material.AIR);
     public boolean failSetStorage;
     public int opens, closes;
+    public final List<Object> shownDialogs = new ArrayList<>();
+    public Object dialog;
+    public boolean failDialog;
+    public int dialogCloses;
     public FakePlayer(UUID uuid, String name, World world) {
         this.uuid = uuid; this.name = name; this.world = world;
         storage = Bukkit.createInventory(null, 36, Component.text("Disposable player storage"));
@@ -72,6 +76,10 @@ public final class FakePlayer {
                 case "hasPermission": case "isPermissionSet": return allowed && !denied.contains(args[0].toString());
                 case "canSee": return true;
                 case "getOpenInventory": return view;
+                case "showDialog":
+                    if (failDialog) throw new IllegalStateException("Injected native dialog send failure");
+                    dialog = args[0]; shownDialogs.add(dialog); return null;
+                case "closeDialog": dialog = null; dialogCloses++; return null;
                 case "openInventory":
                     if (args[0] instanceof Inventory inv) view = view(inv);
                     else view = (InventoryView) args[0];

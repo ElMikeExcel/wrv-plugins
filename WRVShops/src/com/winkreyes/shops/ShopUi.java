@@ -17,7 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 /** Server-owned inventory buttons plus native Bedrock number/review forms. */
 public final class ShopUi implements Listener {
-    public enum ViewKind { CATALOG, QUANTITY, BUY_REVIEW, BUY_CONFIRM, SETUP_PROMPT, SETUP_ITEMS, SETUP_PRICE, SETUP_REVIEW, SETUP_CONFIRM, MANAGE, CLOSE_CONFIRM }
+    public enum ViewKind { NUMBER_ENTRY, CATALOG, QUANTITY, BUY_REVIEW, BUY_CONFIRM, SETUP_PROMPT, SETUP_ITEMS, SETUP_PRICE, SETUP_REVIEW, SETUP_CONFIRM, MANAGE, CLOSE_CONFIRM }
     public static final class Page implements InventoryHolder {
         final UUID player;
         final ViewKind kind;
@@ -26,6 +26,7 @@ public final class ShopUi implements Listener {
         Consumer<String> numberInput;
         // Read at callback execution time so queued clicks compose on the current value.
         long numberValue;
+        boolean numberDialog;
         Page(UUID player,ViewKind kind){this.player=player;this.kind=kind;}
         @Override public Inventory getInventory(){return inventory;}
         public ViewKind kind(){return kind;}
@@ -37,13 +38,15 @@ public final class ShopUi implements Listener {
     }
     private final WRVShops plugin;
     private final BedrockForms forms;
+    private final JavaNumberDialogs dialogs;
     private final Map<UUID,Page> pages=new HashMap<>();
-    public ShopUi(WRVShops plugin){this.plugin=plugin;forms=new BedrockForms(plugin);}
+    public ShopUi(WRVShops plugin){this.plugin=plugin;forms=new BedrockForms(plugin);dialogs=new JavaNumberDialogs(plugin);}
     private static String cash(long minor){return "$"+Money.format(minor);}
     private static String stockValue(long unit,int stock){return "$"+java.math.BigDecimal.valueOf(unit,2).multiply(java.math.BigDecimal.valueOf(stock)).toPlainString();}
     public ViewKind currentKind(UUID id){Page p=pages.get(id);return p==null?null:p.kind;}
     private Page page(Player p,ViewKind kind,String title,int size){
         if(plugin.getLegacyUi()!=null)plugin.getLegacyUi().disconnected(p.getUniqueId());
+        Page previous=pages.get(p.getUniqueId());if(previous!=null&&previous.numberDialog)dialogs.close(p);
         Page page=new Page(p.getUniqueId(),kind);page.inventory=Bukkit.createInventory(page,size,title);
         pages.put(p.getUniqueId(),page);return page;
     }
@@ -58,10 +61,44 @@ public final class ShopUi implements Listener {
         plugin.getServer().getScheduler().runTask(plugin,()->{if(plugin.isEnabled()&&player.isOnline()&&pages.get(player.getUniqueId())==expected){if(plugin.getCheckout().recoveryRequired()){fail(player,"Shops are paused for an administrator check. Please do not retry the purchase.");return;}try{action.run();}catch(Exception e){fail(player,e.getMessage());}}});
     }
     private void fail(Player p,String message){cancel(p);p.sendMessage(ChatColor.RED+(message==null?"That shop is unavailable. Please try again.":message));}
-    public void cancel(Player p){pages.remove(p.getUniqueId());plugin.getCheckout().invalidateBuyer(p.getUniqueId());p.closeInventory();}
+    public void cancel(Player p){Page old=pages.remove(p.getUniqueId());if(old!=null&&old.numberDialog)dialogs.close(p);plugin.getCheckout().invalidateBuyer(p.getUniqueId());p.closeInventory();}
     public void disconnected(UUID id){pages.remove(id);plugin.getCheckout().invalidateBuyer(id);}
     public void closeAll(){for(UUID id:List.copyOf(pages.keySet())){Player p=Bukkit.getPlayer(id);if(p!=null)cancel(p);}pages.clear();}
     public boolean enterNumber(Player p,String value){Page page=pages.get(p.getUniqueId());if(page==null||page.numberInput==null)return false;page.numberInput.accept(value);return true;}
+    private static int parseQuantity(String value,int max){
+        String text=value==null?"":value.trim();
+        if(!text.matches("[0-9]{1,4}"))throw new IllegalArgumentException("Enter a whole number from 1 to "+max+".");
+        int quantity=Integer.parseInt(text);
+        if(quantity<1||quantity>max)throw new IllegalArgumentException("Enter a whole number from 1 to "+max+".");
+        return quantity;
+    }
+    private static long parsePrice(String value){return Money.parse(value==null?null:value.trim());}
+    /** A new token separates typed entry from old queued +/- clicks and stale form responses. */
+    private void requestNumber(Player p,String title,String details,String initial,Consumer<String> validate,Consumer<String> accept,Runnable back){
+        requestNumber(p,title,details,initial,validate,accept,back,null);
+    }
+    private void requestNumber(Player p,String title,String details,String initial,Consumer<String> validate,Consumer<String> accept,Runnable back,String error){
+        Page entry=page(p,ViewKind.NUMBER_ENTRY,title,9);
+        entry.numberInput=value->{
+            try{validate.accept(value);}catch(IllegalArgumentException invalid){
+                p.sendMessage(ChatColor.RED+invalid.getMessage());
+                requestNumber(p,title,details,initial,validate,accept,back,invalid.getMessage());return;
+            }
+            accept.accept(value);
+        };
+        p.closeInventory();
+        Consumer<String> submit=value->later(p,entry,()->entry.numberInput.accept(value));
+        Runnable cancel=()->later(p,entry,back);
+        String prompt=error==null?details:error+"\n\n"+details;
+        boolean sent=forms.number(p,title,prompt,initial,submit,cancel);
+        if(!sent){entry.numberDialog=true;sent=dialogs.number(p,title,prompt,initial,submit,cancel);if(!sent)entry.numberDialog=false;}
+        if(!sent){p.sendMessage(ChatColor.YELLOW+"Text entry is unavailable on this client. Use the amount buttons for now.");back.run();return;}
+        plugin.getServer().getScheduler().runTaskLater(plugin,()->{
+            if(plugin.isEnabled()&&p.isOnline()&&pages.get(p.getUniqueId())==entry){
+                p.sendMessage(ChatColor.YELLOW+"Amount entry expired. Choose Enter Amount to try again.");back.run();
+            }
+        },1200L);
+    }
     @EventHandler public void click(InventoryClickEvent e){
         if(!(e.getView().getTopInventory().getHolder() instanceof Page page))return;
         e.setCancelled(true);
@@ -69,6 +106,12 @@ public final class ShopUi implements Listener {
         if(e.getClick()!=ClickType.LEFT&&e.getClick()!=ClickType.RIGHT)return;
         if(e.getRawSlot()<0||e.getRawSlot()>=page.inventory.getSize())return;
         Runnable action=page.actions.get(e.getRawSlot());if(action!=null)later(p,page,action);
+    }
+    @EventHandler public void opened(InventoryOpenEvent e){
+        Page current=pages.get(e.getPlayer().getUniqueId());
+        if(current!=null&&current.kind==ViewKind.NUMBER_ENTRY&&e.getPlayer() instanceof Player p){
+            pages.remove(p.getUniqueId());if(current.numberDialog)dialogs.close(p);plugin.getCheckout().invalidateBuyer(p.getUniqueId());
+        }
     }
     @EventHandler public void drag(InventoryDragEvent e){if(e.getView().getTopInventory().getHolder() instanceof Page)e.setCancelled(true);}
     @EventHandler public void close(InventoryCloseEvent e){
@@ -98,7 +141,7 @@ public final class ShopUi implements Listener {
     public void quantity(Player p,ShopAdapter.Selection s,int count){
         int max=(int)Math.min(Math.min(s.available(),2304/s.bundleSize()),10000000000L/s.price());count=Math.max(1,Math.min(count,max));if(max<1){fail(p,"This item is out of stock.");return;}
         final int n=count;Page page=page(p,ViewKind.QUANTITY,"How many?",45);page.numberValue=n;
-        Consumer<String> input=value->{try{int q=Integer.parseInt(value.trim());if(q<1||q>max)throw new IllegalArgumentException();buyReview(p,s,q);}catch(RuntimeException e){p.sendMessage(ChatColor.RED+"Enter a whole number from 1 to "+max+".");quantity(p,s,(int)page.numberValue);}};
+        Consumer<String> input=value->{try{int q=parseQuantity(value,max);buyReview(p,s,q);}catch(RuntimeException e){p.sendMessage(ChatColor.RED+"Enter a whole number from 1 to "+max+".");quantity(p,s,(int)page.numberValue);}};
         page.numberInput=input;
         String details=s.name()+"\n"+cash(s.price())+(s.bundleSize()>1?" per bundle of "+s.bundleSize():" each")+"\nAvailable: "+max+"\nQuantity × price = total. Next: review, then final confirmation.";
         p.closeInventory(); // The new page token prevents closing the old page from cancelling this one.
@@ -108,9 +151,10 @@ public final class ShopUi implements Listener {
     /** Updating slots leaves the Java client's current window and cursor position intact. */
     private void renderQuantity(Player p,Page page,ShopAdapter.Selection s,int max){
         int n=(int)page.numberValue;
-        button(page,13,s.item(),s.name(),null,"Quantity: "+n+(s.bundleSize()>1?" bundles ("+(n*s.bundleSize())+" items)":""),cash(s.price())+" × "+n+" = "+cash(Money.multiply(s.price(),n)),"Use buttons to choose your quantity.");
+        button(page,13,s.item(),s.name(),null,"Quantity: "+n+(s.bundleSize()>1?" bundles ("+(n*s.bundleSize())+" items)":""),cash(s.price())+" × "+n+" = "+cash(Money.multiply(s.price(),n)),"Choose Enter Amount to type a number.","Or use the + / - buttons.");
         int[] delta={-64,-8,-1,1,8,64};int[] slots={18,19,20,24,25,26};
         for(int i=0;i<delta.length;i++){final int d=delta[i];button(page,slots[i],d<0?Material.RED_DYE:Material.LIME_DYE,(d>0?"+":"")+d,()->{page.numberValue=Math.max(1,Math.min(max,page.numberValue+d));renderQuantity(p,page,s,max);});}
+        button(page,22,Material.NAME_TAG,"Enter Amount",()->requestNumber(p,"Enter quantity",s.name()+"\n"+(s.bundleSize()>1?"Quantity is bundles of "+s.bundleSize()+" items.":"Quantity is individual items.")+"\nEnter a whole number from 1 to "+max+".\nNext: review, then final confirmation.",String.valueOf(page.numberValue),v->parseQuantity(v,max),v->buyReview(p,s,parseQuantity(v,max)),()->quantity(p,s,(int)page.numberValue)),"Type the exact quantity, e.g. 19.","No money moves until final confirmation.");
         button(page,31,Material.LIME_CONCRETE,"Review purchase",()->buyReview(p,s,(int)page.numberValue),"Nothing is charged yet.");button(page,36,Material.ARROW,"Back",()->backToCatalog(p,s));button(page,44,Material.BARRIER,"Cancel",()->cancel(p));
     }
     private String purchaseText(ShopAdapter.Selection s,int quantity){return (s.bundleSize()>1?quantity+" bundles = "+(quantity*s.bundleSize()):String.valueOf(quantity))+" × "+s.name()+"\n"+cash(s.price())+(s.bundleSize()>1?" per bundle":" each")+"\nTotal: "+cash(Money.multiply(s.price(),quantity))+itemDetails(s.item());}
@@ -163,16 +207,17 @@ public final class ShopUi implements Listener {
     }
     private void setupPrice(Player p,Draft draft,ItemStack item,long price){
         Page page=page(p,ViewKind.SETUP_PRICE,"Price per item",54);long safe=Math.max(1,Math.min(10000000000L,price));page.numberValue=safe;
-        Consumer<String> input=value->{try{long chosen=Money.parse(value);saveDraftPrice(draft,item,chosen);setupItems(p,draft);}catch(RuntimeException e){p.sendMessage(ChatColor.RED+"Use a positive price with up to 2 decimals.");setupPrice(p,draft,item,page.numberValue);}};page.numberInput=input;
+        Consumer<String> input=value->{try{long chosen=parsePrice(value);saveDraftPrice(draft,item,chosen);setupItems(p,draft);}catch(RuntimeException e){p.sendMessage(ChatColor.RED+"Use a positive price with up to 2 decimals.");setupPrice(p,draft,item,page.numberValue);}};page.numberInput=input;
         p.closeInventory();
         if(forms.number(p,"Set unit price",ShopAdapter.name(item)+"\nStock in chest: "+InventoryPlan.count(draft.proposal.contents(),item)+"\nEnter the price for ONE item. You will review before publishing.",java.math.BigDecimal.valueOf(safe,2).toPlainString(),v->later(p,page,()->input.accept(v)),()->later(p,page,()->cancel(p))))return;
         renderPrice(p,page,draft,item);open(p,page);
     }
     private void renderPrice(Player p,Page page,Draft draft,ItemStack item){
         long price=page.numberValue;
-        button(page,13,item,ShopAdapter.name(item),null,"Unit price: "+cash(price),"Stock: "+InventoryPlan.count(draft.proposal.contents(),item),"Use buttons to choose your price.");
+        button(page,13,item,ShopAdapter.name(item),null,"Unit price: "+cash(price),"Stock: "+InventoryPlan.count(draft.proposal.contents(),item),"Choose Enter Amount to type a price.","Or use the + / - buttons.");
         long[] deltas={-10000,-1000,-100,-10,-1,1,10,100,1000,10000};int[] slots={18,19,20,21,22,27,28,29,30,31};
         for(int i=0;i<deltas.length;i++){final long d=deltas[i];button(page,slots[i],d<0?Material.RED_DYE:Material.LIME_DYE,(d<0?"-":"+")+cash(Math.abs(d)),()->{page.numberValue=Math.max(1,Math.min(Money.MAX_MINOR_UNITS,page.numberValue+d));renderPrice(p,page,draft,item);});}
+        button(page,24,Material.NAME_TAG,"Enter Amount",()->requestNumber(p,"Enter price per item",ShopAdapter.name(item)+"\nPrice for ONE item, e.g. 0.50.\nUse 0.01 to 100000000.00, up to 2 decimals.\nYou will review before publishing.",Money.format(page.numberValue),v->parsePrice(v),v->{saveDraftPrice(draft,item,parsePrice(v));setupItems(p,draft);},()->setupPrice(p,draft,item,page.numberValue)),"Type the exact unit price, e.g. 0.50.","Saves to this review only.");
         button(page,40,Material.LIME_CONCRETE,"Use "+cash(price)+" per item",()->{saveDraftPrice(draft,item,page.numberValue);setupItems(p,draft);},"Saves to this review only.");button(page,45,Material.ARROW,"Back",()->setupItems(p,draft));button(page,53,Material.BARRIER,"Cancel setup",()->cancel(p));
     }
     private void saveDraftPrice(Draft d,ItemStack item,long price){ShopOffer previous=draftOffer(d,item);UUID id=previous==null?UUID.randomUUID():previous.id();d.offers.put(id,new ShopOffer(id,item,price,2304));}

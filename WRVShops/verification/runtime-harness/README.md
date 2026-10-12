@@ -15,6 +15,26 @@ The synthetic players use native Paper inventories and actual `ItemStack` metada
 
 This does not validate real Java/Bedrock client rendering, phone layouts, client packets, Geyser/Floodgate, the actual installed economy/GriefPrevention versions, player-save persistence, production permissions or another plugin's interference. No real player accounts or purchases are involved.
 
+### Native typed-entry checks
+
+For candidates containing `JavaNumberDialogs`, the harness also exercises the visible
+Enter Amount buttons at quantity slot 22 and unit-price slot 24. Synthetic `Player`
+proxies capture the actual Paper `showDialog` call. `NativeDialogProbe` reads the real
+Paper dialog's serialized text control, initial amount, input length, explicit Use
+amount/Cancel actions and close behavior, then submits synthetic responses through
+Paper's registered callback manager. Its server implementation inspection is confined
+to test source; no implementation or NMS dependencies are introduced into the plugin.
+
+The 31 typed-entry groups cover a `0.50` unit-price draft, `19` bread bundles totaling
+`$760.00`, unchanged final confirmation, zero/fraction/out-of-stock validation,
+foreign-player/duplicate/stale responses, cancel preserving the latest amount,
+native send failure, unrelated inventory opening, disconnect/reconnect, missing input,
+and a real sixty-second scheduled timeout. Existing 17 plus/minus cursor regressions
+still verify identical native inventories, unchanged synthetic cursor items, and no
+close/reopen calls while adjusting numbers. Timeout checks add approximately one minute
+to each normal boot. Server acceptance and synthetic callbacks do not establish real
+Java client rendering, mouse-pointer behavior, Bedrock rendering or phone usability.
+
 ## Safe reproduction
 
 Requirements: Python 3, exact Java 25 JDK, built `ExcelShops` JAR and a new disposable Paper directory.
@@ -53,7 +73,37 @@ Provider fixtures are deliberately named `Vault` and `GriefPrevention` so ExcelS
 
 Every renamed-plugin boot compares all legacy file hashes, directory/file types and permission modes. Dirty and conflict scenarios check protected physical opening, owner opening, chest/sign breaks, hoppers, player interactions, truthful command feedback and unchanged item stock. The snapshots contain only this run's disposable synthetic data. The runner waits for each child process to exit and checks loopback port 25579 after every boot.
 
-## Verified ExcelShops 0.1.1 candidate
+## Verified ExcelShops 0.1.4 typed-entry candidate
+
+Tested JAR SHA-256: `d4c1a0f8e21ad536577242f5b6522e24d8e03255985b359d765da2886ec2374c`.
+
+The 2026-10-12 run passed **4 full server boots / 1,104 assertions / zero failures**
+on exact Paper 26.2 #123 and Temurin 25.0.4+7-LTS:
+
+- Normal boot: 83 groups / 543 assertions
+- Clean restart: 83 groups / 543 assertions
+- Missing Economy service: 7 assertions
+- Missing Vault plugin and API: 11 assertions
+
+Both normal boots passed all 31 native typed-entry groups and all 17 existing
+plus/minus cursor groups. Each exercised the actual sixty-second entry timeout.
+All four server children exited normally with code 0; loopback port 25579 was
+available after every boot and independently checked again at completion.
+The authorized existing disposable fixture and its unchanged EULA acceptance
+were reused. No production server, accounts or real money were involved.
+
+The 26 production Java source files also compile against the exact Paper API
+with `javac --release 21`, producing 75 classes with deprecated-API notes only.
+The normal artifact remains Java 21-compatible and uses only public API reflection
+for optional dialogs. Native dialog inspection in this harness is test-only.
+
+`evidence-excel-0.1.4/` records the result summary, all four hashed manifests,
+per-group results, exact API compile/source hashes and shutdown verification.
+The clean/dirty/conflict legacy migration suite was not rerun for this UI-only
+candidate. Its earlier evidence below is historical. Client rendering and the
+other limitations stated above remain unverified.
+
+## Historical ExcelShops 0.1.1 candidate
 
 Final tested JAR SHA-256: `5d8628c0855f6664e1434b69234359bfe0c5cd0598885fb391e851f1ad2850e1`.
 

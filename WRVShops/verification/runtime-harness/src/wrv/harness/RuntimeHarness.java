@@ -44,6 +44,8 @@ public final class RuntimeHarness extends JavaPlugin {
     private ItemStack uiItem;
     private InventoryView staleConfirmView;
     private MenuSnapshot priceWindow, quantityWindow;
+    private NativeDialogProbe nativeDialog, staleDialog;
+    private long nativeOpenedAt;
     private record MenuSnapshot(InventoryView view, Inventory inventory, int opens, int closes, ItemStack cursor) {}
 
     @Override public void onEnable() { Bukkit.getScheduler().runTaskLater(this, this::start, 20L); }
@@ -182,6 +184,7 @@ public final class RuntimeHarness extends JavaPlugin {
         cases.add(new Case("setup-select-item-without-publishing", () -> { expectKind(owner, ViewKind.SETUP_ITEMS); check(owner.view.getTopInventory().getItem(0).getType() == Material.GOLD_INGOT, "actual chest contents become visual choices"); check(owner.view.getTopInventory().getItem(1) == null, "equivalent original and roundtripped metadata share one price entry"); click(owner, 0); beforePublished(); }));
         // The original WRVShops JAR remains a migration baseline, not a cursor-fix candidate.
         if (shops.getName().equals("ExcelShops")) addPriceCursorCases();
+        if (typedEntryAvailable()) addPriceTypedCases();
         cases.add(new Case("setup-enter-unit-price-without-publishing", () -> { expectKind(owner, ViewKind.SETUP_PRICE); check(ui().enterNumber(owner.player, "2.50"), "price number input accepted"); expectKind(owner, ViewKind.SETUP_ITEMS); beforePublished(); click(owner, 31); }));
         cases.add(new Case("setup-review-shows-price-before-confirm", () -> { expectKind(owner, ViewKind.SETUP_REVIEW); beforePublished(); check(owner.view.getTopInventory().getItem(0).getItemMeta().getLore().stream().anyMatch(line -> line.contains("2.50")), "review displays selected exact unit price"); click(owner, 49); }));
         cases.add(new Case("setup-final-confirm-is-only-publish-action", () -> { expectKind(owner, ViewKind.SETUP_CONFIRM); beforePublished(); click(owner, 49); click(owner, 49); }));
@@ -208,6 +211,7 @@ public final class RuntimeHarness extends JavaPlugin {
             Bukkit.getPluginManager().callEvent(drag); check(drag.isCancelled(), "drag into menu blocked"); click(buyer, 0); beforePurchase();
         }));
         if (shops.getName().equals("ExcelShops")) addQuantityCursorCases();
+        if (typedEntryAvailable()) addQuantityTypedCases();
         cases.add(new Case("buyer-quantity-preview-no-purchase", () -> { expectKind(buyer, ViewKind.QUANTITY); beforePurchase(); check(ui().enterNumber(buyer.player, "3"), "typed quantity accepted"); expectKind(buyer, ViewKind.BUY_REVIEW); beforePurchase(); click(buyer, 11); }));
         cases.add(new Case("buyer-final-screen-cancel-no-purchase", () -> { expectKind(buyer, ViewKind.BUY_CONFIRM); beforePurchase(); staleConfirmView = buyer.view; click(buyer, 15); }));
         cases.add(new Case("buyer-stale-confirm-after-cancel-cannot-buy", () -> {
@@ -238,6 +242,151 @@ public final class RuntimeHarness extends JavaPlugin {
             check(vault.calls.size() == 2 && buyer.count(uiItem) == 3, "late disconnect click makes no extra purchase"); buyer.online = true;
             registry().remove(owner.player, registry().findByChest(uiFixture.chest).orElseThrow().id());
             check(InventoryPlan.count(chest(uiFixture).getBlockInventory().getContents(), uiItem) == 9, "closing shop retains remaining physical stock");
+        }));
+        if (typedEntryAvailable()) addStandaloneTypedCases();
+    }
+    private boolean typedEntryAvailable() {
+        try { Class.forName("com.winkreyes.shops.JavaNumberDialogs", false, shops.getClass().getClassLoader()); return true; }
+        catch (ClassNotFoundException ignored) { return false; }
+    }
+    private NativeDialogProbe inspectDialog(FakePlayer player, String initial) throws Exception {
+        expectKind(player, ViewKind.NUMBER_ENTRY);
+        check(player.view == null, "native typed entry closes the old inventory without removing its fresh page token");
+        NativeDialogProbe probe = new NativeDialogProbe(player.dialog);
+        check(probe.input.key().equals("amount") && probe.input.initial().equals(initial), "real native text input starts with current amount " + initial);
+        check(probe.input.maxLength() == 32, "native input has a bounded 32-character text field");
+        check(!probe.base.canCloseWithEscape() && !probe.base.pause(), "native entry requires explicit cancellation and does not pause the world");
+        check(probe.buttons.yesButton().label().toString().contains("Use amount") && probe.buttons.noButton().label().toString().contains("Cancel"), "native text dialog includes Use amount and Cancel");
+        return probe;
+    }
+    private void addPriceTypedCases() {
+        cases.add(new Case("typed-price-open-button-uses-latest-queued-value", () -> {
+            expectKind(owner, ViewKind.SETUP_PRICE); priceWindow = rememberWindow(owner);
+            check(owner.view.getTopInventory().getItem(24).getItemMeta().getDisplayName().contains("Enter Amount"), "price menu exposes a direct Enter Amount button");
+            click(owner, 27); click(owner, 29); click(owner, 24); click(owner, 29); click(owner, 40);
+        }));
+        cases.add(new Case("typed-price-native-dialog-cancel-is-owner-bound-once", () -> {
+            nativeDialog = inspectDialog(owner, "2.01"); beforePublished();
+            click(owner, priceWindow.view(), 40);
+            nativeDialog.submit(buyer.player, "0.50");
+            nativeDialog.cancel(owner.player); nativeDialog.cancel(owner.player); nativeDialog.submit(owner.player, "19");
+            staleDialog = nativeDialog;
+        }));
+        cases.add(new Case("typed-price-cancel-restores-current-amount", () -> {
+            expectKind(owner, ViewKind.SETUP_PRICE); loreContains(owner, 13, "Unit price: $2.01"); beforePublished();
+            check(owner.dialog == null && owner.dialogCloses > 0, "restoring price menu dismisses the owned native dialog");
+            click(owner, 24);
+        }));
+        cases.add(new Case("typed-price-invalid-keeps-review-unpublished", () -> {
+            nativeDialog = inspectDialog(owner, "2.01"); staleDialog.submit(owner.player, "99");
+            nativeDialog.submit(owner.player, "0.001"); beforePublished(); staleDialog = nativeDialog;
+        }));
+        cases.add(new Case("typed-price-invalid-reopens-fresh-entry", () -> {
+            nativeDialog = inspectDialog(owner, "2.01"); check(nativeDialog.dialog != staleDialog.dialog, "invalid price gets a fresh dialog and response token");
+            staleDialog.cancel(owner.player); staleDialog.submit(owner.player, "1.00");
+            nativeDialog.submit(owner.player, "0.50"); nativeDialog.submit(owner.player, "19"); nativeDialog.cancel(owner.player);
+        }));
+        cases.add(new Case("typed-price-fifty-cents-saves-draft-only-once", () -> {
+            expectKind(owner, ViewKind.SETUP_ITEMS); loreContains(owner, 0, "$0.50 each"); beforePublished(); click(owner, 0);
+        }));
+        cases.add(new Case("typed-price-send-failure-retains-controls", () -> {
+            expectKind(owner, ViewKind.SETUP_PRICE); loreContains(owner, 13, "Unit price: $0.50");
+            owner.failDialog = true; click(owner, 24);
+        }));
+        cases.add(new Case("typed-price-send-failure-restores-current-amount", () -> {
+            owner.failDialog = false; expectKind(owner, ViewKind.SETUP_PRICE); loreContains(owner, 13, "Unit price: $0.50");
+            check(owner.messages.stream().anyMatch(m -> m.contains("Text entry is unavailable")), "native dialog failure explains the retained amount controls"); beforePublished();
+        }));
+    }
+    private void addQuantityTypedCases() {
+        cases.add(new Case("typed-quantity-open-button-isolates-queued-old-menu", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); quantityWindow = rememberWindow(buyer);
+            check(buyer.view.getTopInventory().getItem(22).getItemMeta().getDisplayName().contains("Enter Amount"), "quantity menu exposes a direct Enter Amount button");
+            click(buyer, 24); click(buyer, 24); click(buyer, 22); click(buyer, 24); click(buyer, 31);
+        }));
+        cases.add(new Case("typed-quantity-zero-reopens-entry-without-charge", () -> {
+            nativeDialog = inspectDialog(buyer, "3"); beforePurchase();
+            nativeDialog.submit(owner.player, "1"); nativeDialog.submit(buyer.player, "0"); staleDialog = nativeDialog;
+        }));
+        cases.add(new Case("typed-quantity-fraction-rejected-on-fresh-entry", () -> {
+            nativeDialog = inspectDialog(buyer, "3"); check(nativeDialog.dialog != staleDialog.dialog, "zero quantity gets a fresh native dialog");
+            staleDialog.submit(buyer.player, "12"); nativeDialog.submit(buyer.player, "1.5"); beforePurchase();
+        }));
+        cases.add(new Case("typed-quantity-stock-limit-rejected", () -> {
+            nativeDialog = inspectDialog(buyer, "3"); nativeDialog.submit(buyer.player, "19"); beforePurchase();
+        }));
+        cases.add(new Case("typed-quantity-valid-response-only-opens-review", () -> {
+            nativeDialog = inspectDialog(buyer, "3"); nativeDialog.submit(buyer.player, "3"); nativeDialog.submit(buyer.player, "12"); nativeDialog.cancel(buyer.player); beforePurchase();
+        }));
+        cases.add(new Case("typed-quantity-review-keeps-final-confirm-separate", () -> {
+            expectKind(buyer, ViewKind.BUY_REVIEW); loreContains(buyer, 4, "3 × UI listed gold"); loreContains(buyer, 4, "Total: $7.50"); beforePurchase(); click(buyer, 13);
+        }));
+        cases.add(new Case("typed-quantity-cancel-open-at-reviewed-amount", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); loreContains(buyer, 13, "Quantity: 3"); click(buyer, 22);
+        }));
+        cases.add(new Case("typed-quantity-cancel-and-late-submit-once", () -> {
+            nativeDialog = inspectDialog(buyer, "3"); nativeDialog.cancel(buyer.player); nativeDialog.cancel(buyer.player); nativeDialog.submit(buyer.player, "9"); beforePurchase();
+        }));
+        cases.add(new Case("typed-quantity-cancel-restores-reviewed-amount", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); loreContains(buyer, 13, "Quantity: 3"); beforePurchase();
+        }));
+    }
+    private void noNativePurchase() throws Exception {
+        check(vault.calls.isEmpty() && buyer.count(adapter().spawn("bread").item()) == 0, "typed spawn entry/review/interruptions never debit or deliver items");
+    }
+    private void addStandaloneTypedCases() {
+        cases.add(new Case("typed-spawn-nineteen-open-native-entry", () -> {
+            resetBalances(); ui().quantity(buyer.player, adapter().spawn("bread"), 1); click(buyer, 22);
+        }));
+        cases.add(new Case("typed-spawn-nineteen-submit-real-callback", () -> {
+            nativeDialog = inspectDialog(buyer, "1"); nativeDialog.submit(buyer.player, "19"); nativeDialog.submit(buyer.player, "20"); noNativePurchase();
+        }));
+        cases.add(new Case("typed-spawn-nineteen-review-correct-bundles-total", () -> {
+            expectKind(buyer, ViewKind.BUY_REVIEW); loreContains(buyer, 4, "19 bundles = 304"); loreContains(buyer, 4, "Total: $760.00"); noNativePurchase(); click(buyer, 11);
+        }));
+        cases.add(new Case("typed-spawn-final-confirm-still-explicit", () -> {
+            expectKind(buyer, ViewKind.BUY_CONFIRM); noNativePurchase(); click(buyer, 13);
+        }));
+        cases.add(new Case("typed-spawn-return-to-entry-keeps-nineteen", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); loreContains(buyer, 13, "Quantity: 19"); click(buyer, 22);
+        }));
+        cases.add(new Case("typed-entry-new-inventory-invalidates-response", () -> {
+            nativeDialog = inspectDialog(buyer, "19");
+            buyer.player.openInventory(Bukkit.createInventory(null, 9, Component.text("Unrelated synthetic menu")));
+            Bukkit.getPluginManager().callEvent(new InventoryOpenEvent(buyer.view));
+            expectKind(buyer, null); nativeDialog.submit(buyer.player, "20"); nativeDialog.cancel(buyer.player); noNativePurchase();
+        }));
+        cases.add(new Case("typed-entry-old-response-cannot-replace-new-navigation", () -> {
+            expectKind(buyer, null); check(buyer.view.getTopInventory().getHolder() == null, "stale dialog leaves unrelated menu untouched");
+            ui().quantity(buyer.player, adapter().spawn("bread"), 19); click(buyer, 22);
+        }));
+        cases.add(new Case("typed-entry-disconnect-invalidates-response", () -> {
+            nativeDialog = inspectDialog(buyer, "19"); buyer.online = false;
+            Bukkit.getPluginManager().callEvent(new PlayerQuitEvent(buyer.player, Component.empty()));
+            nativeDialog.submit(buyer.player, "20"); nativeDialog.cancel(buyer.player); expectKind(buyer, null); noNativePurchase();
+        }));
+        cases.add(new Case("typed-entry-reconnect-cannot-revive-old-response", () -> {
+            buyer.online = true; nativeDialog.submit(buyer.player, "20");
+            ui().quantity(buyer.player, adapter().spawn("bread"), 19); click(buyer, 22);
+        }));
+        cases.add(new Case("typed-entry-missing-text-response-restores-menu", () -> {
+            nativeDialog = inspectDialog(buyer, "19"); nativeDialog.submit(buyer.player, null); noNativePurchase();
+        }));
+        cases.add(new Case("typed-entry-timeout-open-current-amount", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); loreContains(buyer, 13, "Quantity: 19"); click(buyer, 22);
+        }));
+        cases.add(new Case("typed-entry-wait-real-sixty-second-expiry", () -> {
+            nativeDialog = inspectDialog(buyer, "19"); nativeOpenedAt = System.nanoTime(); noNativePurchase();
+        }, 1203L));
+        cases.add(new Case("typed-entry-timeout-restores-current-amount", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); loreContains(buyer, 13, "Quantity: 19");
+            check(Duration.ofNanos(System.nanoTime() - nativeOpenedAt).toSeconds() >= 59, "native dialog expiration exercised real server time and scheduled ticks");
+            check(buyer.messages.stream().anyMatch(m -> m.contains("Amount entry expired")), "expiry explains how to reopen amount entry");
+            check(buyer.dialog == null, "expiry dismisses the native dialog");
+            nativeDialog.submit(buyer.player, "20"); nativeDialog.cancel(buyer.player); noNativePurchase();
+        }));
+        cases.add(new Case("typed-entry-expired-callback-cannot-alter-current-amount", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); loreContains(buyer, 13, "Quantity: 19"); noNativePurchase(); ui().cancel(buyer.player);
         }));
     }
     private void addPriceCursorCases() {
@@ -641,7 +790,7 @@ public final class RuntimeHarness extends JavaPlugin {
         Case entry = cases.removeFirst();
         try { entry.action.run(); passed++; results.add("PASS " + entry.name); getLogger().info("WRV_SHOPS_HARNESS_PASS " + entry.name); }
         catch (Throwable exception) { failed++; results.add("FAIL " + entry.name + ": " + exception); getLogger().severe("WRV_SHOPS_HARNESS_FAIL " + entry.name + ": " + exception); exception.printStackTrace(); }
-        Bukkit.getScheduler().runTaskLater(this, this::next, 3L);
+        Bukkit.getScheduler().runTaskLater(this, this::next, entry.delayTicks());
     }
     private void finish() {
         try {
@@ -667,6 +816,8 @@ public final class RuntimeHarness extends JavaPlugin {
         try { return match.invoke(object, args); } catch (InvocationTargetException exception) { if (exception.getCause() instanceof Exception cause) throw cause; throw exception; }
     }
     private static Class<?> wrap(Class<?> type) { if (type == int.class) return Integer.class; if (type == long.class) return Long.class; if (type == boolean.class) return Boolean.class; if (type == double.class) return Double.class; return type; }
-    private record Case(String name, ThrowingRunnable action) {}
+    private record Case(String name, ThrowingRunnable action, long delayTicks) {
+        Case(String name, ThrowingRunnable action) { this(name, action, 3L); }
+    }
     @FunctionalInterface private interface ThrowingRunnable { void run() throws Exception; }
 }

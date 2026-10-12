@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
+import java.util.function.Consumer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -36,6 +37,9 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
@@ -78,6 +82,11 @@ class ShopUiTest {
     private final AtomicReference<Inventory> opened = new AtomicReference<>();
     private MockedStatic<Bukkit> bukkit;
     private MockedConstruction<ItemStack> items;
+    private MockedConstruction<JavaNumberDialogs> dialogs;
+    private boolean dialogAvailable;
+    private final List<DialogCall> dialogCalls = new ArrayList<>();
+    private final List<Runnable> timeouts = new ArrayList<>();
+    private record DialogCall(String title, String details, String initial, Consumer<String> submit, Runnable cancel) {}
 
     @BeforeEach void setup() throws Exception {
         FormFixtures.reset(); GeyserFixture.reset();
@@ -102,6 +111,15 @@ class ShopUiTest {
         when(plugin.getCheckout()).thenReturn(checkout);
         when(scheduler.runTask(eq(plugin), any(Runnable.class))).thenAnswer(call -> {
             tasks.add(call.getArgument(1)); return mock(BukkitTask.class);
+        });
+        when(scheduler.runTaskLater(eq(plugin), any(Runnable.class), eq(1200L))).thenAnswer(call -> {
+            timeouts.add(call.getArgument(1)); return mock(BukkitTask.class);
+        });
+        dialogs = mockConstruction(JavaNumberDialogs.class, (dialog, context) -> {
+            when(dialog.number(eq(player), anyString(), anyString(), anyString(), any(), any())).thenAnswer(call -> {
+                dialogCalls.add(new DialogCall(call.getArgument(1), call.getArgument(2), call.getArgument(3), call.getArgument(4), call.getArgument(5)));
+                return dialogAvailable;
+            });
         });
         bukkit = mockStatic(Bukkit.class);
         bukkit.when(() -> Bukkit.createInventory(any(InventoryHolder.class), anyInt(), anyString()))
@@ -132,7 +150,7 @@ class ShopUiTest {
         when(plugin.getCatalog()).thenReturn(catalog); when(catalog.all()).thenReturn(List.of());
     }
 
-    @AfterEach void cleanup() { if (items != null) items.close(); if (bukkit != null) bukkit.close(); }
+    @AfterEach void cleanup() { if (dialogs != null) dialogs.close(); if (items != null) items.close(); if (bukkit != null) bukkit.close(); }
 
     private static ItemMeta meta(String display, List<String> lore) {
         ItemMeta meta = mock(ItemMeta.class);
@@ -475,4 +493,156 @@ class ShopUiTest {
         verify(registry, never()).commit(any(), any(), anyList()); FormFixtures.last().choice(2); flush();
         assertNull(ui.currentKind(playerId)); verify(registry, never()).commit(any(), any(), anyList()); noMoneyMoved();
     }
+    private DialogCall typedQuantity(int count) { dialogAvailable = true; quantity(count); tap(22); return dialogCalls.getLast(); }
+    private DialogCall typedPrice() { dialogAvailable = true; setupPrice(); tap(24); return dialogCalls.getLast(); }
+
+    @Test void typedQuantityHasClearButtonAndPrivateInputThenSeparateReviewAndConfirm() throws Exception {
+        dialogAvailable = true; quantity(10); assertEquals("Enter Amount", title(22));
+        queue(24, 22, 26, 31); flush();
+        DialogCall dialog = dialogCalls.getLast(); assertEquals("11", dialog.initial());
+        assertEquals(ShopUi.ViewKind.NUMBER_ENTRY, ui.currentKind(playerId));
+        assertTrue(dialog.details().contains("whole number from 1 to 2304"));
+        dialog.submit().accept("19"); dialog.submit().accept("500"); flush();
+        assertEquals(ShopUi.ViewKind.BUY_REVIEW, ui.currentKind(playerId));
+        assertTrue(lore(4).contains("19 × Custom treasure")); assertTrue(lore(4).contains("Total: $23.75"));
+        noMoneyMoved(); verify(checkout, never()).quote(any(), any(), anyString(), anyLong(), anyInt(), anyLong(), anyString());
+        tap(11); noMoneyMoved(); tap(11);
+        verify(economy, times(1)).withdraw(playerId, 2375); verify(transfer, times(1)).apply();
+    }
+
+    @Test void typedFiftyCentPriceRemainsDraftUntilSeparateFinalPublication() throws Exception {
+        DialogCall dialog = typedPrice(); assertEquals("1.00", dialog.initial());
+        assertTrue(dialog.details().contains("ONE item")); dialog.submit().accept(" 0.50 "); flush();
+        assertEquals(ShopUi.ViewKind.SETUP_ITEMS, ui.currentKind(playerId)); assertTrue(lore(0).contains("$0.50 each"));
+        verify(registry, never()).commit(any(), any(), anyList());
+        tap(31); assertEquals(ShopUi.ViewKind.SETUP_REVIEW, ui.currentKind(playerId));
+        assertTrue(lore(0).contains("Stock value: $4.00")); tap(49);
+        verify(registry, never()).commit(any(), any(), anyList()); tap(49);
+        @SuppressWarnings("unchecked") ArgumentCaptor<List<ShopOffer>> offers = ArgumentCaptor.forClass(List.class);
+        verify(registry, times(1)).commit(eq(player), eq(proposal), offers.capture());
+        assertEquals(50, offers.getValue().getFirst().unitPriceCents()); noMoneyMoved();
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"", "0", "-1", "1.2", "2305", "2147483648", "one", "+1"})
+    void invalidTypedQuantityCanRetryWithoutChangingPreviousAmount(String bad) throws Exception {
+        DialogCall first = typedQuantity(19); first.submit().accept(bad); flush();
+        assertEquals(ShopUi.ViewKind.NUMBER_ENTRY, ui.currentKind(playerId));
+        DialogCall retry = dialogCalls.getLast(); assertNotSame(first, retry); assertEquals("19", retry.initial());
+        assertTrue(retry.details().startsWith("Enter a whole number from 1 to 2304."));
+        first.submit().accept("100"); flush(); assertSame(retry, dialogCalls.getLast());
+        retry.submit().accept("23"); flush(); assertTrue(lore(4).contains("23 × Custom treasure")); noMoneyMoved();
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"", "0", "-0.50", "0.501", "100000000.01", "NaN", "1e2", "$0.50"})
+    void invalidTypedPriceCanRetryThenCancelWithoutSaving(String bad) throws Exception {
+        DialogCall first = typedPrice(); first.submit().accept(bad); flush();
+        assertEquals(ShopUi.ViewKind.NUMBER_ENTRY, ui.currentKind(playerId));
+        DialogCall retry = dialogCalls.getLast(); assertNotSame(first, retry); assertEquals("1.00", retry.initial());
+        retry.cancel().run(); flush(); assertEquals(ShopUi.ViewKind.SETUP_PRICE, ui.currentKind(playerId));
+        assertTrue(lore(13).contains("Unit price: $1.00"));
+        verify(registry, never()).commit(any(), any(), anyList()); noMoneyMoved();
+    }
+
+    @ParameterizedTest @CsvSource({"7, 1, 125, 8", "2304, 64, 125, 37", "2304, 1, 3000000000, 4"})
+    void typedQuantityHonorsStockBundleAndTotalBounds(int stock, int bundle, long price, String bad) throws Exception {
+        selection = selection(stock, bundle, price); DialogCall dialog = typedQuantity(1);
+        dialog.submit().accept(bad); flush(); assertEquals(ShopUi.ViewKind.NUMBER_ENTRY, ui.currentKind(playerId));
+        noMoneyMoved();
+    }
+
+    @Test void typedBundleQuantityExplainsAndReviewsBundleEconomics() throws Exception {
+        selection = selection(2304, 16, 4000); DialogCall dialog = typedQuantity(1);
+        assertTrue(dialog.details().contains("bundles of 16 items")); dialog.submit().accept("2"); flush();
+        assertTrue(lore(4).contains("2 bundles = 32 × Custom treasure"));
+        assertTrue(lore(4).contains("Total: $80.00")); noMoneyMoved();
+    }
+
+    @Test void typedCancelWinsOverQueuedSubmitAndRestoresLatestAmount() throws Exception {
+        DialogCall dialog = typedQuantity(19); dialog.cancel().run(); dialog.submit().accept("500"); flush();
+        assertEquals(ShopUi.ViewKind.QUANTITY, ui.currentKind(playerId)); assertQuantity(19); noMoneyMoved();
+        verify(dialogs.constructed().getFirst()).close(player);
+    }
+
+    @Test void typedEntryExpiresAndOldResponseCannotAffectNewEntry() throws Exception {
+        DialogCall old = typedQuantity(19); timeouts.getLast().run();
+        verify(dialogs.constructed().getFirst()).close(player);
+        assertEquals(ShopUi.ViewKind.QUANTITY, ui.currentKind(playerId)); assertQuantity(19);
+        tap(22); DialogCall current = dialogCalls.getLast(); old.submit().accept("500"); flush();
+        assertEquals(ShopUi.ViewKind.NUMBER_ENTRY, ui.currentKind(playerId)); assertSame(current, dialogCalls.getLast());
+        current.submit().accept("20"); flush(); assertTrue(lore(4).contains("20 × Custom treasure")); noMoneyMoved();
+    }
+
+    @Test void oldEntryTimeoutCannotDismissNewMenu() throws Exception {
+        DialogCall old = typedQuantity(19); Runnable timeout = timeouts.getLast();
+        quantity(40); verify(dialogs.constructed().getFirst()).close(player);
+        Inventory current = opened.get(); timeout.run(); old.cancel().run(); old.submit().accept("500"); flush();
+        assertSame(current, opened.get()); assertQuantity(40); noMoneyMoved();
+    }
+
+    @Test void disconnectCancelsTypedResponse() throws Exception {
+        DialogCall dialog = typedQuantity(19); ui.disconnected(playerId); dialog.submit().accept("500"); flush();
+        assertNull(ui.currentKind(playerId)); noMoneyMoved();
+    }
+
+    @Test void externalInventoryOpeningCancelsTypedResponse() throws Exception {
+        DialogCall dialog = typedQuantity(19); InventoryOpenEvent event = mock(InventoryOpenEvent.class);
+        when(event.getPlayer()).thenReturn(player); ui.opened(event); dialog.submit().accept("500"); flush();
+        assertNull(ui.currentKind(playerId)); noMoneyMoved();
+    }
+
+    @Test void recoveryPauseBlocksTypedResponse() throws Exception {
+        DialogCall dialog = typedQuantity(19); checkout.pauseExternal("Fixture recovery pause");
+        dialog.submit().accept("20"); flush(); assertNull(ui.currentKind(playerId)); noMoneyMoved();
+    }
+
+    @Test void unsupportedJavaDialogFallsBackWithoutActingOnFailedCallbacks() throws Exception {
+        quantity(19); tap(22); DialogCall failed = dialogCalls.getLast();
+        assertEquals(ShopUi.ViewKind.QUANTITY, ui.currentKind(playerId)); assertQuantity(19);
+        failed.submit().accept("500"); failed.cancel().run(); flush(); assertQuantity(19); noMoneyMoved();
+    }
+
+    @Test void repeatedEntryRetainsSavedDraftPriceAndCancelDiscardsOnlyNewInput() throws Exception {
+        DialogCall first = typedPrice(); first.submit().accept("0.50"); flush(); tap(0); tap(24);
+        DialogCall second = dialogCalls.getLast(); assertEquals("0.50", second.initial());
+        second.cancel().run(); flush(); assertTrue(lore(13).contains("Unit price: $0.50"));
+        first.submit().accept("99.00"); flush(); assertTrue(lore(13).contains("Unit price: $0.50"));
+        tap(45); assertTrue(lore(0).contains("$0.50 each")); noMoneyMoved();
+    }
+
+    @Test void editingExistingListingKeepsIdentityAndOldPriceUntilFinalPublish() throws Exception {
+        ItemStack stock = proposal.contents()[0]; UUID offerId = UUID.randomUUID();
+        ShopOffer offer = new ShopOffer(offerId, stock, 250, 2304);
+        ShopRecord existing = mock(ShopRecord.class); when(existing.offers()).thenReturn(List.of(offer));
+        when(registry.findById(proposal.shopId())).thenReturn(Optional.of(existing));
+        DialogCall dialog = typedPrice(); assertEquals("2.50", dialog.initial());
+        dialog.submit().accept("0.50"); flush(); assertTrue(lore(0).contains("$0.50 each"));
+        assertEquals(250, offer.unitPriceCents()); verify(registry, never()).commit(any(), any(), anyList());
+        tap(31); tap(49); tap(49);
+        @SuppressWarnings("unchecked") ArgumentCaptor<List<ShopOffer>> offers = ArgumentCaptor.forClass(List.class);
+        verify(registry).commit(eq(player), eq(proposal), offers.capture());
+        assertEquals(offerId, offers.getValue().getFirst().id());
+        assertEquals(50, offers.getValue().getFirst().unitPriceCents()); noMoneyMoved();
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"teleport", "world", "close_all", "disable"})
+    void typedEntryInterruptionClosesDialogAndDiscardsQueuedCallbacks(String interruption) throws Exception {
+        DialogCall dialog = typedQuantity(19); dialog.submit().accept("20");
+        var uiField = WRVShops.class.getDeclaredField("ui"); uiField.setAccessible(true); uiField.set(plugin, ui);
+        switch (interruption) {
+            case "teleport" -> {
+                PlayerTeleportEvent event = mock(PlayerTeleportEvent.class); when(event.getPlayer()).thenReturn(player);
+                doCallRealMethod().when(plugin).teleported(event); plugin.teleported(event);
+            }
+            case "world" -> {
+                PlayerChangedWorldEvent event = mock(PlayerChangedWorldEvent.class); when(event.getPlayer()).thenReturn(player);
+                doCallRealMethod().when(plugin).changedWorld(event); plugin.changedWorld(event);
+            }
+            case "disable" -> { when(plugin.isEnabled()).thenReturn(false); ui.closeAll(); }
+            default -> ui.closeAll();
+        }
+        verify(dialogs.constructed().getFirst()).close(player);
+        dialog.cancel().run(); timeouts.getLast().run(); flush();
+        assertNull(ui.currentKind(playerId)); noMoneyMoved();
+    }
+
 }

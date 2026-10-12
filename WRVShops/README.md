@@ -1,4 +1,6 @@
-# ExcelShops 0.1.3
+# ExcelShops 0.1.4 typed-entry candidate
+
+**0.1.4 is tested off-server and not installed.** It adds a clear **Enter Amount** button and private native Java text field for exact prices and purchase quantities. Bedrock keeps native numeric forms. See [typed-entry instructions and verification](AMOUNT-ENTRY-0.1.4.md). The live installation remains 0.1.3 as recorded below.
 
 **Installed standalone on Wink Reyes Valley on October 12, 2026.** ExcelShops 0.1.3 runs native player shops and the matching Spawn Shop without ChestShop. The guarded ChestShop plugin was installed earlier that afternoon, then removed after the owner confirmed it was unnecessary. Standalone startup, the EssentialsX economy connection and scoped purchase-menu pauses were checked. An earlier 0.1.2 user-reported Java PC check passed Spawn Shop access/prices/cancel/torch purchase and owner chest-shop setup/publication. A second-player chest-shop purchase and broader platform/balance/stock checks remain pending. The installed 0.1.3 update addresses inventory recreation during price/quantity adjustments. Startup is verified; a human Java cursor retest is still pending. See the [live deployment record](DEPLOYMENT-2026-10-12.md). ExcelShops is original MIT-licensed code. Native ExcelShops and Spawn Shop do not require ChestShop. When legacy ChestShop compatibility is used, it requires the separately branded, LGPL-2.1 **ChestShop 3.13-pre-1 build 474 + confirmation.1** artifact in the same installation. That full modified third-party JAR retains the upstream plugin name `ChestShop`, authorship, data directory and protection listeners. Its source/notice bundle must accompany redistribution. The Maven overlay `ChestShop-ConfirmationGuard-1.0.0.jar` is a compile artifact, not a deployable plugin.
 
@@ -21,10 +23,11 @@ Stay within six blocks of the shop. Quotes expire after 60 seconds by default. I
 ### Java and Bedrock controls
 
 - Both platforms browse the physical chest's contents through a read-only inventory menu. Left and right clicks do the **same** action; no Java-only left/right buy/sell convention.
-- Java uses clearly labeled quantity buttons (`−64`, `−8`, `−1`, `+1`, `+8`, `+64`) and Review/Confirm/Back/Cancel. The command handler accepts `/excelshop amount 19` while its quantity context exists, but ordinary Java chat requires closing the inventory and clears that context; it is not a verified player workaround.
+- Java: choose **Enter Amount**, type a whole-number quantity such as `19`, then **Use amount**. Review and the separate final confirmation still follow. Clearly labeled quantity buttons (`−64`, `−8`, `−1`, `+1`, `+8`, `+64`) remain available for small adjustments.
 - Bedrock uses native Geyser number-entry forms for quantity and unit price, followed by separate review and final confirmation forms. Enter a whole-number quantity or a positive price with at most two decimals. If forms are unavailable, the same inventory buttons are used.
-- Java price controls adjust by 0.01, 0.10, 1, 10 or 100 in either direction. The `/excelshop amount 12.50` handler likewise needs the price-screen context; ordinary Java chat entry is not a verified workaround.
-- Real Java and Bedrock phone rendering/input with the live Geyser/Floodgate builds remains a required staging check. Automated server-side/reflective tests do not prove it.
+- Java prices: choose **Enter Amount**, replace the text with `0.50` (for fifty cents per item), then **Use amount**. This saves only the draft. Review and **Confirm and publish shop** are still required. Price buttons remain for small changes. No command or public chat is needed.
+- Native Java text dialogs require Paper 1.21.7+ and a compatible Java client; the installed Paper 26.2 supports the API. Unsupported/failed dialog APIs return to the amount buttons. Older clients behind protocol translation are not detected reliably. Real Java and Bedrock phone rendering/input with the live Geyser/Floodgate builds remains a required player check; automated tests do not prove it.
+- **Cancel** in typed entry returns to the previous amount without saving the typed text. Use the Cancel button in the Java dialog; Escape is disabled to make cancellation explicit. Input expires after 60 seconds. Invalid input can be corrected in a fresh field. Closing or abandoning purchase review never buys anything.
 
 ## Optional ChestShop compatibility (not currently installed on Wink Reyes Valley)
 
@@ -135,7 +138,9 @@ Historical 0.1.1 evidence is preserved unchanged under [the earlier native-shop 
 
 For the installed 0.1.3 cursor update, use the new artifact-specific results in [CURSOR-FIX-0.1.3.md](CURSOR-FIX-0.1.3.md); historical runtime counts and hashes above do not certify this new JAR.
 
-CI uploads the nine custom JARs, the distinctly named full guarded ChestShop JAR with complete LGPL corresponding source, and a reproducible `ExcelShops-0.1.3-install-candidate.zip`. The installation pack contains exactly the two deployable shop JARs, unchanged matching 18-offer menu/catalog, legal/source material, the offline pause generator/spec, hashes and these instructions. Packaging verifies the official upstream hash, preserves every unmodified upstream entry, checks guard/source correspondence, and rejects an original or overlay-only JAR. It performs no server access.
+For the 0.1.4 typed-entry candidate, see [its verification and compatibility limits](AMOUNT-ENTRY-0.1.4.md); earlier results do not certify it.
+
+CI uploads the nine custom JARs, the distinctly named full guarded ChestShop JAR with complete LGPL corresponding source, and a reproducible `ExcelShops-0.1.4-install-candidate.zip`. The installation pack contains exactly the two deployable shop JARs, unchanged matching 18-offer menu/catalog, legal/source material, the offline pause generator/spec, hashes and these instructions. Packaging verifies the official upstream hash, preserves every unmodified upstream entry, checks guard/source correspondence, and rejects an original or overlay-only JAR. It performs no server access.
 
 After bootstrap/build, reproduce the pair from independently reviewed artifact hashes:
 
@@ -148,7 +153,7 @@ python3 WRVShops/tools/package_candidate.py \
   --guard-sources ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1-sources.zip \
   --expected-sources-sha256 VERIFIED_CORRESPONDING_SOURCE_SHA256 \
   --source-commit FULL_SOURCE_COMMIT_SHA \
-  --output /staging/ExcelShops-0.1.3-install-candidate.zip
+  --output /staging/ExcelShops-0.1.4-install-candidate.zip
 ```
 
 The output must not exist; packaging never overwrites a prior candidate. Runtime evidence must bind both final JAR hashes. Before live use, complete the read-only preflight and human checklist with the installed Vault/Essentials/GriefPrevention/Geyser/Floodgate combination. The earlier preflight reported Essentials 2.22.0 warning about an unsupported server version; the guard does not remove that warning. For a deployment actually using legacy ChestShop trading, rollback must retain the guard or disable that trading. Standalone native/Spawn-only ExcelShops does not require ChestShop. Restoring instant purchases is not a safe silent rollback.

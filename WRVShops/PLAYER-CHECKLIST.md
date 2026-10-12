@@ -2,6 +2,10 @@
 
 **ExcelShops 0.1.3 is installed standalone; human cursor retest pending.** The October 12 update keeps quantity and owner-price adjustments in the same inventory window. Runtime identity and the economy connection were checked. An earlier owner-relayed Java PC report on 0.1.2 passed Spawn Shop menu/prices/cancel/torch purchase and owner setup/publication; it does not certify the new cursor behavior. ChestShop remains absent. The actions below remain a full checklist, not a claim that every case passed. See the [deployment record](DEPLOYMENT-2026-10-12.md).
 
+## 0.1.4 typed-entry candidate (not installed)
+
+The following typing instructions apply after a separately approved 0.1.4 installation. Choose **Enter Amount**, type a price such as `0.50` or whole-number quantity such as `19`, then **Use amount**. Review and separate final confirmation remain mandatory. See [the full typed-entry checklist](AMOUNT-ENTRY-0.1.4.md). Current live 0.1.3 still uses Java buttons; Bedrock already has native numeric forms.
+
 ## Priority retest: Java plus/minus controls
 
 Open **compass menu → Spawn Shop → an item**. Keep the pointer over +1 and click several times without moving it; quantity/total should update without the pointer jumping. Try minus, Review, Change quantity and Back/Cancel. Then repeat price adjustments in **your chest/sign → Edit item prices**. Cancel before any purchase or publication unless you intend it. The full [0.1.3 retest checklist](CURSOR-FIX-0.1.3.md#menu-first-human-retest-after-installation) also covers bounds, one-shot confirmation, buyer entry and Bedrock. No human result is recorded yet.
@@ -10,7 +14,7 @@ Open **compass menu → Spawn Shop → an item**. Keep the pointer over +1 and c
 
 - Open the chest labeled **[Excel Shop]** or its sign. Old managed **[WRV Shop]** labels remain supported.
 - Tap the item. Check its enchantments/custom lore, unit price and stock.
-- Choose quantity. Bedrock phones get a number-entry form; Java has ± buttons. Do not rely on chat-command quantity entry as a Java workaround; closing the inventory clears its input context. Inventory controls are the fallback if forms are unavailable.
+- Choose quantity. Bedrock phones get a number-entry form. Java: choose **Enter Amount**, type a whole number such as `19`, then **Use amount**. Existing ± buttons remain for small changes. Native Java dialogs need a compatible modern client; failed/unsupported APIs fall back to buttons. No chat command is needed.
 - Review **quantity × unit price = total**.
 - On the separate “Are you sure?” screen, choose **Confirm purchase** once.
 - Check money and delivered quantity. Cancel, Back, closing a screen and disconnecting before confirmation must change neither.
@@ -35,7 +39,7 @@ This section applies only if the full guarded ChestShop integration is separatel
 - Place your own **single** normal/trapped chest and stock it. Native setup refuses double chests and existing ChestShop signs; legacy shops keep their original single/double-chest storage and use the separate guarded flow only where that optional ChestShop compatibility is installed.
 - Sneak/crouch while placing an ordinary wall sign against it, or a standing sign on top. Finish the normal sign editor.
 - At **Make this a shop?**, choose Yes. No keeps ordinary storage and its label.
-- Select every distinct item type and set a **price for one item**. Phones use numeric entry; Java uses price buttons. The installed 0.1.3 update keeps these adjustments in the same window; physical cursor behavior still needs a human retest.
+- Select every distinct item type and set a **price for one item**. Phones use numeric entry; Java has **Enter Amount**. Type `0.50` for fifty cents, then **Use amount**. This only saves the draft. Existing price buttons retain the in-place cursor fix.
 - Review owner, each unit price, current stock and stock value. Separately choose **Confirm and publish shop**.
 - After canceling or adding stock to an empty chest, look at the ordinary attached sign and use `/excelshop setup` to resume.
 
@@ -45,7 +49,7 @@ All matching physical stock is for sale at the chosen unit price. There is no co
 
 - Open your own shop or look at it and run `/excelshop manage`.
 - **Open stock chest:** restock/remove your items normally. Give newly introduced item types a price before they sell.
-- **Edit item prices:** review and confirm again. Sold-out listings can be restocked.
+- **Edit item prices:** select the item → **Enter Amount** → type the price → **Use amount**, then review and confirm again. Sold-out listings can be restocked.
 - **Close shop:** confirm returning to ordinary storage. Every stock item stays in the chest. Only then break its chest/sign.
 
 `/wrvshop` still works as an alias. No permission grants or claim-trust changes are needed for the rename.
@@ -67,7 +71,7 @@ Use a disposable staging economy with one Java player and one Bedrock phone play
 3. Cancel on each buying screen; verify no money/item change. Buy once, then double-tap final confirmation and verify only one transaction.
 4. Test insufficient money, full inventory, existing partial stack, stock/price changes, distance change and logout before confirmation.
 5. Test another player's inability to open free stock, use hoppers, break the sign/chest or edit prices.
-6. Restock, edit price and close as the owner; confirm stock is preserved.
+6. Restock, edit price and close as the owner; confirm stock is preserved. Try typed `0.50`, invalid `0.501` and `0`, correction, Cancel, repeated entry and timeout. Old responses must not change a newer menu. Small +/- adjustments should keep the same cursor position.
 7. Only if guarded ChestShop compatibility is separately installed, test both legacy Buy and Sell, free and paid signs, double chests, limited stock/capacity, owner balance changes and both accounts' exact balance/item deltas. Rapid repeat Confirm must trade only once.
 8. For that optional compatibility path, verify unsupported providers/versions, nonzero ChestShop taxes, non-two-decimal price precision and a configured server economy account fail closed. Do not alter real server policy to bypass the refusal.
 9. On the disposable server, test stale phone callbacks and dirty restart. If guarded ChestShop compatibility is installed, also test ExcelShops absent/disabled and confirm default-deny legacy trading with preserved ChestShop protection.
