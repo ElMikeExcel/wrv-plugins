@@ -1,12 +1,12 @@
 # ExcelShops 0.1.2
 
-**Paired installation candidate, not installed on the live server.** ExcelShops is original MIT-licensed code. Existing ChestShop shops require the separately branded, LGPL-2.1 **ChestShop 3.13-pre-1 build 474 + confirmation.1** artifact in the same installation. That full modified third-party JAR retains the upstream plugin name `ChestShop`, authorship, data directory and protection listeners. Its source/notice bundle must accompany redistribution. The Maven overlay `ChestShop-ConfirmationGuard-1.0.0.jar` is a compile artifact, not a deployable plugin.
+**Installed standalone on Wink Reyes Valley on October 12, 2026.** ExcelShops 0.1.2 runs native player shops and the matching Spawn Shop without ChestShop. The guarded ChestShop plugin was installed earlier that afternoon, then removed after the owner confirmed it was unnecessary. Standalone startup, the EssentialsX economy connection and scoped purchase-menu pauses were checked. A later user-reported Java PC check passed Spawn Shop access/prices/cancel/torch purchase and owner chest-shop setup/publication. A second-player chest-shop purchase and broader platform/balance/stock checks remain pending. The price/quantity inventory cursor-reset issue is under investigation and is not fixed. See the [live deployment record](DEPLOYMENT-2026-10-12.md). ExcelShops is original MIT-licensed code. Native ExcelShops and Spawn Shop do not require ChestShop. When legacy ChestShop compatibility is used, it requires the separately branded, LGPL-2.1 **ChestShop 3.13-pre-1 build 474 + confirmation.1** artifact in the same installation. That full modified third-party JAR retains the upstream plugin name `ChestShop`, authorship, data directory and protection listeners. Its source/notice bundle must accompany redistribution. The Maven overlay `ChestShop-ConfirmationGuard-1.0.0.jar` is a compile artifact, not a deployable plugin.
 
-Both native shops and existing ChestShop BUY/SELL trades now require separate review and final confirmation. Existing legacy signs, prices, accounts, permissions, stock, protections and double chests are preserved. Nothing is deployed by this repository or its tests.
+Native Excel shops and Spawn Shop require separate review and final confirmation. The optional guarded ChestShop integration described below adds that flow to legacy BUY/SELL trades when installed; that compatibility plugin is no longer active on Wink Reyes Valley. The optional bridge preserves legacy signs, prices, accounts, permissions, stock, protections and double chests rather than converting them. Standalone ExcelShops does not activate or replace third-party ChestShop sign trading. Nothing is deployed by this repository or its tests.
 
 Plugin name and JAR: **ExcelShops**. Source folder/package remain `WRVShops` / `com.winkreyes.shops` for compatibility. `/excelshop` is the branded command; `/wrvshop` remains a working alias. Existing `wrvshops.use` / `wrvshops.create` permissions and the `wrvshops:shop_id` / `wrvshops:chest_identity` storage keys are intentionally unchanged.
 
-See the [buyer/seller checklist](PLAYER-CHECKLIST.md) and [exact deployment plan](DEPLOYMENT.md) before installation.
+See the [buyer/seller checklist](PLAYER-CHECKLIST.md), [live deployment record](DEPLOYMENT-2026-10-12.md) and preserved [deployment plan](DEPLOYMENT.md).
 
 ## Players: buy from a chest
 
@@ -21,15 +21,15 @@ Stay within six blocks of the shop. Quotes expire after 60 seconds by default. I
 ### Java and Bedrock controls
 
 - Both platforms browse the physical chest's contents through a read-only inventory menu. Left and right clicks do the **same** action; no Java-only left/right buy/sell convention.
-- Java uses clearly labeled quantity buttons (`−64`, `−8`, `−1`, `+1`, `+8`, `+64`) and Review/Confirm/Back/Cancel. The optional `/excelshop amount 19` enters an exact quantity while that screen is open.
+- Java uses clearly labeled quantity buttons (`−64`, `−8`, `−1`, `+1`, `+8`, `+64`) and Review/Confirm/Back/Cancel. The command handler accepts `/excelshop amount 19` while its quantity context exists, but ordinary Java chat requires closing the inventory and clears that context; it is not a verified player workaround.
 - Bedrock uses native Geyser number-entry forms for quantity and unit price, followed by separate review and final confirmation forms. Enter a whole-number quantity or a positive price with at most two decimals. If forms are unavailable, the same inventory buttons are used.
-- Java price controls adjust by 0.01, 0.10, 1, 10 or 100 in either direction. `/excelshop amount 12.50` optionally enters an exact unit price while its screen is open.
+- Java price controls adjust by 0.01, 0.10, 1, 10 or 100 in either direction. The `/excelshop amount 12.50` handler likewise needs the price-screen context; ordinary Java chat entry is not a verified workaround.
 - Real Java and Bedrock phone rendering/input with the live Geyser/Floodgate builds remains a required staging check. Automated server-side/reflective tests do not prove it.
 
-## Existing ChestShop signs: Buy or Sell explicitly
+## Optional ChestShop compatibility (not currently installed on Wink Reyes Valley)
 
 1. Tap/click an existing ChestShop sign. Left/right click and sneaking no longer immediately trade. The chooser identifies the item and offers **Buy from shop** and/or **Sell to shop**, according to the existing sign.
-2. Choose a direction, then a whole **item quantity**. Legacy quantity is items, while Spawn Shop quantity remains bundles. Java has quantity buttons and `/excelshop amount`; Bedrock has numeric entry with an inventory fallback.
+2. Choose a direction, then a whole **item quantity**. Legacy quantity is items, while Spawn Shop quantity remains bundles. Java has quantity buttons; Bedrock has numeric entry with an inventory fallback.
 3. Review the effective item quantity, custom item name/metadata, counterparty, original sign bundle price, effective per-item price and exact total. A fractional per-item display is labeled approximate; the exact total is authoritative. Existing partial-transaction/discount rules can change the available quantity or total, so inspect the returned quote.
 4. Continue to the separate final **Confirm Buy** or **Confirm Sell** screen. Only that action can invoke the bound legacy trade. Cancel, Back, a closed view or disconnect before confirmation moves no money or items.
 5. The final action revalidates sign, owner, inventory, permissions, protection, price, provider and quote state. A change requires a new review. A free legacy offer is shown as zero; native ExcelShops listing prices still must be positive.
@@ -37,6 +37,10 @@ Stay within six blocks of the shop. Quotes expire after 60 seconds by default. I
 The bridge leaves ChestShop's own single/double-chest, finite/admin-stock, account and protection rules intact. It does not rewrite old signs, alter prices or convert shops into the native registry. Owners retain upstream management access. The guard stays **default-deny** if ExcelShops is absent, disabled, incompatible or recovery-paused; ChestShop remains loaded to protect its existing shops. An independently dispatched or uncancelled raw transaction cannot bypass its one-shot guard.
 
 This initial guard supports the verified **EssentialsX 2.22.0 Vault economy provider** with ChestShop `TAX_AMOUNT=0`, `SERVER_TAX_AMOUNT=0`, `PRICE_PRECISION=2` and no configured server economy account/name/UUID. Item counts are 1–2304, exact-cent totals are at most $100,000,000, and the player must remain online, in the same world and within six blocks. Unsupported precision/server-account settings, nonzero ChestShop taxes, unsupported economy providers/versions, or an unsupported ChestShop guard version fail closed before preview can invoke money operations. Do not change live taxes or permissions to make a blocked shop pass without an explicit review. These are deliberate restrictions, not a migration of the server's economy policy.
+
+## Known inventory UI issue
+
+The live 0.1.2 price and quantity plus/minus handlers recreate the inventory, causing close/reopen behavior and the reported cursor-reset annoyance. An in-place update is under investigation; no fix is installed. The separate native Bedrock number form is not the same path. Both the registered shop chest and attached sign open the UI: owner management for the owner, purchase catalog for another player. The current setup success text only mentions the chest.
 
 ## Owners: make a shop
 
@@ -64,7 +68,7 @@ Active shop chests/signs cannot be broken, exploded, piston-moved, extended into
 
 ## Spawn Shop
 
-The companion DeluxeMenus menu becomes a **display-only launcher**. `/shop`, the compass menu and existing ShopVillager NPC keep their entry points after the matching menu is deployed; `/excelshop` also opens the safe catalog directly.
+The companion DeluxeMenus menu becomes a **display-only launcher**. For normal shopping, **open the compass menu → Spawn Shop**, or tap the existing Spawn Shop villager. Use the item/quantity/review/confirmation controls; no chat command is needed. `/shop` and `/excelshop` remain optional fallback entry points.
 
 Spawn stock remains unlimited. Prices retain the original **bundle** economics: for example 16 bread costs 40; two bundles deliver 32 bread for 80. The UI explicitly labels bundle size, bundle price and final item count. This avoids silently changing unit prices that do not divide into whole cents. Enchanted books are built with the server item API, never unverified console `give` syntax.
 
@@ -72,11 +76,13 @@ The player command selects only a server-side offer ID. It cannot supply a price
 
 ## Remaining server-wide purchase paths
 
-The read-only preflight also found an enabled Jobs 5.2.6.3 item shop (four offers, one costing 10,000 points plus $10,000) and the purchase-bearing DeluxeMenus `advanced_menu` and `requirements_menu` examples (the advanced example gives a head, then runs `eco take 666`). They remain outside this pair's confirmation coverage. The owner approved preparing a reversible pause for the later approved installation; no live writes have occurred. The included [offline generator and change spec](PURCHASE-PAUSE-SPEC.md) stage exact, minimal replacements from fresh private exports without changing permissions or example files. Their actual stopped-server installation and restart verification remain required before claiming all server purchases are covered; see [the deployment scope gate](DEPLOYMENT.md#outstanding-whole-server-confirmation-gate). The pack ships only the pause script/spec, never complete exported Jobs/DeluxeMenus configurations or credentials.
+The read-only preflight also found an enabled Jobs 5.2.6.3 item shop (four offers, one costing 10,000 points plus $10,000) and the purchase-bearing DeluxeMenus `advanced_menu` and `requirements_menu` examples (the advanced example gives a head, then runs `eco take 666`). They remain outside this pair's confirmation coverage. The owner approved a reversible pause; the separately approved October 12 deployment applied it, as recorded in [the live receipt](DEPLOYMENT-2026-10-12.md). The included [offline generator and change spec](PURCHASE-PAUSE-SPEC.md) stage exact, minimal replacements from fresh private exports without changing permissions or example files. The installed pauses cover these enumerated paths, not an unlimited claim about every purchase route; see [the deployment scope gate](DEPLOYMENT.md#outstanding-whole-server-confirmation-gate). The pack ships only the pause script/spec, never complete exported Jobs/DeluxeMenus configurations or credentials.
 
 The observed 18 live Spawn Shop prices matched this baseline; still recheck immediately before any approved write. Essentials buy/sell/trade signs were disabled and no paid command costs were found. These are read-only observations, not deployment approval.
 
 ## Administrator setup and migration
+
+**Current native/Spawn-only setup:** ExcelShops runs without ChestShop. The paired/legacy steps below apply only when guarded third-party sign compatibility is separately required. Do not reinstall that plugin merely to follow an old paired plan. Keep the matched Spawn menu/catalog, native data and journals, provider and claim checks.
 
 A possible `plugins/WRVShops/` folder is **not discarded**. Before creating defaults, ExcelShops safely copies the entire legacy folder to `plugins/ExcelShops/`, preserving the original folder untouched. Registry, config, catalog, both `checkout/` and `legacy-checkout/` histories and their `active-session` recovery markers travel together. Preserve both journals even when only one flow appears affected. A dirty legacy journal remains dirty and pauses checkout. A conflicting target, incomplete migration, registry/recovery marker without its journal, old plugin still loaded, held journal lock, linked file or changed source fails closed. The old WRVShops 0.1.0 POSIX lock is not reliable proof of process exit: migration requires an independently verified fully stopped old server. A copied dirty marker still blocks checkout. A successful migration receipt permits ordinary new-folder progress on subsequent starts while refusing a subsequently changed legacy source. Details and rollback restrictions are in [DEPLOYMENT.md](DEPLOYMENT.md).
 
@@ -119,7 +125,7 @@ Journal size is capped at 256 MiB; over-limit state pauses checkout rather than 
 
 ## Verification and remaining gates
 
-The current paired-candidate checks are recorded by CI and the [real-ChestShop runtime harness](verification/legacy-runtime-harness/README.md). Its disposable server uses actual **EssentialsX 2.22.0**, ChestShop and GriefPrevention, plus real Paper inventory implementations. **Vault 1.7.3-b131 is a compatibility substitute; the unidentified live Vault 2.0.0 artifact is not verified.** No test establishes byte identity of the whole live plugin stack. Human Java and Bedrock phone input/rendering, Geyser/Floodgate, real player persistence and unrelated live-plugin interactions remain explicit acceptance gates.
+The current paired-candidate checks are recorded by CI and the [real-ChestShop runtime harness](verification/legacy-runtime-harness/README.md). Its disposable server uses actual **EssentialsX 2.22.0**, ChestShop and GriefPrevention, plus real Paper inventory implementations. **Vault 1.7.3-b131 was a compatibility substitute in the isolated harness.** The later live deployment identified Vault-Updated 2.0.0 and verified the guarded connection to EssentialsXEconomy; this does not establish a player transaction pass. No test establishes byte identity of the whole live plugin stack. Human Java and Bedrock phone input/rendering, Geyser/Floodgate, real player persistence and unrelated live-plugin interactions remain explicit acceptance gates.
 
 Current native-shop acceptance on the final ExcelShops JAR passed **11 boots / 852 assertions**, including 614 candidate assertions and 238 genuine old-plugin baseline assertions; see the [0.1.2 native summary](verification/runtime-harness/evidence-excel-0.1.2/summary.json). The final paired real-plugin suite passed **10 boots / 6,136 assertions with zero failures** using actual EssentialsX/GriefPrevention/guarded ChestShop and synthetic players; see its [runtime harness and evidence](verification/legacy-runtime-harness/README.md). Together these are 21 boots / 6,988 assertions; the separate 27-assertion immediate-trade reproduction is not counted as acceptance. Both suites bind the final ExcelShops SHA `009f321a99f30024bcaf6742e9b2dc9dfba23571eaddddad1eee9699d6fe9edc`; paired evidence also binds guarded ChestShop SHA `5e7bbf6014484ff87b5decced2df32e36b05b3aaa6c26ba03d57c72314cdd814`.
 
@@ -141,4 +147,4 @@ python3 WRVShops/tools/package_candidate.py \
   --output /staging/ExcelShops-0.1.2-install-candidate.zip
 ```
 
-The output must not exist; packaging never overwrites a prior candidate. Runtime evidence must bind both final JAR hashes. Before live use, complete the read-only preflight and human checklist with the installed Vault/Essentials/GriefPrevention/Geyser/Floodgate combination. The earlier preflight reported Essentials 2.22.0 warning about an unsupported server version; the guard does not remove that warning. Any rollback must retain guarded ChestShop or leave the server stopped with all trading disabled. Restoring instant purchases is not a safe silent rollback.
+The output must not exist; packaging never overwrites a prior candidate. Runtime evidence must bind both final JAR hashes. Before live use, complete the read-only preflight and human checklist with the installed Vault/Essentials/GriefPrevention/Geyser/Floodgate combination. The earlier preflight reported Essentials 2.22.0 warning about an unsupported server version; the guard does not remove that warning. For a deployment actually using legacy ChestShop trading, rollback must retain the guard or disable that trading. Standalone native/Spawn-only ExcelShops does not require ChestShop. Restoring instant purchases is not a safe silent rollback.

@@ -1,0 +1,129 @@
+--- plugins/Jobs/generalConfig.yml
++++ plugins/Jobs/generalConfig.yml
+@@ -221,7 +221,7 @@
+   PaymentMethods:
+     Money: true
+     Exp: true
+-    Points: true
++    Points: false
+   # Can be used to change payment amounts for all jobs and all actions if you want to readjust them
+   # Amounts are in percentage, above 0 will increase payments
+   # Amount belove 0 will decrease payments
+--- plugins/Jobs/locale/messages_en.yml
++++ plugins/Jobs/locale/messages_en.yml
+@@ -73,8 +73,8 @@
+       info: Check item bonus
+       args: ''
+     output:
+-      list: '&e[jobname]: %money% %points% %exp%'
+-      notAplyingList: '&7[jobname]: %money% %points% %exp%'
++      list: '&e[jobname]: %money% %exp%'
++      notAplyingList: '&7[jobname]: %money% %exp%'
+       hover: '&7%itemtype%'
+       hoverLevelLimits: "&7From level: %from% \n&7Until level: %until%"
+   edititembonus:
+@@ -86,16 +86,16 @@
+       info: Show job bonuses
+       args: '[jobname]'
+     output:
+-      topline: '&7**************** &2[money] &6[points] &e[exp] &7****************'
+-      permission: ' &ePerm bonus: &2%money% &6%points% &e%exp%'
+-      item: ' &eItem bonus: &2%money% &6%points% &e%exp%'
+-      global: ' &eGlobal bonus: &2%money% &6%points% &e%exp%'
+-      dynamic: ' &eDynamic bonus: &2%money% &6%points% &e%exp%'
+-      nearspawner: ' &eSpawner bonus: &2%money% &6%points% &e%exp%'
+-      petpay: ' &ePetPay bonus: &2%money% &6%points% &e%exp%'
+-      area: ' &eArea bonus: &2%money% &6%points% &e%exp%'
+-      mcmmo: ' &eMcMMO bonus: &2%money% &6%points% &e%exp%'
+-      final: ' &eFinal bonus: &2%money% &6%points% &e%exp%'
++      topline: '&7**************** &2[money] &e[exp] &7****************'
++      permission: ' &ePerm bonus: &2%money% &e%exp%'
++      item: ' &eItem bonus: &2%money% &e%exp%'
++      global: ' &eGlobal bonus: &2%money% &e%exp%'
++      dynamic: ' &eDynamic bonus: &2%money% &e%exp%'
++      nearspawner: ' &eSpawner bonus: &2%money% &e%exp%'
++      petpay: ' &ePetPay bonus: &2%money% &e%exp%'
++      area: ' &eArea bonus: &2%money% &e%exp%'
++      mcmmo: ' &eMcMMO bonus: &2%money% &e%exp%'
++      final: ' &eFinal bonus: &2%money% &e%exp%'
+       specialPrefix: '&6*'
+       finalExplanation: ' &eDoes not include Petpay and Near spawner bonus/penalty'
+   convert:
+@@ -152,10 +152,10 @@
+       noQuests: '&eCan''t find any quests'
+   points:
+     help:
+-      info: Shows how much points does a player have.
+-      args: '[playername]'
+-    currentpoints: ' &eCurrent point amount: &6%currentpoints%'
+-    totalpoints: ' &eTotal amount of collected points until now: &6%totalpoints%'
++      info: 'Shows Jobs reward information.'
++      args: '[playername]'
++    currentpoints: ' &eJobs rewards use server money and job experience.'
++    totalpoints: ''
+   editpoints:
+     help:
+       info: Edit player's points.
+@@ -308,7 +308,7 @@
+       levelFrom: ' &a(from &e%levelFrom% &alevel)'
+       levelUntil: ' &a(until &e%levelUntil% &alevel)'
+       money: ' &2%money%$'
+-      points: ' &6%points%pts'
++      points: ''
+       exp: ' &e%exp%xp'
+     gui:
+       pickjob: '&ePick your job!'
+@@ -592,12 +592,11 @@
+       args: '[playername]'
+     output:
+       topline: '&7************************* &6%playerdisplayname% &7*************************'
+-      ls: '&7* &6%number%. &3%action%: &6%item% &eqty: %qty% %money%%exp%%points%'
++      ls: '&7* &6%number%. &3%action%: &6%item% &eqty: %qty% %money%%exp%'
+       money: '&6money: %amount% '
+       exp: '&eexp: %amount% '
+-      points: '&6points: %amount%'
+-      totalIncomes: '    &6Total money:&2 %money%&6, Total exp:&2 %exp%&6, Total points:&2
+-        %points%'
++      points: ''
++      totalIncomes: '    &6Total money:&2 %money%&6, Total exp:&2 %exp%'
+       bottomline: '&7***********************************************************'
+       prev: '&e<<<<< Prev page &2|'
+       next: '&2|&e Next Page >>>>'
+@@ -608,12 +607,11 @@
+       args: ''
+     output:
+       topline: '&7*********************** &6Global statistics &7***********************'
+-      ls: '&7* &6%number%. &3%action%: &6%item% &eqty: %qty% %money%%exp%%points%'
++      ls: '&7* &6%number%. &3%action%: &6%item% &eqty: %qty% %money%%exp%'
+       money: '&6money: %amount% '
+       exp: '&eexp: %amount% '
+-      points: '&6points: %amount%'
+-      totalIncomes: '    &6Total money:&2 %money%&6, Total exp:&2 %exp%&6, Total points:&2
+-        %points%'
++      points: ''
++      totalIncomes: '    &6Total money:&2 %money%&6, Total exp:&2 %exp%'
+       bottomline: '&7**************************************************************'
+       nodata: '&cData not found'
+   transfer:
+@@ -688,10 +686,10 @@
+         main: '&aYou got:'
+         money: '&e[amount] money'
+         exp: '&7[exp] exp'
+-        points: '&6[points] points'
++        points: ''
+         ACmoney: '&e+[amount]$ '
+         ACexp: '&7+[exp]XP '
+-        ACpoints: '&6+[points]pts '
++        ACpoints: ''
+       Rapid: '&7[type]&a: &7Rapid'
+       Batched: '&7[type]&a: &fBatched'
+       'Off': '&7[type]&a: &6Off'
+@@ -701,7 +699,7 @@
+       args: ''
+   version:
+     output:
+-      payment: '&e[job] &f[action] &7[target] [exp] [money] [points]'
++      payment: '&e[job] &f[action] &7[target] [exp] [money]'
+       nopayment: '&7Can''t find any payments ([target])'
+       jobsVersion: '&eJobs: &6[version]'
+       jobsVersionNew: '&e-> [newVersion]'

@@ -1,6 +1,6 @@
 # Offline purchase-path pause specification
 
-The owner approved preparing a reversible pause of the Jobs item shop and both purchase-bearing DeluxeMenus examples for the later approved installation. **No live write is performed or newly authorized by this file.** The candidate contains this specification and a generator, not exported production configuration or credential-bearing defaults.
+The owner approved this reversible pause of the Jobs item shop and both purchase-bearing DeluxeMenus examples. Its separately approved October 12 application is recorded in [the deployment receipt](DEPLOYMENT-2026-10-12.md); this specification preserves the preparation and reversal procedure. **No live write is performed or newly authorized by this file.** The candidate contains this specification and a generator, not exported production configuration or credential-bearing defaults.
 
 ## Exact intended changes
 
