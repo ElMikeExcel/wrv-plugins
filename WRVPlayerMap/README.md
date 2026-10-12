@@ -1,6 +1,10 @@
-# WRV Player Map 0.2 prototype
+# WRV Player Map 0.2.0
 
-An enhancement to **ordinary Minecraft maps**: use a new empty map normally, then see nearby players' names and distant-player arrows drawn as pixels over its native terrain. This replaces the earlier command-issued personal-map prototype. It remains isolated and is **not installed on the live server**.
+An enhancement to **ordinary Minecraft maps**: use a new empty map normally, then see nearby players' names and distant-player arrows drawn as pixels over its native terrain. This replaces the earlier command-issued personal-map prototype.
+
+**Installed on Wink Reyes Valley on October 12, 2026.** Artifact identity, version, clean enable, command registration, and default update interval were verified. Real Java/Bedrock display and gameplay acceptance remains pending. See the [deployment record](DEPLOYMENT-2026-10-12.md).
+
+The source/build evidence below preserves the tested candidate's provenance. This docs-only update changes no code or binaries and does not merge the draft review.
 
 ## Normal player instructions
 
@@ -64,4 +68,4 @@ Before any authorized live installation, use an isolated staging session with Ja
 - [Exact installed Geyser translator](https://github.com/GeyserMC/Geyser/blob/50a464d7db132ca5943b608a2110c158bf09702a/core/src/main/java/org/geysermc/geyser/translator/protocol/java/level/JavaMapItemDataTranslator.java) forwards map pixels but supplies empty decoration captions, which is why added names use pixels.
 - [Paper MapCanvas API](https://jd.papermc.io/paper/26.2/org/bukkit/map/MapCanvas.html) provides transparent renderer layers. Exact build 123 behavior is tested with real native canvas instances.
 
-All add-on and test code is original; no Cartographer code/assets are reused. This work does not perform a live install, BlueMap removal, port change or production restart.
+All add-on and test code is original; no Cartographer code/assets are reused. Building this source does not perform a live install, BlueMap removal, port change or production restart. The separate completed installation is recorded above.
