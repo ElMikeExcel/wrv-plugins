@@ -1,5 +1,7 @@
 # Excel XP: Together + Weekend XP
 
+**New off-server candidate:** `2.3.003-WRV-XP-3` adds the optional paired Jobs XP bridge. It requires the separately repaired Jobs `5.2.6.3-Excel-XP-1`; WeekendXP stays `1.0.2`. See [Jobs candidate instructions and verification limits](JOBS-XP-CANDIDATE.md). This candidate is not an installation record. The installed XP-2 history below remains unchanged.
+
 **Installed on Wink Reyes Valley: mcMMO 2.3.003-WRV-XP-2**, paired with unchanged **WeekendXP 1.0.2**, updated October 12, 2026. Runtime versions, host artifact hashes, startup, weekday factors and the enabled three-second display setting were verified. On October 12 the server owner personally tested the update and reported the XP indicator working. This is a user-reported basic behavior pass; platform-specific and detailed reward acceptance remain pending. The fourth patch changes only when the XP indicator is visible. mcMMO retains its upstream plugin identity, commands, permissions and data directory.
 
 Verification: 2,308 mcMMO tests and 85 WRV tests passed in GitHub CI. The unchanged candidate also passed 38 isolated native-Paper runtime assertions on exact Paper 26.2 build 123 / Temurin 25.0.4 with WeekendXP 1.0.2; [scope and limits](verification/runtime-harness/README.md). The owner-reported basic indicator pass is documented below; identified Java/Bedrock coverage and edge-case acceptance remain pending.

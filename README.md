@@ -17,6 +17,8 @@ Source and recovery material for the family's Minecraft plugins. Each plugin has
 
 [Spawn Shop](SpawnShop-DeluxeMenus/) is a DeluxeMenus configuration/generator, not a Java plugin. [mcMMO Together + Weekend XP](mcMMO-TogetherBonus/) is a patch series for a separately pinned upstream repository. It adds coordinated skill/green-bar multipliers and a gain-triggered temporary `/xpbonus` indicator; build and stage it together with WeekendXP 1.0.2. The first two historical patches remain unchanged.
 
+**Jobs XP review candidate:** [Excel XP Jobs integration](mcMMO-TogetherBonus/JOBS-XP-CANDIDATE.md) adds a fifth mcMMO patch and a narrow same-version Jobs repair. It is off-server and requires a matched pair; money/points are not multiplied. Follow its separate build and verification notes before requesting installation.
+
 ## Build and test
 
 Install a **full JDK 21** (a Java runtime alone is insufficient), Python 3, and a shell. On Linux/macOS or Windows with Git Bash:
