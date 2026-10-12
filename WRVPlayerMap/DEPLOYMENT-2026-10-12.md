@@ -25,13 +25,22 @@ Times below are UTC, with Central daylight time (America/Chicago, UTC−5) in pa
 
 No earlier WRVPlayerMap installation was present in the preflight. Existing world/map data was not overwritten or migrated, and existing maps were not bulk-enrolled by the installation.
 
-## Human acceptance remains pending
+## Human report: basic checks passed, October 12
 
-No real Java or Bedrock player acceptance pass has been recorded for this deployment yet. Required checks include:
+A player report relayed by the server owner on October 12, 2026 confirms:
 
-- Activate an ordinary empty map, hold it (main hand on phones), and confirm readable names and arrows on real clients.
+- **Test 1: passed, player-reported.** A map was created and was working.
+- **Test 2: passed, player-reported.** The player's own nameplate followed movement, and local terrain and the surrounding area appeared on the map.
+- **Test 3: blocked during the test.** No other players were online, so other-player labels and off-map edge arrows were not tested. This check awaits a second player.
+
+This is human-reported evidence, not an independently observed client session. The report did not specify Java or Bedrock, device, or client version. It does **not** establish cross-platform acceptance or a full gameplay pass.
+
+## Remaining acceptance checks
+
+- Complete the two-player test for other-player labels, positions, and distant edge arrows.
+- Confirm readable names/arrows and holding behavior on identified Java and Bedrock clients (main hand on phones).
 - Share and copy it; zoom with paper; lock with glass; verify the locked copy stays plain and native exploration remains correct.
-- Check dimensions, distant and overlapping players, crowding, long names, visibility rules, and reconnect/restart behavior.
+- Check portals/dimensions, overlapping players, crowding, long names, visibility rules, and reconnect/restart behavior.
 - Check normal inventory/cartography clicks, existing treasure/art maps, and the unlocked held/framed-copy caveat.
 - Observe actual Geyser/Floodgate compatibility and family-session performance.
 

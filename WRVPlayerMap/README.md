@@ -2,7 +2,7 @@
 
 An enhancement to **ordinary Minecraft maps**: use a new empty map normally, then see nearby players' names and distant-player arrows drawn as pixels over its native terrain. This replaces the earlier command-issued personal-map prototype.
 
-**Installed on Wink Reyes Valley on October 12, 2026.** Artifact identity, version, clean enable, command registration, and default update interval were verified. Real Java/Bedrock display and gameplay acceptance remains pending. See the [deployment record](DEPLOYMENT-2026-10-12.md).
+**Installed on Wink Reyes Valley on October 12, 2026.** Artifact identity, version, clean enable, command registration, and default update interval were verified. A player report on October 12 confirms map creation, a self-nameplate that follows movement, and visible local terrain. The player's Java/Bedrock platform was not supplied, so cross-platform acceptance is not established. Other-player labels/edge arrows await a second player; sharing, zoom, locking, portals, and wider acceptance remain pending. See the [deployment record](DEPLOYMENT-2026-10-12.md).
 
 The source/build evidence below preserves the tested candidate's provenance. This docs-only update changes no code or binaries and does not merge the draft review.
 
