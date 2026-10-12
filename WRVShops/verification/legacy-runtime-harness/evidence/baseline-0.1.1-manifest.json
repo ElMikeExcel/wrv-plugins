@@ -1,0 +1,21 @@
+{
+  "baseline": true,
+  "artifacts": {
+    "Vault-official-1.7.3.jar": "a6b5ed97f43a5cf5bbaf00a7c8cd23c5afc9bd003f849875af8b36e6cf77d01d",
+    "GriefPrevention-16.18.7.jar": "45e9907c61222e559ed2e099ffee0ede706a21243a31d7db549baf678708fdf0",
+    "ExcelLegacyRuntimeHarness.jar": "fab88ace1591cd64074831d12b2603b8a1fc9a909880973135325dcdda7b9076",
+    "EssentialsX-2.22.0.jar": "bda4685105977fca2e209820a9f0ad24275bd103390a03236f38e59bfdac58e6",
+    "ExcelShops.jar": "5d8628c0855f6664e1434b69234359bfe0c5cd0598885fb391e851f1ad2850e1",
+    "ChestShop-3.13-pre-1-build474.jar": "b31a40e9561d399d8b04fada4e863ae28c523618976ff3a3b1a6f16fe3aa8ab2"
+  },
+  "synthetic_players": true,
+  "real_client": false,
+  "real_chestshop": true,
+  "real_essentials": true,
+  "real_gp": true,
+  "exact_live_vault": false,
+  "vault_substitute": "official MilkBowl Vault1.7.3",
+  "listen": "127.0.0.1:25580",
+  "exit_code": 0,
+  "port_free_after": true
+}

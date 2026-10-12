@@ -1,0 +1,155 @@
+verification-first-console.log
+[15:10:39 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS exact-runtime-and-plugin-enable
+[15:10:39 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS real-item-metadata-and-storage-plan
+[15:10:39 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS install-synthetic-player-lookup
+[15:10:39 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_RESTART verified shop=6d66600b-485f-4044-9f24-0b28c59e7ed8
+[15:10:39 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS registry-clean-restart-and-physical-persistence
+[15:10:40 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS registry-owner-claim-placement-and-review-snapshots
+[15:10:40 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS chest-final-confirm-stock-price-owner-and-concurrency
+[15:10:40 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS chest-payout-decline-rolls-back-and-refunds
+[15:10:40 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS spawn-quote-cancel-exact-bundle-and-replay
+[15:10:40 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS spawn-capacity-funds-permission-and-disconnect
+[15:10:40 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS spawn-reentrant-confirm-and-changed-inventory-refund
+[15:10:40 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS uncertain-provider-and-refund-failures-persist-recovery
+[15:10:41 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS sign-place-edit-triggers-onboarding
+[15:10:41 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS onboarding-no-keeps-ordinary-storage
+[15:10:41 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS onboarding-can-restart-with-fresh-sign
+[15:10:41 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS onboarding-yes-shows-real-chest-items
+[15:10:41 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-select-item-without-publishing
+[15:10:41 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-enter-unit-price-without-publishing
+[15:10:41 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-review-shows-price-before-confirm
+[15:10:42 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-final-confirm-is-only-publish-action
+[15:10:42 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-duplicate-publish-and-protection-listeners
+[15:10:42 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-catalog-read-only-drag-shift-numberkey
+[15:10:42 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-quantity-preview-no-purchase
+[15:10:42 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-final-screen-cancel-no-purchase
+[15:10:42 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-stale-confirm-after-cancel-cannot-buy
+[15:10:42 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-review-second-attempt
+[15:10:43 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-queued-back-invalidates-queued-confirm
+[15:10:43 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-back-before-confirm-remains-unpaid
+[15:10:43 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-close-before-queued-confirm-cancels
+[15:10:43 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-close-prevents-delayed-checkout
+[15:10:43 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-review-after-close
+[15:10:43 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-explicit-final-confirm-duplicate-click
+[15:10:44 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-exact-purchase-after-final-confirm-only
+[15:10:44 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-prepare-disconnect-confirm
+[15:10:44 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-disconnect-invalidates-current-review
+[15:10:44 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-disconnect-no-late-purchase-and-cleanup
+[15:10:44 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_SUMMARY passed=35 failed=0 assertions=245
+
+verification-legacy-baseline-console.log
+[15:10:23 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS exact-runtime-and-plugin-enable
+[15:10:23 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS real-item-metadata-and-storage-plan
+[15:10:23 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS install-synthetic-player-lookup
+[15:10:24 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_RESTART prepared shop=6d66600b-485f-4044-9f24-0b28c59e7ed8
+[15:10:24 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS registry-clean-restart-and-physical-persistence
+[15:10:24 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS registry-owner-claim-placement-and-review-snapshots
+[15:10:24 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS chest-final-confirm-stock-price-owner-and-concurrency
+[15:10:24 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS chest-payout-decline-rolls-back-and-refunds
+[15:10:24 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS spawn-quote-cancel-exact-bundle-and-replay
+[15:10:24 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS spawn-capacity-funds-permission-and-disconnect
+[15:10:24 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS spawn-reentrant-confirm-and-changed-inventory-refund
+[15:10:24 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS uncertain-provider-and-refund-failures-persist-recovery
+[15:10:25 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS sign-place-edit-triggers-onboarding
+[15:10:25 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS onboarding-no-keeps-ordinary-storage
+[15:10:25 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS onboarding-can-restart-with-fresh-sign
+[15:10:25 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS onboarding-yes-shows-real-chest-items
+[15:10:25 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-select-item-without-publishing
+[15:10:25 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-enter-unit-price-without-publishing
+[15:10:26 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-review-shows-price-before-confirm
+[15:10:26 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-final-confirm-is-only-publish-action
+[15:10:26 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-duplicate-publish-and-protection-listeners
+[15:10:26 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-catalog-read-only-drag-shift-numberkey
+[15:10:26 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-quantity-preview-no-purchase
+[15:10:26 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-final-screen-cancel-no-purchase
+[15:10:26 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-stale-confirm-after-cancel-cannot-buy
+[15:10:27 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-review-second-attempt
+[15:10:27 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-queued-back-invalidates-queued-confirm
+[15:10:27 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-back-before-confirm-remains-unpaid
+[15:10:27 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-close-before-queued-confirm-cancels
+[15:10:27 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-close-prevents-delayed-checkout
+[15:10:27 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-review-after-close
+[15:10:27 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-explicit-final-confirm-duplicate-click
+[15:10:28 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-exact-purchase-after-final-confirm-only
+[15:10:28 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-prepare-disconnect-confirm
+[15:10:28 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-disconnect-invalidates-current-review
+[15:10:28 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-disconnect-no-late-purchase-and-cleanup
+[15:10:28 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_SUMMARY passed=35 failed=0 assertions=238
+
+verification-migration-conflict-console.log
+[15:11:50 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_MIGRATION_CONFLICT verified
+[15:11:50 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS legacy-migration-conflict
+[15:11:50 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_SUMMARY passed=1 failed=0 assertions=17
+
+verification-migration-conflict-restart-console.log
+[15:12:02 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_MIGRATION_CONFLICT verified
+[15:12:02 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS legacy-migration-conflict
+[15:12:02 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_SUMMARY passed=1 failed=0 assertions=17
+
+verification-migration-dirty-console.log
+[15:11:30 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_MIGRATION_DIRTY verified
+[15:11:30 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS legacy-migration-dirty
+[15:11:30 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_SUMMARY passed=1 failed=0 assertions=19
+
+verification-migration-dirty-restart-console.log
+[15:11:40 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_MIGRATION_DIRTY verified
+[15:11:40 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS legacy-migration-dirty
+[15:11:40 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_SUMMARY passed=1 failed=0 assertions=19
+
+verification-migration-missing-journal-console.log
+[15:12:12 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_MIGRATION_MISSING_JOURNAL verified
+[15:12:12 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS legacy-migration-missing-journal
+[15:12:12 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_SUMMARY passed=1 failed=0 assertions=17
+
+verification-migration-missing-journal-restart-console.log
+[15:12:22 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_MIGRATION_MISSING_JOURNAL verified
+[15:12:22 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS legacy-migration-missing-journal
+[15:12:22 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_SUMMARY passed=1 failed=0 assertions=17
+
+verification-no-economy-console.log
+[15:11:10 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PROTECTION_ONLY verified
+[15:11:10 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS provider-absent-startup-keeps-stock-protected
+[15:11:10 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_SUMMARY passed=1 failed=0 assertions=7
+
+verification-no-vault-console.log
+[15:11:20 INFO]: [WRVShopsProtectionHarness] WRV_SHOPS_HARNESS_NO_VAULT verified
+[15:11:20 INFO]: [WRVShopsProtectionHarness] WRV_SHOPS_HARNESS_SUMMARY passed=1 failed=0 assertions=11
+
+verification-restart-console.log
+[15:10:54 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS exact-runtime-and-plugin-enable
+[15:10:54 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS real-item-metadata-and-storage-plan
+[15:10:54 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS install-synthetic-player-lookup
+[15:10:55 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_RESTART verified shop=6d66600b-485f-4044-9f24-0b28c59e7ed8
+[15:10:55 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS registry-clean-restart-and-physical-persistence
+[15:10:55 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS registry-owner-claim-placement-and-review-snapshots
+[15:10:55 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS chest-final-confirm-stock-price-owner-and-concurrency
+[15:10:55 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS chest-payout-decline-rolls-back-and-refunds
+[15:10:56 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS spawn-quote-cancel-exact-bundle-and-replay
+[15:10:56 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS spawn-capacity-funds-permission-and-disconnect
+[15:10:56 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS spawn-reentrant-confirm-and-changed-inventory-refund
+[15:10:56 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS uncertain-provider-and-refund-failures-persist-recovery
+[15:10:56 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS sign-place-edit-triggers-onboarding
+[15:10:56 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS onboarding-no-keeps-ordinary-storage
+[15:10:56 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS onboarding-can-restart-with-fresh-sign
+[15:10:57 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS onboarding-yes-shows-real-chest-items
+[15:10:57 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-select-item-without-publishing
+[15:10:57 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-enter-unit-price-without-publishing
+[15:10:57 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-review-shows-price-before-confirm
+[15:10:57 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-final-confirm-is-only-publish-action
+[15:10:57 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS setup-duplicate-publish-and-protection-listeners
+[15:10:57 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-catalog-read-only-drag-shift-numberkey
+[15:10:58 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-quantity-preview-no-purchase
+[15:10:58 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-final-screen-cancel-no-purchase
+[15:10:58 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-stale-confirm-after-cancel-cannot-buy
+[15:10:58 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-review-second-attempt
+[15:10:58 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-queued-back-invalidates-queued-confirm
+[15:10:58 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-back-before-confirm-remains-unpaid
+[15:10:58 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-close-before-queued-confirm-cancels
+[15:10:59 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-close-prevents-delayed-checkout
+[15:10:59 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-review-after-close
+[15:10:59 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-explicit-final-confirm-duplicate-click
+[15:10:59 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-exact-purchase-after-final-confirm-only
+[15:10:59 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-prepare-disconnect-confirm
+[15:10:59 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-disconnect-invalidates-current-review
+[15:11:00 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_PASS buyer-disconnect-no-late-purchase-and-cleanup
+[15:11:00 INFO]: [WRVShopsRuntimeHarness] WRV_SHOPS_HARNESS_SUMMARY passed=35 failed=0 assertions=245

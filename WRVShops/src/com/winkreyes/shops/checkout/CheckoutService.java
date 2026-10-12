@@ -27,10 +27,12 @@ public final class CheckoutService implements AutoCloseable {
     public enum Stage {
         WITHDRAW_INTENT, WITHDRAWN, TRANSFER_INTENT, TRANSFER_APPLIED,
         PAYOUT_INTENT, PAYOUT_DECLINED, PAID, ROLLBACK_INTENT, ROLLED_BACK,
-        REFUND_INTENT, REFUNDED, NO_CHARGE, COMMITTED, RECOVERY_REQUIRED;
+        REFUND_INTENT, REFUNDED, NO_CHARGE, COMMITTED, RECOVERY_REQUIRED,
+        LEGACY_INTENT, LEGACY_COMMITTED, LEGACY_NO_CHANGE;
 
         public boolean terminal() {
-            return this == REFUNDED || this == NO_CHARGE || this == COMMITTED;
+            return this == REFUNDED || this == NO_CHARGE || this == COMMITTED
+                    || this == LEGACY_COMMITTED || this == LEGACY_NO_CHANGE;
         }
     }
 
@@ -97,6 +99,7 @@ public final class CheckoutService implements AutoCloseable {
     private final Duration quoteTtl;
     private final Map<UUID, Quote> quotes = new HashMap<>();
     private boolean executing;
+    private ExternalLease externalLease;
     private boolean recovery;
     private String recoveryReason;
     private boolean closed;
@@ -111,6 +114,46 @@ public final class CheckoutService implements AutoCloseable {
         }
         recovery = journal.requiresRecovery();
         recoveryReason = recovery ? journal.recoveryReason() : "";
+    }
+
+    /**
+     * Serializes a guarded external checkout with native checkouts, including read-only external
+     * validation that may call reentrant plugins. The caller must close the lease in a finally
+     * block and journal every external side effect in its own durable transaction journal.
+     */
+    public synchronized ExternalLease tryExternalLease() {
+        adapter.assertMainThread();
+        if (closed || recovery || executing) return null;
+        executing = true;
+        externalLease = new ExternalLease();
+        return externalLease;
+    }
+
+    /** An identity-bound, primary-thread lease; stale or repeated closes cannot release a newer lease. */
+    public final class ExternalLease implements AutoCloseable {
+        private ExternalLease() { }
+
+        @Override public void close() {
+            synchronized (CheckoutService.this) {
+                adapter.assertMainThread();
+                if (externalLease != this) return;
+                externalLease = null;
+                executing = false;
+            }
+        }
+    }
+
+    /**
+     * Latches an external ambiguity globally. The already-forced active-session marker must be
+     * retained at shutdown; transaction-specific evidence belongs in the external journal.
+     */
+    public synchronized void pauseExternal(String reason) {
+        adapter.assertMainThread();
+        requireText(reason, MAX_EVIDENCE_BYTES, "recovery reason");
+        if (closed && !recovery) throw new IllegalStateException("Checkout is closed.");
+        if (!recovery) recoveryReason = reason;
+        recovery = true;
+        quotes.clear();
     }
 
     /** Creating, replacing, navigating away from, or cancelling a quote never calls the economy. */
@@ -267,6 +310,8 @@ public final class CheckoutService implements AutoCloseable {
     }
 
     private boolean record(Quote quote, Stage stage, String detail) {
+        // A callback can disable or pause checkout before control returns to this transaction.
+        if (closed || recovery) return false;
         try {
             journal.record(quote, stage, detail);
             return true;
@@ -308,9 +353,13 @@ public final class CheckoutService implements AutoCloseable {
      */
     @Override public synchronized void close() throws IOException {
         adapter.assertMainThread();
-        if (executing) throw new IllegalStateException("Cannot close during checkout.");
+        if (closed) return;
         quotes.clear();
         closed = true;
+        if (executing && !recovery) {
+            recovery = true;
+            recoveryReason = "Shutdown interrupted an active checkout; durability is unconfirmed.";
+        }
         if (recovery) journal.closeUnclean();
         else journal.close();
     }
@@ -318,11 +367,11 @@ public final class CheckoutService implements AutoCloseable {
     /** Use when player/world saving failed or orderly shutdown could not be established. */
     public synchronized void closeUnclean() throws IOException {
         adapter.assertMainThread();
-        if (executing) throw new IllegalStateException("Cannot close during checkout.");
+        if (closed) return;
         quotes.clear();
         closed = true;
+        if (!recovery) recoveryReason = "Shutdown was not confirmed durable.";
         recovery = true;
-        recoveryReason = "Shutdown was not confirmed durable.";
         journal.closeUnclean();
     }
 }

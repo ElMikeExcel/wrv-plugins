@@ -123,6 +123,7 @@ public final class LegacyDataMigration {
             Map<String, Entry> original = exists(source) ? snapshot(source, session.legacyLock, false) : null;
             requireJournalEvidence(original, "Legacy WRVShops");
             Map<String, Entry> existing = exists(target) ? snapshot(target, null, false) : null;
+            requireLegacyJournalEvidence(existing, "ExcelShops");
             boolean manifest = exists(target.resolve(MANIFEST));
             boolean complete = exists(target.resolve(COMPLETE));
             if (manifest || complete) {
@@ -271,6 +272,7 @@ public final class LegacyDataMigration {
 
     private static void requireJournalEvidence(Map<String, Entry> entries, String folder) throws IOException {
         if (entries == null) return;
+        requireLegacyJournalEvidence(entries, folder);
         String journal = Path.of("checkout", "transactions.log").toString();
         String activeSession = Path.of("checkout", "active-session").toString();
         // Saving a registry or creating a session follows journal initialization. Their
@@ -283,10 +285,21 @@ public final class LegacyDataMigration {
         }
     }
 
+    private static void requireLegacyJournalEvidence(Map<String, Entry> entries, String folder) throws IOException {
+        if (entries == null) return;
+        String journal = Path.of("legacy-checkout", "transactions.log").toString();
+        String activeSession = Path.of("legacy-checkout", "active-session").toString();
+        if (entries.containsKey(activeSession)
+                && (!entries.containsKey(journal) || entries.get(journal).directory())) {
+            throw new IOException(folder + " has legacy checkout session evidence but its legacy-checkout/transactions.log is missing or not a regular file. "
+                    + "Preserve all data and reconcile offline; a fresh journal will not be created.");
+        }
+    }
+
     private static void requireMigratedCoreFiles(Path target, Map<String, Entry> recorded) throws IOException {
         // Legitimate operation changes these bytes, but never removes these files. In
         // particular, recreating a missing old journal could discard pending recovery.
-        for (String name : List.of("config.yml", "spawn-catalog.yml", "shops.dat", "checkout/transactions.log")) {
+        for (String name : List.of("config.yml", "spawn-catalog.yml", "shops.dat", "checkout/transactions.log", "legacy-checkout/transactions.log")) {
             if (recorded.containsKey(name) && !recorded.get(name).directory()
                     && (!exists(target.resolve(name)) || !attributes(target.resolve(name)).isRegularFile())) {
                 throw new IOException("A migrated core data file is missing or replaced: " + name

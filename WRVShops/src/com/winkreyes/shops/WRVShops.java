@@ -31,6 +31,8 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
     private CheckoutService checkout;
     private ShopAdapter adapter;
     private ShopUi ui;
+    private LegacyShopBridge legacyBridge;
+    private LegacyShopUi legacyUi;
     private final Map<BlockPos,PendingSign> placedSigns=new HashMap<>();
     private boolean durabilityFailure;
     private final Set<UUID> dirtyPlayers=new HashSet<>(),dirtyWorlds=new HashSet<>();
@@ -38,6 +40,10 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
     @Override public void onEnable(){
         getServer().getPluginManager().registerEvents(this,this);
         Objects.requireNonNull(getCommand("excelshop")).setExecutor(this);
+        if(getServer().getPluginManager().getPlugin("ChestShop")!=null){
+            try{getServer().getPluginManager().registerEvents(new LegacyTransactionFence(()->legacyBridge),this);}
+            catch(LinkageError failure){getLogger().severe("Unsupported ChestShop API; the paired guarded build is required: "+failure);}
+        }
         try{
             migrationSession=LegacyDataMigration.open(getDataFolder().toPath().resolveSibling("WRVShops"),getDataFolder().toPath(),getServer().getPluginManager().getPlugin("WRVShops")!=null);
             getLogger().info("ExcelShops data check: "+migrationSession.outcome());
@@ -50,15 +56,24 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
             adapter=new ShopAdapter(this,provider.getProvider());
             long ttl=getConfig().getLong("quote-seconds",60);if(ttl<1||ttl>300)throw new IllegalArgumentException("quote-seconds must be 1..300");
             checkout=new CheckoutService(adapter,new FileJournal(getDataFolder().toPath().resolve("checkout")),Clock.systemUTC(),Duration.ofSeconds(ttl));
+            // A missing/unsupported ChestShop must never hide an unfinished legacy trade.
+            // Probe independently of the optional adapter; a dirty marker is retained by close().
+            try(FileJournal legacyProbe=new FileJournal(getDataFolder().toPath().resolve("legacy-checkout"))){
+                if(legacyProbe.requiresRecovery())checkout.pauseExternal("Legacy checkout: "+legacyProbe.recoveryReason());
+            }
             ui=new ShopUi(this);Objects.requireNonNull(getCommand("excelshop")).setExecutor(this);
             getServer().getPluginManager().registerEvents(ui,this);
+            if(getServer().getPluginManager().getPlugin("ChestShop")!=null){
+                try{legacyBridge=new LegacyShopBridge(this,provider.getProvider(),ttl);legacyUi=new LegacyShopUi(this,legacyBridge);legacyBridge.setUi(legacyUi);getServer().getPluginManager().registerEvents(legacyUi,this);}
+                catch(Exception|LinkageError failure){getLogger().severe("Legacy ChestShop trading paused: "+failure+". Install the matching guarded ChestShop; do not remove its stock protection.");}
+            }
             if(checkout.recoveryRequired())getLogger().severe("Purchases paused: "+checkout.recoveryReason()+". Preserve the journal and reconcile before enabling purchases.");
-            getLogger().info("ExcelShops enabled. Legacy ChestShop signs are untouched. Economy: "+provider.getProvider().getName());
-        }catch(Exception|LinkageError e){getLogger().severe("ExcelShops entered protection-only mode; purchases/setup unavailable: "+e.getMessage());}
+            getLogger().info("ExcelShops enabled. Legacy ChestShop confirmation: "+(legacyBridge!=null?"guard connected":"unavailable/absent")+". Economy: "+provider.getProvider().getName());
+        }catch(Exception|LinkageError e){if(checkout!=null)checkout.pauseExternal("Startup validation failed: "+e);getLogger().severe("ExcelShops entered protection-only mode; purchases/setup unavailable: "+e.getMessage());}
     }
     @Override public void onDisable(){
-        if(ui!=null)ui.closeAll();placedSigns.clear();
-        if(checkout==null){closeMigration();return;}
+        if(ui!=null)ui.closeAll();if(legacyUi!=null)legacyUi.closeAll();placedSigns.clear();
+        if(checkout==null){closeLegacy(false);closeMigration();return;}
         try{
             // Money and world persistence are separate. Only a fully saved clean shutdown may
             // clear the journal's active-session marker. An abrupt crash remains fail-closed.
@@ -66,9 +81,12 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
             if(registry!=null)registry.all().forEach(shop->dirtyWorlds.add(shop.chest().worldId()));
             for(UUID id:dirtyPlayers){Player p=getServer().getPlayer(id);if(p!=null&&p.isOnline())p.saveData();}
             for(UUID id:dirtyWorlds){World w=getServer().getWorld(id);if(w==null)throw new IllegalStateException("A dirty shop world disappeared");w.save();}
-            if(registry!=null)registry.save();checkout.close();
-        }catch(Exception e){getLogger().severe("Clean shop shutdown could not be verified: "+e.getMessage());try{checkout.closeUnclean();}catch(Exception ignored){}}
+            if(registry!=null)registry.save();closeLegacy(true);checkout.close();
+        }catch(Exception e){getLogger().severe("Clean shop shutdown could not be verified: "+e.getMessage());closeLegacy(false);try{checkout.closeUnclean();}catch(Exception ignored){}}
         finally{closeMigration();}
+    }
+    private void closeLegacy(boolean clean){
+        if(legacyBridge!=null)try{legacyBridge.close(clean);}catch(Exception failure){durabilityFailure=true;getLogger().severe("Legacy checkout journal could not close safely: "+failure);if(checkout!=null)checkout.pauseExternal("Legacy journal close failed");}
     }
     private void closeMigration(){
         if(migrationSession!=null){try{migrationSession.close();}catch(Exception e){getLogger().severe("Could not release migration lock: "+e.getMessage());}finally{migrationSession=null;}}
@@ -78,6 +96,9 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
     public ShopAdapter getAdapter(){return adapter;}
     public SpawnCatalog getCatalog(){return catalog;}
     public ShopUi getUi(){return ui;}
+    public LegacyShopUi getLegacyUi(){return legacyUi;}
+    public LegacyShopBridge getLegacyBridge(){return legacyBridge;}
+    public void markLegacyDirty(Player p,UUID world){dirtyPlayers.add(p.getUniqueId());dirtyWorlds.add(world);}
     public void markDirty(Player player,ShopRecord shop){dirtyPlayers.add(player.getUniqueId());if(shop!=null)dirtyWorlds.add(shop.chest().worldId());}
     @Override public boolean onCommand(CommandSender sender,Command command,String label,String[] args){
         if(ui==null){sender.sendMessage("Shops are paused while an administrator checks startup. Stock remains protected.");return true;}
@@ -87,7 +108,7 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
         try{
             if(args.length==0){ui.showSpawn(p);return true;}
             if(args[0].equalsIgnoreCase("browse")){if(args.length==1)ui.showSpawn(p);else if(args.length==2)ui.quantity(p,adapter.spawn(args[1]),1);else return false;return true;}
-            if(args[0].equalsIgnoreCase("amount")&&args.length==2){if(!ui.enterNumber(p,args[1]))p.sendMessage(ChatColor.YELLOW+"Open a quantity or price screen first.");return true;}
+            if(args[0].equalsIgnoreCase("amount")&&args.length==2){if(!(legacyUi!=null&&legacyUi.enterNumber(p,args[1]))&&!ui.enterNumber(p,args[1]))p.sendMessage(ChatColor.YELLOW+"Open a quantity or price screen first.");return true;}
             if(args[0].equalsIgnoreCase("setup")&&args.length==1){Block sign=p.getTargetBlockExact(5);if(sign==null||!(sign.getState() instanceof Sign))throw new IllegalArgumentException("Look at the ordinary sign attached to your own single chest.");Block chest=attachedChest(sign);if(chest==null)throw new IllegalArgumentException("That sign must be directly attached to your single chest.");ui.offerSetup(p,registry.propose(p,chest,sign));return true;}
             if(args[0].equalsIgnoreCase("manage")&&args.length==1){Block target=p.getTargetBlockExact(5);if(target==null)throw new IllegalArgumentException("Look at your shop chest or its sign.");ShopRecord shop=registry.findByChest(BlockPos.of(target)).or(()->registry.findBySign(BlockPos.of(target))).orElseThrow(()->new IllegalArgumentException("Look at your shop chest or its sign."));if(!shop.ownerId().equals(p.getUniqueId()))throw new IllegalArgumentException("Only this shop's owner can manage it.");ui.showManage(p,shop);return true;}
             return false;
@@ -184,7 +205,7 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
     @EventHandler(priority=EventPriority.HIGHEST,ignoreCancelled=true) public void burn(BlockBurnEvent e){if(protectedBlock(e.getBlock()))e.setCancelled(true);}
     @EventHandler(priority=EventPriority.HIGHEST,ignoreCancelled=true) public void piston(BlockPistonExtendEvent e){if(e.getBlocks().stream().anyMatch(b->protectedBlock(b)||protectedBlock(b.getRelative(e.getDirection()))||protectedBlock(b.getRelative(e.getDirection().getOppositeFace()))))e.setCancelled(true);}
     @EventHandler(priority=EventPriority.HIGHEST,ignoreCancelled=true) public void retract(BlockPistonRetractEvent e){if(e.getBlocks().stream().anyMatch(b->protectedBlock(b)||protectedBlock(b.getRelative(e.getDirection()))||protectedBlock(b.getRelative(e.getDirection().getOppositeFace()))))e.setCancelled(true);}
-    @EventHandler public void quit(PlayerQuitEvent e){if(ui!=null)ui.disconnected(e.getPlayer().getUniqueId());if(dirtyPlayers.contains(e.getPlayer().getUniqueId()))try{e.getPlayer().saveData();}catch(RuntimeException ex){durabilityFailure=true;getLogger().severe("Player save failed; checkout journal must remain dirty: "+ex.getMessage());}}
-    @EventHandler public void changedWorld(PlayerChangedWorldEvent e){if(ui!=null)ui.cancel(e.getPlayer());}
-    @EventHandler public void teleported(PlayerTeleportEvent e){if(!e.isCancelled())if(ui!=null)ui.cancel(e.getPlayer());}
+    @EventHandler public void quit(PlayerQuitEvent e){if(legacyUi!=null)legacyUi.disconnected(e.getPlayer().getUniqueId());if(ui!=null)ui.disconnected(e.getPlayer().getUniqueId());if(dirtyPlayers.contains(e.getPlayer().getUniqueId()))try{e.getPlayer().saveData();}catch(RuntimeException ex){durabilityFailure=true;getLogger().severe("Player save failed; checkout journal must remain dirty: "+ex.getMessage());}}
+    @EventHandler public void changedWorld(PlayerChangedWorldEvent e){if(legacyUi!=null)legacyUi.cancel(e.getPlayer());if(ui!=null)ui.cancel(e.getPlayer());}
+    @EventHandler public void teleported(PlayerTeleportEvent e){if(!e.isCancelled()){if(legacyUi!=null)legacyUi.cancel(e.getPlayer());if(ui!=null)ui.cancel(e.getPlayer());}}
 }

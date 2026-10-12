@@ -1,10 +1,10 @@
 name: ExcelShops
-version: 0.1.1
+version: 0.1.2
 main: com.winkreyes.shops.WRVShops
 api-version: '1.21'
 author: Wink Reyes Valley
 license: MIT
-description: Chest-backed shops with guided setup and explicit final purchase confirmation.
+description: Guided shops and guarded legacy ChestShop BUY/SELL with explicit final confirmation.
 softdepend: [Vault, GriefPrevention, ChestShop, Geyser-Spigot, floodgate, DeluxeMenus]
 commands:
   excelshop:

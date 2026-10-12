@@ -14,9 +14,9 @@ Source and recovery material for the family's Minecraft plugins. Each plugin has
 | [ShopVillager](ShopVillager/) | 1.0.1 | Tagged spawn-shop villager opens DeluxeMenus |
 | [WealthBoard](WealthBoard/) | 1.3.1 | Join wealth popup and optional Jobs enrollment |
 | [WeekendXP](WeekendXP/) | 1.0.1 | Chicago Saturday/Sunday mcMMO XP rate |
-| [ExcelShops](WRVShops/) | 0.1.1 draft | Guided chest setup and explicit final-confirm checkout |
+| [ExcelShops](WRVShops/) | 0.1.2 draft | Native and existing ChestShop BUY/SELL final confirmation |
 
-[Spawn Shop](SpawnShop-DeluxeMenus/) is a DeluxeMenus configuration/generator, not a Java plugin. [mcMMO Together bonus](mcMMO-TogetherBonus/) is an unchanged patch series for a separately pinned upstream repository.
+[ChestShop confirmation guard](ChestShop-ConfirmationGuard/) is a separately branded LGPL-2.1 modification of upstream ChestShop build 474, not a tenth custom plugin. Its Maven module is an overlay; only the packaged full guarded JAR is deployable, paired with ExcelShops and accompanied by full corresponding source/notices. [Spawn Shop](SpawnShop-DeluxeMenus/) is a DeluxeMenus configuration/generator, not a Java plugin. [mcMMO Together bonus](mcMMO-TogetherBonus/) is an unchanged patch series for a separately pinned upstream repository.
 
 ## Build and test
 
@@ -26,17 +26,21 @@ Install a **full JDK 21** (a Java runtime alone is insufficient), Python 3, and 
 ./build.sh
 ```
 
-`mvnw` downloads Maven 3.9.9 from Maven Central when needed and verifies its embedded SHA-512 checksum before running it. It requires curl or wget, tar, and sha512sum or shasum. Dependencies are downloaded by Maven from the repositories in `pom.xml`; no pre-populated `~/.m2` is needed. For Windows without a Unix shell, install Maven 3.9+ and run:
+`mvnw` downloads Maven 3.9.9 from Maven Central when needed and verifies its embedded SHA-512 checksum before running it. It requires curl or wget, tar, and sha512sum or shasum. The root build first downloads and hash-verifies the official pinned ChestShop binary/full source and installs its compile API, then runs Maven and packages the full guarded artifact plus LGPL source ZIP. Dependencies are downloaded by Maven from the repositories in `pom.xml`; no pre-populated `~/.m2` is needed. For Windows without a Unix shell, install Maven 3.9+ and run:
 
 ```text
+bash ChestShop-ConfirmationGuard/bootstrap.sh
 mvn clean verify
+python ChestShop-ConfirmationGuard/package.py
+python -m unittest discover -s ChestShop-ConfirmationGuard/tests_python -v
 python -m unittest discover -s tests -v
 python -m unittest discover -s SpawnShop-DeluxeMenus/tests -v
+python -m unittest discover -s WRVShops/tests_python -v
 ```
 
-Build one plugin with `./mvnw -pl MenuJoin -am verify` or its `build.sh`. Candidate artifacts appear at `<Plugin>/target/<Plugin>-<version>.jar`. All source modules target Java 21 bytecode and the **Paper 1.21.4 API**, pinned to timestamped build `1.21.4-R0.1-20250925.065901-231`. This compile target is not a statement of the live server's Minecraft/Paper version. Plugin descriptors declare minimum API 1.21.
+Build one plugin with `./mvnw -pl MenuJoin -am verify` or its `build.sh`. Custom candidate artifacts appear at `<Plugin>/target/<Plugin>-<version>.jar`. ExcelShops builds require the pinned guard API/bootstrap; its wrapper handles this. The full guarded plugin is `ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1.jar`; never install the overlay `ChestShop-ConfirmationGuard-1.0.0.jar`. All source modules target Java 21 bytecode and the **Paper 1.21.4 API**, pinned to timestamped build `1.21.4-R0.1-20250925.065901-231`. This compile target is not a statement of the live server's Minecraft/Paper version. Plugin descriptors declare minimum API 1.21.
 
-The build manages Paper's transitive dependencies, PlaceholderAPI 2.11.6, VaultAPI 1.7, and Jobs v5.2.6.2. Server/plugin APIs are provided dependencies, not bundled into our JARs. Verify runtime versions separately before deployment. The root check also verifies descriptor versions, main classes, Java 21 class versions, absence of case-colliding paths, and preservation of the historical recovery artifacts.
+The build manages Paper's transitive dependencies, PlaceholderAPI 2.11.6, VaultAPI 1.7, and Jobs v5.2.6.2. Server/plugin APIs are provided dependencies, not bundled into our JARs. Verify runtime versions separately before deployment. The root check verifies the nine custom plugins independently from the third-party overlay: descriptor versions, main classes, Java 21 bytecode, complete guarded binary/source/legal material, case-safe paths and unchanged historical recovery artifacts.
 
 ## Recovery and provenance
 
@@ -55,4 +59,6 @@ Nothing here merges, deploys, restarts or changes the live server. Keep backups 
 
 ## Confirmed shops candidate
 
-[ExcelShops](WRVShops/README.md) adds guided sign-on-chest setup, read-only item browsing, quantity and price review, and a separate final purchase confirmation. Its paired [Spawn Shop menu](SpawnShop-DeluxeMenus/README.md) preserves existing bundle prices while removing immediate money/give commands. This draft candidate is not installed live; follow its staged deployment and Java/Bedrock validation checklist. Existing ChestShop shops are not silently migrated.
+[ExcelShops](WRVShops/README.md) adds guided sign-on-chest setup, read-only item browsing, quantity and price review, and a separate final purchase confirmation. Its paired [Spawn Shop menu](SpawnShop-DeluxeMenus/README.md) preserves existing bundle prices while removing immediate money/give commands. This draft candidate is not installed live; follow its staged deployment and Java/Bedrock validation checklist. The paired guarded ChestShop artifact keeps existing signs, prices, data, permissions, protection and double chests, while sign clicks open an explicit Buy/Sell chooser, quantity, review and final confirmation. Missing/disabled ExcelShops leaves guarded legacy trading denied. Nonzero ChestShop taxes and unsupported provider/version combinations fail closed. The isolated harness uses actual EssentialsX 2.22.0 but substitutes Vault 1.7.3; the unidentified live Vault 2.0.0 and human phone/Java acceptance remain unverified. Rollback must retain guarded ChestShop or stop the server and disable all trading, never silently restore instant purchases.
+
+A separate whole-server gate remains: the observed Jobs 5.2.6.3 item shop and DeluxeMenus `advanced_menu`/`requirements_menu` examples lack confirmation. Reversible pause preparation is approved; the package includes a precise spec and an offline generator, not full credential-bearing configs. Actual installation and restart verification have not happened. See the [deployment scope gate](WRVShops/DEPLOYMENT.md#outstanding-whole-server-confirmation-gate) before describing the pair as covering every purchase route.

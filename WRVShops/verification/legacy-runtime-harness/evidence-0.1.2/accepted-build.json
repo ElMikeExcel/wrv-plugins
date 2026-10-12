@@ -1,0 +1,148 @@
+{
+  "complete": true,
+  "excelshops_sha256": "009f321a99f30024bcaf6742e9b2dc9dfba23571eaddddad1eee9699d6fe9edc",
+  "guard_sha256": "5e7bbf6014484ff87b5decced2df32e36b05b3aaa6c26ba03d57c72314cdd814",
+  "full_server_boots": 10,
+  "groups": 557,
+  "assertions": 6136,
+  "failures": 0,
+  "runs": [
+    {
+      "label": "acceptance-final-full",
+      "mode": "full",
+      "groups": 267,
+      "assertions": 2788,
+      "failures": 0,
+      "manifest": "acceptance-final-full-manifest.json",
+      "results": "acceptance-final-full-results.txt"
+    },
+    {
+      "label": "acceptance-final-clean-restart",
+      "mode": "restart",
+      "groups": 267,
+      "assertions": 2788,
+      "failures": 0,
+      "manifest": "acceptance-final-clean-restart-manifest.json",
+      "results": "acceptance-final-clean-restart-results.txt"
+    },
+    {
+      "label": "acceptance-final-missing-excel",
+      "mode": "missing-excel",
+      "groups": 3,
+      "assertions": 105,
+      "failures": 0,
+      "manifest": "acceptance-final-missing-excel-manifest.json",
+      "results": "acceptance-final-missing-excel-results.txt"
+    },
+    {
+      "label": "acceptance-final-unmodified-chestshop",
+      "mode": "no-guard",
+      "groups": 3,
+      "assertions": 42,
+      "failures": 0,
+      "manifest": "acceptance-final-unmodified-chestshop-manifest.json",
+      "results": "acceptance-final-unmodified-chestshop-results.txt"
+    },
+    {
+      "label": "acceptance-final-mismatched-chestshop",
+      "mode": "mismatch",
+      "groups": 3,
+      "assertions": 105,
+      "failures": 0,
+      "manifest": "acceptance-final-mismatched-chestshop-manifest.json",
+      "results": "acceptance-final-mismatched-chestshop-results.txt"
+    },
+    {
+      "label": "acceptance-final-injected-item-failure",
+      "mode": "partial-failure",
+      "groups": 6,
+      "assertions": 76,
+      "failures": 0,
+      "manifest": "acceptance-final-injected-item-failure-manifest.json",
+      "results": "acceptance-final-injected-item-failure-results.txt"
+    },
+    {
+      "label": "acceptance-final-recovery-first",
+      "mode": "recovery",
+      "groups": 3,
+      "assertions": 106,
+      "failures": 0,
+      "manifest": "acceptance-final-recovery-first-manifest.json",
+      "results": "acceptance-final-recovery-first-results.txt"
+    },
+    {
+      "label": "acceptance-final-recovery-restart",
+      "mode": "recovery",
+      "groups": 3,
+      "assertions": 106,
+      "failures": 0,
+      "manifest": "acceptance-final-recovery-restart-manifest.json",
+      "results": "acceptance-final-recovery-restart-results.txt"
+    },
+    {
+      "label": "acceptance-final-absent-chestshop-recovery",
+      "mode": "missing-chestshop-recovery",
+      "groups": 1,
+      "assertions": 10,
+      "failures": 0,
+      "manifest": "acceptance-final-absent-chestshop-recovery-manifest.json",
+      "results": "acceptance-final-absent-chestshop-recovery-results.txt"
+    },
+    {
+      "label": "acceptance-final-absent-chestshop-recovery-restart",
+      "mode": "missing-chestshop-recovery",
+      "groups": 1,
+      "assertions": 10,
+      "failures": 0,
+      "manifest": "acceptance-final-absent-chestshop-recovery-restart-manifest.json",
+      "results": "acceptance-final-absent-chestshop-recovery-restart-results.txt"
+    }
+  ],
+  "limits": [
+    "Synthetic players, not real clients",
+    "Official Vault1.7.3 is a substitute for unidentified live Vault2.0.0",
+    "No live server access or installation"
+  ],
+  "accepted_at_utc": "2026-10-12T20:17:50.640237+00:00",
+  "paper": "26.2-123-5001879",
+  "paper_api": "26.2.build.123-stable",
+  "java": "25.0.4+7-LTS",
+  "provider_class": "com.earth2me.essentials.economy.vault.VaultEconomyProvider",
+  "plugins": {
+    "Essentials": "2.22.0",
+    "GriefPrevention": "16.18.7",
+    "ChestShop": "3.13-pre-1 (build 474)+confirmation.1",
+    "Vault": "1.7.3-b131 (explicit substitute for unidentified live2.0.0)"
+  },
+  "port_free_after": 25580,
+  "lifecycle": "All ten children exited0. No live access. Final disposable state deliberately remains recovery-locked, with ChestShop absent for the final independent-recovery probe.",
+  "scope": "Synthetic accounts and native Paper-backed inventory through actual ChestShop/Essentials/GP listeners. No real Java/phone clients, authentication, actual-player saves or byte-exact live Vault verification.",
+  "normal_quote_seconds": 5,
+  "baseline_reproduction_excluded_from_acceptance_assertions": 27,
+  "harness_adjustments": "Initial paired iteration fixed synthetic permission case/material inheritance and stale-event cancellation expectation after plugin disable. Final sequence resumed after mismatched fixture was corrected to change runtime API buildId, not merely display metadata; production hashes unchanged. Rejected fixture evidence retained only in disposable runtime.",
+  "evidence": {
+    "acceptance-final-absent-chestshop-recovery-manifest.json": "417882623cd691074b56953132ea829f24ebfe99b2b2400b77e284948bdb74b4",
+    "acceptance-final-absent-chestshop-recovery-restart-manifest.json": "8e51721d3c1b4ab20fd8704dbcb23c8883230d0508c31532b0168be953ab169d",
+    "acceptance-final-absent-chestshop-recovery-restart-results.txt": "ab9a0df8b0974fe65529908ffda769539dc6283d62cf5b2da3784ed6a7498e36",
+    "acceptance-final-absent-chestshop-recovery-results.txt": "ab9a0df8b0974fe65529908ffda769539dc6283d62cf5b2da3784ed6a7498e36",
+    "acceptance-final-aggregate.json": "89490980d5dc85603978561be82e950f01c75df1a798aa97884903f71f1335a5",
+    "acceptance-final-clean-restart-manifest.json": "6a690f9fb3a832466cb61868cd3b85215b56fb70c7e3e105b099bc640f4cdc72",
+    "acceptance-final-clean-restart-results.txt": "a8d97d7309bb4fcf3c5ca5c6e4d2d7359349c2037bc7a2e3b3d99b901350ac6d",
+    "acceptance-final-full-manifest.json": "8efe22201d599d8a9d544a38ee73ee17ac42c40c670f82386c32e9ce75a5ebbc",
+    "acceptance-final-full-results.txt": "a8d97d7309bb4fcf3c5ca5c6e4d2d7359349c2037bc7a2e3b3d99b901350ac6d",
+    "acceptance-final-injected-item-failure-manifest.json": "9630689ba2bd847b3a731a047637a486f45f0661512113fefcb1d3e36ad358b0",
+    "acceptance-final-injected-item-failure-results.txt": "52d4beaad2e15f4558944c1998c5cc90d9929602290558c0019d05d0f964b9e8",
+    "acceptance-final-mismatched-chestshop-manifest.json": "959c9ee0c8e278310005b4c12465336e86d1628291a5534d23ccdd831ee558b8",
+    "acceptance-final-mismatched-chestshop-results.txt": "0e59a2f2fd7ed02584a2acc2c611e6f9c23afbbcf578584d9d6fb049b5cefc33",
+    "acceptance-final-missing-excel-manifest.json": "1f4f6d899d5d5d6888851ced29fcb347c1c4d0e760166d4976805263c610f3e8",
+    "acceptance-final-missing-excel-results.txt": "0e59a2f2fd7ed02584a2acc2c611e6f9c23afbbcf578584d9d6fb049b5cefc33",
+    "acceptance-final-recovery-first-manifest.json": "e948400bd77060d9a813221e25d726976b077626e5a169aa999153dee77b96ca",
+    "acceptance-final-recovery-first-results.txt": "0dcbbaaadf430e21fb9a95daad80b82958fb1832421975e94d07d1fe0cdde01b",
+    "acceptance-final-recovery-restart-manifest.json": "d5291aa8e3a322b85717154315fbad489a17188f153ac441bca2f3bb87f752ca",
+    "acceptance-final-recovery-restart-results.txt": "0dcbbaaadf430e21fb9a95daad80b82958fb1832421975e94d07d1fe0cdde01b",
+    "acceptance-final-unmodified-chestshop-manifest.json": "84f7bbebdd401329c1c3096745078593051115b86db27713a40cfd8c03d84365",
+    "acceptance-final-unmodified-chestshop-results.txt": "46a70f2345f387371130d6de14ce2152f964f2d93ef8052254f97c3e6b5d0ea1",
+    "guard-exact-paper-compile.json": "22756c20cb1ae72e65dc0dd438b331a4d0c30ed14d416f1c3bdf07ed47648e35",
+    "guard-exact-paper-compile.log": "0ef0a14b319024e3d2255e5eeb8c958a979ed3ebc2189a579b6e961417bab523"
+  }
+}

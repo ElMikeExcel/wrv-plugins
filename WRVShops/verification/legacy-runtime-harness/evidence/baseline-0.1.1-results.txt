@@ -1,0 +1,28 @@
+PASS exact Paper 26.2 build 123
+PASS exact Java runtime
+PASS Vault is enabled: 1.7.3-b131
+PASS Essentials is enabled: 2.22.0
+PASS GriefPrevention is enabled: 16.18.7
+PASS ChestShop is enabled: 3.13-pre-1 (build 474)
+PASS ExcelShops is enabled: 0.1.1
+PASS exact ChestShop build474
+PASS real economy service present
+PASS actual EssentialsX economy provider: EssentialsX Economy
+PASS synthetic Essentials account LegacyOwner
+PASS real economy recognizes LegacyOwner
+PASS real balance initialized LegacyOwner
+PASS synthetic Essentials account LegacyBuyer
+PASS real economy recognizes LegacyBuyer
+PASS real balance initialized LegacyBuyer
+PASS actual GP instance exists
+PASS actual GriefPrevention claim created
+PASS actual GP owner lookup succeeds
+PASS real ChestShop sign recognized
+PASS real ChestShop container resolution
+PASS real sign click traverses ChestShop PreTransactionEvent
+PASS baseline bypass reproduced: transaction fires immediately
+PASS baseline immediate purchase charges actual Essentials economy
+PASS baseline exact 4 items delivered
+PASS baseline exact real stock decremented
+PASS baseline seller paid actual Essentials economy
+SUMMARY assertions=27 failed=0

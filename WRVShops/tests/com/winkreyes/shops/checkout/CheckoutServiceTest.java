@@ -3,11 +3,16 @@ package com.winkreyes.shops.checkout;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static com.winkreyes.shops.checkout.CheckoutService.*;
+import com.winkreyes.shops.checkout.CheckoutService.ExternalLease;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.function.Consumer;
 import java.time.*;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -314,10 +319,189 @@ class CheckoutServiceTest {
             assertEquals(Status.NO_CHARGE, service.confirm(first.id(), buyer).status());
             assertEquals(Status.NO_CHARGE, service.confirm(second.id(), other).status());
             assertThrows(IllegalStateException.class, () -> service.quote(other, seller, "third", 1, 1, 100, "third"));
-            assertThrows(IllegalStateException.class, () -> service.close());
+            assertNull(service.tryExternalLease());
         };
         assertEquals(Status.SUCCESS, service.confirm(first.id(), buyer).status());
         assertEquals(1, adapter.withdrawals);
+    }
+
+    @Test void externalLeaseBlocksNativeAndLegacyAdmissionUntilItsOwnerReleasesIt() {
+        Quote nativeQuote = quote();
+        ExternalLease lease = service.tryExternalLease();
+        assertNotNull(lease);
+        assertNull(service.tryExternalLease());
+        assertThrows(IllegalStateException.class, this::quote);
+        assertEquals(Status.NO_CHARGE, service.confirm(nativeQuote.id(), buyer).status());
+        assertEquals(0, adapter.prepares);
+        assertEquals(0, adapter.withdrawals);
+        assertTrue(journal.stages.isEmpty());
+        lease.close();
+        assertEquals(Status.SUCCESS, service.confirm(nativeQuote.id(), buyer).status());
+    }
+
+    @Test void staleOrRepeatedLeaseCloseCannotReleaseNewOwnerOrNativeExecution() {
+        ExternalLease previous = service.tryExternalLease();
+        assertNotNull(previous);
+        previous.close();
+        previous.close();
+        ExternalLease current = service.tryExternalLease();
+        assertNotNull(current);
+        previous.close();
+        assertNull(service.tryExternalLease());
+        assertThrows(IllegalStateException.class, this::quote);
+        current.close();
+        adapter.afterWithdraw = () -> {
+            previous.close();
+            current.close();
+            assertNull(service.tryExternalLease());
+            assertThrows(IllegalStateException.class, this::quote);
+        };
+        assertEquals(Status.SUCCESS, buy().status());
+    }
+
+    @Test void exceptionDuringExternalValidationReleasesLeaseWithoutAnyCharge() {
+        assertThrows(IllegalStateException.class, () -> {
+            try (ExternalLease lease = service.tryExternalLease()) {
+                assertNotNull(lease);
+                throw new IllegalStateException("read-only external validator failed");
+            }
+        });
+        assertTrue(journal.stages.isEmpty());
+        assertEquals(0, adapter.withdrawals);
+        assertEquals(Status.SUCCESS, buy().status());
+    }
+
+    @Test void disconnectAndCancelInvalidateQuotesWithoutReleasingExternalLease() {
+        Quote original = quote();
+        UUID otherBuyer = UUID.randomUUID();
+        Quote other = service.quote(otherBuyer, seller, "second", 1, 1, 100, "second");
+        ExternalLease lease = service.tryExternalLease();
+        service.invalidateBuyer(buyer);
+        assertTrue(service.cancel(other.id(), otherBuyer));
+        service.invalidateAll();
+        assertNull(service.tryExternalLease());
+        assertThrows(IllegalStateException.class, this::quote);
+        lease.close();
+        assertEquals(Status.NO_CHARGE, service.confirm(original.id(), buyer).status());
+        assertEquals(Status.NO_CHARGE, service.confirm(other.id(), otherBuyer).status());
+        assertEquals(0, adapter.withdrawals);
+    }
+
+    @Test void externalLeaseAndPauseEnforcePrimaryThreadWithoutChangingOwnership() {
+        Quote original = quote();
+        adapter.mainThread = false;
+        assertThrows(IllegalStateException.class, service::tryExternalLease);
+        assertThrows(IllegalStateException.class, () -> service.pauseExternal("ambiguous external payment"));
+        adapter.mainThread = true;
+        ExternalLease lease = service.tryExternalLease();
+        adapter.mainThread = false;
+        assertThrows(IllegalStateException.class, lease::close);
+        assertThrows(IllegalStateException.class, service::close);
+        assertThrows(IllegalStateException.class, service::closeUnclean);
+        adapter.mainThread = true;
+        assertNull(service.tryExternalLease());
+        lease.close();
+        assertEquals(Status.SUCCESS, service.confirm(original.id(), buyer).status());
+    }
+
+    @Test void externalPauseClearsQuotesAndCannotBeUndoneByLeaseOrCleanClose() throws Exception {
+        Quote original = quote();
+        ExternalLease lease = service.tryExternalLease();
+        service.pauseExternal("external transaction requires reconciliation");
+        service.pauseExternal("a later symptom");
+        lease.close();
+        assertTrue(service.recoveryRequired());
+        assertEquals("external transaction requires reconciliation", service.recoveryReason());
+        assertNull(service.tryExternalLease());
+        assertFalse(service.cancel(original.id(), buyer));
+        assertThrows(IllegalStateException.class, this::quote);
+        assertEquals(Status.RECOVERY_REQUIRED, service.confirm(original.id(), buyer).status());
+        service.close();
+        service.close();
+        assertTrue(journal.uncleanClosed);
+        assertFalse(journal.cleanClosed);
+        assertTrue(journal.stages.isEmpty());
+    }
+
+    @Test void externalPauseRetainsDurableNativeMarkerAcrossRestart(@TempDir Path directory) throws Exception {
+        FileJournal durable = new FileJournal(directory);
+        service = new CheckoutService(adapter, durable, clock, Duration.ofSeconds(30));
+        try (ExternalLease lease = service.tryExternalLease()) {
+            assertNotNull(lease);
+            service.pauseExternal("see separate legacy journal");
+        }
+        service.close();
+        assertTrue(Files.exists(directory.resolve(FileJournal.SESSION_FILE)));
+        assertEquals(0, Files.size(directory.resolve(FileJournal.LOG_FILE)));
+        try (FileJournal reopened = new FileJournal(directory)) {
+            assertTrue(reopened.requiresRecovery());
+            CheckoutService restarted = new CheckoutService(adapter, reopened, clock, Duration.ofSeconds(30));
+            assertNull(restarted.tryExternalLease());
+            assertThrows(IllegalStateException.class,
+                    () -> restarted.quote(buyer, seller, "shop", 1, 1, 100, "fp"));
+        }
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void shutdownDuringExternalLeaseAlwaysRetainsDurableMarker(boolean explicitlyUnclean, @TempDir Path directory) throws Exception {
+        FileJournal durable = new FileJournal(directory);
+        service = new CheckoutService(adapter, durable, clock, Duration.ofSeconds(30));
+        ExternalLease lease = service.tryExternalLease();
+        if (explicitlyUnclean) service.closeUnclean();
+        else service.close();
+        assertTrue(service.recoveryRequired());
+        lease.close();
+        lease.close();
+        assertNull(service.tryExternalLease());
+        service.close();
+        assertTrue(Files.exists(directory.resolve(FileJournal.SESSION_FILE)));
+        try (FileJournal reopened = new FileJournal(directory)) { assertTrue(reopened.requiresRecovery()); }
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"prepare", "evidence", "withdraw", "apply", "payout", "rollback", "refund"})
+    void nativeCallbacksCannotAdmitExternalTransaction(String phase) {
+        int[] callbacks = {0};
+        adapter.onCallback = current -> {
+            if (current.equals(phase)) {
+                callbacks[0]++;
+                assertNull(service.tryExternalLease());
+                assertThrows(IllegalStateException.class, this::quote);
+            }
+        };
+        if (phase.equals("rollback") || phase.equals("refund")) adapter.payoutResult = MoneyResult.DECLINED;
+        assertEquals(adapter.payoutResult == MoneyResult.DECLINED ? Status.REFUNDED : Status.SUCCESS, buy().status());
+        assertEquals(1, callbacks[0]);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"prepare", "evidence", "withdraw", "apply", "payout", "rollback", "refund"})
+    void shutdownInNativeCallbackStopsLaterEffectsAndCannotMarkClean(String phase) throws Exception {
+        adapter.onCallback = current -> {
+            if (current.equals(phase)) assertDoesNotThrow(service::close);
+        };
+        if (phase.equals("rollback") || phase.equals("refund")) adapter.payoutResult = MoneyResult.DECLINED;
+        Status expected = phase.equals("prepare") || phase.equals("evidence") ? Status.NO_CHARGE : Status.RECOVERY_REQUIRED;
+        assertEquals(expected, buy().status());
+        assertTrue(service.recoveryRequired());
+        assertTrue(journal.uncleanClosed);
+        assertFalse(journal.cleanClosed);
+        assertEquals(phase.equals("prepare") || phase.equals("evidence") ? 0 : 1, adapter.withdrawals);
+        assertEquals(phase.equals("prepare") || phase.equals("evidence") || phase.equals("withdraw") ? 0 : 1, adapter.applies);
+        assertEquals(phase.equals("payout") || phase.equals("rollback") || phase.equals("refund") ? 1 : 0, adapter.payouts);
+        assertEquals(phase.equals("refund") ? 1 : 0, adapter.refunds);
+        assertNull(service.tryExternalLease());
+        service.close();
+        assertFalse(journal.cleanClosed);
+    }
+
+    @Test void pauseDuringNativeValidationStopsBeforeFirstEconomicEffect() throws Exception {
+        adapter.onCallback = current -> {
+            if (current.equals("prepare")) service.pauseExternal("external safety failure");
+        };
+        assertEquals(Status.NO_CHARGE, buy().status());
+        assertEquals(0, adapter.withdrawals);
+        assertTrue(journal.stages.isEmpty());
+        service.close();
+        assertTrue(journal.uncleanClosed);
     }
 
     @Test void primaryThreadGuardRunsBeforeQuoteConsumptionOrAnyMutation() {
@@ -346,6 +530,7 @@ class CheckoutServiceTest {
         assertThrows(IllegalStateException.class, this::quote);
         assertEquals(Status.RECOVERY_REQUIRED, service.confirm(UUID.randomUUID(), buyer).status());
         assertTrue(service.recoveryRequired());
+        assertNull(service.tryExternalLease());
         assertEquals(0, adapter.withdrawals);
     }
 
@@ -353,6 +538,8 @@ class CheckoutServiceTest {
         Quote quote = quote();
         service.close();
         assertTrue(journal.cleanClosed);
+        assertNull(service.tryExternalLease());
+        assertThrows(IllegalStateException.class, () -> service.pauseExternal("already closed"));
         assertEquals(Status.NO_CHARGE, service.confirm(quote.id(), buyer).status());
         assertThrows(IllegalStateException.class, this::quote);
         setup();
@@ -403,9 +590,11 @@ class CheckoutServiceTest {
         MoneyResult withdrawResult = MoneyResult.SUCCESS, payoutResult = MoneyResult.SUCCESS, refundResult = MoneyResult.SUCCESS;
         MutationResult applyResult = MutationResult.APPLIED;
         Runnable afterWithdraw = () -> { };
+        Consumer<String> onCallback = phase -> { };
         public void assertMainThread() { if (!mainThread) throw new IllegalStateException("Not primary thread"); }
         public Preparation prepare(Quote quote) {
             prepares++;
+            onCallback.accept("prepare");
             if (prepareThrows) throw new IllegalStateException("prepare");
             if (!Objects.equals(expectedSeller, quote.sellerId()) || quote.revision() != revision
                     || !quote.fingerprint().equals(fingerprint) || quote.amountMinorUnits() != Money.multiply(unitPrice, quote.quantity())
@@ -414,10 +603,11 @@ class CheckoutServiceTest {
             }
             final int stockBefore = stock, deliveryBefore = delivered;
             return Preparation.ready(new Transfer() {
-                public String auditEvidence() { if (evidenceThrows) throw new IllegalStateException("evidence"); return evidence; }
+                public String auditEvidence() { onCallback.accept("evidence"); if (evidenceThrows) throw new IllegalStateException("evidence"); return evidence; }
                 public MutationResult apply() {
                     assertEquals(Stage.TRANSFER_INTENT, journal.last());
                     applies++;
+                    onCallback.accept("apply");
                     if (stock != stockBefore || delivered != deliveryBefore) return MutationResult.UNCHANGED;
                     if (applyThrows) { stock--; throw new IllegalStateException("partial apply"); }
                     if (applyResult == MutationResult.APPLIED) { stock -= quote.quantity(); delivered += quote.quantity(); }
@@ -426,6 +616,7 @@ class CheckoutServiceTest {
                 public boolean rollback() {
                     assertEquals(Stage.ROLLBACK_INTENT, journal.last());
                     rollbacks++;
+                    onCallback.accept("rollback");
                     if (rollbackThrows) throw new IllegalStateException("rollback");
                     if (rollbackWorks) { stock = stockBefore; delivered = deliveryBefore; }
                     return rollbackWorks;
@@ -436,6 +627,7 @@ class CheckoutServiceTest {
             assertEquals(buyer, id);
             assertEquals(Stage.WITHDRAW_INTENT, journal.last());
             withdrawals++;
+            onCallback.accept("withdraw");
             if (withdrawError) throw new AssertionError("provider fatal error");
             if (withdrawThrows) { buyerFunds -= amount; throw new IllegalStateException("deducted then threw"); }
             if (withdrawResult == MoneyResult.SUCCESS) buyerFunds -= amount;
@@ -446,6 +638,7 @@ class CheckoutServiceTest {
             if (buyer.equals(id)) {
                 assertEquals(Stage.REFUND_INTENT, journal.last());
                 refunds++;
+                onCallback.accept("refund");
                 if (refundThrows) { buyerFunds += amount; throw new IllegalStateException("refunded then threw"); }
                 if (refundResult == MoneyResult.SUCCESS) buyerFunds += amount;
                 return refundResult;
@@ -453,6 +646,7 @@ class CheckoutServiceTest {
             assertEquals(seller, id);
             assertEquals(Stage.PAYOUT_INTENT, journal.last());
             payouts++;
+            onCallback.accept("payout");
             if (payoutThrows) { sellerFunds += amount; throw new IllegalStateException("paid then threw"); }
             if (payoutResult == MoneyResult.SUCCESS) sellerFunds += amount;
             return payoutResult;
@@ -467,6 +661,7 @@ class CheckoutServiceTest {
         public boolean requiresRecovery() { return recovery; }
         public String recoveryReason() { return "previous unclean session"; }
         public void record(Quote quote, Stage stage, String detail) throws IOException {
+            if (cleanClosed || uncleanClosed) throw new IOException("journal closed");
             if (stage == failAt) { recovery = true; throw new IOException("forced failure at " + stage); }
             stages.add(stage); details.add(detail);
             if (stage == Stage.RECOVERY_REQUIRED) recovery = true;

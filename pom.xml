@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.winkreyes</groupId><artifactId>wrv-plugins</artifactId><version>1.0.0</version><packaging>pom</packaging>
   <name>Wink Reyes Valley Plugins</name>
-  <modules><module>BedrockMenu</module><module>Leaderboard</module><module>MenuJoin</module><module>NoPhantoms</module><module>RestartCountdown</module><module>ShopVillager</module><module>WealthBoard</module><module>WeekendXP</module><module>WRVShops</module></modules>
+  <modules><module>ChestShop-ConfirmationGuard</module><module>BedrockMenu</module><module>Leaderboard</module><module>MenuJoin</module><module>NoPhantoms</module><module>RestartCountdown</module><module>ShopVillager</module><module>WealthBoard</module><module>WeekendXP</module><module>WRVShops</module></modules>
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

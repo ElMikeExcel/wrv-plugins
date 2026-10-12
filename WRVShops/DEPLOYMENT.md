@@ -1,70 +1,92 @@
-# ExcelShops 0.1.1: exact deployment plan
+# ExcelShops 0.1.2 + guarded ChestShop: deployment plan
 
-Status: **prepared installation candidate; no live upload, permissions change, merge or restart authorized by this document**. This plan changes only the custom shop plugin and its paired Spawn Shop files. ChestShop and its signs, stock, permissions, taxes and economy rules stay untouched.
+Status: **prepared paired candidate only. No live upload, permission change, merge or restart is authorized by this document.** Installation requires a separate reviewed maintenance approval. Preserve existing sign prices, data, economy rules and protection; do not silently convert third-party shops into the native registry.
 
-## Candidate payload
+## Candidate payload and identity
 
-The reproducible packaging script `tools/package_candidate.py` builds a ZIP with:
+`tools/package_candidate.py` creates a reproducible installation ZIP containing:
 
-- `plugins/ExcelShops-0.1.1.jar`
-- `plugins/ExcelShops/config.yml`
-- `plugins/ExcelShops/spawn-catalog.yml`
+- `plugins/ExcelShops-0.1.2.jar` (original custom MIT code)
+- `plugins/ChestShop-3.13-pre-1-build474-confirmation.1.jar` (full modified third-party plugin, LGPL-2.1)
+- `plugins/ExcelShops/config.yml` and the matching `spawn-catalog.yml`
 - `plugins/DeluxeMenus/gui_menus/spawnshop.yml`
-- `PLAYER-CHECKLIST.md`, this plan, `MANIFEST.json` and `SHA256SUMS`
+- `THIRD-PARTY/ChestShop/NOTICE`, `COPYING.LESSER` and the complete corresponding-source ZIP
+- `PLAYER-CHECKLIST.md`, this plan, `PURCHASE-PAUSE-SPEC.md`, the offline `tools/prepare_purchase_pauses.py` generator, `MANIFEST.json` and `SHA256SUMS`
 
-The three configuration files are a **new-install baseline**, not permission to overwrite existing settings or prices. The script checks descriptor identity, unchanged storage namespace, retained command alias, catalog/resource equality, absence of immediate money/give commands and per-file hashes. It never accesses a server. Follow the legacy-data branch below if WRVShops data exists.
+The full guarded JAR retains the upstream plugin name `ChestShop`, main class, authorship, data directory and protection listeners. Its distinct filename/version identify the modification. **Never install `ChestShop-ConfirmationGuard-1.0.0.jar`: that Maven overlay has no complete plugin and is only a build API artifact.** Never install the original and guarded ChestShop JARs together. Distribute the LGPL notices and full corresponding source with the modified plugin; the source ZIP includes the pinned upstream source, modifications, an applicable patch and standalone rebuild instructions.
+
+The three configuration files are a **new-install baseline**, not authority to reset live settings/prices. The catalog/menu retain the same 18 repository-baseline offers. Packaging validates both expected binary hashes, exact upstream binary/source provenance, complete unchanged upstream content outside the reviewed patch, matching source/legal material, aliases, namespace keys and menu/catalog equality. It rejects an original or overlay-only ChestShop JAR and never accesses a server.
 
 ## 1. Read-only live preflight, still required
 
-A separate authorized server session must capture these facts without changing them:
+A separately authorized session must establish:
 
-1. List plugin JARs and versions. Check whether any `WRVShops` or `ExcelShops` JAR or data folder exists, including disabled/duplicate copies. Do not assume “never installed” means no data.
-2. Inspect the complete old/new data directories if present, including hidden migration markers and `checkout/active-session`, `checkout/transactions.log`, `shops.dat`, `config.yml` and `spawn-catalog.yml`. Record hashes and preserve backups. Do not delete a marker to make startup pass.
-3. Read the live DeluxeMenus `gui_menus/spawnshop.yml`, its menu registration, the `/shop` command owner, the compass/menu Spawn Shop action and ShopVillager's configured target. Confirm exact player entry points and detect any other immediate purchase commands.
-4. Compare every live item, metadata, bundle size and price against the candidate. The included 18-offer catalog is the repository baseline. Any live price/catalog difference requires a deliberately regenerated, reviewed matching menu/catalog pair before upload; do not silently reset the economy to defaults.
-5. Verify enabled Vault provider and its exact version, loaded GriefPrevention, ChestShop, Geyser/Floodgate and Essentials versions. Preserve any unsupported-version warnings. Actual provider/claim integration remains an acceptance gate.
-6. Read normal-player permissions and claim settings, including container trust. Keep `wrvshops.use`, `wrvshops.create`, `wrvshops:shop_id` and `wrvshops:chest_identity` unchanged. No broad DeluxeMenus or trust grants are part of this deployment.
-7. Confirm a recoverable, consistent backup covering plugin/config files, both possible shop data folders, world/chests, player inventories and economy data, plus a maintenance window and rollback decision owner.
+1. Exact loaded JARs/versions and hashes, including duplicate/disabled WRVShops, ExcelShops or ChestShop copies. Record actual plugin load order and command ownership.
+2. Complete `plugins/WRVShops/`, `plugins/ExcelShops/` and `plugins/ChestShop/` directories where present. Preserve `shops.dat`, config/catalog, hidden migration receipts and **both `checkout/` and `legacy-checkout/` logs and active-session markers**. Never delete a marker to make startup pass.
+3. Current legacy signs, account names, BUY/SELL/bundle prices, item metadata, stock, single/double-chest links, permissions, claims/container trust, tax/discount and partial-trade settings. This candidate must preserve them or refuse the trade; it must not silently reset policy.
+4. The current DeluxeMenus `spawnshop.yml`, menu registration, `/shop` owner, compass and villager target, and any other instant money/give entry points. Compare every live offer to the repository baseline. A difference requires a deliberately regenerated, reviewed matching menu/catalog pair before upload.
+5. Exact Vault JAR/provider and EssentialsX versions, GriefPrevention, Geyser and Floodgate. Guard revision 1 supports the verified EssentialsX **2.22.0** Vault provider with ChestShop `TAX_AMOUNT=0`, `SERVER_TAX_AMOUNT=0`, `PRICE_PRECISION=2` and no configured server economy account/name/UUID. Nonzero taxes, unsupported precision/server-account settings or unsupported provider/version/guard combinations fail closed. Do not change live tax or permission settings just to bypass a block.
+6. Preserve `wrvshops.use`, `wrvshops.create`, `wrvshops:shop_id` and `wrvshops:chest_identity`. No broad DeluxeMenus permission or container-trust grant is part of this deployment.
+7. A consistent, recoverable backup of all plugin/config/data folders, world/chests, player inventories and economy accounts; a maintenance window; and a rollback owner. Verify process exit independently before any migration.
 
-Record the observed hashes, intended replacements and differences in a deployment record. Ask for explicit live installation/restart approval after this preflight; a candidate or test result is not that approval.
+Record intended replacements, hashes and differences. Ask for specific live installation/restart approval after the preflight. Candidate tests are not that approval.
 
-## 2. Test the exact intended package on staging
+## Outstanding whole-server confirmation gate
 
-Use the intended exact live plugin combination with disposable accounts/money and a separate world. Verify both Java and Bedrock phone controls using PLAYER-CHECKLIST.md. Test `/shop`, compass, villager, `/excelshop` and old `/wrvshop` alias. A real purchase should use one common Vault balance and move exact physical stock only after final confirmation.
+This pair covers ExcelShops native shops, guarded ChestShop trades and the matching Spawn Shop menu. **It does not establish that every purchase path on the server requires confirmation.** The read-only preflight found two additional paths requiring a separate decision:
 
-Do not hot-reload this plugin, accept a dirty recovery state as success, or run old/new shop plugin JARs together. A namespaced command may change from the old plugin-name namespace to `excelshops:*`; the ordinary `/wrvshop` compatibility alias is retained.
+- Jobs **5.2.6.3** has its item shop enabled with four offers, including one priced at **10,000 points plus $10,000**. The [pinned official ShopManager source](https://github.com/Zrips/Jobs/blob/6fe3c272c3c970d4a94fbf7615953803eb722503/src/main/java/com/gamingmesh/jobs/config/ShopManager.java#L203-L283) gives items/runs commands before deducting points/cash, without a purchase confirmation or cancellable purchase event.
+- The registered DeluxeMenus `advanced_menu` and `requirements_menu` purchase examples lack final confirmation. The observed advanced example gives a head before `eco take 666` and is gated by both `deluxemenus.admin` and `deluxemenus.shopexample`. Both registrations must be paused, not just a permission grant or command alias.
 
-## 3A. Approved maintenance: no legacy WRVShops data exists
+The owner approved preparing a reversible pause of Jobs itemshop and both examples for the later approved installation. **No live writes have occurred or are authorized merely by this plan.** The [precise change spec](PURCHASE-PAUSE-SPEC.md) and offline generator create new private staged copies, exact backups and hashes from fresh exports. They preserve source and all unrelated bytes, reject changed/ambiguous/linked inputs or existing outputs, and leave the actual example files intact. No exported full Jobs/DeluxeMenus config is shipped or committed because it may contain credentials. Apply only during separately approved stopped-server maintenance, then verify all three retained menu registrations remain loaded and neither example is automatically restored. This pair alone must not be described as closing every purchase route until the pause is actually applied and verified.
 
-After explicit approval and the consistent backup:
+The same preflight observed Essentials buy/sell/trade signs disabled and no paid command costs. All 18 live Spawn Shop prices matched this pack at that observation, and ChestShop's server account was empty/zero UUID with taxes zero and precision two. These observations are not write approval: recheck them immediately before the approved maintenance and preserve the recorded policy.
 
-1. Stop the server normally and verify process exit. Do not kill it during purchases.
-2. Place only `ExcelShops-0.1.1.jar`; remove an old custom shop JAR from the load directory only if it was identified and included in the approved replacement list. Do not remove ChestShop.
-3. Install reviewed config/catalog into `plugins/ExcelShops/`. If ExcelShops data already exists, preserve it and its settings; do not overwrite with package defaults.
-4. Replace only the reviewed `plugins/DeluxeMenus/gui_menus/spawnshop.yml`. Preserve the existing menu registration and unrelated menus. Both the menu and authoritative catalog must match the reviewed package.
-5. Start normally. Verify `ExcelShops 0.1.1`, provider hook, no migration/recovery error, correct command ownership, prices and storage protection. The old immediate `[takemoney]` / console give menu must no longer be active.
-6. Perform separately authorized, bounded acceptance checks. Confirm live state with direct evidence, then record hashes, backups, time and observed results. Do not call unperformed purchases or phone checks passed.
+## 2. Stage the exact reviewed pair
+
+Use disposable accounts, money and world data, with the intended exact plugin combination. Bind test evidence to **both final JAR hashes**. Follow PLAYER-CHECKLIST.md with a real Java player and a Bedrock phone player.
+
+Existing ChestShop signs must open an explicit Buy/Sell chooser, then quantity, review and separate final confirmation. Clicking either mouse button or crouching must not trade immediately. Verify Buy, Sell, free/paid offers, both halves of a double chest, preserved protection/permissions, cancellation, stale forms, rapid Confirm, stock/price/account changes, insufficient money/capacity and clean restart. Native shops and Spawn Shop keep their own confirmed flow and matching bundle economics.
+
+Verify default-deny legacy trading with ExcelShops missing, disabled, failed or recovery-paused while ChestShop stays loaded to protect its stock. Verify unsupported taxes/providers fail before any preview money operation. A guarded transaction is serialized with native checkout; ambiguous upstream effects are journaled and pause the whole checkout service. Never automatically retry/refund an ambiguous result.
+
+Do not hot-reload either plugin or run duplicate custom/third-party JARs. The ordinary `/wrvshop` alias remains; the old plugin-name command namespace may differ.
+
+## 3A. Approved maintenance: no legacy WRVShops data
+
+Only after explicit approval and the coordinated backup:
+
+1. Stop the server normally and confirm process exit. Do not kill it during trades.
+2. Remove only the specifically approved old custom shop JAR and original ChestShop JAR from the load directory. Put the **full guarded ChestShop JAR and ExcelShops 0.1.2 JAR** in place together. Preserve the entire ChestShop data directory, signs, chests, stock and settings. Never install the overlay JAR.
+3. Prepare and review the offline pause files from current exports using PURCHASE-PAUSE-SPEC.md; include only the explicitly approved staged Jobs/DeluxeMenus config replacements in the maintenance action. Preserve the exact exported backups privately. Install the reviewed native config/catalog into `plugins/ExcelShops/` only for a genuinely new installation. Preserve an existing ExcelShops folder and settings; do not overwrite them with baseline defaults.
+4. Replace only the reviewed DeluxeMenus `gui_menus/spawnshop.yml`, preserving registration and unrelated menus. The menu and authoritative catalog must match. An old immediate `[takemoney]`/console give menu must not remain active.
+5. Start normally. Verify actual `ChestShop 3.13-pre-1 (build 474)+confirmation.1` and `ExcelShops 0.1.2` identities, the guard/provider connection, command ownership, unchanged prices, protection and no migration/recovery errors.
+6. Run only the separately authorized bounded live acceptance checks. Record direct results, time, backups and both JAR hashes. Do not call an unperformed trade or phone check passed.
 
 ## 3B. Approved maintenance: legacy WRVShops data exists
 
-The whole folder is one migration unit. A legacy registry or active-session marker without its checkout journal is incomplete evidence and refuses migration before staging; recover the complete backup or reconcile offline first. Never copy just `shops.dat`, never reset the checkout directory, and never pre-fill a conflicting ExcelShops directory with package defaults.
+The whole folder is one migration unit. A native legacy registry or active-session marker without its required journal is incomplete evidence. Recover a complete backup or reconcile offline; never copy only `shops.dat`, reset either checkout directory, or prefill a conflicting ExcelShops target with package defaults.
 
-1. Stop the server normally and verify the old server process has exited, then back up the **entire** legacy folder plus world/player/economy state.
-2. Resolve any pre-existing ExcelShops directory or incomplete migration with its actual contents and owner approval. The plugin refuses ambiguous nonempty targets, even if someone calls them defaults. Preserve both sides; do not “fix” it by deletion.
-The WRVShops 0.1.0 journal has a historical POSIX-lock weakness: a readable/open legacy journal lock alone does **not** prove its process stopped. A copied dirty-session marker still pauses ExcelShops, but migration is not a live synchronization tool. Verify process exit independently.
+1. Stop the old server normally, independently verify process exit, and back up its entire data folder plus coordinated world/player/economy state. The WRVShops 0.1.0 journal's historical POSIX-lock weakness means a readable/unheld lock alone does not establish process exit.
+2. Resolve any pre-existing target or incomplete migration based on its actual contents and owner approval. The plugin refuses ambiguous nonempty targets. Preserve both sides instead of deleting them to force progress.
+3. Install only the approved new custom JAR plus the full guarded ChestShop JAR. The migration runs before defaults, locks required evidence, stages a complete checksummed copy, checks source stability and publishes atomically. The source folder remains untouched.
+4. Carry config, catalog, registry, **both journal directories if present**, and all recovery markers/receipts together. Keep existing namespace keys and permissions. Old native `[WRV Shop]` labels remain supported; new publication uses `[Excel Shop]`. Third-party ChestShop signs remain in their original format and data system.
+5. Any copied dirty marker, incomplete or uncertain transaction must still pause checkout. While stopped, reconcile against both journal logs and actual inventories/balances exactly once, retaining original evidence. Only after verified corrections, archive each affected whole journal directory and prepare its reviewed empty replacement log; never just delete `active-session` or fabricate terminal records.
+6. A completed receipt permits normal new-folder updates without copying stale legacy data again. Required migrated core files must remain present. Receipts bind absolute paths; moving a server directory needs offline review. Changed source, linked files, held locks, incomplete staging, conflicting targets or checksum/copy failures require investigation, not forced retries.
+7. Apply separately reviewed menu/catalog changes only after migrated state/prices are verified. Never overwrite migrated settings with baseline defaults.
 
-3. Load only the new ExcelShops JAR. Do not leave a WRVShops plugin JAR loaded or disabled in the same load set. On startup, before defaults, the migration takes a process lock and any existing legacy journal lock, stages a complete checksummed copy, checks source stability and publishes the new folder atomically. The old folder remains byte-for-byte untouched.
-4. The migration copies config, catalog, registry, journal and recovery markers together. `wrvshops` PDC keys and permissions remain the same, so existing managed chest identities stay valid. Old `[WRV Shop]` signs continue to work; editing/publishing a shop uses `[Excel Shop]` thereafter.
-5. A copied `active-session`, incomplete transaction or uncertain journal **must still pause checkout**. Reconcile while stopped using the original evidence and the documented recovery process; never remove only the marker or automatically replay/refund transactions. After completed reconciliation, preserve the archived checkout directory and prepare the reviewed empty replacement `checkout/transactions.log` offline before restarting; migrated core files cannot simply disappear.
-6. A successful receipt allows subsequent ExcelShops writes without recopying stale legacy data. Migrated core config/catalog/registry/journal files must remain present; ordinary updated bytes are permitted. Receipts bind absolute source/destination paths, so relocating the server directory requires an offline migration review. A changed legacy source, incomplete stage, conflicting target, symbolic/hard link, held journal lock or failed copy/checksum causes protection-only mode. Keep the originals and investigate; no overwrite/retry is an accepted migration strategy.
-7. Only after the migrated state and prices are verified should any separately reviewed catalog/menu adjustment be applied during the coordinated maintenance plan. Do not overwrite migrated settings with the ZIP's baseline config/catalog.
+## Recovery and rollback
 
-## Rollback
+Vault balances, player saves and Minecraft worlds are not one atomic database. Preserve `checkout/` and `legacy-checkout/` evidence and consistent account/inventory/world backups. An apparently completed trade after a dirty restart still needs review; there is no automatic replay or speculative compensation.
 
-- If no new purchases or stock/price edits occurred, stop normally and follow the approved backup rollback with the prior JAR/menu/config and consistent data snapshot. Preserve failed-stage evidence.
-- Once ExcelShops has changed money, player items or chest stock, the untouched legacy folder is stale. **Do not revert by simply loading the old JAR against that old folder.** Stop and reconcile a coordinated world/player/economy/shop state, then make a reviewed rollback decision.
-- Never run both custom versions simultaneously, silently migrate third-party ChestShop shops, delete a dirty checkout marker, or change claim trust to get around a blocked shop.
+- **Keep guarded ChestShop installed during any rollback that leaves the server running.** Without a compatible ExcelShops adapter it denies new trades while retaining upstream protection. Alternatively leave the server stopped and disable all trading under an approved plan.
+- **Never silently restore an original instant-purchase ChestShop JAR or the immediate-purchase DeluxeMenus menu as rollback.** Returning unsafe trade behavior requires a separate explicit decision; it is not the default recovery path.
+- If no money/item/stock changes occurred, an approved backup restoration may replace custom configuration/code, but the guarded-trading requirement above still applies. Preserve failed-stage evidence.
+- Once either shop flow changed balances, items, stock or prices, the untouched legacy folder is stale. Do not load the old custom JAR against it. Stop and reconcile a coordinated world/player/economy/shop snapshot before any reviewed rollback.
+- Never run duplicate versions, convert third-party data silently, delete recovery markers, or alter claim trust to bypass a blocked shop.
 
-## Verification record
+## Evidence and remaining acceptance gates
 
-The latest source/CI hash, candidate hashes, unit counts and exact-runtime evidence are linked from README.md and `verification/runtime-harness/`. Fake economy/claims and server-side player fixtures test code paths; they do not replace the read-only live preflight or human Java/Bedrock acceptance. No live changes are performed by the build, package script or isolated harness.
+The current native summary is [11 boots / 852 assertions](verification/runtime-harness/evidence-excel-0.1.2/summary.json); the paired real-plugin suite passed 10 boots / 6,136 assertions with zero failures, recorded by `verification/legacy-runtime-harness/`. Combined acceptance totals 21 boots / 6,988 assertions and does not include the separate unsafe immediate-trade reproduction. Both suites bind the final JAR hashes listed in README. historical 0.1.1 synthetic-harness evidence under `verification/runtime-harness/` is unchanged and does not validate this new pair. The isolated real-ChestShop harness uses actual EssentialsX **2.22.0** and GriefPrevention, with official **Vault 1.7.3-b131 as a substitute**. The live Vault 2.0.0 artifact is unidentified and not byte-verified. Essentials' unsupported-server warning is not removed by this candidate.
+
+Human Java and Bedrock phone controls, real player save behavior, Geyser/Floodgate, the exact live Vault integration and unrelated live plugins remain explicit pending gates until directly checked. Builds, installation packs and disposable harnesses make no live change.

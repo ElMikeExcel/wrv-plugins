@@ -18,9 +18,11 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import com.winkreyes.shops.checkout.CheckoutService.Journal;
@@ -49,6 +51,8 @@ public final class FileJournal implements Journal {
     private final FileChannel channel;
     private final DataFileLock dataLock;
     private final Map<UUID, Stage> states = new HashMap<>();
+    // Keep flow identity after RECOVERY_REQUIRED, which is shared by both journal protocols.
+    private final Set<UUID> legacyTransactions = new HashSet<>();
     private boolean recovery;
     private String reason = "";
     private boolean closed;
@@ -95,7 +99,9 @@ public final class FileJournal implements Journal {
             Objects.requireNonNull(detail);
             if (detail.getBytes(StandardCharsets.UTF_8).length > MAX_DETAIL_BYTES) throw new IOException("Journal detail is too long.");
             Stage previous = states.get(quote.id());
-            if (!allowed(previous, stage)) throw new IOException("Invalid checkout journal transition.");
+            boolean legacy = legacyTransactions.contains(quote.id()) || stage == Stage.LEGACY_INTENT;
+            validateQuote(quote, legacy);
+            if (!allowed(previous, stage, legacy)) throw new IOException("Invalid checkout journal transition.");
             String body = String.join("\t", "1", quote.id().toString(), quote.buyerId().toString(),
                     quote.sellerId() == null ? "-" : quote.sellerId().toString(), encode(quote.offerId()),
                     Long.toString(quote.revision()), Integer.toString(quote.quantity()),
@@ -109,6 +115,7 @@ public final class FileJournal implements Journal {
             while (bytes.hasRemaining()) channel.write(bytes);
             channel.force(true); // An intent must reach storage before its associated side effect.
             states.put(quote.id(), stage);
+            if (legacy) legacyTransactions.add(quote.id());
             if (stage == Stage.RECOVERY_REQUIRED) requireRecovery(detail);
         } catch (IOException | RuntimeException ex) {
             requireRecovery("Journal append or force failed; do not repeat any economic action.");
@@ -134,18 +141,18 @@ public final class FileJournal implements Journal {
                 int lastTab = line.lastIndexOf('\t');
                 if (!checksum(line.substring(0, lastTab)).equals(fields[13])) throw new IllegalArgumentException("Invalid checksum.");
                 UUID id = UUID.fromString(fields[1]);
-                UUID.fromString(fields[2]);
-                if (!fields[3].equals("-")) UUID.fromString(fields[3]);
-                if (decode(fields[4]).isBlank() || Long.parseLong(fields[5]) < 0) throw new IllegalArgumentException("Invalid offer.");
-                Money.requireQuantity(Integer.parseInt(fields[6]));
-                Money.requirePositive(Long.parseLong(fields[7]));
-                if (decode(fields[8]).isBlank()) throw new IllegalArgumentException("Missing fingerprint.");
-                Instant.parse(fields[9]);
                 Stage stage = Stage.valueOf(fields[10]);
+                boolean legacy = legacyTransactions.contains(id) || stage == Stage.LEGACY_INTENT;
+                Quote quote = new Quote(id, UUID.fromString(fields[2]),
+                        fields[3].equals("-") ? null : UUID.fromString(fields[3]), decode(fields[4]),
+                        Long.parseLong(fields[5]), Integer.parseInt(fields[6]), Long.parseLong(fields[7]),
+                        decode(fields[8]), Instant.parse(fields[9]));
+                validateQuote(quote, legacy);
                 Instant.parse(fields[11]);
                 String detail = decode(fields[12]);
-                if (!allowed(states.get(id), stage)) throw new IllegalArgumentException("Invalid transition.");
+                if (!allowed(states.get(id), stage, legacy)) throw new IllegalArgumentException("Invalid transition.");
                 states.put(id, stage);
+                if (legacy) legacyTransactions.add(id);
                 if (stage == Stage.RECOVERY_REQUIRED) requireRecovery(detail);
             }
         } catch (IllegalArgumentException ex) {
@@ -166,7 +173,28 @@ public final class FileJournal implements Journal {
         return null;
     }
 
-    private static boolean allowed(Stage previous, Stage next) {
+    private static void validateQuote(Quote quote, boolean legacy) {
+        Objects.requireNonNull(quote.id(), "transaction id");
+        Objects.requireNonNull(quote.buyerId(), "buyer id");
+        Objects.requireNonNull(quote.expiresAt(), "quote expiry");
+        if (quote.offerId() == null || quote.offerId().isBlank() || quote.revision() < 0) {
+            throw new IllegalArgumentException("Invalid offer.");
+        }
+        if (quote.fingerprint() == null || quote.fingerprint().isBlank()) {
+            throw new IllegalArgumentException("Missing fingerprint.");
+        }
+        Money.requireQuantity(quote.quantity());
+        // Only a LEGACY_INTENT establishes a flow in which a genuinely free trade is valid.
+        if (!legacy || quote.amountMinorUnits() != 0) Money.requirePositive(quote.amountMinorUnits());
+    }
+
+    private static boolean allowed(Stage previous, Stage next, boolean legacy) {
+        if (legacy) {
+            if (previous == null) return next == Stage.LEGACY_INTENT;
+            return previous == Stage.LEGACY_INTENT && (next == Stage.LEGACY_COMMITTED
+                    || next == Stage.LEGACY_NO_CHANGE || next == Stage.RECOVERY_REQUIRED);
+        }
+        // Preserve the original native recovery format, including standalone recovery records.
         if (next == Stage.RECOVERY_REQUIRED) return true;
         if (previous == null) return next == Stage.WITHDRAW_INTENT;
         return switch (previous) {
@@ -180,7 +208,8 @@ public final class FileJournal implements Journal {
             case ROLLBACK_INTENT -> next == Stage.ROLLED_BACK;
             case ROLLED_BACK -> next == Stage.REFUND_INTENT;
             case REFUND_INTENT -> next == Stage.REFUNDED;
-            case REFUNDED, NO_CHARGE, COMMITTED, RECOVERY_REQUIRED -> false;
+            case REFUNDED, NO_CHARGE, COMMITTED, RECOVERY_REQUIRED,
+                    LEGACY_INTENT, LEGACY_COMMITTED, LEGACY_NO_CHANGE -> false;
         };
     }
 

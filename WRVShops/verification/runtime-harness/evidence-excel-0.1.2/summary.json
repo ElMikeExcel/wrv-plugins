@@ -1,0 +1,77 @@
+{
+  "boots": 11,
+  "assertions": 852,
+  "failures": 0,
+  "legacy_baseline_assertions": 238,
+  "candidate_sha256": "009f321a99f30024bcaf6742e9b2dc9dfba23571eaddddad1eee9699d6fe9edc",
+  "synthetic_economy_claims_players": true,
+  "real_client": false,
+  "runs": [
+    {
+      "boot": "verification-first-console",
+      "passed_groups": 35,
+      "failures": 0,
+      "assertions": 245
+    },
+    {
+      "boot": "verification-legacy-baseline-console",
+      "passed_groups": 35,
+      "failures": 0,
+      "assertions": 238
+    },
+    {
+      "boot": "verification-migration-conflict-console",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 17
+    },
+    {
+      "boot": "verification-migration-conflict-restart-console",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 17
+    },
+    {
+      "boot": "verification-migration-dirty-console",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 19
+    },
+    {
+      "boot": "verification-migration-dirty-restart-console",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 19
+    },
+    {
+      "boot": "verification-migration-missing-journal-console",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 17
+    },
+    {
+      "boot": "verification-migration-missing-journal-restart-console",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 17
+    },
+    {
+      "boot": "verification-no-economy-console",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 7
+    },
+    {
+      "boot": "verification-no-vault-console",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 11
+    },
+    {
+      "boot": "verification-restart-console",
+      "passed_groups": 35,
+      "failures": 0,
+      "assertions": 245
+    }
+  ]
+}

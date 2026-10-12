@@ -41,6 +41,7 @@ public final class ShopUi implements Listener {
     private static String stockValue(long unit,int stock){return "$"+java.math.BigDecimal.valueOf(unit,2).multiply(java.math.BigDecimal.valueOf(stock)).toPlainString();}
     public ViewKind currentKind(UUID id){Page p=pages.get(id);return p==null?null:p.kind;}
     private Page page(Player p,ViewKind kind,String title,int size){
+        if(plugin.getLegacyUi()!=null)plugin.getLegacyUi().disconnected(p.getUniqueId());
         Page page=new Page(p.getUniqueId(),kind);page.inventory=Bukkit.createInventory(page,size,title);
         pages.put(p.getUniqueId(),page);return page;
     }

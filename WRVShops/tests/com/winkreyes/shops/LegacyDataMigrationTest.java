@@ -80,7 +80,7 @@ class LegacyDataMigrationTest {
         assertEquals("native shop data", Files.readString(excel().resolve("shops.dat")));
     }
 
-    @ParameterizedTest @ValueSource(strings = {"shops.dat", "checkout/active-session"})
+    @ParameterizedTest @ValueSource(strings = {"shops.dat", "checkout/active-session", "legacy-checkout/active-session"})
     void legacyRegistryOrSessionWithoutJournalBlocksBeforeStagingAndPreservesSource(String evidence) throws Exception {
         put(legacy(), evidence, "existing evidence must not become a clean fresh journal");
         Map<String, String> before = contents(legacy());
@@ -90,6 +90,52 @@ class LegacyDataMigrationTest {
         assertFalse(Files.exists(excel()));
         assertFalse(Files.exists(stage()));
         assertFalse(Files.exists(intent()));
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void missingOrNonRegularLegacyTradeLogInExistingTargetBlocksBeforeAnyStartupWrite(boolean directoryLog) throws Exception {
+        put(excel(), "legacy-checkout/active-session", "unresolved legacy trade");
+        if (directoryLog) Files.createDirectory(excel().resolve("legacy-checkout/transactions.log"));
+        Map<String, String> before = contents(excel());
+        IOException failure = assertThrows(IOException.class, this::open);
+        assertTrue(failure.getMessage().contains("legacy-checkout/transactions.log"));
+        assertEquals(before, contents(excel()));
+        assertFalse(Files.exists(legacy()));
+        assertFalse(Files.exists(stage()));
+        assertFalse(Files.exists(intent()));
+    }
+
+    @Test void nonRegularLegacyTradeLogInSourceIsNotReplacedByFreshEvidence() throws Exception {
+        put(legacy(), "legacy-checkout/active-session", "unresolved legacy trade");
+        Files.createDirectory(legacy().resolve("legacy-checkout/transactions.log"));
+        Map<String, String> before = contents(legacy());
+        IOException failure = assertThrows(IOException.class, this::open);
+        assertTrue(failure.getMessage().contains("legacy-checkout/transactions.log"));
+        assertEquals(before, contents(legacy()));
+        assertFalse(Files.exists(excel()));
+        assertFalse(Files.exists(stage()));
+        assertFalse(Files.exists(intent()));
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void legacyFreeTradeIntentAndDirtyEvidenceSurviveMigrationUnchanged(boolean keepMarker) throws Exception {
+        populate();
+        try (FileJournal journal = new FileJournal(legacy().resolve("legacy-checkout"))) {
+            var quote = new CheckoutService.Quote(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                    "legacy:sign", 1, 4, 0, "both-inventories-before", Instant.parse("2026-10-12T12:00:00Z"));
+            journal.record(quote, CheckoutService.Stage.LEGACY_INTENT, "free trade started, result unknown");
+        }
+        if (!keepMarker) Files.delete(legacy().resolve("legacy-checkout/active-session"));
+        Map<String, String> before = contents(legacy());
+        try (var session = open()) {
+            assertEquals(LegacyDataMigration.Outcome.MIGRATED, session.outcome());
+            assertEquals(before, contents(excel()));
+            try (FileJournal journal = new FileJournal(excel().resolve("legacy-checkout"))) {
+                assertTrue(journal.requiresRecovery());
+            }
+        }
+        assertEquals(before, contents(legacy()));
+        assertTrue(Files.exists(excel().resolve("legacy-checkout/active-session")));
     }
 
     @ParameterizedTest @ValueSource(strings = {"config.yml", "spawn-catalog.yml", "empty-checkout"})
@@ -320,13 +366,18 @@ class LegacyDataMigrationTest {
         assertBlocked();
     }
 
-    @ParameterizedTest @ValueSource(strings = {"config.yml", "spawn-catalog.yml", "shops.dat", "checkout/transactions.log"})
+    @ParameterizedTest @ValueSource(strings = {"config.yml", "spawn-catalog.yml", "shops.dat", "checkout/transactions.log", "legacy-checkout/transactions.log"})
     void missingMigratedCoreFileCannotBeRecreatedAsDefaults(String file) throws Exception {
         populate();
+        if (file.startsWith("legacy-checkout/")) {
+            try (FileJournal ignored = new FileJournal(legacy().resolve("legacy-checkout"))) { }
+        }
+        Map<String, String> sourceBefore = contents(legacy());
         try (var ignored = open()) { }
         Files.delete(excel().resolve(file));
         assertBlocked();
         assertFalse(Files.exists(excel().resolve(file)));
+        assertEquals(sourceBefore, contents(legacy()));
     }
 
     @Test void movingTheEntireServerRequiresOfflineProvenanceReview() throws Exception {

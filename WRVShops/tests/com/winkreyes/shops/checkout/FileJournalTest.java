@@ -10,6 +10,7 @@ import java.nio.channels.FileLock;
 import java.util.concurrent.TimeUnit;
 import com.winkreyes.shops.LegacyDataMigration;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.nio.file.*;
 import java.time.Instant;
 import java.util.*;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class FileJournalTest {
@@ -144,6 +146,184 @@ class FileJournalTest {
             assertTrue(reopened.requiresRecovery());
             assertEquals("unknown withdrawal", reopened.recoveryReason());
         }
+    }
+
+    @ParameterizedTest @EnumSource(value = Stage.class, names = {"LEGACY_COMMITTED", "LEGACY_NO_CHANGE"})
+    void legacyPaidAndFreeTerminalTransactionsCloseAndReopenCleanly(Stage terminal) throws Exception {
+        try (FileJournal journal = new FileJournal(directory)) {
+            for (long amount : List.of(0L, 1L, 500L, Money.MAX_MINOR_UNITS)) {
+                Quote quote = quote(amount);
+                journal.record(quote, Stage.LEGACY_INTENT, "external inventories and accounts before commit");
+                journal.record(quote, terminal, "verified external outcome");
+            }
+        }
+        assertFalse(Files.exists(directory.resolve(FileJournal.SESSION_FILE)));
+        List<String> lines = Files.readAllLines(directory.resolve(FileJournal.LOG_FILE));
+        assertEquals(8, lines.size());
+        assertEquals("0", lines.getFirst().split("\t")[7]);
+        assertEquals("LEGACY_INTENT", lines.getFirst().split("\t")[10]);
+        try (FileJournal reopened = new FileJournal(directory)) { assertFalse(reopened.requiresRecovery()); }
+    }
+
+    @ParameterizedTest @ValueSource(longs = {0, 500})
+    void unfinishedLegacyIntentLocksRestartEvenWithoutSessionMarker(long amount) throws Exception {
+        try (FileJournal journal = new FileJournal(directory)) {
+            journal.record(quote(amount), Stage.LEGACY_INTENT, "before any external side effect");
+        }
+        assertTrue(Files.exists(directory.resolve(FileJournal.SESSION_FILE)));
+        Files.delete(directory.resolve(FileJournal.SESSION_FILE));
+        try (FileJournal reopened = new FileJournal(directory)) {
+            assertTrue(reopened.requiresRecovery());
+            assertTrue(reopened.recoveryReason().contains("incomplete"));
+            assertThrows(IOException.class, () -> reopened.record(quote(), Stage.LEGACY_INTENT, "blocked"));
+            assertThrows(IOException.class, () -> reopened.record(quote(), Stage.WITHDRAW_INTENT, "blocked"));
+        }
+    }
+
+    @ParameterizedTest @ValueSource(longs = {0, 500})
+    void legacyRecoveryPreservesFlowAndReasonAfterRestart(long amount) throws Exception {
+        try (FileJournal journal = new FileJournal(directory)) {
+            Quote quote = quote(amount);
+            journal.record(quote, Stage.LEGACY_INTENT, "before external effects");
+            journal.record(quote, Stage.RECOVERY_REQUIRED, "external result could not be established");
+        }
+        Files.delete(directory.resolve(FileJournal.SESSION_FILE));
+        try (FileJournal reopened = new FileJournal(directory)) {
+            assertTrue(reopened.requiresRecovery());
+            assertEquals("external result could not be established", reopened.recoveryReason());
+            assertThrows(IOException.class, () -> reopened.record(quote(), Stage.LEGACY_INTENT, "blocked"));
+        }
+    }
+
+    @ParameterizedTest @EnumSource(value = Stage.class, names = {"LEGACY_COMMITTED", "LEGACY_NO_CHANGE"})
+    void completedLegacyTransactionStillRequiresDurableShutdown(Stage terminal) throws Exception {
+        FileJournal journal = new FileJournal(directory);
+        Quote quote = quote(0);
+        journal.record(quote, Stage.LEGACY_INTENT, "before");
+        journal.record(quote, terminal, "after");
+        journal.closeUnclean();
+        try (FileJournal reopened = new FileJournal(directory)) { assertTrue(reopened.requiresRecovery()); }
+    }
+
+    @ParameterizedTest @EnumSource(value = Stage.class, names = {"LEGACY_COMMITTED", "LEGACY_NO_CHANGE"})
+    void legacyTerminalWithoutIntentIsRejectedBeforeAppending(Stage terminal) throws Exception {
+        try (FileJournal journal = new FileJournal(directory)) {
+            assertThrows(IOException.class, () -> journal.record(quote(), terminal, "no intent"));
+            assertEquals(0, Files.size(directory.resolve(FileJournal.LOG_FILE)));
+            assertTrue(journal.requiresRecovery());
+        }
+    }
+
+    @ParameterizedTest @CsvSource({
+            "LEGACY_INTENT, WITHDRAW_INTENT", "LEGACY_INTENT, WITHDRAWN", "LEGACY_INTENT, NO_CHARGE",
+            "LEGACY_INTENT, TRANSFER_INTENT", "LEGACY_INTENT, REFUNDED", "LEGACY_INTENT, COMMITTED",
+            "LEGACY_INTENT, LEGACY_INTENT", "WITHDRAW_INTENT, LEGACY_INTENT",
+            "WITHDRAW_INTENT, LEGACY_COMMITTED", "WITHDRAW_INTENT, LEGACY_NO_CHANGE",
+            "RECOVERY_REQUIRED, LEGACY_INTENT", "RECOVERY_REQUIRED, LEGACY_COMMITTED"})
+    void nativeAndLegacyStagesCannotCrossFlows(Stage first, Stage next) throws Exception {
+        try (FileJournal journal = new FileJournal(directory)) {
+            Quote quote = quote();
+            journal.record(quote, first, "valid first stage");
+            long priorSize = Files.size(directory.resolve(FileJournal.LOG_FILE));
+            assertThrows(IOException.class, () -> journal.record(quote, next, "cross-flow attempt"));
+            assertEquals(priorSize, Files.size(directory.resolve(FileJournal.LOG_FILE)));
+            assertTrue(journal.requiresRecovery());
+        }
+    }
+
+    @ParameterizedTest @EnumSource(value = Stage.class, names = {"LEGACY_COMMITTED", "LEGACY_NO_CHANGE", "RECOVERY_REQUIRED"})
+    void legacyOutcomeIsSingleTransitionAndCannotBeRewritten(Stage terminal) throws Exception {
+        try (FileJournal journal = new FileJournal(directory)) {
+            Quote quote = quote(0);
+            journal.record(quote, Stage.LEGACY_INTENT, "before");
+            journal.record(quote, terminal, "verified or ambiguous outcome");
+            long priorSize = Files.size(directory.resolve(FileJournal.LOG_FILE));
+            assertThrows(IOException.class, () -> journal.record(quote, Stage.RECOVERY_REQUIRED, "rewrite outcome"));
+            assertEquals(priorSize, Files.size(directory.resolve(FileJournal.LOG_FILE)));
+            assertTrue(journal.requiresRecovery());
+        }
+    }
+
+    @ParameterizedTest @CsvSource({
+            "WITHDRAW_INTENT, 0", "RECOVERY_REQUIRED, 0", "WITHDRAW_INTENT, -1", "LEGACY_INTENT, -1",
+            "WITHDRAW_INTENT, 10000000001", "LEGACY_INTENT, 10000000001",
+            "WITHDRAW_INTENT, 9223372036854775807", "LEGACY_INTENT, 9223372036854775807",
+            "WITHDRAW_INTENT, -9223372036854775808", "LEGACY_INTENT, -9223372036854775808"})
+    void negativeOverflowOrNonLegacyZeroAmountsCannotBeAppended(Stage initial, long amount) throws Exception {
+        try (FileJournal journal = new FileJournal(directory)) {
+            assertThrows(IOException.class, () -> journal.record(quote(amount), initial, "invalid amount"));
+            assertEquals(0, Files.size(directory.resolve(FileJournal.LOG_FILE)));
+            assertTrue(journal.requiresRecovery());
+        }
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"buyer", "offer", "revision", "quantity-zero", "quantity-overflow", "fingerprint", "expiry"})
+    void invalidLegacyQuoteMetadataFailsBeforeAppending(String invalid) throws Exception {
+        Quote valid = quote(0);
+        Quote invalidQuote = new Quote(valid.id(), invalid.equals("buyer") ? null : valid.buyerId(), valid.sellerId(),
+                invalid.equals("offer") ? " " : valid.offerId(), invalid.equals("revision") ? -1 : valid.revision(),
+                invalid.equals("quantity-zero") ? 0 : invalid.equals("quantity-overflow") ? Integer.MAX_VALUE : valid.quantity(),
+                valid.amountMinorUnits(), invalid.equals("fingerprint") ? "" : valid.fingerprint(),
+                invalid.equals("expiry") ? null : valid.expiresAt());
+        try (FileJournal journal = new FileJournal(directory)) {
+            assertThrows(IOException.class, () -> journal.record(invalidQuote, Stage.LEGACY_INTENT, "invalid metadata"));
+            assertEquals(0, Files.size(directory.resolve(FileJournal.LOG_FILE)));
+        }
+    }
+
+    @ParameterizedTest @CsvSource({
+            "WITHDRAW_INTENT, 0", "RECOVERY_REQUIRED, 0", "LEGACY_COMMITTED, 0", "LEGACY_NO_CHANGE, 0",
+            "LEGACY_INTENT, -1", "LEGACY_INTENT, 10000000001", "LEGACY_INTENT, 9223372036854775808",
+            "WITHDRAW_INTENT, -1", "WITHDRAW_INTENT, 10000000001"})
+    void checksummedHistoryStillRejectsInvalidAmountsAndMissingLegacyIntent(Stage stage, String amount) throws Exception {
+        writeHistory(amount, stage);
+        try (FileJournal journal = new FileJournal(directory)) {
+            assertTrue(journal.requiresRecovery());
+            assertTrue(journal.recoveryReason().contains("corrupt"));
+        }
+    }
+
+    @ParameterizedTest @CsvSource({
+            "WITHDRAW_INTENT, LEGACY_COMMITTED", "WITHDRAW_INTENT, LEGACY_INTENT",
+            "LEGACY_INTENT, COMMITTED", "LEGACY_INTENT, NO_CHARGE", "LEGACY_INTENT, WITHDRAW_INTENT"})
+    void checksummedCrossFlowHistoryCannotFakeCompletion(Stage first, Stage second) throws Exception {
+        writeHistory("500", first, second);
+        try (FileJournal journal = new FileJournal(directory)) {
+            assertTrue(journal.requiresRecovery());
+            assertTrue(journal.recoveryReason().contains("corrupt"));
+        }
+    }
+
+    @Test void existingVersionOneNativeRecoveryHistoryRemainsReadable() throws Exception {
+        writeHistory("500", Stage.RECOVERY_REQUIRED, Stage.RECOVERY_REQUIRED);
+        try (FileJournal journal = new FileJournal(directory)) {
+            assertTrue(journal.requiresRecovery());
+            assertEquals("historical evidence", journal.recoveryReason());
+        }
+    }
+
+    private Quote quote(long amount) {
+        Quote quote = quote();
+        return new Quote(quote.id(), quote.buyerId(), quote.sellerId(), quote.offerId(), quote.revision(),
+                quote.quantity(), amount, quote.fingerprint(), quote.expiresAt());
+    }
+
+    private void writeHistory(String amount, Stage... stages) throws Exception {
+        Quote quote = quote();
+        StringBuilder history = new StringBuilder();
+        for (Stage stage : stages) {
+            String body = String.join("\t", "1", quote.id().toString(), quote.buyerId().toString(),
+                    quote.sellerId().toString(), encoded(quote.offerId()), Long.toString(quote.revision()),
+                    Integer.toString(quote.quantity()), amount, encoded(quote.fingerprint()),
+                    quote.expiresAt().toString(), stage.name(), Instant.now().toString(), encoded("historical evidence"));
+            String checksum = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(body.getBytes(StandardCharsets.UTF_8)));
+            history.append(body).append('\t').append(checksum).append('\n');
+        }
+        Files.writeString(directory.resolve(FileJournal.LOG_FILE), history);
+    }
+
+    private static String encoded(String text) {
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(text.getBytes(StandardCharsets.UTF_8));
     }
 
     @Test void anotherProcessOrPluginInstanceCannotOpenSameJournal() throws Exception {

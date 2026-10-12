@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MODULES = ('BedrockMenu', 'Leaderboard', 'MenuJoin', 'NoPhantoms',
            'RestartCountdown', 'ShopVillager', 'WealthBoard', 'WeekendXP', 'WRVShops')
 IDENTITIES = {'WRVShops': 'ExcelShops'}
+OVERLAY = 'ChestShop-ConfirmationGuard'
 NS = {'m': 'http://maven.apache.org/POM/4.0.0'}
 
 
@@ -25,14 +26,14 @@ class RepositoryTests(unittest.TestCase):
         seen = {}
         for path in ROOT.rglob('*'):
             rel = path.relative_to(ROOT)
-            if set(rel.parts) & {'.git', 'target', 'build', '__pycache__'}:
+            if set(rel.parts) & {'.git', 'target', 'build', '__pycache__', '.cache'}:
                 continue
             self.assertNotIn(str(rel).casefold(), seen, str(rel))
             seen[str(rel).casefold()] = str(rel)
 
     def test_all_modules_have_source_and_matching_versions(self):
         root = ET.parse(ROOT / 'pom.xml')
-        self.assertEqual(set(MODULES), {m.text for m in root.findall('m:modules/m:module', NS)})
+        self.assertEqual([OVERLAY] + list(MODULES), [m.text for m in root.findall('m:modules/m:module', NS)])
         for module in MODULES:
             with self.subTest(module=module):
                 d = descriptor(module)
@@ -61,6 +62,36 @@ class RepositoryTests(unittest.TestCase):
                             self.assertEqual(65, struct.unpack('>H', data[6:8])[0], entry)
                             self.assertTrue(entry.startswith('com/winkreyes'), entry)
                             self.assertFalse(entry.endswith('Test.class'), entry)
+
+    def test_guard_overlay_is_not_a_deployable_custom_plugin(self):
+        self.assertEqual(9, len(MODULES))
+        self.assertFalse((ROOT / OVERLAY / 'plugin.yml').exists())
+        overlay = ROOT / OVERLAY / 'target/ChestShop-ConfirmationGuard-1.0.0.jar'
+        with zipfile.ZipFile(overlay) as z:
+            self.assertNotIn('plugin.yml', z.namelist())
+            self.assertIn('com/Acrobot/ChestShop/Confirmation/ConfirmationGate.class', z.namelist())
+            for name in z.namelist():
+                if name.endswith('.class'):
+                    self.assertTrue(name.startswith('com/Acrobot/ChestShop/'), name)
+                    self.assertEqual(65, struct.unpack('>H', z.read(name)[6:8])[0], name)
+        guarded = ROOT / OVERLAY / 'target/ChestShop-3.13-pre-1-build474-confirmation.1.jar'
+        with zipfile.ZipFile(guarded) as z:
+            text = z.read('plugin.yml').decode()
+            self.assertRegex(text, r'(?m)^name: ChestShop$')
+            self.assertIn("version: '3.13-pre-1 (build 474)+confirmation.1'", text)
+            self.assertIn('com/Acrobot/ChestShop/ChestShop.class', z.namelist())
+            self.assertIn('com/Acrobot/ChestShop/Confirmation/ConfirmationGate.class', z.namelist())
+            self.assertIn('META-INF/confirmation-guard/build.json', z.namelist())
+            self.assertEqual((ROOT / OVERLAY / 'COPYING.LESSER').read_bytes(), z.read('META-INF/confirmation-guard/COPYING.LESSER'))
+            self.assertGreater(len(z.namelist()), 300, 'An overlay alone is not a complete ChestShop plugin')
+        sources = ROOT / OVERLAY / 'target/ChestShop-3.13-pre-1-build474-confirmation.1-sources.zip'
+        with zipfile.ZipFile(sources) as z:
+            self.assertIn('ChestShop-upstream/pom.xml', z.namelist())
+            self.assertIn('ChestShop-upstream/plugin/src/main/java/com/Acrobot/ChestShop/ChestShop.java', z.namelist())
+            self.assertIn('ChestShop-ConfirmationGuard/NOTICE', z.namelist())
+            self.assertIn('ChestShop-ConfirmationGuard/COPYING.LESSER', z.namelist())
+            self.assertIn('pom.xml', z.namelist())
+            self.assertIn('mvnw', z.namelist())
 
     def test_module_build_wrappers_use_repository_maven(self):
         for module in MODULES:

@@ -1,0 +1,24 @@
+ChestShop 3.13-pre-1 build 474, confirmation guard revision 1
+
+This is a modified third-party ChestShop artifact, NOT an original ChestShop
+release and NOT a renamed custom ExcelShops artifact.
+
+Original project: https://github.com/ChestShop-authors/ChestShop-3
+Original authors: Acrobot and the ChestShop contributors
+Upstream revision: dde7ee2155303714c2d5054deeccef4618e3939c
+Original official build: https://ci.minebench.de/job/ChestShop-3/474/
+License: GNU Lesser General Public License, version 2.1 (COPYING.LESSER).
+All original authorship and embedded third-party notices remain unchanged.
+
+Confirmation modifications made October 12, 2026:
+- Permanent default-deny trade admission inside ChestShop, retaining protection.
+- Explicit-count, freshly validated preparation and one-shot confirmed execution.
+- Guard economic, tax, item and stock-counter transaction entry points.
+- Refuse unsupported preview providers or tax configurations.
+- Detect changed inventories, partial item transfers and ambiguous outcomes.
+
+Modified source files have a dated header. New guard code is under LGPL 2.1.
+The accompanying complete corresponding-source ZIP contains the pinned upstream
+source, the modified source overlay, tests, notices and reproducible build tools.
+It must travel with any distributed guarded JAR. See README.md for instructions.
+Do not remove the upstream notices or redistribute this as an official release.
