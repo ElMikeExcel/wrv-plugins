@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent><groupId>com.winkreyes</groupId><artifactId>wrv-plugins</artifactId><version>1.0.0</version></parent>
-  <artifactId>WRVShops</artifactId><version>0.1.0</version>
+  <artifactId>ExcelShops</artifactId><version>0.1.1</version>
   <dependencies><dependency><groupId>com.github.MilkBowl</groupId><artifactId>VaultAPI</artifactId><version>1.7</version><scope>provided</scope><exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency></dependencies>
 <build><resources><resource><directory>${project.basedir}</directory><includes><include>plugin.yml</include><include>config.yml</include><include>spawn-catalog.yml</include><include>LICENSE</include></includes></resource></resources></build>
 </project>

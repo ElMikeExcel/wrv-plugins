@@ -1,0 +1,47 @@
+{
+  ".": {
+    "kind": "directory",
+    "sha256": null,
+    "mode": "0o755"
+  },
+  "checkout": {
+    "kind": "directory",
+    "sha256": null,
+    "mode": "0o755"
+  },
+  "checkout/transactions.log": {
+    "kind": "file",
+    "sha256": "0e5d806e96e5eec2037bb1c1af301f6b24f197420fe1497eb10572b3160a0902",
+    "mode": "0o644"
+  },
+  "config.yml": {
+    "kind": "file",
+    "sha256": "4c0fd50f646990b3329301a0a136fc73ce8461642fc8912e3dd606fe96d33acb",
+    "mode": "0o644"
+  },
+  "migration-fixture.txt": {
+    "kind": "file",
+    "sha256": "34f9555877c6d81003a96f1acb12b6949ec93a6f5b607e736e2be9ea18ebf8db",
+    "mode": "0o644"
+  },
+  "nested": {
+    "kind": "directory",
+    "sha256": null,
+    "mode": "0o755"
+  },
+  "nested/opaque-evidence.bin": {
+    "kind": "file",
+    "sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+    "mode": "0o644"
+  },
+  "shops.dat": {
+    "kind": "file",
+    "sha256": "523d4df8f28b4c7bdc2c3eb9595d3cc6ec4e9f582533e5871b59877f97082dae",
+    "mode": "0o600"
+  },
+  "spawn-catalog.yml": {
+    "kind": "file",
+    "sha256": "b4bdffcd642db8afe51577a3ae7888e2999435d820ad9900d048eb1f7c07e4b6",
+    "mode": "0o644"
+  }
+}

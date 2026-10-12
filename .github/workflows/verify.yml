@@ -17,9 +17,20 @@ jobs:
           cache: maven
       - name: Build all plugins and run regression checks
         run: ./build.sh
-      - name: Upload candidate JARs (not deployed)
+      - name: Package matching ExcelShops installation candidate (not deployed)
+        env:
+          CANDIDATE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          JAR=WRVShops/target/ExcelShops-0.1.1.jar
+          python3 WRVShops/tools/package_candidate.py \
+            --jar "$JAR" --expected-sha256 "$(sha256sum "$JAR" | cut -d' ' -f1)" \
+            --source-commit "$CANDIDATE_COMMIT" \
+            --output WRVShops/target/ExcelShops-0.1.1-install-candidate.zip
+      - name: Upload candidate JARs and matching shop pack (not deployed)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: wrv-plugins-candidate-${{ github.sha }}
-          path: '*/target/*.jar'
+          path: |
+            */target/*.jar
+            WRVShops/target/ExcelShops-0.1.1-install-candidate.zip
           if-no-files-found: error

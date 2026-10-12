@@ -1,4 +1,4 @@
-# Disposable exact-runtime shop harness
+# Disposable exact-runtime ExcelShops harness
 
 **Never install any harness JAR on a real server.** The fixture creates synthetic players, an in-memory fake Vault economy, fake claim records, test chests and signs, and shuts down its server when checks finish. This folder is source, configuration, runner and concise evidence only. Do not commit binaries, worlds, logs, account data or the sibling disposable runtime folder.
 
@@ -8,16 +8,16 @@
 - Paper API `26.2.build.123-stable`
 - Eclipse Temurin Java `25.0.4+7-LTS`
 - Official VaultAPI 1.7 interfaces, with an original in-memory test provider
-- Original synthetic claim provider exposing the public GriefPrevention API used by WRVShops
+- Original synthetic claim provider exposing the public GriefPrevention API used by ExcelShops
 - Loopback only `127.0.0.1:25579`; online authentication and whitelist required; RCON/query/management server disabled
 
-The synthetic players use native Paper inventories and actual `ItemStack` metadata. A test-only delegating `Server` proxy permits WRVShops to resolve their UUIDs without network clients. World blocks, chest storage, plugin loading, service lookup, scheduled callbacks, event dispatch, serialization and clean server restarts run on exact Paper.
+The synthetic players use native Paper inventories and actual `ItemStack` metadata. A test-only delegating `Server` proxy permits ExcelShops to resolve their UUIDs without network clients. World blocks, chest storage, plugin loading, service lookup, scheduled callbacks, event dispatch, serialization and clean server restarts run on exact Paper.
 
 This does not validate real Java/Bedrock client rendering, phone layouts, client packets, Geyser/Floodgate, the actual installed economy/GriefPrevention versions, player-save persistence, production permissions or another plugin's interference. No real player accounts or purchases are involved.
 
 ## Safe reproduction
 
-Requirements: Python 3, exact Java 25 JDK, built `WRVShops` JAR and a new disposable Paper directory.
+Requirements: Python 3, exact Java 25 JDK, built `ExcelShops` JAR and a new disposable Paper directory.
 
 1. Obtain the exact official Paper artifact using [Paper build metadata](https://fill.papermc.io/v3/projects/paper/versions/26.2/builds/123), with SHA-256 `7b7b3b43c009103e1971a0576c26f655a7dd9b56a0a2a4438e352c03a7fecd08`. Name it `paper-26.2-123.jar`.
 2. Copy `server.properties.loopback` into the disposable folder as `server.properties`. Never use a production folder or world.
@@ -29,17 +29,56 @@ Requirements: Python 3, exact Java 25 JDK, built `WRVShops` JAR and a new dispos
 ```sh
 python3 verification/runtime-harness/run.py \
   --server-dir /path/to/new-disposable-server \
-  --plugin target/WRVShops-0.1.0.jar \
+  --plugin target/ExcelShops-0.1.1.jar \
+  --legacy-plugin /path/to/WRVShops-0.1.0.jar \
   --vault-api /path/to/VaultAPI-1.7.jar \
   --annotations-jar /path/to/annotations-26.0.2.jar \
   --java-home "$JAVA_HOME"
 ```
 
-The runner verifies dependency hashes and isolation settings, rejects unexpected plugin JARs or a port already in use, compiles original test providers/harness, and performs four complete boots: normal startup, a clean restart, missing Economy service, and Vault plugin/API entirely absent. Each run writes a manifest of artifact hashes and a console log only under the disposable server. A bounded timeout requests clean stop of the process it started, then terminates only that child if needed. It never finds or stops another server.
+The runner verifies dependency hashes and isolation settings, rejects unexpected plugin JARs or a port already in use, and compiles original test providers/harness. Without `--legacy-plugin` it performs the original four complete boots: normal startup, a clean restart, missing Economy service, and Vault plugin/API entirely absent. With the exact original candidate supplied it performs eleven full boots, including the migration sequence below. Each run writes a manifest of artifact hashes and a console log only under the disposable server. A bounded timeout requests clean stop of the process it started, then terminates only that child if needed. It never finds or stops another server.
 
-Provider fixtures are deliberately named `Vault` and `GriefPrevention` so WRVShops exercises its actual declared dependency and reflection paths. They are clearly marked `0.0.0-test-only`, are not substitutes for the real plugins, and must never be distributed as production dependencies.
+Provider fixtures are deliberately named `Vault` and `GriefPrevention` so ExcelShops exercises its actual declared dependency and reflection paths. They are clearly marked `0.0.0-test-only`, are not substitutes for the real plugins, and must never be distributed as production dependencies.
 
-## Evidence
+## Migration sequence
+
+`--legacy-plugin` requires original WRVShops 0.1.0 SHA-256 `16de2e1477f561987717412b4c338eda136cd1025fad85e3c692ad29fc663aaa` and a fresh disposable fixture. The runner never overwrites a pre-existing shop data folder.
+
+1. Boot the original WRVShops JAR to create an authentic legacy registry, journal and physical world fixture. Shut down normally. Add opaque synthetic evidence files to prove that unknown files are copied too.
+2. Replace only that isolated plugin JAR with ExcelShops. Run normal checks, clean restart, missing Economy and missing Vault. Verify old shop IDs, exact item metadata, all seven persisted stock items, original `wrvshops` PDC tags, new command identity and old command alias.
+3. Restore the runner's own legacy snapshot, add a synthetic dirty-session marker, then boot ExcelShops and restart it. Recovery must remain locked, stock and economy must be untouched, and the destination journal must remain byte-identical to the old journal. The marker must remain present after normal shutdown.
+4. Restore the legacy snapshot again, create a conflicting nonempty ExcelShops target folder, then boot and restart. Migration must fail closed without changing either folder; old PDC-tagged chests and signs must remain protected even before registry initialization.
+
+5. Restore the genuine legacy snapshot, remove only its synthetic transaction log, then boot and restart. Existing shop state with missing journal evidence must stop before migration staging, never create a new target or substitute journal, and continue protecting the old tagged stock.
+
+Every renamed-plugin boot compares all legacy file hashes, directory/file types and permission modes. Dirty and conflict scenarios check protected physical opening, owner opening, chest/sign breaks, hoppers, player interactions, truthful command feedback and unchanged item stock. The snapshots contain only this run's disposable synthetic data. The runner waits for each child process to exit and checks loopback port 25579 after every boot.
+
+## Verified ExcelShops 0.1.1 candidate
+
+Final tested JAR SHA-256: `5d8628c0855f6664e1434b69234359bfe0c5cd0598885fb391e851f1ad2850e1`.
+
+The accepted 2026-10-12 UTC run passed all **11 full server boots / 852 assertions / zero failures** on exact Paper 26.2 #123 and Temurin 25.0.4+7-LTS:
+
+- Original WRVShops baseline: 35 groups / 238 assertions, establishing the genuine old registry, journal and world fixture
+- ExcelShops clean migration: 35 groups / 245 assertions
+- ExcelShops clean restart: 35 groups / 245 assertions
+- Missing Economy service: 7 assertions
+- Missing Vault plugin and API: 11 assertions
+- Dirty legacy migration and restart: 19 assertions each
+- Conflicting data folders and restart: 17 assertions each
+- Missing legacy transaction journal and restart: 17 assertions each
+
+The renamed candidate accounts for 614 assertions; 238 prepare and verify the original legacy fixture. All legacy file hashes, directory/file types and permission modes remained unchanged during every renamed-plugin boot. Dirty migration retained the exact old transaction journal and recovery marker across restart. Conflict and missing-journal startup stayed in protection-only mode without changing either data folder; missing evidence never produced a fresh substitute journal or reached staging. Old `wrvshops` PDC-tagged stock remained protected in every paused state.
+
+Every child process exited normally with code 0. Port `127.0.0.1:25579` was free after each boot and after final verification. The final production sources also compile against the exact runtime API with `javac --release 21`: 56 class files, deprecated-API notes only.
+
+`evidence-excel-0.1.1/` contains the accepted result, all 11 artifact/run manifests, per-case results, source compile hashes, official runtime provenance, legacy folder hash manifest and shutdown verification. The older `evidence/` directory is preserved unchanged as historical WRVShops 0.1.0 evidence.
+
+These are synthetic economy/claims/players on real Paper storage. Real Java and Bedrock client rendering, actual economy/GriefPrevention/Geyser/Floodgate versions, real player saving and live deployment remain unverified and require the separate staging checklist. No live server or real money was used.
+
+## Historical WRVShops 0.1.0 evidence
+
+The following evidence describes the original pre-rename candidate. The accepted renamed candidate results are above.
 
 Final candidate SHA-256: `16de2e1477f561987717412b4c338eda136cd1025fad85e3c692ad29fc663aaa`.
 

@@ -5,6 +5,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static com.winkreyes.shops.checkout.CheckoutService.*;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.util.concurrent.TimeUnit;
+import com.winkreyes.shops.LegacyDataMigration;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.Instant;
@@ -148,6 +152,119 @@ class FileJournalTest {
             assertFalse(journal.requiresRecovery());
         }
         try (FileJournal reopened = new FileJournal(directory)) { assertFalse(reopened.requiresRecovery()); }
+    }
+
+    @Test void realOtherProcessRemainsExcludedAfterEmptyAndPopulatedJournalParsing() throws Exception {
+        try (FileJournal journal = new FileJournal(directory)) {
+            assertEquals(13, probe(directory.resolve(FileJournal.LOG_FILE)));
+            commit(journal, quote(), "durable evidence");
+            assertEquals(13, probe(directory.resolve(FileJournal.LOG_FILE)));
+        }
+        assertEquals(0, probe(directory.resolve(FileJournal.LOG_FILE)));
+        try (FileJournal journal = new FileJournal(directory)) {
+            assertFalse(journal.requiresRecovery());
+            assertEquals(13, probe(directory.resolve(FileJournal.LOG_FILE)));
+            commit(journal, quote(), "more durable evidence after parsing");
+            assertEquals(13, probe(directory.resolve(FileJournal.LOG_FILE)));
+        }
+    }
+
+    @Test void failedSameJvmDuplicateDoesNotReleaseOriginalPosixLock() throws Exception {
+        try (FileJournal journal = new FileJournal(directory)) {
+            assertThrows(IOException.class, () -> new FileJournal(directory));
+            assertEquals(13, probe(directory.resolve(FileJournal.LOG_FILE)));
+            commit(journal, quote(), "owner remains usable");
+        }
+        assertEquals(0, probe(directory.resolve(FileJournal.LOG_FILE)));
+    }
+
+    @Test void migrationCannotDropSameJvmLegacyJournalLock() throws Exception {
+        Path source = directory.resolve("WRVShops");
+        Path target = directory.resolve("ExcelShops");
+        try (FileJournal journal = new FileJournal(source.resolve("checkout"))) {
+            assertThrows(IOException.class, () -> LegacyDataMigration.open(source, target, false));
+            assertEquals(13, probe(source.resolve("checkout/transactions.log")));
+            assertFalse(Files.exists(target));
+        }
+    }
+
+    @Test void journalCannotDropMigrationOwnedLegacyLockOrCreateSessionMarker() throws Exception {
+        Path source = directory.resolve("WRVShops");
+        Path target = directory.resolve("ExcelShops");
+        try (FileJournal ignored = new FileJournal(source.resolve("checkout"))) { }
+        try (var migration = LegacyDataMigration.open(source, target, false)) {
+            assertThrows(IOException.class, () -> new FileJournal(source.resolve("checkout")));
+            assertEquals(13, probe(source.resolve("checkout/transactions.log")));
+            assertFalse(Files.exists(source.resolve("checkout/active-session")));
+        }
+        assertEquals(0, probe(source.resolve("checkout/transactions.log")));
+    }
+
+    @Test void targetSnapshotCannotDropAlreadyOpenSameJvmExcelJournalLock() throws Exception {
+        Path source = directory.resolve("WRVShops");
+        Path target = directory.resolve("ExcelShops");
+        try (FileJournal journal = new FileJournal(target.resolve("checkout"))) {
+            assertThrows(IOException.class, () -> LegacyDataMigration.open(source, target, false));
+            assertEquals(13, probe(target.resolve("checkout/transactions.log")));
+            commit(journal, quote(), "target still owns lock");
+        }
+    }
+
+    @Test void malformedUtf8StillRejectsStartupAndReleasesReservation() throws Exception {
+        Path log = directory.resolve(FileJournal.LOG_FILE);
+        Files.write(log, new byte[]{(byte) 0xc3, 0x28, 0x0a});
+        assertThrows(IOException.class, () -> new FileJournal(directory));
+        assertEquals(0, probe(log));
+        Files.writeString(log, "");
+        try (FileJournal journal = new FileJournal(directory)) { assertFalse(journal.requiresRecovery()); }
+    }
+
+    @Test void hardlinkedJournalIsRejectedBeforeAnotherDescriptorCanReleaseAnyLock() throws Exception {
+        Path log = Files.writeString(directory.resolve(FileJournal.LOG_FILE), "");
+        Files.createLink(directory.resolve("log-alias"), log);
+        assertThrows(IOException.class, () -> new FileJournal(directory));
+        assertFalse(Files.exists(directory.resolve(FileJournal.SESSION_FILE)));
+    }
+
+    @Test void failedOrdinaryReaderCannotDropOwnedJournalLock() throws Exception {
+        try (FileJournal ignored = new FileJournal(directory)) {
+            assertThrows(IOException.class, () -> DataFileLock.openReadOnly(directory.resolve(FileJournal.LOG_FILE)));
+            assertEquals(13, probe(directory.resolve(FileJournal.LOG_FILE)));
+        }
+    }
+
+    @Test void ordinaryReaderReservationPreventsNewJournalOwnerUntilClosed() throws Exception {
+        Path log = Files.writeString(directory.resolve(FileJournal.LOG_FILE), "");
+        try (var reader = DataFileLock.openReadOnly(log)) {
+            assertThrows(IOException.class, () -> new FileJournal(directory));
+        }
+        try (FileJournal journal = new FileJournal(directory)) {
+            assertFalse(journal.requiresRecovery());
+            assertEquals(13, probe(log));
+        }
+    }
+
+    private int probe(Path log) throws Exception {
+        String classPath = System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
+        Process process = new ProcessBuilder(Path.of(System.getProperty("java.home"), "bin", "java").toString(),
+                "-cp", classPath, LockProbe.class.getName(), log.toString()).redirectErrorStream(true).start();
+        try {
+            assertTrue(process.waitFor(15, TimeUnit.SECONDS), "Lock probe timed out");
+            int exit = process.exitValue();
+            assertTrue(exit == 0 || exit == 13, () -> {
+                try { return new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8); }
+                catch (IOException failure) { return failure.toString(); }
+            });
+            return exit;
+        } finally { process.destroyForcibly(); }
+    }
+
+    public static final class LockProbe {
+        public static void main(String[] args) throws Exception {
+            try (FileChannel channel = FileChannel.open(Path.of(args[0]), StandardOpenOption.READ, StandardOpenOption.WRITE)) {
+                try (FileLock lock = channel.tryLock()) { if (lock == null) System.exit(13); }
+            }
+        }
     }
 
     @Test void invalidTransitionFailsClosedInsteadOfLoggingImpossibleSuccess() throws Exception {

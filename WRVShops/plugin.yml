@@ -1,5 +1,5 @@
-name: WRVShops
-version: 0.1.0
+name: ExcelShops
+version: 0.1.1
 main: com.winkreyes.shops.WRVShops
 api-version: '1.21'
 author: Wink Reyes Valley
@@ -7,9 +7,10 @@ license: MIT
 description: Chest-backed shops with guided setup and explicit final purchase confirmation.
 softdepend: [Vault, GriefPrevention, ChestShop, Geyser-Spigot, floodgate, DeluxeMenus]
 commands:
-  wrvshop:
+  excelshop:
+    aliases: [wrvshop]
     description: Browse the confirmed Spawn Shop or manage your chest shop
-    usage: /wrvshop [browse <item>|setup|manage|amount <number>]
+    usage: /excelshop [browse <item>|setup|manage|amount <number>]
     permission: wrvshops.use
 permissions:
   wrvshops.use:

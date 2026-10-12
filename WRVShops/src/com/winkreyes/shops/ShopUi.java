@@ -100,7 +100,7 @@ public final class ShopUi implements Listener {
         String details=s.name()+"\n"+cash(s.price())+(s.bundleSize()>1?" per bundle of "+s.bundleSize():" each")+"\nAvailable: "+max+"\nQuantity × price = total. Next: review, then final confirmation.";
         p.closeInventory(); // The new page token prevents closing the old page from cancelling this one.
         if(forms.number(p,"Choose quantity",details,String.valueOf(n),v->later(p,page,()->input.accept(v)),()->later(p,page,()->cancel(p))))return;
-        button(page,13,s.item(),s.name(),null,"Quantity: "+n+(s.bundleSize()>1?" bundles ("+(n*s.bundleSize())+" items)":""),cash(s.price())+" × "+n+" = "+cash(Money.multiply(s.price(),n)),"Use buttons, or /wrvshop amount <number>");
+        button(page,13,s.item(),s.name(),null,"Quantity: "+n+(s.bundleSize()>1?" bundles ("+(n*s.bundleSize())+" items)":""),cash(s.price())+" × "+n+" = "+cash(Money.multiply(s.price(),n)),"Use buttons, or /excelshop amount <number>");
         int[] delta={-64,-8,-1,1,8,64};int[] slots={18,19,20,24,25,26};
         for(int i=0;i<delta.length;i++){final int d=delta[i];button(page,slots[i],d<0?Material.RED_DYE:Material.LIME_DYE,(d>0?"+":"")+d,()->quantity(p,s,Math.max(1,Math.min(max,n+d))));}
         button(page,31,Material.LIME_CONCRETE,"Review purchase",()->buyReview(p,s,n),"Nothing is charged yet.");button(page,36,Material.ARROW,"Back",()->backToCatalog(p,s));button(page,44,Material.BARRIER,"Cancel",()->cancel(p));open(p,page);
@@ -158,7 +158,7 @@ public final class ShopUi implements Listener {
         Consumer<String> input=value->{try{long chosen=Money.parse(value);saveDraftPrice(draft,item,chosen);setupItems(p,draft);}catch(RuntimeException e){p.sendMessage(ChatColor.RED+"Use a positive price with up to 2 decimals.");setupPrice(p,draft,item,safe);}};page.numberInput=input;
         p.closeInventory();
         if(forms.number(p,"Set unit price",ShopAdapter.name(item)+"\nStock in chest: "+InventoryPlan.count(draft.proposal.contents(),item)+"\nEnter the price for ONE item. You will review before publishing.",java.math.BigDecimal.valueOf(safe,2).toPlainString(),v->later(p,page,()->input.accept(v)),()->later(p,page,()->cancel(p))))return;
-        button(page,13,item,ShopAdapter.name(item),null,"Unit price: "+cash(safe),"Stock: "+InventoryPlan.count(draft.proposal.contents(),item),"Use buttons, or /wrvshop amount <price>");
+        button(page,13,item,ShopAdapter.name(item),null,"Unit price: "+cash(safe),"Stock: "+InventoryPlan.count(draft.proposal.contents(),item),"Use buttons, or /excelshop amount <price>");
         long[] deltas={-10000,-1000,-100,-10,-1,1,10,100,1000,10000};int[] slots={18,19,20,21,22,27,28,29,30,31};
         for(int i=0;i<deltas.length;i++){final long d=deltas[i];button(page,slots[i],d<0?Material.RED_DYE:Material.LIME_DYE,(d<0?"-":"+")+cash(Math.abs(d)),()->setupPrice(p,draft,item,Math.max(1,Math.min(10000000000L,safe+d))));}
         button(page,40,Material.LIME_CONCRETE,"Use "+cash(safe)+" per item",()->{saveDraftPrice(draft,item,safe);setupItems(p,draft);},"Saves to this review only.");button(page,45,Material.ARROW,"Back",()->setupItems(p,draft));button(page,53,Material.BARRIER,"Cancel setup",()->cancel(p));open(p,page);

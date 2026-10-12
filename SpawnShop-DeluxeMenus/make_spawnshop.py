@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generates spawnshop.yml for DeluxeMenus.
 Retune ALL prices at once: pass a multiplier (1.0 = base list, 1.5 = 50% pricier),
-install spawnshop.yml into DeluxeMenus and the matching spawn-catalog.yml into WRVShops.
+install spawnshop.yml into DeluxeMenus and the matching spawn-catalog.yml into ExcelShops.
 Restart the staged server to load the authoritative catalog; never deploy only one file.
 Base prices assume ~$600/hr for an all-jobs player ($10 per minute of play)."""
 import argparse
@@ -52,9 +52,9 @@ ITEMS = [
 
 def q(s): return "'" + s.replace("'", "''") + "'"
 def render(multiplier=1.0):
-    """Display-only entry menu: WRVShops owns quotes, validation and final confirmation."""
+    """Display-only entry menu: ExcelShops owns quotes, validation and final confirmation."""
     multiplier = validate_multiplier(multiplier)
-    out = ["# AUTO-GENERATED. Install matching WRVShops spawn-catalog.yml with this menu.",
+    out = ["# AUTO-GENERATED. Install matching ExcelShops spawn-catalog.yml with this menu.",
            "menu_title: '&2&lSpawn Shop'", "open_command: shop", "size: 45", "items:",
            "  balance:", "    material: GOLD_NUGGET", "    slot: 4",
            "    display_name: '&e&lYour money: &f$%vault_eco_balance_formatted%'",
@@ -65,13 +65,13 @@ def render(multiplier=1.0):
     for key, slot, icon, name, give, amt, base, lore in ITEMS:
         p = price(base, multiplier)
         if p > 100_000_000:
-            raise ValueError("bundle price exceeds WRVShops safety limit")
+            raise ValueError("bundle price exceeds ExcelShops safety limit")
         label = name if amt == 1 else f"{amt} {name}"
         out += [f"  {key}:", f"    material: {icon}", f"    slot: {slot}", f"    amount: {min(amt,64)}",
                 f"    display_name: {q('&a&l' + label)}", "    lore:", f"      - {q('&7' + lore)}",
                 f"      - {q('&eBundle price: &f$' + str(p))}", "      - '&8Tap to choose quantity. No charge yet.'"]
         for side in ("left", "right"):
-            out += [f"    {side}_click_commands:", f"      - {q('[player] wrvshop browse ' + key)}"]
+            out += [f"    {side}_click_commands:", f"      - {q('[player] excelshop browse ' + key)}"]
     return "\n".join(out) + "\n"
 
 
@@ -82,7 +82,7 @@ def render_catalog(multiplier=1.0):
     for key, slot, icon, name, give, amt, base, lore in ITEMS:
         p = price(base, multiplier)
         if p > 100_000_000:
-            raise ValueError("bundle price exceeds WRVShops safety limit")
+            raise ValueError("bundle price exceeds ExcelShops safety limit")
         out += [f"  {key}:", f"    material: {icon}", f"    name: {q(name)}", f"    bundle-size: {amt}", f"    bundle-price: {q(str(p) + '.00')}"]
         if key in ("mending", "unbreaking", "efficiency"):
             level = {"mending": 1, "unbreaking": 3, "efficiency": 4}[key]
@@ -94,7 +94,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("multiplier", nargs="?", default="1.0", help="positive price multiplier (default: 1.0)")
     parser.add_argument("--output", type=Path, default=Path("spawnshop.yml"), help="output file (default: spawnshop.yml in the current directory)")
-    parser.add_argument("--catalog-output", type=Path, default=Path("spawn-catalog.yml"), help="matching WRVShops catalog output")
+    parser.add_argument("--catalog-output", type=Path, default=Path("spawn-catalog.yml"), help="matching ExcelShops catalog output")
     args = parser.parse_args(argv)
     try:
         multiplier = validate_multiplier(args.multiplier)

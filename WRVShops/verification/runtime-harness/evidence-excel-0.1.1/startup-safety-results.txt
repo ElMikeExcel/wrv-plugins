@@ -1,0 +1,36 @@
+verification-legacy-baseline: [13:20:57 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4+7-LTS; Eclipse Adoptium Temurin-25.0.4+7) on Linux 6.18.44 (amd64)
+verification-legacy-baseline: [13:20:57 INFO]: [bootstrap] Loading Paper 26.2-123-main@5001879 (2026-09-09T17:32:22Z) for Minecraft 26.2
+verification-first: [13:21:14 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4+7-LTS; Eclipse Adoptium Temurin-25.0.4+7) on Linux 6.18.44 (amd64)
+verification-first: [13:21:14 INFO]: [bootstrap] Loading Paper 26.2-123-main@5001879 (2026-09-09T17:32:22Z) for Minecraft 26.2
+verification-first: [13:21:22 INFO]: [ExcelShops] ExcelShops data check: MIGRATED
+verification-restart: [13:21:31 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4+7-LTS; Eclipse Adoptium Temurin-25.0.4+7) on Linux 6.18.44 (amd64)
+verification-restart: [13:21:31 INFO]: [bootstrap] Loading Paper 26.2-123-main@5001879 (2026-09-09T17:32:22Z) for Minecraft 26.2
+verification-restart: [13:21:38 INFO]: [ExcelShops] ExcelShops data check: ALREADY_MIGRATED
+verification-no-economy: [13:21:47 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4+7-LTS; Eclipse Adoptium Temurin-25.0.4+7) on Linux 6.18.44 (amd64)
+verification-no-economy: [13:21:47 INFO]: [bootstrap] Loading Paper 26.2-123-main@5001879 (2026-09-09T17:32:22Z) for Minecraft 26.2
+verification-no-economy: [13:21:54 INFO]: [ExcelShops] ExcelShops data check: ALREADY_MIGRATED
+verification-no-economy: [13:21:54 ERROR]: [ExcelShops] ExcelShops entered protection-only mode; purchases/setup unavailable: A working Vault economy provider is required
+verification-no-vault: [13:21:58 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4+7-LTS; Eclipse Adoptium Temurin-25.0.4+7) on Linux 6.18.44 (amd64)
+verification-no-vault: [13:21:58 INFO]: [bootstrap] Loading Paper 26.2-123-main@5001879 (2026-09-09T17:32:22Z) for Minecraft 26.2
+verification-no-vault: [13:22:04 INFO]: [ExcelShops] ExcelShops data check: ALREADY_MIGRATED
+verification-no-vault: [13:22:04 ERROR]: [ExcelShops] ExcelShops entered protection-only mode; purchases/setup unavailable: net/milkbowl/vault/economy/Economy
+verification-migration-dirty: [13:22:08 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4+7-LTS; Eclipse Adoptium Temurin-25.0.4+7) on Linux 6.18.44 (amd64)
+verification-migration-dirty: [13:22:08 INFO]: [bootstrap] Loading Paper 26.2-123-main@5001879 (2026-09-09T17:32:22Z) for Minecraft 26.2
+verification-migration-dirty: [13:22:15 INFO]: [ExcelShops] ExcelShops data check: MIGRATED
+verification-migration-dirty: [13:22:15 ERROR]: [ExcelShops] Purchases paused: Previous session did not shut down cleanly.. Preserve the journal and reconcile before enabling purchases.
+verification-migration-dirty-restart: [13:22:19 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4+7-LTS; Eclipse Adoptium Temurin-25.0.4+7) on Linux 6.18.44 (amd64)
+verification-migration-dirty-restart: [13:22:19 INFO]: [bootstrap] Loading Paper 26.2-123-main@5001879 (2026-09-09T17:32:22Z) for Minecraft 26.2
+verification-migration-dirty-restart: [13:22:25 INFO]: [ExcelShops] ExcelShops data check: ALREADY_MIGRATED
+verification-migration-dirty-restart: [13:22:25 ERROR]: [ExcelShops] Purchases paused: Previous session did not shut down cleanly.. Preserve the journal and reconcile before enabling purchases.
+verification-migration-conflict: [13:22:29 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4+7-LTS; Eclipse Adoptium Temurin-25.0.4+7) on Linux 6.18.44 (amd64)
+verification-migration-conflict: [13:22:29 INFO]: [bootstrap] Loading Paper 26.2-123-main@5001879 (2026-09-09T17:32:22Z) for Minecraft 26.2
+verification-migration-conflict: [13:22:35 ERROR]: [ExcelShops] ExcelShops entered protection-only mode; purchases/setup unavailable: Both WRVShops and ExcelShops contain data without valid migration provenance. Preserve both and reconcile offline.
+verification-migration-conflict-restart: [13:22:39 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4+7-LTS; Eclipse Adoptium Temurin-25.0.4+7) on Linux 6.18.44 (amd64)
+verification-migration-conflict-restart: [13:22:39 INFO]: [bootstrap] Loading Paper 26.2-123-main@5001879 (2026-09-09T17:32:22Z) for Minecraft 26.2
+verification-migration-conflict-restart: [13:22:46 ERROR]: [ExcelShops] ExcelShops entered protection-only mode; purchases/setup unavailable: Both WRVShops and ExcelShops contain data without valid migration provenance. Preserve both and reconcile offline.
+verification-migration-missing-journal: [13:22:50 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4+7-LTS; Eclipse Adoptium Temurin-25.0.4+7) on Linux 6.18.44 (amd64)
+verification-migration-missing-journal: [13:22:50 INFO]: [bootstrap] Loading Paper 26.2-123-main@5001879 (2026-09-09T17:32:22Z) for Minecraft 26.2
+verification-migration-missing-journal: [13:22:57 ERROR]: [ExcelShops] ExcelShops entered protection-only mode; purchases/setup unavailable: Legacy WRVShops has registry/session evidence but its checkout/transactions.log is missing or not a regular file. Preserve all data and reconcile offline; a fresh journal will not be created.
+verification-migration-missing-journal-restart: [13:23:00 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4+7-LTS; Eclipse Adoptium Temurin-25.0.4+7) on Linux 6.18.44 (amd64)
+verification-migration-missing-journal-restart: [13:23:00 INFO]: [bootstrap] Loading Paper 26.2-123-main@5001879 (2026-09-09T17:32:22Z) for Minecraft 26.2
+verification-migration-missing-journal-restart: [13:23:07 ERROR]: [ExcelShops] ExcelShops entered protection-only mode; purchases/setup unavailable: Legacy WRVShops has registry/session evidence but its checkout/transactions.log is missing or not a regular file. Preserve all data and reconcile offline; a fresh journal will not be created.

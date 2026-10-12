@@ -1,4 +1,4 @@
-# AUTO-GENERATED. Install matching WRVShops spawn-catalog.yml with this menu.
+# AUTO-GENERATED. Install matching ExcelShops spawn-catalog.yml with this menu.
 menu_title: '&2&lSpawn Shop'
 open_command: shop
 size: 45
@@ -27,9 +27,9 @@ items:
       - '&eBundle price: &f$40'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse bread'
+      - '[player] excelshop browse bread'
     right_click_commands:
-      - '[player] wrvshop browse bread'
+      - '[player] excelshop browse bread'
   steak:
     material: COOKED_BEEF
     slot: 11
@@ -40,9 +40,9 @@ items:
       - '&eBundle price: &f$80'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse steak'
+      - '[player] excelshop browse steak'
     right_click_commands:
-      - '[player] wrvshop browse steak'
+      - '[player] excelshop browse steak'
   gcarrot:
     material: GOLDEN_CARROT
     slot: 12
@@ -53,9 +53,9 @@ items:
       - '&eBundle price: &f$250'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse gcarrot'
+      - '[player] excelshop browse gcarrot'
     right_click_commands:
-      - '[player] wrvshop browse gcarrot'
+      - '[player] excelshop browse gcarrot'
   gapple:
     material: GOLDEN_APPLE
     slot: 13
@@ -66,9 +66,9 @@ items:
       - '&eBundle price: &f$300'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse gapple'
+      - '[player] excelshop browse gapple'
     right_click_commands:
-      - '[player] wrvshop browse gapple'
+      - '[player] excelshop browse gapple'
   torch:
     material: TORCH
     slot: 14
@@ -79,9 +79,9 @@ items:
       - '&eBundle price: &f$40'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse torch'
+      - '[player] excelshop browse torch'
     right_click_commands:
-      - '[player] wrvshop browse torch'
+      - '[player] excelshop browse torch'
   logs:
     material: OAK_LOG
     slot: 15
@@ -92,9 +92,9 @@ items:
       - '&eBundle price: &f$150'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse logs'
+      - '[player] excelshop browse logs'
     right_click_commands:
-      - '[player] wrvshop browse logs'
+      - '[player] excelshop browse logs'
   glass:
     material: GLASS
     slot: 16
@@ -105,9 +105,9 @@ items:
       - '&eBundle price: &f$180'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse glass'
+      - '[player] excelshop browse glass'
     right_click_commands:
-      - '[player] wrvshop browse glass'
+      - '[player] excelshop browse glass'
   iron:
     material: IRON_INGOT
     slot: 19
@@ -118,9 +118,9 @@ items:
       - '&eBundle price: &f$300'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse iron'
+      - '[player] excelshop browse iron'
     right_click_commands:
-      - '[player] wrvshop browse iron'
+      - '[player] excelshop browse iron'
   water:
     material: WATER_BUCKET
     slot: 20
@@ -131,9 +131,9 @@ items:
       - '&eBundle price: &f$100'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse water'
+      - '[player] excelshop browse water'
     right_click_commands:
-      - '[player] wrvshop browse water'
+      - '[player] excelshop browse water'
   saddle:
     material: SADDLE
     slot: 21
@@ -144,9 +144,9 @@ items:
       - '&eBundle price: &f$400'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse saddle'
+      - '[player] excelshop browse saddle'
     right_click_commands:
-      - '[player] wrvshop browse saddle'
+      - '[player] excelshop browse saddle'
   nametag:
     material: NAME_TAG
     slot: 22
@@ -157,9 +157,9 @@ items:
       - '&eBundle price: &f$350'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse nametag'
+      - '[player] excelshop browse nametag'
     right_click_commands:
-      - '[player] wrvshop browse nametag'
+      - '[player] excelshop browse nametag'
   lead:
     material: LEAD
     slot: 23
@@ -170,9 +170,9 @@ items:
       - '&eBundle price: &f$150'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse lead'
+      - '[player] excelshop browse lead'
     right_click_commands:
-      - '[player] wrvshop browse lead'
+      - '[player] excelshop browse lead'
   pearl:
     material: ENDER_PEARL
     slot: 24
@@ -183,9 +183,9 @@ items:
       - '&eBundle price: &f$400'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse pearl'
+      - '[player] excelshop browse pearl'
     right_click_commands:
-      - '[player] wrvshop browse pearl'
+      - '[player] excelshop browse pearl'
   rocket:
     material: FIREWORK_ROCKET
     slot: 25
@@ -196,9 +196,9 @@ items:
       - '&eBundle price: &f$200'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse rocket'
+      - '[player] excelshop browse rocket'
     right_click_commands:
-      - '[player] wrvshop browse rocket'
+      - '[player] excelshop browse rocket'
   xp:
     material: EXPERIENCE_BOTTLE
     slot: 29
@@ -209,9 +209,9 @@ items:
       - '&eBundle price: &f$500'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse xp'
+      - '[player] excelshop browse xp'
     right_click_commands:
-      - '[player] wrvshop browse xp'
+      - '[player] excelshop browse xp'
   mending:
     material: ENCHANTED_BOOK
     slot: 30
@@ -222,9 +222,9 @@ items:
       - '&eBundle price: &f$600'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse mending'
+      - '[player] excelshop browse mending'
     right_click_commands:
-      - '[player] wrvshop browse mending'
+      - '[player] excelshop browse mending'
   unbreaking:
     material: ENCHANTED_BOOK
     slot: 32
@@ -235,9 +235,9 @@ items:
       - '&eBundle price: &f$450'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse unbreaking'
+      - '[player] excelshop browse unbreaking'
     right_click_commands:
-      - '[player] wrvshop browse unbreaking'
+      - '[player] excelshop browse unbreaking'
   efficiency:
     material: ENCHANTED_BOOK
     slot: 33
@@ -248,6 +248,6 @@ items:
       - '&eBundle price: &f$450'
       - '&8Tap to choose quantity. No charge yet.'
     left_click_commands:
-      - '[player] wrvshop browse efficiency'
+      - '[player] excelshop browse efficiency'
     right_click_commands:
-      - '[player] wrvshop browse efficiency'
+      - '[player] excelshop browse efficiency'

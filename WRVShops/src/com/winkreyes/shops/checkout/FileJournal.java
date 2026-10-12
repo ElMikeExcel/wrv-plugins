@@ -3,10 +3,12 @@ package com.winkreyes.shops.checkout;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.FilterReader;
+import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.channels.OverlappingFileLockException;
+import java.nio.channels.Channels;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,7 +47,7 @@ public final class FileJournal implements Journal {
     private final Path directory;
     private final Path sessionFile;
     private final FileChannel channel;
-    private final FileLock fileLock;
+    private final DataFileLock dataLock;
     private final Map<UUID, Stage> states = new HashMap<>();
     private boolean recovery;
     private String reason = "";
@@ -56,20 +58,15 @@ public final class FileJournal implements Journal {
         Files.createDirectories(this.directory);
         this.sessionFile = this.directory.resolve(SESSION_FILE);
         Path log = this.directory.resolve(LOG_FILE);
-        FileChannel opened = FileChannel.open(log, StandardOpenOption.CREATE,
-                StandardOpenOption.READ, StandardOpenOption.WRITE);
-        FileLock lock = null;
+        DataFileLock acquired = DataFileLock.open(log, true);
         try {
-            try { lock = opened.tryLock(); }
-            catch (OverlappingFileLockException ex) { throw new IOException("Checkout journal is already open.", ex); }
-            if (lock == null) throw new IOException("Checkout journal is locked by another process.");
-            channel = opened;
-            fileLock = lock;
+            dataLock = acquired;
+            channel = acquired.channel();
             if (Files.exists(sessionFile)) requireRecovery("Previous session did not shut down cleanly.");
-            if (Files.size(log) > MAX_JOURNAL_BYTES) {
+            if (channel.size() > MAX_JOURNAL_BYTES) {
                 requireRecovery("Journal exceeded its safe size limit; reconcile and archive it offline.");
             } else {
-                readJournal(log);
+                readJournal();
             }
             if (states.values().stream().anyMatch(stage -> !stage.terminal())) {
                 requireRecovery("Journal contains an incomplete or uncertain transaction.");
@@ -78,8 +75,7 @@ public final class FileJournal implements Journal {
             syncDirectory();
             channel.position(channel.size());
         } catch (IOException | RuntimeException | Error ex) {
-            if (lock != null) try { lock.release(); } catch (IOException ignored) { }
-            try { opened.close(); } catch (IOException ignored) { }
+            try { acquired.close(); } catch (IOException secondary) { ex.addSuppressed(secondary); }
             throw ex;
         }
     }
@@ -121,8 +117,15 @@ public final class FileJournal implements Journal {
         }
     }
 
-    private void readJournal(Path log) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(log, StandardCharsets.UTF_8)) {
+    private void readJournal() throws IOException {
+        channel.position(0);
+        Reader decoded = Channels.newReader(channel, StandardCharsets.UTF_8.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPORT).onUnmappableCharacter(CodingErrorAction.REPORT), -1);
+        // Closing another descriptor for this inode would release a POSIX process lock.
+        // Decode through the owned channel, and leave its lifetime to dataLock.
+        try (BufferedReader reader = new BufferedReader(new FilterReader(decoded) {
+            @Override public void close() { }
+        })) {
             String line;
             while ((line = readBoundedLine(reader)) != null) {
                 if (line.length() > MAX_LINE_LENGTH) throw new IllegalArgumentException("Oversized record.");
@@ -184,7 +187,7 @@ public final class FileJournal implements Journal {
     private void createSessionMarker() throws IOException {
         if (Files.exists(sessionFile)) return;
         try (FileChannel marker = FileChannel.open(sessionFile, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
-            ByteBuffer content = StandardCharsets.UTF_8.encode("WRVShops active session " + UUID.randomUUID() + " " + Instant.now() + "\n");
+            ByteBuffer content = StandardCharsets.UTF_8.encode("ExcelShops active session " + UUID.randomUUID() + " " + Instant.now() + "\n");
             while (content.hasRemaining()) marker.write(content);
             marker.force(true);
         }
@@ -238,8 +241,7 @@ public final class FileJournal implements Journal {
             }
         } finally {
             closed = true;
-            try { fileLock.release(); }
-            finally { channel.close(); }
+            dataLock.close();
         }
     }
 }

@@ -163,8 +163,8 @@ public final class ShopRegistry {
             if (!chest.update(false, false)) throw new RegistryException("The chest changed before it could be registered.");
             sign.getPersistentDataContainer().set(SHOP_ID, PersistentDataType.STRING, shop.id().toString());
             for (Side side : Side.values()) {
-                sign.getSide(side).setLine(0, "[WRV Shop]"); sign.getSide(side).setLine(1, shop.ownerName());
-                sign.getSide(side).setLine(2, shop.offers().size() + " item type(s)"); sign.getSide(side).setLine(3, "Right-click to shop");
+                sign.getSide(side).setLine(0, "[Excel Shop]"); sign.getSide(side).setLine(1, shop.ownerName());
+                sign.getSide(side).setLine(2, shop.offers().size() + " item type(s)"); sign.getSide(side).setLine(3, "Tap to shop");
             }
             sign.setWaxed(true);
             if (!sign.update(false, false)) throw new RegistryException("The sign changed before it could be registered.");

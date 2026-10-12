@@ -10,6 +10,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 MODULES = ('BedrockMenu', 'Leaderboard', 'MenuJoin', 'NoPhantoms',
            'RestartCountdown', 'ShopVillager', 'WealthBoard', 'WeekendXP', 'WRVShops')
+IDENTITIES = {'WRVShops': 'ExcelShops'}
 NS = {'m': 'http://maven.apache.org/POM/4.0.0'}
 
 
@@ -36,7 +37,7 @@ class RepositoryTests(unittest.TestCase):
             with self.subTest(module=module):
                 d = descriptor(module)
                 pom = ET.parse(ROOT / module / 'pom.xml')
-                self.assertEqual(module, d['name'])
+                self.assertEqual(IDENTITIES.get(module, module), d['name'])
                 self.assertEqual(pom.find('m:version', NS).text, d['version'])
                 self.assertTrue((ROOT / module / 'src' / (d['main'].replace('.', '/') + '.java')).is_file())
                 self.assertEqual('1.21', d['api-version'])
@@ -46,7 +47,7 @@ class RepositoryTests(unittest.TestCase):
         for module in MODULES:
             with self.subTest(module=module):
                 d = descriptor(module)
-                jar = ROOT / module / 'target' / f"{module}-{d['version']}.jar"
+                jar = ROOT / module / 'target' / f"{d['name']}-{d['version']}.jar"
                 self.assertTrue(jar.is_file(), f'Run ./mvnw clean verify first: {jar}')
                 with zipfile.ZipFile(jar) as z:
                     self.assertIn(d['main'].replace('.', '/') + '.class', z.namelist())

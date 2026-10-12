@@ -26,6 +26,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class WRVShops extends JavaPlugin implements Listener,CommandExecutor {
     private ShopRegistry registry;
+    private LegacyDataMigration.Session migrationSession;
     private SpawnCatalog catalog;
     private CheckoutService checkout;
     private ShopAdapter adapter;
@@ -36,8 +37,10 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
     private record PendingSign(UUID placer,BlockPos chest,long at){}
     @Override public void onEnable(){
         getServer().getPluginManager().registerEvents(this,this);
-        Objects.requireNonNull(getCommand("wrvshop")).setExecutor(this);
+        Objects.requireNonNull(getCommand("excelshop")).setExecutor(this);
         try{
+            migrationSession=LegacyDataMigration.open(getDataFolder().toPath().resolveSibling("WRVShops"),getDataFolder().toPath(),getServer().getPluginManager().getPlugin("WRVShops")!=null);
+            getLogger().info("ExcelShops data check: "+migrationSession.outcome());
             saveDefaultConfig();
             registry=new ShopRegistry(this,getConfig().getBoolean("require-grief-prevention",true));registry.load();
             RegisteredServiceProvider<Economy> provider=getServer().getServicesManager().getRegistration(Economy.class);
@@ -47,15 +50,15 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
             adapter=new ShopAdapter(this,provider.getProvider());
             long ttl=getConfig().getLong("quote-seconds",60);if(ttl<1||ttl>300)throw new IllegalArgumentException("quote-seconds must be 1..300");
             checkout=new CheckoutService(adapter,new FileJournal(getDataFolder().toPath().resolve("checkout")),Clock.systemUTC(),Duration.ofSeconds(ttl));
-            ui=new ShopUi(this);Objects.requireNonNull(getCommand("wrvshop")).setExecutor(this);
+            ui=new ShopUi(this);Objects.requireNonNull(getCommand("excelshop")).setExecutor(this);
             getServer().getPluginManager().registerEvents(ui,this);
             if(checkout.recoveryRequired())getLogger().severe("Purchases paused: "+checkout.recoveryReason()+". Preserve the journal and reconcile before enabling purchases.");
-            getLogger().info("WRVShops enabled. No live shop migration is automatic. Economy: "+provider.getProvider().getName());
-        }catch(Exception|LinkageError e){getLogger().severe("WRVShops entered protection-only mode; purchases/setup unavailable: "+e.getMessage());}
+            getLogger().info("ExcelShops enabled. Legacy ChestShop signs are untouched. Economy: "+provider.getProvider().getName());
+        }catch(Exception|LinkageError e){getLogger().severe("ExcelShops entered protection-only mode; purchases/setup unavailable: "+e.getMessage());}
     }
     @Override public void onDisable(){
         if(ui!=null)ui.closeAll();placedSigns.clear();
-        if(checkout==null)return;
+        if(checkout==null){closeMigration();return;}
         try{
             // Money and world persistence are separate. Only a fully saved clean shutdown may
             // clear the journal's active-session marker. An abrupt crash remains fail-closed.
@@ -65,6 +68,10 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
             for(UUID id:dirtyWorlds){World w=getServer().getWorld(id);if(w==null)throw new IllegalStateException("A dirty shop world disappeared");w.save();}
             if(registry!=null)registry.save();checkout.close();
         }catch(Exception e){getLogger().severe("Clean shop shutdown could not be verified: "+e.getMessage());try{checkout.closeUnclean();}catch(Exception ignored){}}
+        finally{closeMigration();}
+    }
+    private void closeMigration(){
+        if(migrationSession!=null){try{migrationSession.close();}catch(Exception e){getLogger().severe("Could not release migration lock: "+e.getMessage());}finally{migrationSession=null;}}
     }
     public ShopRegistry getRegistry(){return registry;}
     public CheckoutService getCheckout(){return checkout;}

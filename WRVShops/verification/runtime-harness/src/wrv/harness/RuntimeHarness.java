@@ -46,10 +46,13 @@ public final class RuntimeHarness extends JavaPlugin {
 
     @Override public void onEnable() { Bukkit.getScheduler().runTaskLater(this, this::start, 20L); }
     private void start() {
-        shops = Bukkit.getPluginManager().getPlugin("WRVShops");
+        shops = Bukkit.getPluginManager().getPlugin(System.getProperty("wrv.test.plugin-name", "ExcelShops"));
         vault = (FakeVault) Bukkit.getPluginManager().getPlugin("Vault");
         world = Bukkit.getWorlds().getFirst();
         owner = fake(1, "TestOwner"); buyer = fake(2, "TestBuyer"); secondBuyer = fake(3, "TestBuyerTwo");
+        if (System.getProperty("wrv.test.migration-mode") != null) {
+            cases.add(new Case("legacy-migration-" + System.getProperty("wrv.test.migration-mode"), this::migrationSafety)); next(); return;
+        }
         if (Boolean.getBoolean("wrv.test.no-economy")) {
             cases.add(new Case("provider-absent-startup-keeps-stock-protected", this::protectionOnlyStartup)); next(); return;
         }
@@ -57,16 +60,55 @@ public final class RuntimeHarness extends JavaPlugin {
             check(Bukkit.getVersion().equals("26.2-123-5001879 (MC: 26.2)"), Bukkit.getVersion());
             check(Bukkit.getBukkitVersion().equals("26.2.build.123-stable"), Bukkit.getBukkitVersion());
             check(System.getProperty("java.runtime.version").equals("25.0.4+7-LTS"), System.getProperty("java.runtime.version"));
-            check(shops != null && shops.isEnabled(), "WRVShops enabled with registered fake Economy");
+            check(shops != null && shops.isEnabled(), "shop plugin enabled with registered fake Economy");
             check(vault != null && vault.isEnabled(), "disposable fake Vault loaded");
+            check(shops.getDataFolder().getName().equals(System.getProperty("wrv.test.plugin-name", "ExcelShops")), "data folder matches declared plugin identity");
+            if (shops.getName().equals("ExcelShops")) {
+                check(Bukkit.getPluginCommand("excelshop").getPlugin() == shops, "ExcelShops primary command belongs to renamed plugin");
+                check(Bukkit.getPluginCommand("wrvshop").getPlugin() == shops, "legacy command alias remains available");
+            }
         }));
         cases.add(new Case("real-item-metadata-and-storage-plan", this::metadataPlan));
         cases.add(new Case("install-synthetic-player-lookup", this::installLookup));
         addShopCases();
         next();
     }
+    private void migrationSafety() throws Exception {
+        String mode = System.getProperty("wrv.test.migration-mode");
+        boolean startupBlocked = mode.equals("conflict") || mode.equals("missing-journal");
+        check(shops != null && shops.isEnabled(), "renamed plugin stays enabled to protect stock");
+        check(shops.getName().equals("ExcelShops"), "new runtime identity is ExcelShops");
+        check(Bukkit.getPluginManager().getPlugin("WRVShops") == null, "legacy plugin is not loaded alongside the new plugin");
+        if (startupBlocked) {
+            check(checkout() == null && ui() == null, "unsafe migration source or target stops checkout and setup initialization");
+        } else {
+            check(checkout() != null && checkout().recoveryRequired(), "legacy dirty session requires recovery after migration and restart");
+            check(Files.exists(shops.getDataFolder().toPath().resolve("checkout/active-session")), "recovery marker remains present");
+            check(!registry().all().isEmpty(), "legacy registry remains loaded while recovery-locked");
+        }
+        loadFixtureChunks(80);
+        Chest chest = (Chest) world.getBlockAt(80, 5, 0).getState();
+        Block sign = world.getBlockAt(80, 5, 1);
+        ItemStack[] before = chest.getBlockInventory().getContents();
+        for (Block block : List.of(chest.getBlock(), sign)) {
+            check(((TileState) block.getState()).getPersistentDataContainer().getKeys().stream().anyMatch(key -> key.getNamespace().equals("wrvshops")), "legacy wrvshops PDC tags remain present");
+            BlockBreakEvent broken = new BlockBreakEvent(block, buyer.player); Bukkit.getPluginManager().callEvent(broken); check(broken.isCancelled(), "tagged legacy block break blocked while migration/recovery paused");
+        }
+        for (FakePlayer player : List.of(owner, buyer)) {
+            InventoryOpenEvent open = new InventoryOpenEvent(player.view(chest.getBlockInventory())); Bukkit.getPluginManager().callEvent(open); check(open.isCancelled(), "owner and buyer physical access blocked while paused");
+        }
+        ItemStack sample = Arrays.stream(before).filter(Objects::nonNull).findFirst().orElseThrow();
+        InventoryMoveItemEvent move = new InventoryMoveItemEvent(chest.getBlockInventory(), sample, Bukkit.createInventory(null, 9), true); Bukkit.getPluginManager().callEvent(move); check(move.isCancelled(), "hopper extraction blocked while paused");
+        PlayerInteractEvent interact = new PlayerInteractEvent(buyer.player, Action.RIGHT_CLICK_BLOCK, null, chest.getBlock(), BlockFace.SOUTH, EquipmentSlot.HAND); Bukkit.getPluginManager().callEvent(interact); check(interact.isCancelled(), "interaction cannot expose paused physical stock");
+        check(Bukkit.getPluginCommand("excelshop").execute(buyer.player, "excelshop", new String[0]), "renamed command remains registered");
+        check(buyer.messages.stream().anyMatch(message -> message.contains("paused")), "command clearly reports paused migration/recovery state");
+        check(vault.calls.isEmpty(), "migration/recovery probe makes no economy calls");
+        check(Arrays.equals(before, chest.getBlockInventory().getContents()), "migration/recovery leaves original stock untouched");
+        check(Arrays.stream(before).filter(Objects::nonNull).mapToInt(ItemStack::getAmount).sum() == 7, "all seven legacy fixture items retained");
+        getLogger().info("WRV_SHOPS_HARNESS_MIGRATION_" + mode.toUpperCase(Locale.ROOT).replace('-', '_') + " verified");
+    }
     private void protectionOnlyStartup() throws Exception {
-        check(shops != null && shops.isEnabled(), "WRVShops remains loaded to protect chests without economy service");
+        check(shops != null && shops.isEnabled(), "ExcelShops remains loaded to protect chests without economy service");
         check(checkout() == null && ui() == null, "checkout and setup remain unavailable");
         loadFixtureChunks(80);
         ShopRecord shop = registry().findByChest(world.getBlockAt(80, 5, 0)).orElseThrow();
@@ -227,6 +269,9 @@ public final class RuntimeHarness extends JavaPlugin {
             UUID id = UUID.fromString(state.getProperty("shop-id"));
             ShopRecord restored = registry().findById(id).orElseThrow();
             check(restored.chest().x() == 80, "shop registry restored before fixture writes");
+            for (Block block : List.of(restored.chest().resolve(Bukkit.getServer()), restored.sign().resolve(Bukkit.getServer()))) {
+                check(((TileState) block.getState()).getPersistentDataContainer().getKeys().stream().anyMatch(key -> key.getNamespace().equals("wrvshops")), "original wrvshops PDC namespace retained after rename/restart");
+            }
             Chest persisted = registry().validate(restored);
             check(InventoryPlan.count(persisted.getBlockInventory().getContents(), restored.offers().getFirst().item()) == 7, "physical stock persists across full server restart");
             check(restored.offers().getFirst().item().isSimilar(named(Material.AMETHYST_SHARD, "Persisted shop sample")), "item metadata survives registry load");

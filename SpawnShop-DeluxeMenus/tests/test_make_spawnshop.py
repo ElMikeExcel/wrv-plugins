@@ -70,7 +70,7 @@ class SpawnShopTest(unittest.TestCase):
             rendered = shop.render(multiplier)
             for key, slot, icon, name, give, amount, base, lore in shop.ITEMS:
                 block = re.search(rf"^  {key}:\n(.*?)(?=^  \w+:|\Z)", rendered, re.M | re.S).group(1)
-                self.assertEqual(block.count(f"[player] wrvshop browse {key}"), 2)
+                self.assertEqual(block.count(f"[player] excelshop browse {key}"), 2)
                 self.assertIn(f"&eBundle price: &f${shop.price(base, multiplier)}", block)
             for forbidden in ("[takemoney]", "minecraft:give", "[givemoney]", "[console]", "[refresh]"):
                 self.assertNotIn(forbidden, rendered)

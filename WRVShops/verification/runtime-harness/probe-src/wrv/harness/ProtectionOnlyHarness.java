@@ -21,8 +21,8 @@ public final class ProtectionOnlyHarness extends JavaPlugin {
             check(Bukkit.getPluginManager().getPlugin("Vault") == null, "Vault plugin is absent");
             boolean unavailable = false; try { Class.forName("net.milkbowl.vault.economy.Economy"); } catch (ClassNotFoundException expected) { unavailable = true; }
             check(unavailable, "Vault API classes are absent from probe classloader");
-            Plugin shops = Bukkit.getPluginManager().getPlugin("WRVShops");
-            check(shops != null && shops.isEnabled(), "WRVShops handles missing Economy class and stays loaded for protection");
+            Plugin shops = Bukkit.getPluginManager().getPlugin("ExcelShops");
+            check(shops != null && shops.isEnabled(), "ExcelShops handles missing Economy class and stays loaded for protection");
             World world = Bukkit.getWorlds().getFirst();
             for (int x : new int[]{79, 80, 81}) for (int z : new int[]{-1, 0, 1}) { Chunk chunk = world.getChunkAt(x >> 4, z >> 4); chunk.load(true); chunk.addPluginChunkTicket(this); }
             FakePlayer buyer = new FakePlayer(UUID.fromString("667cf2d7-0000-4000-8000-000000000002"), "NoVaultBuyer", world);
