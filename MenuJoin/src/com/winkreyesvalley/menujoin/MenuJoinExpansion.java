@@ -8,7 +8,7 @@ public class MenuJoinExpansion extends PlaceholderExpansion {
     public MenuJoinExpansion(MenuJoin plugin) { this.plugin = plugin; }
     @Override public String getIdentifier() { return "menujoin"; }
     @Override public String getAuthor() { return "WinkReyesValley"; }
-    @Override public String getVersion() { return "1.0.0"; }
+    @Override public String getVersion() { return plugin.getDescription().getVersion(); }
     @Override public boolean persist() { return true; }
     @Override public String onPlaceholderRequest(Player p, String id) {
         if (p == null) return "";

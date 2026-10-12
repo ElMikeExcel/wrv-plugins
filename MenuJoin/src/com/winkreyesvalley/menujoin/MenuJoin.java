@@ -21,7 +21,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/** MenuJoin 1.2.0 - rebuilt from decompiled 1.1.0 (Argus) plus respawn/death/drop/compass features. */
+/** MenuJoin - recovered 1.2.0 behavior with inventory-safe compass delivery. */
 public class MenuJoin extends JavaPlugin implements Listener {
     private NamespacedKey disabledKey;
     private NamespacedKey compassKey; // menujoin:menu_compass - same as 1.1.0, existing compasses keep working
@@ -61,11 +61,10 @@ public class MenuJoin extends JavaPlugin implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
-        boolean open = !isDisabled(p);
         Bukkit.getScheduler().runTaskLater(this, () -> {
             if (!p.isOnline()) return;
             giveMenuCompass(p);
-            if (open) p.performCommand("menu");
+            if (!isDisabled(p)) p.performCommand("menu");
         }, 60L);
     }
 
@@ -108,11 +107,14 @@ public class MenuJoin extends JavaPlugin implements Listener {
         return isMenuCompass(p.getItemOnCursor());
     }
 
-    /** Returns true if a new compass was given. */
+    /** Returns true only if a new compass was placed in the player's inventory. */
     public boolean giveMenuCompass(Player p) {
         if (hasMenuCompass(p)) return false;
-        p.getInventory().addItem(createMenuCompass()).values()
-                .forEach(left -> p.getWorld().dropItemNaturally(p.getLocation(), left));
+        // Never drop leftovers: a full inventory must not let /compass spawn unlimited items.
+        if (!p.getInventory().addItem(createMenuCompass()).isEmpty()) {
+            p.sendMessage("§eYour inventory is full. Make room, then use §6/compass §eto get your Server Menu compass.");
+            return false;
+        }
         return true;
     }
 
@@ -142,8 +144,8 @@ public class MenuJoin extends JavaPlugin implements Listener {
 
     private boolean compassCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player p)) { sender.sendMessage("Only players can use this command."); return true; }
-        if (giveMenuCompass(p)) p.sendMessage("§aHere's a fresh §6Server Menu §acompass! Tap it to open the menu.");
-        else p.sendMessage("§7You already have your §6Server Menu §7compass. Check your inventory!");
+        if (hasMenuCompass(p)) p.sendMessage("§7You already have your §6Server Menu §7compass. Check your inventory!");
+        else if (giveMenuCompass(p)) p.sendMessage("§aHere's a fresh §6Server Menu §acompass! Tap it to open the menu.");
         return true;
     }
 }

@@ -6,9 +6,9 @@ import org.bukkit.command.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.MerchantInventory;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -24,6 +24,15 @@ public final class ShopVillager extends JavaPlugin implements Listener {
         getLogger().info("ShopVillager enabled: tap a 'Spawn Shop' villager to open the shop.");
     }
 
+    @Override public void onDisable() {
+        last.clear();
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        last.remove(e.getPlayer().getUniqueId());
+    }
+
     static boolean isShop(Entity e) { return e != null && e.getScoreboardTags().contains(TAG); }
 
     private void open(Player p) {
@@ -32,7 +41,9 @@ public final class ShopVillager extends JavaPlugin implements Listener {
         if (prev != null && now - prev < 500) return; // one tap fires several events
         last.put(p.getUniqueId(), now);
         String cmd = getConfig().getString("open-command", "dm open spawnshop %player%").replace("%player%", p.getName());
-        Bukkit.getScheduler().runTask(this, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd));
+        Bukkit.getScheduler().runTask(this, () -> {
+            if (p.isOnline()) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+        });
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
@@ -51,7 +62,7 @@ public final class ShopVillager extends JavaPlugin implements Listener {
     // Safety net: never let a vanilla trade window open for a tagged villager.
     @EventHandler(priority = EventPriority.LOWEST)
     public void onOpen(InventoryOpenEvent e) {
-        if (e.getInventory().getType() == InventoryType.MERCHANT && e.getInventory() instanceof MerchantInventory mi
+        if (e.getInventory() instanceof MerchantInventory mi
                 && mi.getHolder() instanceof Entity ent && isShop(ent)) e.setCancelled(true);
     }
 
@@ -77,7 +88,11 @@ public final class ShopVillager extends JavaPlugin implements Listener {
             }
             case "tag" -> {
                 Entity t = p.getTargetEntity(5);
-                if (t instanceof Villager) { t.addScoreboardTag(TAG); p.sendMessage(ChatColor.GREEN + "That villager now opens the Spawn Shop."); }
+                if (t instanceof Villager v) {
+                    v.setInvulnerable(true);
+                    v.addScoreboardTag(TAG);
+                    p.sendMessage(ChatColor.GREEN + "That villager now opens the Spawn Shop.");
+                }
                 else p.sendMessage(ChatColor.RED + "Look at a villager within 5 blocks.");
             }
             default -> p.sendMessage(ChatColor.YELLOW + "/shopvillager create | remove | tag");

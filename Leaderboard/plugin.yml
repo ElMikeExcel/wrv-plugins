@@ -1,0 +1,10 @@
+name: Leaderboard
+version: 1.0.0
+author: Argus
+main: com.winkreyes.leaderboard.Leaderboard
+api-version: "1.21"
+description: /leaderboard shows every server leaderboard at once.
+commands:
+  leaderboard:
+    description: Show all server leaderboards
+    usage: /leaderboard

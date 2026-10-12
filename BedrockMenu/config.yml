@@ -1,0 +1,5 @@
+# World containing the village at x=-784, z=-272, used only if EssentialsSpawn
+# cannot supply a spawn. Empty chooses the first loaded NORMAL (overworld).
+# Set an explicit world name on multi-overworld servers. Missing or non-NORMAL
+# named worlds fail safely instead of using the player's Nether/End world.
+fallback-world: ''
