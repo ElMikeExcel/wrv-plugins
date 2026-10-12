@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent><groupId>com.winkreyes</groupId><artifactId>wrv-plugins</artifactId><version>1.0.0</version><relativePath>../../pom.xml</relativePath></parent>
+  <artifactId>Jobs-XP-Bridge-Check</artifactId><version>5.2.6.3-Excel-XP-1</version>
+  <!-- This compiles only the optional bridge, not the full Jobs plugin. It creates no installable JAR. -->
+  <build>
+    <sourceDirectory>${project.basedir}/../target/upstream/src/main/java</sourceDirectory>
+    <testSourceDirectory>${project.basedir}/../target/upstream/src/test/java</testSourceDirectory>
+    <plugins>
+      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><configuration>
+        <includes><include>com/gamingmesh/jobs/hooks/ExcelXpBonusBridge.java</include></includes>
+        <testIncludes><testInclude>com/gamingmesh/jobs/hooks/ExcelXpBonusBridgeTest.java</testInclude></testIncludes>
+        <compilerArgs><arg>-sourcepath</arg><arg>${project.build.directory}/empty-sourcepath</arg></compilerArgs>
+      </configuration></plugin>
+    </plugins>
+  </build>
+</project>

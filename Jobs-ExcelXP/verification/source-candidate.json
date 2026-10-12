@@ -1,0 +1,38 @@
+{
+  "status": "Source-only off-server candidate; not ready to install",
+  "date_utc": "2026-10-12",
+  "mcmmo": {
+    "candidate": "2.3.003-WRV-XP-3",
+    "upstream_commit": "058279c148a65bd708dc85067d3858f6adde1173",
+    "reconstructed_source_tree": "2c79f90b92f1cc80d178b46930e53f14c4283d0f",
+    "local_full_build": "Blocked at dependency resolution before compilation"
+  },
+  "jobs": {
+    "candidate": "5.2.6.3-Excel-XP-1",
+    "upstream_commit": "6fe3c272c3c970d4a94fbf7615953803eb722503",
+    "reconstructed_source_tree": "de2bd4457dc4fbf99ea6fc2042b480054e88079d",
+    "resources_config_and_locales_unchanged": true,
+    "full_award_tests": "21 cases written; not compiled or run",
+    "baseline_failure_comparison": "Not run",
+    "deployable_binary": "Not built"
+  },
+  "passed": {
+    "jobs_bridge_java_tests": 22,
+    "wrv_java_tests": 85,
+    "repository_checks": 5,
+    "shop_generator_checks": 9,
+    "patch_reconstruction_and_tree_comparison": true,
+    "independent_source_review": "No remaining source-level blocker within documented preserved-limit scope"
+  },
+  "remaining": [
+    "Full mcMMO and Jobs build/test validation",
+    "Exact Jobs dependencies and real-award regression execution",
+    "Disposable server paired-plugin runtime acceptance",
+    "Real Java and Geyser/Bedrock visual/gameplay acceptance",
+    "Explicit installation approval"
+  ],
+  "patches": {
+    "Jobs-ExcelXP/patches/0001-jobs-excel-xp-bonus.patch": "2ccf976f12b8d36e0c03dfb6c23aabe4e540881478526924c74280ea361d75ae",
+    "mcMMO-TogetherBonus/patches/0005-Extend-shared-XP-bonuses-to-Jobs.patch": "f6d0a5215d85fb63b1f2f019c02dd1c11f94d38293d9c695a701252dcd3e1875"
+  }
+}

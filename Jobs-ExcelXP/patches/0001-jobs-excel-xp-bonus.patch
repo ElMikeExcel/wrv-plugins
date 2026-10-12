@@ -1,0 +1,901 @@
+diff --git a/EXCEL-XP-PATCH.md b/EXCEL-XP-PATCH.md
+new file mode 100644
+index 0000000..ef0c3ff
+--- /dev/null
++++ b/EXCEL-XP-PATCH.md
+@@ -0,0 +1,107 @@
++# Jobs 5.2.6.3 Excel XP candidate
++
++This is an off-server paired candidate, not a live installation or an upstream version upgrade.
++
++## Provenance
++
++- Upstream: https://github.com/Zrips/Jobs
++- Exact base tag: `v5.2.6.3`
++- Exact base commit: `6fe3c272c3c970d4a94fbf7615953803eb722503`
++- Plugin name remains `Jobs`.
++- Candidate version: `5.2.6.3-Excel-XP-1`.
++- Preserve the upstream Apache/GPL license files and complete corresponding source when distributing a candidate JAR.
++
++## Why an XP-event listener alone is insufficient
++
++In the pinned upstream `Jobs.java`, normal `action` consumes the final
++`JobsExpGainEvent.getExp()` value, then caches it in `FASTPAYMENT` and applies it
++to `JobProgression.addExperience`.
++
++The cached `perform` path captures XP before its events and adds that old value to
++progression even after listeners change XP. Its displayed/logged XP can therefore
++differ from real progression. Changing that one local variable alone is also
++insufficient: cached XP already includes native and external event boosts, so
++repeating those boosts would compound them.
++
++The cached path is used by rapid same-material block breaks and the
++`payForAbove` block-physics path for sugar cane, bamboo, kelp and weeping vines.
++Ordinary gameplay rewards funnel through `Jobs.action`. Administrative
++`/jobs exp` and `/jobs grantxp` directly alter progression and intentionally do
++not receive gameplay Together/weekend bonuses.
++
++Sources:
++
++- https://github.com/Zrips/Jobs/blob/v5.2.6.3/src/main/java/com/gamingmesh/jobs/Jobs.java
++- https://github.com/Zrips/Jobs/blob/v5.2.6.3/src/main/java/com/gamingmesh/jobs/listeners/JobsPaymentListener.java
++- https://github.com/Zrips/Jobs/blob/v5.2.6.3/src/main/java/com/gamingmesh/jobs/container/JobProgression.java
++- https://github.com/Zrips/Jobs/blob/v5.2.6.3/src/main/java/com/gamingmesh/jobs/PlayerManager.java
++
++## Narrow changes
++
++1. Discover the paired mcMMO plugin lazily through three public reflected methods:
++   `isJobsXpBonusSupported()`, `getJobsXpBonusMultiplier(Player)` and
++   `notifyJobsXpGain(Player)`. No direct mcMMO dependency or new load-order edge.
++2. Expose `Jobs.isExcelXpBonusSupported()` as the paired-build capability marker.
++3. Apply the Excel multiplier after cancellable Jobs XP events, once per award.
++   Keep this multiplier out of the replay cache.
++4. Recompute only XP on cached replay using the current job progression/formula,
++   pre-payment event, native EXP boost/minimum, and XP-gain event. This avoids
++   compounding cached native or third-party XP boosts. Cached money and points
++   retain their existing behavior.
++5. Pass one final XP value to payment reporting, logging, and actual progression.
++6. Notify mcMMO only after positive XP really raises stored XP or job level.
++   A fully capped level-200 job does not generate a false recent-XP notification.
++
++Absent, disabled, unsupported, or incompatible mcMMO leaves base XP in place.
++Non-finite, below-one, or overflowing bonus multipliers also leave base XP intact.
++Zero and negative XP are not multiplied. XP remains a double, with no new rounding.
++Asynchronous callbacks skip the optional bridge without touching its cached state.
++The three reflected methods must be instance methods returning exactly
++`boolean`, `double`, and `void`, respectively.
++
++## Preserved behavior and limits
++
++- This patch does not change money/points formulas, rewards, currency settings,
++  shop settings, data files, or saved balances. It never enables points.
++- Existing Jobs currency-limit accounting occurs before the Excel multiplier.
++  Its counters therefore consume base/event XP, not this added Excel bonus.
++  Existing cached-path limit semantics are preserved, including the upstream
++  any-currency-allowed check. This is not a currency-limit redesign.
++- Normal XP-event cancellation still suppresses XP while preserving money/points;
++  cached XP-event cancellation still cancels the entire cached payment, matching
++  upstream. Pre-payment cancellation remains honored in both paths.
++- Real `JobProgression` level-up and maximum-level clamps remain authoritative.
++- A cached replay with a missing job/action or configured maximum-level payment
++  stop cannot award XP; existing cached money/points behavior is left alone.
++- No direct administrative XP grants or Minecraft green-XP changes are added here.
++
++## Verification required before deployment
++
++The JUnit regression suite executes the real patched `Jobs.action` and
++`Jobs.perform` methods plus real `JobProgression`. It checks actual stored XP,
++not only event values or displayed payment text. It covers cached replays,
++third-party/native multipliers, solo/Together/weekend/combined factors,
++cancellation, fractional and nonpositive XP, level-up and caps, malformed bridge
++values, optional-plugin discovery, eligibility and unchanged money/points.
++
++Run these tests with JDK 21 using the full upstream Maven build when its optional
++dependency repositories are available. The public repository also supplies a
++standalone bridge-only test harness that does not compile the award paths.
++Do not substitute the cached JitPack `v5.2.6.2` artifact for an exact 5.2.6.3
++baseline: its embedded version is `5.2.6.1`.
++
++No live server checks or installation are implied by an off-server test pass.
++
++### Candidate verification on 2026-10-12
++
++- PASS: standalone real bridge Java compilation and 22 JUnit cases, offline with
++  cached Paper API 1.21.4, JDK 21, JUnit 5.11.4 and Mockito 5.15.2. Zero failures,
++  errors or skipped cases. Mockito is supplied as a startup Java agent, avoiding
++  restricted dynamic-attach behavior.
++- NOT RUN: full real-Jobs award suite and baseline-failure comparison. These
++  require the full upstream dependency set or a separately validated focused
++  build against exact baseline binaries. Required dependencies were unavailable
++  because of repository-access failures.
++- NOT BUILT: deployable paired Jobs candidate JAR. The build pipeline refuses to
++  create one until the full real-Jobs tests succeed against verified inputs.
++- NOT PERFORMED: live server installation or gameplay validation.
+diff --git a/pom.xml b/pom.xml
+index 54ac1b1..065d857 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -5,7 +5,7 @@
+ 	<modelVersion>4.0.0</modelVersion>
+ 	<groupId>Jobs</groupId>
+ 	<artifactId>jobs</artifactId>
+-	<version>5.2.6.3</version>
++	<version>5.2.6.3-Excel-XP-1</version>
+ 	<name>Jobs</name>
+ 	<url>http://maven.apache.org</url>
+ 
+@@ -16,6 +16,15 @@
+ 	</properties>
+ 
+ 	<dependencies>
++        <!-- Excel XP regression tests; never included in the plugin JAR. -->
++        <dependency>
++            <groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId>
++            <version>5.11.4</version><scope>test</scope>
++        </dependency>
++        <dependency>
++            <groupId>org.mockito</groupId><artifactId>mockito-core</artifactId>
++            <version>5.15.2</version><scope>test</scope>
++        </dependency>
+         <!-- Spigot API -->
+ 		<dependency>
+ 			<groupId>org.spigotmc</groupId>
+@@ -252,6 +261,11 @@
+ 			</resource>
+ 		</resources>
+ 		<plugins>
++            <plugin>
++                <groupId>org.apache.maven.plugins</groupId>
++                <artifactId>maven-surefire-plugin</artifactId><version>3.5.2</version>
++                <configuration><argLine>-javaagent:${settings.localRepository}/org/mockito/mockito-core/5.15.2/mockito-core-5.15.2.jar</argLine></configuration>
++            </plugin>
+ 			<!-- Make a Jar -->
+ 			<plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+diff --git a/src/main/java/com/gamingmesh/jobs/Jobs.java b/src/main/java/com/gamingmesh/jobs/Jobs.java
+index 8c4aac5..176e9c2 100644
+--- a/src/main/java/com/gamingmesh/jobs/Jobs.java
++++ b/src/main/java/com/gamingmesh/jobs/Jobs.java
+@@ -97,6 +97,7 @@ import com.gamingmesh.jobs.economy.BufferedPayment;
+ import com.gamingmesh.jobs.economy.Economy;
+ import com.gamingmesh.jobs.economy.PaymentData;
+ import com.gamingmesh.jobs.hooks.JobsHook;
++import com.gamingmesh.jobs.hooks.ExcelXpBonusBridge;
+ import com.gamingmesh.jobs.i18n.Language;
+ import com.gamingmesh.jobs.listeners.JobsDefaultFishPaymentListener;
+ import com.gamingmesh.jobs.listeners.JobsListener;
+@@ -1336,7 +1337,12 @@ public final class Jobs extends JavaPlugin {
+                 if (expAmount != 0D)
+                     payments.put(CurrencyType.EXP, expAmount);
+ 
++                // Keep the replay cache free of the Excel bonus. Each award uses current
++                // Together/weekend state exactly once, including fast block/crop payments.
+                 FASTPAYMENT.put(jPlayer.getUniqueId(), new FastPayment(jPlayer, info, new BufferedPayment(jPlayer.getPlayer(), payments), prog.getJob()));
++                expAmount = ExcelXpBonusBridge.apply(jPlayer.getPlayer(), expAmount);
++                if (expAmount != 0D)
++                    payments.put(CurrencyType.EXP, expAmount);
+ 
+                 // FinalPayment event
+                 CMIScheduler.runTaskAsynchronously(getInstance(), () -> Bukkit.getServer().getPluginManager().callEvent(new JobsInstancePaymentEvent(jPlayer.getPlayer(), payments)));
+@@ -1352,8 +1358,11 @@ public final class Jobs extends JavaPlugin {
+                     getLoging().recordToLog(jPlayer, info, amounts);
+                 }
+ 
++                double oldExperience = prog.getExperience();
+                 if (prog.addExperience(expAmount))
+                     getPlayerManager().performLevelUp(jPlayer, prog.getJob(), oldLevel);
++                ExcelXpBonusBridge.notifyGain(jPlayer.getPlayer(), expAmount, oldLevel,
++                    oldExperience, prog.getLevel(), prog.getExperience());
+             }
+ 
+             //need to update bp
+@@ -1413,10 +1422,17 @@ public final class Jobs extends JavaPlugin {
+ 
+     public static void perform(JobsPlayer jPlayer, ActionInfo info, BufferedPayment payment, Job job, Block block, Entity ent, LivingEntity victim) {
+ 
+-        // Need to clone
++        // Replay the established money/points, but calculate fresh XP. Cached XP has
++        // already passed native boosts and external events and must not be boosted twice.
+         payment = new BufferedPayment(jPlayer.getPlayer(), payment.getPayment());
+-
+-        double expPayment = payment.get(CurrencyType.EXP);
++        JobProgression prog = jPlayer.getJobProgression(job);
++        JobInfo xpInfo = prog == null ? null : job.getJobInfo(info, prog.getLevel());
++        boolean xpEligible = xpInfo != null && !(gConfigManager.disablePaymentIfMaxLevelReached
++            && prog.getLevel() >= job.getMaxLevel());
++        double baseExperience = !xpEligible ? 0D : xpInfo.getExperience(prog.getLevel(),
++            jPlayer.getJobProgression().size(), jPlayer.maxJobsEquation);
++        payment.set(CurrencyType.EXP, baseExperience);
++        Boost xpBoost = getPlayerManager().getFinalBonus(jPlayer, job, ent, victim);
+ 
+         JobsPrePaymentEvent jobsPrePaymentEvent = new JobsPrePaymentEvent(jPlayer.getPlayer(), job, payment.getPayment(), block, ent, victim, info);
+         Bukkit.getServer().getPluginManager().callEvent(jobsPrePaymentEvent);
+@@ -1427,7 +1443,16 @@ public final class Jobs extends JavaPlugin {
+         payment.set(CurrencyType.MONEY, jobsPrePaymentEvent.getAmount());
+         payment.set(CurrencyType.POINTS, jobsPrePaymentEvent.getPoints());
+ 
+-        JobsExpGainEvent jobsExpGainEvent = new JobsExpGainEvent(payment.getOfflinePlayer(), job, expPayment,
++        double eventExperience = jobsPrePaymentEvent.getExp();
++        if (eventExperience != 0D) {
++            eventExperience = xpBoost.getFinalAmount(CurrencyType.EXP, eventExperience);
++            if (gConfigManager.useMinimumOveralExp && eventExperience > 0D) {
++                double minimum = eventExperience * gConfigManager.minimumOveralExpLimit;
++                if (eventExperience < minimum)
++                    eventExperience = minimum;
++            }
++        }
++        JobsExpGainEvent jobsExpGainEvent = new JobsExpGainEvent(payment.getOfflinePlayer(), job, eventExperience,
+             block, ent, victim, info);
+         Bukkit.getServer().getPluginManager().callEvent(jobsExpGainEvent);
+         // If event is canceled, don't do anything
+@@ -1436,7 +1461,7 @@ public final class Jobs extends JavaPlugin {
+ 
+         checkDailyQuests(jPlayer, job, info);
+ 
+-        payment.set(CurrencyType.EXP, jobsExpGainEvent.getExp());
++        payment.set(CurrencyType.EXP, xpEligible ? jobsExpGainEvent.getExp() : 0D);
+ 
+         boolean limited = true;
+         for (CurrencyType one : CurrencyType.values()) {
+@@ -1449,17 +1474,25 @@ public final class Jobs extends JavaPlugin {
+         if (limited)
+             return;
+ 
++        // Honor both cancellable events, then apply the current Excel bonus once.
++        // Use one final value for accounting, logging and real progression.
++        double expPayment = ExcelXpBonusBridge.apply(jPlayer.getPlayer(), payment.get(CurrencyType.EXP));
++        payment.set(CurrencyType.EXP, expPayment);
+         economy.pay(jPlayer, payment.getPayment());
+ 
+-        JobProgression prog = jPlayer.getJobProgression(job);
++        if (prog == null)
++            return;
+         int oldLevel = prog.getLevel();
+ 
+         if (gConfigManager.LoggingUse) {
+             getLoging().recordToLog(jPlayer, info, payment.getPayment());
+         }
+ 
++        double oldExperience = prog.getExperience();
+         if (prog.addExperience(expPayment))
+             getPlayerManager().performLevelUp(jPlayer, prog.getJob(), oldLevel);
++        ExcelXpBonusBridge.notifyGain(jPlayer.getPlayer(), expPayment, oldLevel,
++            oldExperience, prog.getLevel(), prog.getExperience());
+     }
+ 
+     public static SelectionManager getSelectionManager() {
+@@ -1479,6 +1512,11 @@ public final class Jobs extends JavaPlugin {
+ 
+     }
+ 
++    /** Capability marker for the paired mcMMO build; no load-order dependency. */
++    public boolean isExcelXpBonusSupported() {
++        return true;
++    }
++
+     public static boolean hasLimitedItems() {
+         return hasLimitedItems;
+     }
+diff --git a/src/main/java/com/gamingmesh/jobs/hooks/ExcelXpBonusBridge.java b/src/main/java/com/gamingmesh/jobs/hooks/ExcelXpBonusBridge.java
+new file mode 100644
+index 0000000..e9368c7
+--- /dev/null
++++ b/src/main/java/com/gamingmesh/jobs/hooks/ExcelXpBonusBridge.java
+@@ -0,0 +1,108 @@
++package com.gamingmesh.jobs.hooks;
++
++import java.lang.reflect.Method;
++import java.lang.reflect.Modifier;
++
++import org.bukkit.Bukkit;
++import org.bukkit.entity.Player;
++import org.bukkit.plugin.Plugin;
++
++/**
++ * Optional, lazily discovered bridge to the paired mcMMO Excel XP build.
++ * Does not require either plugin to load first and never changes money or points.
++ */
++public final class ExcelXpBonusBridge {
++    private static Plugin cachedPlugin;
++    private static Method supported;
++    private static Method multiplier;
++    private static Method notifyGain;
++    private static boolean warned;
++
++    private ExcelXpBonusBridge() {
++    }
++
++    private static Plugin findBridge() {
++        Plugin plugin = Bukkit.getPluginManager().getPlugin("mcMMO");
++        if (plugin == null || !plugin.isEnabled())
++            return null;
++
++        if (plugin != cachedPlugin) {
++            cachedPlugin = plugin;
++            supported = null;
++            multiplier = null;
++            notifyGain = null;
++            warned = false;
++            try {
++                Method supportMethod = plugin.getClass().getMethod("isJobsXpBonusSupported");
++                Method multiplierMethod = plugin.getClass().getMethod("getJobsXpBonusMultiplier", Player.class);
++                Method notifyMethod = plugin.getClass().getMethod("notifyJobsXpGain", Player.class);
++                if (!isInstanceMethod(supportMethod, boolean.class)
++                    || !isInstanceMethod(multiplierMethod, double.class)
++                    || !isInstanceMethod(notifyMethod, void.class))
++                    return null;
++                supported = supportMethod;
++                multiplier = multiplierMethod;
++                notifyGain = notifyMethod;
++            } catch (ReflectiveOperationException | LinkageError e) {
++                // Unmodified mcMMO is a supported no-bonus configuration.
++                return null;
++            }
++        }
++        if (supported == null || multiplier == null || notifyGain == null)
++            return null;
++        try {
++            return Boolean.TRUE.equals(supported.invoke(plugin)) ? plugin : null;
++        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
++            warn(plugin, e);
++            return null;
++        }
++    }
++
++    private static boolean isInstanceMethod(Method method, Class<?> returnType) {
++        return !Modifier.isStatic(method.getModifiers()) && method.getReturnType() == returnType;
++    }
++
++    /** Applies the current bonus once to positive, finite XP; malformed results fail closed. */
++    public static double apply(Player player, double experience) {
++        if (player == null || !Double.isFinite(experience) || experience <= 0D || !Bukkit.isPrimaryThread())
++            return experience;
++        Plugin plugin = findBridge();
++        if (plugin == null)
++            return experience;
++        try {
++            Object result = multiplier.invoke(plugin, player);
++            double factor = (Double) result;
++            if (!Double.isFinite(factor) || factor < 1D)
++                return experience;
++            double boosted = experience * factor;
++            return Double.isFinite(boosted) ? boosted : experience;
++        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
++            warn(plugin, e);
++            return experience;
++        }
++    }
++
++    /** Called only after positive XP really increased stored progression. */
++    public static void notifyGain(Player player, double awardedExperience, int oldLevel,
++        double oldExperience, int newLevel, double newExperience) {
++        if (player == null || !Double.isFinite(awardedExperience) || awardedExperience <= 0D || !Bukkit.isPrimaryThread()
++            || !(newLevel > oldLevel || newLevel == oldLevel && newExperience > oldExperience))
++            return;
++        Plugin plugin = findBridge();
++        if (plugin == null)
++            return;
++        try {
++            notifyGain.invoke(plugin, player);
++        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
++            warn(plugin, e);
++        }
++    }
++
++    private static void warn(Plugin plugin, Throwable error) {
++        if (!warned) {
++            warned = true;
++            plugin.getLogger().warning("Jobs Excel XP bridge unavailable; keeping base Jobs XP ("
++                + error.getClass().getSimpleName() + ").");
++        }
++    }
++}
+diff --git a/src/test/java/com/gamingmesh/jobs/ExcelXpAwardTest.java b/src/test/java/com/gamingmesh/jobs/ExcelXpAwardTest.java
+new file mode 100644
+index 0000000..e29b83f
+--- /dev/null
++++ b/src/test/java/com/gamingmesh/jobs/ExcelXpAwardTest.java
+@@ -0,0 +1,349 @@
++package com.gamingmesh.jobs;
++
++import static org.junit.jupiter.api.Assertions.*;
++import static org.mockito.ArgumentMatchers.*;
++import static org.mockito.Mockito.*;
++
++import java.lang.reflect.Field;
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.UUID;
++import java.util.function.Consumer;
++import java.util.logging.Logger;
++
++import org.bukkit.Bukkit;
++import org.bukkit.Server;
++import org.bukkit.entity.Player;
++import org.bukkit.event.Event;
++import org.bukkit.plugin.Plugin;
++import org.bukkit.plugin.PluginManager;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.ValueSource;
++import org.mockito.MockedStatic;
++
++import com.gamingmesh.jobs.api.JobsExpGainEvent;
++import com.gamingmesh.jobs.api.JobsPrePaymentEvent;
++import com.gamingmesh.jobs.config.GeneralConfigManager;
++import com.gamingmesh.jobs.container.*;
++import com.gamingmesh.jobs.economy.BufferedEconomy;
++import com.gamingmesh.jobs.economy.BufferedPayment;
++import com.gamingmesh.jobs.stuff.Loging;
++
++import net.Zrips.CMILib.Version.Schedulers.CMIScheduler;
++
++/** Exercises the real Jobs.action/perform and real JobProgression, not a copied formula. */
++class ExcelXpAwardTest {
++    public interface ExcelMcMMO extends Plugin {
++        boolean isJobsXpBonusSupported();
++        double getJobsXpBonusMultiplier(Player player);
++        void notifyJobsXpGain(Player player);
++    }
++
++    private MockedStatic<Bukkit> bukkit;
++    private MockedStatic<Jobs> jobs;
++    private MockedStatic<JobsTop> tops;
++    private MockedStatic<CMIScheduler> scheduler;
++    private ExcelMcMMO mcMMO;
++    private PluginManager plugins;
++    private Player player;
++    private JobsPlayer jPlayer;
++    private Job job;
++    private JobInfo jobInfo;
++    private JobProgression progress;
++    private GeneralConfigManager config;
++    private PlayerManager manager;
++    private ActionInfo info;
++    private Loging logging;
++    private Consumer<Event> eventHandler = event -> {};
++    private final List<Map<CurrencyType, Double>> paid = new ArrayList<>();
++
++    @BeforeEach
++    void setUp() throws Exception {
++        bukkit = mockStatic(Bukkit.class);
++        bukkit.when(Bukkit::isPrimaryThread).thenReturn(true);
++        tops = mockStatic(JobsTop.class);
++        Server server = mock(Server.class);
++        plugins = mock(PluginManager.class);
++        bukkit.when(Bukkit::getServer).thenReturn(server);
++        bukkit.when(Bukkit::getPluginManager).thenReturn(plugins);
++        when(server.getPluginManager()).thenReturn(plugins);
++        when(server.getName()).thenReturn("Paper");
++        when(server.getVersion()).thenReturn("1.21.5");
++        when(server.getBukkitVersion()).thenReturn("1.21.5-R0.1-SNAPSHOT");
++        bukkit.when(Bukkit::getVersion).thenReturn("1.21.5");
++        bukkit.when(Bukkit::getBukkitVersion).thenReturn("1.21.5-R0.1-SNAPSHOT");
++        scheduler = mockStatic(CMIScheduler.class);
++        config = mock(GeneralConfigManager.class);
++        config.useBlockProtectionBlockTracker = true;
++        config.LoggingUse = true;
++        manager = mock(PlayerManager.class);
++        logging = mock(Loging.class);
++        BufferedEconomy economy = mock(BufferedEconomy.class);
++        setJobsField("gConfigManager", config);
++        setJobsField("pManager", manager);
++        setJobsField("economy", economy);
++        setJobsField("loging", logging);
++        jobs = mockStatic(Jobs.class, CALLS_REAL_METHODS);
++        Jobs plugin = mock(Jobs.class);
++        jobs.when(Jobs::getInstance).thenReturn(plugin);
++        Jobs.FASTPAYMENT.clear();
++
++        mcMMO = mock(ExcelMcMMO.class);
++        when(mcMMO.isEnabled()).thenReturn(true);
++        when(mcMMO.isJobsXpBonusSupported()).thenReturn(true);
++        when(mcMMO.getJobsXpBonusMultiplier(any())).thenReturn(2.4D);
++        when(mcMMO.getLogger()).thenReturn(Logger.getLogger("ExcelXpAwardTest"));
++        when(plugins.getPlugin("mcMMO")).thenReturn(mcMMO);
++        doAnswer(invocation -> {
++            eventHandler.accept(invocation.getArgument(0));
++            return null;
++        }).when(plugins).callEvent(any(Event.class));
++
++        player = mock(Player.class);
++        jPlayer = mock(JobsPlayer.class);
++        when(jPlayer.getPlayer()).thenReturn(player);
++        when(jPlayer.getUniqueId()).thenReturn(UUID.randomUUID());
++        when(jPlayer.isUnderLimit(any(), anyDouble())).thenReturn(true);
++        job = mock(Job.class);
++        jobInfo = mock(JobInfo.class);
++        when(job.getMaxLevel()).thenReturn(200);
++        when(job.getMaxExp(anyMap())).thenReturn(100D);
++        when(jPlayer.getMaxJobLevelAllowed(job)).thenReturn(200);
++        info = mock(ActionInfo.class);
++        when(info.getType()).thenReturn(ActionType.BREAK);
++        when(info.getName()).thenReturn("STONE");
++        when(job.getJobInfo(eq(info), anyInt())).thenReturn(jobInfo);
++        when(jobInfo.getIncome(anyDouble(), anyInt(), anyInt())).thenReturn(3D);
++        when(jobInfo.getPoints(anyDouble(), anyInt(), anyInt())).thenReturn(4D);
++        when(jobInfo.getExperience(anyDouble(), anyInt(), anyInt())).thenReturn(10D);
++        when(manager.getFinalBonus(eq(jPlayer), eq(job), (org.bukkit.entity.Entity) any(), (org.bukkit.entity.LivingEntity) any())).thenReturn(new Boost());
++        newProgress(1, 0D);
++        doAnswer(invocation -> {
++            paid.add(new HashMap<>(invocation.<Map<CurrencyType, Double>>getArgument(1)));
++            return null;
++        }).when(economy).pay(eq(jPlayer), anyMap());
++    }
++
++    private static void setJobsField(String name, Object value) throws Exception {
++        Field field = Jobs.class.getDeclaredField(name);
++        field.setAccessible(true);
++        field.set(null, value);
++    }
++
++    private void newProgress(int level, double xp) {
++        progress = new JobProgression(job, jPlayer, level, xp);
++        when(jPlayer.getJobProgression()).thenReturn(List.of(progress));
++        when(jPlayer.getJobProgression(job)).thenReturn(progress);
++        progress.reloadMaxExperience();
++    }
++
++    @AfterEach
++    void tearDown() {
++        if (jobs != null) jobs.close();
++        if (scheduler != null) scheduler.close();
++        if (tops != null) tops.close();
++        if (bukkit != null) bukkit.close();
++    }
++
++    private void action() {
++        Jobs.action(jPlayer, info, null, null, null);
++    }
++
++    private void replay(BufferedPayment payment) {
++        Jobs.perform(jPlayer, info, payment, job, null, null, null);
++    }
++
++    private BufferedPayment seedPayment() {
++        return new BufferedPayment(player, CurrencyType.generate(3D, 10D, 4D));
++    }
++
++    private void assertPaid(double xp) {
++        Map<CurrencyType, Double> payment = paid.getLast();
++        assertEquals(xp, payment.getOrDefault(CurrencyType.EXP, 0D), 1e-9);
++        assertEquals(3D, payment.get(CurrencyType.MONEY), 1e-9);
++        assertEquals(4D, payment.get(CurrencyType.POINTS), 1e-9);
++    }
++
++    @Test
++    void actionAndRepeatedFastAwardsUseOneCurrentBonusAndDoNotPolluteCache() {
++        action();
++        assertEquals(24D, progress.getExperience(), 1e-9);
++        assertPaid(24D);
++        BufferedPayment cached = Jobs.FASTPAYMENT.get(jPlayer.getUniqueId()).getPayment();
++        assertEquals(10D, cached.get(CurrencyType.EXP), 1e-9);
++        replay(cached);
++        assertEquals(48D, progress.getExperience(), 1e-9);
++        assertPaid(24D);
++        when(mcMMO.getJobsXpBonusMultiplier(player)).thenReturn(1.2D);
++        replay(cached);
++        assertEquals(60D, progress.getExperience(), 1e-9);
++        assertPaid(12D);
++        assertEquals(10D, cached.get(CurrencyType.EXP), 1e-9);
++        verify(mcMMO, times(3)).notifyJobsXpGain(player);
++        // Preserve upstream pre-Excel-bonus limit consumption; live limits are disabled.
++        verify(jPlayer, atLeastOnce()).isUnderLimit(CurrencyType.EXP, 10D);
++        verify(jPlayer, never()).isUnderLimit(CurrencyType.EXP, 24D);
++    }
++
++    @Test
++    void cachedEventMutationReachesActualStoredProgressionAndLog() {
++        eventHandler = event -> {
++            if (event instanceof JobsPrePaymentEvent pre) pre.setExp(15D);
++            if (event instanceof JobsExpGainEvent gain) {
++                assertEquals(15D, gain.getExp(), 1e-9);
++                gain.setExp(20D);
++            }
++        };
++        replay(seedPayment());
++        assertPaid(48D);
++        assertEquals(48D, progress.getExperience(), 1e-9);
++        verify(logging).recordToLog(eq(jPlayer), eq(info), argThat(values -> values.get(CurrencyType.EXP) == 48D));
++    }
++
++    @Test
++    void normalAndFastPrePaymentCancellationDoNotAwardOrNotify() {
++        eventHandler = event -> { if (event instanceof JobsPrePaymentEvent pre) pre.setCancelled(true); };
++        action();
++        replay(seedPayment());
++        assertEquals(0D, progress.getExperience());
++        assertTrue(paid.isEmpty());
++        verify(mcMMO, never()).notifyJobsXpGain(any());
++    }
++
++    @Test
++    void xpCancellationPreservesUpstreamMoneyAndPointsSemantics() {
++        eventHandler = event -> { if (event instanceof JobsExpGainEvent gain) gain.setCancelled(true); };
++        action();
++        assertPaid(0D); // Standard action still pays money and points.
++        replay(seedPayment()); // Upstream fast path cancels the complete payment.
++        assertEquals(1, paid.size());
++        assertEquals(0D, progress.getExperience());
++        verify(mcMMO, never()).notifyJobsXpGain(any());
++    }
++
++    @Test
++    void realLevelUpCountsAsGainButMaxLevelCapDoesNotNotify() {
++        newProgress(1, 95D);
++        replay(seedPayment());
++        assertEquals(2, progress.getLevel());
++        assertEquals(19D, progress.getExperience(), 1e-9);
++        verify(manager).performLevelUp(jPlayer, job, 1);
++        verify(mcMMO).notifyJobsXpGain(player);
++        clearInvocations(mcMMO);
++        newProgress(200, 100D);
++        replay(seedPayment());
++        assertEquals(200, progress.getLevel());
++        assertEquals(100D, progress.getExperience());
++        verify(mcMMO, never()).notifyJobsXpGain(any());
++    }
++
++    @Test
++    void fractionalXpIsNotRoundedAndNonpositiveXpIsNotBoosted() {
++        when(jobInfo.getExperience(anyDouble(), anyInt(), anyInt())).thenReturn(0.125D);
++        action();
++        assertEquals(0.3D, progress.getExperience(), 1e-12);
++        assertPaid(0.3D);
++        clearInvocations(mcMMO);
++        when(jobInfo.getExperience(anyDouble(), anyInt(), anyInt())).thenReturn(-0.1D);
++        replay(new BufferedPayment(player, CurrencyType.generate(3D, -0.1D, 4D)));
++        assertEquals(0.2D, progress.getExperience(), 1e-12);
++        assertPaid(-0.1D);
++        verify(mcMMO, never()).notifyJobsXpGain(any());
++    }
++
++    @Test
++    void replayRecalculatesNativeAndExternalXpBoostsWithoutCompoundingCachedEvents() {
++        Boost nativeBoost = mock(Boost.class);
++        when(nativeBoost.getFinalAmount(eq(CurrencyType.EXP), anyDouble()))
++            .thenAnswer(call -> call.<Double>getArgument(1) * 1.5D);
++        when(nativeBoost.getFinalAmount(eq(CurrencyType.MONEY), anyDouble()))
++            .thenAnswer(call -> call.<Double>getArgument(1));
++        when(nativeBoost.getFinalAmount(eq(CurrencyType.POINTS), anyDouble()))
++            .thenAnswer(call -> call.<Double>getArgument(1));
++        when(manager.getFinalBonus(eq(jPlayer), eq(job), (org.bukkit.entity.Entity) any(), (org.bukkit.entity.LivingEntity) any())).thenReturn(nativeBoost);
++        eventHandler = event -> {
++            if (event instanceof JobsPrePaymentEvent pre) pre.setExp(pre.getExp() * 2D);
++            if (event instanceof JobsExpGainEvent gain) gain.setExp(gain.getExp() * 2D);
++        };
++        action(); // 10 * pre-event 2 * native 1.5 * exp-event 2 * Excel 2.4 = 144.
++        assertEquals(144D, progress.getLastExperience(), 1e-9);
++        assertPaid(144D);
++        BufferedPayment cached = Jobs.FASTPAYMENT.get(jPlayer.getUniqueId()).getPayment();
++        assertEquals(60D, cached.get(CurrencyType.EXP));
++        replay(cached);
++        assertEquals(288D, progress.getLastExperience(), 1e-9);
++        assertPaid(144D);
++        assertEquals(60D, cached.get(CurrencyType.EXP));
++    }
++
++    @Test
++    void noMcMMOAndUnsupportedMcMMOFailClosedAndCanAppearLater() {
++        when(plugins.getPlugin("mcMMO")).thenReturn(null);
++        replay(seedPayment());
++        assertEquals(10D, progress.getExperience());
++        when(plugins.getPlugin("mcMMO")).thenReturn(mcMMO);
++        when(mcMMO.isJobsXpBonusSupported()).thenReturn(false);
++        replay(seedPayment());
++        assertEquals(20D, progress.getExperience());
++        when(mcMMO.isJobsXpBonusSupported()).thenReturn(true);
++        replay(seedPayment());
++        assertEquals(44D, progress.getExperience());
++    }
++
++    @ParameterizedTest
++    @ValueSource(doubles = {1D, 1.25D, 1.2D, 1.5D})
++    void soloTogetherWeekendAndStackedFactorsMatchOnNormalAndCachedPaths(double factor) {
++        when(mcMMO.getJobsXpBonusMultiplier(player)).thenReturn(factor);
++        action();
++        assertPaid(10D * factor);
++        replay(Jobs.FASTPAYMENT.get(jPlayer.getUniqueId()).getPayment());
++        assertPaid(10D * factor);
++        assertEquals(20D * factor, progress.getExperience(), 1e-9);
++        verify(mcMMO, times(2)).notifyJobsXpGain(player);
++    }
++
++    @ParameterizedTest
++    @ValueSource(doubles = {Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, -1D, 0D, 0.5D, Double.MAX_VALUE})
++    void malformedOrOverflowingMultipliersKeepOriginalXp(double factor) {
++        when(mcMMO.getJobsXpBonusMultiplier(player)).thenReturn(factor);
++        replay(seedPayment());
++        assertPaid(10D);
++        assertEquals(10D, progress.getExperience());
++    }
++
++    @Test
++    void cachedXpEligibilityHandlesRemovedJobMissingActionAndMaxLevelStop() {
++        when(job.getJobInfo(eq(info), anyInt())).thenReturn(null);
++        replay(seedPayment());
++        assertPaid(0D);
++        assertEquals(0D, progress.getExperience());
++        when(job.getJobInfo(eq(info), anyInt())).thenReturn(jobInfo);
++        config.disablePaymentIfMaxLevelReached = true;
++        newProgress(200, 50D);
++        replay(seedPayment());
++        assertPaid(0D);
++        assertEquals(50D, progress.getExperience());
++        when(jPlayer.getJobProgression(job)).thenReturn(null);
++        assertDoesNotThrow(() -> replay(seedPayment()));
++        assertPaid(0D);
++        verify(mcMMO, never()).notifyJobsXpGain(any());
++    }
++
++    @Test
++    void zeroXpOrAllCurrenciesBlockedNeverNotify() {
++        when(jobInfo.getExperience(anyDouble(), anyInt(), anyInt())).thenReturn(0D);
++        replay(seedPayment());
++        assertPaid(0D);
++        when(jobInfo.getExperience(anyDouble(), anyInt(), anyInt())).thenReturn(10D);
++        when(jPlayer.isUnderLimit(any(), anyDouble())).thenReturn(false);
++        replay(seedPayment());
++        assertEquals(1, paid.size());
++        assertEquals(0D, progress.getExperience());
++        verify(mcMMO, never()).notifyJobsXpGain(any());
++    }
++}
+diff --git a/src/test/java/com/gamingmesh/jobs/hooks/ExcelXpBonusBridgeTest.java b/src/test/java/com/gamingmesh/jobs/hooks/ExcelXpBonusBridgeTest.java
+new file mode 100644
+index 0000000..2fd5195
+--- /dev/null
++++ b/src/test/java/com/gamingmesh/jobs/hooks/ExcelXpBonusBridgeTest.java
+@@ -0,0 +1,148 @@
++package com.gamingmesh.jobs.hooks;
++
++import static org.junit.jupiter.api.Assertions.*;
++import static org.mockito.Mockito.*;
++
++import java.util.logging.Logger;
++
++import org.bukkit.Bukkit;
++import org.bukkit.entity.Player;
++import org.bukkit.plugin.Plugin;
++import org.bukkit.plugin.PluginManager;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.ValueSource;
++import org.mockito.MockedStatic;
++
++class ExcelXpBonusBridgeTest {
++    public interface ExcelMcMMO extends Plugin {
++        boolean isJobsXpBonusSupported();
++        double getJobsXpBonusMultiplier(Player player);
++        void notifyJobsXpGain(Player player);
++    }
++    public interface WrongReturnMcMMO extends Plugin {
++        boolean isJobsXpBonusSupported();
++        Number getJobsXpBonusMultiplier(Player player);
++        void notifyJobsXpGain(Player player);
++    }
++    public abstract static class StaticApiMcMMO implements Plugin {
++        public static boolean isJobsXpBonusSupported() { return true; }
++        public static double getJobsXpBonusMultiplier(Player player) { return 2D; }
++        public static void notifyJobsXpGain(Player player) { }
++    }
++
++    private MockedStatic<Bukkit> bukkit;
++    private PluginManager plugins;
++    private ExcelMcMMO mcMMO;
++    private Player player;
++
++    @BeforeEach
++    void setUp() {
++        bukkit = mockStatic(Bukkit.class);
++        plugins = mock(PluginManager.class);
++        player = mock(Player.class);
++        mcMMO = mock(ExcelMcMMO.class);
++        bukkit.when(Bukkit::isPrimaryThread).thenReturn(true);
++        bukkit.when(Bukkit::getPluginManager).thenReturn(plugins);
++        when(plugins.getPlugin("mcMMO")).thenReturn(mcMMO);
++        when(mcMMO.isEnabled()).thenReturn(true);
++        when(mcMMO.isJobsXpBonusSupported()).thenReturn(true);
++        when(mcMMO.getJobsXpBonusMultiplier(player)).thenReturn(1.5D);
++        when(mcMMO.getLogger()).thenReturn(Logger.getLogger("ExcelXpBonusBridgeTest"));
++    }
++
++    @AfterEach
++    void tearDown() {
++        bukkit.close();
++    }
++
++    @ParameterizedTest
++    @ValueSource(doubles = {1D, 1.25D, 1.2D, 1.5D})
++    void keepsFractionsForSoloTogetherWeekendAndCombinedFactors(double factor) {
++        when(mcMMO.getJobsXpBonusMultiplier(player)).thenReturn(factor);
++        assertEquals(0.125D * factor, ExcelXpBonusBridge.apply(player, 0.125D), 1e-12);
++    }
++
++    @ParameterizedTest
++    @ValueSource(doubles = {Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, -1D, 0D, 0.5D, Double.MAX_VALUE})
++    void malformedAndOverflowingMultipliersFailClosed(double factor) {
++        when(mcMMO.getJobsXpBonusMultiplier(player)).thenReturn(factor);
++        assertEquals(10D, ExcelXpBonusBridge.apply(player, 10D));
++    }
++
++    @ParameterizedTest
++    @ValueSource(doubles = {0D, -1D, Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY})
++    void nonpositiveAndNonfiniteInputIsUntouchedWithoutBridgeCalls(double input) {
++        assertEquals(input, ExcelXpBonusBridge.apply(player, input));
++        verifyNoInteractions(plugins);
++    }
++
++    @Test
++    void optionalPluginMayAppearOrBecomeSupportedLater() {
++        when(plugins.getPlugin("mcMMO")).thenReturn(null);
++        assertEquals(10D, ExcelXpBonusBridge.apply(player, 10D));
++        when(plugins.getPlugin("mcMMO")).thenReturn(mcMMO);
++        when(mcMMO.isEnabled()).thenReturn(false);
++        assertEquals(10D, ExcelXpBonusBridge.apply(player, 10D));
++        when(mcMMO.isEnabled()).thenReturn(true);
++        when(mcMMO.isJobsXpBonusSupported()).thenReturn(false);
++        assertEquals(10D, ExcelXpBonusBridge.apply(player, 10D));
++        when(mcMMO.isJobsXpBonusSupported()).thenReturn(true);
++        assertEquals(15D, ExcelXpBonusBridge.apply(player, 10D));
++    }
++
++    @Test
++    void rejectsUnmodifiedIncompatibleAndStaticApis() {
++        Plugin plain = mock(Plugin.class);
++        when(plain.isEnabled()).thenReturn(true);
++        when(plugins.getPlugin("mcMMO")).thenReturn(plain);
++        assertEquals(10D, ExcelXpBonusBridge.apply(player, 10D));
++        WrongReturnMcMMO wrong = mock(WrongReturnMcMMO.class);
++        when(wrong.isEnabled()).thenReturn(true);
++        when(plugins.getPlugin("mcMMO")).thenReturn(wrong);
++        assertEquals(10D, ExcelXpBonusBridge.apply(player, 10D));
++        verify(wrong, never()).isJobsXpBonusSupported();
++        StaticApiMcMMO statics = mock(StaticApiMcMMO.class);
++        when(statics.isEnabled()).thenReturn(true);
++        when(plugins.getPlugin("mcMMO")).thenReturn(statics);
++        assertEquals(10D, ExcelXpBonusBridge.apply(player, 10D));
++    }
++
++    @Test
++    void doesNotTouchPluginCacheOrApiFromAsyncCallbacks() {
++        bukkit.when(Bukkit::isPrimaryThread).thenReturn(false);
++        assertEquals(10D, ExcelXpBonusBridge.apply(player, 10D));
++        ExcelXpBonusBridge.notifyGain(player, 10D, 1, 0D, 1, 10D);
++        verifyNoInteractions(plugins);
++        verify(mcMMO, never()).getJobsXpBonusMultiplier(player);
++        verify(mcMMO, never()).notifyJobsXpGain(player);
++    }
++
++    @Test
++    void positiveStoredXpOrLevelChangeNotifiesButCapZeroAndLossDoNot() {
++        ExcelXpBonusBridge.notifyGain(player, 10D, 1, 0D, 1, 10D);
++        ExcelXpBonusBridge.notifyGain(player, 10D, 1, 99D, 2, 9D);
++        ExcelXpBonusBridge.notifyGain(player, 10D, 200, 100D, 200, 100D);
++        ExcelXpBonusBridge.notifyGain(player, 0D, 1, 0D, 1, 0D);
++        ExcelXpBonusBridge.notifyGain(player, -10D, 1, 20D, 1, 10D);
++        ExcelXpBonusBridge.notifyGain(player, Double.NaN, 1, 0D, 1, 10D);
++        verify(mcMMO, times(2)).notifyJobsXpGain(player);
++    }
++
++    @Test
++    void exceptionsFailClosedWithoutBreakingAnAward() {
++        when(mcMMO.getJobsXpBonusMultiplier(player)).thenThrow(new IllegalStateException("test"));
++        assertEquals(10D, ExcelXpBonusBridge.apply(player, 10D));
++        doThrow(new IllegalStateException("test")).when(mcMMO).notifyJobsXpGain(player);
++        assertDoesNotThrow(() -> ExcelXpBonusBridge.notifyGain(player, 10D, 1, 0D, 1, 10D));
++    }
++
++    @Test
++    void nullPlayerNeverTouchesTheApi() {
++        assertEquals(10D, ExcelXpBonusBridge.apply(null, 10D));
++        ExcelXpBonusBridge.notifyGain(null, 10D, 1, 0D, 1, 10D);
++        verifyNoInteractions(plugins);
++    }
++}
