@@ -13,9 +13,9 @@ Source and recovery material for the family's Minecraft plugins. Each plugin has
 | [RestartCountdown](RestartCountdown/) | 1.1.1 | Two-minute chat-and-title warning, cancellable shutdown |
 | [ShopVillager](ShopVillager/) | 1.0.1 | Tagged spawn-shop villager opens DeluxeMenus |
 | [WealthBoard](WealthBoard/) | 1.3.1 | Join wealth popup and optional Jobs enrollment |
-| [WeekendXP](WeekendXP/) | 1.0.1 | Chicago Saturday/Sunday mcMMO XP rate |
+| [WeekendXP](WeekendXP/) | 1.0.2 | Chicago Saturday/Sunday skill + green-bar XP rate |
 
-[Spawn Shop](SpawnShop-DeluxeMenus/) is a DeluxeMenus configuration/generator, not a Java plugin. [mcMMO Together bonus](mcMMO-TogetherBonus/) is an unchanged patch series for a separately pinned upstream repository.
+[Spawn Shop](SpawnShop-DeluxeMenus/) is a DeluxeMenus configuration/generator, not a Java plugin. [mcMMO Together + Weekend XP](mcMMO-TogetherBonus/) is a patch series for a separately pinned upstream repository. It adds coordinated skill/green-bar multipliers and a live `/xpbonus` indicator; build and stage it together with WeekendXP 1.0.2. The first two historical patches remain unchanged.
 
 ## Build and test
 

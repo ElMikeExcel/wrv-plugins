@@ -23,3 +23,33 @@ jobs:
           name: wrv-plugins-candidate-${{ github.sha }}
           path: '*/target/*.jar'
           if-no-files-found: error
+  verify-mcmmo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check out exact custom mcMMO base
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: mcMMO-Dev/mcMMO
+          ref: 058279c148a65bd708dc85067d3858f6adde1173
+          path: mcMMO-TogetherBonus/target/upstream
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: mcMMO-TogetherBonus/target/upstream/pom.xml
+      - name: Apply custom XP patches in order
+        working-directory: mcMMO-TogetherBonus/target/upstream
+        run: git -c user.name='WRV CI' -c user.email='ci@local.invalid' am "$GITHUB_WORKSPACE"/mcMMO-TogetherBonus/patches/*.patch
+      - name: Verify mcMMO including XP regressions
+        working-directory: mcMMO-TogetherBonus/target/upstream
+        run: mvn -B clean verify
+      - name: Upload custom mcMMO candidate (not deployed)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: wrv-mcmmo-xp-candidate-${{ github.sha }}
+          path: mcMMO-TogetherBonus/target/upstream/target/mcMMO.jar
+          if-no-files-found: error

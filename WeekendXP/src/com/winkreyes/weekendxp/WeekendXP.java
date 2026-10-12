@@ -1,23 +1,29 @@
 package com.winkreyes.weekendxp;
 
 import java.time.Instant;
-import org.bukkit.command.CommandException;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
-/** Applies mcMMO's 1.2x weekend XP event on Saturday/Sunday in Chicago. */
+/** Applies skill and vanilla 1.2x weekend XP events on Saturday/Sunday in Chicago. */
 public class WeekendXP extends JavaPlugin {
     private WeekendSchedule schedule;
+    private VanillaXpBridge vanillaXpBridge;
     private BukkitTask checkTask;
 
     @Override
     public void onEnable() {
         schedule = new WeekendSchedule();
+        vanillaXpBridge = new VanillaXpBridge(() -> {
+            Plugin mcMMO = getServer().getPluginManager().getPlugin("mcMMO");
+            return mcMMO != null && mcMMO.isEnabled() ? mcMMO : null;
+        }, message -> getLogger().warning(message));
+        vanillaXpBridge.isSupported();
         applyCorrectRate();
         // Re-check every 30 minutes in case the server stays up across midnight.
         checkTask = getServer().getScheduler().runTaskTimer(this, this::applyCorrectRate,
                 20L * 60 * 30, 20L * 60 * 30);
-        getLogger().info("WeekendXP enabled: mcMMO 1.2x XP on Sat-Sun (America/Chicago).");
+        getLogger().info("WeekendXP scheduler enabled: America/Chicago, every 30 minutes.");
     }
 
     @Override
@@ -32,16 +38,18 @@ public class WeekendXP extends JavaPlugin {
         Instant now = Instant.now();
         try {
             WeekendSchedule.Result result = schedule.apply(now,
-                    command -> getServer().dispatchCommand(getServer().getConsoleSender(), command));
+                    command -> getServer().dispatchCommand(getServer().getConsoleSender(), command),
+                    vanillaXpBridge::applyMultiplier);
             if (result == WeekendSchedule.Result.FAILED) {
-                getLogger().warning("mcMMO XP-rate command could not be dispatched; will retry at the next check.");
+                getLogger().warning("Weekend XP schedule incomplete; will retry the mcMMO command"
+                        + " and vanilla XP multiplier at the next check.");
             } else if (result == WeekendSchedule.Result.APPLIED) {
                 getLogger().info(WeekendSchedule.isWeekend(now)
-                        ? "Weekend detected: dispatched mcMMO 1.2x XP-rate command."
-                        : "Weekday detected: dispatched mcMMO XP-rate reset command.");
+                        ? "Weekend detected: dispatched mcMMO 1.2x XP-rate command; verified vanilla XP event multiplier 1.2x."
+                        : "Weekday detected: dispatched mcMMO XP-rate reset command; verified vanilla XP event multiplier 1.0x.");
             }
-        } catch (CommandException e) {
-            getLogger().warning("mcMMO XP-rate command failed; will retry at the next check: " + e.getMessage());
+        } catch (RuntimeException e) {
+            getLogger().warning("XP schedule failed; will retry at the next check: " + e.getMessage());
         }
     }
 }
