@@ -1,0 +1,21 @@
+{
+  "utc": "2026-10-12T22:42:34.870881+00:00",
+  "stage": "verification-no-vault",
+  "plugin_sha256": "37ac2dbbf084c0a1c1d57dbff2f886ccf2194a439de955c74765a97f1a9160a4",
+  "plugin_name": "ExcelShops",
+  "harness_sha256": "637a1d3f36ae732cb9a22d073d524b23721afbf63c2dfa50b51ff5947d789d11",
+  "fake_vault_sha256": "bfa63a20eb1229981772c115b1b264a22056f991839b137f618de3c1aadfc03e",
+  "fake_gp_sha256": "f62b4460d50318cf98c2a4f3dd400637d83aa04d855ef64aa434eb460dd7c155",
+  "vault_api_sha256": "47f6a400a8ab22012e6a320f7bfc63621ce4a246e1c60502ff7fc91d532d2601",
+  "paper_sha256": "7b7b3b43c009103e1971a0576c26f655a7dd9b56a0a2a4438e352c03a7fecd08",
+  "java": "openjdk version \"25.0.4\" 2026-07-21 LTS\nOpenJDK Runtime Environment Temurin-25.0.4+7 (build 25.0.4+7-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.4+7 (build 25.0.4+7-LTS, mixed mode, sharing)",
+  "listen": "127.0.0.1:25579",
+  "synthetic_players": true,
+  "real_client": false,
+  "real_economy": false,
+  "vault_plugin_present": false,
+  "economy_service_present": false,
+  "probe_sha256": "c5bbd7740faf1da2807e6411685942d60deb5991b4197a0f6f50868f58da13ad",
+  "child_exit_code": 0,
+  "loopback_25579_available_after_run": true
+}

@@ -24,6 +24,8 @@ public final class ShopUi implements Listener {
         final Map<Integer,Runnable> actions=new HashMap<>();
         Inventory inventory;
         Consumer<String> numberInput;
+        // Read at callback execution time so queued clicks compose on the current value.
+        long numberValue;
         Page(UUID player,ViewKind kind){this.player=player;this.kind=kind;}
         @Override public Inventory getInventory(){return inventory;}
         public ViewKind kind(){return kind;}
@@ -50,7 +52,7 @@ public final class ShopUi implements Listener {
     private void button(Page page,int slot,ItemStack item,String title,Runnable action,String... lore){
         ItemStack icon=item.clone();icon.setAmount(Math.max(1,Math.min(icon.getAmount(),icon.getMaxStackSize())));
         ItemMeta meta=icon.getItemMeta();meta.setDisplayName(ChatColor.RESET+title);List<String> details=new ArrayList<>();if(meta.hasLore())details.addAll(meta.getLore());if(!details.isEmpty())details.add("");details.addAll(Arrays.stream(lore).map(s->ChatColor.GRAY+s).toList());meta.setLore(details);icon.setItemMeta(meta);page.inventory.setItem(slot,icon);
-        if(action!=null)page.actions.put(slot,action);
+        if(action!=null)page.actions.put(slot,action);else page.actions.remove(slot);
     }
     private void later(Player player,Page expected,Runnable action){
         plugin.getServer().getScheduler().runTask(plugin,()->{if(plugin.isEnabled()&&player.isOnline()&&pages.get(player.getUniqueId())==expected){if(plugin.getCheckout().recoveryRequired()){fail(player,"Shops are paused for an administrator check. Please do not retry the purchase.");return;}try{action.run();}catch(Exception e){fail(player,e.getMessage());}}});
@@ -95,16 +97,21 @@ public final class ShopUi implements Listener {
     private void backToCatalog(Player p,ShopAdapter.Selection s){if(s.shop()==null)showSpawn(p);else showShop(p,s.shop());}
     public void quantity(Player p,ShopAdapter.Selection s,int count){
         int max=(int)Math.min(Math.min(s.available(),2304/s.bundleSize()),10000000000L/s.price());count=Math.max(1,Math.min(count,max));if(max<1){fail(p,"This item is out of stock.");return;}
-        final int n=count;Page page=page(p,ViewKind.QUANTITY,"How many?",45);
-        Consumer<String> input=value->{try{int q=Integer.parseInt(value.trim());if(q<1||q>max)throw new IllegalArgumentException();buyReview(p,s,q);}catch(RuntimeException e){p.sendMessage(ChatColor.RED+"Enter a whole number from 1 to "+max+".");quantity(p,s,n);}};
+        final int n=count;Page page=page(p,ViewKind.QUANTITY,"How many?",45);page.numberValue=n;
+        Consumer<String> input=value->{try{int q=Integer.parseInt(value.trim());if(q<1||q>max)throw new IllegalArgumentException();buyReview(p,s,q);}catch(RuntimeException e){p.sendMessage(ChatColor.RED+"Enter a whole number from 1 to "+max+".");quantity(p,s,(int)page.numberValue);}};
         page.numberInput=input;
         String details=s.name()+"\n"+cash(s.price())+(s.bundleSize()>1?" per bundle of "+s.bundleSize():" each")+"\nAvailable: "+max+"\nQuantity × price = total. Next: review, then final confirmation.";
         p.closeInventory(); // The new page token prevents closing the old page from cancelling this one.
         if(forms.number(p,"Choose quantity",details,String.valueOf(n),v->later(p,page,()->input.accept(v)),()->later(p,page,()->cancel(p))))return;
-        button(page,13,s.item(),s.name(),null,"Quantity: "+n+(s.bundleSize()>1?" bundles ("+(n*s.bundleSize())+" items)":""),cash(s.price())+" × "+n+" = "+cash(Money.multiply(s.price(),n)),"Use buttons, or /excelshop amount <number>");
+        renderQuantity(p,page,s,max);open(p,page);
+    }
+    /** Updating slots leaves the Java client's current window and cursor position intact. */
+    private void renderQuantity(Player p,Page page,ShopAdapter.Selection s,int max){
+        int n=(int)page.numberValue;
+        button(page,13,s.item(),s.name(),null,"Quantity: "+n+(s.bundleSize()>1?" bundles ("+(n*s.bundleSize())+" items)":""),cash(s.price())+" × "+n+" = "+cash(Money.multiply(s.price(),n)),"Use buttons to choose your quantity.");
         int[] delta={-64,-8,-1,1,8,64};int[] slots={18,19,20,24,25,26};
-        for(int i=0;i<delta.length;i++){final int d=delta[i];button(page,slots[i],d<0?Material.RED_DYE:Material.LIME_DYE,(d>0?"+":"")+d,()->quantity(p,s,Math.max(1,Math.min(max,n+d))));}
-        button(page,31,Material.LIME_CONCRETE,"Review purchase",()->buyReview(p,s,n),"Nothing is charged yet.");button(page,36,Material.ARROW,"Back",()->backToCatalog(p,s));button(page,44,Material.BARRIER,"Cancel",()->cancel(p));open(p,page);
+        for(int i=0;i<delta.length;i++){final int d=delta[i];button(page,slots[i],d<0?Material.RED_DYE:Material.LIME_DYE,(d>0?"+":"")+d,()->{page.numberValue=Math.max(1,Math.min(max,page.numberValue+d));renderQuantity(p,page,s,max);});}
+        button(page,31,Material.LIME_CONCRETE,"Review purchase",()->buyReview(p,s,(int)page.numberValue),"Nothing is charged yet.");button(page,36,Material.ARROW,"Back",()->backToCatalog(p,s));button(page,44,Material.BARRIER,"Cancel",()->cancel(p));
     }
     private String purchaseText(ShopAdapter.Selection s,int quantity){return (s.bundleSize()>1?quantity+" bundles = "+(quantity*s.bundleSize()):String.valueOf(quantity))+" × "+s.name()+"\n"+cash(s.price())+(s.bundleSize()>1?" per bundle":" each")+"\nTotal: "+cash(Money.multiply(s.price(),quantity))+itemDetails(s.item());}
     private String itemDetails(ItemStack item){
@@ -155,21 +162,25 @@ public final class ShopUi implements Listener {
         button(page,40,Material.BARRIER,"Cancel setup",()->cancel(p));open(p,page);
     }
     private void setupPrice(Player p,Draft draft,ItemStack item,long price){
-        Page page=page(p,ViewKind.SETUP_PRICE,"Price per item",54);long safe=Math.max(1,Math.min(10000000000L,price));
-        Consumer<String> input=value->{try{long chosen=Money.parse(value);saveDraftPrice(draft,item,chosen);setupItems(p,draft);}catch(RuntimeException e){p.sendMessage(ChatColor.RED+"Use a positive price with up to 2 decimals.");setupPrice(p,draft,item,safe);}};page.numberInput=input;
+        Page page=page(p,ViewKind.SETUP_PRICE,"Price per item",54);long safe=Math.max(1,Math.min(10000000000L,price));page.numberValue=safe;
+        Consumer<String> input=value->{try{long chosen=Money.parse(value);saveDraftPrice(draft,item,chosen);setupItems(p,draft);}catch(RuntimeException e){p.sendMessage(ChatColor.RED+"Use a positive price with up to 2 decimals.");setupPrice(p,draft,item,page.numberValue);}};page.numberInput=input;
         p.closeInventory();
         if(forms.number(p,"Set unit price",ShopAdapter.name(item)+"\nStock in chest: "+InventoryPlan.count(draft.proposal.contents(),item)+"\nEnter the price for ONE item. You will review before publishing.",java.math.BigDecimal.valueOf(safe,2).toPlainString(),v->later(p,page,()->input.accept(v)),()->later(p,page,()->cancel(p))))return;
-        button(page,13,item,ShopAdapter.name(item),null,"Unit price: "+cash(safe),"Stock: "+InventoryPlan.count(draft.proposal.contents(),item),"Use buttons, or /excelshop amount <price>");
+        renderPrice(p,page,draft,item);open(p,page);
+    }
+    private void renderPrice(Player p,Page page,Draft draft,ItemStack item){
+        long price=page.numberValue;
+        button(page,13,item,ShopAdapter.name(item),null,"Unit price: "+cash(price),"Stock: "+InventoryPlan.count(draft.proposal.contents(),item),"Use buttons to choose your price.");
         long[] deltas={-10000,-1000,-100,-10,-1,1,10,100,1000,10000};int[] slots={18,19,20,21,22,27,28,29,30,31};
-        for(int i=0;i<deltas.length;i++){final long d=deltas[i];button(page,slots[i],d<0?Material.RED_DYE:Material.LIME_DYE,(d<0?"-":"+")+cash(Math.abs(d)),()->setupPrice(p,draft,item,Math.max(1,Math.min(10000000000L,safe+d))));}
-        button(page,40,Material.LIME_CONCRETE,"Use "+cash(safe)+" per item",()->{saveDraftPrice(draft,item,safe);setupItems(p,draft);},"Saves to this review only.");button(page,45,Material.ARROW,"Back",()->setupItems(p,draft));button(page,53,Material.BARRIER,"Cancel setup",()->cancel(p));open(p,page);
+        for(int i=0;i<deltas.length;i++){final long d=deltas[i];button(page,slots[i],d<0?Material.RED_DYE:Material.LIME_DYE,(d<0?"-":"+")+cash(Math.abs(d)),()->{page.numberValue=Math.max(1,Math.min(Money.MAX_MINOR_UNITS,page.numberValue+d));renderPrice(p,page,draft,item);});}
+        button(page,40,Material.LIME_CONCRETE,"Use "+cash(price)+" per item",()->{saveDraftPrice(draft,item,page.numberValue);setupItems(p,draft);},"Saves to this review only.");button(page,45,Material.ARROW,"Back",()->setupItems(p,draft));button(page,53,Material.BARRIER,"Cancel setup",()->cancel(p));
     }
     private void saveDraftPrice(Draft d,ItemStack item,long price){ShopOffer previous=draftOffer(d,item);UUID id=previous==null?UUID.randomUUID():previous.id();d.offers.put(id,new ShopOffer(id,item,price,2304));}
     private void setupReview(Player p,Draft draft,boolean confirm){
         Page page=page(p,confirm?ViewKind.SETUP_CONFIRM:ViewKind.SETUP_REVIEW,confirm?"Publish this shop?":"Review your shop",54);
         StringBuilder text=new StringBuilder("Owner: "+p.getName()+"\nAll matching chest stock will be for sale.\n");int slot=0;
         for(ShopOffer o:draft.offers.values()){int stock=InventoryPlan.count(draft.proposal.contents(),o.item());text.append(ShopAdapter.name(o.item())).append(": ").append(cash(o.unitPriceCents())).append(" each; stock ").append(stock).append("; total stock value ").append(stockValue(o.unitPriceCents(),stock)).append('\n');button(page,slot++,o.item(),ShopAdapter.name(o.item()),null,cash(o.unitPriceCents())+" each","Stock: "+stock,"Stock value: "+stockValue(o.unitPriceCents(),stock));}
-        Runnable next=()->{if(!confirm){setupReview(p,draft,true);return;}try{ShopRecord shop=plugin.getRegistry().commit(p,draft.proposal,List.copyOf(draft.offers.values()));cancel(p);p.sendMessage(ChatColor.GREEN+"Your shop is ready. Players can open the chest to browse and confirm purchases.");}catch(RegistryException e){fail(p,e.getMessage());}};
+        Runnable next=()->{if(!confirm){setupReview(p,draft,true);return;}try{ShopRecord shop=plugin.getRegistry().commit(p,draft.proposal,List.copyOf(draft.offers.values()));cancel(p);p.sendMessage(ChatColor.GREEN+"Your shop is ready. Players can right-click the chest or its attached sign to browse and confirm purchases.");}catch(RegistryException e){fail(p,e.getMessage());}};
         Runnable back=()->setupItems(p,draft);
         p.closeInventory();
         if(forms.choices(p,confirm?"Publish this shop?":"Review your shop",text.toString(),new String[]{confirm?"Confirm and publish shop":"Continue to confirmation","Change prices","Cancel"},id->later(p,page,()->{if(id==0)next.run();else if(id==1)back.run();else cancel(p);}),()->later(p,page,()->cancel(p))))return;

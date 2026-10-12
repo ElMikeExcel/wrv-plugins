@@ -12,7 +12,7 @@ import zipfile
 
 MODULE = Path(__file__).resolve().parents[1]
 ROOT = MODULE.parent
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 GUARD = ROOT / "ChestShop-ConfirmationGuard"
 GUARD_NAME = "ChestShop-3.13-pre-1-build474-confirmation.1"
 GUARD_BUILD = "chestshop474-confirmation.1"

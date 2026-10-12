@@ -43,6 +43,8 @@ public final class RuntimeHarness extends JavaPlugin {
     private Physical uiFixture;
     private ItemStack uiItem;
     private InventoryView staleConfirmView;
+    private MenuSnapshot priceWindow, quantityWindow;
+    private record MenuSnapshot(InventoryView view, Inventory inventory, int opens, int closes, ItemStack cursor) {}
 
     @Override public void onEnable() { Bukkit.getScheduler().runTaskLater(this, this::start, 20L); }
     private void start() {
@@ -135,8 +137,25 @@ public final class RuntimeHarness extends JavaPlugin {
     private void expectKind(FakePlayer player, ViewKind expected) throws Exception { check(ui().currentKind(player.uuid) == expected, "expected UI stage " + expected + " but was " + ui().currentKind(player.uuid)); }
     private InventoryClickEvent click(FakePlayer player, int slot) {
         if (player.view == null) throw new AssertionError("No open inventory for " + player.name);
-        InventoryClickEvent event = new InventoryClickEvent(player.view, InventoryType.SlotType.CONTAINER, slot, ClickType.LEFT, InventoryAction.PICKUP_ALL);
+        return click(player, player.view, slot);
+    }
+    private InventoryClickEvent click(FakePlayer player, InventoryView view, int slot) {
+        InventoryClickEvent event = new InventoryClickEvent(view, InventoryType.SlotType.CONTAINER, slot, ClickType.LEFT, InventoryAction.PICKUP_ALL);
         Bukkit.getPluginManager().callEvent(event); check(event.isCancelled(), "menu click never transfers icon or inventory items"); return event;
+    }
+    private MenuSnapshot rememberWindow(FakePlayer player) {
+        check(player.view.getTopInventory().getClass().getName().startsWith("org.bukkit.craftbukkit."), "number menu uses an actual Paper inventory");
+        return new MenuSnapshot(player.view, player.view.getTopInventory(), player.opens, player.closes, player.cursor.clone());
+    }
+    private void sameWindow(FakePlayer player, MenuSnapshot expected) {
+        check(player.view == expected.view(), "queued number clicks preserve the exact open InventoryView");
+        check(player.view.getTopInventory() == expected.inventory(), "queued number clicks preserve the exact native Paper Inventory");
+        check(player.opens == expected.opens() && player.closes == expected.closes(), "number buttons never close or reopen the inventory");
+        check(player.cursor.equals(expected.cursor()), "number buttons preserve the synthetic player's cursor item");
+    }
+    private void loreContains(FakePlayer player, int slot, String text) {
+        check(player.view.getTopInventory().getItem(slot).getItemMeta().getLore().stream()
+            .map(ChatColor::stripColor).anyMatch(line -> line.contains(text)), "menu lore contains current value: " + text);
     }
     private void beforePublished() throws Exception { check(registry().findByChest(uiFixture.chest).isEmpty(), "shop remains ordinary storage before final publish"); check(vault.calls.isEmpty(), "setup never calls economy"); }
     private void beforePurchase() { check(vault.calls.isEmpty() && buyer.count(uiItem) == 0, "catalog/quantity/review/confirmation preview does not buy anything"); }
@@ -161,13 +180,17 @@ public final class RuntimeHarness extends JavaPlugin {
         cases.add(new Case("onboarding-can-restart-with-fresh-sign", () -> { expectKind(owner, null); beforePublished(); signPlacementAndEdit(); }));
         cases.add(new Case("onboarding-yes-shows-real-chest-items", () -> { expectKind(owner, ViewKind.SETUP_PROMPT); click(owner, 11); beforePublished(); }));
         cases.add(new Case("setup-select-item-without-publishing", () -> { expectKind(owner, ViewKind.SETUP_ITEMS); check(owner.view.getTopInventory().getItem(0).getType() == Material.GOLD_INGOT, "actual chest contents become visual choices"); check(owner.view.getTopInventory().getItem(1) == null, "equivalent original and roundtripped metadata share one price entry"); click(owner, 0); beforePublished(); }));
+        // The original WRVShops JAR remains a migration baseline, not a cursor-fix candidate.
+        if (shops.getName().equals("ExcelShops")) addPriceCursorCases();
         cases.add(new Case("setup-enter-unit-price-without-publishing", () -> { expectKind(owner, ViewKind.SETUP_PRICE); check(ui().enterNumber(owner.player, "2.50"), "price number input accepted"); expectKind(owner, ViewKind.SETUP_ITEMS); beforePublished(); click(owner, 31); }));
         cases.add(new Case("setup-review-shows-price-before-confirm", () -> { expectKind(owner, ViewKind.SETUP_REVIEW); beforePublished(); check(owner.view.getTopInventory().getItem(0).getItemMeta().getLore().stream().anyMatch(line -> line.contains("2.50")), "review displays selected exact unit price"); click(owner, 49); }));
         cases.add(new Case("setup-final-confirm-is-only-publish-action", () -> { expectKind(owner, ViewKind.SETUP_CONFIRM); beforePublished(); click(owner, 49); click(owner, 49); }));
         cases.add(new Case("setup-duplicate-publish-and-protection-listeners", () -> {
             ShopRecord shop = registry().findByChest(uiFixture.chest).orElseThrow();
             check(shop.revision() == 1 && shop.offers().size() == 1 && shop.offers().getFirst().unitPriceCents() == 250, "two final click events create exactly one listing");
-            check(vault.calls.isEmpty(), "publishing uses no money"); protectionListeners(shop);
+            check(vault.calls.isEmpty(), "publishing uses no money");
+            if (shops.getName().equals("ExcelShops")) check(owner.messages.stream().anyMatch(message -> message.contains("right-click the chest or its attached sign")), "publish success tells players how to open the chest or sign shop");
+            protectionListeners(shop);
             ui().showManage(owner.player, shop); expectKind(owner, ViewKind.MANAGE); click(owner, 13); owner.x += 100;
             PlayerInteractEvent event = new PlayerInteractEvent(buyer.player, Action.RIGHT_CLICK_BLOCK, null, uiFixture.chest, BlockFace.SOUTH, EquipmentSlot.HAND);
             event.setCancelled(true); Bukkit.getPluginManager().callEvent(event);
@@ -184,6 +207,7 @@ public final class RuntimeHarness extends JavaPlugin {
             InventoryDragEvent drag = new InventoryDragEvent(buyer.view, new ItemStack(Material.DIRT), new ItemStack(Material.DIRT, 2), false, Map.of(0, new ItemStack(Material.DIRT)));
             Bukkit.getPluginManager().callEvent(drag); check(drag.isCancelled(), "drag into menu blocked"); click(buyer, 0); beforePurchase();
         }));
+        if (shops.getName().equals("ExcelShops")) addQuantityCursorCases();
         cases.add(new Case("buyer-quantity-preview-no-purchase", () -> { expectKind(buyer, ViewKind.QUANTITY); beforePurchase(); check(ui().enterNumber(buyer.player, "3"), "typed quantity accepted"); expectKind(buyer, ViewKind.BUY_REVIEW); beforePurchase(); click(buyer, 11); }));
         cases.add(new Case("buyer-final-screen-cancel-no-purchase", () -> { expectKind(buyer, ViewKind.BUY_CONFIRM); beforePurchase(); staleConfirmView = buyer.view; click(buyer, 15); }));
         cases.add(new Case("buyer-stale-confirm-after-cancel-cannot-buy", () -> {
@@ -214,6 +238,80 @@ public final class RuntimeHarness extends JavaPlugin {
             check(vault.calls.size() == 2 && buyer.count(uiItem) == 3, "late disconnect click makes no extra purchase"); buyer.online = true;
             registry().remove(owner.player, registry().findByChest(uiFixture.chest).orElseThrow().id());
             check(InventoryPlan.count(chest(uiFixture).getBlockInventory().getContents(), uiItem) == 9, "closing shop retains remaining physical stock");
+        }));
+    }
+    private void addPriceCursorCases() {
+        cases.add(new Case("setup-price-queue-mixed-adjustments", () -> {
+            expectKind(owner, ViewKind.SETUP_PRICE); owner.cursor = named(Material.EMERALD, "Synthetic cursor item"); priceWindow = rememberWindow(owner);
+            click(owner, 27); click(owner, 27); click(owner, 28); click(owner, 29); click(owner, 21); beforePublished();
+        }));
+        cases.add(new Case("setup-price-queued-adjustments-keep-native-window", () -> {
+            expectKind(owner, ViewKind.SETUP_PRICE); sameWindow(owner, priceWindow); loreContains(owner, 13, "Unit price: $2.02"); beforePublished();
+            owner.cursor = new ItemStack(Material.AIR);
+            check(ui().enterNumber(owner.player, "invalid"), "invalid price input is handled");
+            expectKind(owner, ViewKind.SETUP_PRICE); loreContains(owner, 13, "Unit price: $2.02");
+            click(owner, 29); click(owner, 29); click(owner, 22); click(owner, 40);
+        }));
+        cases.add(new Case("setup-price-queued-save-uses-latest-value", () -> {
+            expectKind(owner, ViewKind.SETUP_ITEMS); loreContains(owner, 0, "$4.01 each"); beforePublished();
+            click(owner, priceWindow.view(), 29); click(owner, priceWindow.view(), 40); click(owner, 0);
+        }));
+        cases.add(new Case("setup-price-stale-save-and-back-do-not-change-draft", () -> {
+            expectKind(owner, ViewKind.SETUP_PRICE); loreContains(owner, 13, "Unit price: $4.01"); beforePublished();
+            click(owner, 45); click(owner, 29); click(owner, 40);
+        }));
+        cases.add(new Case("setup-price-back-invalidates-queued-adjust-and-save", () -> {
+            expectKind(owner, ViewKind.SETUP_ITEMS); loreContains(owner, 0, "$4.01 each"); beforePublished(); click(owner, 0);
+        }));
+        cases.add(new Case("setup-price-cancel-invalidates-queued-save", () -> {
+            expectKind(owner, ViewKind.SETUP_PRICE); priceWindow = rememberWindow(owner);
+            click(owner, 53); click(owner, 29); click(owner, 40);
+        }));
+        cases.add(new Case("setup-price-cancel-keeps-chest-ordinary", () -> {
+            expectKind(owner, null); beforePublished();
+            click(owner, priceWindow.view(), 40);
+            ui().offerSetup(owner.player, registry().propose(owner.player, uiFixture.chest, uiFixture.sign));
+            click(owner, priceWindow.view(), 29); click(owner, 11);
+        }));
+        cases.add(new Case("setup-price-stale-events-cannot-revive-cancelled-draft", () -> {
+            expectKind(owner, ViewKind.SETUP_ITEMS); loreContains(owner, 0, "Price needed"); beforePublished(); click(owner, 0);
+        }));
+    }
+    private void addQuantityCursorCases() {
+        cases.add(new Case("buyer-quantity-queue-mixed-adjustments", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); buyer.cursor = named(Material.DIAMOND, "Synthetic quantity cursor"); quantityWindow = rememberWindow(buyer);
+            click(buyer, 24); click(buyer, 24); click(buyer, 25); click(buyer, 20); beforePurchase();
+        }));
+        cases.add(new Case("buyer-quantity-queued-adjustments-keep-native-window", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); sameWindow(buyer, quantityWindow); loreContains(buyer, 13, "Quantity: 10"); loreContains(buyer, 13, "$2.50 × 10 = $25.00"); beforePurchase();
+            buyer.cursor = new ItemStack(Material.AIR);
+            check(ui().enterNumber(buyer.player, "0"), "invalid quantity input is handled");
+            expectKind(buyer, ViewKind.QUANTITY); loreContains(buyer, 13, "Quantity: 10");
+            click(buyer, 19); click(buyer, 24); click(buyer, 31); click(buyer, 26);
+        }));
+        cases.add(new Case("buyer-quantity-queued-review-uses-latest-value", () -> {
+            expectKind(buyer, ViewKind.BUY_REVIEW); loreContains(buyer, 4, "3 × UI listed gold"); loreContains(buyer, 4, "Total: $7.50"); beforePurchase();
+            click(buyer, quantityWindow.view(), 31); click(buyer, quantityWindow.view(), 24); click(buyer, 13);
+        }));
+        cases.add(new Case("buyer-quantity-review-back-retains-latest-value", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); loreContains(buyer, 13, "Quantity: 3"); quantityWindow = rememberWindow(buyer); beforePurchase();
+            click(buyer, 26); click(buyer, 26);
+        }));
+        cases.add(new Case("buyer-quantity-upper-clamp-keeps-native-window", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); sameWindow(buyer, quantityWindow); loreContains(buyer, 13, "Quantity: 12"); beforePurchase(); click(buyer, 18); click(buyer, 18);
+        }));
+        cases.add(new Case("buyer-quantity-lower-clamp-and-back-keep-money-unchanged", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); sameWindow(buyer, quantityWindow); loreContains(buyer, 13, "Quantity: 1"); beforePurchase(); click(buyer, 36); click(buyer, 31);
+        }));
+        cases.add(new Case("buyer-quantity-back-invalidates-queued-review", () -> {
+            expectKind(buyer, ViewKind.CATALOG); beforePurchase(); click(buyer, quantityWindow.view(), 31); click(buyer, 0);
+        }));
+        cases.add(new Case("buyer-quantity-cancel-invalidates-queued-review", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); quantityWindow = rememberWindow(buyer); click(buyer, 24); click(buyer, 44); click(buyer, 31);
+        }));
+        cases.add(new Case("buyer-quantity-cancel-and-stale-events-never-buy", () -> {
+            expectKind(buyer, null); beforePurchase(); click(buyer, quantityWindow.view(), 31); click(buyer, quantityWindow.view(), 24);
+            ui().showShop(buyer.player, registry().findByChest(uiFixture.chest).orElseThrow()); click(buyer, 0);
         }));
     }
     private void protectionListeners(ShopRecord shop) {

@@ -1,0 +1,69 @@
+{
+  "candidate_version": "0.1.3",
+  "candidate_sha256": "37ac2dbbf084c0a1c1d57dbff2f886ccf2194a439de955c74765a97f1a9160a4",
+  "verification_date_utc": "2026-10-12",
+  "boots": 4,
+  "assertions": 757,
+  "failures": 0,
+  "paper": "26.2 build 123, commit 50018799f282010f7eb15d32c29cadbbe7c9d740",
+  "java": "Eclipse Temurin 25.0.4+7-LTS",
+  "listen": "127.0.0.1:25579",
+  "new_cursor_regression_groups": 17,
+  "native_paper_inventories": true,
+  "synthetic_players_inventory_views_economy_claims": true,
+  "real_client": false,
+  "live_server_accessed": false,
+  "real_money_used": false,
+  "legacy_migration_suite_rerun": false,
+  "all_child_processes_exited_zero": true,
+  "loopback_port_free_after_every_boot": true,
+  "coverage": [
+    "Queued mixed +/- clicks compose and retain identical native Inventory and synthetic InventoryView references.",
+    "No close/open calls or synthetic held-cursor-item changes from number buttons.",
+    "Queued Save and Review consume the latest adjusted value.",
+    "Invalid typed values retain the most recently adjusted price and quantity.",
+    "Quantity lower and stock upper bounds retain the same window.",
+    "Back and Cancel invalidate queued navigation, edits, Save and Review; stale callbacks cannot revive cancelled drafts or buy.",
+    "Duplicate final confirmations make one exact debit and credit and deliver stock once.",
+    "Success instructions mention right-clicking the chest or its attached sign.",
+    "Full clean restart, unavailable Economy service and absent Vault retain stock protection."
+  ],
+  "limitations": [
+    "Human mouse-pointer position, client packets, real Java/Bedrock rendering and phone layout were not tested.",
+    "Actual economy, GriefPrevention, Geyser/Floodgate, real player persistence and other-plugin interactions were not tested.",
+    "The legacy migration suite is supported but was not rerun for this UI-only candidate; prior migration evidence is historical."
+  ],
+  "runs": [
+    {
+      "boot": "verification-first",
+      "passed_groups": 52,
+      "failures": 0,
+      "assertions": 367
+    },
+    {
+      "boot": "verification-restart",
+      "passed_groups": 52,
+      "failures": 0,
+      "assertions": 372
+    },
+    {
+      "boot": "verification-no-economy",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 7
+    },
+    {
+      "boot": "verification-no-vault",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 11
+    }
+  ],
+  "source_input_sha256": {
+    "WRVShops/src/com/winkreyes/shops/ShopUi.java": "12db8d73da3ff2cc51023f3a96fe2871914efc611e6ed450b872800b2f59ced5",
+    "WRVShops/verification/runtime-harness/src/wrv/harness/RuntimeHarness.java": "76d016325cb06f17012e5604654f689a5c00f769e2e36210c0cf148a376440cd",
+    "WRVShops/verification/runtime-harness/src/wrv/harness/FakePlayer.java": "3ec55f6d07f77e644338c4506ddbb3d6b8c97cd1267f669f1a3eb65323028abf",
+    "WRVShops/verification/runtime-harness/run.py": "cc74bbe3e18560e252691cebd03147f48286b841fa976764d44d006fddebf71a",
+    "WRVShops/verification/runtime-harness/server.properties.loopback": "bd928afcff2f065f0c2bbdcc6c5f6f0dfbc3086387f00bff8fde08beb96c4c17"
+  }
+}
