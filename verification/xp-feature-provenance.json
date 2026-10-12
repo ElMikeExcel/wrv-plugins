@@ -1,0 +1,52 @@
+{
+  "upstream_mcmmo_commit": "058279c148a65bd708dc85067d3858f6adde1173",
+  "upstream_archive_sha256": "5b703b61d8510910b014f649398dae8c96f192ab3d20927ec86b7d9f0a63cade",
+  "remote_repair_base_commit": "e406719f2ff1509bc86fcdb44ac80aa395210cc4",
+  "remote_repair_base_tree": "7032762cd23c1864d29fad9e4a1d128e4c0233de",
+  "local_mcmmo_feature_commit": "3bd8181dad4de070f60f7eba1a993e0ab256303b",
+  "mcmmo_source_tree": "512f8b15738a797d99c63cec4acf8293b22534f7",
+  "local_wrv_feature_commit": "9224d3bafd04f9a9f354e688bf7cda9c9add7422",
+  "wrv_source_tree": "029d204c96f25e136205114f5e15469d7a0ffde2",
+  "test_totals": {
+    "mcmmo_default_profile": {
+      "tests": 2263,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "wrv_eight_modules": {
+      "tests": 85,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "repository_checks": 5,
+    "shop_generator_checks": 9
+  },
+  "excluded_mcmmo_tags": [
+    "skip",
+    "stress",
+    "docker"
+  ],
+  "build_toolchain": {
+    "jdk": "Temurin 21.0.12.1+1",
+    "maven": "3.9.9",
+    "mcmmo_release": 17,
+    "weekend_release": 21
+  },
+  "clean_patch_tree_equal": true,
+  "repeat_mcmmo_jar_equal": true,
+  "repeat_weekend_jar_equal": true,
+  "artifacts": {
+    "WeekendXP-1.0.2.jar": "4452ccd90bea409fca37740d3e4e9967ef6dd56e9280000521eec868cf0254d0",
+    "mcMMO-2.3.003-WRV-XP-1-source.zip": "99b4112becbcba4284620c1fb6bde0ab30ca266e7c9551f6cd64ad6c01319752",
+    "mcMMO-2.3.003-WRV-XP-1.jar": "0dbb196d53bf17d917d485129684f7b599980946c499fd9889c9aa13d38582a5",
+    "wrv-plugins-xp-source.zip": "9ed7b99e6d33c0760592271b81d228bb79245bc0b140ba6c2da25f1fb6a82ce4"
+  },
+  "publication": {
+    "tested_source_commit": "c862c76b4ed373782ac084e8564aff34ff7a3f14",
+    "tested_source_tree": "029d204c96f25e136205114f5e15469d7a0ffde2",
+    "additional_publication_changes": "License notice and this provenance record only; tested runtime sources and patches unchanged."
+  },
+  "artifact_scope": "Hashes identify the original locally tested candidates. CI artifact hashes may differ when toolchains or upstream snapshot dependencies differ. Deployment evidence is recorded separately."
+}
