@@ -1,0 +1,11 @@
+Accepted isolated runtime verification: 2026-10-12 UTC
+Paper: 26.2 build 123; commit 50018799f282010f7eb15d32c29cadbbe7c9d740
+Bukkit API: 26.2.build.123-stable
+Java: Eclipse Temurin 25.0.4+7-LTS
+Prototype SHA-256: c3161b67ece29bdfeed00f4218ea1f7e47ac54ef0ff221c383ec18bf56b50e01
+Candidate boot: PASS, 8 test groups, 150 assertions, 0 failures; clean shutdown.
+Clean restart: PASS, 8 test groups, 150 assertions, 0 failures; clean shutdown.
+Persisted map ID 9 recovered; native renderer retained and plugin overlay reattached automatically before test attachment.
+Exact Paper API compilation: PASS using Java 25 javac --release 21; deprecated-API notes only.
+Portable runner itself: PASS on two additional complete boots with the same candidate hash.
+No real Java/Bedrock client session, phone display, Geyser/Floodgate combination, or production server was tested.

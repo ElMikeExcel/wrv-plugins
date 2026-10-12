@@ -2,7 +2,7 @@
 
 ## Automated
 
-`./build.sh` compiles all eight plugins with Java 21, runs JUnit/Mockito behavior tests, packages JARs, and runs repository and shop-generator tests. Mocks verify code paths without a running Minecraft server. They do not prove client rendering, permissions from the installed permission manager, plugin classloader behavior, host restart policy, or external plugin command acceptance.
+`./build.sh` compiles all nine plugins with Java 21, runs JUnit/Mockito behavior tests, packages JARs, and runs repository and shop-generator tests. Mocks verify code paths without a running Minecraft server. They do not prove client rendering, permissions from the installed permission manager, plugin classloader behavior, host restart policy, or external plugin command acceptance.
 
 The Maven release property emits Java 21 bytecode; the JAR audit checks class version 65, descriptor/main-class/version consistency, required config resources and that no test/server API classes are bundled. Archive checks protect the unchanged recovery artifacts. CI uses read-only repository permission and uploads candidate JARs only.
 
@@ -17,6 +17,8 @@ Use a disposable staging copy with the exact intended server, Java, EssentialsX/
 5. WealthBoard: Vault absent/provider absent; Jobs absent/disabled/enabled; logout before delayed tasks; signed/localized currency; top-three ordering and all-job enrollment with the deployed Jobs version.
 6. WeekendXP: controlled staging clock/reload on a Chicago weekday and weekend; confirm actual mcMMO global rate, transition timing (up to 30 minutes), command failure handling and intended reset policy. A successful Bukkit dispatch does not prove the external plugin changed its state.
 7. ShopVillager/Spawn Shop: create/tag/remove with admin and non-admin accounts; Java/Bedrock interaction once per tap, no trade window, protected tagged villagers, permission checks, sufficient/insufficient funds and inventory space. Check actual enchanted-item syntax against the deployed Minecraft version before any economic use.
-8. mcMMO: build the exact pinned upstream plus both patches separately. On staging verify Together bonus range/member count, gameplay-only XP sources, disabled defaults and `/party info` text. The eight-module build does not package mcMMO.
+8. mcMMO: build the exact pinned upstream plus both patches separately. On staging verify Together bonus range/member count, gameplay-only XP sources, disabled defaults and `/party info` text. The nine-module build does not package mcMMO.
 
 No production readiness or source-to-installed-JAR identity should be inferred until the relevant runtime checks and installed artifact comparison have actually been performed.
+
+9. WRVPlayerMap: see its README and verification directory for isolated exact-Paper results and the outstanding real Java/Bedrock phone acceptance checks. Keep worlds/native map data and maps.yml together across restart/restore.

@@ -1,0 +1,18 @@
+name: WRVPlayerMap
+version: 0.1.0
+main: com.winkreyes.playermap.PlayerMapPlugin
+api-version: '1.21'
+author: Wink Reyes Valley
+description: Dedicated vanilla terrain maps with pixel-rendered family player labels.
+commands:
+  playermap:
+    description: Get your player map, choose a normal map scale, or list online players.
+    usage: /playermap [get|scale <0-4>|list]
+    permission: wrv.playermap.use
+permissions:
+  wrv.playermap.use:
+    description: Obtain and view a personal player map.
+    default: true
+  wrv.playermap.visible:
+    description: Appear on other players' player maps; vanish visibility is also respected.
+    default: true

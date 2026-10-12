@@ -1,0 +1,6 @@
+# Vanilla zoom: 0=128, 1=256, 2=512, 3=1024, 4=2048 blocks per side.
+default-scale: 2
+# Position snapshots and held-map checks. Minimum 10 ticks; default once per second.
+update-interval-ticks: 20
+# Only deliberate replacement after loss creates another ITEM, always reusing its map ID.
+replacement-cooldown-seconds: 60

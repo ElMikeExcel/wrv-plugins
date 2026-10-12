@@ -51,3 +51,7 @@ Nothing here merges, deploys, restarts or changes the live server. Keep backups 
 - RestartCountdown calls server shutdown after warnings. It does not start the process again; restart behavior belongs to the host or supervisor.
 - Don't overwrite a populated DeluxeMenus config wholesale. Merge this repository's menu registration into the existing file.
 - Never commit credentials, server secrets, world saves, player databases or local dependency caches.
+
+## Player-map prototype
+
+[WRVPlayerMap](WRVPlayerMap/README.md) adds dedicated normal terrain maps with pixel-rendered names and distant-player arrows. It is independently tested and remains a prototype pending real Java/Bedrock client acceptance; it is not deployed by this repository.

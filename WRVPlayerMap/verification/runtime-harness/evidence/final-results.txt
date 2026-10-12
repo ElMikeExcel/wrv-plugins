@@ -1,0 +1,9 @@
+PASS exact-server-version
+PASS native-map-layer-and-transparent-pixels
+PASS plugin-enabled
+PASS managed-map-create-reuse-and-per-world-scale
+PASS managed-map-overlay-restored-after-restart
+PASS prototype-delta-writes-and-native-pixel-restore
+PASS simulated-item-issuance-hands-permission-and-dimension
+PASS simulated-visibility-and-disconnected-player-filtering
+SUMMARY passed=8 failed=0 assertions=150
