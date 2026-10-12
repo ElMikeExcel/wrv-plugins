@@ -1,56 +1,67 @@
-# WRV Player Map prototype
+# WRV Player Map 0.2 prototype
 
-A small, original Paper add-on that keeps Minecraft's native terrain renderer and adds player names and arrows as map **pixels**. It uses an ordinary filled-map item, so it does not depend on Java-only cursor captions or a browser map. No Cartographer code or assets are used.
+An enhancement to **ordinary Minecraft maps**: use a new empty map normally, then see nearby players' names and distant-player arrows drawn as pixels over its native terrain. This replaces the earlier command-issued personal-map prototype. It remains isolated and is **not installed on the live server**.
 
-This is a **separately tested prototype**, not an installed replacement for BlueMap. It never reads or deletes BlueMap files and has no BlueMap dependency, web service, port, resource pack or client-mod requirement.
+## Normal player instructions
 
-## Use
+1. Craft or acquire an ordinary empty map and use it normally. Newly activated maps gain tracking automatically; no special command or extra map item is needed.
+2. Hold the filled map in your **main hand on phones**. Java offhand holding is recognized too. Explore normally: the map retains its real vanilla ID, region, scale, world and terrain history.
+3. Share the map or copy it normally. At a cartography table, paper zooms out, an empty map makes a copy, and a glass pane makes a locked, plain map for walls/art. The add-on does not replace these recipes, consume extra materials or create extra map IDs.
+4. Optional: `/playermap list` lists visible online players and their worlds. `/playermap` shows help. The former `/playermap get` and `/playermap scale` controls no longer issue or modify anything.
 
-- `/playermap` or `/playermap get`: receive one personal map, or reuse the one already carried. Put it in the **main hand on phones**. Java offhand holding is also recognized. No map is handed out automatically on join, death or reconnect.
-- `/playermap scale 0` through `4`: select the five vanilla scales: 128, 256, 512, 1024 and 2048 blocks across. The held map is preferred when an older lost copy was later recovered. Default scale is 2.
-- `/playermap list`: list visible online players and their worlds, including full names when the pixel display is crowded.
-- North is up. Your marker/name is green and prefixed `*`; other names are yellow. In-area arrows show facing. Out-of-area arrows indicate the bearing from the **map center**, not the viewer.
+North is up. Your added name/arrow is green and prefixed `*`; other added names are yellow. In-area arrows show facing. Off-map arrows point toward the player from the **map center**. Vanilla cursors, banners and other native decorations remain as they normally would.
 
-The map uses a normal, fixed vanilla-aligned region centered on the area where that player's world/scale map is first requested. It does not continuously recenter or render unexplored faraway terrain. Each scale has its own ordinary exploration history, just like separate vanilla maps. All online players in that same world can have markers even when they are beyond the map's terrain coverage.
+Each map stays with its original world and region. Taking an Overworld map through a portal does not turn it into a Nether map. In another dimension, it keeps its ordinary terrain image without misleading live player coordinates. Activate a separate ordinary map there if you want a map of that world; normal Minecraft dimension-specific terrain behavior still applies.
 
-Names are placed around markers with leader lines. Coincident markers spread apart slightly, retaining a line to the actual position. The self arrow is drawn last. A 128×128 map has finite room: on unusually crowded maps, a footer reports hidden labels and label priority cycles every three snapshots (three seconds at the default update rate). All same-world markers remain eligible; `/playermap list` is the complete text fallback. Very long/unsupported glyphs are fitted or replaced with `?` rather than treated as formatting.
+## What stays plain
 
-## Worlds, privacy and items
+- Maps that already existed when this feature was enabled are not automatically adopted, including their normal untracked zooms/copies.
+- Treasure/explorer maps are not enrolled by merely being created, loaded, held or traded.
+- Locked maps always stay plain. Locking an improved map creates Minecraft's normal separate locked ID and captures its terrain only; the player-label layer is not baked into the art.
+- Custom/virtual maps and activation outputs with custom names, lore, colors, location names or plugin data are skipped conservatively.
 
-- When its owner holds it after changing worlds, the same item switches to that owner's dedicated map for that world and zoom. Returning reuses the prior ID and terrain. Other-world players are counted, not plotted at misleading converted coordinates.
-- Personal maps borrowed by another player show ordinary terrain only. Normal/unrelated maps are never claimed or modified. Map frames are not a separate tracking display; dynamic rendering requires the corresponding personal map to be held.
-- `wrv.playermap.use` defaults to true. Denying it blocks issuing and viewing overlays. `wrv.playermap.visible` defaults to true; denying it hides that player from other people's maps. Bukkit `canSee` is respected, so hidden players are excluded when the installed vanish plugin uses that API. The viewer always retains their own marker.
-- Logout removes the position snapshot and cached viewer frame. Permission/vanish/world changes are reflected no later than the next snapshot, normally one second. Minecraft/client packet timing is additional.
-- A full inventory or map on the cursor causes a clear retry message without dropping an item. Repeated commands reuse the carried map, including offhand. Replacements after deliberate loss reuse the stored ID and are rate-limited (default 60 seconds, minimum 10). This is not an absolute ban on multiple physical copies: storing/dropping one and deliberately requesting a later replacement can leave an old copy. No automatic item flooding or per-movement map-ID creation occurs.
-- Crafting/cartography changes of tagged maps are blocked. Change zoom with the command so the ID registry stays consistent.
+**Map-wall caveat:** Minecraft copies share a map ID and therefore one image per viewer. An **unlocked** framed copy can show the same overlay while that viewer holds another copy with the same ID. Independently styled held/frame copies are not promised. Use a glass-pane locked copy for a reliably plain wall/art display. Existing map walls remain outside automatic enrollment.
 
-## Storage and performance
+## Tracking, permissions and crowding
 
-`plugins/WRVPlayerMap/maps.yml` records owner UUID, world UUID, scale, map ID and center. Back it up **together with the worlds' native map data**. Missing/changed map IDs, changed centers/scales and malformed registry data fail closed rather than claim unrelated maps. Writes are atomic where supported. A failed write blocks further allocations until the storage issue is repaired and the plugin restarted.
+All visible online players in the map's world can be drawn, including players far beyond its terrain coverage. Other-world players are counted separately; `/playermap list` gives their names/worlds without inventing converted coordinates. No remote terrain is generated.
 
-The number of registered IDs is bounded to one per owner × world × five scales. Disconnecting, moving and repeated requests do not allocate IDs. The plugin samples online player positions once per second by default, caches contextual frames and writes only changed pixels. It does not query blocks/chunks, generate chunks, scan worlds, keep chunks loaded or run its own terrain renderer. Normal vanilla exploration still has its usual cost. Unchanged frames at the same snapshot are reused.
+Coincident markers spread slightly with lines back to their real positions. The self arrow is drawn last. On crowded 128×128 maps, a footer reports hidden labels and name priority cycles every three position snapshots (normally three seconds). `/playermap list` is the full-name fallback. Long/unsupported glyphs are fitted or replaced with `?` safely.
 
-A local synthetic test with twelve coincident players measured about 0.3 ms for overlay layout per render after warm-up. That excludes map packet transport, terrain updates and real host/client performance; it is not a 3 GB server TPS guarantee. Actual phone readability and the installed Geyser/Floodgate/vanish behavior still require client acceptance testing.
+- `wrv.playermap.use` (default true): activate and view the enhancement. Denying it leaves ordinary map behavior available.
+- `wrv.playermap.visible` (default true): appear in the **added pixel names/markers**. This does not suppress Minecraft's own cursor when vanilla would show it, such as another holder of the same map. It is not a complete vanish permission.
+- Bukkit `canSee` is respected by the added overlay. Exact Paper's native renderer also respects `canSee`; test the installed vanish plugin rather than assuming it uses that API.
 
-## Build and verification
+Positions refresh once per second by default. Logout is removed from snapshots, and stale pixels clear transparently. Client packet timing is additional. Normal vanilla inventory handling, map consumption, dropping and crafting semantics are retained; no command/join/reconnect grant or automatic item replacement exists.
 
-From the repository root: `./mvnw -B -ntp -pl WRVPlayerMap -am clean verify`.
+## Narrow scope and storage
 
-The regular reproducible reactor emits Java 21 bytecode against the repository's pinned Paper 1.21.4 API. Additionally, this prototype was compiled directly with Java 25 against the exact Paper 26.2 build 123 API and loaded/tested on Paper `26.2-123-main@5001879` with Temurin `25.0.4+7`. There is no NMS or Geyser API dependency.
+Enrollment uses Paper's `PlayerMapFilledEvent`, specifically empty-map activation. It captures the vanilla-created identity early and refuses changes to that identity before applying metadata. `MapInitializeEvent` **only restores IDs already known**; it never globally converts maps. A lineage tag copied by vanilla recipes allows only validated native zoom descendants of a known activated map to enroll when held. Normal copies reuse the same ID. Locked or unmarked items never activate an overlay.
 
-The module's automated tests cover geometry/scales/negative coordinates, edge arrows, overlap/overflow, stale-pixel clearing, registry reuse/reload/corruption, normal-map isolation, inventory/cursor/offhand/repeated requests, owner permissions and deliberate replacement cooldowns. See `verification/` for the exact isolated-server harness, reproducibility details and explicit remaining client checks.
+As with other server extensions, installed plugins are trusted. A plugin that deliberately substitutes an old plain map *before* this add-on's earliest activation listener cannot be distinguished from Paper's original result through that event alone. The checks reject later replacements and obvious custom outputs; coexistence with another map-activation replacement plugin requires integration testing. This is not a sandbox against privileged plugins forging metadata.
 
-The intended live compatibility targets are Geyser `2.11.3-b1251` (`50a464d`) and Floodgate `2.2.5-SNAPSHOT` (`b141-81b65cc`). Pixel transport is the compatibility strategy; a real Java and Bedrock client have **not** yet visually verified this candidate.
+Back up `plugins/WRVPlayerMap/maps.yml` **with the worlds' native map data**. Format 2 records ID/world/center/scale/root ancestry without ownership. Malformed or impossible ancestry and changed registered identities fail closed. Writes are atomic where supported; a write failure stops further enrollment until storage is repaired and the plugin restarted. Ordinary maps continue working.
 
-## Staging before any live install
+The old isolated 0.1 owner-map registry is deliberately not imported automatically. Preserve it separately if evaluating an upgrade of that unpublished-to-production prototype; never delete native world map data as a migration shortcut.
 
-1. Make a disposable, private test server using the exact intended Paper, Java, Geyser and Floodgate builds. Install this candidate JAR there and preserve both world map data and the plugin registry across clean restarts.
-2. Join with a real Java account and at least two Bedrock phones. Request maps, hold them in the main hand, travel inside/outside the map and compare labels/arrows with known player positions. Check every scale, matching and different dimensions, identical positions, long Floodgate names and a dark/bright terrain background.
-3. Check logout, reconnect, server restart, death/loss, replacement cooldown, inventory full/cursor/offhand, permissions and actual vanish integration. Confirm non-player maps and their IDs/renderers remain unchanged.
-4. Watch tick time/memory with the actual family player count for at least one gameplay session. No live installation, restart, BlueMap removal or permission changes are implied by building this prototype.
-5. If removal is needed after a future authorized install, stop the test server, remove this plugin JAR, retain its registry/world map data for rollback and restart. Dedicated map items revert to their native terrain; no automatic world or map-data deletion is part of removal.
+The plugin creates **zero map IDs**. Entries follow maps that vanilla itself creates through activation/zoom. It samples only online player positions and held items, caches contextual frames and writes changed pixels. It does not scan world files, blocks/chunks/entities, generate chunks, force chunks to stay loaded, render terrain, use BlueMap data or expose a web port. Startup does not enumerate/load every registered map; views reattach lazily as used. Normal vanilla terrain work remains normal vanilla work.
 
-## API/source rationale
+## Build, verification and remaining checks
 
-- [Exact installed Geyser translator source](https://github.com/GeyserMC/Geyser/blob/50a464d7db132ca5943b608a2110c158bf09702a/core/src/main/java/org/geysermc/geyser/translator/protocol/java/level/JavaMapItemDataTranslator.java) converts map pixel colors into Bedrock colors while supplying an empty decoration-caption string. This is why names are drawn as pixels. That source inspection does not replace a phone test.
-- [Paper MapCanvas API](https://jd.papermc.io/paper/26.2/org/bukkit/map/MapCanvas.html) documents per-renderer layers and null color revealing the layer beneath. The exact build123 behavior was also checked on real CraftMapCanvas instances.
+From repository root: `./mvnw -B -ntp -pl WRVPlayerMap -am clean verify`.
+
+This module alone pins Paper API `1.21.5-R0.1-20250925.065803-26`, which contains `PlayerMapFilledEvent` and keeps the existing Java 21 reactor usable. The other modules retain their API pins. The candidate is also compiled/tested against the exact deployed Paper `26.2-123-main@5001879`, API `26.2.build.123-stable`, Temurin `25.0.4+7`. The production plugin has no NMS or Geyser API dependency.
+
+See `verification/runtime-harness/` for original, reproducible isolated tests and final artifact hashes. Tests use actual native map creation, clone/zoom/lock post-processing, real item metadata/map canvases and clean server restarts, with synthetic players. They verify native ID/terrain/flags, ancestry, sharing, locked plain copies, no overlay baked into locked art, permissions, stale pixels and dimensions.
+
+**Still unverified:** real Java and Bedrock phone display, UI clicks/shift-click crafting/inventory packet synchronization, actual Geyser `2.11.3-b1251` (`50a464d`) / Floodgate `2.2.5-SNAPSHOT` (`b141-81b65cc`) together, installed vanish integration, and live-host tick/memory performance. No headless test is presented as phone acceptance.
+
+Before any authorized live installation, use an isolated staging session with Java and at least two Bedrock phones. Activate an ordinary map; share/clone/zoom/lock it; visit another region and dimension; test main/offhand, overlaps, long names, reconnect, full restart, and existing treasure/art maps. Specifically check an unlocked framed copy while holding its twin, then a locked copy. Observe a normal family gameplay session for readability and performance. Removal only needs the plugin JAR removed during an authorized stop/restart: maps retain vanilla terrain; preserve registry/world data for rollback.
+
+## Primary-source rationale
+
+- [Exact Paper empty-map hook](https://github.com/PaperMC/Paper/blob/50018799f282010f7eb15d32c29cadbbe7c9d740/paper-server/patches/sources/net/minecraft/world/item/EmptyMapItem.java.patch) supplies the native-created item through [PlayerMapFilledEvent](https://github.com/PaperMC/Paper/blob/50018799f282010f7eb15d32c29cadbbe7c9d740/paper-api/src/main/java/io/papermc/paper/event/player/PlayerMapFilledEvent.java).
+- [Exact installed Geyser translator](https://github.com/GeyserMC/Geyser/blob/50a464d7db132ca5943b608a2110c158bf09702a/core/src/main/java/org/geysermc/geyser/translator/protocol/java/level/JavaMapItemDataTranslator.java) forwards map pixels but supplies empty decoration captions, which is why added names use pixels.
+- [Paper MapCanvas API](https://jd.papermc.io/paper/26.2/org/bukkit/map/MapCanvas.html) provides transparent renderer layers. Exact build 123 behavior is tested with real native canvas instances.
+
+All add-on and test code is original; no Cartographer code/assets are reused. This work does not perform a live install, BlueMap removal, port change or production restart.

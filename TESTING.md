@@ -21,4 +21,4 @@ Use a disposable staging copy with the exact intended server, Java, EssentialsX/
 
 No production readiness or source-to-installed-JAR identity should be inferred until the relevant runtime checks and installed artifact comparison have actually been performed.
 
-9. WRVPlayerMap: see its README and verification directory for isolated exact-Paper results and the outstanding real Java/Bedrock phone acceptance checks. Keep worlds/native map data and maps.yml together across restart/restore.
+9. WRVPlayerMap: test ordinary empty-map activation, sharing, native zoom/copy/lock recipes, plain locked map art, fixed world/region and same-ID held/frame behavior. See its README and verification directory for exact-Paper results and outstanding Java/Bedrock phone acceptance. Keep world map data and the format 2 registry together across restart/restore.

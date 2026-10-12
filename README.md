@@ -54,4 +54,4 @@ Nothing here merges, deploys, restarts or changes the live server. Keep backups 
 
 ## Player-map prototype
 
-[WRVPlayerMap](WRVPlayerMap/README.md) adds dedicated normal terrain maps with pixel-rendered names and distant-player arrows. It is independently tested and remains a prototype pending real Java/Bedrock client acceptance; it is not deployed by this repository.
+[WRVPlayerMap](WRVPlayerMap/README.md) enhances newly activated ordinary maps with pixel-rendered names and distant-player arrows while retaining their vanilla identities, terrain, sharing and cartography. It is independently tested and remains a prototype pending real Java/Bedrock client acceptance; it is not deployed by this repository.

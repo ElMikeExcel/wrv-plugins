@@ -6,9 +6,9 @@
 
 Final prototype JAR SHA-256:
 
-`c3161b67ece29bdfeed00f4218ea1f7e47ac54ef0ff221c383ec18bf56b50e01`
+`382e40bdb3eae37d2c5dc6b6344d57749701f4b589bcdfd77919aac2750b9dc9`
 
-The exact runtime and a subsequent clean restart each passed **8 test groups / 150 assertions** on 2026-10-12 UTC:
+The exact runtime and a subsequent clean restart each passed **9 test groups / 111 assertions** on 2026-10-12 UTC:
 
 - Paper 26.2 build 123, commit `50018799f282010f7eb15d32c29cadbbe7c9d740`
 - API `26.2.build.123-stable`
@@ -19,13 +19,14 @@ The production source also compiled with Java 25 `javac --release 21` against th
 ## Coverage
 
 1. Exact Paper/API versions and successful prototype enable.
-2. Native `CraftMapRenderer` stays first, overlay stays contextual, and maps remain native/non-virtual.
-3. Real `CraftMapCanvas` null clearing preserves underlying terrain pixels.
-4. Registered map reuse across five scales, separate owners/worlds, idempotent attachment, unrelated vanilla maps untouched, and changed registered metadata refused safely.
-5. Map ID and center survive a clean full server restart; overlay reattaches during plugin startup, before harness attachment code.
-6. Initial/cache-reset frames clear all stale pixels; unchanged subsequent frames write zero pixels; removed marker pixels return to transparent.
-7. Synthetic players with real server `ItemStack`/`MapMeta`: single issuance, repeated-command protection, selected-held-item priority, main/offhand detection, clear-on-unheld or permission removal, borrowed maps remain terrain-only, cross-world guard, world-switch ID reuse, cursor and replacement protection, and no allocation when inventory is full.
-8. Visibility permission, `canSee`/vanish, and disconnection filtering prevent peer labels/positions from appearing in generated frames.
+2. Native `CraftMapRenderer` remains first, overlay remains contextual, and maps stay non-virtual; real `CraftMapCanvas` null pixels restore native terrain.
+3. Actual `PlayerMapFilledEvent` dispatch on a native-created ordinary map keeps its ID, center, scale, world, tracking flags and terrain bytes. The plugin only replaces the event result and never issues a second item. Unmarked existing maps and denied activations stay plain.
+4. Native item cloning shares the map ID. Native zoom post-processing creates the normal new IDs through all five scales while preserving lineage, including multiple zooms before a held-map check. Unmarked existing maps' zooms remain untracked.
+5. Native glass-pane lock post-processing creates its normal separate locked ID. It stays plain despite inherited metadata, and a byte comparison proves added labels were not baked into its locked terrain.
+6. Native ID/item metadata/registry survive a clean full restart; the overlay reattaches lazily before the explicit held-map check and no new registry entry is created.
+7. Initial/cache-reset frames clear stale pixels, unchanged frames write zero pixels, and removed markers return to transparent.
+8. Synthetic players with real server items/map views verify sharing without owner binding, main/offhand versus stored items, permission clearing, fixed map world/ID across dimensions, and shared-ID identity of held/framed copies.
+9. Added overlay labels/markers respect visibility permission, `canSee`, and online status. Native Minecraft cursor behavior is preserved and is not hidden by this add-on's visibility permission.
 
 ## Reproduce safely
 
@@ -56,7 +57,7 @@ Requirements: Python 3, a Java 25 JDK (Temurin 25.0.4+7 for an exact match), the
    ```sh
    python3 verification/runtime-harness/run.py \
      --server-dir /path/to/disposable-server \
-     --plugin target/WRVPlayerMap-0.1.0.jar \
+     --plugin target/WRVPlayerMap-0.2.0.jar \
      --annotations-jar /path/to/annotations-26.0.2.jar \
      --java-home "$JAVA_HOME"
    ```
@@ -69,6 +70,6 @@ The `evidence/` folder records the tested artifact hashes, the accepted boot/res
 
 ## Limits
 
-No real Java/Bedrock client, phone display, client packets, Geyser/Floodgate combination, or production plugin stack was exercised. Player and inventory objects are synthetic; map views, canvas, palette colors, item metadata, serialization, and server restart are real. The cloud JVM produced external Minecraft-authentication/Paper-update DNS warnings; local tests passed, but authenticated client connectivity is unverified.
+No real Java/Bedrock client, phone display, UI inventory/crafting clicks, client packets, Geyser/Floodgate combination, or production plugin stack was exercised. Players/inventories are synthetic. Event dispatch, native map creation and clone/zoom/lock post-processing, map views/canvas, item metadata, serialization and full restarts are real. Shared frame identity is checked server-side, not through a client screenshot. The cloud JVM produced external Minecraft-authentication/Paper-update DNS warnings; local tests passed, but authenticated client connectivity is unverified.
 
-The initial smoke harness expected a startup-banner version format while Bukkit returns a different format. Correcting that test expectation produced a pass without changing the prototype.
+This harness intentionally imports exact-version server internals to verify native map operations. The runner includes the patched server JAR in its test classpath. The production plugin itself has no NMS dependency. Both final runs use the same SHA-pinned 0.2.0 candidate, including the registry and lineage-hardening fixes.

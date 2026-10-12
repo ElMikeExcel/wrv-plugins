@@ -1,9 +1,10 @@
 PASS exact-server-version
 PASS native-map-layer-and-transparent-pixels
 PASS plugin-enabled
-PASS managed-map-create-reuse-and-per-world-scale
-PASS managed-map-overlay-restored-after-restart
-PASS prototype-delta-writes-and-native-pixel-restore
-PASS simulated-item-issuance-hands-permission-and-dimension
-PASS simulated-visibility-and-disconnected-player-filtering
-SUMMARY passed=8 failed=0 assertions=150
+PASS native-empty-map-activation-preserves-id-and-terrain
+PASS vanilla-clone-zoom-and-lock-provenance
+PASS tracked-map-restored-after-restart
+PASS delta-pixels-and-native-terrain-restoration
+PASS sharing-hands-dimensions-and-frame-id-semantics
+PASS visibility-and-disconnected-player-filtering
+SUMMARY passed=9 failed=0 assertions=111

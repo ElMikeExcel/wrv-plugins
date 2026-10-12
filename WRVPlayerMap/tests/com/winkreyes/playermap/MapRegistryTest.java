@@ -1,5 +1,4 @@
 package com.winkreyes.playermap;
-import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.map.MapView;
@@ -7,61 +6,73 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.*;
 import java.util.*;
-import java.util.concurrent.atomic.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 class MapRegistryTest {
     @TempDir Path temp;
-    Server server; World world; MapRegistry registry; Map<Integer,MapView> maps; AtomicInteger next;
+    World world; MapRegistry registry;
     @BeforeEach void setup() throws Exception {
-        server = mock(Server.class); world = mock(World.class); when(world.getUID()).thenReturn(new UUID(0,1));
-        maps = new HashMap<>(); next = new AtomicInteger();
-        when(server.createMap(any())).thenAnswer(invocation -> newMap(invocation.getArgument(0)));
-        when(server.getMap(anyInt())).thenAnswer(invocation -> maps.get(invocation.<Integer>getArgument(0)));
-        registry = new MapRegistry(server,temp.resolve("maps.yml")); registry.load();
+        world = mock(World.class); when(world.getUID()).thenReturn(new UUID(0,1));
+        registry = new MapRegistry(temp.resolve("maps.yml")); registry.load();
     }
-    MapView newMap(World w) {
-        MapView map = mock(MapView.class); int id = next.getAndIncrement(); when(map.getId()).thenReturn(id); when(map.getWorld()).thenReturn(w);
-        AtomicInteger x = new AtomicInteger(), z = new AtomicInteger(); AtomicReference<MapView.Scale> scale = new AtomicReference<>(MapView.Scale.NORMAL);
-        when(map.getCenterX()).thenAnswer(i -> x.get()); when(map.getCenterZ()).thenAnswer(i -> z.get()); when(map.getScale()).thenAnswer(i -> scale.get());
-        doAnswer(i -> { x.set(i.getArgument(0)); return null; }).when(map).setCenterX(anyInt());
-        doAnswer(i -> { z.set(i.getArgument(0)); return null; }).when(map).setCenterZ(anyInt());
-        doAnswer(i -> { scale.set(i.getArgument(0)); return null; }).when(map).setScale(any()); maps.put(id,map); return map;
+    MapView map(int id, int scale, int x, int z) {
+        MapView map = mock(MapView.class); when(map.getId()).thenReturn(id); when(map.getWorld()).thenReturn(world);
+        when(map.getScale()).thenReturn(MapView.Scale.values()[scale]); when(map.getCenterX()).thenReturn(x); when(map.getCenterZ()).thenReturn(z); return map;
     }
-    @Test void reusesSameIdAtEveryLocationAndAfterRegistryReload() throws Exception {
-        UUID owner = UUID.randomUUID(); MapView first = registry.getOrCreate(owner,world,2,0,0);
-        assertSame(first,registry.getOrCreate(owner,world,2,2e7,-2e7));
-        MapRegistry restarted = new MapRegistry(server,temp.resolve("maps.yml")); restarted.load();
-        assertSame(first,restarted.getOrCreate(owner,world,2,2e7,-2e7)); verify(server,times(1)).createMap(world);
-        assertEquals(192,first.getCenterX()); assertEquals(192,first.getCenterZ());
-        verify(first,never()).removeRenderer(any()); verify(first,never()).setLocked(anyBoolean());
+    @Test void recordsExactVanillaIdentityWithoutChangingAnyMapProperties() throws Exception {
+        MapView initial = map(10,0,-128,256); registry.trackInitial(initial); registry.trackInitial(initial);
+        assertEquals(1,registry.entries().size()); assertTrue(registry.matches(initial));
+        verify(initial,never()).setScale(any()); verify(initial,never()).setCenterX(anyInt()); verify(initial,never()).setCenterZ(anyInt());
+        verify(initial,never()).setWorld(any()); verify(initial,never()).setLocked(anyBoolean()); verify(initial,never()).setTrackingPosition(anyBoolean());
+        MapRegistry restarted = new MapRegistry(temp.resolve("maps.yml")); restarted.load();
+        assertTrue(restarted.matches(initial)); assertEquals(10,restarted.entry(10).root());
     }
-    @Test void ownerWorldAndEachVanillaScaleHaveSeparateFiniteIds() throws Exception {
-        UUID owner = UUID.randomUUID();
-        for (int scale = 0; scale < 5; scale++) registry.getOrCreate(owner,world,scale,0,0);
-        World nether = mock(World.class); when(nether.getUID()).thenReturn(new UUID(0,2));
-        registry.getOrCreate(owner,nether,2,0,0); registry.getOrCreate(UUID.randomUUID(),world,2,0,0);
-        assertEquals(7,registry.entries().size()); assertEquals(7,next.get());
-    }
-    @Test void unregisteredAndChangedMapsAreNeverClaimed() throws Exception {
-        MapView unrelated = newMap(world); assertFalse(registry.matches(unrelated));
-        UUID owner = UUID.randomUUID(); MapView map = registry.getOrCreate(owner,world,2,0,0); map.setCenterX(999);
-        assertFalse(registry.matches(map)); assertThrows(java.io.IOException.class, () -> registry.getOrCreate(owner,world,2,0,0));
-        assertEquals(2,next.get());
-    }
-    @Test void malformedRegistryFailsClosedInsteadOfAllocatingReplacementMaps() throws Exception {
-        Files.writeString(temp.resolve("maps.yml"),"maps:\n - owner: corrupt\n   id: 1\n");
-        assertThrows(InvalidConfigurationException.class, () -> registry.load()); verify(server,never()).createMap(any());
-    }
-    @Test void invalidRegistryShapesFailClosed() throws Exception {
-        for (String invalid : List.of("maps: definitely-not-a-list", "maps: [not-a-map]", "unexpected: 123")) {
-            Files.writeString(temp.resolve("maps.yml"),invalid);
-            assertThrows(InvalidConfigurationException.class, () -> registry.load());
+    @Test void allNormalZoomLevelsKeepRootLineageWithoutRequiringIntermediateHold() throws Exception {
+        registry.trackInitial(map(10,0,-128,256));
+        for (int scale = 1; scale <= 4; scale++) {
+            MapView zoom = map(10+scale,scale,MapGeometry.vanillaCenter(-128,scale),MapGeometry.vanillaCenter(256,scale));
+            assertTrue(registry.trackZoom(zoom,10)); assertTrue(registry.matches(zoom)); assertEquals(10,registry.entry(10+scale).root());
         }
-        verify(server,never()).createMap(any());
+        assertEquals(5,registry.entries().size());
     }
-    @Test void scaleOutsideVanillaRangeCannotAllocate() {
-        assertThrows(IllegalArgumentException.class, () -> registry.getOrCreate(UUID.randomUUID(),world,5,0,0));
-        verify(server,never()).createMap(any());
+    @Test void clonesReuseSameIdentity() throws Exception {
+        MapView initial = map(10,0,0,0); registry.trackInitial(initial);
+        assertTrue(registry.trackZoom(initial,10)); assertEquals(1,registry.entries().size());
+    }
+    @Test void missingLineageWrongRegionWorldOlderIdsAndScaleDoNotClaimMaps() throws Exception {
+        registry.trackInitial(map(10,0,0,0));
+        assertFalse(registry.trackZoom(map(11,1,64,64),999));
+        assertFalse(registry.trackZoom(map(11,1,1000,64),10));
+        assertFalse(registry.trackZoom(map(9,1,64,64),10));
+        assertFalse(registry.trackZoom(map(11,0,0,0),10));
+        MapView other = map(11,1,64,64); World nether = mock(World.class); when(nether.getUID()).thenReturn(new UUID(0,2)); when(other.getWorld()).thenReturn(nether);
+        assertFalse(registry.trackZoom(other,10)); assertEquals(1,registry.entries().size());
+    }
+    @Test void lockedCopiesRemainPlainAndVirtualMapsAreNeverClaimed() throws Exception {
+        registry.trackInitial(map(10,0,0,0)); MapView locked = map(11,0,0,0); when(locked.isLocked()).thenReturn(true);
+        assertFalse(registry.trackZoom(locked,10)); assertThrows(java.io.IOException.class, () -> registry.trackInitial(locked));
+        MapView virtual = map(12,1,64,64); when(virtual.isVirtual()).thenReturn(true);
+        assertFalse(registry.trackZoom(virtual,10)); assertThrows(java.io.IOException.class, () -> registry.trackInitial(virtual));
+    }
+    @Test void changedRegisteredMetadataFailsClosed() throws Exception {
+        MapView initial = map(10,0,0,0); registry.trackInitial(initial); when(initial.getCenterX()).thenReturn(999);
+        assertFalse(registry.matches(initial)); assertFalse(registry.trackZoom(initial,10)); assertThrows(java.io.IOException.class, () -> registry.trackInitial(initial));
+    }
+    @Test void malformedAndLegacyRegistriesFailClosed() throws Exception {
+        for (String invalid : List.of("maps: []", "format: 2\nmaps: invalid", "format: 2\nmaps: [not-a-map]", "format: 2\nmaps:\n - id: 1.5\n", "unexpected: 123")) {
+            Files.writeString(temp.resolve("maps.yml"),invalid); assertThrows(InvalidConfigurationException.class, () -> registry.load());
+        }
+    }
+    @Test void impossiblePersistedZoomAncestryFailsClosed() throws Exception {
+        registry.trackInitial(map(10,0,0,0)); registry.trackZoom(map(11,1,64,64),10);
+        String valid = Files.readString(temp.resolve("maps.yml"));
+        for (String invalid : List.of(valid.replace("center-x: 64","center-x: 1000"), valid.replace("scale: 1","scale: 0"), valid.replace("id: 11","id: 9"), valid.replace("scale: 0","scale: 2"))) {
+            Files.writeString(temp.resolve("maps.yml"),invalid);
+            assertThrows(InvalidConfigurationException.class, () -> new MapRegistry(temp.resolve("maps.yml")).load());
+        }
+    }
+    @Test void malformedRootReferenceFailsClosedOnRestart() throws Exception {
+        registry.trackInitial(map(10,0,0,0)); String text = Files.readString(temp.resolve("maps.yml")).replace("root: 10","root: 999");
+        Files.writeString(temp.resolve("maps.yml"),text); assertThrows(InvalidConfigurationException.class, () -> new MapRegistry(temp.resolve("maps.yml")).load());
     }
 }

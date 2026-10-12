@@ -60,18 +60,18 @@ def main():
         parser.error('Run official Paperclip patch-only setup first to extract exact runtime libraries')
     plugins = root / 'plugins'
     plugins.mkdir(exist_ok=True)
-    unexpected = [p.name for p in plugins.glob('*.jar') if p.name not in {'WRVPlayerMap-0.1.0.jar', 'WRVRuntimeHarness.jar'}]
+    unexpected = [p.name for p in plugins.glob('*.jar') if p.name not in {'WRVPlayerMap-0.2.0.jar', 'WRVRuntimeHarness.jar'}]
     if unexpected:
         parser.error('Use a disposable test folder with only this prototype/harness: ' + ', '.join(unexpected))
     build = root / 'harness-build'
     build.mkdir(exist_ok=True)
-    classpath = os.pathsep.join(str(p) for p in [*libraries, annotations])
+    classpath = os.pathsep.join(str(p) for p in [*libraries, annotations, root / "versions/26.2/paper-26.2.jar"])
     subprocess.run([str(java_home / 'bin/javac'), '--release', '25', '-cp', classpath,
                     '-d', str(build), str(here / 'src/wrv/harness/RuntimeHarness.java')], check=True)
     shutil.copyfile(here / 'plugin.yml', build / 'plugin.yml')
     harness = plugins / 'WRVRuntimeHarness.jar'
     subprocess.run([str(java_home / 'bin/jar'), '--create', '--file', str(harness), '-C', str(build), '.'], check=True)
-    target = plugins / 'WRVPlayerMap-0.1.0.jar'
+    target = plugins / 'WRVPlayerMap-0.2.0.jar'
     if target.resolve() != plugin:
         shutil.copyfile(plugin, target)
     version = subprocess.run([str(java_home / 'bin/java'), '-version'], capture_output=True, text=True, check=True).stderr.strip()

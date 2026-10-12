@@ -39,7 +39,7 @@ class RepositoryTests(unittest.TestCase):
                 self.assertEqual(module, d['name'])
                 self.assertEqual(pom.find('m:version', NS).text, d['version'])
                 self.assertTrue((ROOT / module / 'src' / (d['main'].replace('.', '/') + '.java')).is_file())
-                self.assertEqual('1.21', d['api-version'])
+                self.assertEqual('1.21.5' if module == 'WRVPlayerMap' else '1.21', d['api-version'])
                 self.assertTrue((ROOT / module / 'README.md').is_file())
 
     def test_jar_main_version_and_java21_bytecode(self):

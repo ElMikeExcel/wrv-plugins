@@ -1,6 +1,15 @@
 package wrv.harness;
 
 import org.bukkit.Bukkit;
+import io.papermc.paper.event.player.PlayerMapFilledEvent;
+import org.bukkit.NamespacedKey;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import net.minecraft.world.item.MapItem;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.MapPostProcessing;
+import net.minecraft.core.component.DataComponents;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.map.MapCanvas;
@@ -89,79 +98,101 @@ public final class RuntimeHarness extends JavaPlugin {
         check(map.getRenderers().size() == 1 && map.getRenderers().getFirst() == nativeRenderer, "removing overlay preserves terrain renderer");
     }
     private void pluginTests() {
-        test("managed-map-create-reuse-and-per-world-scale", this::registryTests);
-        test("managed-map-overlay-restored-after-restart", this::restartTests);
-        test("prototype-delta-writes-and-native-pixel-restore", this::prototypeCanvasTests);
-        test("simulated-item-issuance-hands-permission-and-dimension", this::simulatedPlayerTests);
-        test("simulated-visibility-and-disconnected-player-filtering", this::visibilityTests);
+        test("native-empty-map-activation-preserves-id-and-terrain", this::activationTests);
+        test("vanilla-clone-zoom-and-lock-provenance", this::cartographyTests);
+        test("tracked-map-restored-after-restart", this::restartTests);
+        test("delta-pixels-and-native-terrain-restoration", this::prototypeCanvasTests);
+        test("sharing-hands-dimensions-and-frame-id-semantics", this::simulatedPlayerTests);
+        test("visibility-and-disconnected-player-filtering", this::visibilityTests);
     }
     private Plugin prototype() {
         Plugin plugin = Bukkit.getPluginManager().getPlugin("WRVPlayerMap");
-        check(plugin != null && plugin.isEnabled(), "prototype must be enabled");
-        return plugin;
+        check(plugin != null && plugin.isEnabled(), "prototype must be enabled"); return plugin;
     }
     private Object registry() throws Exception { return field(prototype(), "registry"); }
-    private MapView mapFor(UUID owner, World world, int scale, double x, double z) throws Exception {
-        return (MapView) invoke(registry(), "getOrCreate", new Class<?>[]{UUID.class, World.class, int.class, double.class, double.class}, owner, world, scale, x, z);
-    }
     private int registrySize() throws Exception { return ((Collection<?>) invoke(registry(), "entries", new Class<?>[]{})).size(); }
     private void attach(MapView map) throws Exception { invoke(prototype(), "attach", new Class<?>[]{MapView.class}, map); }
-    private void checkLayers(MapView map) {
-        check(map.getRenderers().size() == 2, "managed map has native and overlay renderers, id=" + map.getId());
-        check(map.getRenderers().getFirst().getClass().getName().endsWith("CraftMapRenderer"), "native renderer remains first");
-        check(map.getRenderers().get(1).getClass().getName().equals("com.winkreyes.playermap.PlayerMapRenderer"), "prototype overlay remains second");
-        check(map.getRenderers().get(1).isContextual(), "overlay is per viewer");
-        check(!map.isVirtual(), "managed terrain map is non-virtual");
+    private static MapView view(ItemStack item) { return ((MapMeta)item.getItemMeta()).getMapView(); }
+    private ItemStack ordinaryMap(World world, int x, int z) {
+        return CraftItemStack.asBukkitCopy(MapItem.create(((CraftWorld)world).getHandle(),x,z,(byte)0,true,false));
     }
-    private void registryTests() throws Exception {
-        World world = Bukkit.getWorlds().getFirst();
-        UUID owner = UUID.fromString("3c9b7650-5061-4ce5-a4d0-f90ac7900001");
-        for (int scale = 0; scale <= 4; scale++) {
-            MapView view = mapFor(owner, world, scale, -130.0, 257.0);
-            check(view.getScale().getValue() == scale, "requested scale respected");
-            int size = registrySize();
-            MapView again = mapFor(owner, world, scale, 9000.0, -9000.0);
-            check(again.getId() == view.getId() && registrySize() == size, "same owner/world/scale reuses map ID");
-            check(!view.isTrackingPosition() && !view.isUnlimitedTracking(), "native cursor tracking disabled for pixel markers");
-            attach(view); attach(view); checkLayers(view);
+    private ItemStack activated(FakePlayer player) {
+        ItemStack created = ordinaryMap(player.world,(int)player.x,(int)player.z);
+        PlayerMapFilledEvent event = new PlayerMapFilledEvent(player.player,new ItemStack(Material.MAP),created);
+        Bukkit.getPluginManager().callEvent(event); return event.getCreatedMap();
+    }
+    private boolean ensure(FakePlayer holder,ItemStack item) throws Exception {
+        return (boolean)invoke(prototype(),"ensureTracked",new Class<?>[]{Player.class,ItemStack.class},holder.player,item);
+    }
+    private ItemStack postProcess(ItemStack source,World world,MapPostProcessing operation) {
+        net.minecraft.world.item.ItemStack result = CraftItemStack.asNMSCopy(source).copyWithCount(1);
+        result.set(DataComponents.MAP_POST_PROCESSING,operation);
+        ((MapItem)Items.FILLED_MAP).onCraftedPostProcess(result,((CraftWorld)world).getHandle());
+        return CraftItemStack.asBukkitCopy(result);
+    }
+    private void checkLayers(MapView map) {
+        check(map.getRenderers().size() == 2,"tracked map has native and overlay renderers, id="+map.getId());
+        check(map.getRenderers().getFirst().getClass().getName().endsWith("CraftMapRenderer"),"native renderer stays first");
+        check(map.getRenderers().get(1).getClass().getName().equals("com.winkreyes.playermap.PlayerMapRenderer"),"second renderer is player overlay");
+        check(map.getRenderers().get(1).isContextual() && !map.isVirtual(),"per-viewer overlay keeps native map nonvirtual");
+    }
+    private FakePlayer person(World world,String name) { return new FakePlayer(UUID.randomUUID(),name,world); }
+    private void activationTests() throws Exception {
+        World world = Bukkit.getWorlds().getFirst(); FakePlayer owner = person(world,"Activator"); owner.x=-130; owner.z=257;
+        ItemStack original = ordinaryMap(world,-130,257); MapView nativeView = view(original);
+        int id=nativeView.getId(), x=nativeView.getCenterX(), z=nativeView.getCenterZ(); boolean tracking=nativeView.isTrackingPosition();
+        var data=MapItem.getSavedData(CraftItemStack.asNMSCopy(original),((CraftWorld)world).getHandle()); data.colors[123]=(byte)21; data.setDirty();
+        PlayerMapFilledEvent event=new PlayerMapFilledEvent(owner.player,new ItemStack(Material.MAP,3),original);
+        int before=registrySize(); Bukkit.getPluginManager().callEvent(event); ItemStack enhanced=event.getCreatedMap();
+        check(registrySize()==before+1,"only activation enrolls exactly one vanilla ID");
+        check(view(enhanced).getId()==id && view(enhanced).getCenterX()==x && view(enhanced).getCenterZ()==z,"same native ID and region");
+        check(view(enhanced).getScale()==MapView.Scale.CLOSEST && view(enhanced).getWorld().equals(world),"native scale and world preserved");
+        check(view(enhanced).isTrackingPosition()==tracking && data.colors[123]==21,"native flags and terrain history preserved");
+        check(enhanced.getAmount()==1 && owner.itemCount()==0,"event replaces only its vanilla result, never grants a second inventory item");
+        check(enhanced.getItemMeta().getPersistentDataContainer().get(new NamespacedKey("wrvplayermap","lineage_root"),PersistentDataType.INTEGER)==id,"lineage tag uses native root ID");
+        checkLayers(nativeView);
+        ItemStack old=ordinaryMap(world,0,0); MapView oldView=view(old); int oldBefore=registrySize();
+        check(!ensure(owner,old) && registrySize()==oldBefore && oldView.getRenderers().size()==1,"unmarked old/explorer-style map not enrolled by holding or map initialize");
+        FakePlayer denied=person(world,"Denied"); denied.use=false; ItemStack plain=activated(denied);
+        check(view(plain).getRenderers().size()==1,"denied activation leaves ordinary map usable and plain");
+    }
+    private void cartographyTests() throws Exception {
+        World world=Bukkit.getWorlds().getFirst(); FakePlayer holder=person(world,"Cartographer"); holder.x=-130; holder.z=257;
+        ItemStack initial=activated(holder); int root=view(initial).getId();
+        ItemStack clone=CraftItemStack.asBukkitCopy(CraftItemStack.asNMSCopy(initial).copyWithCount(2)); int count=registrySize();
+        check(view(clone).getId()==root && clone.getAmount()==2 && ensure(holder,clone) && registrySize()==count,"vanilla clone shares map ID and lineage without extra enrollment");
+        ItemStack zoom=initial;
+        for(int scale=1;scale<=4;scale++) {
+            zoom=postProcess(zoom,world,MapPostProcessing.SCALE);
+            check(view(zoom).getId()!=root && view(zoom).getScale().getValue()==scale,"native zoom allocates its own expected ID/scale");
+            check(ensure(holder,zoom),"marked native zoom descendant enrolled at scale "+scale); checkLayers(view(zoom));
         }
-        MapView normal = mapFor(owner, world, 2, 0, 0);
-        World otherWorld = Bukkit.getWorlds().stream().filter(w -> !w.getUID().equals(world.getUID())).findFirst().orElseThrow();
-        MapView other = mapFor(owner, otherWorld, 2, 0, 0);
-        check(normal.getId() != other.getId(), "different world gets separate map ID");
-        MapView otherOwner = mapFor(UUID.fromString("3c9b7650-5061-4ce5-a4d0-f90ac7900002"), world, 2, 0, 0);
-        check(normal.getId() != otherOwner.getId(), "different owner gets separate map ID");
-        MapView unrelated = Bukkit.createMap(world); List<MapRenderer> original = List.copyOf(unrelated.getRenderers());
-        attach(unrelated); check(unrelated.getRenderers().equals(original), "unrelated vanilla map is not modified");
-        int originalCenter = normal.getCenterX(); normal.setCenterX(originalCenter + 128);
-        try {
-            check(!(boolean) invoke(registry(), "matches", new Class<?>[]{MapView.class}, normal), "changed map no longer matches registry");
-            try { mapFor(owner, world, 2, 0, 0); throw new AssertionError("tampered map should be refused"); }
-            catch (InvocationTargetException exception) { check(exception.getCause() instanceof IOException, "changed map fails safely with IOException"); }
-        } finally { normal.setCenterX(originalCenter); }
+        ItemStack quick=postProcess(postProcess(initial,world,MapPostProcessing.SCALE),world,MapPostProcessing.SCALE);
+        check(ensure(holder,quick),"multiple zooms before a held check preserve root ancestry");
+        var nativeData=MapItem.getSavedData(CraftItemStack.asNMSCopy(initial),((CraftWorld)world).getHandle()); nativeData.colors[456]=(byte)33; nativeData.setDirty();
+        byte[] terrain=nativeData.colors.clone(); holder.items[0]=initial; setPositions(prototype(),holder);
+        MapCanvas canvas=realCanvas(view(initial)); view(initial).getRenderers().get(1).render(view(initial),canvas,holder.player);
+        check(opaquePixels(canvas)>0,"root map has a live overlay before locking");
+        ItemStack locked=postProcess(initial,world,MapPostProcessing.LOCK); int before=registrySize();
+        check(view(locked).getId()!=root && view(locked).isLocked(),"vanilla lock creates a separate locked ID");
+        check(!ensure(holder,locked) && registrySize()==before && view(locked).getRenderers().size()==1,"locked copy remains plain despite inherited tag");
+        var lockedData=MapItem.getSavedData(CraftItemStack.asNMSCopy(locked),((CraftWorld)world).getHandle());
+        check(Arrays.equals(terrain,lockedData.colors),"locked art snapshots only native terrain; labels are not baked in");
+        ItemStack old=ordinaryMap(world,0,0), oldZoom=postProcess(old,world,MapPostProcessing.SCALE);
+        check(!ensure(holder,oldZoom) && view(oldZoom).getRenderers().size()==1,"zooming existing untracked maps does not opt them in");
+        setField(prototype(),"positions",List.of());
     }
     private void restartTests() throws Exception {
-        Path state = getDataFolder().toPath().resolve("restart-state.properties"); Files.createDirectories(state.getParent());
-        UUID owner = UUID.fromString("3c9b7650-5061-4ce5-a4d0-f90ac7900003");
-        World world = Bukkit.getWorlds().getFirst(); Properties properties = new Properties();
-        boolean restart = Files.exists(state);
-        if (restart) {
-            try (var in = Files.newInputStream(state)) { properties.load(in); }
-            int id = Integer.parseInt(properties.getProperty("map-id"));
-            MapView loaded = Bukkit.getMap(id);
-            check(loaded != null, "persisted map ID restored by server");
-            checkLayers(loaded); // Before attach(): proves plugin startup reattached the overlay.
-            MapView same = mapFor(owner, world, 3, 9000, -9000);
-            check(same.getId() == id, "registry reuses same ID after full server restart");
-            check(same.getCenterX() == Integer.parseInt(properties.getProperty("center-x")), "map center preserved across restart");
-            getLogger().info("WRV_HARNESS_RESTART verified map=" + id);
+        Path state=getDataFolder().toPath().resolve("native-restart-item.bin"); Files.createDirectories(state.getParent());
+        FakePlayer holder=person(Bukkit.getWorlds().getFirst(),"RestartHolder");
+        if(Files.exists(state)) {
+            ItemStack item=ItemStack.deserializeBytes(Files.readAllBytes(state)); MapView map=view(item);
+            check(map!=null,"native ID restored from serialized ordinary item"); checkLayers(map);
+            int before=registrySize(); check(ensure(holder,item) && registrySize()==before,"reload reuses the recorded ID without allocating/re-enrolling");
+            getLogger().info("WRV_HARNESS_RESTART verified map="+map.getId());
         } else {
-            MapView created = mapFor(owner, world, 3, 321, -654); attach(created); checkLayers(created);
-            properties.setProperty("map-id", Integer.toString(created.getId()));
-            properties.setProperty("center-x", Integer.toString(created.getCenterX()));
-            properties.setProperty("world", world.getUID().toString());
-            try (var out = Files.newOutputStream(state)) { properties.store(out, "Isolated runtime persistence fixture"); }
-            getLogger().info("WRV_HARNESS_RESTART prepared map=" + created.getId() + "; restart verification pending");
+            ItemStack item=postProcess(activated(holder),holder.world,MapPostProcessing.SCALE); check(ensure(holder,item),"restart fixture tracked");
+            Files.write(state,item.serializeAsBytes()); getLogger().info("WRV_HARNESS_RESTART prepared map="+view(item).getId());
         }
     }
     private MapCanvas realCanvas(MapView map) throws Exception {
@@ -173,7 +204,7 @@ public final class RuntimeHarness extends JavaPlugin {
         return canvas;
     }
     private void prototypeCanvasTests() throws Exception {
-        MapView map = mapFor(UUID.fromString("3c9b7650-5061-4ce5-a4d0-f90ac7900001"), Bukkit.getWorlds().getFirst(), 2, 0, 0);
+        MapView map = view(activated(person(Bukkit.getWorlds().getFirst(),"CanvasHolder")));
         MapCanvas canvas = realCanvas(map); Color base = canvas.getBasePixelColor(64, 64);
         Class<?> renderer = Class.forName("com.winkreyes.playermap.PlayerMapRenderer", true, prototype().getClass().getClassLoader());
         Method apply = renderer.getDeclaredMethod("apply", MapCanvas.class, byte[].class, byte[].class); apply.setAccessible(true);
@@ -190,72 +221,29 @@ public final class RuntimeHarness extends JavaPlugin {
         check((int) apply.invoke(null, canvas, null, clear) == 128 * 128 && canvas.getPixelColor(10, 10) == null, "cache reset fully clears stale canvas pixels");
     }
     private void simulatedPlayerTests() throws Exception {
-        Plugin plugin = prototype(); World world = Bukkit.getWorlds().getFirst();
-        FakePlayer fake = new FakePlayer(UUID.fromString("3c9b7650-5061-4ce5-a4d0-f90ac7900010"), "TestOwner", world);
-        invoke(plugin, "giveOrUpdate", new Class<?>[]{Player.class, Integer.class}, fake.player, null);
-        check(fake.itemCount() == 1, "initial command issues one item");
-        ItemStack item = fake.items[0]; check(item != null && item.getType() == Material.FILLED_MAP, "issued item is a filled map");
-        int firstId = ((MapMeta) item.getItemMeta()).getMapId();
-        check(item.getItemMeta().getPersistentDataContainer().getKeys().stream().anyMatch(key -> key.toString().equals("wrvplayermap:owner")), "owner PDC tag stored");
-        invoke(plugin, "giveOrUpdate", new Class<?>[]{Player.class, Integer.class}, fake.player, null);
-        check(fake.itemCount() == 1 && ((MapMeta) fake.items[0].getItemMeta()).getMapId() == firstId, "repeated command does not duplicate item/map ID");
-        invoke(plugin, "giveOrUpdate", new Class<?>[]{Player.class, Integer.class}, fake.player, 4);
-        check(fake.itemCount() == 1 && ((MapMeta) item.getItemMeta()).getMapView().getScale().getValue() == 4, "scale change updates same item");
-        invoke(plugin, "giveOrUpdate", new Class<?>[]{Player.class, Integer.class}, fake.player, 2);
-        check(((MapMeta) item.getItemMeta()).getMapId() == firstId, "switching scale back reuses prior ID");
-        MapView map = ((MapMeta) item.getItemMeta()).getMapView(); checkLayers(map);
-        check((boolean) invoke(plugin, "isHeld", new Class<?>[]{Player.class, int.class}, fake.player, firstId), "main-hand detection");
-        fake.items[0] = null; fake.items[40] = item;
-        check((boolean) invoke(plugin, "isHeld", new Class<?>[]{Player.class, int.class}, fake.player, firstId), "off-hand detection");
-        fake.items[40] = null; fake.items[10] = item;
-        check(!(boolean) invoke(plugin, "isHeld", new Class<?>[]{Player.class, int.class}, fake.player, firstId), "stored inventory map is not held");
-        fake.items[10] = null; fake.items[0] = item;
-        FakePlayer borrower = new FakePlayer(UUID.fromString("3c9b7650-5061-4ce5-a4d0-f90ac7900012"), "Borrower", world); borrower.items[0] = item;
-        check(!(boolean) invoke(plugin, "isHeld", new Class<?>[]{Player.class, int.class}, borrower.player, firstId), "borrowed item does not grant owner overlay");
-        MapCanvas borrowedCanvas = realCanvas(map); map.getRenderers().get(1).render(map, borrowedCanvas, borrower.player);
-        check(opaquePixels(borrowedCanvas) == 0 && borrowedCanvas.getBasePixelColor(64, 64) != null, "borrowed map remains native terrain only");
-        fake.items[1] = item.clone(); fake.selected = 1;
-        invoke(plugin, "giveOrUpdate", new Class<?>[]{Player.class, Integer.class}, fake.player, 3);
-        check(((MapMeta) fake.items[1].getItemMeta()).getMapView().getScale().getValue() == 3 && ((MapMeta) fake.items[0].getItemMeta()).getMapId() == firstId, "selected held item is preferred over stored duplicate");
-        fake.items[1] = null; fake.selected = 0;
-        List<?> originalPositions = (List<?>) field(plugin, "positions");
-        try {
-            setPositions(plugin, fake);
-            MapCanvas canvas = realCanvas(map); MapRenderer renderer = map.getRenderers().get(1);
-            renderer.render(map, canvas, fake.player); check(opaquePixels(canvas) > 0, "held permitted viewer receives pixel overlay");
-            fake.items[0] = null;
-            renderer.render(map, canvas, fake.player); check(opaquePixels(canvas) == 0, "no longer holding map clears all prior pixels");
-            fake.items[0] = item;
-            renderer.render(map, canvas, fake.player); check(opaquePixels(canvas) > 0, "holding again repaints overlay");
-            fake.use = false;
-            renderer.render(map, canvas, fake.player); check(opaquePixels(canvas) == 0, "permission removal clears all pixels without requiring a new snapshot");
-            fake.use = true;
-        } finally { setField(plugin, "positions", originalPositions); }
-        World otherWorld = Bukkit.getWorlds().stream().filter(w -> !w.getUID().equals(world.getUID())).findFirst().orElseThrow();
-        fake.world = otherWorld;
-        check(nonzero(overlayPixels(plugin, map, fake.player)) == 0, "cross-world viewer receives no overlay before map switch");
-        invoke(plugin, "updateHeldWorld", new Class<?>[]{Player.class, ItemStack.class}, fake.player, item);
-        MapView other = ((MapMeta) item.getItemMeta()).getMapView();
-        check(other.getId() != firstId && other.getWorld().getUID().equals(otherWorld.getUID()), "held map switches world using separate registered ID");
-        fake.world = world;
-        invoke(plugin, "updateHeldWorld", new Class<?>[]{Player.class, ItemStack.class}, fake.player, item);
-        check(((MapMeta) item.getItemMeta()).getMapId() == firstId, "returning world restores prior map ID");
-        fake.items[0] = null; fake.cursor = item;
-        invoke(plugin, "giveOrUpdate", new Class<?>[]{Player.class, Integer.class}, fake.player, null);
-        check(fake.itemCount() == 0, "cursor-held owned map prevents duplicate issuance");
-        fake.cursor = null;
-        invoke(plugin, "giveOrUpdate", new Class<?>[]{Player.class, Integer.class}, fake.player, null);
-        check(fake.itemCount() == 0, "replacement cooldown prevents rapid duplicate issuance");
-        FakePlayer full = new FakePlayer(UUID.fromString("3c9b7650-5061-4ce5-a4d0-f90ac7900011"), "FullInventory", world);
-        Arrays.fill(full.items, new ItemStack(Material.DIRT)); int before = registrySize();
-        invoke(plugin, "giveOrUpdate", new Class<?>[]{Player.class, Integer.class}, full.player, null);
-        check(registrySize() == before, "full inventory does not allocate a new map");
+        Plugin plugin=prototype(); World world=Bukkit.getWorlds().getFirst(); FakePlayer owner=person(world,"Owner"), borrower=person(world,"Borrower");
+        ItemStack item=activated(owner); MapView map=view(item); int id=map.getId(); borrower.items[0]=item;
+        check(ensure(borrower,item) && (boolean)invoke(plugin,"isHeld",new Class<?>[]{Player.class,int.class},borrower.player,id),"shared ordinary map works for another player");
+        borrower.items[0]=null; borrower.items[40]=item; check((boolean)invoke(plugin,"isHeld",new Class<?>[]{Player.class,int.class},borrower.player,id),"offhand supported");
+        borrower.items[40]=null; borrower.items[10]=item; check(!(boolean)invoke(plugin,"isHeld",new Class<?>[]{Player.class,int.class},borrower.player,id),"stored maps do not activate overlay");
+        borrower.items[10]=null; borrower.items[0]=item; setPositions(plugin,borrower);
+        MapCanvas canvas=realCanvas(map); MapRenderer renderer=map.getRenderers().get(1); renderer.render(map,canvas,borrower.player);
+        check(opaquePixels(canvas)>0,"shared permitted holder gets own contextual pixels");
+        MapView frameCopy=view(item.clone()); check(frameCopy.getId()==id && frameCopy==map,"held/frame clones resolve one shared map view, not independent display identities");
+        borrower.items[0]=null; renderer.render(map,canvas,borrower.player); check(opaquePixels(canvas)==0,"unheld map clears tracking layer");
+        borrower.items[0]=item; renderer.render(map,canvas,borrower.player); borrower.use=false; renderer.render(map,canvas,borrower.player);
+        check(opaquePixels(canvas)==0,"permission removal clears prior pixels immediately"); borrower.use=true;
+        World other=Bukkit.getWorlds().stream().filter(w->!w.getUID().equals(world.getUID())).findFirst().orElseThrow(); borrower.world=other;
+        check(ensure(borrower,item) && view(item).getId()==id && view(item).getWorld().equals(world),"changing dimensions never swaps the ordinary map ID/world");
+        check(nonzero(overlayPixels(plugin,map,borrower.player))==0,"other-dimension holder sees native terrain without misleading player overlay");
+        borrower.world=world; check(nonzero(overlayPixels(plugin,map,borrower.player))>0,"returning to map world restores labels");
+        setField(plugin,"positions",List.of());
     }
     private void visibilityTests() throws Exception {
         Plugin plugin = prototype(); World world = Bukkit.getWorlds().getFirst();
         FakePlayer viewer = new FakePlayer(UUID.fromString("3c9b7650-5061-4ce5-a4d0-f90ac7900020"), "Viewer", world);
         FakePlayer peer = new FakePlayer(UUID.fromString("3c9b7650-5061-4ce5-a4d0-f90ac7900021"), "VisiblePeer", world); peer.x = 50;
-        MapView map = mapFor(viewer.uuid, world, 2, 0, 0); attach(map);
+        MapView map = view(activated(viewer));
         List<?> original = (List<?>) field(plugin, "positions");
         try {
             setPositions(plugin, viewer); byte[] baseline = overlayPixels(plugin, map, viewer.player);
