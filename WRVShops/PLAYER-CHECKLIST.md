@@ -1,6 +1,10 @@
 # ExcelShops: player acceptance checklist
 
-**Installed standalone; limited player checks passed, broader acceptance pending.** ExcelShops 0.1.2 was installed on October 12, 2026 and now runs without the unnecessary ChestShop compatibility plugin. Standalone startup, runtime identity and the economy connection were checked; the later owner-relayed Java PC report passed Spawn Shop menu/prices/cancel/torch purchase and owner setup/publication. The actions below remain a full checklist, not a claim that every case passed. See the [deployment record](DEPLOYMENT-2026-10-12.md).
+**ExcelShops 0.1.3 is installed standalone; human cursor retest pending.** The October 12 update keeps quantity and owner-price adjustments in the same inventory window. Runtime identity and the economy connection were checked. An earlier owner-relayed Java PC report on 0.1.2 passed Spawn Shop menu/prices/cancel/torch purchase and owner setup/publication; it does not certify the new cursor behavior. ChestShop remains absent. The actions below remain a full checklist, not a claim that every case passed. See the [deployment record](DEPLOYMENT-2026-10-12.md).
+
+## Priority retest: Java plus/minus controls
+
+Open **compass menu → Spawn Shop → an item**. Keep the pointer over +1 and click several times without moving it; quantity/total should update without the pointer jumping. Try minus, Review, Change quantity and Back/Cancel. Then repeat price adjustments in **your chest/sign → Edit item prices**. Cancel before any purchase or publication unless you intend it. The full [0.1.3 retest checklist](CURSOR-FIX-0.1.3.md#menu-first-human-retest-after-installation) also covers bounds, one-shot confirmation, buyer entry and Bedrock. No human result is recorded yet.
 
 ## Buy from a player
 
@@ -31,7 +35,7 @@ This section applies only if the full guarded ChestShop integration is separatel
 - Place your own **single** normal/trapped chest and stock it. Native setup refuses double chests and existing ChestShop signs; legacy shops keep their original single/double-chest storage and use the separate guarded flow only where that optional ChestShop compatibility is installed.
 - Sneak/crouch while placing an ordinary wall sign against it, or a standing sign on top. Finish the normal sign editor.
 - At **Make this a shop?**, choose Yes. No keeps ordinary storage and its label.
-- Select every distinct item type and set a **price for one item**. Phones use numeric entry; Java uses price buttons. Their cursor-reset behavior is a known live issue under investigation, not a completed fix.
+- Select every distinct item type and set a **price for one item**. Phones use numeric entry; Java uses price buttons. The installed 0.1.3 update keeps these adjustments in the same window; physical cursor behavior still needs a human retest.
 - Review owner, each unit price, current stock and stock value. Separately choose **Confirm and publish shop**.
 - After canceling or adding stock to an empty chest, look at the ordinary attached sign and use `/excelshop setup` to resume.
 

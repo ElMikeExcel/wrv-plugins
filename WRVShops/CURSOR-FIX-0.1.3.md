@@ -1,6 +1,6 @@
-# ExcelShops 0.1.3 cursor fix candidate
+# ExcelShops 0.1.3 inventory-button update
 
-Status: built and tested off-server; not merged or installed. Live remains 0.1.2 until explicit maintenance approval.
+Status: installed on Wink Reyes Valley on October 12, 2026 after approved stopped-server maintenance. The host hash, loaded version and startup checks are verified in the [deployment record](DEPLOYMENT-2026-10-12.md). Human Java cursor retest remains pending. The PR remains draft and unmerged; the source and automated evidence below are preserved.
 
 ## Scope
 
@@ -22,7 +22,7 @@ Status: built and tested off-server; not merged or installed. Live remains 0.1.2
 
 Historical 0.1.2 migration/legacy-stack results are not counted as new 0.1.3 runtime verification. This change does not certify the optional legacy ChestShop path or the exact live plugin stack.
 
-## Menu-first human retest after approved installation
+## Menu-first human retest after installation
 
 1. Open compass menu → Spawn Shop → an item. Move the pointer over +1; click several times without moving it. The pointer should stay there and each click should update quantity/total. Try minus and a bound.
 2. Choose Review, then Change quantity and Back/Cancel. Check the current quantity and total; these steps must not charge money or give items.
@@ -34,5 +34,7 @@ Historical 0.1.2 migration/legacy-stack results are not counted as new 0.1.3 run
 Automated checks use synthetic players. They cannot prove physical mouse behavior, real client packets, installed Geyser/Floodgate, the exact live provider stack or production state.
 
 ## Deployment boundary
+
+The October 12 installation is complete; the following remains guidance for any separately approved future replacement, not an outstanding instruction to repeat this deployment.
 
 Install only the reviewed ExcelShops 0.1.3 JAR during separately approved stopped-server maintenance with coordinated backup and startup verification. Do not install the optional guarded ChestShop JAR for this standalone server. Preserve the complete existing ExcelShops data folder, both journals, stock, balances, menus and configuration. Never hot-reload a replacement JAR. No live change is authorized by this document.

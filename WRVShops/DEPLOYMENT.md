@@ -1,6 +1,6 @@
 # ExcelShops 0.1.2 + guarded ChestShop: deployment plan
 
-Status: **the separately approved October 12 installation is recorded in [DEPLOYMENT-2026-10-12.md](DEPLOYMENT-2026-10-12.md).** The later standalone restart removed unneeded ChestShop while retaining ExcelShops; see that same receipt for current status. The procedures below preserve the earlier reviewed paired deployment plan and its pre-installation gates, including optional compatibility paths that are not currently installed. This document itself authorizes no further live upload, permission change, merge or restart; a future deployment needs its own approval. Preserve existing sign prices, data, economy rules and protection; do not silently convert third-party shops into the native registry.
+Status: **the separately approved October 12 installation is recorded in [DEPLOYMENT-2026-10-12.md](DEPLOYMENT-2026-10-12.md).** The later standalone restart removed unneeded ChestShop, and a subsequent approved update installed ExcelShops 0.1.3; see that same receipt for current status and pending human retests. The procedures below preserve the earlier reviewed paired deployment plan and its pre-installation gates, including optional compatibility paths that are not currently installed. This document itself authorizes no further live upload, permission change, merge or restart; a future deployment needs its own approval. Preserve existing sign prices, data, economy rules and protection; do not silently convert third-party shops into the native registry.
 
 ## Candidate payload and identity
 

@@ -1,8 +1,29 @@
 # ExcelShops installation: October 12, 2026
 
-## Current status: standalone ExcelShops
+## Current status: ExcelShops 0.1.3 installed; human cursor retest pending
 
-**ExcelShops 0.1.2 is installed and runs native player shops and the matching Spawn Shop without ChestShop.** The owner confirmed the legacy sign plugin was unnecessary and approved its removal. That approval did not authorize restoring instant purchases or deleting shop data.
+The owner-approved inventory-button update is installed on the standalone server. Quantity and owner-price plus/minus adjustments now update the existing inventory instead of reopening it. Automated server-side checks and live startup passed; physical Java pointer behavior and Bedrock input still need player acceptance. Earlier 0.1.2 player reports below remain limited to that version's tested flows.
+
+### Artifact and live verification
+
+- Tested source: [`22d47bd11ba179fba5f8637278eb712d44f3d871`](https://github.com/ElMikeExcel/wrv-plugins/commit/22d47bd11ba179fba5f8637278eb712d44f3d871), preserved in draft PR #4. This update changes documentation only and does not merge the PR.
+- Installed artifact: `ExcelShops-0.1.3.jar`; server-computed SHA-256 `37ac2dbbf084c0a1c1d57dbff2f886ccf2194a439de955c74765a97f1a9160a4` matches the tested build. Only one ExcelShops JAR is active; ChestShop remains absent.
+- **22:57:37 UTC (5:57:37 p.m. CDT), October 12:** ExcelShops 0.1.3 enabled against existing data with legacy compatibility `unavailable/absent` and economy `EssentialsX Economy`. Runtime version was independently queried at **22:57:50**.
+- **22:57:54 UTC:** native readiness returned its normal in-game-only response rather than a recovery/paused state.
+- **22:58:02–22:58:28 UTC:** Vault 2.0.0 reported the EssentialsX Economy connection; the same three menus (`basics_menu`, `server_menu`, `spawnshop`) and 28 plugins loaded, without ChestShop.
+- **22:58:59–22:59:08 UTC:** read-only checks reconfirmed Normal in the Overworld, Nether and End. Existing Jobs points/menu settings were not edited. mcMMO XP-2 and WeekendXP 1.0.2 loaded; the weekday vanilla rate remained 1.0×. ExcelPlayerMap was untouched.
+- **22:59:15 UTC (5:59:15 p.m. CDT):** TPS was `20.0 / 19.9 / 19.9`, a point-in-time health check. A player rejoined afterward; this is not a cursor acceptance result.
+- No new shop startup error was observed. Pre-existing terminal-feature and Essentials server-version warnings remain.
+
+The warned maintenance stopped and saved the server normally. Shop data and checkout journals were retained; there were no configuration, catalog, price, permission, stock or balance edits. No live trade was performed by the installer. Existing native/Spawn review and separate final confirmation remain mandatory. The source-specific automated results are in [CURSOR-FIX-0.1.3.md](CURSOR-FIX-0.1.3.md); historical 0.1.2 harness results do not certify the new artifact.
+
+### Remaining player checks
+
+Start with **compass menu → Spawn Shop → an item** and **your chest/sign → Edit item prices**. Keep the pointer over plus/minus and click repeatedly; verify it stays in place, the current amount reaches Review/Use, and Back/Cancel does not purchase or publish. See the [full menu-first retest checklist](CURSOR-FIX-0.1.3.md#menu-first-human-retest-after-installation). Human Java cursor acceptance is pending. Second-player chest purchases, exact buyer/seller balances and stock, Bedrock native/fallback controls, edge cases and sustained-load checks are also pending. Normal Java chat number-entry still clears the inventory context and is not a proven workaround.
+
+## Earlier standalone installation: ExcelShops 0.1.2
+
+**ExcelShops 0.1.2 was installed to run native player shops and the matching Spawn Shop without ChestShop.** The owner confirmed the legacy sign plugin was unnecessary and approved its removal. That approval did not authorize restoring instant purchases or deleting shop data.
 
 - **21:10:29 UTC (4:10:29 p.m. CDT):** guarded ChestShop was removed from the active plugin load set. Its data and the ExcelShops checkout journals were retained; the journals were empty and clean before restart.
 - **21:10:42 UTC (4:10:42 p.m. CDT):** normal standalone start requested.
@@ -19,7 +40,7 @@ A limited player report arrived later on October 12, as recorded below. Startup,
 
 ## Earlier paired installation and provenance
 
-ExcelShops 0.1.2 and guarded ChestShop were initially installed together at 20:58 UTC (3:58 p.m. CDT). The guarded compatibility plugin was subsequently removed as described above; the unchanged ExcelShops artifact remains installed.
+ExcelShops 0.1.2 and guarded ChestShop were initially installed together at 20:58 UTC (3:58 p.m. CDT). The guarded compatibility plugin was subsequently removed as described above; the 0.1.2 artifact remained installed until the later 0.1.3 update recorded above.
 
 The deployed files match the approved build from [`d082342b1d8f9a6adbb987d86c9f1e2758fec6bf`](https://github.com/ElMikeExcel/wrv-plugins/commit/d082342b1d8f9a6adbb987d86c9f1e2758fec6bf), preserved in [draft PR #4](https://github.com/ElMikeExcel/wrv-plugins/pull/4). This documentation update does not change source, binaries or build evidence, and does not merge the PR.
 
@@ -45,7 +66,7 @@ Times are October 12 UTC, followed by America/Chicago daylight time (UTC−5).
 - No permissions, claims, tax policy, economy balances, stock or sign data were intentionally changed. The previously checked ChestShop zero-tax, two-decimal and empty server-account policy was retained.
 - No shop startup/recovery error was observed in the reviewed startup block. Existing unrelated Essentials server-version and terminal-feature warnings remain.
 
-## Limited player report and remaining acceptance
+## Earlier 0.1.2 player report and remaining acceptance
 
 At about **22:12 UTC (5:12 p.m. CDT) on October 12**, the owner relayed a player's results (later confirmed as Java on a gaming PC):
 
@@ -58,9 +79,9 @@ These are user-reported results, not an independently observed session. The owne
 
 **Still pending:** a second player buying from the newly published shop, including chest and attached-sign entry, exact buyer/seller balance changes, stock decrement and protection. Inventory capacity, insufficient funds, distance/stale sessions, reconnect/restart persistence and broader platform checks remain open. No live trade was performed by the installer; the later player report is separate evidence.
 
-**Known UI issue, not fixed:** the player reported the cursor moving/resetting while using price plus/minus controls. Source review found price and quantity button handlers recreating and closing/reopening their inventory. Updating the same inventory in place is under investigation; no corrected plugin has been installed. Native Bedrock number forms and inventory fallback are distinct UI paths. Do not present `/excelshop amount` through normal Java chat as a proven workaround: closing the inventory clears its number-entry context.
+**Issue reported on 0.1.2:** the player reported the cursor moving/resetting while using price plus/minus controls. Source review found price and quantity button handlers recreating and closing/reopening their inventory. The later installed 0.1.3 update keeps these adjustments in the same inventory; human pointer verification is still pending. Native Bedrock number forms and inventory fallback are distinct UI paths. Do not present `/excelshop amount` through normal Java chat as a proven workaround: closing the inventory clears its number-entry context.
 
-Both the shop chest and its attached sign are supported entry points. The owner gets management; another player gets the purchase catalog. The current setup success message mentions only the chest, so these instructions clarify the sign path without claiming that second-player sign purchases have passed.
+Both the shop chest and its attached sign are supported entry points. The owner gets management; another player gets the purchase catalog. The earlier 0.1.2 setup success message mentioned only the chest. Installed 0.1.3 now mentions both chest and attached sign; this does not claim second-player sign purchases have passed.
 
 Use the [player and seller checklist](PLAYER-CHECKLIST.md), prioritizing the compass menu for normal shopping. Further money/item-changing checks need the owner's authorization.
 
