@@ -8,6 +8,12 @@ mcMMO **2.3.003-WRV-XP-2** appends patch 0004 to the unchanged first three patch
 
 Local and remote verification for this update is recorded in `verification/xp-indicator-fix.json`. The original results below are historical evidence for XP-1, not a substitute for testing XP-2. No production server access, upload, restart or player-data changes are part of this indicator fix.
 
+### Isolated runtime verification
+
+The unchanged XP-2 CI artifact passed **38 assertions** on exact **Paper 26.2 build 123 / Temurin 25.0.4**, alongside unchanged WeekendXP 1.0.2. Native Paper bossbars, scheduler, XP profiles/events, actual 60-tick expiry, repeated gains, zero/cancelled awards, preference controls and cleanup were exercised. Together/weekend skill composition and vanilla fractional payout passed. The process stopped cleanly and its loopback-only port closed.
+
+Players are synthetic and outgoing packets suppressed. Actual Java/Bedrock rendering, Geyser/Floodgate, gameplay orb collisions/Mending, reconnect persistence and the production plugin stack remain untested. The fixture neutralized upstream EarlyGameBoost only in its disposable config to isolate true zero awards. See [reproducible harness and evidence](verification/runtime-harness/README.md).
+
 ### Player acceptance checklist for XP-2
 
 1. Join and stand still, change worlds and move in/out of Together range: no indicator until XP is earned. `/xpbonus status` stays available in chat.

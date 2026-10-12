@@ -15,12 +15,14 @@
   "local_maven_execution": "Blocked before compilation/test execution by HTTP 403 dependency downloads and network approval cancellation; no local Java test pass or local candidate JAR is claimed.",
   "remote_verification": "Existing draft PR 2 runs full default mcMMO and eight-module WRV test jobs and uploads commit-identified JARs. Refer to the exact commit Checks and Actions artifacts for final results.",
   "pull_request": "https://github.com/ElMikeExcel/wrv-plugins/pull/2",
-  "runtime_acceptance": "Not performed on exact Paper 26.2 build 123 / Java 25 or real Java/Bedrock clients; see player acceptance checklist.",
+  "runtime_acceptance": "38 isolated native-Paper assertions passed on exact Paper 26.2 build 123 / Temurin 25.0.4 with synthetic players and suppressed packets. Real Java/Bedrock rendering, production stack, actual Mending collision and authenticated reconnect remain untested.",
   "default_display_ticks": 60,
   "default_display_seconds_at_20tps": 3,
   "duration_config": "General.XP_Bonus_Indicator.Display_Seconds",
   "valid_duration_seconds": [
     0.1,
     60
-  ]
+  ],
+  "runtime_evidence": "mcMMO-TogetherBonus/verification/runtime-harness/evidence/exact-runtime.json",
+  "runtime_candidate_sha256": "5f6279995c7b30240d2a7e07cb916b6e28b82537826f9ef0f2702b080cf20978"
 }
