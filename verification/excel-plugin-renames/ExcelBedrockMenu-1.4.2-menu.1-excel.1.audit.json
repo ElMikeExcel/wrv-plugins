@@ -1,0 +1,113 @@
+{
+  "changed_entries": [
+    "plugin.yml"
+  ],
+  "descriptor_after": {
+    "api-version": "1.13",
+    "author": "Argus",
+    "commands": {
+      "menu": {
+        "description": "Open the server menu",
+        "usage": "/menu"
+      },
+      "tpmenu": {
+        "description": "Pick an online player to send a teleport request to",
+        "usage": "/tpmenu"
+      }
+    },
+    "description": "/menu that works on Bedrock via native Geyser forms. Removes the redundant Jobs & Money menu entry.",
+    "main": "com.winkreyes.bedrockmenu.BedrockMenu",
+    "name": "ExcelBedrockMenu",
+    "provides": [
+      "BedrockMenu"
+    ],
+    "softdepend": [
+      "Geyser-Spigot",
+      "floodgate",
+      "DeluxeMenus",
+      "Essentials",
+      "EssentialsSpawn"
+    ],
+    "version": "1.4.2-menu.1-excel.1"
+  },
+  "descriptor_before": {
+    "api-version": "1.13",
+    "author": "Argus",
+    "commands": {
+      "menu": {
+        "description": "Open the server menu",
+        "usage": "/menu"
+      },
+      "tpmenu": {
+        "description": "Pick an online player to send a teleport request to",
+        "usage": "/tpmenu"
+      }
+    },
+    "description": "/menu that works on Bedrock via native Geyser forms. Removes the redundant Jobs & Money menu entry.",
+    "main": "com.winkreyes.bedrockmenu.BedrockMenu",
+    "name": "BedrockMenu",
+    "softdepend": [
+      "Geyser-Spigot",
+      "floodgate",
+      "DeluxeMenus",
+      "Essentials",
+      "EssentialsSpawn"
+    ],
+    "version": "1.4.2-menu.1"
+  },
+  "entries": [
+    {
+      "input_sha256": "9e078ae6bed9538e69ae118a88314cf1ce0b29164e713a2574ec9041b044c9ca",
+      "input_size": 56,
+      "name": "META-INF/MANIFEST.MF",
+      "output_sha256": "9e078ae6bed9538e69ae118a88314cf1ce0b29164e713a2574ec9041b044c9ca",
+      "output_size": 56
+    },
+    {
+      "input_sha256": "5cb4e321d5ad4061c29500c89cd59abb86d42a65403409f3647643ce2a1b04a2",
+      "input_size": 6377,
+      "name": "com/winkreyes/bedrockmenu/BedrockMenu.class",
+      "output_sha256": "5cb4e321d5ad4061c29500c89cd59abb86d42a65403409f3647643ce2a1b04a2",
+      "output_size": 6377
+    },
+    {
+      "input_sha256": "446bf5db742d008a995d53d88e225d6a46006263cb25f01b0cf7ba45edc843fe",
+      "input_size": 8176,
+      "name": "com/winkreyes/bedrockmenu/GeyserForms.class",
+      "output_sha256": "446bf5db742d008a995d53d88e225d6a46006263cb25f01b0cf7ba45edc843fe",
+      "output_size": 8176
+    },
+    {
+      "input_sha256": "9ab6500f87e7b6448d56de25b15d9284f0fe1ffb2b7a754a59b2226ed002b9bb",
+      "input_size": 687,
+      "name": "com/winkreyes/bedrockmenu/TeleportMenu$PickHolder.class",
+      "output_sha256": "9ab6500f87e7b6448d56de25b15d9284f0fe1ffb2b7a754a59b2226ed002b9bb",
+      "output_size": 687
+    },
+    {
+      "input_sha256": "bfb5accd2713aff340f39a91f878a39ce2d829b5b52075db1079dab4d0712ba0",
+      "input_size": 12963,
+      "name": "com/winkreyes/bedrockmenu/TeleportMenu.class",
+      "output_sha256": "bfb5accd2713aff340f39a91f878a39ce2d829b5b52075db1079dab4d0712ba0",
+      "output_size": 12963
+    },
+    {
+      "input_sha256": "10b2926856584645ce7283d0c155402ec0534047ba5b1e00aa667ca3e1478222",
+      "input_size": 483,
+      "name": "plugin.yml",
+      "output_sha256": "0de22ba86d3f50ed6eb90bd36f49d2670c8f2a7ad3afe58de6f28a1530afc99a",
+      "output_size": 520
+    }
+  ],
+  "input_sha256": "fef68e9a06053767fa8223811e4ca2b1294a05daefa0e7bb11346ceba730f276",
+  "menujoin_namespace_patch": null,
+  "new_name": "ExcelBedrockMenu",
+  "new_version": "1.4.2-menu.1-excel.1",
+  "old_name": "BedrockMenu",
+  "old_version": "1.4.2-menu.1",
+  "output_filename": "ExcelBedrockMenu-1.4.2-menu.1-excel.1.jar",
+  "output_sha256": "b84f9fc0f118c330a9e8c9fd807660db6016fedd834a241a6242b1b4b26a0b33",
+  "runtime_verification": "Not performed by this offline transformer; Paper provides resolution and live gameplay remain separate checks.",
+  "schema": 1,
+  "unchanged_entry_count": 5
+}

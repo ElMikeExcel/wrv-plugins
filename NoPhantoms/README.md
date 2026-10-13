@@ -1,4 +1,9 @@
-# NoPhantoms
+# ExcelNoPhantoms
+
+Runtime identity: `ExcelNoPhantoms`; legacy provider alias: `NoPhantoms`.
+The source module directory, commands, permissions, main class, authors and licenses
+are unchanged. See [rename/migration scope](../EXCEL-PLUGIN-RENAMES.md).
+**Source builds are not approved rename-only replacements for the installed JARs.**
 
 Version: **1.0.0**. Cancels phantom `CreatureSpawnEvent`s; other creatures are unaffected. No commands or configuration.
 
@@ -10,7 +15,7 @@ From the repository root, with JDK 21:
 ./mvnw -pl NoPhantoms -am verify
 ```
 
-Output: `NoPhantoms/target/NoPhantoms-1.0.0.jar`. The Paper API is provided by the server and is not bundled.
+Output: `NoPhantoms/target/ExcelNoPhantoms-1.0.0.jar`. The Paper API is provided by the server and is not bundled.
 
 ## Source recovery
 

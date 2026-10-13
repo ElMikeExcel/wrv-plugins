@@ -1,0 +1,148 @@
+{
+  "changed_entries": [
+    "plugin.yml"
+  ],
+  "descriptor_after": {
+    "api-version": "1.21",
+    "author": "Argus",
+    "depend": [
+      "mcMMO"
+    ],
+    "description": "Automatically sets mcMMO and vanilla 1.2x XP on weekends (Sat-Sun).",
+    "main": "com.winkreyes.weekendxp.WeekendXP",
+    "name": "ExcelWeekendXP",
+    "provides": [
+      "WeekendXP"
+    ],
+    "version": "1.0.2-excel.1"
+  },
+  "descriptor_before": {
+    "api-version": "1.21",
+    "author": "Argus",
+    "depend": [
+      "mcMMO"
+    ],
+    "description": "Automatically sets mcMMO and vanilla 1.2x XP on weekends (Sat-Sun).",
+    "main": "com.winkreyes.weekendxp.WeekendXP",
+    "name": "WeekendXP",
+    "version": "1.0.2"
+  },
+  "entries": [
+    {
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "input_size": 0,
+      "name": "META-INF/",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_size": 0
+    },
+    {
+      "input_sha256": "289b2bfc405dc9cbc53a9f07fc483ba6fda5bcd41204b80d09f1bf946f0676c6",
+      "input_size": 81,
+      "name": "META-INF/MANIFEST.MF",
+      "output_sha256": "289b2bfc405dc9cbc53a9f07fc483ba6fda5bcd41204b80d09f1bf946f0676c6",
+      "output_size": 81
+    },
+    {
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "input_size": 0,
+      "name": "com/",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_size": 0
+    },
+    {
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "input_size": 0,
+      "name": "com/winkreyes/",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_size": 0
+    },
+    {
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "input_size": 0,
+      "name": "com/winkreyes/weekendxp/",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_size": 0
+    },
+    {
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "input_size": 0,
+      "name": "META-INF/maven/",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_size": 0
+    },
+    {
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "input_size": 0,
+      "name": "META-INF/maven/com.winkreyes/",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_size": 0
+    },
+    {
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "input_size": 0,
+      "name": "META-INF/maven/com.winkreyes/WeekendXP/",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_size": 0
+    },
+    {
+      "input_sha256": "5a894cffe4570f37868a86df898d6335342769876443254ca54dbcd72ab70f83",
+      "input_size": 5743,
+      "name": "com/winkreyes/weekendxp/VanillaXpBridge.class",
+      "output_sha256": "5a894cffe4570f37868a86df898d6335342769876443254ca54dbcd72ab70f83",
+      "output_size": 5743
+    },
+    {
+      "input_sha256": "a25db743e3edfd2a61c032059d6cb7979bff2d5e081b6c1a5ac6bec8c620d774",
+      "input_size": 1354,
+      "name": "com/winkreyes/weekendxp/WeekendSchedule$Result.class",
+      "output_sha256": "a25db743e3edfd2a61c032059d6cb7979bff2d5e081b6c1a5ac6bec8c620d774",
+      "output_size": 1354
+    },
+    {
+      "input_sha256": "7b9bb7830923e01da0b11f7642c3dbfdb8741b9f249492dc046ec5f368cd3b06",
+      "input_size": 2466,
+      "name": "com/winkreyes/weekendxp/WeekendSchedule.class",
+      "output_sha256": "7b9bb7830923e01da0b11f7642c3dbfdb8741b9f249492dc046ec5f368cd3b06",
+      "output_size": 2466
+    },
+    {
+      "input_sha256": "3d5eddddce2c6a76b22fad2dd7cf56a2aeb52ef2c2482c2a9a1245309dfcc975",
+      "input_size": 5238,
+      "name": "com/winkreyes/weekendxp/WeekendXP.class",
+      "output_sha256": "3d5eddddce2c6a76b22fad2dd7cf56a2aeb52ef2c2482c2a9a1245309dfcc975",
+      "output_size": 5238
+    },
+    {
+      "input_sha256": "063e7225d215cb693ba2f76f4cad6b239a01f6e59eba08c57eadbee5e526f8b3",
+      "input_size": 202,
+      "name": "plugin.yml",
+      "output_sha256": "6fbc72105be87d60766d20c627b153d2db865f451305cc726236a4185ef7cbba",
+      "output_size": 237
+    },
+    {
+      "input_sha256": "66b70e1f7aacbd7242628a11b2271dc8f8172b86c787557eaf2db8c1e7eb9d6b",
+      "input_size": 498,
+      "name": "META-INF/maven/com.winkreyes/WeekendXP/pom.xml",
+      "output_sha256": "66b70e1f7aacbd7242628a11b2271dc8f8172b86c787557eaf2db8c1e7eb9d6b",
+      "output_size": 498
+    },
+    {
+      "input_sha256": "30bf5d3082305cab941cb5da858b9854d6a032f19363a60105fc2e7c943bfe92",
+      "input_size": 57,
+      "name": "META-INF/maven/com.winkreyes/WeekendXP/pom.properties",
+      "output_sha256": "30bf5d3082305cab941cb5da858b9854d6a032f19363a60105fc2e7c943bfe92",
+      "output_size": 57
+    }
+  ],
+  "input_sha256": "4452ccd90bea409fca37740d3e4e9967ef6dd56e9280000521eec868cf0254d0",
+  "menujoin_namespace_patch": null,
+  "new_name": "ExcelWeekendXP",
+  "new_version": "1.0.2-excel.1",
+  "old_name": "WeekendXP",
+  "old_version": "1.0.2",
+  "output_filename": "ExcelWeekendXP-1.0.2-excel.1.jar",
+  "output_sha256": "01f9482ad11572668b43d7a71e9ed80b58b8d2e0ab5ae101b3e13670abdb9a4a",
+  "runtime_verification": "Not performed by this offline transformer; Paper provides resolution and live gameplay remain separate checks.",
+  "schema": 1,
+  "unchanged_entry_count": 14
+}

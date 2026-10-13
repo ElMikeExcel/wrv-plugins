@@ -10,7 +10,8 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 MODULES = ('BedrockMenu', 'Leaderboard', 'MenuJoin', 'NoPhantoms',
            'RestartCountdown', 'ShopVillager', 'WealthBoard', 'WeekendXP', 'WRVShops')
-IDENTITIES = {'WRVShops': 'ExcelShops'}
+IDENTITIES = {module: 'Excel' + module for module in MODULES if module != 'WRVShops'}
+IDENTITIES['WRVShops'] = 'ExcelShops'
 OVERLAY = 'ChestShop-ConfirmationGuard'
 NS = {'m': 'http://maven.apache.org/POM/4.0.0'}
 

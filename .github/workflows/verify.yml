@@ -15,6 +15,11 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
+      - name: Verify fail-closed Excel rename tooling
+        run: |
+          python3 -m pip install -r tools/excel_renames/requirements.txt
+          cd tools/excel_renames
+          python3 -m unittest discover -s tests -v
       - name: Bootstrap pinned ChestShop, build plugins, package guard and run checks
         run: ./build.sh
       - name: Package verified ExcelShops and guarded ChestShop pair (not deployed)
@@ -30,19 +35,20 @@ jobs:
             --guard-sources "$SOURCES" --expected-sources-sha256 "$(sha256sum "$SOURCES" | cut -d' ' -f1)" \
             --source-commit "$CANDIDATE_COMMIT" \
             --output WRVShops/target/ExcelShops-0.1.4-install-candidate.zip
-      - name: Upload candidate JARs and matching shop pack (not deployed)
+      - name: Upload source-built JARs and shop pack (not approved for rename-only deployment)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: wrv-plugins-candidate-${{ github.sha }}
           path: |
-            BedrockMenu/target/BedrockMenu-*.jar
-            Leaderboard/target/Leaderboard-*.jar
-            MenuJoin/target/MenuJoin-*.jar
-            NoPhantoms/target/NoPhantoms-*.jar
-            RestartCountdown/target/RestartCountdown-*.jar
-            ShopVillager/target/ShopVillager-*.jar
-            WealthBoard/target/WealthBoard-*.jar
-            WeekendXP/target/WeekendXP-*.jar
+            EXCEL-PLUGIN-RENAMES.md
+            BedrockMenu/target/ExcelBedrockMenu-*.jar
+            Leaderboard/target/ExcelLeaderboard-*.jar
+            MenuJoin/target/ExcelMenuJoin-*.jar
+            NoPhantoms/target/ExcelNoPhantoms-*.jar
+            RestartCountdown/target/ExcelRestartCountdown-*.jar
+            ShopVillager/target/ExcelShopVillager-*.jar
+            WealthBoard/target/ExcelWealthBoard-*.jar
+            WeekendXP/target/ExcelWeekendXP-*.jar
             WRVShops/target/ExcelShops-0.1.4.jar
             ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1.jar
             ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1-sources.zip

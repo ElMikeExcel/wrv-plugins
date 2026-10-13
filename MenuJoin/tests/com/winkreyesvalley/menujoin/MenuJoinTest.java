@@ -57,9 +57,9 @@ class MenuJoinTest {
         bukkit.when(Bukkit::getScheduler).thenReturn(scheduler);
 
         plugin = mock(MenuJoin.class, CALLS_REAL_METHODS);
-        doReturn("MenuJoin").when(plugin).getName();
+        doReturn("ExcelMenuJoin").when(plugin).getName();
         doReturn(Logger.getAnonymousLogger()).when(plugin).getLogger();
-        doReturn(new PluginDescriptionFile("MenuJoin", "1.2.1", MenuJoin.class.getName()))
+        doReturn(new PluginDescriptionFile("ExcelMenuJoin", "1.2.1", MenuJoin.class.getName()))
                 .when(plugin).getDescription();
         compassCommand = mock(PluginCommand.class);
         toggleCommand = mock(PluginCommand.class);
@@ -80,6 +80,15 @@ class MenuJoinTest {
     @AfterEach
     void tearDown() {
         bukkit.close();
+    }
+
+    @Test
+    void renamedPluginReadsExistingDisabledPreferenceWithoutRewritingPlayerData() {
+        assertEquals("ExcelMenuJoin", plugin.getName());
+        when(playerData.getOrDefault(DISABLED_KEY, PersistentDataType.BOOLEAN, false)).thenReturn(true);
+        assertTrue(plugin.isDisabled(player));
+        verify(playerData).getOrDefault(DISABLED_KEY, PersistentDataType.BOOLEAN, false);
+        verifyNoMoreInteractions(playerData);
     }
 
     @Test

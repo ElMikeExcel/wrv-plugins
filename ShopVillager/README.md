@@ -1,4 +1,9 @@
-# ShopVillager 1.0.1
+# ExcelShopVillager 1.0.1
+
+Runtime identity: `ExcelShopVillager`; legacy provider alias: `ShopVillager`.
+The source module directory, commands, permissions, main class, authors and licenses
+are unchanged. See [rename/migration scope](../EXCEL-PLUGIN-RENAMES.md).
+**Source builds are not approved rename-only replacements for the installed JARs.**
 
 Tapping the spawn shop villager opens the Spawn Shop (DeluxeMenus `spawnshop`) instead of trades. Only operators or players with `shopvillager.admin` can create, remove, or tag shop villagers.
 

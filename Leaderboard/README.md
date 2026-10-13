@@ -1,4 +1,9 @@
-# Leaderboard
+# ExcelLeaderboard
+
+Runtime identity: `ExcelLeaderboard`; legacy provider alias: `Leaderboard`.
+The source module directory, commands, permissions, main class, authors and licenses
+are unchanged. See [rename/migration scope](../EXCEL-PLUGIN-RENAMES.md).
+**Source builds are not approved rename-only replacements for the installed JARs.**
 
 Version: **1.0.0**. `/leaderboard` runs the native Essentials `baltop` and mcMMO `mctop` commands as the player, retaining their output and permission checks. If either command is unavailable, the player receives a short fallback message. Console use is rejected.
 
@@ -10,7 +15,7 @@ From the repository root, with JDK 21:
 ./mvnw -pl Leaderboard -am verify
 ```
 
-Output: `Leaderboard/target/Leaderboard-1.0.0.jar`. No external plugin APIs are needed at compile time beyond Paper.
+Output: `Leaderboard/target/ExcelLeaderboard-1.0.0.jar`. No external plugin APIs are needed at compile time beyond Paper.
 
 ## Source recovery
 

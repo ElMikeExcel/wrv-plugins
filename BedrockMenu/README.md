@@ -1,4 +1,9 @@
-# BedrockMenu
+# ExcelBedrockMenu
+
+Runtime identity: `ExcelBedrockMenu`; legacy provider alias: `BedrockMenu`.
+The source module directory, commands, permissions, main class, authors and licenses
+are unchanged. See [rename/migration scope](../EXCEL-PLUGIN-RENAMES.md).
+**Source builds are not approved rename-only replacements for the installed JARs.**
 
 `/menu` opens native Geyser forms for Bedrock players and the DeluxeMenus
 `server_menu` chest GUI for Java players. `/tpmenu` opens the player picker.
@@ -9,10 +14,15 @@ The readable original 1.4.1 Java sources have been recovered from repository
 history and restored under `src/`. The 1.4.2 Spawn Shop addition is now ordinary
 source code, so the normal build no longer rewrites old class files.
 
-Buttons: Spawn, Teleport to a player, Spawn Shop (`/shop`), Jobs & Money, mcMMO
-Stats, Leaderboard, Server Info, Auto-open on join. No Home/Set Home. `/shop`
+Buttons: Spawn, Teleport to a player, Spawn Shop (`/shop`), mcMMO Stats,
+Leaderboard, Server Info, Auto-open on join. No Home/Set Home. `/shop`
 matches the historical patch and the included DeluxeMenus menu's command; the
 old README incorrectly called this `dm open spawnshop`.
+
+The redundant Jobs & Money button and its `jobs browse` route were removed
+from both ordered arrays. This source change does not disable Jobs or change
+job enrollment. The separately prepared 1.4.2-menu.1 live-compatible hotfix
+does not include the spawn repairs below. See `MENU_REMOVAL.md`.
 
 ### Spawn repairs
 
@@ -45,9 +55,9 @@ mvn -pl BedrockMenu -am verify
 ```
 
 Or run `./build.sh` here. The current plugin jar is built from `src/`, `plugin.yml`,
-and `config.yml`. Unit tests in `tests/` cover spawn API selection, missing or
-disabled plugins, world selection, coordinates, height limits, and failure
-paths. They do not replace a Paper + Geyser + Essentials staging-server test.
+and `config.yml`. Unit tests in `tests/` cover the ordered native-menu button/command mapping,
+spawn API selection, missing or disabled plugins, world selection, coordinates,
+height limits, and failure paths. They do not replace a Paper + Geyser + Essentials staging-server test.
 
 ## Recovery material
 

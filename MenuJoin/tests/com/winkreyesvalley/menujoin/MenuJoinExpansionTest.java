@@ -11,7 +11,7 @@ class MenuJoinExpansionTest {
     @Test
     void versionMatchesLoadedPluginMetadata() {
         MenuJoin plugin = mock(MenuJoin.class);
-        when(plugin.getDescription()).thenReturn(new PluginDescriptionFile("MenuJoin", "1.2.1", MenuJoin.class.getName()));
+        when(plugin.getDescription()).thenReturn(new PluginDescriptionFile("ExcelMenuJoin", "1.2.1", MenuJoin.class.getName()));
         assertEquals("1.2.1", new MenuJoinExpansion(plugin).getVersion());
     }
 

@@ -1,0 +1,33 @@
+{
+  "status": "prepared_not_installed",
+  "verified_at_utc": "2026-10-13T02:38:00Z",
+  "live_baseline_sha256": {
+    "BedrockMenu-1.4.2.jar": "68eb426b83f827a9fbf92f83cac4f4922f9904ba3aafc2dc9c1a0f27667fc841",
+    "MenuJoin-1.2.0.jar": "abc335c402295f458b5beae4ad0972bb8c3c981ed74dca28efe0571d0d1d8178",
+    "WeekendXP-1.0.2.jar": "4452ccd90bea409fca37740d3e4e9967ef6dd56e9280000521eec868cf0254d0",
+    "NoPhantoms-1.0.0.jar": "240e2cf7660a7cf515bf341bd8ed1ed7581099b933060e01c11c5c926b186195",
+    "RestartCountdown-1.1.0.jar": "5ed80156802ee4303c719dcd7e2dba245786a50b81f2d99384ff0d6bbb2d08d0",
+    "Leaderboard-1.0.0.jar": "0999028a9e2edd1a8c495bef4af029c157a3d97a9daead59468fe6d6a3ca6014",
+    "WealthBoard-1.3.0.jar": "55fa51fb6eb1824936d92cf5be20dc5b49bdd1726c14c154a0f19e1bc121559d",
+    "ShopVillager-1.0.0.jar": "59d13816c8a3f1b053e3accf4bed433eb1ef2a2459428d7db44a3f3e964fb9ad"
+  },
+  "candidates": [
+    {
+      "filename": "ExcelBedrockMenu-1.4.2-menu.1-excel.1.jar",
+      "sha256": "b84f9fc0f118c330a9e8c9fd807660db6016fedd834a241a6242b1b4b26a0b33",
+      "bytes": 13684
+    },
+    {
+      "filename": "ExcelWeekendXP-1.0.2-excel.1.jar",
+      "sha256": "01f9482ad11572668b43d7a71e9ed80b58b8d2e0ab5ae101b3e13670abdb9a4a",
+      "bytes": 9586
+    }
+  ],
+  "blocked": [
+    "Six exact original JARs have not been transferred to the build workspace. No replacement artifacts for those six have been prepared.",
+    "MenuJoin live namespace bytecode patch is deliberately blocked until the exact original JAR is available.",
+    "No Paper 26.2 build 123 boot, actual dependency/provides resolution, or real-client gameplay test has been run for this rename batch.",
+    "Qualified-command reference inventory and stopped-server data copies remain pending."
+  ],
+  "scope": "BedrockMenu final candidate retains the separately approved Jobs & Money menu-only patch. WeekendXP is an exact-live 1.0.2 metadata-only transform. Neither is installed. Maintained source builds contain separate pre-existing repairs and are not live rename substitutes."
+}

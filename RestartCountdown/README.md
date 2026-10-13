@@ -1,4 +1,9 @@
-# RestartCountdown
+# ExcelRestartCountdown
+
+Runtime identity: `ExcelRestartCountdown`; legacy provider alias: `RestartCountdown`.
+The source module directory, commands, permissions, main class, authors and licenses
+are unchanged. See [rename/migration scope](../EXCEL-PLUGIN-RENAMES.md).
+**Source builds are not approved rename-only replacements for the installed JARs.**
 
 Version: **1.1.1**, restored and repaired from **1.1.0**.
 
@@ -19,7 +24,7 @@ From the repository root, with JDK 21:
 ./mvnw -pl RestartCountdown -am verify
 ```
 
-Output: `RestartCountdown/target/RestartCountdown-1.1.1.jar`.
+Output: `RestartCountdown/target/ExcelRestartCountdown-1.1.1.jar`.
 
 Tests cover the complete sequence, reason-bearing chat and titles, the final 40-tick delay, permission checks, active cancellation, cancellation during the shutdown grace period, duplicate starts and plugin disable cleanup. They use a mocked scheduler and never stop a real server.
 

@@ -29,8 +29,8 @@ public class MenuJoin extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        disabledKey = new NamespacedKey(this, "autojoin_disabled");
-        compassKey = new NamespacedKey(this, "menu_compass");
+        disabledKey = new NamespacedKey("menujoin", "autojoin_disabled");
+        compassKey = new NamespacedKey("menujoin", "menu_compass");
         Bukkit.getPluginManager().registerEvents(this, this);
         getCommand("menujoin").setExecutor(this::toggleCommand);
         getCommand("compass").setExecutor(this::compassCommand);

@@ -1,4 +1,9 @@
-# WealthBoard
+# ExcelWealthBoard
+
+Runtime identity: `ExcelWealthBoard`; legacy provider alias: `WealthBoard`.
+The source module directory, commands, permissions, main class, authors and licenses
+are unchanged. See [rename/migration scope](../EXCEL-PLUGIN-RENAMES.md).
+**Source builds are not approved rename-only replacements for the installed JARs.**
 
 Version: **1.3.1**, restored and repaired from **1.3.0**.
 
@@ -14,7 +19,7 @@ From the repository root, with JDK 21:
 ./mvnw -pl WealthBoard -am verify
 ```
 
-Output: `WealthBoard/target/WealthBoard-1.3.1.jar`. Paper, VaultAPI and Jobs are compile-time/provided dependencies and are not bundled. See the Maven files for pinned build API versions. The Jobs integration retains `getJobsPlayer`, `isInJob` and `joinJob`, checked against the [official Jobs API source](https://github.com/Zrips/Jobs/blob/v5.2.6.2/src/main/java/com/gamingmesh/jobs/PlayerManager.java).
+Output: `WealthBoard/target/ExcelWealthBoard-1.3.1.jar`. Paper, VaultAPI and Jobs are compile-time/provided dependencies and are not bundled. See the Maven files for pinned build API versions. The Jobs integration retains `getJobsPlayer`, `isInJob` and `joinJob`, checked against the [official Jobs API source](https://github.com/Zrips/Jobs/blob/v5.2.6.2/src/main/java/com/gamingmesh/jobs/PlayerManager.java).
 
 ## Recovery and repairs
 

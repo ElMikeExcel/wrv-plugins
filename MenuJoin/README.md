@@ -1,4 +1,9 @@
-# MenuJoin 1.2.1
+# ExcelMenuJoin 1.2.1
+
+Runtime identity: `ExcelMenuJoin`; legacy provider alias: `MenuJoin`.
+The source module directory, commands, permissions, main class, authors and licenses
+are unchanged. See [rename/migration scope](../EXCEL-PLUGIN-RENAMES.md).
+**Source builds are not approved rename-only replacements for the installed JARs.**
 
 Argus's compass plugin, recovered from 1.1.0 and extended in 1.2.0 by Steve.
 This repair keeps the existing join, respawn, menu-toggle, and compass behavior.
@@ -10,7 +15,7 @@ This repair keeps the existing join, respawn, menu-toggle, and compass behavior.
 - Optional PlaceholderAPI for `%menujoin_status%`
 - Build from this directory with `./build.sh`, or from the repository root with
   `mvn -pl MenuJoin -am verify`.
-- Output: `target/MenuJoin-1.2.1.jar`
+- Output: `target/ExcelMenuJoin-1.2.1.jar`
 
 ## Behavior
 
