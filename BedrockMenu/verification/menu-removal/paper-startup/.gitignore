@@ -1,0 +1,11 @@
+server/
+jdk25/
+compile-libraries/
+probe/classes/
+__pycache__/
+*.pyc
+evidence/boot-*.log
+evidence/paperclip-patch-only.log
+evidence/probe-compile.log
+evidence/*private*
+evidence/previous-results-*

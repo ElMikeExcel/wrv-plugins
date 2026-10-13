@@ -1,0 +1,29 @@
+PASS probe is on actual Paper main thread
+PASS Minecraft 26.2 runtime
+PASS Paper build 123 runtime
+PASS original BedrockMenu plugin identity resolved
+PASS actual candidate plugin enabled
+PASS exact candidate descriptor version
+PASS original entry point loaded by Paper
+PASS no renamed plugin loaded
+PASS seven ordered runtime button labels
+PASS seven correctly paired runtime commands
+PASS button/command lengths agree
+PASS removed label absent
+PASS removed command route absent
+PASS menu registered in actual Paper command map
+PASS menu remains owned by BedrockMenu
+PASS menu executor assigned
+PASS menu console rejection path executes without linkage failure
+PASS tpmenu registered in actual Paper command map
+PASS tpmenu remains owned by BedrockMenu
+PASS tpmenu executor assigned
+PASS tpmenu console rejection path executes without linkage failure
+PASS actual Paper listener registration succeeded
+PASS original teleport listener registered
+PASS GeyserForms resolves from actual plugin classloader
+PASS TeleportMenu resolves from actual plugin classloader
+PASS TeleportMenu$PickHolder resolves from actual plugin classloader
+PASS test explicitly has no Geyser integration
+PASS test explicitly has no Essentials integration
+RESULT PASS 28 checks

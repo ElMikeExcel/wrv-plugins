@@ -2,7 +2,8 @@
 
 ## Status
 
-Prepared and verified offline on 2026-10-13; not deployed. Deployment is pending. Runtime branding changes were canceled; this candidate
+Prepared and verified offline and on isolated Paper on 2026-10-13; not deployed.
+Deployment is pending. Runtime branding changes were canceled; this candidate
 retains the BedrockMenu plugin identity, data folder and command namespace.
 The canonical source tree includes separate, undeployed 1.4.3 spawn repairs;
 those repairs are not included in this menu-only candidate.
@@ -84,8 +85,18 @@ checks do not certify a different deployable hotfix JAR.
 
 All four hotfix classes also linked and verified against the real Paper
 26.2 build 123 API on Temurin 25.0.4+7, including the seven-entry array checks,
-without Bukkit test doubles. Actual server startup remains pending; this
-linkage check is not a Paper server or Geyser/client integration test.
+without Bukkit test doubles. The exact candidate then passed two actual
+isolated Paper boots, including a clean restart: 28 checks per boot, 56 total.
+These verified enable/disable, original identity and version, both menu arrays,
+real command ownership/executors and original teleport listener registration.
+Both boots exited normally, released their loopback port and left the candidate
+unchanged. The source-only harness and sanitized results are in
+[`verification/menu-removal/paper-startup/`](verification/menu-removal/paper-startup/README.md).
+
+The isolated runtime could not resolve external Minecraft-auth and Paper-update
+hosts, so it does not establish online authentication or client connectivity.
+Geyser, Essentials and real Java/Bedrock clients were absent. This is actual
+Paper startup evidence, not full-server or device integration coverage.
 
 ## Repeat from the exact live JAR
 
