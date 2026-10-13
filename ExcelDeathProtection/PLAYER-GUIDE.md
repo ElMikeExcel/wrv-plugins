@@ -1,6 +1,6 @@
 # Death Protection
 
-**0.1.3 review-window preview. Version 0.1.2 is the last verified installed version (October 13, 2026, 23:40:51 UTC).** The owner reported that the two 0.1.2 shop entries look good on his phone and accepted buying one at a time without a quantity dialog. Exact-shortfall visibility motivated this candidate. All 0.1.3 Java, Bedrock-phone, real-purchase, and gameplay checks remain pending. Prices below are in-game money.
+**Version 0.1.3 was installed October 13, 2026; loaded version was verified at 23:51:04 UTC.** All real Java, Bedrock-phone, actual-purchase, and gameplay acceptance checks remain pending. The owner's earlier report that both shop entries looked good on his phone applies to 0.1.2, and he accepted buying one at a time without a quantity dialog. Exact-shortfall visibility motivated the new review. Prices below are in-game money.
 
 ## Death Protection — $15,000
 
@@ -32,13 +32,13 @@ You can have only one active protection, basic or premium.
 
 Check your current protection with **/dp status**.
 
-## Last verified installed flow: 0.1.2
+## Historical flow: 0.1.2
 
 In 0.1.2, choose the same shop option or repeat the same buy command within 20 seconds to confirm the product and price. It buys one at a time and does not open an ordinary-item quantity window. The earlier phone report checked the appearance of the shop entries only; it did not establish purchase, activation, or death/respawn acceptance.
 
-## Candidate 0.1.3: buying one at a time
+## Installed 0.1.3: buying one at a time
 
-Tap either product in Spawn Shop, or use **/dp buy basic** or **/dp buy premium**. The candidate opens a review with **quantity 1**, the price, your balance, and the money you would have left. If you cannot afford it, it shows **Need $… more** instead and disables purchasing.
+Tap either product in Spawn Shop, or use **/dp buy basic** or **/dp buy premium**. Version 0.1.3 opens a review with **quantity 1**, the price, your balance, and the money you would have left. If you cannot afford it, it shows **Need $… more** instead and disables purchasing.
 
 Opening, refreshing, closing, and going Back never charge you. Select **Confirm** to purchase. Your balance and eligibility are checked again then. A review expires after 20 seconds; tap its disabled button to refresh, then Confirm again. If your balance changed from too low to enough, a fresh quote may be required before purchasing. Back requests the existing Spawn Shop `/shop` command; actual Java and phone navigation through DeluxeMenus still needs checking.
 

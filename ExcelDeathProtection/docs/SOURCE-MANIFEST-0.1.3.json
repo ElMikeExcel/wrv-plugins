@@ -1,13 +1,18 @@
 {
   "schema_version": 1,
   "candidate_version": "0.1.3",
-  "status": "source review candidate; installation and real-client/provider acceptance are separate gates",
-  "publication_base_commit": "721ebcfb02bde4edf283fffdc2cb6e8fa4681730",
+  "status": "0.1.3 installed; real-client/provider and gameplay acceptance remain pending",
+  "publication_base_commit": "18dd40ae73e1a5a01bb99f5c5f8afb2969c466cd",
   "baseline_implementation_commit": "a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac",
   "last_verified_installed": {
-    "version": "0.1.2",
-    "observed_at_utc": "2026-10-13T23:40:51Z",
-    "jar_sha256": "24b8866853fea7f86c70d8d002a9200fbe36340a8d1284bf76f28bc8684af7f4"
+    "version": "0.1.3",
+    "enabled_at_utc": "2026-10-13T23:50:52Z",
+    "version_observed_at_utc": "2026-10-13T23:51:04Z",
+    "source_commit": "18dd40ae73e1a5a01bb99f5c5f8afb2969c466cd",
+    "jar_sha256": "f0224d18a51e430b81ec8fb02f9408fd6038e64b893d84d738368fd288cb4093",
+    "menu_sha256": "9f328011cb78bf11d86fdbf15519db96c86ea3638b0672137c7eed242d2124b2",
+    "config_sha256": "d6e3208761c5b08dee1687237946b85d4821dd9f3020aa39b54bfbf082115efc",
+    "acceptance": "Actual Java, Bedrock phone, live purchases and gameplay remain pending."
   },
   "candidate_artifact": {
     "filename": "ExcelDeathProtection-0.1.3.jar",
@@ -147,38 +152,43 @@
   "reconciled_publication_documentation": [
     {
       "path": "CHANGELOG.md",
-      "bytes": 5952,
-      "sha256": "0797d580c589992f0e621ffa1fc016acfbb81cf174b9ed094b427223298fb6c2"
+      "bytes": 6092,
+      "sha256": "8819b2fe8ac7160e543fcdff2249973a9672ea7d93ad9f5c28c2cbd3771e926f"
     },
     {
       "path": "PLAYER-GUIDE.md",
-      "bytes": 3621,
-      "sha256": "11199fd426527feab92f4849844bdcc0ff0df56e2d679e9ff5227cc2825eebee"
+      "bytes": 3617,
+      "sha256": "810f5d17fd6e4de308b7f6473cc7c5a2382e0ec6a72807b6685f61f0db866ba4"
     },
     {
       "path": "PURCHASE-JOURNAL.md",
-      "bytes": 5795,
-      "sha256": "d96ee763469ebe597ffadad159163d5a077e188ed8a5faf95e74d2194a1d7563"
+      "bytes": 5775,
+      "sha256": "235630d121b0eefeb53a8c39508575f0a004b8869ca3f5395ced1cf8c50b6eaa"
     },
     {
       "path": "README.md",
-      "bytes": 10992,
-      "sha256": "13ae3aedb22f3a80140ff749005a510e3b0ff21f6083e6174fe5d8456354316f"
+      "bytes": 11189,
+      "sha256": "d2ae2a35d9968ebd1adf3a41239f05c1925e259942d814de5e0dbc2893ee38e1"
     },
     {
       "path": "SPEC.md",
-      "bytes": 12868,
-      "sha256": "03cdec5a6227a9996162bd63eea52fd6768f3734ad87181631f3293c750acd7b"
+      "bytes": 12969,
+      "sha256": "33a003e50960c1440de4e09e7678d87a7a6503edf073bc730ae5eec65527d8a7"
     },
     {
       "path": "docs/INSTALL-PLAN-0.1.3.md",
-      "bytes": 4643,
-      "sha256": "f9a5d31ceb3a228f3a8ef66ce0b7613d738ef19ab234c5df30fd3f32ed4a35ba"
+      "bytes": 4799,
+      "sha256": "49acbb9bf8f99b78bd84944151efb7fec122fcceb52369c817b87ea4da440760"
     },
     {
       "path": "docs/INSTALLATION-0.1.2.md",
       "bytes": 6617,
       "sha256": "e45d81ed414ef4f75607610907d74cebdace051e21865fe85176b552c08d6b97"
+    },
+    {
+      "path": "docs/INSTALLATION-0.1.3.md",
+      "bytes": 6846,
+      "sha256": "8fc96fecfa6dc1f89fa8c64fc05cef7c3a9787c9cb69bab4ddbe842e3ec650a8"
     },
     {
       "path": "docs/SOURCE-MANIFEST-0.1.2.json",
@@ -192,18 +202,18 @@
     },
     {
       "path": "docs/VERIFICATION-RESULTS-0.1.3.md",
-      "bytes": 9558,
-      "sha256": "7dbdde30e8d661f62288995994067bcb55a5908a78e24a13c759fb0db1fe23ef"
+      "bytes": 10081,
+      "sha256": "9db8971afaf2864002e3276046fe7b02891c73320674d3fa19eb6a7f94a20366"
     },
     {
       "path": "docs/VERIFICATION.md",
-      "bytes": 13281,
-      "sha256": "fe5605127d4db1f44de6eb0ba87e940bed358051b116bd60df6c811eddd53852"
+      "bytes": 13684,
+      "sha256": "176d5cf3168419d050a6398b6d2f39abaa7b80d9e766bd1c0642ccfd2cbc3e0d"
     },
     {
       "path": "integration/README.md",
-      "bytes": 9794,
-      "sha256": "3863828b7a65a4b2fb31d93850a8fa76ae1ae74c58838ee917b4d00442f42931"
+      "bytes": 9736,
+      "sha256": "d5a1a812e2b128c0cc52d080d090c7018d62b7e31cb31c25722a455a522f99b4"
     },
     {
       "path": "integration/spawnshop-death-protection.template.yml",
@@ -213,5 +223,9 @@
   ],
   "manifest_self_hash": "Excluded to avoid a circular hash. The publishing Git commit identifies this file.",
   "historical_evidence": "INSTALLATION-0.1.2.md, VERIFICATION-RESULTS-0.1.2.md and SOURCE-MANIFEST-0.1.2.json are retained byte-for-byte from the publication base.",
-  "verification_scope": "99 candidate tests; 107 includes those 99 plus eight reviewer additions; 196 isolated Paper assertions. Actual Java, Bedrock phone, live provider purchases and gameplay acceptance remain pending."
+  "verification_scope": "99 candidate tests; 107 includes those 99 plus eight reviewer additions; 196 isolated Paper assertions. Actual Java, Bedrock phone, live provider purchases and gameplay acceptance remain pending.",
+  "initial_candidate_publication_commit": "18dd40ae73e1a5a01bb99f5c5f8afb2969c466cd",
+  "initial_candidate_publication_base_commit": "721ebcfb02bde4edf283fffdc2cb6e8fa4681730",
+  "documentation_update": "Installed-status documentation only, based on the initial candidate publication. The enclosing Git commit identifies the subsequent documentation revision; implementation/build/resources/tests remain byte-identical.",
+  "initial_published_manifest_sha256": "2d50806af5a62ff53e8e91d19c99e283f2096a2ad2a1b4aa53ce84fb18283ac4"
 }

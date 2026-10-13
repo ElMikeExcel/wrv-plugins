@@ -2,7 +2,7 @@
 
 Created for Wink Reyes Valley.
 
-**Source version: 0.1.3 review candidate, October 13, 2026. Source publication is separate from installation.** Version 0.1.2 remains the last verified installed version, reconfirmed at 23:40:51 UTC. Its exact tested artifact came from source commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`. The owner reported only that both 0.1.2 shop entries look good on his phone and accepted fixed-one purchases without an ordinary quantity dialog. Exact-shortfall visibility was the reported concern motivating this candidate. **All 0.1.3 real Java, Bedrock-phone, live-purchase, and gameplay acceptance checks remain pending.** PR #13 remains draft and unmerged. See [0.1.2 installation history](docs/INSTALLATION-0.1.2.md), [0.1.3 automated evidence and current operations](docs/VERIFICATION-RESULTS-0.1.3.md), and [the remaining checklist](docs/VERIFICATION.md).
+**0.1.3 installed October 13, 2026, with loaded version verified at 23:51:04 UTC.** The active artifact matches the exact tested 58,521-byte JAR built from draft PR #13 source commit `18dd40ae73e1a5a01bb99f5c5f8afb2969c466cd`. Installation evidence is separate from source publication and player acceptance. **All 0.1.3 real Java, Bedrock-phone, live-purchase, and gameplay acceptance checks remain pending.** The owner's earlier phone report concerned only the appearance of both 0.1.2 shop entries and acceptance of fixed-one purchases without an ordinary quantity dialog; exact-shortfall visibility motivated this review-window update. PR #13 remains draft and unmerged. See [0.1.3 installation evidence](docs/INSTALLATION-0.1.3.md), [automated evidence](docs/VERIFICATION-RESULTS-0.1.3.md), [remaining checks](docs/VERIFICATION.md), and [0.1.2 history](docs/INSTALLATION-0.1.2.md).
 
 ## The two products
 
@@ -22,7 +22,7 @@ There is one shared active-protection slot per player:
 
 Basic uses a boss bar reading **Inventory protected: 1 death**, without boss fog, sky darkening, or music. It adds no potion effects or gameplay abilities. Premium retains its Conduit Power benefits. `/dp status` is the authoritative player check: a Conduit effect can also come from a real conduit or another plugin.
 
-## Candidate 0.1.3 commands and review flow
+## Installed 0.1.3 commands and review flow
 
 - `/dp status`: show the active tier or no active protection.
 - `/dp buy basic`: open a review for immediate **Death Protection**, $15,000; only its Confirm action purchases.
@@ -43,7 +43,7 @@ basic-price: 15000.0
 premium-price: 30000.0
 ```
 
-The legacy `price` setting is ignored. Existing server configuration files may retain it, so explicitly review both new keys during any future authorized rollout. The verified October 13 0.1.2 installation uses the two keys shown above. The candidate requires no replacement of that active configuration. Keep shop lore in sync with the configured prices. The plugin owns the price, confirmation, eligibility checks, charge, and delivery; a menu must never perform a second independent withdrawal.
+The legacy `price` setting is ignored. Existing server configuration files may retain it, so explicitly review both new keys during any future authorized rollout. The verified October 13 0.1.2 installation uses the two keys shown above. The 0.1.3 rollout retained that active configuration; the installation record distinguishes its checks from real-provider purchases. Keep shop lore in sync with the configured prices. The plugin owns the price, confirmation, eligibility checks, charge, and delivery; a menu must never perform a second independent withdrawal.
 
 ## Migration and safety limits
 
@@ -56,7 +56,7 @@ The legacy `price` setting is ignored. Existing server configuration files may r
 
 ## Shop integration
 
-The last verified 0.1.2 Spawn Shop has **Death Protection at slot 31** (CHEST, $15,000) and **+Death Protection Potion at slot 34** (POTION, $30,000). Both left/right click routes call the tier-aware plugin purchase command once. The installed file preserves all 20 unrelated shop items and non-item settings; its exact checksum is recorded in [installation evidence](docs/INSTALLATION-0.1.2.md). The owner reported both 0.1.2 entries look good on his phone; that limited report does not validate the new review screen. The installed 0.1.2 flow repeats the same shop choice or buy command within 20 seconds; the 0.1.3 candidate instead requires its review-window Confirm. A separately verified rollout must reconcile only the two instruction lines against the current live menu. See the [candidate installation plan](docs/INSTALL-PLAN-0.1.3.md).
+The installed Spawn Shop has **Death Protection at slot 31** (CHEST, $15,000) and **+Death Protection Potion at slot 34** (POTION, $30,000). Both left/right click routes call the tier-aware plugin purchase command once. The installed file preserves all 20 unrelated shop items and non-item settings; its exact checksum is recorded in [0.1.3 installation evidence](docs/INSTALLATION-0.1.3.md). The owner reported both 0.1.2 entries look good on his phone; that limited report does not validate the new review screen. The historical 0.1.2 flow repeated the same shop choice or buy command within 20 seconds; installed 0.1.3 instead requires its review-window Confirm. The live menu now says “Tap to review 1. No charge yet.” See [installation evidence](docs/INSTALLATION-0.1.3.md) and the [rollout plan](docs/INSTALL-PLAN-0.1.3.md).
 
 The repository `SpawnShop-DeluxeMenus/spawnshop.yml` and historical `make_spawnshop.py` generator have not been updated to this live integration. **Regeneration can overwrite the hand-integrated entries.** Treat that as an open maintenance gap; do not regenerate or replace the live menu from the older repository copy. [Integration instructions](integration/README.md) distinguish the installed menu from the separate [unassigned item template](integration/spawnshop-death-protection.template.yml), which is not ready to load.
 
@@ -76,6 +76,7 @@ A successful compile or automated test run is not a live installation or a playe
 - [PURCHASE-JOURNAL.md](PURCHASE-JOURNAL.md): audit phases, limitations, and required manual reconciliation
 - [docs/VERIFICATION.md](docs/VERIFICATION.md): release gates and scenario checklist
 - [docs/VERIFICATION-RESULTS-0.1.3.md](docs/VERIFICATION-RESULTS-0.1.3.md): exact candidate evidence, current operations, and limits
-- [docs/INSTALL-PLAN-0.1.3.md](docs/INSTALL-PLAN-0.1.3.md): rollout checks, separate from installation proof
+- [docs/INSTALLATION-0.1.3.md](docs/INSTALLATION-0.1.3.md): authorized installation and narrowly scoped server checks
+- [docs/INSTALL-PLAN-0.1.3.md](docs/INSTALL-PLAN-0.1.3.md): rollout procedure, separate from its evidence
 - [docs/SOURCE-MANIFEST-0.1.3.json](docs/SOURCE-MANIFEST-0.1.3.json): tested snapshot and reconciled publication file identities
 - [integration/README.md](integration/README.md): installed shop integration, maintenance gap, and recovery cautions

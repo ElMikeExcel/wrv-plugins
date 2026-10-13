@@ -1,14 +1,14 @@
-# Spawn Shop integration: 0.1.3 candidate and installed history
+# Spawn Shop integration: installed 0.1.3 and history
 
-**0.1.3 source candidate; 0.1.2 remains the last verified installed version at 23:40:51 UTC.** Existing tier-specific command routes are unchanged; update only the two entry instructions to “Tap to review 1. No charge yet.” Each command opens the plugin's native review; do not append close/open/refresh commands that replace or dismiss that review. The plugin's Back button executes the already-registered `/shop` command. No ExcelShops catalog/payment route is added. The tested companion menu was based on the earlier exact installed snapshot and changed only those two instruction lines. It is not a fresh live baseline. This source publication changes the unassigned review template only; it does not change the active server menu, repository menu, or generator. Follow the [0.1.3 rollout plan](../docs/INSTALL-PLAN-0.1.3.md) after a fresh live read.
+**0.1.3 installed October 13, 2026; loaded version verified at 23:51:04 UTC.** Existing tier-specific routes remain unchanged. The two entry instructions now read “Tap to review 1. No charge yet.” Each command opens the plugin's native review; do not append close/open/refresh commands that replace or dismiss it. Back requests the existing `/shop` command. No ExcelShops catalog/payment route was added. See [0.1.3 installation evidence](../docs/INSTALLATION-0.1.3.md); all actual Java, phone, live-purchase, gameplay, and DeluxeMenus Back-navigation checks remain pending. The repository menu and generator remain unchanged and are still an overwrite risk.
 
-**0.1.2 installed October 13, 2026.** The active menu uses basic slot 31 and premium slot 34. Exact file checks and read-only startup checks passed; the owner reports both entries look good on his phone, while Java, remaining phone UI, real purchases, and gameplay acceptance remain pending. See [installation evidence](../docs/INSTALLATION-0.1.2.md). Do not copy the unassigned template into a live DeluxeMenus directory as a complete menu.
+**Historical 0.1.2 installation, October 13, 2026.** That menu used basic slot 31 and premium slot 34. Exact file checks and read-only startup checks passed; the owner reports both entries look good on his phone, while Java, remaining phone UI, real purchases, and gameplay acceptance remain pending. See [installation evidence](../docs/INSTALLATION-0.1.2.md). Do not copy the unassigned template into a live DeluxeMenus directory as a complete menu.
 
-## What is known
+## Installed routes and preserved history
 
-The installed JAR corresponds to PR #13 source commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`. The older `ff224dea03d61e0f2227e65d8015d662c93c8d34` baseline and repository `SpawnShop-DeluxeMenus/spawnshop.yml` are historical inputs, not the installed menu.
+The installed 0.1.3 JAR corresponds to PR #13 source commit `18dd40ae73e1a5a01bb99f5c5f8afb2969c466cd`. The preceding 0.1.2 artifact came from `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`. The older `ff224dea03d61e0f2227e65d8015d662c93c8d34` baseline and repository `SpawnShop-DeluxeMenus/spawnshop.yml` are historical inputs, not the installed menu.
 
-The installed `deathprotection_basic` entry is a CHEST button at slot 31 for **Death Protection / $15,000**, with immediate activation. The `deathpotion` entry is a POTION at slot 34 for **+Death Protection Potion / $30,000**, to drink later. Both left/right routes use the corresponding `deathprotection buy basic|premium %player_name%` command and explain confirmation within 20 seconds. Structural comparison preserved all 20 unrelated items and every non-item top-level setting.
+The installed `deathprotection_basic` entry is a CHEST button at slot 31 for **Death Protection / $15,000**, with immediate activation. The `deathpotion` entry is a POTION at slot 34 for **+Death Protection Potion / $30,000**, to drink later. Both left/right routes use the corresponding `deathprotection buy basic|premium %player_name%` command and say “Tap to review 1. No charge yet.” The 0.1.3 review itself expires after 20 seconds; repeated commands do not confirm it. Structural comparison preserved all 20 unrelated items and every non-item top-level setting.
 
 **Generator gap:** the historical manual `make_spawnshop.py` workflow and repository menu are unchanged. Future regeneration can overwrite these hand-integrated entries. A separately scoped generator/integration update must preserve ordinary products and keep these tier prices outside general price scaling. Until then, do not regenerate or replace the live menu from the older repository template.
 
@@ -16,9 +16,9 @@ The installed `deathprotection_basic` entry is a CHEST button at slot 31 for **D
 
 The owner accepts the single-item purchase flow without an ordinary-item quantity window. Exact-shortfall feedback visibility was the reported concern motivating the offline 0.1.3 review candidate; actual phone acceptance of the new UI remains pending.
 
-## Candidate 0.1.3 rollout
+## 0.1.3 rollout and future maintenance
 
-The currently integrated slots and routes already exist. For the candidate, recheck the live JAR/config/menu, preserve subsequent edits, replace only the authorized plugin artifact, and change only each product's instruction to “Tap to review 1. No charge yet.” Keep slot 31/basic and slot 34/premium, prices, and commands unless a newly inspected conflict requires a separately reviewed change. Keep the active config unchanged when its effective values still match. Do not apply the older initial-integration steps below over a current live menu.
+The installed 0.1.3 delta is the exact tested plugin artifact and the two reviewed instruction lines. For future changes, freshly inspect live JAR/config/menu and preserve subsequent edits. Keep slot 31/basic and slot 34/premium, prices, and commands unless a newly inspected conflict requires a separately reviewed change. Keep the active config unchanged when its effective values still match. Do not apply the older initial-integration steps below over a current live menu.
 
 A provider-reported full stopped-instance backup completed October 13 at 23:39:15 UTC, and Restore was exposed afterward. No restore or archive-integrity test was performed. Recheck that a backup still covers any subsequent gameplay/economy activity before rollout; the earlier 0.1.2 backup-attempt failure remains historical.
 

@@ -1,6 +1,6 @@
 # ExcelDeathProtection: two-tier specification
 
-**Version 0.1.3 source candidate, October 13, 2026. Installation and real-client acceptance are separate gates.** Built from the installed 0.1.2 implementation (source identity `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`); 0.1.2 remains the last verified installed version at 23:40:51 UTC. Historical deployment checks are in [0.1.2 installation evidence](docs/INSTALLATION-0.1.2.md); they are not acceptance of the candidate review UI. [0.1.3 evidence](docs/VERIFICATION-RESULTS-0.1.3.md) records automated coverage and current operations separately.
+**Version 0.1.3 installed October 13, 2026; loaded version verified at 23:51:04 UTC.** Source commit `18dd40ae73e1a5a01bb99f5c5f8afb2969c466cd` publishes the exact tested implementation, built from installed 0.1.2 source identity `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`. Later documentation commits do not rebuild or change that artifact. [0.1.3 installation evidence](docs/INSTALLATION-0.1.3.md) is separate from [automated coverage](docs/VERIFICATION-RESULTS-0.1.3.md), [0.1.2 history](docs/INSTALLATION-0.1.2.md), and pending actual Java/phone/purchase/gameplay acceptance.
 
 ## Product contract
 
@@ -85,7 +85,7 @@ Operator review must correlate the player UUID, product, quoted amount, transact
 
 ## Shop integration boundaries
 
-The last verified October 13 0.1.2 menu uses verified slot 31 for basic and slot 34 for premium, with one tier-aware plugin command for each left/right click route. Its exact checksum and preservation checks are in [installation evidence](docs/INSTALLATION-0.1.2.md). The owner reported both 0.1.2 entries look good on his phone and accepted single-item purchasing without a quantity dialog. Exact-shortfall visibility motivated the candidate review; all 0.1.3 Java and phone review checks remain pending.
+The installed October 13 0.1.3 menu retains verified slot 31 for basic and slot 34 for premium, with one tier-aware plugin command for each left/right click route. Its exact checksum and preservation checks are in [0.1.3 installation evidence](docs/INSTALLATION-0.1.3.md). The two instructions now say “Tap to review 1. No charge yet.” The owner reported both 0.1.2 entries look good on his phone and accepted single-item purchasing without a quantity dialog. Exact-shortfall visibility motivated the candidate review; all 0.1.3 Java and phone review checks remain pending.
 
 The older repository `SpawnShop-DeluxeMenus/spawnshop.yml` and manual `make_spawnshop.py` generator remain unchanged. Regeneration can overwrite the hand-integrated choices. Resolve that maintenance gap in a separately scoped update; do not substitute the older repository menu for the live one. The supplied unassigned template is not a ready-to-load menu. No menu `[takemoney]` command belongs to either product.
 

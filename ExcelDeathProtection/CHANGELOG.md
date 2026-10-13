@@ -1,8 +1,8 @@
 # ExcelDeathProtection changelog
 
-## 0.1.3 — one-item review source candidate, October 13, 2026
+## 0.1.3 — one-item review, installed October 13, 2026
 
-**Candidate source; installation is a separate gate. 0.1.2 remains the last verified installed version at 23:40:51 UTC. PR #13 remains draft and unmerged. All 0.1.3 Java, Bedrock-phone, live-purchase, and gameplay acceptance checks are pending.**
+**Installed from the exact tested artifact; loaded version verified at 23:51:04 UTC.** Source identity: `18dd40ae73e1a5a01bb99f5c5f8afb2969c466cd`. PR #13 remains draft and unmerged. All 0.1.3 Java, Bedrock-phone, live-purchase, and gameplay acceptance checks remain pending. [Installation evidence](docs/INSTALLATION-0.1.3.md) separates the recorded server/file checks from player acceptance.
 
 - Every shop tap/buy command opens a quantity-1 native review with price, balance, projected remainder or exact shortfall, Confirm and Back.
 - No purchase on opening, repeated buy commands, refresh, Back or close. Insufficient/invalid/expired reviews cannot charge; they can be refreshed.

@@ -1,6 +1,6 @@
 # Two-tier verification checklist
 
-**0.1.3 source candidate; 0.1.2 is the last verified installed version at 23:40:51 UTC. All real Java, Bedrock-phone, live-purchase, and gameplay acceptance below remains pending.** [Candidate evidence](VERIFICATION-RESULTS-0.1.3.md) separates automated results and current operations from [0.1.2 installation history](INSTALLATION-0.1.2.md). Checked evidence items below are narrowly scoped; unchecked real-client/provider cases have not passed merely because startup or synthetic tests passed.
+**0.1.3 installed October 13, 2026; loaded version verified at 23:51:04 UTC. All real Java, Bedrock-phone, live-purchase, and gameplay acceptance below remains pending.** [Installation evidence](INSTALLATION-0.1.3.md), [automated results](VERIFICATION-RESULTS-0.1.3.md), and [0.1.2 history](INSTALLATION-0.1.2.md) are separate. Checked evidence items below are narrowly scoped; unchecked real-client/provider cases have not passed merely because startup or synthetic tests passed.
 
 ## Evidence and release gates
 
@@ -10,7 +10,7 @@
 - [x] Record unchanged dependency set, packaged 0.1.3 metadata/prices, Java-21 class targets, and absence of test/fixture classes.
 - [x] Record later provider-reported full stopped-instance backup completion at 23:39:15 UTC and exposed Restore option. This is separate from the unsuccessful earlier 0.1.2 rollout backup attempt.
 - [ ] Establish recovery integrity: no restore or archive-integrity/manifest test has been performed. Recheck that the selected recovery point covers later gameplay/economy activity before changing the installation.
-- [ ] Verify a separately authorized 0.1.3 installation: loaded version, artifact hash, current live config/menu, economy provider, and relevant logs. Source publication is not deployment evidence.
+- [x] Record separately authorized 0.1.3 installation: loaded version at 23:51:04 UTC, exact active artifact hash, unchanged config/prices, reviewed menu delta/hash, provider, menu registration, unchanged empty journal, and read-only health/log checks in [installation evidence](INSTALLATION-0.1.3.md). These checks do not establish player/provider acceptance.
 - [ ] Obtain separate authorization before test purchases or any real-balance/playerdata correction.
 - [ ] Reconcile the historical menu/generator with the live hand-integrated entries in a separately scoped update before future regeneration.
 - [ ] Verify candidate exact-shortfall feedback on an actual phone; the reported 0.1.2 concern is not closed by automated checks.
@@ -103,10 +103,10 @@ Use isolated test data and controlled interruption points, never an unapproved e
 
 ## Menu integration and final acceptance
 
-- [ ] Freshly inspect the live menu before 0.1.3 rollout, preserving recorded slots 31/34, all unrelated products/settings and any later edits. The historical repository menu/generator remains an overwrite risk.
-- [ ] Change only the two reviewed instructions to “Tap to review 1. No charge yet.” Do not load the unassigned template as a complete menu.
-- [ ] Reverify names, prices, activation wording, XP disclosure, premium benefits including land mining, and matching effective config.
-- [ ] Reverify each click route calls exactly one tier-aware buy command with no independent withdrawal/delivery or additional commands dismissing the review.
+- [x] Record the 0.1.3 live menu hash matching the reviewed two-line delta, preserving slots 31/34, all 20 unrelated products and non-item settings. The historical repository menu/generator remains an overwrite risk; future changes need a fresh live read.
+- [x] Install the two reviewed instructions “Tap to review 1. No charge yet.” and recheck the exact menu hash after startup. The unassigned template is not a complete loadable menu.
+- [x] Preserve reviewed names, prices, activation wording, XP disclosure and premium benefits including land mining; recheck unchanged active config hash and startup prices. These are file/server checks, not visual acceptance.
+- [x] Preserve the reviewed one-command-per-route menu, with no independent withdrawal/delivery or added commands dismissing the review, as established by the installed exact menu hash. Actual client/DeluxeMenus behavior remains pending.
 - [ ] Verify confirmation visibility while the shop is open, including Bedrock-mobile tap behavior, Back, close, expiry/refresh, price/funds changes, repeated commands and rejected inventory actions.
 - [ ] Confirm the deployed player-facing guide matches the installed implementation only after publication is authorized.
 - [ ] Record remaining failures/blocked cases. Do not call the feature live-ready until the required gates are satisfied.

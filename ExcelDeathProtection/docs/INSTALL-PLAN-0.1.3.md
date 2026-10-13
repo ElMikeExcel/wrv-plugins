@@ -1,8 +1,8 @@
 # ExcelDeathProtection 0.1.3: rollout plan and verification gates
 
-This source candidate and its tested artifact are separate from a verified server installation. Version 0.1.2 is the last verified installed version at October 13, 2026, 23:40:51 UTC. Follow the owner's separately granted rollout authorization; this document grants none. Actual Java and Bedrock-phone acceptance and any real-balance test purchase are separate gates.
+**The authorized 0.1.3 rollout is recorded separately in [installation evidence](INSTALLATION-0.1.3.md), with loaded version verified October 13, 2026, at 23:51:04 UTC.** This retained plan describes the narrow rollout and future verification constraints; it does not grant fresh authorization. All real Java, Bedrock-phone, live-purchase, and gameplay acceptance remains pending.
 
-## Proposed scope
+## Retained rollout procedure
 
 1. Recheck the actual installed version, player activity, economy provider and exact active files. The prior observed 0.1.2 JAR SHA-256 was `24b8866853fea7f86c70d8d002a9200fbe36340a8d1284bf76f28bc8684af7f4`; the active menu was `be96b3bc272d9a1004e4b4364ed8eb903686727a7a5e365f0c4afc6c19ed947d`. These are historical observations, not permission to overwrite later changes.
 2. Coordinate approved maintenance and confirm an appropriate consistent recovery point. A full stopped-instance managed backup was provider-reported completed at 23:39:15 UTC, with Restore exposed afterward; it captures the instance after 0.1.2 installation. No restore or archive-integrity test was performed. Recheck any subsequent player/economy activity before relying on it. Preserve the earlier 0.1.2 failed-attempt history, and do not substitute a partial file copy for a consistent snapshot.
@@ -12,7 +12,7 @@ This source candidate and its tested artifact are separate from a verified serve
 6. Start normally; verify loaded version 0.1.3, JAR/menu hashes, configured prices $15,000/$30,000, Vault/Essentials provider, menu registration, player health and relevant logs. No global reload.
 7. Separately verify real Java and Bedrock phone review appearance, balance/shortfall readability, delayed inventory transition, expiry, Back into DeluxeMenus `/shop`, and no-charge open/close behavior. A separately approved controlled purchase is required to establish actual-provider transaction/activation behavior. Synthetic fixture tests are not that approval or proof.
 
-## Candidate behavior
+## 0.1.3 behavior contract
 
 - Every tier-specific or legacy buy command opens a fixed-quantity-1 native inventory review. Repeated commands cannot confirm a purchase.
 - Opening, refreshing, Back and close make no payment or grant. A current enabled Confirm performs the existing journaled purchase path after all current checks.
@@ -22,8 +22,8 @@ This source candidate and its tested artifact are separate from a verified serve
 
 ## Rollback constraints
 
-This candidate does not change the entitlement or journal formats introduced by 0.1.2. Rollback still requires a consistent, authorized decision based on actual transactions and server evidence. Do not blindly downgrade to 0.1.1: it interprets new basic active records as premium and does not implement the current journal safety model. Never clear a safety lock simply to resume purchases.
+Version 0.1.3 does not change the entitlement or journal formats introduced by 0.1.2. Rollback still requires a consistent, authorized decision based on actual transactions and server evidence. Do not blindly downgrade to 0.1.1: it interprets new basic active records as premium and does not implement the current journal safety model. Never clear a safety lock simply to resume purchases.
 
 ## Remaining integration caveat
 
-The ordinary menu/generator source must eventually retain the two reviewed instruction lines. This source publication does not edit the live generator/menu, repository `SpawnShop-DeluxeMenus/spawnshop.yml` or `make_spawnshop.py`, website, or ExcelShops catalog. The tested companion YAML was based on the authoritative installed 0.1.2 menu snapshot, not a fresh live read. The [unassigned source template](../integration/spawnshop-death-protection.template.yml) is a review aid, not a loadable full menu. See [current evidence and operations](VERIFICATION-RESULTS-0.1.3.md).
+The ordinary menu/generator source must eventually retain the two reviewed instruction lines. The authorized live rollout changed the plugin JAR and two menu instruction lines; this documentation follow-up does not itself change server or website files. The live generator, repository `SpawnShop-DeluxeMenus/spawnshop.yml` and `make_spawnshop.py`, and ExcelShops catalog remain unchanged. The tested companion YAML was based on the authoritative installed 0.1.2 menu snapshot, not a fresh live read. The [unassigned source template](../integration/spawnshop-death-protection.template.yml) is a review aid, not a loadable full menu. See [current evidence and operations](VERIFICATION-RESULTS-0.1.3.md).
