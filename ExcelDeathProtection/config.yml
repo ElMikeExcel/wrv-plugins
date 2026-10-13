@@ -1,3 +1,4 @@
-# ExcelDeathProtection settings
-# Price of one Death Protection Potion at the Spawn Shop (in-game money).
-price: 15000.0
+# Candidate 0.1.2. In-game money; paid only after a matching second confirmation.
+# Old `price` no longer sets either product's price.
+basic-price: 15000.0
+premium-price: 30000.0

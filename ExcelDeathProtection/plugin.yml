@@ -1,17 +1,17 @@
 name: ExcelDeathProtection
-version: 0.1.1
+version: 0.1.2
 author: Argus
 main: com.winkreyes.exceldeathprotection.ExcelDeathProtection
 api-version: "1.21"
-description: One-use death protection potion. Drink it and your next death keeps your items (not your XP), once.
+description: "One-death item protection: instant basic service or drinkable premium potion. XP unchanged."
 depend: [Vault]
 softdepend: [DeluxeMenus]
 commands:
   deathprotection:
     aliases: [dp]
-    description: Death Protection Potion status, buying, and admin giving
-    usage: /deathprotection [status|buy|give <player> [amount]]
+    description: Death Protection status, purchases, and admin potion giving
+    usage: /deathprotection [status|buy basic|buy premium|give <player> [amount]]
 permissions:
   exceldeathprotection.admin:
-    description: Give Death Protection Potions and use the console buy form
+    description: Give premium potions and use console purchase forms
     default: op

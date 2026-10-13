@@ -1,407 +1,459 @@
 package com.winkreyes.exceldeathprotection;
 
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
+import net.milkbowl.vault.economy.EconomyResponse;
+import org.bukkit.*;
+import org.bukkit.boss.*;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+import org.bukkit.event.*;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.event.player.*;
+import org.bukkit.inventory.*;
+import org.bukkit.inventory.meta.*;
+import org.bukkit.persistence.*;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.potion.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.io.IOException;
+import java.util.*;
 
-/**
- * ExcelDeathProtection
- *
- * The Spawn Shop sells a Death Protection Potion (through the DeluxeMenus
- * console command hook, because ExcelShops delivers plain material items and
- * cannot hand out a custom potion). Drinking the potion activates a one-use
- * buff: the next time the player dies, they keep ALL of their items and the
- * buff is consumed. The death itself is NOT prevented and XP is NOT saved;
- * XP drops exactly as a normal death.
- *
- * While the buff is active it is shown as the vanilla Conduit Power status
- * effect (small HUD icon + listed in the inventory screen). Conduit Power is
- * used because it exists on BOTH Java and Bedrock: the original Luck icon
- * (0.1.0) is a Java-only effect that Bedrock cannot display at all, which
- * Mike caught in the Oct 13, 2026 phone test. Conduit Power grants
- * underwater breathing, clearer underwater vision and faster mining.
- * The mining boost also works on land. These benefits are disclosed in the guide.
- * The buff state itself is stored in the player's PersistentDataContainer,
- * so it survives relogs and restarts, and is re-applied by a watchdog.
- */
+/** One shared, persistent entitlement. Presentation never determines protection. */
 public class ExcelDeathProtection extends JavaPlugin implements Listener, CommandExecutor, TabCompleter {
-
-    private NamespacedKey potionKey;
-    private NamespacedKey activeKey;
+    public enum Tier { NONE, BASIC, PREMIUM }
+    private NamespacedKey potionKey, activeKey, tierKey, loreKey;
     private Economy economy;
-    private final Map<UUID, Long> pendingBuys = new HashMap<>();
-    private final Map<UUID, Boolean> usedProtection = new HashMap<>();
+    private PurchaseCoordinator purchases;
+    private final Map<UUID, Player> purchasePlayers = new HashMap<>();
+    private final Map<UUID, BossBar> basicBars = new HashMap<>();
+    private final Set<UUID> usedProtection = new HashSet<>();
+    private final Set<PlayerDeathEvent> pendingDeaths = Collections.newSetFromMap(new IdentityHashMap<>());
+    // Pending consume is finalized after every cancellable listener has run.
+    private final Map<UUID, PlayerItemConsumeEvent> pendingConsumes = new HashMap<>();
+    private static final int LORE_VERSION = 2;
+    private static final String BASIC_BAR = "Inventory protected: 1 death";
 
-    private static final long CONFIRM_WINDOW_MS = 20_000L;
-
-    @Override
-    public void onEnable() {
+    @Override public void onEnable() {
         saveDefaultConfig();
         potionKey = new NamespacedKey(this, "potion");
         activeKey = new NamespacedKey(this, "active");
-
-        if (!setupEconomy()) {
-            getLogger().severe("Vault economy not found. The buy command is disabled; give/status still work.");
-        }
-
+        tierKey = new NamespacedKey(this, "tier");
+        loreKey = new NamespacedKey(this, "lore_version");
+        RegisteredServiceProvider<Economy> provider = getServer().getServicesManager().getRegistration(Economy.class);
+        economy = provider == null ? null : provider.getProvider();
+        if (economy == null) getLogger().warning("Vault economy unavailable; purchases disabled.");
+        if (getConfig().contains("price")) getLogger().warning("Legacy price is ignored. Use basic-price and premium-price; defaults are 15000 and 30000.");
+        initializePurchases();
         getServer().getPluginManager().registerEvents(this, this);
-        if (getCommand("deathprotection") != null) {
-            getCommand("deathprotection").setExecutor(this);
-            getCommand("deathprotection").setTabCompleter(this);
-        }
-
-        // Watchdog: keep the Conduit Power indicator present while the buff is active
-        // (milk, /effect clear and relogs all remove effects; the buff flag in
-        // the player's data is the source of truth).
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                for (Player player : Bukkit.getOnlinePlayers()) {
-                    if (isProtected(player) && !player.hasPotionEffect(PotionEffectType.CONDUIT_POWER)) {
-                        applyIndicator(player);
-                    }
-                }
-            }
-        }.runTaskTimer(this, 100L, 100L);
-
-        getLogger().info("ExcelDeathProtection enabled. Potion price: $" + money(price()));
+        Objects.requireNonNull(getCommand("deathprotection")).setExecutor(this);
+        getCommand("deathprotection").setTabCompleter(this);
+        for (Player player : Bukkit.getOnlinePlayers()) refreshPlayer(player);
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            for (Player player : Bukkit.getOnlinePlayers()) refreshPlayer(player);
+        }, 100L, 100L);
+        getLogger().info("ExcelDeathProtection 0.1.2: basic $" + money(price(PurchaseCoordinator.Product.BASIC))
+                + ", premium $" + money(price(PurchaseCoordinator.Product.PREMIUM)));
     }
 
-    private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) {
-            return false;
-        }
-        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
-            return false;
-        }
-        economy = rsp.getProvider();
-        return economy != null;
+    @Override public void onDisable() {
+        basicBars.values().forEach(BossBar::removeAll);
+        basicBars.clear();
+        pendingConsumes.clear();
+        usedProtection.clear();
+        pendingDeaths.clear();
+        // Do not strip effects belonging to a natural conduit or another plugin.
+        // Premium protection remains persisted; normal death removes vanilla effects.
     }
 
-    private double price() {
-        return getConfig().getDouble("price", 15000.0);
-    }
-
-    private String money(double amount) {
-        return String.format("%,.2f", amount);
-    }
-
-    // ------------------------------------------------------------------
-    // Buff state
-    // ------------------------------------------------------------------
-
-    public boolean isProtected(Player player) {
+    public Tier getTier(Player player) {
         PersistentDataContainer data = player.getPersistentDataContainer();
-        return data.has(activeKey, PersistentDataType.BYTE)
-                && data.get(activeKey, PersistentDataType.BYTE) == (byte) 1;
+        if (!data.has(activeKey, PersistentDataType.BYTE)
+                || !Byte.valueOf((byte) 1).equals(data.get(activeKey, PersistentDataType.BYTE))) return Tier.NONE;
+        // Every historical active=1 purchase was premium. Unknown future/malformed tier
+        // also preserves the purchase's premium entitlement rather than downgrading it.
+        return data.has(tierKey, PersistentDataType.STRING)
+                && "BASIC".equals(data.get(tierKey, PersistentDataType.STRING)) ? Tier.BASIC : Tier.PREMIUM;
     }
+    public boolean isProtected(Player player) { return getTier(player) != Tier.NONE; }
 
-    private void setProtected(Player player, boolean active) {
-        if (active) {
-            player.getPersistentDataContainer().set(activeKey, PersistentDataType.BYTE, (byte) 1);
-            applyIndicator(player);
+    private void setTier(Player player, Tier tier) {
+        PersistentDataContainer data = player.getPersistentDataContainer();
+        if (tier == Tier.NONE) {
+            data.remove(activeKey); data.remove(tierKey);
         } else {
-            player.getPersistentDataContainer().remove(activeKey);
-            player.removePotionEffect(PotionEffectType.CONDUIT_POWER);
-            player.removePotionEffect(PotionEffectType.LUCK);
+            data.set(activeKey, PersistentDataType.BYTE, (byte) 1);
+            data.set(tierKey, PersistentDataType.STRING, tier.name());
         }
     }
-
-    private void applyIndicator(Player player) {
-        // Conduit Power: underwater breathing/vision and faster mining (also on land).
-        player.removePotionEffect(PotionEffectType.LUCK);
-        player.addPotionEffect(new PotionEffect(
-                PotionEffectType.CONDUIT_POWER,
-                PotionEffect.INFINITE_DURATION,
-                0,      // amplifier
-                true,   // ambient
-                false,  // no particles
-                true)); // show icon
+    private void refreshPlayer(Player player) {
+        if (!player.isOnline()) return;
+        refreshPresentation(player);
+        refreshPotionLore(player);
     }
-
-    // ------------------------------------------------------------------
-    // The potion item
-    // ------------------------------------------------------------------
+    private void refreshPresentation(Player player) {
+        Tier tier = getTier(player);
+        if (tier == Tier.BASIC) {
+            BossBar bar = basicBars.computeIfAbsent(player.getUniqueId(), id ->
+                    Bukkit.createBossBar(BASIC_BAR, BarColor.GREEN, BarStyle.SOLID));
+            if (!bar.getPlayers().contains(player)) bar.addPlayer(player);
+            bar.setVisible(true);
+        } else hideBar(player);
+        if (tier == Tier.PREMIUM && !player.hasPotionEffect(PotionEffectType.CONDUIT_POWER)) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.CONDUIT_POWER,
+                    PotionEffect.INFINITE_DURATION, 0, true, false, true));
+        }
+        // No unconditional removePotionEffect: the old version recorded no ownership,
+        // and Bukkit cannot reliably distinguish another plugin's identical effect.
+    }
+    private void hideBar(Player player) {
+        BossBar bar = basicBars.remove(player.getUniqueId());
+        if (bar != null) bar.removeAll();
+    }
 
     public ItemStack createPotion(int amount) {
-        ItemStack potion = new ItemStack(Material.POTION, amount);
-        ItemMeta meta = potion.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName(ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Death Protection Potion");
-            meta.setLore(Arrays.asList(
-                    ChatColor.GRAY + "Drink to activate " + ChatColor.WHITE + "\u2620\u2714 Items protected" + ChatColor.GRAY + ".",
-                    ChatColor.GRAY + "If you die while it is active, you",
-                    ChatColor.GRAY + "keep all your items " + ChatColor.WHITE + "once" + ChatColor.GRAY + ".",
-                    ChatColor.RED + "Does NOT save your XP levels.",
-                    ChatColor.AQUA + "While active: Conduit Power. Breathe,",
-                    ChatColor.AQUA + "see and dig faster underwater.",
-                    ChatColor.DARK_GRAY + "One use. Stays active until it saves you."));
-            meta.setEnchantmentGlintOverride(true);
-            meta.getPersistentDataContainer().set(potionKey, PersistentDataType.BYTE, (byte) 1);
-            if (meta instanceof PotionMeta) {
-                ((PotionMeta) meta).setColor(Color.fromRGB(0x7D, 0x3C, 0x98));
-            }
-            potion.setItemMeta(meta);
+        if (amount < 1 || amount > 64) throw new IllegalArgumentException("amount must be 1..64");
+        ItemStack item = new ItemStack(Material.POTION, amount);
+        ItemMeta meta = Objects.requireNonNull(item.getItemMeta());
+        meta.getPersistentDataContainer().set(potionKey, PersistentDataType.BYTE, (byte) 1);
+        meta.setEnchantmentGlintOverride(true);
+        if (meta instanceof PotionMeta potion) potion.setColor(Color.fromRGB(0x7D, 0x3C, 0x98));
+        updatePotionText(meta);
+        item.setItemMeta(meta);
+        return item;
+    }
+    public boolean isProtectionPotion(ItemStack item) {
+        return item != null && item.getType() == Material.POTION && item.hasItemMeta()
+                && item.getItemMeta().getPersistentDataContainer().has(potionKey, PersistentDataType.BYTE);
+    }
+    private void updatePotionText(ItemMeta meta) {
+        String oldName = meta.hasDisplayName() ? ChatColor.stripColor(meta.getDisplayName()) : "";
+        if (oldName.isEmpty() || oldName.equals("Death Protection Potion") || oldName.equals("+Death Protection Potion"))
+            meta.setDisplayName(ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "+Death Protection Potion");
+        meta.setLore(Arrays.asList(
+                ChatColor.GRAY + "Drink to protect your items for one death.",
+                ChatColor.GRAY + "You still die and respawn normally.",
+                ChatColor.RED + "Does NOT save your XP levels.",
+                ChatColor.AQUA + "While active: Conduit Power gives",
+                ChatColor.AQUA + "underwater breathing and clearer vision,",
+                ChatColor.AQUA + "plus faster mining (including on land).",
+                ChatColor.DARK_GRAY + "One active protection. A second drink is blocked.",
+                ChatColor.DARK_GRAY + "Existing potions keep their premium benefits."));
+        meta.getPersistentDataContainer().set(loreKey, PersistentDataType.INTEGER, LORE_VERSION);
+    }
+    private void refreshPotionLore(Player player) {
+        PlayerInventory inv = player.getInventory();
+        for (int slot = 0; slot < inv.getSize(); slot++) {
+            ItemStack item = inv.getItem(slot);
+            if (!isProtectionPotion(item)) continue;
+            ItemMeta meta = item.getItemMeta();
+            if (meta.getPersistentDataContainer().has(loreKey, PersistentDataType.INTEGER)
+                    && Integer.valueOf(LORE_VERSION).equals(meta.getPersistentDataContainer().get(loreKey, PersistentDataType.INTEGER))) continue;
+            ItemStack updated = item.clone();
+            updatePotionText(meta); updated.setItemMeta(meta); inv.setItem(slot, updated);
         }
-        return potion;
     }
 
-    private boolean isProtectionPotion(ItemStack item) {
-        if (item == null || item.getType() != Material.POTION || !item.hasItemMeta()) {
-            return false;
-        }
-        ItemMeta meta = item.getItemMeta();
-        return meta != null
-                && meta.getPersistentDataContainer().has(potionKey, PersistentDataType.BYTE);
-    }
-
-    // ------------------------------------------------------------------
-    // Events
-    // ------------------------------------------------------------------
-
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onConsume(PlayerItemConsumeEvent event) {
-        if (!isProtectionPotion(event.getItem())) {
-            return;
-        }
+        if (!isProtectionPotion(event.getItem())) return;
         Player player = event.getPlayer();
-        if (isProtected(player)) {
-            // Never waste a potion: protection is already active.
+        UUID id = player.getUniqueId();
+        if (isProtected(player) || pendingConsumes.containsKey(id)) {
             event.setCancelled(true);
-            player.sendMessage(ChatColor.YELLOW + "\u2620\u2714 Items protected is already active. This potion was not used.");
+            player.sendMessage(ChatColor.YELLOW + "Protection is already active. This potion was not used.");
             return;
         }
-        setProtected(player, true);
-        player.sendMessage(ChatColor.GREEN + "\u2620\u2714 Items protected is now ACTIVE.");
-        player.sendMessage(ChatColor.GRAY + "If you die, you keep your items once. " + ChatColor.RED + "Your XP is not saved.");
-        player.sendMessage(ChatColor.DARK_GRAY + "Look for the blue shell (Conduit Power) icon: while you see it, you are protected.");
-        player.sendMessage(ChatColor.DARK_GRAY + "While it is on, you also breathe, see and dig faster underwater.");
+        // Activate during this event so lethal damage immediately after drinking is
+        // protected. At MONITOR, reverse the tentative change if another listener
+        // cancelled the drink. Only finalized activation gets an effect or save.
+        pendingConsumes.put(id, event);
+        setTier(player, Tier.PREMIUM);
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void finishConsume(PlayerItemConsumeEvent event) {
+        Player player = event.getPlayer();
+        if (pendingConsumes.get(player.getUniqueId()) != event) return;
+        pendingConsumes.remove(player.getUniqueId());
+        if (event.isCancelled() || !isProtectionPotion(event.getItem())) { setTier(player, Tier.NONE); return; }
+        // Vanilla decrements the consumed bottle after this event returns. Saving
+        // inside the event would persist both the bottle and active protection.
+        Bukkit.getScheduler().runTask(this, () -> {
+            try { player.saveData(); }
+            catch (RuntimeException ex) {
+                getLogger().severe("Premium activation persistence uncertain for " + player.getUniqueId() + ": " + ex);
+                player.sendMessage(ChatColor.RED + "Saving protection failed. Tell an admin before logging out.");
+            }
+        });
+        refreshPresentation(player);
+        player.sendMessage(ChatColor.GREEN + "+Death Protection is ACTIVE. Your next death keeps your items once.");
+        player.sendMessage(ChatColor.RED + "XP is not saved. " + ChatColor.AQUA + "Conduit: underwater breathing/vision and faster mining, including on land.");
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
-        if (!isProtected(player)) {
-            return;
-        }
-        // Save the items only. XP handling is left exactly as vanilla:
-        // keepLevel stays false and dropped XP is untouched, so levels are
-        // lost and XP orbs drop like a normal death.
+        if (!isProtected(player)) return;
         event.setKeepInventory(true);
         event.getDrops().clear();
-        setProtected(player, false);
-        usedProtection.put(player.getUniqueId(), Boolean.TRUE);
+        pendingDeaths.add(event);
     }
-
-    @EventHandler
-    public void onRespawn(PlayerRespawnEvent event) {
-        if (usedProtection.remove(event.getPlayer().getUniqueId()) != null) {
-            Player player = event.getPlayer();
-            player.sendMessage(ChatColor.GOLD + "\u2620\u2714 Death protection used: your items were kept.");
-            player.sendMessage(ChatColor.GRAY + "Your XP dropped as normal. Protection is now off.");
-        }
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void finishDeath(PlayerDeathEvent event) {
+        if (!pendingDeaths.remove(event) || event.isCancelled()) return;
+        Player player = event.getEntity();
+        // Do not alter keepLevel, droppedExp, newExp/newLevel or actual death/respawn.
+        setTier(player, Tier.NONE);
+        hideBar(player);
+        pendingConsumes.remove(player.getUniqueId());
+        usedProtection.add(player.getUniqueId());
+        // Player data is saved by the normal death/respawn flow. Saving an alive
+        // pre-death snapshot here would create a misleading rollback boundary.
     }
-
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
+    @EventHandler public void onRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
-        if (isProtected(player) && !player.hasPotionEffect(PotionEffectType.CONDUIT_POWER)) {
-            applyIndicator(player);
+        hideBar(player);
+        if (usedProtection.remove(player.getUniqueId())) {
+            player.sendMessage(ChatColor.GOLD + "Death protection used: your items were kept. Protection is now off.");
+            player.sendMessage(ChatColor.GRAY + "XP follows the server's normal death rules.");
         }
     }
+    @EventHandler public void onJoin(PlayerJoinEvent event) { refreshPlayer(event.getPlayer()); }
+    @EventHandler public void onQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        hideBar(player); pendingConsumes.remove(player.getUniqueId()); usedProtection.remove(player.getUniqueId());
+        if (purchases != null) purchases.clearConfirmation(player.getUniqueId());
+    }
 
-    // ------------------------------------------------------------------
-    // Commands
-    // ------------------------------------------------------------------
+    private double price(PurchaseCoordinator.Product product) {
+        return getConfig().getDouble(product == PurchaseCoordinator.Product.BASIC ? "basic-price" : "premium-price",
+                product == PurchaseCoordinator.Product.BASIC ? 15000.0 : 30000.0);
+    }
+    private static String money(double amount) { return String.format(Locale.US, "%,.2f", amount); }
+    private static String productName(PurchaseCoordinator.Product product) {
+        return product == PurchaseCoordinator.Product.BASIC ? "Death Protection" : "+Death Protection Potion";
+    }
+    private void message(Player p, ChatColor color, String title, String detail) {
+        p.sendMessage(color + title + ". " + ChatColor.WHITE + detail);
+        p.sendTitle(color + title, ChatColor.WHITE + detail, 5, 50, 10);
+    }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length == 0) {
-            sendUsage(sender);
-            return true;
-        }
-        switch (args[0].toLowerCase()) {
+    @Override public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!Bukkit.isPrimaryThread()) { sender.sendMessage("This command must run on the server thread."); return true; }
+        if (args.length == 0) { usage(sender); return true; }
+        switch (args[0].toLowerCase(Locale.ROOT)) {
             case "status":
-                return handleStatus(sender);
-            case "give":
-                return handleGive(sender, args);
-            case "buy":
-                return handleBuy(sender, args);
-            default:
-                sendUsage(sender);
+                if (sender instanceof Player player) {
+                    Tier tier = getTier(player);
+                    player.sendMessage(ChatColor.GOLD + "Death Protection: " + tier + ". " +
+                            (tier == Tier.NONE ? "Basic $" + money(price(PurchaseCoordinator.Product.BASIC)) + "; premium $" + money(price(PurchaseCoordinator.Product.PREMIUM))
+                                    : "Your next death keeps your items once; XP is not saved."));
+                } else sender.sendMessage("Only players have a protection status.");
                 return true;
+            case "buy": return handleBuy(sender, args);
+            case "give": return handleGive(sender, args);
+            default: usage(sender); return true;
         }
     }
-
-    private void sendUsage(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + "Death Protection: " + ChatColor.WHITE
-                + "/deathprotection status | buy" 
-                + (sender.hasPermission("exceldeathprotection.admin") ? " | give <player> [amount]" : ""));
+    private void usage(CommandSender sender) {
+        sender.sendMessage("/dp status | /dp buy basic | /dp buy premium" +
+                (sender.hasPermission("exceldeathprotection.admin") ? " | /dp give <player> [amount]" : ""));
     }
-
-    private boolean handleStatus(CommandSender sender) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("Only players have a protection status.");
-            return true;
-        }
-        Player player = (Player) sender;
-        if (isProtected(player)) {
-            player.sendMessage(ChatColor.GREEN + "\u2620\u2714 Items protected: ACTIVE. Your next death keeps your items (XP not saved).");
-        } else {
-            player.sendMessage(ChatColor.GRAY + "\u2620\u2714 Items protected: not active. The Spawn Shop sells the potion for $" + money(price()) + ".");
-        }
-        return true;
-    }
-
-    private boolean handleGive(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("exceldeathprotection.admin")) {
-            sender.sendMessage(ChatColor.RED + "You do not have permission to do that.");
-            return true;
-        }
-        if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Usage: /deathprotection give <player> [amount]");
-            return true;
-        }
-        Player target = Bukkit.getPlayerExact(args[1]);
-        if (target == null) {
-            sender.sendMessage(ChatColor.RED + "Player not found or not online: " + args[1]);
-            return true;
-        }
-        int amount = 1;
-        if (args.length >= 3) {
-            try {
-                amount = Math.max(1, Math.min(64, Integer.parseInt(args[2])));
-            } catch (NumberFormatException ignored) {
-                sender.sendMessage(ChatColor.RED + "Amount must be a number.");
-                return true;
-            }
-        }
-        target.getInventory().addItem(createPotion(amount));
-        sender.sendMessage(ChatColor.GREEN + "Gave " + amount + " Death Protection Potion(s) to " + target.getName() + ".");
-        target.sendMessage(ChatColor.GREEN + "You received a Death Protection Potion. Drink it to activate \u2620\u2714 Items protected.");
-        return true;
-    }
-
-    /**
-     * Buy flow used by the Spawn Shop menu (console: /deathprotection buy <player>)
-     * and by players directly (/deathprotection buy). Two-step confirm:
-     * the first run arms the purchase, a second run within 20 seconds completes it.
-     */
-    /**
-     * Big on-screen message for the buy flow. Chat alone is easy to miss
-     * behind the shop window on Bedrock (Mike's Oct 13 test), so every buy
-     * outcome also gets a title that renders over the menu.
-     */
-    private void showBuyTitle(Player player, String title, String subtitle) {
-        player.sendTitle(title, subtitle, 5, 50, 10);
-    }
-
     private boolean handleBuy(CommandSender sender, String[] args) {
+        PurchaseCoordinator.Product product = PurchaseCoordinator.Product.PREMIUM;
         Player buyer;
-        if (sender instanceof Player) {
-            buyer = (Player) sender;
+        if (sender instanceof Player player) {
+            buyer = player;
+            if (args.length > 2) { usage(sender); return true; }
+            if (args.length == 2) {
+                try { product = PurchaseCoordinator.Product.valueOf(args[1].toUpperCase(Locale.ROOT)); }
+                catch (IllegalArgumentException ex) { usage(sender); return true; }
+            }
         } else {
-            if (args.length < 2) {
-                sender.sendMessage("Console usage: /deathprotection buy <player>");
-                return true;
-            }
-            buyer = Bukkit.getPlayerExact(args[1]);
-            if (buyer == null) {
-                sender.sendMessage("Player not found or not online: " + args[1]);
-                return true;
-            }
+            if (!sender.hasPermission("exceldeathprotection.admin")) { sender.sendMessage("Permission denied."); return true; }
+            String name;
+            if (args.length == 2) name = args[1]; // historical menu command means premium
+            else if (args.length == 3) {
+                try { product = PurchaseCoordinator.Product.valueOf(args[1].toUpperCase(Locale.ROOT)); }
+                catch (IllegalArgumentException ex) { usage(sender); return true; }
+                name = args[2];
+            } else { sender.sendMessage("Console: deathprotection buy basic|premium <player>"); return true; }
+            buyer = Bukkit.getPlayerExact(name);
+            if (buyer == null) { sender.sendMessage("Player is not online: " + name); return true; }
         }
-
-        if (economy == null) {
-            buyer.sendMessage(ChatColor.RED + "The shop money system is not available right now.");
-            return true;
-        }
-
-        double cost = price();
-        UUID id = buyer.getUniqueId();
-        long now = System.currentTimeMillis();
-        Long armedAt = pendingBuys.get(id);
-        if (armedAt == null || now - armedAt > CONFIRM_WINDOW_MS) {
-            pendingBuys.put(id, now);
-            buyer.sendMessage(ChatColor.YELLOW + "Death Protection Potion: " + ChatColor.WHITE + "$" + money(cost) + ChatColor.YELLOW + ".");
-            buyer.sendMessage(ChatColor.YELLOW + "Tap Buy again within 20 seconds to confirm. " 
-                    + ChatColor.GRAY + "(Balance: $" + money(economy.getBalance(buyer)) + ")");
-            showBuyTitle(buyer,
-                    ChatColor.YELLOW + "Death Protection Potion",
-                    ChatColor.WHITE + "Tap Buy again within 20 seconds to confirm ($" + money(cost) + ")");
-            return true;
-        }
-        pendingBuys.remove(id);
-
-        double balance = economy.getBalance(buyer);
-        if (balance < cost) {
-            buyer.sendMessage(ChatColor.RED + "Not enough money. The potion costs $" + money(cost)
-                    + ", you have $" + money(balance) + " (short $" + money(cost - balance) + ").");
-            showBuyTitle(buyer,
-                    ChatColor.RED + "Not enough money",
-                    ChatColor.WHITE + "Potion costs $" + money(cost) + " (short $" + money(cost - balance) + ")");
-            return true;
-        }
-        if (!economy.withdrawPlayer(buyer, cost).transactionSuccess()) {
-            buyer.sendMessage(ChatColor.RED + "The purchase failed. You were not charged.");
-            return true;
-        }
-        buyer.getInventory().addItem(createPotion(1));
-        showBuyTitle(buyer,
-                ChatColor.GREEN + "Potion bought",
-                ChatColor.WHITE + "Drink it to activate \u2620\u2714 Items protected");
-        buyer.sendMessage(ChatColor.GREEN + "You bought a Death Protection Potion for $" + money(cost) + ".");
-        buyer.sendMessage(ChatColor.GRAY + "Balance left: $" + money(economy.getBalance(buyer)) + ". Drink the potion to activate \u2620\u2714 Items protected.");
+        performPurchase(buyer, product);
         return true;
     }
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        List<String> options = new ArrayList<>();
-        if (args.length == 1) {
-            options.add("status");
-            options.add("buy");
-            if (sender.hasPermission("exceldeathprotection.admin")) {
-                options.add("give");
-            }
-        } else if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                options.add(player.getName());
-            }
+    private boolean handleGive(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("exceldeathprotection.admin")) { sender.sendMessage("Permission denied."); return true; }
+        if (args.length < 2 || args.length > 3) { usage(sender); return true; }
+        Player target = Bukkit.getPlayerExact(args[1]);
+        if (target == null) { sender.sendMessage("Player not online."); return true; }
+        int amount = 1;
+        try { if (args.length == 3) amount = Integer.parseInt(args[2]); }
+        catch (NumberFormatException ex) { sender.sendMessage("Amount must be 1..64."); return true; }
+        if (amount < 1 || amount > 64) { sender.sendMessage("Amount must be 1..64."); return true; }
+        int given = 0;
+        for (int i = 0; i < amount && target.getInventory().firstEmpty() >= 0; i++) {
+            if (!target.getInventory().addItem(createPotion(1)).isEmpty()) break;
+            given++;
         }
-        return options;
+        target.saveData();
+        sender.sendMessage("Gave " + given + " premium potion(s) to " + target.getName() + "; " + (amount - given) + " not delivered (no space).");
+        return true;
+    }
+    @Override public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length == 1) return sender.hasPermission("exceldeathprotection.admin") ? List.of("status", "buy", "give") : List.of("status", "buy");
+        if (args.length == 2 && args[0].equalsIgnoreCase("buy")) return List.of("basic", "premium");
+        return List.of();
+    }
+
+    private void initializePurchases() {
+        try {
+            PurchaseJournal journal = new PurchaseJournal(getDataFolder().toPath().resolve("purchases.journal"));
+            purchases = new PurchaseCoordinator(new PurchaseCoordinator.Ports() {
+                @Override public PurchaseCoordinator.Eligibility check(UUID id, PurchaseCoordinator.Product product) {
+                    Player p = purchasePlayers.get(id);
+                    if (economy == null) return PurchaseCoordinator.Eligibility.UNAVAILABLE;
+                    if (p == null || !p.isOnline() || p.isDead()) return PurchaseCoordinator.Eligibility.OFFLINE;
+                    if (product == PurchaseCoordinator.Product.BASIC && isProtected(p)) return PurchaseCoordinator.Eligibility.ALREADY_ACTIVE;
+                    if (product == PurchaseCoordinator.Product.PREMIUM && !hasPotionSpace(p)) return PurchaseCoordinator.Eligibility.NO_SPACE;
+                    return PurchaseCoordinator.Eligibility.ELIGIBLE;
+                }
+                @Override public double balance(UUID id) { return economy.getBalance(purchasePlayers.get(id)); }
+                @Override public PurchaseCoordinator.MoneyResult withdraw(UUID id, double amount) {
+                    EconomyResponse r = economy.withdrawPlayer(purchasePlayers.get(id), amount);
+                    return r == null ? null : new PurchaseCoordinator.MoneyResult(r.transactionSuccess(), r.amount, r.balance);
+                }
+                @Override public PurchaseCoordinator.MoneyResult deposit(UUID id, double amount) {
+                    EconomyResponse r = economy.depositPlayer(purchasePlayers.get(id), amount);
+                    return r == null ? null : new PurchaseCoordinator.MoneyResult(r.transactionSuccess(), r.amount, r.balance);
+                }
+                @Override public PurchaseCoordinator.DeliveryOutcome deliver(UUID id, PurchaseCoordinator.Product product) {
+                    Player p = purchasePlayers.get(id);
+                    if (p == null || !p.isOnline() || p.isDead()) return PurchaseCoordinator.DeliveryOutcome.FAILED_ROLLED_BACK;
+                    return product == PurchaseCoordinator.Product.BASIC ? deliverBasic(p) : deliverPotion(p);
+                }
+            }, journal, System::currentTimeMillis, 20_000L, 1_000L);
+            if (!journal.unresolved().isEmpty()) getLogger().severe("Unresolved purchase journal entries: " + journal.unresolved().size()
+                    + ". Affected players are locked from purchases until manual reconciliation; do not automatically retry payment/refund.");
+        } catch (IOException | RuntimeException ex) {
+            purchases = null;
+            getLogger().severe("Purchase journal unavailable. Purchases disabled: " + ex);
+        }
+    }
+    private boolean hasPotionSpace(Player player) {
+        for (ItemStack item : player.getInventory().getStorageContents())
+            if (item == null || item.getType().isAir()) return true;
+        return false;
+    }
+    // SUCCESS below means the grant was observed in memory and saveData requested.
+    // Paper can swallow disk-save errors; its void API does not prove durability.
+    // Retain the purchase audit and use manual reconciliation after storage failure.
+    private PurchaseCoordinator.DeliveryOutcome deliverBasic(Player player) {
+        if (isProtected(player)) return PurchaseCoordinator.DeliveryOutcome.FAILED_ROLLED_BACK;
+        PersistentDataContainer data = player.getPersistentDataContainer();
+        byte[] before;
+        try { before = data.serializeToBytes(); }
+        catch (IOException | RuntimeException ex) { return PurchaseCoordinator.DeliveryOutcome.FAILED_ROLLED_BACK; }
+        try {
+            setTier(player, Tier.BASIC);
+            player.saveData();
+            if (getTier(player) != Tier.BASIC) throw new IllegalStateException("Basic entitlement verification failed");
+            return PurchaseCoordinator.DeliveryOutcome.SUCCESS;
+        } catch (RuntimeException ex) {
+            getLogger().warning("Basic grant failed for " + player.getUniqueId() + "; attempting rollback: " + ex);
+            try {
+                data.readFromBytes(before, true);
+                player.saveData();
+                if (getTier(player) == Tier.NONE) return PurchaseCoordinator.DeliveryOutcome.FAILED_ROLLED_BACK;
+            } catch (IOException | RuntimeException rollback) {
+                getLogger().severe("Basic rollback uncertain for " + player.getUniqueId() + ": " + rollback);
+            }
+            return PurchaseCoordinator.DeliveryOutcome.UNKNOWN;
+        }
+    }
+    private PurchaseCoordinator.DeliveryOutcome deliverPotion(Player player) {
+        if (!hasPotionSpace(player)) return PurchaseCoordinator.DeliveryOutcome.FAILED_ROLLED_BACK;
+        PlayerInventory inv = player.getInventory();
+        ItemStack[] before;
+        ItemStack potion;
+        int count;
+        try {
+            before = cloneItems(inv.getStorageContents());
+            potion = createPotion(1);
+            count = countSimilar(before, potion);
+        } catch (RuntimeException ex) { return PurchaseCoordinator.DeliveryOutcome.FAILED_ROLLED_BACK; }
+        try {
+            Map<Integer, ItemStack> leftover = inv.addItem(potion.clone());
+            if (leftover == null || !leftover.isEmpty() || countSimilar(inv.getStorageContents(), potion) != count + 1)
+                throw new IllegalStateException("Potion delivery verification failed");
+            player.saveData();
+            return PurchaseCoordinator.DeliveryOutcome.SUCCESS;
+        } catch (RuntimeException ex) {
+            getLogger().warning("Potion grant failed for " + player.getUniqueId() + "; attempting rollback: " + ex);
+            try {
+                inv.setStorageContents(cloneItems(before));
+                player.saveData();
+                if (Arrays.equals(before, inv.getStorageContents())) return PurchaseCoordinator.DeliveryOutcome.FAILED_ROLLED_BACK;
+            } catch (RuntimeException rollback) {
+                getLogger().severe("Potion rollback uncertain for " + player.getUniqueId() + ": " + rollback);
+            }
+            return PurchaseCoordinator.DeliveryOutcome.UNKNOWN;
+        }
+    }
+    private static ItemStack[] cloneItems(ItemStack[] source) {
+        ItemStack[] clone = new ItemStack[source.length];
+        for (int i = 0; i < source.length; i++) clone[i] = source[i] == null ? null : source[i].clone();
+        return clone;
+    }
+    private static int countSimilar(ItemStack[] contents, ItemStack wanted) {
+        int count = 0;
+        for (ItemStack item : contents) if (item != null && item.isSimilar(wanted)) count += item.getAmount();
+        return count;
+    }
+    private void performPurchase(Player buyer, PurchaseCoordinator.Product product) {
+        if (purchases == null || economy == null) {
+            message(buyer, ChatColor.RED, "Shop unavailable", "No purchase was started. Please try later.");
+            return;
+        }
+        UUID id = buyer.getUniqueId();
+        // Retain only the current synchronous caller, never an offline Player object.
+        if (purchasePlayers.putIfAbsent(id, buyer) != null) {
+            message(buyer, ChatColor.YELLOW, "Purchase in progress", "Wait for its result before trying again.");
+            return;
+        }
+        PurchaseCoordinator.Result result;
+        try { result = purchases.click(id, product, price(product)); }
+        finally { purchasePlayers.remove(id); }
+        switch (result.status()) {
+            case ARMED -> message(buyer, ChatColor.YELLOW, productName(product) + " $" + money(result.price()),
+                    "Tap again within 20s. Balance $" + money(result.balance()) + ".");
+            case PURCHASED -> {
+                try { refreshPresentation(buyer); }
+                catch (RuntimeException ex) { getLogger().warning("Presentation refresh failed after successful purchase: " + ex); }
+                message(buyer, ChatColor.GREEN, product == PurchaseCoordinator.Product.BASIC ? "Death Protection active" : "Premium potion bought",
+                        product == PurchaseCoordinator.Product.BASIC ? "Inventory protected for 1 death. XP not saved." : "Drink it to activate. XP not saved.");
+                buyer.sendMessage(ChatColor.GRAY + "Paid $" + money(result.price()) + "; balance $" + money(result.balance()) + ".");
+            }
+            case INELIGIBLE -> {
+                String detail = result.detail();
+                if (isProtected(buyer) && product == PurchaseCoordinator.Product.BASIC) detail = "Protection is already active; no charge.";
+                else if (product == PurchaseCoordinator.Product.PREMIUM && !hasPotionSpace(buyer)) detail = "Make an empty inventory slot first; no charge.";
+                else detail = "This purchase is unavailable right now; no charge.";
+                message(buyer, ChatColor.YELLOW, "Cannot buy", detail);
+            }
+            case INSUFFICIENT_FUNDS -> message(buyer, ChatColor.RED, "Not enough money",
+                    "Costs $" + money(result.price()) + "; short $" + money(Math.max(0, result.price() - result.balance())) + ".");
+            case DECLINED -> message(buyer, ChatColor.RED, "Payment declined", "The economy provider declined this purchase.");
+            case REFUNDED -> message(buyer, ChatColor.YELLOW, "Purchase refunded", "Delivery failed; $" + money(result.price()) + " was returned.");
+            case COOLDOWN, BUSY -> message(buyer, ChatColor.YELLOW, "Please wait", "Your last purchase is already being handled.");
+            case LOCKED -> {
+                getLogger().severe("Purchase needs manual reconciliation for " + id + ", transaction " + result.transactionId() + ": " + result.detail());
+                message(buyer, ChatColor.RED, "Purchase needs admin review", "Payment or delivery is uncertain. Do not retry; tell an admin.");
+            }
+            case UNAVAILABLE, INVALID_PRICE -> message(buyer, ChatColor.RED, "Shop unavailable", "No purchase can be completed right now; tell an admin.");
+        }
     }
 }
