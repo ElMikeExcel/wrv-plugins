@@ -6,7 +6,7 @@ A one-use death protection potion. The Spawn Shop sells the potion for **$15,000
 
 - The death itself is **not** prevented. You die and respawn as normal.
 - **XP is NOT saved.** Levels are lost and XP orbs drop exactly like a normal death. This is stated on the potion itself, in game messages, and in the player guide.
-- While the buff is active it shows as the vanilla **Conduit Power** status effect: a small blue shell icon beside the HUD, and it is listed inside the inventory screen, on Java and Bedrock alike. (0.1.0 used Luck, which Bedrock cannot display at all; Mike caught that in the Oct 13 phone test.) Conduit Power does nothing on land; underwater it lets you breathe, see clearly and dig faster while you are protected, and that benefit is disclosed on the potion itself and in the player guide. A watchdog re-applies the icon if something removes it (milk, relogs) while the buff is still active.
+- While the buff is active it shows as the vanilla **Conduit Power** status effect (underwater breathing, clearer underwater vision, and faster mining): a small blue shell icon beside the HUD, and it is listed inside the inventory screen, on Java and Bedrock alike. (0.1.0 used Luck, which Bedrock cannot display at all; Mike caught that in the Oct 13 phone test.) The effect stays active while you are protected, and its benefits are disclosed on the potion itself and in the player guide. The mining boost also works on land. A watchdog re-applies the icon if something removes it (milk, relogs) while the buff is still active.
 - Buff state is stored per player, so it survives logging out and server restarts.
 - Drinking a second potion while protected does nothing and does not consume the potion.
 - Items with Curse of Vanishing still vanish when you die (normal game rule).
@@ -34,4 +34,4 @@ Compiled with `javac` against the Paper API set used by the other Wink Reyes Val
 
 ## Status (Oct 13, 2026)
 
-0.1.0 was installed and Bedrock-tested by Mike on Oct 13: buy messages, drinking, /dp status, the death test (items kept, XP dropped, buff consumed) all passed; the Luck indicator does not display on Bedrock. 0.1.1 fixes the indicator (Conduit Power), adds on-screen buy titles, discloses the underwater benefit, and raises the price to $15,000 (Mike's call). Java player check still to come.
+0.1.0 was installed and Bedrock-tested by Mike on Oct 13: buy messages, drinking, /dp status, the death test (items kept, XP dropped, buff consumed) all passed; the Luck indicator does not display on Bedrock. 0.1.1 fixes the indicator (Conduit Power: underwater breathing, clearer underwater vision, and faster mining), adds on-screen buy titles, discloses the underwater benefit, and raises the price to $15,000 (Mike's call). Java player check still to come.

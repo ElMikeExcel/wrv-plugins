@@ -50,9 +50,9 @@ import java.util.UUID;
  * effect (small HUD icon + listed in the inventory screen). Conduit Power is
  * used because it exists on BOTH Java and Bedrock: the original Luck icon
  * (0.1.0) is a Java-only effect that Bedrock cannot display at all, which
- * Mike caught in the Oct 13, 2026 phone test. On land Conduit Power does
- * nothing; underwater it grants breathing, clearer vision and faster
- * digging, and that benefit is disclosed on the potion and in the guide.
+ * Mike caught in the Oct 13, 2026 phone test. Conduit Power grants
+ * underwater breathing, clearer underwater vision and faster mining.
+ * The mining boost also works on land. These benefits are disclosed in the guide.
  * The buff state itself is stored in the player's PersistentDataContainer,
  * so it survives relogs and restarts, and is re-applied by a watchdog.
  */
@@ -141,7 +141,7 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
     }
 
     private void applyIndicator(Player player) {
-        // Conduit Power: visible on Java and Bedrock, inert on land.
+        // Conduit Power: underwater breathing/vision and faster mining (also on land).
         player.removePotionEffect(PotionEffectType.LUCK);
         player.addPotionEffect(new PotionEffect(
                 PotionEffectType.CONDUIT_POWER,

@@ -10,7 +10,7 @@ Status: built and installed as 0.1.0 on Oct 13, 2026; revised to 0.1.1 the same 
 ## How players get it
 - A custom potion sold at the spawn shop (ExcelShops / Spawn Shop).
 - Drinking the potion activates the buff. The buff stays active until a death uses it (no timer planned; confirm at build time).
-- Potion price: $15,000 (Mike raised it from $10,000 on Oct 13, 2026 after the Conduit Power benefit was added). Note: that's above every current player balance (top is ~$6,481), so it's a save-up item nobody can buy yet.
+- Potion price: $15,000 (Mike raised it from $10,000 on Oct 13, 2026 after the Conduit Power benefits (underwater breathing, clearer underwater vision, and faster mining) were added). Note: that's above every current player balance (top is ~$6,481), so it's a save-up item nobody can buy yet.
 
 ## Indicator (how players know it's active)
 - The buff is a real status effect, so it shows as a small icon beside the HUD (like Speed/Strength) and is listed inside the inventory screen, on Java and Bedrock. Small and out of the way was Mike's requirement.
@@ -37,6 +37,6 @@ Status: built and installed as 0.1.0 on Oct 13, 2026; revised to 0.1.1 the same 
 
 - Custom status effects cannot be registered by a plugin at runtime, so the indicator borrows a vanilla effect (as the fallback above anticipated).
 - 0.1.0 used Luck. Mike's Bedrock phone test passed every mechanic (buy messages, drink, /dp status, death kept items, XP dropped, buff consumed) but showed NO indicator in the inventory screen: Luck is a Java-only effect and Bedrock cannot display it.
-- 0.1.1 switches the indicator to Conduit Power, which exists on both platforms and is inert on land. Its underwater benefits (breathing, clearer vision, faster digging while protected) are disclosed on the potion, in game messages, and in the player guide, per Mike's direction.
+- 0.1.1 switches the indicator to Conduit Power, Minecraft's effect for underwater breathing, clearer underwater vision, and faster mining. It exists on both platforms, and the mining boost also works on land. Its benefits while protected are disclosed on the potion, in game messages, and in the player guide, per Mike's direction.
 - 0.1.1 also adds big on-screen titles for the buy flow (arm / not enough money / bought), because chat sits behind the shop window on Bedrock. Mike confirmed the chat messages themselves are clear.
 - Price: $15,000 (Mike, Oct 13, 2026).
