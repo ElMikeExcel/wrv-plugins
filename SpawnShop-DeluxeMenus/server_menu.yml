@@ -30,15 +30,6 @@ items:
       - '&7See your skill levels'
     left_click_commands:
       - '[player] mcstats'
-  jobs:
-    material: GOLD_INGOT
-    slot: 13
-    display_name: '&a&lJobs & Money'
-    lore:
-      - '&7You earn money for playing'
-      - '&7/baltop shows the richest'
-    left_click_commands:
-      - '[player] jobs browse'
   info:
     material: BOOK
     slot: 15

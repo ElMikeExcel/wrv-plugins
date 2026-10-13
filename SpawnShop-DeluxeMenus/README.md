@@ -9,3 +9,14 @@ Generate the paired files with `python3 make_spawnshop.py [multiplier]`. Outputs
 The October 12 deployment replaced the old live menu. For any future approved deployment, the matching menu must also be replaced. Installing this plugin alone does not rewrite old immediate-purchase commands. Existing ChestShop signs and physical stock are not migrated.
 
 Current branded entry command: `/excelshop`; `/wrvshop` remains a compatibility alias. See the [exact ExcelShops deployment plan](../WRVShops/DEPLOYMENT.md). The repository catalog is not proof of current live prices: compare the live menu/catalog read-only before approving installation.
+
+## Server Menu shortcut cleanup
+
+On October 13, 2026, the separate Java `server_menu.yml` stopped showing the
+redundant **Jobs & Money** shortcut. Its `jobs browse` action was removed; the
+Spawn Shop shortcut, shop balance display, actual job earnings and enrollment
+were unchanged. Java's saved menu was reread and `dm reload server_menu`
+succeeded at 02:22:39 UTC. Existing menu slots remain unchanged.
+
+The native Bedrock change is a separate, prepared plugin hotfix and is not yet
+installed. See [the exact menu-only candidate and checks](../BedrockMenu/MENU_REMOVAL.md).
