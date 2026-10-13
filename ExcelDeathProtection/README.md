@@ -2,7 +2,7 @@
 
 Created for Wink Reyes Valley.
 
-**0.1.2 installed October 13, 2026.** The installed JAR matches the tested artifact from draft PR #13 source commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`. Loaded version, both configured prices, menu registration, and read-only server health were verified. **Java and Bedrock-mobile UI, real purchases, and gameplay acceptance remain pending.** Startup success is not player acceptance. PR #13 remains draft and unmerged. See [installation evidence](docs/INSTALLATION-0.1.2.md) and [the verification checklist](docs/VERIFICATION.md).
+**0.1.2 installed October 13, 2026.** The installed JAR matches the tested artifact from draft PR #13 source commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`. Loaded version, both configured prices, menu registration, and read-only server health were verified. **The owner reported that both Spawn Shop entries look good on his phone. Java checks, remaining phone UI checks, real purchases, and gameplay acceptance remain pending.** Startup success is not player acceptance. PR #13 remains draft and unmerged. See [installation evidence](docs/INSTALLATION-0.1.2.md) and [the verification checklist](docs/VERIFICATION.md).
 
 ## The two products
 
@@ -54,7 +54,7 @@ The legacy `price` setting is ignored. Existing server configuration files may r
 
 ## Shop integration
 
-The installed Spawn Shop has **Death Protection at slot 31** (CHEST, $15,000) and **+Death Protection Potion at slot 34** (POTION, $30,000). Both left/right click routes call the tier-aware plugin purchase command once. The installed file preserves all 20 unrelated shop items and non-item settings; its exact checksum is recorded in [installation evidence](docs/INSTALLATION-0.1.2.md). Actual Java/phone rendering and tapping remain pending.
+The installed Spawn Shop has **Death Protection at slot 31** (CHEST, $15,000) and **+Death Protection Potion at slot 34** (POTION, $30,000). Both left/right click routes call the tier-aware plugin purchase command once. The installed file preserves all 20 unrelated shop items and non-item settings; its exact checksum is recorded in [installation evidence](docs/INSTALLATION-0.1.2.md). The owner reported both entries look good on his phone; Java rendering and the remaining confirmation/tapping checks are pending.
 
 The repository `SpawnShop-DeluxeMenus/spawnshop.yml` and historical `make_spawnshop.py` generator have not been updated to this live integration. **Regeneration can overwrite the hand-integrated entries.** Treat that as an open maintenance gap; do not regenerate or replace the live menu from the older repository copy. [Integration instructions](integration/README.md) distinguish the installed menu from the separate [unassigned item template](integration/spawnshop-death-protection.template.yml), which is not ready to load.
 

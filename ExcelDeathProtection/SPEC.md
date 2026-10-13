@@ -82,7 +82,7 @@ Operator review must correlate the player UUID, product, quoted amount, transact
 
 ## Shop integration boundaries
 
-The October 13 installed menu uses verified slot 31 for basic and slot 34 for premium, with one tier-aware plugin command for each left/right click route. Its exact checksum and preservation checks are in [installation evidence](docs/INSTALLATION-0.1.2.md). Java/phone rendering and tap behavior remain pending.
+The October 13 installed menu uses verified slot 31 for basic and slot 34 for premium, with one tier-aware plugin command for each left/right click route. Its exact checksum and preservation checks are in [installation evidence](docs/INSTALLATION-0.1.2.md). The owner reported both entries look good on his phone; Java rendering and remaining confirmation/tap behavior checks are pending.
 
 The older repository `SpawnShop-DeluxeMenus/spawnshop.yml` and manual `make_spawnshop.py` generator remain unchanged. Regeneration can overwrite the hand-integrated choices. Resolve that maintenance gap in a separately scoped update; do not substitute the older repository menu for the live one. The supplied unassigned template is not a ready-to-load menu. No menu `[takemoney]` command belongs to either product.
 
@@ -101,4 +101,4 @@ Any test purchase using real in-game funds needs approval for the product and co
 
 ## Historical context, not current acceptance evidence
 
-The baseline documentation records that 0.1.0 was installed and tested on Bedrock mobile on October 13, 2026: purchase messaging, drinking, status, one-death item retention, XP behavior, and consumed protection passed that historical test. Its Luck icon was absent on Bedrock. The 0.1.1 revision changed the effect to Conduit Power, disclosed its benefits, introduced on-screen buy titles, and used a single $15,000 potion. The installed two-tier version supersedes that single-product contract; its own client, purchase, and gameplay checks remain pending.
+The baseline documentation records that 0.1.0 was installed and tested on Bedrock mobile on October 13, 2026: purchase messaging, drinking, status, one-death item retention, XP behavior, and consumed protection passed that historical test. Its Luck icon was absent on Bedrock. The 0.1.1 revision changed the effect to Conduit Power, disclosed its benefits, introduced on-screen buy titles, and used a single $15,000 potion. The installed two-tier version supersedes that single-product contract. Its limited phone entry-appearance check was reported good; remaining client, purchase, and gameplay checks remain pending.

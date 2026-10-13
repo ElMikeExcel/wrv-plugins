@@ -2,7 +2,7 @@
 
 ## Status
 
-Installed on Wink Reyes Valley on **October 13, 2026**, with the server ready at **22:58:41 UTC**. The exact tested JAR was installed without rebuilding it. This records deployment and read-only server health, **not Java/Bedrock-mobile UI, real-purchase, or gameplay acceptance**. All of those acceptance checks remain pending. Source PR #13 remains draft and unmerged.
+Installed on Wink Reyes Valley on **October 13, 2026**, with the server ready at **22:58:41 UTC**. The exact tested JAR was installed without rebuilding it. This records deployment and read-only server health, **not Java/Bedrock-mobile UI, real-purchase, or gameplay acceptance**. A later limited phone appearance report is recorded below; full UI, purchase, and gameplay acceptance remain pending. Source PR #13 remains draft and unmerged.
 
 Installed source identity: [`a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`](https://github.com/ElMikeExcel/wrv-plugins/commit/a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac). The older `ff224dea03d61e0f2227e65d8015d662c93c8d34` is the historical input baseline, not the installed source identity. Later Markdown changes do not change the installed artifact.
 
@@ -36,9 +36,13 @@ All three active checksums were verified through the server file-details interfa
 - At 23:00:22, `purchases.journal` existed and was **0 bytes**, with no recorded unresolved transactions at that observation. This does not exercise a purchase or prove transaction durability.
 - No ExcelDeathProtection startup error, price-key warning, or journal-lock warning was observed. Unrelated existing server warnings/errors remained, including provider version compatibility, optional plugin hooks, and a query-port bind error. The entire startup log is not claimed to be error-free.
 
+## Limited phone report, October 13 at 23:14 UTC
+
+The owner reported that both shop entries look good on his phone. He accepts that these single-item purchases do not open the quantity window used for ordinary shop items. Clear visibility of the exact amount missing when a player cannot afford the purchase remains a reported usability concern. This report does not establish a completed purchase, activation, death/respawn, Java check, or full phone UI acceptance.
+
 ## Explicitly pending
 
-1. **Java and Bedrock-mobile UI:** labels, slots, prices, balance/header rendering, quote/title visibility, tap flow, basic bossbar, premium effect UI, and HUD coexistence.
+1. **Java and remaining Bedrock-mobile UI:** Java screens, exact-shortfall feedback visibility, quote/title visibility, confirmation flow, basic bossbar, premium effect UI, and HUD coexistence. The limited phone entry-appearance report above does not cover these checks.
 2. **Actual provider and gameplay:** separately authorized purchase, activation, real death/respawn, inventory/XP, persistence, legacy entitlement, and cross-plugin checks. No test purchase, grant, death, inventory edit, or balance adjustment was performed during deployment verification.
 3. **Manual reconciliation:** a controlled isolated rehearsal with the actual economy provider has not been evidenced. The [journal procedure](../PURCHASE-JOURNAL.md) remains an operational gap; ambiguous transactions must stay locked pending evidence and authorization.
 4. **Recoverable backup:** the fresh full backup attempt did not produce a verified completed entry. Retained old JAR/config/menu files are rollback inputs, not a complete gameplay/economy recovery snapshot. Existing managed backup entries do not establish a current tested recovery point.

@@ -2,7 +2,7 @@
 
 ## Publication, installation, and acceptance status
 
-Version 0.1.2 was installed October 13, 2026 from the exact tested JAR associated with source commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`. [Installation evidence](INSTALLATION-0.1.2.md) records the server-verified artifact/config/menu hashes and read-only startup checks. **Java and Bedrock-mobile UI, real purchases, and gameplay acceptance remain pending.** PR #13 remains draft and unmerged. Historical 0.1.0/0.1.1 player results do not validate 0.1.2.
+Version 0.1.2 was installed October 13, 2026 from the exact tested JAR associated with source commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`. [Installation evidence](INSTALLATION-0.1.2.md) records the server-verified artifact/config/menu hashes and read-only startup checks. **The owner reported that both Spawn Shop entries look good on his phone. Java checks, remaining phone UI checks, real purchases, and gameplay acceptance remain pending.** PR #13 remains draft and unmerged. Historical 0.1.0/0.1.1 player results do not validate 0.1.2.
 
 The original source publication at `a2586bf...` preserved all 19 tested source, test, configuration, and candidate-document files byte-for-byte. This later documentation-only update records installation and supersedes stale not-deployed wording; implementation, tests, packaged configuration, and dependencies are unchanged.
 
@@ -56,7 +56,7 @@ The native fixture retained a Curse of Vanishing sword during protected deaths i
 
 ## Release gates still open
 
-1. **Java and Bedrock/Geyser clients:** real menu/tap confirmation, bossbar and effect appearance, network login/relog/respawn, and HUD/plugin coexistence have not been tested for 0.1.2.
+1. **Java and Bedrock/Geyser clients:** the owner reports that both entries look good on his phone and accepts the single-item flow without a quantity window. Exact-shortfall feedback visibility remains a reported concern. Real purchase confirmation, bossbar/effect appearance, network relog/respawn, and HUD/plugin coexistence still need acceptance checks for 0.1.2; no Java or gameplay pass is claimed.
 2. **Remaining operations:** installed hashes, loaded version, configured tier prices, Vault/EssentialsX provider, DeluxeMenus registration, and live menu slots were verified on October 13. The attempted fresh full backup did not reach a verified completed result; retained individual rollback files are not a full recovery snapshot. The historical repository generator remains an overwrite risk. The supplied unassigned template is still not the installed menu.
 3. **Durability:** Vault and playerdata are not crash-atomic. Paper `saveData()` can return normally despite disabled saving or swallowed storage errors. A paid grant can be lost after a silent save failure; a refunded grant can reappear after a silent rollback-save failure. The throwing-save fixtures do not prove disk-full, power-loss, or disabled-saving behavior.
 4. **Manual reconciliation:** ambiguous journal entries intentionally block further purchases. No automatic replay, refund, grant, or per-player unlock exists. Rehearse the documented operator procedure with the real provider as an outstanding operational gap; do not clear a journal merely to bypass a lock.

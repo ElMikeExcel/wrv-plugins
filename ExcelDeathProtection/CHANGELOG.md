@@ -2,8 +2,9 @@
 
 ## 0.1.2 — two-tier update, installed October 13, 2026
 
-**Installed and startup-verified; Java and Bedrock-mobile UI, real purchases, and gameplay acceptance are pending.** The exact tested JAR was installed from source commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`; PR #13 remains draft and unmerged. [Installation evidence](docs/INSTALLATION-0.1.2.md) separates deployment checks from acceptance.
+**Installed and startup-verified; the owner reports both entries look good on his phone. Java, remaining phone UI, real purchases, and gameplay acceptance are pending.** The exact tested JAR was installed from source commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`; PR #13 remains draft and unmerged. [Installation evidence](docs/INSTALLATION-0.1.2.md) separates deployment checks from acceptance.
 
+- Recorded a limited phone visual check of both shop entries. The owner accepts the single-item flow without a quantity window; exact-shortfall feedback remains a reported usability concern. This is not a completed purchase or gameplay test.
 - Split the product into **Death Protection**, $15,000, activated immediately after a confirmed purchase with no extra abilities, and **+Death Protection Potion**, $30,000, stored and activated by drinking.
 - Keep the premium Conduit Power benefits, including faster mining on land, and disclose them consistently.
 - Use a shared one-death active slot. Reject duplicate basic purchases before charging; cancel a second potion drink while either tier is active without consuming the potion.

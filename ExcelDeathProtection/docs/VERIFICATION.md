@@ -12,6 +12,8 @@
 - [ ] Obtain separate authorization before test purchases or any real-balance/playerdata correction.
 - [ ] Establish a genuinely completed recoverable backup; the rollout's fresh full backup did not produce a verified completed entry. Retained file copies are not a complete recovery snapshot.
 - [ ] Reconcile the historical menu/generator with the live hand-integrated entries before future regeneration.
+- [x] Record the owner's October 13 phone visual report: both shop entries look good. This is limited appearance evidence, not full UI or gameplay acceptance.
+- [ ] Investigate exact-shortfall feedback visibility. The owner accepts the lack of a quantity window for these single-item purchases.
 - [ ] Run and record the Java player checks below.
 - [ ] Run and record the Bedrock-mobile player checks below, with Geyser/Floodgate/server versions as applicable.
 

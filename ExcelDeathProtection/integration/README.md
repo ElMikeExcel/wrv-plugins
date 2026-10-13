@@ -1,6 +1,6 @@
 # Spawn Shop integration: installed state and maintenance
 
-**0.1.2 installed October 13, 2026.** The active menu uses basic slot 31 and premium slot 34. Exact file checks and read-only startup checks passed; Java/phone UI, real purchases, and gameplay acceptance remain pending. See [installation evidence](../docs/INSTALLATION-0.1.2.md). Do not copy the unassigned template into a live DeluxeMenus directory as a complete menu.
+**0.1.2 installed October 13, 2026.** The active menu uses basic slot 31 and premium slot 34. Exact file checks and read-only startup checks passed; the owner reports both entries look good on his phone, while Java, remaining phone UI, real purchases, and gameplay acceptance remain pending. See [installation evidence](../docs/INSTALLATION-0.1.2.md). Do not copy the unassigned template into a live DeluxeMenus directory as a complete menu.
 
 ## What is known
 
@@ -11,6 +11,8 @@ The installed `deathprotection_basic` entry is a CHEST button at slot 31 for **D
 **Generator gap:** the historical manual `make_spawnshop.py` workflow and repository menu are unchanged. Future regeneration can overwrite these hand-integrated entries. A separately scoped generator/integration update must preserve ordinary products and keep these tier prices outside general price scaling. Until then, do not regenerate or replace the live menu from the older repository template.
 
 `spawnshop-death-protection.template.yml` contains only the two item definitions, with deliberately unassigned slot placeholders. It is valid YAML for review, but it is **not a valid ready-to-load DeluxeMenus menu**. The source shop file has been left unchanged by this documentation task.
+
+The owner accepts the single-item purchase flow without an ordinary-item quantity window. Exact-shortfall feedback visibility remains a reported phone usability concern; it has not been resolved by this documentation update.
 
 ## For any future authorized rollout
 
