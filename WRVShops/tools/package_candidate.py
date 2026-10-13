@@ -12,7 +12,7 @@ import zipfile
 
 MODULE = Path(__file__).resolve().parents[1]
 ROOT = MODULE.parent
-VERSION = "0.1.4"
+VERSION = "0.1.5"
 GUARD = ROOT / "ChestShop-ConfirmationGuard"
 GUARD_NAME = "ChestShop-3.13-pre-1-build474-confirmation.1"
 GUARD_BUILD = "chestshop474-confirmation.1"
@@ -173,6 +173,7 @@ def package(jar, expected_sha256, output, source_commit=None, *, guarded_jar=Non
         "tools/prepare_purchase_pauses.py": (MODULE / "tools/prepare_purchase_pauses.py").read_bytes(),
         "PURCHASE-PAUSE-SPEC.md": (MODULE / "PURCHASE-PAUSE-SPEC.md").read_bytes(),
         "PLAYER-CHECKLIST.md": (MODULE / "PLAYER-CHECKLIST.md").read_bytes(),
+        "BALANCE-DISPLAY-0.1.5.md": (MODULE / "BALANCE-DISPLAY-0.1.5.md").read_bytes(),
         "AMOUNT-ENTRY-0.1.4.md": (MODULE / "AMOUNT-ENTRY-0.1.4.md").read_bytes(),
         "DEPLOYMENT.md": (MODULE / "DEPLOYMENT.md").read_bytes(),
         "LICENSE": (MODULE / "LICENSE").read_bytes(),

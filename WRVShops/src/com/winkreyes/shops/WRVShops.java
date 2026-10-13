@@ -31,6 +31,7 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
     private CheckoutService checkout;
     private ShopAdapter adapter;
     private ShopUi ui;
+    private BalanceDisplay balanceDisplay;
     private LegacyShopBridge legacyBridge;
     private LegacyShopUi legacyUi;
     private final Map<BlockPos,PendingSign> placedSigns=new HashMap<>();
@@ -54,6 +55,7 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
             File file=new File(getDataFolder(),"spawn-catalog.yml");if(!file.exists())saveResource("spawn-catalog.yml",false);
             catalog=new SpawnCatalog(YamlConfiguration.loadConfiguration(file));
             adapter=new ShopAdapter(this,provider.getProvider());
+            balanceDisplay=new BalanceDisplay(this,provider.getProvider());
             long ttl=getConfig().getLong("quote-seconds",60);if(ttl<1||ttl>300)throw new IllegalArgumentException("quote-seconds must be 1..300");
             checkout=new CheckoutService(adapter,new FileJournal(getDataFolder().toPath().resolve("checkout")),Clock.systemUTC(),Duration.ofSeconds(ttl));
             // A missing/unsupported ChestShop must never hide an unfinished legacy trade.
@@ -96,6 +98,7 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
     public ShopAdapter getAdapter(){return adapter;}
     public SpawnCatalog getCatalog(){return catalog;}
     public ShopUi getUi(){return ui;}
+    public BalanceDisplay getBalanceDisplay(){return balanceDisplay;}
     public LegacyShopUi getLegacyUi(){return legacyUi;}
     public LegacyShopBridge getLegacyBridge(){return legacyBridge;}
     public void markLegacyDirty(Player p,UUID world){dirtyPlayers.add(p.getUniqueId());dirtyWorlds.add(world);}

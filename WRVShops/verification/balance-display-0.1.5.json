@@ -1,0 +1,57 @@
+{
+  "version": "0.1.5",
+  "status": "candidate_not_installed",
+  "jar_sha256": "c4f84625e3ed60fa15d4146cd2a30865fe8602a90942e2e348050c7db2c4c92b",
+  "jar_bytes": 206755,
+  "java_tests": {
+    "tests": 757,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python_tests": {
+    "tests": 57,
+    "failures": 0,
+    "errors": 0
+  },
+  "runtime": {
+    "paper": "26.2 build 123",
+    "java": "Temurin 25.0.4+7-LTS",
+    "synthetic_economy_and_players": true,
+    "boots": 4,
+    "assertions": 1286,
+    "failures": 0,
+    "stages": [
+      {
+        "stage": "first",
+        "passed_groups": 93,
+        "failed_groups": 0,
+        "assertions": 634
+      },
+      {
+        "stage": "restart",
+        "passed_groups": 93,
+        "failed_groups": 0,
+        "assertions": 634
+      },
+      {
+        "stage": "no-economy",
+        "passed_groups": 1,
+        "failed_groups": 0,
+        "assertions": 7
+      },
+      {
+        "stage": "no-vault",
+        "passed_groups": 1,
+        "failed_groups": 0,
+        "assertions": 11
+      }
+    ],
+    "clean_process_shutdown": true,
+    "loopback_port_released": true
+  },
+  "real_java_bedrock_clients": "pending",
+  "checkout_code_changed": false,
+  "catalog_prices_changed": false,
+  "repeated_build_byte_identical": true
+}

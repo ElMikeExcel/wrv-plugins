@@ -18,6 +18,24 @@ class SpawnShopTest(unittest.TestCase):
     def test_default_output_matches_preserved_menu_byte_for_byte(self):
         self.assertEqual(shop.render().encode("utf-8"), (ROOT / "spawnshop.yml").read_bytes())
 
+    def test_shop_open_command_is_registered_for_programmatic_menu_buttons(self):
+        # BedrockMenu and DeluxeMenus [player] actions use performCommand,
+        # which bypasses PlayerCommandPreprocessEvent-only menu aliases.
+        for multiplier in (0.5, 1.0, 1.25, 2.0):
+            with self.subTest(multiplier=multiplier):
+                lines = shop.render(multiplier).splitlines()
+                self.assertEqual(lines.count("open_command: shop"), 1)
+                self.assertEqual(lines.count("register_command: true"), 1)
+                self.assertEqual(lines.index("register_command: true"),
+                                 lines.index("open_command: shop") + 1)
+
+    def test_balance_is_visible_without_hover_and_updates_icon(self):
+        menu = shop.render()
+        self.assertIn("menu_title: '&eBalance $%vault_eco_balance_fixed% &8| &2Spawn Shop'", menu)
+        self.assertIn("update_interval: 1", menu)
+        self.assertIn("    update: true", menu)
+        self.assertIn("Current balance: &f$%vault_eco_balance_fixed%", menu)
+
     def test_import_does_not_generate_a_menu(self):
         with tempfile.TemporaryDirectory() as directory:
             result = subprocess.run([sys.executable, "-c", f"import runpy; runpy.run_path({str(SCRIPT)!r})"], cwd=directory, capture_output=True, text=True)

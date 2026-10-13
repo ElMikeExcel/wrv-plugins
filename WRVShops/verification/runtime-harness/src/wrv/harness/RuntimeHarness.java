@@ -17,6 +17,8 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import io.papermc.paper.registry.data.dialog.body.PlainMessageDialogBody;
 import com.winkreyes.shops.InventoryPlan;
 import com.winkreyes.shops.ShopAdapter;
 import com.winkreyes.shops.ShopUi;
@@ -244,6 +246,100 @@ public final class RuntimeHarness extends JavaPlugin {
             check(InventoryPlan.count(chest(uiFixture).getBlockInventory().getContents(), uiItem) == 9, "closing shop retains remaining physical stock");
         }));
         if (typedEntryAvailable()) addStandaloneTypedCases();
+        if (balanceDisplayAvailable()) addBalanceCases();
+    }
+    private boolean balanceDisplayAvailable() {
+        try { shops.getClass().getMethod("getBalanceDisplay"); return true; }
+        catch (NoSuchMethodException baseline) { return false; }
+    }
+    /** Inspect Paper's stored title; the synthetic InventoryView intentionally has a fixed test title. */
+    private void balanceHeader(FakePlayer player, String amount) throws Exception {
+        Inventory inventory = player.view.getTopInventory();
+        check(inventory.getClass().getName().startsWith("org.bukkit.craftbukkit."), "balance menu uses an actual Paper inventory");
+        Object nativeInventory = inventory.getClass().getMethod("getInventory").invoke(inventory);
+        Method title = nativeInventory.getClass().getMethod("getTitle");
+        title.setAccessible(true);
+        check(((String) title.invoke(nativeInventory)).startsWith("Balance " + amount + " | "), "Paper inventory stores visible balance-first title " + amount);
+        String icon = ChatColor.stripColor(inventory.getItem(inventory.getSize() - 2).getItemMeta().getDisplayName());
+        check(icon.equals("Current balance: " + amount), "balance icon agrees with the visible inventory title");
+    }
+    private void unchangedDisplayBalances(double buyerBalance, double ownerBalance) throws Exception {
+        noNativePurchase();
+        check(vault.balances.get(buyer.uuid) == buyerBalance && vault.balances.get(owner.uuid) == ownerBalance
+                && vault.balances.get(secondBuyer.uuid) == 10000.0, "viewing balance and preview leaves every synthetic account unchanged");
+    }
+    private String nativeDialogText(NativeDialogProbe probe) {
+        check(probe.base.body().size() == 1 && probe.base.body().getFirst() instanceof PlainMessageDialogBody,
+                "real Paper amount dialog contains one visible message body");
+        return PlainTextComponentSerializer.plainText().serialize(((PlainMessageDialogBody) probe.base.body().getFirst()).contents());
+    }
+    private void addBalanceCases() {
+        cases.add(new Case("balance-catalog-and-quantity-display-only", () -> {
+            resetBalances(); vault.balances.put(buyer.uuid, 1500.0);
+            check(invoke(shops, "getBalanceDisplay") != null, "candidate initializes its read-only balance display");
+            ui().showSpawn(buyer.player); expectKind(buyer, ViewKind.CATALOG); balanceHeader(buyer, "$1,500.00");
+            ui().quantity(buyer.player, adapter().spawn("bread"), 2); expectKind(buyer, ViewKind.QUANTITY);
+            balanceHeader(buyer, "$1,500.00"); loreContains(buyer, 13, "Current balance: $1,500.00");
+            loreContains(buyer, 13, "Purchase cost: -$80.00"); loreContains(buyer, 13, "Balance after purchase: $1,420.00");
+            unchangedDisplayBalances(1500.0, 10000.0);
+        }));
+        cases.add(new Case("balance-review-refreshes-and-warns-insufficient-funds", () -> {
+            vault.balances.put(buyer.uuid, 50.0);
+            check(ui().enterNumber(buyer.player, "2"), "quantity input opens a read-only balance review");
+            expectKind(buyer, ViewKind.BUY_REVIEW); balanceHeader(buyer, "$50.00");
+            loreContains(buyer, 4, "Current balance: $50.00"); loreContains(buyer, 4, "Purchase cost: -$80.00");
+            loreContains(buyer, 4, "Balance after purchase: -$30.00"); loreContains(buyer, 4, "Insufficient funds. Need $30.00 more.");
+            unchangedDisplayBalances(50.0, 10000.0);
+            vault.balances.put(buyer.uuid, 100.0); click(buyer, 11);
+        }));
+        cases.add(new Case("balance-final-confirm-refreshes-without-trading", () -> {
+            expectKind(buyer, ViewKind.BUY_CONFIRM); balanceHeader(buyer, "$100.00");
+            loreContains(buyer, 4, "Current balance: $100.00"); loreContains(buyer, 4, "Purchase cost: -$80.00");
+            loreContains(buyer, 4, "Balance after purchase: $20.00");
+            check(ChatColor.stripColor(buyer.view.getTopInventory().getItem(11).getItemMeta().getDisplayName()).contains("$80.00"),
+                    "final purchase button agrees with the exact preview total");
+            unchangedDisplayBalances(100.0, 10000.0); click(buyer, 15);
+        }));
+        cases.add(new Case("balance-cancel-and-owner-setup-remain-read-only", () -> {
+            expectKind(buyer, null); unchangedDisplayBalances(100.0, 10000.0);
+            nearby(owner, uiFixture); vault.balances.put(owner.uuid, 2500.25);
+            ui().offerSetup(owner.player, registry().propose(owner.player, uiFixture.chest, uiFixture.sign));
+            expectKind(owner, ViewKind.SETUP_PROMPT); balanceHeader(owner, "$2,500.25");
+            unchangedDisplayBalances(100.0, 2500.25); click(owner, 11);
+        }));
+        cases.add(new Case("balance-owner-item-selection-remains-visible", () -> {
+            expectKind(owner, ViewKind.SETUP_ITEMS); balanceHeader(owner, "$2,500.25");
+            unchangedDisplayBalances(100.0, 2500.25); click(owner, 0);
+        }));
+        cases.add(new Case("balance-owner-price-screen-does-not-publish", () -> {
+            expectKind(owner, ViewKind.SETUP_PRICE); balanceHeader(owner, "$2,500.25");
+            check(registry().findByChest(uiFixture.chest).isEmpty(), "balance-only setup inspection leaves chest unpublished");
+            unchangedDisplayBalances(100.0, 2500.25); ui().cancel(owner.player);
+        }));
+        if (!typedEntryAvailable()) return;
+        cases.add(new Case("balance-native-entry-open-current-preview", () -> {
+            ui().quantity(buyer.player, adapter().spawn("bread"), 2); click(buyer, 22);
+        }));
+        cases.add(new Case("balance-native-entry-body-has-current-and-projected-values", () -> {
+            nativeDialog = inspectDialog(buyer, "2"); String text = nativeDialogText(nativeDialog);
+            check(text.contains("Current balance: $100.00") && text.contains("Purchase cost: -$80.00")
+                    && text.contains("Balance after purchase: $20.00"), "actual Paper dialog body includes exact balance preview");
+            unchangedDisplayBalances(100.0, 2500.25);
+            vault.balances.put(buyer.uuid, 5.0); staleDialog = nativeDialog; nativeDialog.submit(buyer.player, "0");
+        }));
+        cases.add(new Case("balance-native-entry-invalid-retry-refreshes-preview", () -> {
+            nativeDialog = inspectDialog(buyer, "2"); String text = nativeDialogText(nativeDialog);
+            check(nativeDialog.dialog != staleDialog.dialog, "invalid quantity recreates the real Paper dialog");
+            check(text.contains("Current balance: $5.00") && text.contains("Balance after purchase: -$75.00")
+                    && text.contains("Insufficient funds. Need $75.00 more."), "retry reads a fresh balance and shortfall");
+            check(!text.contains("Current balance: $100.00") && !text.contains("Balance after purchase: $20.00"), "retry never retains the stale balance preview");
+            unchangedDisplayBalances(5.0, 2500.25); nativeDialog.cancel(buyer.player);
+        }));
+        cases.add(new Case("balance-native-entry-cancel-restores-fresh-menu", () -> {
+            expectKind(buyer, ViewKind.QUANTITY); balanceHeader(buyer, "$5.00");
+            loreContains(buyer, 13, "Balance after purchase: -$75.00"); unchangedDisplayBalances(5.0, 2500.25);
+            ui().cancel(buyer.player);
+        }));
     }
     private boolean typedEntryAvailable() {
         try { Class.forName("com.winkreyes.shops.JavaNumberDialogs", false, shops.getClass().getClassLoader()); return true; }
