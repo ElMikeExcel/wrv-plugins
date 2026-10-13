@@ -1,5 +1,5 @@
 # AUTO-GENERATED. Install matching ExcelShops spawn-catalog.yml with this menu.
-menu_title: '&eBalance $%vault_eco_balance_fixed% &8| &2Spawn Shop'
+menu_title: '&eBalance $%vault_eco_balance_2dp% &8| &2Spawn Shop'
 open_command: shop
 register_command: true
 size: 45
@@ -9,7 +9,7 @@ items:
     material: GOLD_NUGGET
     slot: 4
     update: true
-    display_name: '&e&lCurrent balance: &f$%vault_eco_balance_fixed%'
+    display_name: '&e&lCurrent balance: &f$%vault_eco_balance_2dp%'
     lore:
       - '&7Tap an item, choose quantity, then confirm.'
   back:
