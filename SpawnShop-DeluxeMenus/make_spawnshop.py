@@ -55,9 +55,9 @@ def render(multiplier=1.0):
     """Display-only entry menu: ExcelShops owns quotes, validation and final confirmation."""
     multiplier = validate_multiplier(multiplier)
     out = ["# AUTO-GENERATED. Install matching ExcelShops spawn-catalog.yml with this menu.",
-           "menu_title: '&eBalance $%vault_eco_balance_fixed% &8| &2Spawn Shop'", "open_command: shop", "register_command: true", "size: 45", "update_interval: 1", "items:",
+           "menu_title: '&eBalance $%vault_eco_balance_2dp% &8| &2Spawn Shop'", "open_command: shop", "register_command: true", "size: 45", "update_interval: 1", "items:",
            "  balance:", "    material: GOLD_NUGGET", "    slot: 4", "    update: true",
-           "    display_name: '&e&lCurrent balance: &f$%vault_eco_balance_fixed%'",
+           "    display_name: '&e&lCurrent balance: &f$%vault_eco_balance_2dp%'",
            "    lore:", "      - '&7Tap an item, choose quantity, then confirm.'",
            "  back:", "    material: ARROW", "    slot: 40", "    display_name: '&c&lBack to Menu'",
            "    left_click_commands:", "      - '[player] menu'",
@@ -113,3 +113,4 @@ def main(argv=None):
 
 if __name__ == "__main__":
     main()
+

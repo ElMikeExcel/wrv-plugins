@@ -31,10 +31,25 @@ class SpawnShopTest(unittest.TestCase):
 
     def test_balance_is_visible_without_hover_and_updates_icon(self):
         menu = shop.render()
-        self.assertIn("menu_title: '&eBalance $%vault_eco_balance_fixed% &8| &2Spawn Shop'", menu)
+        self.assertIn("menu_title: '&eBalance $%vault_eco_balance_2dp% &8| &2Spawn Shop'", menu)
         self.assertIn("update_interval: 1", menu)
         self.assertIn("    update: true", menu)
-        self.assertIn("Current balance: &f$%vault_eco_balance_fixed%", menu)
+        self.assertIn("Current balance: &f$%vault_eco_balance_2dp%", menu)
+
+    def test_balance_precision_does_not_use_integer_or_abbreviated_placeholders(self):
+        menu = shop.render()
+        self.assertEqual(menu.count("%vault_eco_balance_2dp%"), 2)
+        for token in ("%vault_eco_balance_fixed%", "%vault_eco_balance_formatted%", "%vault_eco_balance_commas%"):
+            self.assertNotIn(token, menu)
+
+    def test_title_keeps_full_balance_first_even_for_large_values(self):
+        title = shop.render().splitlines()[1]
+        for amount in ("0", "0.01", "352.82", "352.8", "999999999.99", "1000000000000.01", "-12.34"):
+            shown = title.replace("%vault_eco_balance_2dp%", amount)
+            self.assertTrue(shown.startswith("menu_title: '&eBalance $" + amount))
+            self.assertIn(" &8| &2Spawn Shop", shown)
+        # Layout is client-dependent: never truncate/abbreviate the monetary value.
+        self.assertIn("open_command: shop\nregister_command: true", shop.render())
 
     def test_import_does_not_generate_a_menu(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -115,3 +130,4 @@ class SpawnShopTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
