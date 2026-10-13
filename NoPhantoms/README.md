@@ -1,4 +1,6 @@
-# NoPhantoms
+# ExcelNoPhantoms (NoPhantoms)
+
+**Created by us (custom add-on).** This is a documentation label; the runtime plugin name remains `NoPhantoms`. Recorded installed version: **1.0.0**; this branch's source version: **1.0.0**. The source/build details below describe this branch, not proof of the installed JAR's behavior. See the [plugin inventory](../PLUGIN-INVENTORY.md).
 
 Version: **1.0.0**. Cancels phantom `CreatureSpawnEvent`s; other creatures are unaffected. No commands or configuration.
 

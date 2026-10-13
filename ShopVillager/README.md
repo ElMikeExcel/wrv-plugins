@@ -1,4 +1,6 @@
-# ShopVillager 1.0.1
+# ExcelShopVillager (ShopVillager)
+
+**Created by us (custom add-on).** This is a documentation label; the runtime plugin name remains `ShopVillager`. Recorded installed version: **1.0.0**; this branch's source version: **1.0.1**. The source/build details below describe this branch, not proof of the installed JAR's behavior. See the [plugin inventory](../PLUGIN-INVENTORY.md).
 
 Tapping the spawn shop villager opens the Spawn Shop (DeluxeMenus `spawnshop`) instead of trades. Only operators or players with `shopvillager.admin` can create, remove, or tag shop villagers.
 

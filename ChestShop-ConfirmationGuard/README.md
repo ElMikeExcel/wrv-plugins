@@ -1,5 +1,7 @@
 # Pinned third-party ChestShop confirmation guard
 
+**Historical modification, no longer installed.** This guard was removed from the live server on October 12, 2026. It is not part of the active Excel-labeled plugin inventory. The build and compatibility instructions below are retained for reference; upstream authorship and LGPL-2.1 notices remain intact. See the [deployment record](../WRVShops/DEPLOYMENT-2026-10-12.md) and [plugin inventory](../PLUGIN-INVENTORY.md).
+
 This module modifies ChestShop build 474. It is separate from the custom
 ExcelShops plugin. Deploying both JARs is required to enable existing legacy shops
 with confirmation. Replace the old ChestShop JAR, but retain the complete

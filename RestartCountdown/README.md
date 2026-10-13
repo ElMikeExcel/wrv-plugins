@@ -1,4 +1,6 @@
-# RestartCountdown
+# ExcelRestartCountdown (RestartCountdown)
+
+**Created by us (custom add-on).** This is a documentation label; the runtime plugin name remains `RestartCountdown`. Recorded installed version: **1.1.0**; this branch's source version: **1.1.1**. The source/build details below describe this branch, not proof of the installed JAR's behavior. See the [plugin inventory](../PLUGIN-INVENTORY.md).
 
 Version: **1.1.1**, restored and repaired from **1.1.0**.
 
