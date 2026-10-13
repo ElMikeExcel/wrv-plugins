@@ -1,11 +1,11 @@
 # Death Protection Potion
 
-The Spawn Shop sells a **Death Protection Potion** for **$10,000**.
+The Spawn Shop sells a **Death Protection Potion** for **$15,000**.
 
 ## What it does
 
-1. Buy the potion at the Spawn Shop (tap it, then tap again to confirm).
-2. Drink it. You will see **☠✔ Items protected is now ACTIVE**, and a small green clover (Luck) icon appears by your hearts. It is also listed when you open your inventory.
+1. Buy the potion at the Spawn Shop (tap it, then tap again to confirm). The price and confirmation also appear as a big message on your screen.
+2. Drink it. You will see **☠✔ Items protected is now ACTIVE**, and a small blue shell (Conduit Power) icon appears by your hearts. It is also listed when you open your inventory.
 3. While that icon is there, you are protected: **if you die, you keep all of your items.** You still die and respawn as normal, and the protection is then used up.
 
 ## What it does NOT do
@@ -18,5 +18,6 @@ The Spawn Shop sells a **Death Protection Potion** for **$10,000**.
 ## Good to know
 
 - The protection stays on when you log out and back in. It only ends when it saves you.
+- While protection is on, you also get **Conduit Power**: breathe, see clearly and dig faster underwater. On land it does nothing.
 - Drinking a second potion while you are already protected does nothing, and the potion is not used up.
 - Check yourself any time with `/dp status`.

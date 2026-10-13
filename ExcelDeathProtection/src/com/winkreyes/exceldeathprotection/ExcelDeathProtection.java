@@ -46,8 +46,13 @@ import java.util.UUID;
  * buff is consumed. The death itself is NOT prevented and XP is NOT saved;
  * XP drops exactly as a normal death.
  *
- * While the buff is active it is shown as the vanilla Luck status effect
- * (small HUD icon + listed in the inventory screen on Java and Bedrock).
+ * While the buff is active it is shown as the vanilla Conduit Power status
+ * effect (small HUD icon + listed in the inventory screen). Conduit Power is
+ * used because it exists on BOTH Java and Bedrock: the original Luck icon
+ * (0.1.0) is a Java-only effect that Bedrock cannot display at all, which
+ * Mike caught in the Oct 13, 2026 phone test. On land Conduit Power does
+ * nothing; underwater it grants breathing, clearer vision and faster
+ * digging, and that benefit is disclosed on the potion and in the guide.
  * The buff state itself is stored in the player's PersistentDataContainer,
  * so it survives relogs and restarts, and is re-applied by a watchdog.
  */
@@ -77,14 +82,14 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
             getCommand("deathprotection").setTabCompleter(this);
         }
 
-        // Watchdog: keep the Luck indicator present while the buff is active
+        // Watchdog: keep the Conduit Power indicator present while the buff is active
         // (milk, /effect clear and relogs all remove effects; the buff flag in
         // the player's data is the source of truth).
         new BukkitRunnable() {
             @Override
             public void run() {
                 for (Player player : Bukkit.getOnlinePlayers()) {
-                    if (isProtected(player) && !player.hasPotionEffect(PotionEffectType.LUCK)) {
+                    if (isProtected(player) && !player.hasPotionEffect(PotionEffectType.CONDUIT_POWER)) {
                         applyIndicator(player);
                     }
                 }
@@ -107,7 +112,7 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
     }
 
     private double price() {
-        return getConfig().getDouble("price", 10000.0);
+        return getConfig().getDouble("price", 15000.0);
     }
 
     private String money(double amount) {
@@ -130,13 +135,16 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
             applyIndicator(player);
         } else {
             player.getPersistentDataContainer().remove(activeKey);
+            player.removePotionEffect(PotionEffectType.CONDUIT_POWER);
             player.removePotionEffect(PotionEffectType.LUCK);
         }
     }
 
     private void applyIndicator(Player player) {
+        // Conduit Power: visible on Java and Bedrock, inert on land.
+        player.removePotionEffect(PotionEffectType.LUCK);
         player.addPotionEffect(new PotionEffect(
-                PotionEffectType.LUCK,
+                PotionEffectType.CONDUIT_POWER,
                 PotionEffect.INFINITE_DURATION,
                 0,      // amplifier
                 true,   // ambient
@@ -158,6 +166,8 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
                     ChatColor.GRAY + "If you die while it is active, you",
                     ChatColor.GRAY + "keep all your items " + ChatColor.WHITE + "once" + ChatColor.GRAY + ".",
                     ChatColor.RED + "Does NOT save your XP levels.",
+                    ChatColor.AQUA + "While active: Conduit Power. Breathe,",
+                    ChatColor.AQUA + "see and dig faster underwater.",
                     ChatColor.DARK_GRAY + "One use. Stays active until it saves you."));
             meta.setEnchantmentGlintOverride(true);
             meta.getPersistentDataContainer().set(potionKey, PersistentDataType.BYTE, (byte) 1);
@@ -189,7 +199,7 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
         }
         Player player = event.getPlayer();
         if (isProtected(player)) {
-            // Never waste a $10,000 potion: it is already active.
+            // Never waste a potion: protection is already active.
             event.setCancelled(true);
             player.sendMessage(ChatColor.YELLOW + "\u2620\u2714 Items protected is already active. This potion was not used.");
             return;
@@ -197,7 +207,8 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
         setProtected(player, true);
         player.sendMessage(ChatColor.GREEN + "\u2620\u2714 Items protected is now ACTIVE.");
         player.sendMessage(ChatColor.GRAY + "If you die, you keep your items once. " + ChatColor.RED + "Your XP is not saved.");
-        player.sendMessage(ChatColor.DARK_GRAY + "Look for the green clover (Luck) icon: while you see it, you are protected.");
+        player.sendMessage(ChatColor.DARK_GRAY + "Look for the blue shell (Conduit Power) icon: while you see it, you are protected.");
+        player.sendMessage(ChatColor.DARK_GRAY + "While it is on, you also breathe, see and dig faster underwater.");
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -227,7 +238,7 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (isProtected(player) && !player.hasPotionEffect(PotionEffectType.LUCK)) {
+        if (isProtected(player) && !player.hasPotionEffect(PotionEffectType.CONDUIT_POWER)) {
             applyIndicator(player);
         }
     }
@@ -309,6 +320,15 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
      * and by players directly (/deathprotection buy). Two-step confirm:
      * the first run arms the purchase, a second run within 20 seconds completes it.
      */
+    /**
+     * Big on-screen message for the buy flow. Chat alone is easy to miss
+     * behind the shop window on Bedrock (Mike's Oct 13 test), so every buy
+     * outcome also gets a title that renders over the menu.
+     */
+    private void showBuyTitle(Player player, String title, String subtitle) {
+        player.sendTitle(title, subtitle, 5, 50, 10);
+    }
+
     private boolean handleBuy(CommandSender sender, String[] args) {
         Player buyer;
         if (sender instanceof Player) {
@@ -339,6 +359,9 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
             buyer.sendMessage(ChatColor.YELLOW + "Death Protection Potion: " + ChatColor.WHITE + "$" + money(cost) + ChatColor.YELLOW + ".");
             buyer.sendMessage(ChatColor.YELLOW + "Tap Buy again within 20 seconds to confirm. " 
                     + ChatColor.GRAY + "(Balance: $" + money(economy.getBalance(buyer)) + ")");
+            showBuyTitle(buyer,
+                    ChatColor.YELLOW + "Death Protection Potion",
+                    ChatColor.WHITE + "Tap Buy again within 20 seconds to confirm ($" + money(cost) + ")");
             return true;
         }
         pendingBuys.remove(id);
@@ -347,6 +370,9 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
         if (balance < cost) {
             buyer.sendMessage(ChatColor.RED + "Not enough money. The potion costs $" + money(cost)
                     + ", you have $" + money(balance) + " (short $" + money(cost - balance) + ").");
+            showBuyTitle(buyer,
+                    ChatColor.RED + "Not enough money",
+                    ChatColor.WHITE + "Potion costs $" + money(cost) + " (short $" + money(cost - balance) + ")");
             return true;
         }
         if (!economy.withdrawPlayer(buyer, cost).transactionSuccess()) {
@@ -354,6 +380,9 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
             return true;
         }
         buyer.getInventory().addItem(createPotion(1));
+        showBuyTitle(buyer,
+                ChatColor.GREEN + "Potion bought",
+                ChatColor.WHITE + "Drink it to activate \u2620\u2714 Items protected");
         buyer.sendMessage(ChatColor.GREEN + "You bought a Death Protection Potion for $" + money(cost) + ".");
         buyer.sendMessage(ChatColor.GRAY + "Balance left: $" + money(economy.getBalance(buyer)) + ". Drink the potion to activate \u2620\u2714 Items protected.");
         return true;
