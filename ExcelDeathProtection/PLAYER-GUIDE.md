@@ -1,6 +1,6 @@
 # Death Protection
 
-**Preview of the two-tier update. This candidate is not yet live; Java and Bedrock-mobile checks are still pending.** Prices below are in-game money.
+**Version 0.1.2 was installed October 13, 2026. Java and Bedrock-mobile screens, real purchases, and gameplay checks are still pending.** The server loaded successfully, but that does not verify the in-game buying or death/respawn experience. Prices below are in-game money.
 
 ## Death Protection — $15,000
 
@@ -31,6 +31,10 @@ You can have only one active protection, basic or premium.
 - A potion sitting in your inventory does not count as active protection.
 
 Check your current protection with **/dp status**.
+
+## Buying in Spawn Shop
+
+Choose **Death Protection** for $15,000 or **+Death Protection Potion** for $30,000. The first click or tap shows the product and price. Check the quote, then choose the same option again within 20 seconds to confirm. Changing products or prices requires a fresh confirmation. The basic button activates protection; it does not give you its chest icon as an item.
 
 ## Buying with commands
 

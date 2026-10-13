@@ -1,6 +1,6 @@
 # Purchase journal and reconciliation
 
-This candidate uses an append-only `purchases.journal` in the plugin data folder. It reduces duplicate charges and unsafe refunds, but does **not** make Vault balances and Minecraft playerdata atomic. A completed Bukkit `saveData()` call does not prove a successful filesystem write or fsync. A silent delivery save failure may lose a paid grant; a silent rollback save failure may let a refunded grant reappear after restart. Test and review this operating procedure before deployment.
+Version 0.1.2 uses an append-only `purchases.journal` in the plugin data folder. It reduces duplicate charges and unsafe refunds, but does **not** make Vault balances and Minecraft playerdata atomic. A completed Bukkit `saveData()` call does not prove a successful filesystem write or fsync. A silent delivery save failure may lose a paid grant; a silent rollback save failure may let a refunded grant reappear after restart. **Operational gap:** 0.1.2 was installed October 13, 2026, but an isolated manual reconciliation rehearsal with the actual economy provider has not been evidenced. Installation and an empty startup journal do not validate this procedure.
 
 ## What is recorded
 
@@ -31,13 +31,13 @@ On startup, the latest nonterminal record for **any** transaction locks that pla
 
 ## Required manual response
 
-There is deliberately no in-game unlock command or automatic repair. Before releasing this candidate, rehearse manual reconciliation in an isolated copy with the actual economy provider.
+There is deliberately no in-game unlock command or automatic repair. The required manual reconciliation rehearsal in an isolated copy with the actual economy provider remains pending. Do not improvise corrections or use production balances to test this procedure without explicit authorization.
 
 1. Stop purchases and stop the server before changing the journal. Preserve the entire journal, playerdata, provider data/logs, and server log in a timestamped backup.
 2. Identify every unresolved transaction and its player, product, price, and last known phase. For corrupt logs, preserve the corrupt bytes and inspect all potentially affected recent transactions; do not simply truncate the tail.
 3. Compare provider transaction evidence with the player's actual entitlement or potion inventory. The player's current balance alone cannot determine whether a transaction was charged or refunded. A premium bottle might have been moved, consumed, or transferred, so absence from current inventory is not proof of nondelivery.
 4. Have an authorized administrator make any needed correction once, recording the evidence and correction alongside the transaction UUID. Do not retry the purchase, blindly deposit the price, or remove protection to guess a resolution.
-5. Only after **all** unresolved transactions have been reconciled and any journal-integrity uncertainty resolved, archive the original journal outside the active filename. Keep the archive and the resolution record. Restart to create a fresh journal, then verify that purchases are available. If some transactions remain unresolved, keep the active journal and those locks in place; this candidate has no supported per-player repair tool.
+5. Only after **all** unresolved transactions have been reconciled and any journal-integrity uncertainty resolved, archive the original journal outside the active filename. Keep the archive and the resolution record. Restart to create a fresh journal, then verify that purchases are available. If some transactions remain unresolved, keep the active journal and those locks in place; this version has no supported per-player repair tool.
 
 Do not hand-edit checksums, mark ambiguous transactions completed, delete the only audit copy, or rotate the journal merely to clear an error. Production financial or playerdata changes require the server owner's authorization; these instructions do not grant it.
 

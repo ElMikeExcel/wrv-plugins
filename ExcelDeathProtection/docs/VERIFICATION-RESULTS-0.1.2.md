@@ -1,18 +1,19 @@
 # ExcelDeathProtection 0.1.2 verification results
 
-## Publication and release status
+## Publication, installation, and acceptance status
 
-This is a source-only draft update to PR #13, prepared October 13, 2026. It preserves the exact 19 source, test, configuration, and documentation files from the tested offline candidate. No implementation or candidate-document bytes were changed for publication.
+Version 0.1.2 was installed October 13, 2026 from the exact tested JAR associated with source commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`. [Installation evidence](INSTALLATION-0.1.2.md) records the server-verified artifact/config/menu hashes and read-only startup checks. **Java and Bedrock-mobile UI, real purchases, and gameplay acceptance remain pending.** PR #13 remains draft and unmerged. Historical 0.1.0/0.1.1 player results do not validate 0.1.2.
 
-Some candidate documents say “not published.” That is their pre-publication snapshot status. This draft publication supersedes only that publication status. Version 0.1.2 has not been merged, installed, or deployed by this update. Java and Bedrock-mobile client acceptance remains pending. Historical 0.1.0/0.1.1 installation or player results do not validate 0.1.2.
+The original source publication at `a2586bf...` preserved all 19 tested source, test, configuration, and candidate-document files byte-for-byte. This later documentation-only update records installation and supersedes stale not-deployed wording; implementation, tests, packaged configuration, and dependencies are unchanged.
 
-The separate source manifest identifies each candidate file by SHA-256 and byte length. This report and that manifest are publication evidence, not additional plugin implementation. No JAR, archive, runtime world, playerdata, purchase journal, runtime logs, credentials, or private attachment links are published here.
+[SOURCE-MANIFEST-0.1.2.json](SOURCE-MANIFEST-0.1.2.json) remains the historical tested-candidate manifest at that source commit. Its documentation hashes identify that original snapshot, not these subsequently updated Markdown files. No JAR, archive, runtime world, playerdata, purchase journal, runtime logs, credentials, or private attachment links are published here.
 
 ## Exact candidate identity
 
 - Input repository: `ElMikeExcel/wrv-plugins`, draft PR #13.
-- Baseline commit: `ff224dea03d61e0f2227e65d8015d662c93c8d34`.
-- Candidate version: `0.1.2`.
+- Historical input baseline commit: `ff224dea03d61e0f2227e65d8015d662c93c8d34`.
+- Installed source commit: `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`.
+- Version: `0.1.2`.
 - Candidate JAR: `ExcelDeathProtection-0.1.2.jar`, 42,508 bytes.
 - JAR SHA-256: `24b8866853fea7f86c70d8d002a9200fbe36340a8d1284bf76f28bc8684af7f4`.
 - Offline candidate ZIP SHA-256: `db4cd44f097e69fbe28f2cb022d097fbcbd3a2883e2501ca67b3dc608f3df9ea`.
@@ -56,9 +57,13 @@ The native fixture retained a Curse of Vanishing sword during protected deaths i
 ## Release gates still open
 
 1. **Java and Bedrock/Geyser clients:** real menu/tap confirmation, bossbar and effect appearance, network login/relog/respawn, and HUD/plugin coexistence have not been tested for 0.1.2.
-2. **Production integration:** inspect the actual server, economy provider, plugin versions, configuration migration, menu slots and generator, backups, and rollback plan before any separately authorized installation. The supplied shop file is an unassigned template, not a live menu.
+2. **Remaining operations:** installed hashes, loaded version, configured tier prices, Vault/EssentialsX provider, DeluxeMenus registration, and live menu slots were verified on October 13. The attempted fresh full backup did not reach a verified completed result; retained individual rollback files are not a full recovery snapshot. The historical repository generator remains an overwrite risk. The supplied unassigned template is still not the installed menu.
 3. **Durability:** Vault and playerdata are not crash-atomic. Paper `saveData()` can return normally despite disabled saving or swallowed storage errors. A paid grant can be lost after a silent save failure; a refunded grant can reappear after a silent rollback-save failure. The throwing-save fixtures do not prove disk-full, power-loss, or disabled-saving behavior.
-4. **Manual reconciliation:** ambiguous journal entries intentionally block further purchases. No automatic replay, refund, grant, or per-player unlock exists. Rehearse the documented operator procedure with the real provider before release; do not clear a journal merely to bypass a lock.
+4. **Manual reconciliation:** ambiguous journal entries intentionally block further purchases. No automatic replay, refund, grant, or per-player unlock exists. Rehearse the documented operator procedure with the real provider as an outstanding operational gap; do not clear a journal merely to bypass a lock.
 5. **Compatibility:** verify competing death handlers, representative causes/dimensions, legacy effect attribution, and cursed-item behavior on the actual server/plugin combination.
 
-See [the release checklist](VERIFICATION.md) and [purchase-journal guidance](../PURCHASE-JOURNAL.md). The recorded offline tests support this draft candidate; they are not a claim of production readiness or a GitHub CI pass. Test execution was completed before publication, not rerun as part of the source upload.
+See [the release checklist](VERIFICATION.md) and [purchase-journal guidance](../PURCHASE-JOURNAL.md). The recorded offline tests support the exact installed artifact; they are not a claim of production readiness or a GitHub CI pass. The original test execution preceded source publication. Later documentation verification is recorded separately and cannot replace actual client/provider acceptance.
+
+## Documentation follow-up verification, October 13, 2026
+
+The documentation-only checkout was rebuilt with `OFFLINE=1 bash build.sh`, using Maven 3.9.9, Java 21.0.12.1, and the existing pinned dependency cache. **48 tests passed, with zero failures, errors, or skips.** The rebuilt JAR SHA-256 was again `24b8866853fea7f86c70d8d002a9200fbe36340a8d1284bf76f28bc8684af7f4`, exactly matching the installed artifact. This local verification did not reinstall anything or exercise the live provider or clients. The prior 128 isolated runtime assertions were not rerun for Markdown-only edits.

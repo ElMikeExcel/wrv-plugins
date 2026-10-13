@@ -1,6 +1,6 @@
-# ExcelDeathProtection: two-tier candidate specification
+# ExcelDeathProtection: two-tier specification
 
-**Candidate, October 13, 2026. Not published or deployed.** Baseline: PR #13, commit `ff224dea03d61e0f2227e65d8015d662c93c8d34`. This contract describes the intended 0.1.2 behavior. Automated evidence and separate live Java/Bedrock-mobile checks must be recorded before release; unperformed checks remain pending.
+**Version 0.1.2 installed October 13, 2026; player acceptance pending.** Installed source identity: draft PR #13, commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`. The earlier `ff224dea03d61e0f2227e65d8015d662c93c8d34` baseline is historical input. This contract describes intended 0.1.2 behavior; installation/startup verification is not proof of real Java/Bedrock-mobile UI, purchase, or gameplay acceptance. See [installation evidence](docs/INSTALLATION-0.1.2.md).
 
 ## Product contract
 
@@ -82,9 +82,9 @@ Operator review must correlate the player UUID, product, quoted amount, transact
 
 ## Shop integration boundaries
 
-The source `SpawnShop-DeluxeMenus/spawnshop.yml` at the verified baseline contains no Death Protection slot. It is marked auto-generated. Neither the live slot layout nor its generator changes have been inspected in this offline task.
+The October 13 installed menu uses verified slot 31 for basic and slot 34 for premium, with one tier-aware plugin command for each left/right click route. Its exact checksum and preservation checks are in [installation evidence](docs/INSTALLATION-0.1.2.md). Java/phone rendering and tap behavior remain pending.
 
-Supply separate unassigned product entries and integration instructions. Before future installation, inspect the live menu and generator, replace/update the actual old potion listing, choose non-conflicting slots, and synchronize names/prices. Never ship guessed slot numbers or call an unassigned template a ready-to-load menu. No menu `[takemoney]` command belongs to either product.
+The older repository `SpawnShop-DeluxeMenus/spawnshop.yml` and manual `make_spawnshop.py` generator remain unchanged. Regeneration can overwrite the hand-integrated choices. Resolve that maintenance gap in a separately scoped update; do not substitute the older repository menu for the live one. The supplied unassigned template is not a ready-to-load menu. No menu `[takemoney]` command belongs to either product.
 
 ## Verification and release gates
 
@@ -101,4 +101,4 @@ Any test purchase using real in-game funds needs approval for the product and co
 
 ## Historical context, not current acceptance evidence
 
-The baseline documentation records that 0.1.0 was installed and tested on Bedrock mobile on October 13, 2026: purchase messaging, drinking, status, one-death item retention, XP behavior, and consumed protection passed that historical test. Its Luck icon was absent on Bedrock. The 0.1.1 revision changed the effect to Conduit Power, disclosed its benefits, introduced on-screen buy titles, and used a single $15,000 potion. This two-tier candidate supersedes that single-product contract; its own live checks are pending.
+The baseline documentation records that 0.1.0 was installed and tested on Bedrock mobile on October 13, 2026: purchase messaging, drinking, status, one-death item retention, XP behavior, and consumed protection passed that historical test. Its Luck icon was absent on Bedrock. The 0.1.1 revision changed the effect to Conduit Power, disclosed its benefits, introduced on-screen buy titles, and used a single $15,000 potion. The installed two-tier version supersedes that single-product contract; its own client, purchase, and gameplay checks remain pending.

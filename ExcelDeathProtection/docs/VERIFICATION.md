@@ -1,15 +1,17 @@
 # Two-tier verification checklist
 
-**Candidate status: not published or deployed. All live Java and Bedrock-mobile checks are pending.** This file is a checklist, not a test-results claim. Record automated results elsewhere with the exact candidate source/artifact identity; mark each case passed, failed, blocked, or not run.
+**Status: 0.1.2 installed October 13, 2026; client and gameplay acceptance pending.** [Installation evidence](INSTALLATION-0.1.2.md) records exact deployed hashes, configured prices, startup, provider, and menu registration. [Automated results](VERIFICATION-RESULTS-0.1.2.md) are separate. The unchecked scenarios below remain pending for real Java and Bedrock-mobile clients and the actual provider; a passing startup does not mark them passed.
 
 ## Evidence and release gates
 
-- [ ] Record candidate source identity, exact JAR SHA-256, Java/Maven versions, build command, and build output.
-- [ ] Record automated-test command and full result counts; distinguish test coverage from a real Paper-server check.
-- [ ] Preserve baseline PR #13 commit `ff224dea03d61e0f2227e65d8015d662c93c8d34` as historical input, not candidate identity.
-- [ ] Review any changed dependencies, resources, version metadata, and packaged JAR contents.
-- [ ] Obtain explicit deployment and test authorization for spending real in-game balances as needed; use isolated fixtures/test balances where possible.
-- [ ] Verify future installation separately, including loaded version and artifact hash, backups, economy provider, live config, menu/generator, and logs.
+- [x] Record installed source commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`, exact JAR SHA-256, and prior build/toolchain evidence.
+- [x] Record 48 automated tests and 128 isolated Paper assertions separately from real-client acceptance.
+- [x] Preserve baseline PR #13 commit `ff224dea03d61e0f2227e65d8015d662c93c8d34` as historical input, not installed source identity.
+- [x] Record prior packaged-resource and class-target checks; this documentation update changes no implementation or dependencies.
+- [x] Record separately authorized installation, loaded version, installed hashes, configured prices, economy provider, and menu registration.
+- [ ] Obtain separate authorization before test purchases or any real-balance/playerdata correction.
+- [ ] Establish a genuinely completed recoverable backup; the rollout's fresh full backup did not produce a verified completed entry. Retained file copies are not a complete recovery snapshot.
+- [ ] Reconcile the historical menu/generator with the live hand-integrated entries before future regeneration.
 - [ ] Run and record the Java player checks below.
 - [ ] Run and record the Bedrock-mobile player checks below, with Geyser/Floodgate/server versions as applicable.
 
@@ -81,10 +83,10 @@ Use isolated test data and controlled interruption points, never an unapproved e
 
 ## Menu integration and final acceptance
 
-- [ ] Inspect the live menu and owning generator. Record the actual original potion listing if present; the baseline source has none.
-- [ ] Assign verified, non-conflicting slots and remove all template placeholders before loading.
-- [ ] Update both names, prices, activation wording, XP disclosure, and premium benefits, including mining on land.
-- [ ] Each click route calls exactly one tier-aware plugin buy command; neither route withdraws money or gives an item independently.
+- [x] Inspect the live menu; record basic slot 31 and premium slot 34. The historical manual generator remains an open overwrite risk.
+- [x] Install integer, non-conflicting slots; the active file has no template placeholders.
+- [x] Verify installed YAML names, prices, activation wording, XP disclosure, and premium benefits, including mining on land. This is a file check, not visual acceptance.
+- [x] Verify each installed left/right click route calls exactly one tier-aware plugin buy command; neither route withdraws money or gives an item independently.
 - [ ] Verify confirmation visibility while the shop is open, including Bedrock-mobile tap behavior and product changes.
 - [ ] Confirm the deployed player-facing guide matches the installed implementation only after publication is authorized.
 - [ ] Record remaining failures/blocked cases. Do not call the feature live-ready until the required gates are satisfied.
