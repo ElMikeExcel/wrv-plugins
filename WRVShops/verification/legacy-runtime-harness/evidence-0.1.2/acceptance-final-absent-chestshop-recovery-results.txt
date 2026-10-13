@@ -1,0 +1,11 @@
+PASS ExcelShops remains enabled
+PASS ChestShop entirely absent
+PASS native checkout loaded in recovery mode
+PASS dirty legacy evidence globally pauses native checkout
+PASS paused checkout refuses external admission
+PASS native quote API refuses purchase while legacy recovery is pending
+PASS native browse command remains registered
+PASS native command truthfully reports paused recovery
+PASS native paused command gives no items
+PASS legacy interrupted marker preserved before shutdown
+SUMMARY passed=1 assertions=10 failed=0

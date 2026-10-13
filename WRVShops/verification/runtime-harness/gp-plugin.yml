@@ -1,0 +1,6 @@
+name: GriefPrevention
+version: 0.0.0-test-only
+main: me.ryanhamshire.GriefPrevention.GriefPrevention
+api-version: '26.2'
+loadbefore: [WRVShops, ExcelShops]
+description: Synthetic claim API fixture. This is NOT the actual GriefPrevention plugin. NEVER deploy.

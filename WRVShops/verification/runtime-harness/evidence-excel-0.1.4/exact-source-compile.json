@@ -1,0 +1,41 @@
+{
+  "java": "Temurin 25.0.4+7-LTS",
+  "release": 21,
+  "paper_api": "26.2.build.123-stable",
+  "source_files": 26,
+  "class_files": 75,
+  "exit_code": 0,
+  "production_artifact_built_with": "Temurin 21.0.12.1+1",
+  "provided_legacy_compile_dependencies": {
+    "ChestShop-ConfirmationGuard-1.0.0.jar": "b22137ff0f94b8407f7c4985133b7e534b9d80f42be1cdc17aee0dcd018f07a0",
+    "ChestShop-3.13-pre-1-build474.jar": "b31a40e9561d399d8b04fada4e863ae28c523618976ff3a3b1a6f16fe3aa8ab2"
+  },
+  "source_sha256": {
+    "WRVShops/src/com/winkreyes/shops/BedrockForms.java": "2c1e06094a6e8bfcaed20b27fd75ddcf4b2ea276af6814bd49ec942ae08bdadd",
+    "WRVShops/src/com/winkreyes/shops/InventoryPlan.java": "e9b52a7fa67815db86f9e71af29dbbcf5ea9c9413516bffd521c3149e3b01bc1",
+    "WRVShops/src/com/winkreyes/shops/JavaNumberDialogs.java": "c35e5c67118621b3468987cf36facf78e686393bec6020d5d09410c8cb33dce3",
+    "WRVShops/src/com/winkreyes/shops/LegacyDataMigration.java": "0ce9fd58cb8da8ff11815e7c8d8e531c44ab8418ce8a0da6bc076fc3774c476d",
+    "WRVShops/src/com/winkreyes/shops/LegacyShopBridge.java": "1a26752088e25bb984b4c13446884e00be768584efe20e06d79dbef6311d7b86",
+    "WRVShops/src/com/winkreyes/shops/LegacyShopUi.java": "9ad1acee12de99adecaec9c507ac1413d8000f1216e85cd1564a9053de680c77",
+    "WRVShops/src/com/winkreyes/shops/LegacyTrading.java": "7b9209d24313e0ba4c01c8df553b4539fe914fdcccccec62e5f0ee54355614b2",
+    "WRVShops/src/com/winkreyes/shops/LegacyTransactionFence.java": "16cf21ba6db29230d482bad871834a59fd0c8fe7030d56cd7f5a9b7746b2296a",
+    "WRVShops/src/com/winkreyes/shops/ShopAdapter.java": "fc2330c177ee1ad4f4239a1202d930c19050b666d72ede98529f832ce28988c2",
+    "WRVShops/src/com/winkreyes/shops/ShopUi.java": "e844b453942653fd4bcb060eaccfc361a1b51a1b6833bd8506f8616213f05a7d",
+    "WRVShops/src/com/winkreyes/shops/SpawnCatalog.java": "8bc9b6185653b0efff9ecf1866884e090c78dfcdefd15a70bc1af7d67f4c7b50",
+    "WRVShops/src/com/winkreyes/shops/WRVShops.java": "f2a78d355a7301dd09c67b74cd2e4b6d9bfa6ab2d033594d5b930e214d0edfc4",
+    "WRVShops/src/com/winkreyes/shops/checkout/CheckoutService.java": "6f63818c0dd91edf55337e81781b0a9b45ac968f56e87d31011633a27dc3eafc",
+    "WRVShops/src/com/winkreyes/shops/checkout/DataFileLock.java": "db464447a8b4c6e23073e22c90272caee8462b070ec77221d800bf722243c4d2",
+    "WRVShops/src/com/winkreyes/shops/checkout/FileJournal.java": "95245638b24efb3a9fb0d4e081d9bd7300a43f082996749c5480905ca52377bf",
+    "WRVShops/src/com/winkreyes/shops/checkout/Money.java": "53355296c3ab78a9c99ddcd2b0c12a9237499ca9ba5ba38df5831f52fcefdd55",
+    "WRVShops/src/com/winkreyes/shops/store/BlockPos.java": "4b055cbf5b587d7f7538a6175b2a341ff57b32a6a8a7842eb844d8b29c53abf2",
+    "WRVShops/src/com/winkreyes/shops/store/ClaimOwnership.java": "e6b9aaaab8ef198017f36dc4db0c3ae423aca95431ae06bd584a4566ec8329f6",
+    "WRVShops/src/com/winkreyes/shops/store/GriefPreventionOwnership.java": "575206c37a82699d96697d275d4a309cd1c6cbf972b96d6f6f756c7089c7e4f5",
+    "WRVShops/src/com/winkreyes/shops/store/OwnershipProof.java": "e4bce19b53f0e14064fcfe7ea1c7be581777b37680ab7ecf99957ab27c9e3e9c",
+    "WRVShops/src/com/winkreyes/shops/store/RegistryException.java": "b68b9700887b858b6d09f13689efe1b9f08660e6d5d948342c837c38b103db73",
+    "WRVShops/src/com/winkreyes/shops/store/RegistryFile.java": "07319e1f882a62fee9dd722d2b32cc011f30240a2148bf3ad2f52698b834c4a3",
+    "WRVShops/src/com/winkreyes/shops/store/SetupProposal.java": "49602fbc8dbae367db021c42052a83bb76fcc9d615ac9bfd6b9a0c006d6912d3",
+    "WRVShops/src/com/winkreyes/shops/store/ShopOffer.java": "612105858e752a850777f491eaeb5a8912f02ac9c536ee8ce9359a7e5ff05c5f",
+    "WRVShops/src/com/winkreyes/shops/store/ShopRecord.java": "5a3de3c18165eef219e2c9d188fb3bd1e7c99a823df8ce457bf89ee17a1ba8fa",
+    "WRVShops/src/com/winkreyes/shops/store/ShopRegistry.java": "36386d5bcaa4443adcd167d03f89a77455c0b6cf8e45daadb3b58ed36826e814"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "mode": "mismatch",
+  "legacy_evidence_before": {
+    "transactions.log": "345842459828e53e92aeb232cff9a82d1a3613f982417c5da4a8e1268d72a79f"
+  },
+  "native_marker_isolated_for_independent_legacy_probe": false,
+  "harness_sources": {
+    "src/wrv/harness/FakePlayer.java": "928871391b3c9e8dca1108c7f6bb5888a3d2d9e20614973d9869bcb3d2ae2e09",
+    "src/wrv/harness/FullLegacyRuntimeHarness.java": "1eb77c670f0cd5eaa74cd11ec5734495c970e448bcb42ed2ed09c5f3a4b08f12",
+    "src/wrv/harness/LegacyRecoveryProbe.java": "3e07be3926f719a5decee0415ce58585a2591118575f36dee0836c16c4453dd8",
+    "src/wrv/harness/LegacyRuntimeHarness.java": "b027fc932e7dd59ef065b69ad7344e822e151964b8b63dc4889113e82fd626b3"
+  },
+  "source_plugin_sha256": "009f321a99f30024bcaf6742e9b2dc9dfba23571eaddddad1eee9699d6fe9edc",
+  "source_guard_sha256": "5e7bbf6014484ff87b5decced2df32e36b05b3aaa6c26ba03d57c72314cdd814",
+  "artifacts": {
+    "Vault-official-1.7.3.jar": "a6b5ed97f43a5cf5bbaf00a7c8cd23c5afc9bd003f849875af8b36e6cf77d01d",
+    "GriefPrevention-16.18.7.jar": "45e9907c61222e559ed2e099ffee0ede706a21243a31d7db549baf678708fdf0",
+    "ExcelLegacyRuntimeHarness.jar": "8c30117459002065d3a8d2580deb9bd116052fd5567dfd39e65f2287b6ce75e9",
+    "EssentialsX-2.22.0.jar": "bda4685105977fca2e209820a9f0ad24275bd103390a03236f38e59bfdac58e6",
+    "ExcelShops.jar": "009f321a99f30024bcaf6742e9b2dc9dfba23571eaddddad1eee9699d6fe9edc",
+    "ChestShop-3.13-pre-1-build474.jar": "652e24d4ecdf03f6c1ca047ba3a4ef8f0effa48861d06214118c6a8041f5f896"
+  },
+  "synthetic_players": true,
+  "real_network_client": false,
+  "real_chestshop": true,
+  "real_essentials": true,
+  "real_gp": true,
+  "exact_live_vault": false,
+  "vault_substitute": "official MilkBowl Vault1.7.3",
+  "listen": "127.0.0.1:25580",
+  "exit_code": 0,
+  "legacy_evidence_after": {
+    "transactions.log": "345842459828e53e92aeb232cff9a82d1a3613f982417c5da4a8e1268d72a79f"
+  },
+  "port_free_after": true,
+  "excelshops_present": true,
+  "paired_guard_contract_present": false,
+  "presence_metadata_source": "Derived from mode and pinned per-boot plugin artifact listing."
+}

@@ -1,0 +1,18 @@
+{
+  "utc": "2026-10-12T05:34:18.145629+00:00",
+  "stage": "verification-restart",
+  "plugin_sha256": "16de2e1477f561987717412b4c338eda136cd1025fad85e3c692ad29fc663aaa",
+  "harness_sha256": "ce18c73e8a20bfd4955e7eb1bbe0115372f079ebf8bc1ae5ad28c16c9e0b0bcf",
+  "fake_vault_sha256": "8da622778a9529e3fbd88a28dc81eb32762931f7c5e0f2d76be46726f39d7992",
+  "fake_gp_sha256": "17a0b06e384ea2b0d4c6a47c279251c28ccfe8a9ec988b646f67d3f3b3f480da",
+  "vault_api_sha256": "47f6a400a8ab22012e6a320f7bfc63621ce4a246e1c60502ff7fc91d532d2601",
+  "paper_sha256": "7b7b3b43c009103e1971a0576c26f655a7dd9b56a0a2a4438e352c03a7fecd08",
+  "java": "openjdk version \"25.0.4\" 2026-07-21 LTS\nOpenJDK Runtime Environment Temurin-25.0.4+7 (build 25.0.4+7-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.4+7 (build 25.0.4+7-LTS, mixed mode, sharing)",
+  "listen": "127.0.0.1:25579",
+  "synthetic_players": true,
+  "real_client": false,
+  "real_economy": false,
+  "vault_plugin_present": true,
+  "economy_service_present": true,
+  "probe_sha256": null
+}

@@ -65,24 +65,25 @@ class SpawnShopTest(unittest.TestCase):
         self.assertNotIn("elytra", shop.render())
         self.assertNotIn("[givemoney]", shop.render())
 
-    def test_buy_requirements_match_commands_for_both_click_sides(self):
+    def test_every_click_opens_server_side_confirmation_without_mutation(self):
         for multiplier in (0.5, 1.0, 1.25, 2.0):
             rendered = shop.render(multiplier)
             for key, slot, icon, name, give, amount, base, lore in shop.ITEMS:
-                with self.subTest(multiplier=multiplier, item=key):
-                    block = re.search(rf"^  {key}:\n(.*?)(?=^  \w+:|\Z)", rendered, re.M | re.S).group(1)
-                    price = shop.price(base, multiplier)
-                    self.assertGreater(price, 0)
-                    self.assertIn(f"&ePrice: &f${price}", block)
-                    for side in ("left", "right"):
-                        requirement = block.split(f"    {side}_click_requirement:\n", 1)[1].split(f"    {side}_click_commands:\n", 1)[0]
-                        self.assertIn(f"          amount: {price}\n", requirement)
-                        self.assertIn("type: has money", requirement)
-                        self.assertIn("input: '%player_has_empty_slot%'", requirement)
-                        commands = block.split(f"    {side}_click_commands:\n", 1)[1].split("    right_click_requirement:", 1)[0]
-                        self.assertIn(f"'[takemoney] {price}'", commands)
-                        self.assertIn(f"'[console] minecraft:give %player_name% {give} {amount}'", commands)
-                        self.assertLess(commands.index("[takemoney]"), commands.index("[console] minecraft:give"))
+                block = re.search(rf"^  {key}:\n(.*?)(?=^  \w+:|\Z)", rendered, re.M | re.S).group(1)
+                self.assertEqual(block.count(f"[player] excelshop browse {key}"), 2)
+                self.assertIn(f"&eBundle price: &f${shop.price(base, multiplier)}", block)
+            for forbidden in ("[takemoney]", "minecraft:give", "[givemoney]", "[console]", "[refresh]"):
+                self.assertNotIn(forbidden, rendered)
+
+    def test_authoritative_catalog_matches_packaged_resource(self):
+        self.assertEqual(shop.render_catalog(), (ROOT / "spawn-catalog.yml").read_text())
+        self.assertEqual(shop.render_catalog(), (ROOT.parent / "WRVShops/spawn-catalog.yml").read_text())
+        for item in shop.ITEMS:
+            self.assertIn("bundle-price: '" + str(shop.price(item[6])) + ".00'", shop.render_catalog())
+
+    def test_catalog_refuses_unsafe_prices(self):
+        with self.assertRaises(ValueError):
+            shop.render_catalog(1e10)
 
     def test_rounding_matches_existing_friendly_steps(self):
         for base, multiplier, expected in ((40, 1.25, 50), (80, 1.25, 100), (250, 1.25, 320), (600, 1.25, 750), (600, 2.0, 1200)):

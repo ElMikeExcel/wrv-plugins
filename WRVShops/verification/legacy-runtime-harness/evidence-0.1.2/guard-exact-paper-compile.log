@@ -1,0 +1,6 @@
+ChestShop-ConfirmationGuard/src/com/Acrobot/ChestShop/Listeners/Player/PlayerInteract.java:110: warning: [removal] SignChangeEvent(@org.jetbrains.annotations.NotNull Block,@org.jetbrains.annotations.NotNull Player,@org.jetbrains.annotations.NotNull String[]) in SignChangeEvent has been deprecated and marked for removal
+                    SignChangeEvent changeEvent = new SignChangeEvent(block, player, lines);
+                                                  ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+1 warning

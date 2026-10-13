@@ -1,0 +1,6 @@
+name: Vault
+version: 0.0.0-test-only
+main: wrv.harness.FakeVault
+api-version: '26.2'
+loadbefore: [WRVShops, ExcelShops]
+description: Disposable fake Economy provider using official VaultAPI; NEVER deploy.

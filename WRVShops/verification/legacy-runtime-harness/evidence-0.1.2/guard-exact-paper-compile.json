@@ -1,0 +1,21 @@
+{
+  "exit_code": 0,
+  "jdk": "25.0.4+7",
+  "release": 21,
+  "paper_api": "26.2.build.123-stable",
+  "guard_jar_sha256": "5e7bbf6014484ff87b5decced2df32e36b05b3aaa6c26ba03d57c72314cdd814",
+  "source_sha256": {
+    "src/com/Acrobot/ChestShop/Confirmation/ConfirmationGate.java": "b9d429060b631ef3a6b7f28db23f2c09486b56be5d31531aa870423b93452b43",
+    "src/com/Acrobot/ChestShop/Events/PreTransactionEvent.java": "a0ef22b4e8730b308e262d3c95ab57cb878bef46630590a82edc0f2c821244e4",
+    "src/com/Acrobot/ChestShop/Events/TransactionEvent.java": "f89204ebb4d50eda6af5eaa6235bb2d2d8162b0d42708222325826bb21dfa05b",
+    "src/com/Acrobot/ChestShop/Listeners/Economy/EconomyAdapter.java": "14b65faa09b98c335fbab0ec5630a9a99ad4878e34b6cfb886a93972a1546632",
+    "src/com/Acrobot/ChestShop/Listeners/Economy/Plugins/VaultListener.java": "faecae1f5c76aac0c9cf681a1a18bc682ab166a7e6ef1cce02ccc6c2e909b17a",
+    "src/com/Acrobot/ChestShop/Listeners/Economy/TaxModule.java": "a7fd91727e1bb29c67b2c029878e99193917222b15369052cb3a7828525ec41a",
+    "src/com/Acrobot/ChestShop/Listeners/Modules/StockCounterModule.java": "8d38d7ab6ae3becced2b0044feb110acfec14dcb74d91d486ba389d297ac219b",
+    "src/com/Acrobot/ChestShop/Listeners/Player/PlayerInteract.java": "9b8d334dd61f22d064e8261ba7192cc6a40cf1b20f5070c868854f2a40c0f529",
+    "src/com/Acrobot/ChestShop/Listeners/PostTransaction/EconomicModule.java": "2b2cb0df93d8d71b422deaea4d74a781d33fedc9a3048b2b2f4aa4e23fb1a230",
+    "src/com/Acrobot/ChestShop/Listeners/PostTransaction/ItemManager.java": "1a2cdda094754249e9ea367fa103e4506478d103d36164358c3e65c21d6058b3",
+    "src/com/Acrobot/ChestShop/Listeners/PostTransaction/TransactionMessageSender.java": "821b4fef134a50d5fb6507aa1ba31b2b1d2c26380c56e6672881d266043b913e",
+    "src/com/Acrobot/ChestShop/Listeners/PreTransaction/PermissionChecker.java": "e49770527633d1ad469053a10702dd96ec4873caf01cfe809dbba655f8a741b8"
+  }
+}

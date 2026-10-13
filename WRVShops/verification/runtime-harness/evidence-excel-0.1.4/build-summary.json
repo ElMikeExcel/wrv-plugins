@@ -1,0 +1,28 @@
+{
+  "candidate": "ExcelShops 0.1.4",
+  "build_command": "./build.sh (offline verified dependencies), followed by final ShopUiTest rerun after test-only additions",
+  "build_exit_code": 0,
+  "java_tests": {
+    "tests": 733,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python_tests": 55,
+  "java_release": 21,
+  "jar_sha256": "565ae9e91e7a4516908e2d245f87ef1936aae23d055f084dc4159112e445f83c",
+  "jar_bytes": 202230,
+  "repeat_build_identical": true,
+  "java_production_paths": [
+    "WRVShops/src/com/winkreyes/shops/ShopUi.java",
+    "WRVShops/src/com/winkreyes/shops/JavaNumberDialogs.java",
+    "WRVShops/src/com/winkreyes/shops/BedrockForms.java"
+  ],
+  "independent_review": "No blocking findings; recommended interruption tests added and passed.",
+  "live_deployed": false,
+  "human_java_bedrock_rendering_verified": false,
+  "full_aggregate_java_tests": 710,
+  "final_affected_ui_tests": 140,
+  "platform_routing": "Geyser/Floodgate-independent classification; known Bedrock and uncertain detection cannot receive Java dialogs",
+  "explicit_amount_regressions": "Java and Bedrock accept 70000 as price; reject negative/-0/zero, nonfinite text, scientific notation, overflow and excessive quantity/precision"
+}

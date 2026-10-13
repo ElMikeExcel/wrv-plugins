@@ -1,0 +1,90 @@
+Accepted WRVShops JAR SHA-256 16de2e1477f561987717412b4c338eda136cd1025fad85e3c692ad29fc663aaa
+Paper 26.2-123; API 26.2.build.123-stable; Temurin 25.0.4+7-LTS
+Synthetic players and test-only Economy/claim providers. Real Paper blocks, metadata, inventories and registered events.
+
+STAGE verification-first
+PASS exact-runtime-and-plugin-enable
+PASS real-item-metadata-and-storage-plan
+PASS install-synthetic-player-lookup
+RESTART verified shop=ec83987a-6f0e-4b61-83ad-c747fc296426
+PASS registry-clean-restart-and-physical-persistence
+PASS registry-owner-claim-placement-and-review-snapshots
+PASS chest-final-confirm-stock-price-owner-and-concurrency
+PASS chest-payout-decline-rolls-back-and-refunds
+PASS spawn-quote-cancel-exact-bundle-and-replay
+PASS spawn-capacity-funds-permission-and-disconnect
+PASS spawn-reentrant-confirm-and-changed-inventory-refund
+PASS uncertain-provider-and-refund-failures-persist-recovery
+PASS sign-place-edit-triggers-onboarding
+PASS onboarding-no-keeps-ordinary-storage
+PASS onboarding-can-restart-with-fresh-sign
+PASS onboarding-yes-shows-real-chest-items
+PASS setup-select-item-without-publishing
+PASS setup-enter-unit-price-without-publishing
+PASS setup-review-shows-price-before-confirm
+PASS setup-final-confirm-is-only-publish-action
+PASS setup-duplicate-publish-and-protection-listeners
+PASS buyer-catalog-read-only-drag-shift-numberkey
+PASS buyer-quantity-preview-no-purchase
+PASS buyer-final-screen-cancel-no-purchase
+PASS buyer-stale-confirm-after-cancel-cannot-buy
+PASS buyer-review-second-attempt
+PASS buyer-queued-back-invalidates-queued-confirm
+PASS buyer-back-before-confirm-remains-unpaid
+PASS buyer-close-before-queued-confirm-cancels
+PASS buyer-close-prevents-delayed-checkout
+PASS buyer-review-after-close
+PASS buyer-explicit-final-confirm-duplicate-click
+PASS buyer-exact-purchase-after-final-confirm-only
+PASS buyer-prepare-disconnect-confirm
+PASS buyer-disconnect-invalidates-current-review
+PASS buyer-disconnect-no-late-purchase-and-cleanup
+SUMMARY passed=35 failed=0 assertions=240
+
+STAGE verification-restart
+PASS exact-runtime-and-plugin-enable
+PASS real-item-metadata-and-storage-plan
+PASS install-synthetic-player-lookup
+RESTART verified shop=ec83987a-6f0e-4b61-83ad-c747fc296426
+PASS registry-clean-restart-and-physical-persistence
+PASS registry-owner-claim-placement-and-review-snapshots
+PASS chest-final-confirm-stock-price-owner-and-concurrency
+PASS chest-payout-decline-rolls-back-and-refunds
+PASS spawn-quote-cancel-exact-bundle-and-replay
+PASS spawn-capacity-funds-permission-and-disconnect
+PASS spawn-reentrant-confirm-and-changed-inventory-refund
+PASS uncertain-provider-and-refund-failures-persist-recovery
+PASS sign-place-edit-triggers-onboarding
+PASS onboarding-no-keeps-ordinary-storage
+PASS onboarding-can-restart-with-fresh-sign
+PASS onboarding-yes-shows-real-chest-items
+PASS setup-select-item-without-publishing
+PASS setup-enter-unit-price-without-publishing
+PASS setup-review-shows-price-before-confirm
+PASS setup-final-confirm-is-only-publish-action
+PASS setup-duplicate-publish-and-protection-listeners
+PASS buyer-catalog-read-only-drag-shift-numberkey
+PASS buyer-quantity-preview-no-purchase
+PASS buyer-final-screen-cancel-no-purchase
+PASS buyer-stale-confirm-after-cancel-cannot-buy
+PASS buyer-review-second-attempt
+PASS buyer-queued-back-invalidates-queued-confirm
+PASS buyer-back-before-confirm-remains-unpaid
+PASS buyer-close-before-queued-confirm-cancels
+PASS buyer-close-prevents-delayed-checkout
+PASS buyer-review-after-close
+PASS buyer-explicit-final-confirm-duplicate-click
+PASS buyer-exact-purchase-after-final-confirm-only
+PASS buyer-prepare-disconnect-confirm
+PASS buyer-disconnect-invalidates-current-review
+PASS buyer-disconnect-no-late-purchase-and-cleanup
+SUMMARY passed=35 failed=0 assertions=240
+
+STAGE verification-no-economy
+PROTECTION_ONLY verified
+PASS provider-absent-startup-keeps-stock-protected
+SUMMARY passed=1 failed=0 assertions=7
+
+STAGE verification-no-vault
+NO_VAULT verified
+SUMMARY passed=1 failed=0 assertions=11

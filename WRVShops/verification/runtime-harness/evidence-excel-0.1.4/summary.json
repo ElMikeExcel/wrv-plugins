@@ -1,0 +1,95 @@
+{
+  "candidate_version": "0.1.4",
+  "candidate_sha256": "565ae9e91e7a4516908e2d245f87ef1936aae23d055f084dc4159112e445f83c",
+  "verification_date_utc": "2026-10-13",
+  "boots": 4,
+  "assertions": 1104,
+  "failures": 0,
+  "paper": "26.2 build 123, commit 50018799f282010f7eb15d32c29cadbbe7c9d740",
+  "java": "Eclipse Temurin 25.0.4+7-LTS",
+  "listen": "127.0.0.1:25579",
+  "new_typed_entry_groups": 31,
+  "retained_cursor_regression_groups": 17,
+  "native_paper_inventories": true,
+  "native_paper_dialog_construction_and_text_input_inspected": true,
+  "native_paper_registered_callbacks_dispatched": true,
+  "native_dialog_timeout_exercised_seconds": 60,
+  "synthetic_players_inventory_views_economy_claims": true,
+  "real_client": false,
+  "live_server_accessed": false,
+  "real_money_used": false,
+  "legacy_migration_suite_rerun": false,
+  "reused_existing_authorized_disposable_fixture": true,
+  "new_eula_acceptance": false,
+  "all_child_processes_exited_zero": true,
+  "loopback_port_free_after_every_boot": true,
+  "coverage": [
+    "Native Enter Amount buttons construct actual Paper dialogs with one bounded text input, current value, Use amount and Cancel actions.",
+    "0.50 unit price saves exactly fifty cents only in setup draft; separate review and final publication remain unchanged.",
+    "19 bread bundles review as 304 items and $760.00 without debit or delivery; final purchase confirmation remains separate.",
+    "Zero, fractional and out-of-stock quantities and excessive price precision reopen a fresh input dialog without changing amount or spending.",
+    "Foreign-player callbacks cannot consume the owner response; duplicate, stale and post-cancel callbacks cannot mutate a newer page.",
+    "Cancel restores the most recently queued plus/minus amount; failed native send restores usable amount controls.",
+    "Unrelated inventory navigation and disconnect/reconnect invalidate pending amount responses; missing text safely restores controls.",
+    "A real sixty-second server timer restores the current amount, dismisses the dialog and rejects expired callbacks on both normal boots.",
+    "Existing queued plus/minus controls preserve exact native inventory and synthetic InventoryView references, cursor item and open/close counts.",
+    "Queued Save/Review uses latest amount; checkout, duplicate final confirmation, physical protection, restart, missing Economy and missing Vault regression checks pass."
+  ],
+  "limitations": [
+    "Capturing showDialog and dispatching a synthetic response proves server construction/callback handling, not real Java rendering or protocol support.",
+    "Human mouse-pointer position, client packets, Bedrock rendering, phone keyboard/layout and actual Geyser/Floodgate were not tested.",
+    "Actual installed economy and GriefPrevention versions, real player save persistence and other-plugin interference were not tested.",
+    "Legacy migration tests remain supported but were not rerun for this UI-only candidate; historical migration evidence does not constitute a fresh run.",
+    "Runtime fixture logs include external Paper-update and Minecraft authentication DNS warnings; no live accounts or network clients were used.",
+    "The corrected Bedrock routing guard is present in the tested JAR, but this real-Paper harness contains no actual Geyser/Floodgate provider. Separate synthetic API tests do not establish real phone/client compatibility."
+  ],
+  "runs": [
+    {
+      "boot": "verification-first",
+      "passed_groups": 83,
+      "failures": 0,
+      "assertions": 543
+    },
+    {
+      "boot": "verification-restart",
+      "passed_groups": 83,
+      "failures": 0,
+      "assertions": 543
+    },
+    {
+      "boot": "verification-no-economy",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 7
+    },
+    {
+      "boot": "verification-no-vault",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 11
+    }
+  ],
+  "source_input_sha256": {
+    "WRVShops/src/com/winkreyes/shops/ShopUi.java": "e844b453942653fd4bcb060eaccfc361a1b51a1b6833bd8506f8616213f05a7d",
+    "WRVShops/src/com/winkreyes/shops/JavaNumberDialogs.java": "c35e5c67118621b3468987cf36facf78e686393bec6020d5d09410c8cb33dce3",
+    "WRVShops/verification/runtime-harness/src/wrv/harness/RuntimeHarness.java": "9a20c97cb266d6606ef699a63ad461cd3ebda244c04c2b8582779c33251e502e",
+    "WRVShops/verification/runtime-harness/src/wrv/harness/FakePlayer.java": "1453c47aac3305e0d391120228148bb9d46786a2818bf36070075570f0602c51",
+    "WRVShops/verification/runtime-harness/src/wrv/harness/NativeDialogProbe.java": "a26fe328570bd745676d277e67e266d3225c1ba600ae9eaa65fb1f2bd4f7e8f7",
+    "WRVShops/verification/runtime-harness/run.py": "cc74bbe3e18560e252691cebd03147f48286b841fa976764d44d006fddebf71a",
+    "WRVShops/verification/runtime-harness/server.properties.loopback": "bd928afcff2f065f0c2bbdcc6c5f6f0dfbc3086387f00bff8fde08beb96c4c17",
+    "WRVShops/src/com/winkreyes/shops/BedrockForms.java": "2c1e06094a6e8bfcaed20b27fd75ddcf4b2ea276af6814bd49ec942ae08bdadd"
+  },
+  "active_session_marker_absent_after_clean_shutdown": true,
+  "runtime_bridge_provider": "No actual Geyser or Floodgate installed; native Java dialog branch only.",
+  "prior_unaccepted_attempt": {
+    "outcome": "240-second first-boot timeout during concurrent build and runtime work",
+    "passed_groups_observed": 81,
+    "failed_groups_observed": 0,
+    "completed_boots": 0,
+    "accepted_as_verification": false,
+    "root_cause": "Shell commands and server scheduling stalled; resource contention is plausible, not conclusively established.",
+    "recovery": "Archived complete dirty synthetic world/data with recovery marker and journal intact; restored byte-verified existing clean accepted fixture before serial retry. No dirty marker was cleared in place.",
+    "logs_and_dirty_fixture_preserved_outside_repository": true,
+    "eula_changed": false
+  }
+}

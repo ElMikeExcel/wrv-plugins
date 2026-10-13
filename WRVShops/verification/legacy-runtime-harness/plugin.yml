@@ -1,0 +1,6 @@
+name: ExcelLegacyRuntimeHarness
+version: 0.0.0-test-only
+main: wrv.harness.LegacyRuntimeHarness
+api-version: '1.21'
+depend: [Vault, Essentials, GriefPrevention, ChestShop, ExcelShops]
+description: NEVER DEPLOY. Disposable synthetic accounts on official real plugins.

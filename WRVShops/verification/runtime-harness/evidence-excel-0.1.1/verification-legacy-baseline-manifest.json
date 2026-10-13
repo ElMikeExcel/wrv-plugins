@@ -1,0 +1,21 @@
+{
+  "utc": "2026-10-12T18:20:56.886545+00:00",
+  "stage": "verification-legacy-baseline",
+  "plugin_sha256": "16de2e1477f561987717412b4c338eda136cd1025fad85e3c692ad29fc663aaa",
+  "plugin_name": "WRVShops",
+  "harness_sha256": "817f01566f11178a3eb20e9600b2809c451ba3eeb4476ddb9025fa1b76cd2529",
+  "fake_vault_sha256": "92e0f4b6018db591c3d6751c23952aedd0dbef1e20b1b470928570517496302a",
+  "fake_gp_sha256": "07c3f82774fb189c142304573d4b6ef98b16b91bfb2504a0b5836567409cc237",
+  "vault_api_sha256": "47f6a400a8ab22012e6a320f7bfc63621ce4a246e1c60502ff7fc91d532d2601",
+  "paper_sha256": "7b7b3b43c009103e1971a0576c26f655a7dd9b56a0a2a4438e352c03a7fecd08",
+  "java": "openjdk version \"25.0.4\" 2026-07-21 LTS\nOpenJDK Runtime Environment Temurin-25.0.4+7 (build 25.0.4+7-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.4+7 (build 25.0.4+7-LTS, mixed mode, sharing)",
+  "listen": "127.0.0.1:25579",
+  "synthetic_players": true,
+  "real_client": false,
+  "real_economy": false,
+  "vault_plugin_present": true,
+  "economy_service_present": true,
+  "probe_sha256": null,
+  "child_exit_code": 0,
+  "loopback_25579_available_after_run": true
+}

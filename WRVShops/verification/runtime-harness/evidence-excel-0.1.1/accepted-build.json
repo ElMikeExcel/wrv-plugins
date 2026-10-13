@@ -1,0 +1,105 @@
+{
+  "checked_utc": "2026-10-12T18:23:53.598188+00:00",
+  "runner_exit_code": 0,
+  "plugin_name": "ExcelShops",
+  "plugin_version": "0.1.1",
+  "plugin_sha256": "5d8628c0855f6664e1434b69234359bfe0c5cd0598885fb391e851f1ad2850e1",
+  "legacy_plugin_sha256": "16de2e1477f561987717412b4c338eda136cd1025fad85e3c692ad29fc663aaa",
+  "exact_paper": "26.2-123-5001879",
+  "exact_java": "Eclipse Temurin25.0.4+7-LTS",
+  "full_server_boots": 11,
+  "total_groups_passed": 113,
+  "total_groups_failed": 0,
+  "total_assertions": 852,
+  "renamed_plugin_assertions": 614,
+  "stages": [
+    {
+      "stage": "verification-legacy-baseline",
+      "groups_passed": 35,
+      "groups_failed": 0,
+      "assertions": 238
+    },
+    {
+      "stage": "verification-first",
+      "groups_passed": 35,
+      "groups_failed": 0,
+      "assertions": 245
+    },
+    {
+      "stage": "verification-restart",
+      "groups_passed": 35,
+      "groups_failed": 0,
+      "assertions": 245
+    },
+    {
+      "stage": "verification-no-economy",
+      "groups_passed": 1,
+      "groups_failed": 0,
+      "assertions": 7
+    },
+    {
+      "stage": "verification-no-vault",
+      "groups_passed": 1,
+      "groups_failed": 0,
+      "assertions": 11
+    },
+    {
+      "stage": "verification-migration-dirty",
+      "groups_passed": 1,
+      "groups_failed": 0,
+      "assertions": 19
+    },
+    {
+      "stage": "verification-migration-dirty-restart",
+      "groups_passed": 1,
+      "groups_failed": 0,
+      "assertions": 19
+    },
+    {
+      "stage": "verification-migration-conflict",
+      "groups_passed": 1,
+      "groups_failed": 0,
+      "assertions": 17
+    },
+    {
+      "stage": "verification-migration-conflict-restart",
+      "groups_passed": 1,
+      "groups_failed": 0,
+      "assertions": 17
+    },
+    {
+      "stage": "verification-migration-missing-journal",
+      "groups_passed": 1,
+      "groups_failed": 0,
+      "assertions": 17
+    },
+    {
+      "stage": "verification-migration-missing-journal-restart",
+      "groups_passed": 1,
+      "groups_failed": 0,
+      "assertions": 17
+    }
+  ],
+  "all_child_processes_exited_normally": true,
+  "loopback_25579_available_after_run": true,
+  "legacy_files_directories_types_modes_unchanged_on_every_renamed_boot": true,
+  "dirty_migration_journal_bytes_unchanged_and_marker_retained_across_restart": true,
+  "conflict_both_folders_unchanged_across_restart": true,
+  "missing_legacy_journal_refused_before_staging_across_restart": true,
+  "missing_legacy_journal_source_untouched_and_no_target_or_substitute_journal_created": true,
+  "exact_api_source_compile": {
+    "exit_code": 0,
+    "release": 21,
+    "java": "Temurin25.0.4+7-LTS",
+    "paper_api": "26.2.build.123-stable",
+    "class_files": 56,
+    "notes": "Note: Some input files use or override a deprecated API.\nNote: Recompile with -Xlint:deprecation for details."
+  },
+  "live_server_accessed": false,
+  "real_money_used": false,
+  "real_clients_tested": false,
+  "real_griefprevention_tested": false,
+  "real_economy_provider_tested": false,
+  "real_geyser_floodgate_tested": false,
+  "runner_sha256": "cc74bbe3e18560e252691cebd03147f48286b841fa976764d44d006fddebf71a"
+}

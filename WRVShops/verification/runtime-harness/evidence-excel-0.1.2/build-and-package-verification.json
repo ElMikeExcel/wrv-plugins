@@ -1,0 +1,121 @@
+{
+  "artifacts": {
+    "ChestShop-3.13-pre-1-build474-confirmation.1-sources.zip": "ee8f6618f6d96ec19f66b806fd2cf5fe04f7b198c548b288024ebd6552fc7260",
+    "ChestShop-3.13-pre-1-build474-confirmation.1.jar": "5e7bbf6014484ff87b5decced2df32e36b05b3aaa6c26ba03d57c72314cdd814",
+    "ExcelShops-0.1.2-install-candidate.zip": "f0eccd1096336a1e7093961eb97772a0872721c79972f580b4a32ef371667e9b",
+    "ExcelShops-0.1.2.jar": "009f321a99f30024bcaf6742e9b2dc9dfba23571eaddddad1eee9699d6fe9edc"
+  },
+  "deployment_performed": false,
+  "install_pack_files": 13,
+  "install_pack_jars": [
+    "plugins/ChestShop-3.13-pre-1-build474-confirmation.1.jar",
+    "plugins/ExcelShops-0.1.2.jar"
+  ],
+  "java": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 554
+  },
+  "logs": [
+    "/tmp/paired-final-clean-build.log",
+    "/tmp/final-guard-python.log",
+    "/tmp/final-root-python.log",
+    "/tmp/final-spawn-python.log",
+    "/tmp/final-pack-python.log"
+  ],
+  "modules": {
+    "BedrockMenu": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 11
+    },
+    "ChestShop-ConfirmationGuard": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 34
+    },
+    "Leaderboard": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 3
+    },
+    "MenuJoin": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 21
+    },
+    "NoPhantoms": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 2
+    },
+    "RestartCountdown": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 7
+    },
+    "ShopVillager": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 10
+    },
+    "WRVShops": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 455
+    },
+    "WealthBoard": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 6
+    },
+    "WeekendXP": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 5
+    }
+  },
+  "note": "Local reproducibility verification before source publication. The GitHub Actions installation pack binds its actual head commit; final delivery requires CI/local byte comparison.",
+  "python": {
+    "errors": 0,
+    "failures": 0,
+    "guard_audit": 7,
+    "pair_and_offline_pause": 31,
+    "repository_audit": 6,
+    "skipped": 0,
+    "spawn_generator": 11,
+    "tests": 55
+  },
+  "reproducible_pair": true,
+  "runtime_acceptance": {
+    "combined_assertions": 6988,
+    "combined_boots": 21,
+    "failures": 0,
+    "human_clients": "unverified",
+    "legacy_paired_assertions": 6136,
+    "legacy_paired_boots": 10,
+    "native_assertions": 852,
+    "native_boots": 11,
+    "native_candidate_assertions": 614,
+    "native_old_fixture_assertions": 238,
+    "vault": "1.7.3 substitute; exact live 2.0.0 unverified"
+  },
+  "source_commit": null,
+  "source_rebuild": {
+    "independent_directory": "/tmp/guard-corresponding-source-rebuild-p6ba7c0w",
+    "java_tests": 34,
+    "log": "/tmp/final-guard-source-rebuild.log",
+    "matches_final_guard_binary": true
+  }
+}

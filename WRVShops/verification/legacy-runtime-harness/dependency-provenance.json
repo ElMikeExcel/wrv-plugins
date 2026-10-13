@@ -1,0 +1,45 @@
+{
+  "checked_at_utc": "2026-10-12T19:36:00Z",
+  "artifacts": [
+    {
+      "name": "ChestShop",
+      "version": "3.13-pre-1 (build 474)",
+      "url": "https://ci.minebench.de/job/ChestShop-3/474/artifact/target/ChestShop.jar",
+      "build_metadata": "https://ci.minebench.de/job/ChestShop-3/474/api/json",
+      "upstream_commit": "dde7ee2155303714c2d5054deeccef4618e3939c",
+      "sha256": "b31a40e9561d399d8b04fada4e863ae28c523618976ff3a3b1a6f16fe3aa8ab2",
+      "bytes": 2147147,
+      "live_match": "version/build match; no live artifact hash acquired"
+    },
+    {
+      "name": "EssentialsX",
+      "version": "2.22.0",
+      "url": "https://github.com/EssentialsX/Essentials/releases/download/2.22.0/EssentialsX-2.22.0.jar",
+      "release": "https://github.com/EssentialsX/Essentials/releases/tag/2.22.0",
+      "sha256": "bda4685105977fca2e209820a9f0ad24275bd103390a03236f38e59bfdac58e6",
+      "verification": "matches GitHub release asset digest",
+      "bytes": 4861125,
+      "live_match": "version match; no live artifact hash acquired"
+    },
+    {
+      "name": "GriefPrevention",
+      "version": "16.18.7",
+      "url": "https://cdn.modrinth.com/data/O4o4mKaq/versions/dGfCZHqk/GriefPrevention.jar",
+      "release": "https://github.com/GriefPrevention/GriefPrevention/releases/tag/16.18.7",
+      "sha256": "45e9907c61222e559ed2e099ffee0ede706a21243a31d7db549baf678708fdf0",
+      "sha512": "c9bc692253ba3860327e5c38767ce3dc66c798264fe650a08b4ae888337ff75bc16e9bd1db7b39a514a275bf2cc2a3f1f8cd95cf080b89ae42a0f684fc2bfc66",
+      "verification": "matches upstream-linked Modrinth file SHA512",
+      "bytes": 380232,
+      "live_match": "version match; no live artifact hash acquired"
+    },
+    {
+      "name": "Vault",
+      "version": "1.7.3-b131",
+      "url": "https://github.com/MilkBowl/Vault/releases/download/1.7.3/Vault.jar",
+      "sha256": "a6b5ed97f43a5cf5bbaf00a7c8cd23c5afc9bd003f849875af8b36e6cf77d01d",
+      "bytes": 272259,
+      "live_match": false,
+      "notice": "Explicit upstream compatibility substitute. Live version2.0.0 observed14.09KB, identity unresolved. Essentials Vault Compatibility Layer is a generic layer label, not fork identification."
+    }
+  ]
+}
