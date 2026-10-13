@@ -17,4 +17,4 @@ This display works the same way for Java and Bedrock players. It does not create
 3. Open chat and confirm that each ranked name and balance is readable.
 4. Try `/leaderboard` to reopen the full boards.
 
-This release is still an undeployed candidate until the server owner approves installation.
+Version 1.3.0-mobile.1 is installed. Actual phone-screen confirmation is still pending; use the checklist above to verify your device.
