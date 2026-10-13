@@ -1,4 +1,8 @@
-# WeekendXP
+# ExcelWeekendXP (WeekendXP)
+
+**Created by us (custom add-on).** This is a documentation label; the runtime plugin name remains `WeekendXP`. Recorded installed version: **1.0.2**; this branch's source version: **1.0.1**. The source/build details below describe this branch, not proof of the installed JAR's behavior. See the [plugin inventory](../PLUGIN-INVENTORY.md).
+
+The installed **1.0.2** source is recorded separately at [commit `55fcc2f`](https://github.com/ElMikeExcel/wrv-plugins/commit/55fcc2fe19afc649508927436db4bf222bbb83f6). This branch retains **1.0.1**; the following 1.2× schedule is its source behavior and must not be treated as the live 1.0.2 schedule.
 
 Version: **1.0.1**, restored and repaired from **1.0.0**.
 

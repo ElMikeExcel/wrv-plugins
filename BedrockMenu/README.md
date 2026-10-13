@@ -1,4 +1,6 @@
-# BedrockMenu
+# ExcelBedrockMenu (BedrockMenu)
+
+**Created by us (custom add-on).** This is a documentation label; the runtime plugin name remains `BedrockMenu`. Recorded installed version: **1.4.2**; this branch's source version: **1.4.3**. The source/build details below describe this branch, not proof of the installed JAR's behavior. See the [plugin inventory](../PLUGIN-INVENTORY.md).
 
 `/menu` opens native Geyser forms for Bedrock players and the DeluxeMenus
 `server_menu` chest GUI for Java players. `/tpmenu` opens the player picker.

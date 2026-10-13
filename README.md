@@ -2,21 +2,29 @@
 
 Source and recovery material for the family's Minecraft plugins. Each plugin has one canonical, case-safe folder. Built JARs are generated locally or in CI and are not committed or automatically deployed.
 
+## Identifying our plugins
+
+Documentation uses **ExcelName (OriginalName)** to identify custom add-ons we created. Modified upstream code is labeled **mcMMO with Excel XP (mcMMO)**; upstream authors and licenses are preserved. These are identification labels, not a runtime-renaming or installation plan. Plugin IDs, packages, commands, permissions, data folders, JAR names and version behavior stay unchanged. ExcelShops and ExcelPlayerMap were already branded at runtime.
+
+The [plugin inventory](PLUGIN-INVENTORY.md) separates created add-ons, the installed mcMMO modification, Jobs settings-only customization, and historical or off-server work. It also distinguishes recorded installed versions from this branch's source versions. The earlier [runtime-rename proposal, PR #6](https://github.com/ElMikeExcel/wrv-plugins/pull/6), was closed without merging and is superseded by documentation-only identification.
+
 ## Current source
+
+The versions and purposes below describe source in this branch. They are not a live plugin/version inventory; some installed versions differ.
 
 | Plugin | Source version | Purpose |
 | --- | --- | --- |
-| [BedrockMenu](BedrockMenu/) | 1.4.3 | Bedrock native forms and Java menu, player teleport requests, Spawn Shop |
-| [Leaderboard](Leaderboard/) | 1.0.0 | Wealth and mcMMO command shortcuts |
-| [MenuJoin](MenuJoin/) | 1.2.1 | Join menu toggle, protected/recoverable menu compass, PlaceholderAPI expansion |
-| [NoPhantoms](NoPhantoms/) | 1.0.0 | Cancel phantom spawns |
-| [RestartCountdown](RestartCountdown/) | 1.1.1 | Two-minute chat-and-title warning, cancellable shutdown |
-| [ShopVillager](ShopVillager/) | 1.0.1 | Tagged spawn-shop villager opens DeluxeMenus |
-| [WealthBoard](WealthBoard/) | 1.3.1 | Join wealth popup and optional Jobs enrollment |
-| [WeekendXP](WeekendXP/) | 1.0.1 | Chicago Saturday/Sunday mcMMO XP rate |
-| [ExcelShops](WRVShops/) | 0.1.4 | Native and existing ChestShop BUY/SELL final confirmation |
+| [ExcelBedrockMenu (BedrockMenu)](BedrockMenu/) | 1.4.3 | Bedrock native forms and Java menu, player teleport requests, Spawn Shop |
+| [ExcelLeaderboard (Leaderboard)](Leaderboard/) | 1.0.0 | Wealth and mcMMO command shortcuts |
+| [ExcelMenuJoin (MenuJoin)](MenuJoin/) | 1.2.1 | Join menu toggle, protected/recoverable menu compass, PlaceholderAPI expansion |
+| [ExcelNoPhantoms (NoPhantoms)](NoPhantoms/) | 1.0.0 | Cancel phantom spawns |
+| [ExcelRestartCountdown (RestartCountdown)](RestartCountdown/) | 1.1.1 | Two-minute chat-and-title warning, cancellable shutdown |
+| [ExcelShopVillager (ShopVillager)](ShopVillager/) | 1.0.1 | Tagged spawn-shop villager opens DeluxeMenus |
+| [ExcelWealthBoard (WealthBoard)](WealthBoard/) | 1.3.1 | Join wealth popup and optional Jobs enrollment |
+| [ExcelWeekendXP (WeekendXP)](WeekendXP/) | 1.0.1 | Chicago Saturday/Sunday mcMMO XP rate |
+| [ExcelShops (WRVShops)](WRVShops/) | 0.1.4 | Native and existing ChestShop BUY/SELL final confirmation |
 
-[ChestShop confirmation guard](ChestShop-ConfirmationGuard/) is a separately branded LGPL-2.1 modification of upstream ChestShop build 474, not a tenth custom plugin. Its Maven module is an overlay; only the packaged full guarded JAR is deployable, paired with ExcelShops and accompanied by full corresponding source/notices. [Spawn Shop](SpawnShop-DeluxeMenus/) is a DeluxeMenus configuration/generator, not a Java plugin. [mcMMO Together bonus](mcMMO-TogetherBonus/) is an unchanged patch series for a separately pinned upstream repository.
+[ChestShop confirmation guard](ChestShop-ConfirmationGuard/) is a historical LGPL-2.1 modification of upstream ChestShop build 474, removed from the live server and not an active custom add-on. Its Maven module is an overlay; only the packaged full guarded JAR is deployable, paired with ExcelShops and accompanied by full corresponding source/notices. [Spawn Shop](SpawnShop-DeluxeMenus/) is a DeluxeMenus configuration/generator, not a Java plugin. [mcMMO with Excel XP (mcMMO)](mcMMO-TogetherBonus/) retains the historical Together bonus patch series for a separately pinned upstream repository; this folder is not a complete snapshot of the installed custom mcMMO build. [ExcelPlayerMap (WRVPlayerMap)](https://github.com/ElMikeExcel/wrv-plugins/blob/0329e01cef749719e653b876329cdf7115dff8d3/WRVPlayerMap/README.md) is another created add-on, with source documented separately rather than present in this branch.
 
 ## Build and test
 

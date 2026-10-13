@@ -1,4 +1,6 @@
-# ExcelShops 0.1.4: typed entry installed
+# ExcelShops (WRVShops)
+
+**Created by us (custom add-on), already branded at runtime.** Runtime name: `ExcelShops`; recorded installed and source version: **0.1.4**. `WRVShops` identifies the original name/source folder. This documentation label does not change either identity or existing compatibility behavior. See the [plugin inventory](../PLUGIN-INVENTORY.md).
 
 **0.1.4 is installed; real-device acceptance remains pending.** It adds a clear **Enter Amount** button and private native Java text field for exact prices and purchase quantities. Bedrock keeps native numeric forms. See [typed-entry instructions and verification](AMOUNT-ENTRY-0.1.4.md). The host hash, loaded version and startup checks were verified at about 8:13 p.m. Central on October 12, 2026 (October 13 UTC). Java keyboard/mouse and Bedrock touch, controller and Windows still need human checks.
 

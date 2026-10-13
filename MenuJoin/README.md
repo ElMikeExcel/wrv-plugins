@@ -1,4 +1,6 @@
-# MenuJoin 1.2.1
+# ExcelMenuJoin (MenuJoin)
+
+**Created by us (custom add-on).** This is a documentation label; the runtime plugin name remains `MenuJoin`. Recorded installed version: **1.2.0**; this branch's source version: **1.2.1**. The source/build details below describe this branch, not proof of the installed JAR's behavior. See the [plugin inventory](../PLUGIN-INVENTORY.md).
 
 Argus's compass plugin, recovered from 1.1.0 and extended in 1.2.0 by Steve.
 This repair keeps the existing join, respawn, menu-toggle, and compass behavior.

@@ -1,4 +1,6 @@
-# Leaderboard
+# ExcelLeaderboard (Leaderboard)
+
+**Created by us (custom add-on).** This is a documentation label; the runtime plugin name remains `Leaderboard`. Recorded installed version: **1.0.0**; this branch's source version: **1.0.0**. The source/build details below describe this branch, not proof of the installed JAR's behavior. See the [plugin inventory](../PLUGIN-INVENTORY.md).
 
 Version: **1.0.0**. `/leaderboard` runs the native Essentials `baltop` and mcMMO `mctop` commands as the player, retaining their output and permission checks. If either command is unavailable, the player receives a short fallback message. Console use is rejected.
 
