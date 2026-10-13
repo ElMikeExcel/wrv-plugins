@@ -25,6 +25,7 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
     private NamespacedKey potionKey, activeKey, tierKey, loreKey;
     private Economy economy;
     private PurchaseCoordinator purchases;
+    private PurchaseReviewMenu reviewMenu;
     private final Map<UUID, Player> purchasePlayers = new HashMap<>();
     private final Map<UUID, BossBar> basicBars = new HashMap<>();
     private final Set<UUID> usedProtection = new HashSet<>();
@@ -45,6 +46,7 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
         if (economy == null) getLogger().warning("Vault economy unavailable; purchases disabled.");
         if (getConfig().contains("price")) getLogger().warning("Legacy price is ignored. Use basic-price and premium-price; defaults are 15000 and 30000.");
         initializePurchases();
+        initializeReviewMenu();
         getServer().getPluginManager().registerEvents(this, this);
         Objects.requireNonNull(getCommand("deathprotection")).setExecutor(this);
         getCommand("deathprotection").setTabCompleter(this);
@@ -52,11 +54,15 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (Player player : Bukkit.getOnlinePlayers()) refreshPlayer(player);
         }, 100L, 100L);
-        getLogger().info("ExcelDeathProtection 0.1.2: basic $" + money(price(PurchaseCoordinator.Product.BASIC))
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            for (Player player : Bukkit.getOnlinePlayers()) reviewMenu.refresh(player);
+        }, 20L, 20L);
+        getLogger().info("ExcelDeathProtection 0.1.3: basic $" + money(price(PurchaseCoordinator.Product.BASIC))
                 + ", premium $" + money(price(PurchaseCoordinator.Product.PREMIUM)));
     }
 
     @Override public void onDisable() {
+        if (reviewMenu != null) reviewMenu.shutdown();
         basicBars.values().forEach(BossBar::removeAll);
         basicBars.clear();
         pendingConsumes.clear();
@@ -282,7 +288,7 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
             buyer = Bukkit.getPlayerExact(name);
             if (buyer == null) { sender.sendMessage("Player is not online: " + name); return true; }
         }
-        performPurchase(buyer, product);
+        reviewMenu.open(buyer, product);
         return true;
     }
     private boolean handleGive(CommandSender sender, String[] args) {
@@ -413,23 +419,58 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
         for (ItemStack item : contents) if (item != null && item.isSimilar(wanted)) count += item.getAmount();
         return count;
     }
-    private void performPurchase(Player buyer, PurchaseCoordinator.Product product) {
+    private enum PurchaseMode { QUOTE, PREVIEW, CONFIRM }
+    private void initializeReviewMenu() {
+        reviewMenu = new PurchaseReviewMenu(new PurchaseReviewMenu.Gateway() {
+            @Override public PurchaseCoordinator.Result quote(Player p, PurchaseCoordinator.Product product) {
+                return purchaseResult(p, product, PurchaseMode.QUOTE);
+            }
+            @Override public PurchaseCoordinator.Result preview(Player p, PurchaseCoordinator.Product product) {
+                return purchaseResult(p, product, PurchaseMode.PREVIEW);
+            }
+            @Override public PurchaseCoordinator.Result confirm(Player p, PurchaseCoordinator.Product product) {
+                return purchaseResult(p, product, PurchaseMode.CONFIRM);
+            }
+            @Override public void cancel(UUID id) { if (purchases != null) purchases.cancel(id); }
+            @Override public void report(Player p, PurchaseCoordinator.Result result) { reportPurchase(p, result); }
+        }, new PurchaseReviewMenu.Host() {
+            @Override public Inventory inventory(InventoryHolder holder, String title) {
+                return Bukkit.createInventory(holder, 27, title);
+            }
+            @Override public ItemStack item(Material material, String name, List<String> lore) {
+                ItemStack item = new ItemStack(material, 1);
+                ItemMeta meta = Objects.requireNonNull(item.getItemMeta());
+                meta.setDisplayName(name); meta.setLore(lore); item.setItemMeta(meta); return item;
+            }
+            @Override public void later(Runnable action) { Bukkit.getScheduler().runTask(ExcelDeathProtection.this, action); }
+            @Override public void back(Player player) { player.performCommand("shop"); }
+        }, System::currentTimeMillis);
+        getServer().getPluginManager().registerEvents(reviewMenu, this);
+    }
+    private PurchaseCoordinator.Result purchaseResult(Player buyer, PurchaseCoordinator.Product product, PurchaseMode mode) {
+        double currentPrice = price(product);
         if (purchases == null || economy == null) {
-            message(buyer, ChatColor.RED, "Shop unavailable", "No purchase was started. Please try later.");
-            return;
+            return new PurchaseCoordinator.Result(PurchaseCoordinator.Status.UNAVAILABLE, product, currentPrice,
+                    Double.NaN, null, "Economy or purchase journal unavailable");
         }
         UUID id = buyer.getUniqueId();
-        // Retain only the current synchronous caller, never an offline Player object.
         if (purchasePlayers.putIfAbsent(id, buyer) != null) {
-            message(buyer, ChatColor.YELLOW, "Purchase in progress", "Wait for its result before trying again.");
-            return;
+            return new PurchaseCoordinator.Result(PurchaseCoordinator.Status.BUSY, product, currentPrice,
+                    Double.NaN, null, "Purchase already in progress");
         }
-        PurchaseCoordinator.Result result;
-        try { result = purchases.click(id, product, price(product)); }
-        finally { purchasePlayers.remove(id); }
+        try {
+            return switch (mode) {
+                case QUOTE -> purchases.quote(id, product, currentPrice);
+                case PREVIEW -> purchases.preview(id, product, currentPrice);
+                case CONFIRM -> purchases.confirm(id, product, currentPrice);
+            };
+        } finally { purchasePlayers.remove(id); }
+    }
+    private void reportPurchase(Player buyer, PurchaseCoordinator.Result result) {
+        PurchaseCoordinator.Product product = result.product();
         switch (result.status()) {
             case ARMED -> message(buyer, ChatColor.YELLOW, productName(product) + " $" + money(result.price()),
-                    "Tap again within 20s. Balance $" + money(result.balance()) + ".");
+                    "Review the price and balance, then select Confirm. No charge yet.");
             case PURCHASED -> {
                 try { refreshPresentation(buyer); }
                 catch (RuntimeException ex) { getLogger().warning("Presentation refresh failed after successful purchase: " + ex); }
@@ -450,7 +491,7 @@ public class ExcelDeathProtection extends JavaPlugin implements Listener, Comman
             case REFUNDED -> message(buyer, ChatColor.YELLOW, "Purchase refunded", "Delivery failed; $" + money(result.price()) + " was returned.");
             case COOLDOWN, BUSY -> message(buyer, ChatColor.YELLOW, "Please wait", "Your last purchase is already being handled.");
             case LOCKED -> {
-                getLogger().severe("Purchase needs manual reconciliation for " + id + ", transaction " + result.transactionId() + ": " + result.detail());
+                getLogger().severe("Purchase needs manual reconciliation for " + buyer.getUniqueId() + ", transaction " + result.transactionId() + ": " + result.detail());
                 message(buyer, ChatColor.RED, "Purchase needs admin review", "Payment or delivery is uncertain. Do not retry; tell an admin.");
             }
             case UNAVAILABLE, INVALID_PRICE -> message(buyer, ChatColor.RED, "Shop unavailable", "No purchase can be completed right now; tell an admin.");

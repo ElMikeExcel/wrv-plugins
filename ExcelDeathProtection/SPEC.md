@@ -1,6 +1,6 @@
 # ExcelDeathProtection: two-tier specification
 
-**Version 0.1.2 installed October 13, 2026; player acceptance pending.** Installed source identity: draft PR #13, commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`. The earlier `ff224dea03d61e0f2227e65d8015d662c93c8d34` baseline is historical input. This contract describes intended 0.1.2 behavior; installation/startup verification is not proof of real Java/Bedrock-mobile UI, purchase, or gameplay acceptance. See [installation evidence](docs/INSTALLATION-0.1.2.md).
+**Version 0.1.3 source candidate, October 13, 2026. Installation and real-client acceptance are separate gates.** Built from the installed 0.1.2 implementation (source identity `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`); 0.1.2 remains the last verified installed version at 23:40:51 UTC. Historical deployment checks are in [0.1.2 installation evidence](docs/INSTALLATION-0.1.2.md); they are not acceptance of the candidate review UI. [0.1.3 evidence](docs/VERIFICATION-RESULTS-0.1.3.md) records automated coverage and current operations separately.
 
 ## Product contract
 
@@ -39,7 +39,10 @@
 - Compatibility aliases: bare player `/dp buy` and old console `deathprotection buy <player>` mean **premium**, with a fresh confirmation at the new $30,000 price. They must not retain an old underpriced quote or silently change product intent.
 - Player buy commands always target the sender; a player cannot use the console target-player form.
 - Admin `give <player> [amount]` continues to give premium potions; it is not a paid basic activation command.
-- First purchase invocation displays exact product and price. A repeat for the same product within 20 seconds confirms. A product/price change requires a fresh confirmation. Logout clears an unused quote; a successful purchase has a one-second repeat-click cooldown.
+- Every buy invocation opens a native 27-slot, single-product review with quantity fixed at 1; repeated invocations never charge. Review shows authoritative price, balance, projected remainder or positive shortfall. A positive sub-cent shortage is displayed rounded up to a cent so it is never misleadingly zero.
+- Only an owner-matched, current inventory's plain left/right Confirm action can reach the existing purchase coordinator. Cancel all movement/drag/cross-inventory actions while reviewing. Queue actions after inventory click handling and recheck the exact current session before acting.
+- Opening/previewing/Back/close/logout never withdraw, deliver, refund, or write transaction intent. Read-only periodic preview must not arm or extend quotes. Confirm consumes a matching quote after fresh provider/eligibility checks. Missing, changed or expired quotes create a fresh non-charging review; a distinct Confirm is required.
+- A review expires after 20 seconds. Back, close, quit and replacing the review invalidate previous tokens/actions. A successful purchase keeps the one-second repeat-click cooldown.
 - The plugin owns the authoritative price, validation, confirmation, withdrawal, and delivery. Menu entries call the plugin; they do not independently withdraw money or manufacture the bottle.
 - Missing economy provider, invalid price, insufficient funds, blocked state, or delivery precondition failure must not silently debit the player or report success.
 - New defaults are `basic-price: 15000.0` and `premium-price: 30000.0`. The legacy `price` key is ignored.
@@ -82,7 +85,7 @@ Operator review must correlate the player UUID, product, quoted amount, transact
 
 ## Shop integration boundaries
 
-The October 13 installed menu uses verified slot 31 for basic and slot 34 for premium, with one tier-aware plugin command for each left/right click route. Its exact checksum and preservation checks are in [installation evidence](docs/INSTALLATION-0.1.2.md). The owner reported both entries look good on his phone; Java rendering and remaining confirmation/tap behavior checks are pending.
+The last verified October 13 0.1.2 menu uses verified slot 31 for basic and slot 34 for premium, with one tier-aware plugin command for each left/right click route. Its exact checksum and preservation checks are in [installation evidence](docs/INSTALLATION-0.1.2.md). The owner reported both 0.1.2 entries look good on his phone and accepted single-item purchasing without a quantity dialog. Exact-shortfall visibility motivated the candidate review; all 0.1.3 Java and phone review checks remain pending.
 
 The older repository `SpawnShop-DeluxeMenus/spawnshop.yml` and manual `make_spawnshop.py` generator remain unchanged. Regeneration can overwrite the hand-integrated choices. Resolve that maintenance gap in a separately scoped update; do not substitute the older repository menu for the live one. The supplied unassigned template is not a ready-to-load menu. No menu `[takemoney]` command belongs to either product.
 

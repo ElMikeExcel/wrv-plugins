@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "candidate_version": "0.1.3",
+  "status": "source review candidate; installation and real-client/provider acceptance are separate gates",
+  "publication_base_commit": "721ebcfb02bde4edf283fffdc2cb6e8fa4681730",
+  "baseline_implementation_commit": "a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac",
+  "last_verified_installed": {
+    "version": "0.1.2",
+    "observed_at_utc": "2026-10-13T23:40:51Z",
+    "jar_sha256": "24b8866853fea7f86c70d8d002a9200fbe36340a8d1284bf76f28bc8684af7f4"
+  },
+  "candidate_artifact": {
+    "filename": "ExcelDeathProtection-0.1.3.jar",
+    "bytes": 58521,
+    "sha256": "f0224d18a51e430b81ec8fb02f9408fd6038e64b893d84d738368fd288cb4093"
+  },
+  "tested_snapshot_manifest": {
+    "filename": "SOURCE-MANIFEST.json",
+    "bytes": 4329,
+    "sha256": "eef488aed1c6587a0e36929c6dfee29aa14ae453628e2dd3154ed5f24b7dcd50",
+    "scope": "Frozen offline candidate snapshot. Documentation entries below identify original snapshot bytes, not necessarily reconciled publication bytes."
+  },
+  "exact_tested_implementation_build_resources_and_tests": [
+    {
+      "path": ".gitignore",
+      "bytes": 15,
+      "sha256": "a04097d90d608076e3d49ece9768303ce8fbc2fa07924b1b9c0d08e1c8de1037"
+    },
+    {
+      "path": "build.sh",
+      "bytes": 643,
+      "sha256": "1a16212122c3e796684e31ebd8ebc41f0a30ccda9765af9574b7ffa5ee865d7f"
+    },
+    {
+      "path": "config.yml",
+      "bytes": 182,
+      "sha256": "ac927fcecb8f383ef45f32bffbb7b655c5becf409adb564cd6429e249cdef162"
+    },
+    {
+      "path": "plugin.yml",
+      "bytes": 621,
+      "sha256": "d00137c22fce49e0b00ef8a0a4b00ad0d59c8de81995a53b64a501cefa2f9ff9"
+    },
+    {
+      "path": "pom.xml",
+      "bytes": 3750,
+      "sha256": "59e05c4a2ec20964516553c48747a251e3a8fadd56c1be2983bcf328c9271531"
+    },
+    {
+      "path": "src/com/winkreyes/exceldeathprotection/ExcelDeathProtection.java",
+      "bytes": 30266,
+      "sha256": "4a1a33cc3dacacf4211cfe2001200b4b871b613207d89f63098409a535ea1ad3"
+    },
+    {
+      "path": "src/com/winkreyes/exceldeathprotection/PurchaseCoordinator.java",
+      "bytes": 14600,
+      "sha256": "c55e11925c2638a0260854495fd6e0d26dd5ad47cc2cbaa7bba19979d3cfbd80"
+    },
+    {
+      "path": "src/com/winkreyes/exceldeathprotection/PurchaseJournal.java",
+      "bytes": 6783,
+      "sha256": "27f62f047804ecb763274c15af50af219bd27b758c398380209c947e891b58f9"
+    },
+    {
+      "path": "src/com/winkreyes/exceldeathprotection/PurchaseReviewMenu.java",
+      "bytes": 13148,
+      "sha256": "41c3daaee1049c1dcfb9cfa666dd2cc22237c881ed71cb8e8cc84c709065e3b4"
+    },
+    {
+      "path": "test/com/winkreyes/exceldeathprotection/PurchaseCoordinatorTest.java",
+      "bytes": 28513,
+      "sha256": "875d26568d2bd47ee2a76208600b248dd3256cd837470d54601571187f584cea"
+    },
+    {
+      "path": "test/com/winkreyes/exceldeathprotection/PurchaseJournalTest.java",
+      "bytes": 6072,
+      "sha256": "01eb2583f9ac42cb6310eb89f3153e34376a693d68fff262e348daa6e89c60c1"
+    },
+    {
+      "path": "test/com/winkreyes/exceldeathprotection/PurchaseReviewMenuTest.java",
+      "bytes": 16466,
+      "sha256": "9b7006b079f58f249749c6d4aa5b237c5838220a2120093e07093b7df69c61a3"
+    },
+    {
+      "path": "test/com/winkreyes/exceldeathprotection/ResourceConfigurationTest.java",
+      "bytes": 1744,
+      "sha256": "2fb13072fba9413cc12ccb2fd5296933485c33e885aef8874dfd8b7ced5a91e5"
+    }
+  ],
+  "tested_documentation_snapshot": [
+    {
+      "path": "CHANGELOG.md",
+      "bytes": 5420,
+      "sha256": "d5ec08ebe496ce35cb81b425652b74c6e6c0ffa32b854cae45d9619c43ea05d6"
+    },
+    {
+      "path": "PLAYER-GUIDE.md",
+      "bytes": 2844,
+      "sha256": "24acfa2388e0393c39691e2861baa6331340efdfb3df46d42a8169f884114cd2"
+    },
+    {
+      "path": "PURCHASE-JOURNAL.md",
+      "bytes": 5165,
+      "sha256": "a4863e5ccfe89266e525a1ea285a4ea3d438ccb7a3e96be99b7c3368425916b4"
+    },
+    {
+      "path": "README.md",
+      "bytes": 9144,
+      "sha256": "6900bda4c1c46d438bc8e9960ad762b8aeedbd57e9e700491320e1a33fbe2ddf"
+    },
+    {
+      "path": "SPEC.md",
+      "bytes": 12544,
+      "sha256": "0afbbed2a23aa21df0544edcf79c7bd2c3287fefda48f49c91c687c15f0ef906"
+    },
+    {
+      "path": "docs/INSTALLATION-0.1.2.md",
+      "bytes": 6617,
+      "sha256": "e45d81ed414ef4f75607610907d74cebdace051e21865fe85176b552c08d6b97"
+    },
+    {
+      "path": "docs/SOURCE-MANIFEST-0.1.2.json",
+      "bytes": 3628,
+      "sha256": "41a757ee3839b262b84001e3be567276af070745ff8aa9bd2ed37f97d92abc30"
+    },
+    {
+      "path": "docs/VERIFICATION-RESULTS-0.1.2.md",
+      "bytes": 7721,
+      "sha256": "c1cec7e4c34d60cdd9fd3c4db20b37af4bee3ecfc1b9d9c6627198c3ecdaba7e"
+    },
+    {
+      "path": "docs/VERIFICATION.md",
+      "bytes": 10735,
+      "sha256": "6599512f1da84212562e2c391d388dd8f5df32a3b7010c14c0ac1386e7b2b064"
+    },
+    {
+      "path": "integration/README.md",
+      "bytes": 8520,
+      "sha256": "ae910df5c8d319afdb33711df8dd74cfab3e18a1c2d0a5b7a109fb6beb557190"
+    },
+    {
+      "path": "integration/spawnshop-death-protection.template.yml",
+      "bytes": 2051,
+      "sha256": "46343a16cf0f45d5589e913c5626898bd96bdd71197c9942c4b35be0e2bc66eb"
+    }
+  ],
+  "reconciled_publication_documentation": [
+    {
+      "path": "CHANGELOG.md",
+      "bytes": 5952,
+      "sha256": "0797d580c589992f0e621ffa1fc016acfbb81cf174b9ed094b427223298fb6c2"
+    },
+    {
+      "path": "PLAYER-GUIDE.md",
+      "bytes": 3621,
+      "sha256": "11199fd426527feab92f4849844bdcc0ff0df56e2d679e9ff5227cc2825eebee"
+    },
+    {
+      "path": "PURCHASE-JOURNAL.md",
+      "bytes": 5795,
+      "sha256": "d96ee763469ebe597ffadad159163d5a077e188ed8a5faf95e74d2194a1d7563"
+    },
+    {
+      "path": "README.md",
+      "bytes": 10992,
+      "sha256": "13ae3aedb22f3a80140ff749005a510e3b0ff21f6083e6174fe5d8456354316f"
+    },
+    {
+      "path": "SPEC.md",
+      "bytes": 12868,
+      "sha256": "03cdec5a6227a9996162bd63eea52fd6768f3734ad87181631f3293c750acd7b"
+    },
+    {
+      "path": "docs/INSTALL-PLAN-0.1.3.md",
+      "bytes": 4643,
+      "sha256": "f9a5d31ceb3a228f3a8ef66ce0b7613d738ef19ab234c5df30fd3f32ed4a35ba"
+    },
+    {
+      "path": "docs/INSTALLATION-0.1.2.md",
+      "bytes": 6617,
+      "sha256": "e45d81ed414ef4f75607610907d74cebdace051e21865fe85176b552c08d6b97"
+    },
+    {
+      "path": "docs/SOURCE-MANIFEST-0.1.2.json",
+      "bytes": 3628,
+      "sha256": "41a757ee3839b262b84001e3be567276af070745ff8aa9bd2ed37f97d92abc30"
+    },
+    {
+      "path": "docs/VERIFICATION-RESULTS-0.1.2.md",
+      "bytes": 7721,
+      "sha256": "c1cec7e4c34d60cdd9fd3c4db20b37af4bee3ecfc1b9d9c6627198c3ecdaba7e"
+    },
+    {
+      "path": "docs/VERIFICATION-RESULTS-0.1.3.md",
+      "bytes": 9558,
+      "sha256": "7dbdde30e8d661f62288995994067bcb55a5908a78e24a13c759fb0db1fe23ef"
+    },
+    {
+      "path": "docs/VERIFICATION.md",
+      "bytes": 13281,
+      "sha256": "fe5605127d4db1f44de6eb0ba87e940bed358051b116bd60df6c811eddd53852"
+    },
+    {
+      "path": "integration/README.md",
+      "bytes": 9794,
+      "sha256": "3863828b7a65a4b2fb31d93850a8fa76ae1ae74c58838ee917b4d00442f42931"
+    },
+    {
+      "path": "integration/spawnshop-death-protection.template.yml",
+      "bytes": 2051,
+      "sha256": "46343a16cf0f45d5589e913c5626898bd96bdd71197c9942c4b35be0e2bc66eb"
+    }
+  ],
+  "manifest_self_hash": "Excluded to avoid a circular hash. The publishing Git commit identifies this file.",
+  "historical_evidence": "INSTALLATION-0.1.2.md, VERIFICATION-RESULTS-0.1.2.md and SOURCE-MANIFEST-0.1.2.json are retained byte-for-byte from the publication base.",
+  "verification_scope": "99 candidate tests; 107 includes those 99 plus eight reviewer additions; 196 isolated Paper assertions. Actual Java, Bedrock phone, live provider purchases and gameplay acceptance remain pending."
+}

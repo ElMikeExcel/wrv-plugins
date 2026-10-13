@@ -33,10 +33,252 @@ class PurchaseCoordinatorTest {
         return new PurchaseCoordinator(ports, log, now::get, 20_000, 1_000);
     }
     Result click(Product product) { return coordinator.click(player, product, price(product)); }
+    Result quote(Product product) { return coordinator.quote(player, product, price(product)); }
+    Result preview(Product product) { return coordinator.preview(player, product, price(product)); }
+    Result confirm(Product product) { return coordinator.confirm(player, product, price(product)); }
     static double price(Product product) { return product == Product.BASIC ? 15_000 : 30_000; }
     Result buy(Product product) {
         assertEquals(Status.ARMED, click(product).status());
         return click(product);
+    }
+
+    @Test void repeatedQuotesNeverChargeAndReplacePreviousExpiry() {
+        assertEquals(Status.ARMED, quote(Product.BASIC).status());
+        now.addAndGet(19_999);
+        for (int i = 0; i < 5; i++) {
+            Result quoted = quote(Product.BASIC);
+            assertEquals(Status.ARMED, quoted.status());
+            assertEquals(Product.BASIC, quoted.product());
+            assertEquals(15_000, quoted.price());
+            assertEquals(100_000, quoted.balance());
+            assertNull(quoted.transactionId());
+        }
+        assertNoTransactions();
+        now.incrementAndGet();
+        assertEquals(Status.PURCHASED, confirm(Product.BASIC).status());
+        assertEquals(1, ports.withdrawals);
+    }
+
+    @Test void previewNeverPrimesAPurchase() {
+        for (Product product : Product.values()) {
+            for (int i = 0; i < 3; i++) assertEquals(Status.ARMED, preview(product).status());
+            assertEquals(Status.ARMED, confirm(product).status());
+            coordinator.clearConfirmation(player);
+        }
+        assertNoTransactions();
+    }
+
+    @Test void quotedProductCanBeConfirmedAfterAnyReadOnlyPreview() {
+        assertEquals(Status.ARMED, quote(Product.BASIC).status());
+        assertEquals(Status.ARMED, preview(Product.BASIC).status());
+        assertEquals(Status.ARMED, preview(Product.PREMIUM).status());
+        assertEquals(Status.ARMED, coordinator.preview(player, Product.BASIC, 16_000).status());
+        assertNoTransactions();
+        assertEquals(Status.PURCHASED, confirm(Product.BASIC).status());
+        assertEquals(85_000, ports.money);
+    }
+
+    @Test void previewFailuresDoNotConsumeAnExistingQuote() {
+        quote(Product.PREMIUM);
+        ports.money = 1;
+        assertEquals(Status.INSUFFICIENT_FUNDS, preview(Product.PREMIUM).status());
+        ports.money = 100_000;
+        ports.eligibility = Eligibility.NO_SPACE;
+        assertEquals(Status.INELIGIBLE, preview(Product.PREMIUM).status());
+        ports.eligibility = Eligibility.ELIGIBLE;
+        ports.failBalance = true;
+        assertEquals(Status.UNAVAILABLE, preview(Product.PREMIUM).status());
+        ports.failBalance = false;
+        assertEquals(Status.INVALID_PRICE, coordinator.preview(player, Product.PREMIUM, Double.NaN).status());
+        assertNoTransactions();
+        assertEquals(Status.PURCHASED, confirm(Product.PREMIUM).status());
+        assertEquals(70_000, ports.money);
+    }
+
+    @Test void previewsNeverRefreshAQuoteExpiry() {
+        quote(Product.PREMIUM);
+        now.addAndGet(19_999);
+        assertEquals(Status.ARMED, preview(Product.PREMIUM).status());
+        now.incrementAndGet();
+        assertEquals(Status.ARMED, confirm(Product.PREMIUM).status());
+        assertNoTransactions();
+        assertEquals(Status.PURCHASED, confirm(Product.PREMIUM).status());
+    }
+
+    @Test void insufficientResultsExposeBothTierPricesAndBalancesWithoutArming() {
+        for (Product product : Product.values()) {
+            double expectedPrice = price(product);
+            ports.money = expectedPrice - 123.45;
+            for (Result result : new Result[]{quote(product), preview(product), confirm(product)}) {
+                assertEquals(Status.INSUFFICIENT_FUNDS, result.status());
+                assertEquals(product, result.product());
+                assertEquals(expectedPrice, result.price());
+                assertEquals(ports.money, result.balance());
+                assertEquals(123.45, result.price() - result.balance(), 0.000001);
+                assertNull(result.transactionId());
+            }
+            ports.money = 100_000;
+            assertEquals(Status.ARMED, confirm(product).status());
+            coordinator.clearConfirmation(player);
+        }
+        assertNoTransactions();
+    }
+
+    @Test void confirmWithoutAQuoteRequiresAnotherDistinctConfirmation() {
+        assertEquals(Status.ARMED, confirm(Product.BASIC).status());
+        assertNoTransactions();
+        assertEquals(Status.PURCHASED, confirm(Product.BASIC).status());
+    }
+
+    @Test void confirmPriceOrProductChangeReturnsFreshReviewWithoutDebit() {
+        quote(Product.BASIC);
+        assertEquals(Status.ARMED, confirm(Product.PREMIUM).status());
+        assertNoTransactions();
+        Result changed = coordinator.confirm(player, Product.PREMIUM, 31_000);
+        assertEquals(Status.ARMED, changed.status());
+        assertEquals(31_000, changed.price());
+        assertNoTransactions();
+        assertEquals(Status.PURCHASED, coordinator.confirm(player, Product.PREMIUM, 31_000).status());
+        assertEquals(69_000, ports.money);
+    }
+
+    @Test void differentPlayerCannotUseOrConsumeAQuote() {
+        quote(Product.PREMIUM);
+        assertEquals(Status.ARMED, coordinator.confirm(UUID.randomUUID(), Product.PREMIUM, 30_000).status());
+        assertNoTransactions();
+        assertEquals(Status.PURCHASED, confirm(Product.PREMIUM).status());
+    }
+
+    @Test void quoteFailureInvalidatesEarlierConfirmation() {
+        quote(Product.BASIC);
+        ports.money = 1;
+        assertEquals(Status.INSUFFICIENT_FUNDS, quote(Product.PREMIUM).status());
+        ports.money = 100_000;
+        assertEquals(Status.ARMED, confirm(Product.BASIC).status());
+        assertNoTransactions();
+    }
+
+    @Test void allConfirmationPrecheckFailuresConsumeThePreviousToken() throws Exception {
+        SwitchableJournal log = new SwitchableJournal(directory.resolve("switchable"));
+        journal = log;
+        coordinator = create(log);
+        quote(Product.BASIC);
+        log.available = false;
+        assertEquals(Status.UNAVAILABLE, confirm(Product.BASIC).status());
+        log.available = true;
+        assertEquals(Status.ARMED, confirm(Product.BASIC).status());
+        assertEquals(Status.INVALID_PRICE, coordinator.confirm(player, Product.BASIC, 0).status());
+        assertEquals(Status.ARMED, confirm(Product.BASIC).status());
+        ports.eligibility = Eligibility.NO_SPACE;
+        assertEquals(Status.INELIGIBLE, confirm(Product.BASIC).status());
+        ports.eligibility = Eligibility.ELIGIBLE;
+        assertEquals(Status.ARMED, confirm(Product.BASIC).status());
+        ports.failBalance = true;
+        assertEquals(Status.UNAVAILABLE, confirm(Product.BASIC).status());
+        ports.failBalance = false;
+        assertEquals(Status.ARMED, confirm(Product.BASIC).status());
+        ports.money = 1;
+        assertEquals(Status.INSUFFICIENT_FUNDS, confirm(Product.BASIC).status());
+        ports.money = 100_000;
+        assertEquals(Status.ARMED, confirm(Product.BASIC).status());
+        assertNoTransactions();
+    }
+
+    @Test void previewChecksJournalHealthWithoutConsumingTheQuote() throws Exception {
+        SwitchableJournal log = new SwitchableJournal(directory.resolve("switchable"));
+        journal = log;
+        coordinator = create(log);
+        quote(Product.BASIC);
+        int balanceReads = ports.balanceReads;
+        log.available = false;
+        assertEquals(Status.UNAVAILABLE, preview(Product.BASIC).status());
+        assertEquals(balanceReads, ports.balanceReads);
+        log.available = true;
+        assertEquals(Status.PURCHASED, confirm(Product.BASIC).status());
+    }
+
+    @Test void quoteAndPreviewRespectCooldownAndLockedState() {
+        assertEquals(Status.PURCHASED, buy(Product.BASIC).status());
+        int entries = journal.entries().size();
+        int balanceReads = ports.balanceReads;
+        assertEquals(Status.COOLDOWN, quote(Product.PREMIUM).status());
+        assertEquals(Status.COOLDOWN, preview(Product.PREMIUM).status());
+        assertEquals(entries, journal.entries().size());
+        assertEquals(balanceReads, ports.balanceReads);
+        now.addAndGet(1_000);
+        ports.delivery = DeliveryOutcome.UNKNOWN;
+        quote(Product.PREMIUM);
+        assertEquals(Status.LOCKED, confirm(Product.PREMIUM).status());
+        entries = journal.entries().size();
+        balanceReads = ports.balanceReads;
+        assertEquals(Status.LOCKED, quote(Product.BASIC).status());
+        assertEquals(Status.LOCKED, preview(Product.BASIC).status());
+        assertEquals(entries, journal.entries().size());
+        assertEquals(balanceReads, ports.balanceReads);
+        assertEquals(2, ports.withdrawals);
+    }
+
+    @Test void expiryIsRecheckedAfterSlowProviderPrechecks() {
+        quote(Product.PREMIUM);
+        ports.onCheck = () -> now.addAndGet(20_000);
+        assertEquals(Status.ARMED, confirm(Product.PREMIUM).status());
+        assertNoTransactions();
+        ports.onCheck = () -> {};
+        assertEquals(Status.PURCHASED, confirm(Product.PREMIUM).status());
+    }
+
+    @Test void backwardClockRequiresFreshConfirmationForExplicitApi() {
+        quote(Product.BASIC);
+        now.decrementAndGet();
+        assertEquals(Status.ARMED, confirm(Product.BASIC).status());
+        assertNoTransactions();
+    }
+
+    @Test void allEntryPointsShareTheReentrantGuardDuringPreviewAndPurchase() {
+        ports.onCheck = () -> {
+            assertEquals(Status.BUSY, preview(Product.BASIC).status());
+            assertEquals(Status.BUSY, quote(Product.BASIC).status());
+            assertEquals(Status.BUSY, confirm(Product.BASIC).status());
+            assertEquals(Status.BUSY, click(Product.BASIC).status());
+        };
+        assertEquals(Status.ARMED, preview(Product.BASIC).status());
+        assertEquals(Status.ARMED, confirm(Product.BASIC).status());
+        assertNoTransactions();
+        ports.onWithdraw = ports.onCheck;
+        assertEquals(Status.PURCHASED, confirm(Product.BASIC).status());
+        assertEquals(1, ports.withdrawals);
+    }
+
+    @Test void concurrentReviewCallsCannotInterfereWithAnInProgressConfirmation() throws Exception {
+        CountDownLatch inside = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        AtomicReference<Result> result = new AtomicReference<>();
+        ports.onWithdraw = () -> {
+            inside.countDown();
+            try { assertTrue(release.await(5, TimeUnit.SECONDS)); }
+            catch (InterruptedException failure) { throw new RuntimeException(failure); }
+        };
+        quote(Product.PREMIUM);
+        Thread thread = new Thread(() -> result.set(confirm(Product.PREMIUM)));
+        thread.start();
+        try {
+            assertTrue(inside.await(5, TimeUnit.SECONDS));
+            assertEquals(Status.BUSY, quote(Product.BASIC).status());
+            assertEquals(Status.BUSY, preview(Product.BASIC).status());
+            assertEquals(Status.BUSY, confirm(Product.PREMIUM).status());
+        } finally { release.countDown(); }
+        thread.join(5_000);
+        assertFalse(thread.isAlive());
+        assertEquals(Status.PURCHASED, result.get().status());
+        assertEquals(1, ports.withdrawals);
+        assertEquals(1, ports.deliveries);
+    }
+
+    void assertNoTransactions() {
+        assertEquals(0, ports.withdrawals);
+        assertEquals(0, ports.refunds);
+        assertEquals(0, ports.deliveries);
+        assertTrue(journal.entries().isEmpty());
     }
 
     @Test void basicChargesFifteenThousandAndActivatesOnce() {
@@ -342,6 +584,12 @@ class PurchaseCoordinatorTest {
         assertEquals(1, ports.withdrawals);
     }
 
+    static class SwitchableJournal extends PurchaseJournal {
+        boolean available = true;
+        SwitchableJournal(Path path) throws IOException { super(path); }
+        @Override public synchronized boolean healthy() { return available && super.healthy(); }
+    }
+
     static class FaultyJournal extends PurchaseJournal {
         final Phase failurePhase;
         FaultyJournal(Path path, Phase failurePhase) throws IOException { super(path); this.failurePhase = failurePhase; }
@@ -361,7 +609,8 @@ class PurchaseCoordinatorTest {
                 wrongAmount, wrongReportedBalance, throwDelivery, rejectRefund, throwAfterRefund;
         Runnable onWithdraw = () -> {};
         Runnable onRefund = () -> {};
-        public Eligibility check(UUID id, Product product) { return eligibility; }
+        Runnable onCheck = () -> {};
+        public Eligibility check(UUID id, Product product) { onCheck.run(); return eligibility; }
         public double balance(UUID id) {
             balanceReads++;
             if (failBalance) throw new IllegalStateException("balance unavailable");

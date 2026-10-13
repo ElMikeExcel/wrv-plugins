@@ -1,26 +1,44 @@
 # Two-tier verification checklist
 
-**Status: 0.1.2 installed October 13, 2026; client and gameplay acceptance pending.** [Installation evidence](INSTALLATION-0.1.2.md) records exact deployed hashes, configured prices, startup, provider, and menu registration. [Automated results](VERIFICATION-RESULTS-0.1.2.md) are separate. The unchecked scenarios below remain pending for real Java and Bedrock-mobile clients and the actual provider; a passing startup does not mark them passed.
+**0.1.3 source candidate; 0.1.2 is the last verified installed version at 23:40:51 UTC. All real Java, Bedrock-phone, live-purchase, and gameplay acceptance below remains pending.** [Candidate evidence](VERIFICATION-RESULTS-0.1.3.md) separates automated results and current operations from [0.1.2 installation history](INSTALLATION-0.1.2.md). Checked evidence items below are narrowly scoped; unchecked real-client/provider cases have not passed merely because startup or synthetic tests passed.
 
 ## Evidence and release gates
 
-- [x] Record installed source commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`, exact JAR SHA-256, and prior build/toolchain evidence.
-- [x] Record 48 automated tests and 128 isolated Paper assertions separately from real-client acceptance.
-- [x] Preserve baseline PR #13 commit `ff224dea03d61e0f2227e65d8015d662c93c8d34` as historical input, not installed source identity.
-- [x] Record prior packaged-resource and class-target checks; this documentation update changes no implementation or dependencies.
-- [x] Record separately authorized installation, loaded version, installed hashes, configured prices, economy provider, and menu registration.
+- [x] Record exact 0.1.3 artifact: 58,521 bytes, SHA-256 `f0224d18a51e430b81ec8fb02f9408fd6038e64b893d84d738368fd288cb4093`; Java 21.0.12.1, Maven 3.9.9, pinned cached dependencies, clean offline builds.
+- [x] Record 99 candidate tests, 107 including the same 99 plus eight independent additions, and 196 isolated Paper assertions. These are synthetic tests, not actual-provider/client acceptance.
+- [x] Separate the tested implementation/resources/tests from the tested-doc snapshot and the reconciled publication docs in [the 0.1.3 manifest](SOURCE-MANIFEST-0.1.3.json).
+- [x] Record unchanged dependency set, packaged 0.1.3 metadata/prices, Java-21 class targets, and absence of test/fixture classes.
+- [x] Record later provider-reported full stopped-instance backup completion at 23:39:15 UTC and exposed Restore option. This is separate from the unsuccessful earlier 0.1.2 rollout backup attempt.
+- [ ] Establish recovery integrity: no restore or archive-integrity/manifest test has been performed. Recheck that the selected recovery point covers later gameplay/economy activity before changing the installation.
+- [ ] Verify a separately authorized 0.1.3 installation: loaded version, artifact hash, current live config/menu, economy provider, and relevant logs. Source publication is not deployment evidence.
 - [ ] Obtain separate authorization before test purchases or any real-balance/playerdata correction.
-- [ ] Establish a genuinely completed recoverable backup; the rollout's fresh full backup did not produce a verified completed entry. Retained file copies are not a complete recovery snapshot.
-- [ ] Reconcile the historical menu/generator with the live hand-integrated entries before future regeneration.
-- [x] Record the owner's October 13 phone visual report: both shop entries look good. This is limited appearance evidence, not full UI or gameplay acceptance.
-- [ ] Investigate exact-shortfall feedback visibility. The owner accepts the lack of a quantity window for these single-item purchases.
-- [ ] Run and record the Java player checks below.
-- [ ] Run and record the Bedrock-mobile player checks below, with Geyser/Floodgate/server versions as applicable.
+- [ ] Reconcile the historical menu/generator with the live hand-integrated entries in a separately scoped update before future regeneration.
+- [ ] Verify candidate exact-shortfall feedback on an actual phone; the reported 0.1.2 concern is not closed by automated checks.
+- [ ] Run and record real Java player checks below.
+- [ ] Run and record real Bedrock-mobile checks below, with Geyser/Floodgate/server versions as applicable.
+
+## Preserved 0.1.2 evidence (historical, not 0.1.3 acceptance)
+
+- [x] Record installed source commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`, exact JAR SHA-256, and prior build/toolchain evidence in [installation history](INSTALLATION-0.1.2.md).
+- [x] Preserve baseline PR #13 commit `ff224dea03d61e0f2227e65d8015d662c93c8d34` as historical input, not installed source or candidate identity.
+- [x] Preserve 48 automated tests and 128 isolated Paper assertions for 0.1.2 in [its historical results](VERIFICATION-RESULTS-0.1.2.md).
+- [x] Preserve authorized 0.1.2 installation, loaded version, exact files/prices, economy provider, and menu registration; 0.1.2 was reconfirmed loaded at 23:40:51 UTC.
+- [x] Preserve the owner's narrow phone report that both 0.1.2 entries look good. The owner accepts fixed-one purchases without the ordinary quantity window. This is not purchase, gameplay, Java, full phone, or new-review acceptance.
+- [x] Preserve installed slot 31/basic and slot 34/premium, integer/non-conflicting slots, YAML disclosures, one plugin command per left/right route, and all 20 unrelated items/non-item settings. These checks describe the recorded 0.1.2 snapshot, not a fresh 0.1.3 live read.
+
+## Review-window release checks
+
+- [ ] Both tiers display quantity 1, price, balance, projected remainder or positive shortfall clearly on Java and a real Bedrock phone.
+- [ ] Open, repeated buy commands, refresh, Back, close, quit and stale callbacks never charge or grant.
+- [ ] Only current owner inventory plain Confirm can transact; shifted, double, creative, number-key, offhand, drop, bottom and outside clicks plus drags are blocked.
+- [ ] Insufficient funds, funds changed between click and execution, new active protection, full potion inventory, changed prices and expiry all fail/requote safely.
+- [ ] Opening from DeluxeMenus safely replaces the shop; Back restores its existing /shop menu. Confirmation survives no close/reopen boundary.
+- [x] Offline candidate testing used no new dependencies, new legal acceptance, production server changes, or real balances/player data. The existing isolated fixture agreement was retained unchanged.
 
 ## Product and confirmation checks
 
-- [ ] First basic purchase shows **Death Protection / $15,000** and makes no withdrawal. Same-product confirmation within 20 seconds charges once and immediately activates basic with no item delivered.
-- [ ] First premium purchase shows **+Death Protection Potion / $30,000** and makes no withdrawal. Confirmation charges once and gives the real marked potion without activating protection.
+- [ ] Opening basic review shows **Death Protection / quantity 1 / $15,000**, current balance and projected remainder/shortfall, and makes no withdrawal. Its Confirm within 20 seconds charges once and immediately activates basic with no item delivered.
+- [ ] Opening premium review shows **+Death Protection Potion / quantity 1 / $30,000**, current balance and projected remainder/shortfall, and makes no withdrawal. Confirm charges once and gives the real marked potion without activating protection.
 - [ ] Switching products, changed effective price, expired confirmation, and rapid/repeated clicks cannot reuse the wrong quote or double charge. Verify the one-second successful-purchase cooldown and clearing of unused quotes on logout.
 - [ ] Bare player `/dp buy` and old console `buy <player>` are premium aliases. They show/confirm $30,000, never an unconfirmed legacy $15,000 charge or unintended basic purchase.
 - [ ] Explicit player/admin/console forms resolve the intended player and reject malformed/unauthorized usage.
@@ -85,11 +103,11 @@ Use isolated test data and controlled interruption points, never an unapproved e
 
 ## Menu integration and final acceptance
 
-- [x] Inspect the live menu; record basic slot 31 and premium slot 34. The historical manual generator remains an open overwrite risk.
-- [x] Install integer, non-conflicting slots; the active file has no template placeholders.
-- [x] Verify installed YAML names, prices, activation wording, XP disclosure, and premium benefits, including mining on land. This is a file check, not visual acceptance.
-- [x] Verify each installed left/right click route calls exactly one tier-aware plugin buy command; neither route withdraws money or gives an item independently.
-- [ ] Verify confirmation visibility while the shop is open, including Bedrock-mobile tap behavior and product changes.
+- [ ] Freshly inspect the live menu before 0.1.3 rollout, preserving recorded slots 31/34, all unrelated products/settings and any later edits. The historical repository menu/generator remains an overwrite risk.
+- [ ] Change only the two reviewed instructions to “Tap to review 1. No charge yet.” Do not load the unassigned template as a complete menu.
+- [ ] Reverify names, prices, activation wording, XP disclosure, premium benefits including land mining, and matching effective config.
+- [ ] Reverify each click route calls exactly one tier-aware buy command with no independent withdrawal/delivery or additional commands dismissing the review.
+- [ ] Verify confirmation visibility while the shop is open, including Bedrock-mobile tap behavior, Back, close, expiry/refresh, price/funds changes, repeated commands and rejected inventory actions.
 - [ ] Confirm the deployed player-facing guide matches the installed implementation only after publication is authorized.
 - [ ] Record remaining failures/blocked cases. Do not call the feature live-ready until the required gates are satisfied.
 

@@ -1,4 +1,6 @@
-# Spawn Shop integration: installed state and maintenance
+# Spawn Shop integration: 0.1.3 candidate and installed history
+
+**0.1.3 source candidate; 0.1.2 remains the last verified installed version at 23:40:51 UTC.** Existing tier-specific command routes are unchanged; update only the two entry instructions to “Tap to review 1. No charge yet.” Each command opens the plugin's native review; do not append close/open/refresh commands that replace or dismiss that review. The plugin's Back button executes the already-registered `/shop` command. No ExcelShops catalog/payment route is added. The tested companion menu was based on the earlier exact installed snapshot and changed only those two instruction lines. It is not a fresh live baseline. This source publication changes the unassigned review template only; it does not change the active server menu, repository menu, or generator. Follow the [0.1.3 rollout plan](../docs/INSTALL-PLAN-0.1.3.md) after a fresh live read.
 
 **0.1.2 installed October 13, 2026.** The active menu uses basic slot 31 and premium slot 34. Exact file checks and read-only startup checks passed; the owner reports both entries look good on his phone, while Java, remaining phone UI, real purchases, and gameplay acceptance remain pending. See [installation evidence](../docs/INSTALLATION-0.1.2.md). Do not copy the unassigned template into a live DeluxeMenus directory as a complete menu.
 
@@ -10,11 +12,17 @@ The installed `deathprotection_basic` entry is a CHEST button at slot 31 for **D
 
 **Generator gap:** the historical manual `make_spawnshop.py` workflow and repository menu are unchanged. Future regeneration can overwrite these hand-integrated entries. A separately scoped generator/integration update must preserve ordinary products and keep these tier prices outside general price scaling. Until then, do not regenerate or replace the live menu from the older repository template.
 
-`spawnshop-death-protection.template.yml` contains only the two item definitions, with deliberately unassigned slot placeholders. It is valid YAML for review, but it is **not a valid ready-to-load DeluxeMenus menu**. The source shop file has been left unchanged by this documentation task.
+`spawnshop-death-protection.template.yml` contains only the two item definitions, with deliberately unassigned slot placeholders. It is valid YAML for review, but it is **not a valid ready-to-load DeluxeMenus menu**. The repository shop file and generator remain unchanged by this source publication.
 
-The owner accepts the single-item purchase flow without an ordinary-item quantity window. Exact-shortfall feedback visibility remains a reported phone usability concern; it has not been resolved by this documentation update.
+The owner accepts the single-item purchase flow without an ordinary-item quantity window. Exact-shortfall feedback visibility was the reported concern motivating the offline 0.1.3 review candidate; actual phone acceptance of the new UI remains pending.
 
-## For any future authorized rollout
+## Candidate 0.1.3 rollout
+
+The currently integrated slots and routes already exist. For the candidate, recheck the live JAR/config/menu, preserve subsequent edits, replace only the authorized plugin artifact, and change only each product's instruction to “Tap to review 1. No charge yet.” Keep slot 31/basic and slot 34/premium, prices, and commands unless a newly inspected conflict requires a separately reviewed change. Keep the active config unchanged when its effective values still match. Do not apply the older initial-integration steps below over a current live menu.
+
+A provider-reported full stopped-instance backup completed October 13 at 23:39:15 UTC, and Restore was exposed afterward. No restore or archive-integrity test was performed. Recheck that a backup still covers any subsequent gameplay/economy activity before rollout; the earlier 0.1.2 backup-attempt failure remains historical.
+
+## Initial integration procedure (historical reference; not the 0.1.3 delta)
 
 1. Obtain authorization for installation and any test purchases using real in-game balances. These instructions do not authorize either action.
 2. Back up the existing plugin JAR, plugin data/config, relevant player data, economy data, live shop YAML, and generator/source configuration. Coordinate a consistent server backup rather than copying mutable files blindly.

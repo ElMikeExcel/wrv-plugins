@@ -1,6 +1,6 @@
 # CANDIDATE TEMPLATE ONLY. NOT A COMPLETE OR LOADABLE DELUXEMENUS MENU.
-# No live slots have been inspected. Replace BOTH slot placeholders only after
-# inspecting the live menu and its generator. Merge these under its items map.
+# This reusable template leaves slots unassigned. Inspect the target live menu
+# and generator before assigning them. The October 13 installed slots were 31/34.
 # Update/replace the actual old potion entry if one exists on the server.
 # Native Paper 26.2 retained a protected Curse of Vanishing sword; verify live behavior.
 # Do not advertise that protected cursed items necessarily vanish.
@@ -18,13 +18,11 @@ items:
       - '&7You still die. No extra abilities.'
       - '&cDoes NOT save your XP.'
       - '&7One active protection of either kind.'
-      - '&8Tap twice within 20 seconds to confirm.'
+      - '&8Tap to review 1. No charge yet.'
     left_click_commands:
       - '[console] deathprotection buy basic %player_name%'
-      - '[refresh]'
     right_click_commands:
       - '[console] deathprotection buy basic %player_name%'
-      - '[refresh]'
   death_protection_premium:
     material: POTION
     slot: '__ASSIGN_PREMIUM_SLOT_AFTER_LIVE_INSPECTION__'
@@ -39,10 +37,8 @@ items:
       - '&bUnderwater breathing and clearer vision.'
       - '&bFaster mining, also on land.'
       - '&7One active protection of either kind.'
-      - '&8Tap twice within 20 seconds to confirm.'
+      - '&8Tap to review 1. No charge yet.'
     left_click_commands:
       - '[console] deathprotection buy premium %player_name%'
-      - '[refresh]'
     right_click_commands:
       - '[console] deathprotection buy premium %player_name%'
-      - '[refresh]'

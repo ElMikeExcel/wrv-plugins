@@ -10,4 +10,4 @@ args=(verify)
 if [[ "${OFFLINE:-0}" == "1" ]]; then args=(-o "${args[@]}"); fi
 if [[ -n "${MAVEN_REPO:-}" ]]; then args=("-Dmaven.repo.local=$MAVEN_REPO" "${args[@]}"); fi
 "${MAVEN_COMMAND:-mvn}" "${args[@]}" "$@"
-sha256sum target/ExcelDeathProtection-0.1.2.jar
+sha256sum target/ExcelDeathProtection-0.1.3.jar

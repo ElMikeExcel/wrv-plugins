@@ -1,5 +1,17 @@
 # ExcelDeathProtection changelog
 
+## 0.1.3 — one-item review source candidate, October 13, 2026
+
+**Candidate source; installation is a separate gate. 0.1.2 remains the last verified installed version at 23:40:51 UTC. PR #13 remains draft and unmerged. All 0.1.3 Java, Bedrock-phone, live-purchase, and gameplay acceptance checks are pending.**
+
+- Every shop tap/buy command opens a quantity-1 native review with price, balance, projected remainder or exact shortfall, Confirm and Back.
+- No purchase on opening, repeated buy commands, refresh, Back or close. Insufficient/invalid/expired reviews cannot charge; they can be refreshed.
+- Refresh balance without arming or extending the quote. Recheck economy, eligibility, product, price and expiry on Confirm through the existing journaled coordinator.
+- Bind interactions to exact inventory/player/session; cancel movement, drag, shifted/hotbar/creative/double-click actions and stale scheduled callbacks.
+- Preserve tier prices, legacy entitlements/potions, journal/refund safeguards, gameplay and XP behavior.
+- Keep installed 0.1.2 deployment/limited phone-appearance evidence below as history, not verification of this new UI.
+- Record 99 passing candidate tests, 107 including eight independent reviewer additions, and 196 isolated Paper assertions for the exact 58,521-byte artifact. [Candidate evidence](docs/VERIFICATION-RESULTS-0.1.3.md) distinguishes synthetic results from client/provider acceptance and records a later provider-completed backup separately from the earlier failed attempt.
+
 ## 0.1.2 — two-tier update, installed October 13, 2026
 
 **Installed and startup-verified; the owner reports both entries look good on his phone. Java, remaining phone UI, real purchases, and gameplay acceptance are pending.** The exact tested JAR was installed from source commit `a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac`; PR #13 remains draft and unmerged. [Installation evidence](docs/INSTALLATION-0.1.2.md) separates deployment checks from acceptance.

@@ -40,6 +40,7 @@ public final class PurchaseCoordinator {
     }
 
     private record Confirmation(UUID playerId, Product product, double price, long armedAt) {}
+    private enum Operation { PREVIEW, QUOTE, CONFIRM }
     private static final class State {
         final AtomicBoolean busy = new AtomicBoolean();
         volatile boolean locked;
@@ -77,7 +78,39 @@ public final class PurchaseCoordinator {
         return Set.copyOf(result);
     }
 
+    /** Backward-compatible two-tap entry point; a first click creates a quote. */
     public Result click(UUID playerId, Product product, double price) {
+        return confirm(playerId, product, price);
+    }
+
+    /**
+     * Rechecks availability and affordability without changing any confirmation.
+     * ARMED means the product is currently affordable, not that a token was armed.
+     * Never writes a transaction, withdraws, refunds, or delivers a product.
+     */
+    public Result preview(UUID playerId, Product product, double price) {
+        return execute(playerId, product, price, Operation.PREVIEW);
+    }
+
+    /**
+     * Replaces any prior confirmation with a fresh quote if all prechecks pass.
+     * Even repeated calls never purchase. Failed prechecks leave no confirmation.
+     */
+    public Result quote(UUID playerId, Product product, double price) {
+        return execute(playerId, product, price, Operation.QUOTE);
+    }
+
+    /**
+     * Purchases only with an existing, matching, unexpired confirmation. Otherwise
+     * returns a fresh ARMED quote, requiring another distinct confirmation call.
+     * An owning attempt consumes its old token even if a precheck or purchase fails.
+     * A BUSY response does not interfere with the operation already in progress.
+     */
+    public Result confirm(UUID playerId, Product product, double price) {
+        return execute(playerId, product, price, Operation.CONFIRM);
+    }
+
+    private Result execute(UUID playerId, Product product, double price, Operation operation) {
         Objects.requireNonNull(playerId);
         Objects.requireNonNull(product);
         State state = state(playerId);
@@ -85,30 +118,29 @@ public final class PurchaseCoordinator {
             return result(Status.BUSY, product, price, Double.NaN, null, "Purchase already in progress");
         }
         try {
-            return guardedClick(playerId, state, product, price);
+            return guardedExecute(playerId, state, product, price, operation);
         } finally {
             state.busy.set(false);
         }
     }
 
-    private Result guardedClick(UUID id, State state, Product product, double price) {
+    private Result guardedExecute(UUID id, State state, Product product, double price, Operation operation) {
+        Confirmation token = state.confirmation;
+        // Preview must not consume or refresh a token, even on a failed precheck.
+        // Quote/confirm invalidate the previous token before every guarded precheck.
+        if (operation != Operation.PREVIEW) state.confirmation = null;
         if (state.locked) return result(Status.LOCKED, product, price, Double.NaN, null,
                 "An administrator must reconcile an earlier purchase");
         if (!journal.healthy()) return result(Status.UNAVAILABLE, product, price, Double.NaN, null,
                 "Purchase journal is unavailable");
         if (!Double.isFinite(price) || price <= 0) {
-            state.confirmation = null;
             return result(Status.INVALID_PRICE, product, price, Double.NaN, null, "Invalid configured price");
         }
         long now = clock.getAsLong();
         if (state.completedOnce && (now < state.lastSuccess
                 || now - state.lastSuccess < successCooldownMs)) {
-            state.confirmation = null;
             return result(Status.COOLDOWN, product, price, Double.NaN, null, "Please wait before buying again");
         }
-        Confirmation token = state.confirmation;
-        // Every attempted confirmation consumes its token, including precheck failures.
-        state.confirmation = null;
         Eligibility eligibility;
         double balance;
         try {
@@ -124,7 +156,13 @@ public final class PurchaseCoordinator {
         }
         if (balance < price) return result(Status.INSUFFICIENT_FUNDS, product, price, balance, null,
                 "Balance is below the price");
-        if (token == null || !token.playerId().equals(id) || token.product() != product
+        if (operation == Operation.PREVIEW) {
+            return result(Status.ARMED, product, price, balance, null, "Available at the current product and price");
+        }
+        // Provider reads may take time; validate expiry and date a fresh quote only
+        // after those reads, rather than allowing an expired token to reach debit.
+        now = clock.getAsLong();
+        if (operation == Operation.QUOTE || token == null || !token.playerId().equals(id) || token.product() != product
                 || Double.compare(token.price(), price) != 0 || now < token.armedAt()
                 || now - token.armedAt() >= confirmWindowMs) {
             state.confirmation = new Confirmation(id, product, price, now);

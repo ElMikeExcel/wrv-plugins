@@ -1,6 +1,6 @@
 # Death Protection
 
-**Version 0.1.2 was installed October 13, 2026. The owner reports that both shop entries look good on his phone. Java checks, remaining phone UI checks, real purchases, and gameplay acceptance are still pending.** The server loaded successfully, but that does not verify the in-game buying or death/respawn experience. Prices below are in-game money.
+**0.1.3 review-window preview. Version 0.1.2 is the last verified installed version (October 13, 2026, 23:40:51 UTC).** The owner reported that the two 0.1.2 shop entries look good on his phone and accepted buying one at a time without a quantity dialog. Exact-shortfall visibility motivated this candidate. All 0.1.3 Java, Bedrock-phone, real-purchase, and gameplay checks remain pending. Prices below are in-game money.
 
 ## Death Protection — $15,000
 
@@ -32,15 +32,17 @@ You can have only one active protection, basic or premium.
 
 Check your current protection with **/dp status**.
 
-## Buying in Spawn Shop
+## Last verified installed flow: 0.1.2
 
-Choose **Death Protection** for $15,000 or **+Death Protection Potion** for $30,000. The first click or tap shows the product and price. Check the quote, then choose the same option again within 20 seconds to confirm. Changing products or prices requires a fresh confirmation. The basic button activates protection; it does not give you its chest icon as an item. These are single-item purchases and do not open the quantity window used by ordinary shop items. The owner accepts that flow; clearer visibility of the exact amount missing when you cannot afford a purchase remains a reported concern.
+In 0.1.2, choose the same shop option or repeat the same buy command within 20 seconds to confirm the product and price. It buys one at a time and does not open an ordinary-item quantity window. The earlier phone report checked the appearance of the shop entries only; it did not establish purchase, activation, or death/respawn acceptance.
 
-## Buying with commands
+## Candidate 0.1.3: buying one at a time
 
-Use **/dp buy basic** for the $15,000 option or **/dp buy premium** for the $30,000 potion. The first command shows what you are buying and the price. Repeat the same purchase within 20 seconds to confirm.
+Tap either product in Spawn Shop, or use **/dp buy basic** or **/dp buy premium**. The candidate opens a review with **quantity 1**, the price, your balance, and the money you would have left. If you cannot afford it, it shows **Need $… more** instead and disables purchasing.
 
-The older **/dp buy** command still means the premium potion. It now asks you to confirm the **$30,000** price. Use the explicit basic command if you want immediate protection for $15,000.
+Opening, refreshing, closing, and going Back never charge you. Select **Confirm** to purchase. Your balance and eligibility are checked again then. A review expires after 20 seconds; tap its disabled button to refresh, then Confirm again. If your balance changed from too low to enough, a fresh quote may be required before purchasing. Back requests the existing Spawn Shop `/shop` command; actual Java and phone navigation through DeluxeMenus still needs checking.
+
+The older **/dp buy** command still opens the **$30,000 premium potion** review. Repeating any buy command opens another review; it never buys automatically.
 
 ## If you already have protection or a potion
 
