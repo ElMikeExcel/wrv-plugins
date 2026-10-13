@@ -17,8 +17,10 @@ SHA-256 hashes of the original recovered source files:
 | `TeleportMenu.java` | `f16009ae46e3d54760f2ac0b8dc7f394eaf75fd03e2506dfcc58ed30dc7ee360` |
 
 The active `GeyserForms.java` and `TeleportMenu.java` still match those hashes
-exactly. `BedrockMenu.java` intentionally differs for the 1.4.2 menu addition and
-1.4.3 repairs; `SpawnLocations.java` is new.
+exactly. `BedrockMenu.java` intentionally differs for the 1.4.2 menu addition,
+1.4.3 repairs, and subsequent removal of the redundant Jobs & Money button and
+route; `SpawnLocations.java` is new. The separate menu-only 1.4.2 hotfix is
+documented in `MENU_REMOVAL.md`.
 
 ## Comparison performed on 2026-10-12
 

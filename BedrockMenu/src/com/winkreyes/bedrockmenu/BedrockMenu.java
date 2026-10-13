@@ -24,11 +24,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class BedrockMenu extends JavaPlugin implements CommandExecutor {
 
     private static final String[] BUTTONS = {
-        "Spawn", "Teleport to a player", "Spawn Shop", "Jobs & Money",
+        "Spawn", "Teleport to a player", "Spawn Shop",
         "mcMMO Stats", "Leaderboard", "Server Info", "Auto-open on join"
     };
     private static final String[] COMMANDS = {
-        "spawn", "tpmenu", "shop", "jobs browse",
+        "spawn", "tpmenu", "shop",
         "mcstats", "leaderboard", "motd", "menujoin"
     };
 

@@ -1,0 +1,45 @@
+{
+  "utc": "2026-10-13T03:21:40.035949+00:00",
+  "candidate_sha256": "fef68e9a06053767fa8223811e4ca2b1294a05daefa0e7bb11346ceba730f276",
+  "paper_sha256": "7b7b3b43c009103e1971a0576c26f655a7dd9b56a0a2a4438e352c03a7fecd08",
+  "mojang_sha256": "cdacdfb25898de5e4b4b0e5ddcc2722f77067e46605709c2d886c000ebb63ec5",
+  "java": "openjdk version \"25.0.4\" 2026-07-21 LTS\nOpenJDK Runtime Environment Temurin-25.0.4+7 (build 25.0.4+7-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.4+7 (build 25.0.4+7-LTS, mixed mode, sharing)\n",
+  "listen": "127.0.0.1:25581",
+  "real_paper_server": true,
+  "actual_geyser": false,
+  "real_client": false,
+  "real_essentials": false,
+  "boots": [
+    {
+      "boot": 1,
+      "exit_code": 0,
+      "checks": 28,
+      "results": "PASS",
+      "loopback_port_free_after": true
+    },
+    {
+      "boot": 2,
+      "exit_code": 0,
+      "checks": 28,
+      "results": "PASS",
+      "loopback_port_free_after": true
+    }
+  ],
+  "assertions": 56,
+  "eula_file_unchanged": true,
+  "completed_at_utc": "2026-10-13T03:23:27.316664+00:00",
+  "probe_sha256": "f5eb92f47483e07f5497dfd03f2fadac8a79363c3f9f700506279e2216fb3101",
+  "candidate_name": "BedrockMenu-1.4.2-menu.1.jar",
+  "plugin_enable_disable_errors": false,
+  "environment_warnings": [
+    "Minecraft authentication public-key fetch failed due to DNS resolution in this cloud runtime.",
+    "Paper update/version lookup failed due to DNS resolution in this cloud runtime.",
+    "Bundled JOML emitted a deprecated Unsafe warning; Netty used a generated hardware identifier."
+  ],
+  "limits": [
+    "Actual Geyser/Floodgate, Essentials, DeluxeMenus and client rendering are untested.",
+    "No real player authentication or network-client connectivity was validated.",
+    "No production server action, deployment or restart was performed."
+  ],
+  "independent_final_port_check_free": true
+}

@@ -1,0 +1,6 @@
+name: BedrockMenuStartupProbe
+version: 0.0.0-test-only
+main: check.MenuStartupProbe
+api-version: '1.21'
+depend: [BedrockMenu]
+description: Disposable local runtime check. Never install on production; shuts down server after checks.
