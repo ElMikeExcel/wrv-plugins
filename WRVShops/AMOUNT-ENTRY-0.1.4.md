@@ -1,6 +1,6 @@
 # ExcelShops 0.1.4: type exact amounts
 
-Status: off-server candidate. No live deployment or publication is authorized by this document.
+Status: installed on Wink Reyes Valley at about 8:13 p.m. Central on October 12, 2026 (01:13 UTC October 13). The server-computed artifact hash, loaded version, economy connection and startup checks passed; see the [deployment record](DEPLOYMENT-2026-10-12.md). Human Java/Bedrock touch/controller/Windows acceptance remains pending. This documentation authorizes no further deployment or settings change.
 
 ## Player flow
 
@@ -39,7 +39,7 @@ One preceding concurrent-runtime attempt timed out during cloud-host scheduling 
 
 These use synthetic players/economy/claims on real Paper. Human Java/Bedrock rendering, real client packets and the exact live plugin stack remain unverified. Historical tests for older versions are not counted as new runtime verification.
 
-## Small player check after separately approved installation
+## Small player check after installation
 
 1. Open your shop price field. Choose Enter Amount, type `0.50`, choose Use amount. Confirm review shows `$0.50 each`; cancel before publication unless you intend the change.
 2. Re-enter, try `0.501` and `0`, then correct to `0.50`. Cancel from the text dialog once and confirm the previous price remains.
@@ -48,6 +48,8 @@ These use synthetic players/economy/claims on real Paper. Human Java/Bedrock ren
 5. Check the same price/quantity/review/cancel flow from Bedrock's native forms. Check plus/minus controls still preserve the pointer on Java.
 
 ## Installation boundary
+
+The approved standalone 0.1.4 installation is complete. The following applies to any future separately approved replacement, not a request to repeat the installation.
 
 Only install the reviewed ExcelShops JAR during separately approved stopped-server maintenance with coordinated backup and startup verification. Preserve the full ExcelShops data folder and both checkout journals. Do not hot-reload, change money/stock or reinstall optional ChestShop. Runtime harness JARs are test-only and must never be installed on a real server.
 
@@ -61,7 +63,7 @@ The same shop actions, exact amounts, review and final confirmation are required
 | Bedrock Android/iOS touch | Native Geyser number form and touch buttons | Geyser/Cumulus API fixtures, fifty-cent price and quantity/review regression tests | Pending |
 | Bedrock controller/console, where connected | Native form with controller navigation and on-screen keyboard | Same Bedrock API path; no physical controller simulated | Pending |
 | Bedrock Windows keyboard/mouse | Native Geyser form | Same Bedrock API path | Pending |
-| Older Java via protocol translation | Shared inventory controls when text API fails; dialog display is not detectable reliably | Server fallback tests only | Pending; verify compatibility before installation |
+| Older Java via protocol translation | Shared inventory controls when text API fails; dialog display is not detectable reliably | Server fallback tests only | Pending; verify compatibility before relying on typed entry |
 
 For every row, check `0.50`, an exact whole quantity, invalid input/retry, Cancel/Back, repeated entry and a stale response after reopening a shop. Also check the Java text-entry timeout and the shared purchase-quote expiry. Verify totals and separate final confirmation. A small authorized test purchase must charge once and deliver the exact count; every cancellation must leave money/items unchanged. On touch/controller, check field focus, keyboard entry, button legibility and no reliance on hover or right-click.
 

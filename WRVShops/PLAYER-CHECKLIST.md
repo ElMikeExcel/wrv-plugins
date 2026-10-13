@@ -1,10 +1,10 @@
 # ExcelShops: player acceptance checklist
 
-**ExcelShops 0.1.3 is installed standalone; human cursor retest pending.** The October 12 update keeps quantity and owner-price adjustments in the same inventory window. Runtime identity and the economy connection were checked. An earlier owner-relayed Java PC report on 0.1.2 passed Spawn Shop menu/prices/cancel/torch purchase and owner setup/publication; it does not certify the new cursor behavior. ChestShop remains absent. The actions below remain a full checklist, not a claim that every case passed. See the [deployment record](DEPLOYMENT-2026-10-12.md).
+**ExcelShops 0.1.4 is installed standalone; human typed-entry and cursor checks remain pending.** The October 12 update keeps quantity and owner-price adjustments in the same inventory window. Runtime identity and the economy connection were checked. An earlier owner-relayed Java PC report on 0.1.2 passed Spawn Shop menu/prices/cancel/torch purchase and owner setup/publication; it does not certify the new cursor behavior. ChestShop remains absent. The actions below remain a full checklist, not a claim that every case passed. See the [deployment record](DEPLOYMENT-2026-10-12.md).
 
-## 0.1.4 typed-entry candidate (not installed)
+## 0.1.4 typed entry (installed; device checks pending)
 
-The following typing instructions apply after a separately approved 0.1.4 installation. Java keyboard/mouse, Bedrock touch, Bedrock controller and Bedrock desktop require their own [real-device checks](AMOUNT-ENTRY-0.1.4.md#cross-platform-acceptance-matrix); none is marked passed by server/API tests. Choose **Enter Amount**, type a price such as `0.50` or whole-number quantity such as `19`, then **Use amount**. Review and separate final confirmation remain mandatory. See [the full typed-entry checklist](AMOUNT-ENTRY-0.1.4.md). Current live 0.1.3 still uses Java buttons; Bedrock already has native numeric forms.
+The following typing instructions apply to the installed 0.1.4 update. Java keyboard/mouse, Bedrock touch, Bedrock controller and Bedrock desktop require their own [real-device checks](AMOUNT-ENTRY-0.1.4.md#cross-platform-acceptance-matrix); none is marked passed by server/API tests. Choose **Enter Amount**, type a price such as `0.50` or whole-number quantity such as `19`, then **Use amount**. Review and separate final confirmation remain mandatory. See [the full typed-entry checklist](AMOUNT-ENTRY-0.1.4.md). Existing Java plus/minus buttons remain available; Bedrock keeps native numeric forms.
 
 ## Priority retest: Java plus/minus controls
 

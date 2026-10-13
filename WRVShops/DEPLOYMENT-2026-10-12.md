@@ -1,6 +1,26 @@
 # ExcelShops installation: October 12, 2026
 
-## Current status: ExcelShops 0.1.3 installed; human cursor retest pending
+## Current status: ExcelShops 0.1.4 installed; real-device checks pending
+
+The approved typed-amount update is installed standalone. Java gains **Enter Amount → private text field → Use amount**, followed by the existing review and separate final confirmation. Bedrock retains its native numeric forms. Existing in-place plus/minus controls remain available. Installation and startup are verified; none of these server checks establishes human Java, Bedrock touch/controller or Bedrock Windows acceptance.
+
+### Identity and completed live checks
+
+- Source: [`0225e77d3a85201c21ca5371e7d7fb8b3806939c`](https://github.com/ElMikeExcel/wrv-plugins/commit/0225e77d3a85201c21ca5371e7d7fb8b3806939c), preserved in draft PR #4. Only the standalone ExcelShops JAR was installed; ChestShop remains absent.
+- Artifact: `ExcelShops-0.1.4.jar`, 202,230 bytes. Server-computed SHA-256 `565ae9e91e7a4516908e2d245f87ef1936aae23d055f084dc4159112e445f83c` matched the tested CI artifact at **01:12:16 UTC October 13 (8:12:16 p.m. CDT October 12)**.
+- **01:13:15 UTC October 13 (8:13:15 p.m. CDT October 12):** ExcelShops 0.1.4 enabled against existing data with EssentialsX Economy and legacy ChestShop `unavailable/absent`. The panel was Online by **01:13:21**; an independent version query at **01:13:28** confirmed 0.1.4.
+- The runtime list showed 28 plugins, without ChestShop. Vault 2.0.0 reported EssentialsX Economy and the existing LuckPerms permission/chat provider.
+- **01:13:50 UTC:** the same three menus loaded: `basics_menu`, `server_menu`, `spawnshop`. Read-only checks reconfirmed Normal in the Overworld, Nether and End.
+- **01:15:29 UTC (8:15:29 p.m. CDT October 12):** settled TPS was `20.0 / 20.0 / 20.0`; average tick time was 0.3 ms with no players online. This is an empty-server health observation, not a load test.
+- No ExcelShops startup exception/error was observed. Existing unrelated Essentials server-version, terminal, optional-plugin and query-listener warnings remain; network settings were not changed.
+
+The owner-approved maintenance included a fresh player check, advance warning, all-dimension save and clean stop before replacement. Complete shop data and both checkout journals were preserved. No live purchase, publication, balance, stock, catalog, permission or unrelated setting change was made during deployment. Existing Jobs settings/menu pauses, map and XP behavior were not changed. This docs-only update preserves source, binaries and artifact-specific automated evidence and does not merge the PR.
+
+### Player acceptance still required
+
+Use [the typed-entry instructions and device matrix](AMOUNT-ENTRY-0.1.4.md#cross-platform-acceptance-matrix). Start through **compass menu → Spawn Shop** or **your chest/sign → Edit item prices**. Verify a `0.50` price, exact whole-number quantity, invalid-input retry, Cancel/Back, Java's 60-second entry timeout, stale responses, and the separate final confirmation. Physical Java cursor behavior, phone/controller field focus and legibility, older-client compatibility, second-player chest purchases, exact buyer/seller balances and stock, and broader gameplay/load cases remain pending. Earlier 0.1.2 player reports below do not certify these new controls.
+
+## Earlier 0.1.3 installation; human cursor retest still pending
 
 The owner-approved inventory-button update is installed on the standalone server. Quantity and owner-price plus/minus adjustments now update the existing inventory instead of reopening it. Automated server-side checks and live startup passed; physical Java pointer behavior and Bedrock input still need player acceptance. Earlier 0.1.2 player reports below remain limited to that version's tested flows.
 

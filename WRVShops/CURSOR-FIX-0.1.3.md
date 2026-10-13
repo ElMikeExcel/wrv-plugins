@@ -1,6 +1,6 @@
 # ExcelShops 0.1.3 inventory-button update
 
-Status: installed on Wink Reyes Valley on October 12, 2026 after approved stopped-server maintenance. The host hash, loaded version and startup checks are verified in the [deployment record](DEPLOYMENT-2026-10-12.md). Human Java cursor retest remains pending. The PR remains draft and unmerged; the source and automated evidence below are preserved.
+Status: originally installed on Wink Reyes Valley on October 12, 2026 after approved stopped-server maintenance; the later installed 0.1.4 retains this inventory-button behavior. The host hash, loaded version and startup checks are verified in the [deployment record](DEPLOYMENT-2026-10-12.md). Human Java cursor retest remains pending. The PR remains draft and unmerged; the source and automated evidence below are preserved.
 
 ## Scope
 
