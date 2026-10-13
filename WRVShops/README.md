@@ -1,4 +1,6 @@
-# ExcelShops 0.1.4: typed entry installed
+# ExcelShops: 0.1.4 installed, 0.1.5 balance preview candidate
+
+**New 0.1.5 balance display candidate is prepared off-server, not installed.** See [balance instructions, examples and device limits](BALANCE-DISPLAY-0.1.5.md). It adds visible balance headers and current balance / purchase cost / projected remainder, with insufficient-funds warnings, while retaining typed entry and separate confirmation. Live status below remains 0.1.4.
 
 **0.1.4 is installed; real-device acceptance remains pending.** It adds a clear **Enter Amount** button and private native Java text field for exact prices and purchase quantities. Bedrock keeps native numeric forms. See [typed-entry instructions and verification](AMOUNT-ENTRY-0.1.4.md). The host hash, loaded version and startup checks were verified at about 8:13 p.m. Central on October 12, 2026 (October 13 UTC). Java keyboard/mouse and Bedrock touch, controller and Windows still need human checks.
 
@@ -94,7 +96,7 @@ A possible `plugins/WRVShops/` folder is **not discarded**. Before creating defa
 
 
 1. **Do not hot-install this on production.** Back up plugin files, world/chest data, player inventories and economy data together. Use a disposable copy with the intended exact plugin versions first.
-2. Build with `./build.sh` at the repository root or `./WRVShops/build.sh`; Java 21+ and Maven 3.9+ are required. The build bootstraps the official hash-pinned ChestShop binary/source, compiles the provided API overlay first, and packages the full guarded binary plus corresponding source. Outputs include `WRVShops/target/ExcelShops-0.1.3.jar` and `ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1.jar`.
+2. Build with `./build.sh` at the repository root or `./WRVShops/build.sh`; Java 21+ and Maven 3.9+ are required. The build bootstraps the official hash-pinned ChestShop binary/source, compiles the provided API overlay first, and packages the full guarded binary plus corresponding source. Outputs include `WRVShops/target/ExcelShops-0.1.5.jar` and `ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1.jar`.
 3. Stage both reviewed JARs with Vault and the supported EssentialsX provider. Replace the original ChestShop JAR with the full guarded JAR; never load both or install the overlay-only build artifact. Retain the entire ChestShop data folder. Defaults require working GriefPrevention ownership checks. Geyser is optional for native Bedrock forms.
 4. Complete the read-only live preflight in DEPLOYMENT.md first. The bundled catalog contains repository baseline prices, not newly verified live prices. If a legacy WRVShops folder exists, follow the migration branch of that plan rather than pre-populating a conflicting target. Then install the matching generated `SpawnShop-DeluxeMenus/spawnshop.yml` into DeluxeMenus' `gui_menus/` and `SpawnShop-DeluxeMenus/spawn-catalog.yml` into `plugins/ExcelShops/`. Keep DeluxeMenus' existing menu registration and ShopVillager target.
 5. **Replace the old immediate-purchase menu as part of the same maintenance change.** Merely adding the JAR does not remove `[takemoney]`/`minecraft:give` from an old live DeluxeMenus file. Merely replacing the menu without the plugin fails closed but cannot open checkout. Compare both deployed files to the reviewed candidate.
@@ -141,20 +143,20 @@ For the installed 0.1.3 cursor update, use the new artifact-specific results in 
 
 For the installed 0.1.4 typed-entry update, see [its verification and compatibility limits](AMOUNT-ENTRY-0.1.4.md); earlier results do not certify it.
 
-CI uploads the nine custom JARs, the distinctly named full guarded ChestShop JAR with complete LGPL corresponding source, and a reproducible `ExcelShops-0.1.4-install-candidate.zip`. The installation pack contains exactly the two deployable shop JARs, unchanged matching 18-offer menu/catalog, legal/source material, the offline pause generator/spec, hashes and these instructions. Packaging verifies the official upstream hash, preserves every unmodified upstream entry, checks guard/source correspondence, and rejects an original or overlay-only JAR. It performs no server access.
+CI uploads the nine custom JARs, the distinctly named full guarded ChestShop JAR with complete LGPL corresponding source, and a reproducible `ExcelShops-0.1.5-install-candidate.zip`. The installation pack contains exactly the two deployable shop JARs, unchanged matching 18-offer menu/catalog, legal/source material, the offline pause generator/spec, hashes and these instructions. Packaging verifies the official upstream hash, preserves every unmodified upstream entry, checks guard/source correspondence, and rejects an original or overlay-only JAR. It performs no server access.
 
 After bootstrap/build, reproduce the pair from independently reviewed artifact hashes:
 
 ```sh
 python3 WRVShops/tools/package_candidate.py \
-  --jar WRVShops/target/ExcelShops-0.1.3.jar \
+  --jar WRVShops/target/ExcelShops-0.1.5.jar \
   --expected-sha256 VERIFIED_EXCELSHOPS_SHA256 \
   --guarded-jar ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1.jar \
   --expected-guarded-sha256 VERIFIED_GUARDED_CHESTSHOP_SHA256 \
   --guard-sources ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1-sources.zip \
   --expected-sources-sha256 VERIFIED_CORRESPONDING_SOURCE_SHA256 \
   --source-commit FULL_SOURCE_COMMIT_SHA \
-  --output /staging/ExcelShops-0.1.4-install-candidate.zip
+  --output /staging/ExcelShops-0.1.5-install-candidate.zip
 ```
 
 The output must not exist; packaging never overwrites a prior candidate. Runtime evidence must bind both final JAR hashes. Before live use, complete the read-only preflight and human checklist with the installed Vault/Essentials/GriefPrevention/Geyser/Floodgate combination. The earlier preflight reported Essentials 2.22.0 warning about an unsupported server version; the guard does not remove that warning. For a deployment actually using legacy ChestShop trading, rollback must retain the guard or disable that trading. Standalone native/Spawn-only ExcelShops does not require ChestShop. Restoring instant purchases is not a safe silent rollback.

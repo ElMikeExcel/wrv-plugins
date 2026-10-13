@@ -63,10 +63,29 @@ public final class LegacyShopUi implements Listener {
 
     private Page page(Player player, ViewKind kind, String title, int size) {
         Page page = new Page(player.getUniqueId(), kind);
-        page.inventory = Bukkit.createInventory(page, size, title);
+        page.inventory = Bukkit.createInventory(page, size, balanceTitle(player, title));
         // Replace before closing the old inventory: its close event must not revoke this page.
         pages.put(player.getUniqueId(), page);
         return page;
+    }
+
+    private String balanceTitle(Player player, String title) {
+        BalanceDisplay display = plugin.getBalanceDisplay();
+        return display == null ? "Balance unavailable | " + title : display.title(player, title, true);
+    }
+
+    private String currentBalance(Player player) {
+        BalanceDisplay display = plugin.getBalanceDisplay();
+        return display == null ? "Current balance: unavailable" : display.current(player, true);
+    }
+
+    private String quoteBalance(Player player, LegacyTrading.Quote quote) {
+        BalanceDisplay display = plugin.getBalanceDisplay();
+        boolean selling = quote.direction() == LegacyTrading.Direction.SELL;
+        return display == null ? "Current balance: unavailable\n"
+                + (selling ? "Sale proceeds: +" : "Purchase cost: -") + BalanceDisplay.money(quote.totalCents())
+                + "\nBalance after " + (selling ? "sale" : "purchase") + ": unavailable"
+                : display.preview(player, quote.totalCents(), selling, true);
     }
 
     private void button(Page page, int slot, Material material, String title, Runnable action, String... lore) {
@@ -183,7 +202,7 @@ public final class LegacyShopUi implements Listener {
         // The bridge has just issued this offer. Calling trading.cancel here would revoke it.
         Page page = page(player, ViewKind.OFFER, "Chest shop · Buy or Sell", 27);
         String name = ShopAdapter.name(offer.item());
-        item(page, 4, offer.item(), "Shop owner: " + offer.owner(), "Item: " + name,
+        item(page, 4, offer.item(), currentBalance(player), "Shop owner: " + offer.owner(), "Item: " + name,
                 "Sign bundle: " + offer.bundleQuantity() + " items",
                 "Buy from shop: " + price(offer, LegacyTrading.Direction.BUY),
                 "Sell to shop: " + price(offer, LegacyTrading.Direction.SELL),
@@ -225,7 +244,8 @@ public final class LegacyShopUi implements Listener {
             review(player, offer, direction, number);
         };
         page.numberInput = input;
-        String details = verb(direction) + " " + ShopAdapter.name(offer.item()) + "\n"
+        String details = currentBalance(player) + "\nTotal: calculated at review.\n"
+                + verb(direction) + " " + ShopAdapter.name(offer.item()) + "\n"
                 + price(offer, direction) + "\nEnter the number of ITEMS, not bundles: 1–" + MAX_QUANTITY
                 + ".\nThe server calculates the available quantity and total for review."
                 + "\nThen a separate final confirmation."
@@ -234,7 +254,8 @@ public final class LegacyShopUi implements Listener {
         if (forms.number(player, verb(direction) + " · choose item quantity", details, String.valueOf(count),
                 value -> later(player, page, () -> input.accept(value)),
                 () -> later(player, page, () -> cancel(player)))) return;
-        item(page, 13, offer.item(), verb(direction) + " quantity: " + count + " items", price(offer, direction),
+        item(page, 13, offer.item(), currentBalance(player), "Total: calculated at review.",
+                verb(direction) + " quantity: " + count + " items", price(offer, direction),
                 "Quantity is items, not bundles.", "Use buttons, or /excelshop amount <wholequantity>",
                 "The server calculates your total at review.");
         int[] changes = {-64, -8, -1, 1, 8, 64};
@@ -271,7 +292,8 @@ public final class LegacyShopUi implements Listener {
         }
         Page page = page(player, direction == LegacyTrading.Direction.BUY ? ViewKind.BUY_REVIEW : ViewKind.SELL_REVIEW,
                 "Review " + verb(direction), 27);
-        String text = quoteText(quote) + "\nNo trade yet. Continue to a separate final confirmation.";
+        String summary = quoteBalance(player, quote) + "\n" + quoteText(quote);
+        String text = summary + "\nNo trade yet. Continue to a separate final confirmation.";
         Runnable next = () -> confirm(player, offer, quote);
         Runnable change = () -> quantity(player, offer, direction, quote.requestedQuantity());
         player.closeInventory();
@@ -279,7 +301,7 @@ public final class LegacyShopUi implements Listener {
                 new String[]{"Continue to final " + verb(direction) + " confirmation", "Change quantity", "Cancel"},
                 id -> later(player, page, () -> { if (id == 0) next.run(); else if (id == 1) change.run(); else cancel(player); }),
                 () -> later(player, page, () -> cancel(player)))) return;
-        item(page, 4, quote.item(), quoteText(quote).split("\\R"));
+        item(page, 4, quote.item(), summary.split("\\R"));
         button(page, 11, Material.LIME_CONCRETE, "Continue to " + verb(direction) + " confirmation", next,
                 "This is review only. No trade yet.");
         button(page, 13, Material.ARROW, "Change quantity", change);
@@ -291,7 +313,8 @@ public final class LegacyShopUi implements Listener {
         LegacyTrading.Direction direction = quote.direction();
         Page page = page(player, direction == LegacyTrading.Direction.BUY ? ViewKind.BUY_CONFIRM : ViewKind.SELL_CONFIRM,
                 "Confirm " + verb(direction) + "?", 27);
-        String text = quoteText(quote) + "\n"
+        String summary = quoteBalance(player, quote) + "\n" + quoteText(quote);
+        String text = summary + "\n"
                 + (direction == LegacyTrading.Direction.BUY
                 ? "Confirm Buy pays the shop and gives you these items."
                 : "Confirm Sell takes these items from you and pays you.")
@@ -321,7 +344,7 @@ public final class LegacyShopUi implements Listener {
                 id -> later(player, page, () -> { if (id == 0) commit.run(); else if (id == 1) back.run(); else cancel(player); }),
                 () -> later(player, page, () -> cancel(player)))) return;
         item(page, 4, quote.item(), text.split("\\R"));
-        button(page, 11, Material.LIME_CONCRETE, label, commit, quote.description().split("\\R"));
+        button(page, 11, Material.LIME_CONCRETE, label, commit, summary.split("\\R"));
         button(page, 13, Material.ARROW, "Back / change quantity", back);
         button(page, 15, Material.BARRIER, "Cancel", () -> cancel(player));
         player.openInventory(page.inventory);

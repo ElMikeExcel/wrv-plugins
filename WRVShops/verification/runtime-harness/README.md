@@ -35,6 +35,15 @@ close/reopen calls while adjusting numbers. Timeout checks add approximately one
 to each normal boot. Server acceptance and synthetic callbacks do not establish real
 Java client rendering, mouse-pointer behavior, Bedrock rendering or phone usability.
 
+### Balance-display checks (0.1.5 candidates)
+
+When `getBalanceDisplay` is present, ten additional cases inspect actual Paper inventory
+headers, balance icons, quantity/review/final-confirmation costs and projected balances,
+insufficient-funds warnings, owner setup, and actual native-dialog text. Changed synthetic
+balances are re-read at review, confirmation and invalid-input retry. Viewing and Cancel
+must not invoke debit/credit operations or deliver items. These are synthetic runtime
+checks; they do not establish physical Java or Bedrock rendering/input acceptance.
+
 ## Safe reproduction
 
 Requirements: Python 3, exact Java 25 JDK, built `ExcelShops` JAR and a new disposable Paper directory.

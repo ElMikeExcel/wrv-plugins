@@ -14,9 +14,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Server;
+import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -30,6 +32,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.ServicesManager;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.geysermc.fixtures.FormFixtures;
@@ -55,6 +59,7 @@ class LegacyShopUiTest {
     private final UUID playerId = UUID.fromString("00000000-0000-0000-0000-000000000321");
     private final Deque<Runnable> tasks = new ArrayDeque<>();
     private final AtomicReference<Inventory> opened = new AtomicReference<>();
+    private final Map<Inventory, String> titles = new HashMap<>();
     private MockedStatic<Bukkit> bukkit;
     private MockedConstruction<ItemStack> items;
 
@@ -75,7 +80,11 @@ class LegacyShopUiTest {
         when(scheduler.runTask(eq(plugin), any(Runnable.class))).thenAnswer(call -> { tasks.add(call.getArgument(1)); return mock(BukkitTask.class); });
         bukkit = mockStatic(Bukkit.class);
         bukkit.when(() -> Bukkit.createInventory(any(InventoryHolder.class), anyInt(), anyString()))
-                .thenAnswer(call -> inventory(call.getArgument(0), call.getArgument(1)));
+                .thenAnswer(call -> {
+                    Inventory inventory = inventory(call.getArgument(0), call.getArgument(1));
+                    titles.put(inventory, call.getArgument(2));
+                    return inventory;
+                });
         bukkit.when(() -> Bukkit.getPlayer(playerId)).thenReturn(player);
         items = mockConstruction(ItemStack.class, (stack, context) -> {
             Material type = context.arguments().isEmpty() ? Material.STONE : (Material) context.arguments().getFirst();
@@ -165,6 +174,79 @@ class LegacyShopUiTest {
         when(plugins.getPlugin("Geyser-Spigot")).thenReturn(geyser); when(geyser.isEnabled()).thenReturn(true);
     }
     private String lore(int slot) { return String.join("\n", opened.get().getItem(slot).getItemMeta().getLore()); }
+
+    private Economy worldBalance(double initialBalance) {
+        Economy economy = mock(Economy.class);
+        ServicesManager services = mock(ServicesManager.class);
+        @SuppressWarnings("unchecked") RegisteredServiceProvider<Economy> registration = mock(RegisteredServiceProvider.class);
+        World world = mock(World.class);
+        when(player.getWorld()).thenReturn(world); when(world.getName()).thenReturn("shop_world");
+        when(plugin.getServer().getServicesManager()).thenReturn(services);
+        when(services.getRegistration(Economy.class)).thenReturn(registration);
+        when(registration.getProvider()).thenReturn(economy); when(economy.isEnabled()).thenReturn(true);
+        when(economy.hasAccount(player, "shop_world")).thenReturn(true);
+        when(economy.getBalance(player, "shop_world")).thenReturn(initialBalance);
+        when(plugin.getBalanceDisplay()).thenReturn(new BalanceDisplay(plugin, economy));
+        return economy;
+    }
+
+    @ParameterizedTest @EnumSource(LegacyTrading.Direction.class)
+    void everyInventoryScreenShowsWorldBalanceAndQuotedPreviewRefreshesAtConfirmation(LegacyTrading.Direction direction) {
+        Economy economy = worldBalance(500);
+        ui.showOffer(player, offer);
+        assertTrue(titles.get(opened.get()).startsWith("Balance $500.00 | "));
+        assertTrue(lore(4).contains("Current balance: $500.00"));
+        tap(direction == LegacyTrading.Direction.BUY ? 11 : 15);
+        assertTrue(titles.get(opened.get()).startsWith("Balance $500.00 | "));
+        assertTrue(lore(13).contains("Current balance: $500.00"));
+        assertTrue(lore(13).contains("Total: calculated at review."));
+        assertFalse(lore(13).contains("Balance after"));
+        tap(31);
+        assertTrue(titles.get(opened.get()).startsWith("Balance $500.00 | "));
+        assertTrue(lore(4).contains(direction == LegacyTrading.Direction.BUY
+                ? "Purchase cost: -$123.45" : "Sale proceeds: +$123.45"));
+        assertTrue(lore(4).contains(direction == LegacyTrading.Direction.BUY
+                ? "Balance after purchase: $376.55" : "Balance after sale: $623.45"));
+        when(economy.getBalance(player, "shop_world")).thenReturn(20.0);
+        tap(11);
+        assertTrue(titles.get(opened.get()).startsWith("Balance $20.00 | "));
+        assertTrue(lore(4).contains("Current balance: $20.00"));
+        assertTrue(lore(11).contains(direction == LegacyTrading.Direction.BUY
+                ? "Balance after purchase: -$103.45" : "Balance after sale: $143.45"));
+        assertEquals(direction == LegacyTrading.Direction.BUY, lore(11).contains("Insufficient funds."));
+        verify(economy, never()).getBalance(player);
+        verify(trading, never()).confirm(any(), any());
+    }
+
+    @ParameterizedTest @EnumSource(LegacyTrading.Direction.class)
+    void everyNativeFormShowsCurrentBalanceAndFreshExactQuotePreview(LegacyTrading.Direction direction) {
+        Economy economy = worldBalance(500);
+        nativeForms(); choose(direction);
+        assertTrue(FormFixtures.last().text.startsWith("Current balance: $500.00\n"));
+        assertTrue(FormFixtures.last().text.contains("Total: calculated at review."));
+        assertFalse(FormFixtures.last().text.contains("Balance after"));
+        FormFixtures.last().number("8"); flush();
+        assertTrue(FormFixtures.last().text.startsWith("Current balance: $500.00\n"));
+        assertTrue(FormFixtures.last().text.contains(direction == LegacyTrading.Direction.BUY
+                ? "Purchase cost: -$123.45" : "Sale proceeds: +$123.45"));
+        assertTrue(FormFixtures.last().text.contains(direction == LegacyTrading.Direction.BUY
+                ? "Balance after purchase: $376.55" : "Balance after sale: $623.45"));
+        when(economy.getBalance(player, "shop_world")).thenReturn(200.0);
+        FormFixtures.last().choice(0); flush();
+        assertTrue(FormFixtures.last().text.startsWith("Current balance: $200.00\n"));
+        assertTrue(FormFixtures.last().text.contains(direction == LegacyTrading.Direction.BUY
+                ? "Balance after purchase: $76.55" : "Balance after sale: $323.45"));
+        verify(economy, never()).getBalance(player);
+        verify(trading, never()).confirm(any(), any());
+    }
+
+    @Test void missingBalanceDisplayKeepsUnknownBalanceHonestAndExactQuoteVisible() {
+        review(LegacyTrading.Direction.BUY);
+        assertTrue(titles.get(opened.get()).startsWith("Balance unavailable | "));
+        assertTrue(lore(4).contains("Current balance: unavailable"));
+        assertTrue(lore(4).contains("Purchase cost: -$123.45"));
+        assertTrue(lore(4).contains("Balance after purchase: unavailable"));
+    }
 
     @Test void offerKeepsOriginalItemMetadataBundleAndTrustedPriceLabelsWithoutPreparingOrCancelling() throws Exception {
         ui.showOffer(player, offer);

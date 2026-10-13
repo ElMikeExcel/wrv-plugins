@@ -85,6 +85,8 @@ class ShopUiTest {
     private MockedConstruction<ItemStack> items;
     private MockedConstruction<JavaNumberDialogs> dialogs;
     private boolean dialogAvailable;
+    private net.milkbowl.vault.economy.Economy vault;
+    private final List<String> inventoryTitles = new ArrayList<>();
     private final List<DialogCall> dialogCalls = new ArrayList<>();
     private final List<Runnable> timeouts = new ArrayList<>();
     private record DialogCall(String title, String details, String initial, Consumer<String> submit, Runnable cancel) {}
@@ -101,6 +103,14 @@ class ShopUiTest {
         when(plugin.getLogger()).thenReturn(Logger.getLogger("ShopUiTest"));
         when(player.getUniqueId()).thenReturn(playerId); when(player.isOnline()).thenReturn(true);
         when(player.getName()).thenReturn("Buyer");
+        vault = mock(net.milkbowl.vault.economy.Economy.class);
+        org.bukkit.plugin.ServicesManager services = mock(org.bukkit.plugin.ServicesManager.class);
+        org.bukkit.plugin.RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> provider = mock(org.bukkit.plugin.RegisteredServiceProvider.class);
+        when(server.getServicesManager()).thenReturn(services);
+        when(services.getRegistration(net.milkbowl.vault.economy.Economy.class)).thenReturn(provider);
+        when(provider.getProvider()).thenReturn(vault); when(vault.isEnabled()).thenReturn(true);
+        when(vault.hasAccount(player)).thenReturn(true); when(vault.getBalance(player)).thenReturn(1500.0);
+        when(plugin.getBalanceDisplay()).thenReturn(new BalanceDisplay(plugin,vault));
         economy = mock(CheckoutService.Adapter.class); transfer = mock(CheckoutService.Transfer.class);
         when(transfer.auditEvidence()).thenReturn("Fixture buyer and chest before/after snapshots");
         when(transfer.apply()).thenReturn(CheckoutService.MutationResult.APPLIED);
@@ -124,7 +134,7 @@ class ShopUiTest {
         });
         bukkit = mockStatic(Bukkit.class);
         bukkit.when(() -> Bukkit.createInventory(any(InventoryHolder.class), anyInt(), anyString()))
-                .thenAnswer(call -> inventory(call.getArgument(0), call.getArgument(1)));
+                .thenAnswer(call -> { inventoryTitles.add(call.getArgument(2)); return inventory(call.getArgument(0), call.getArgument(1)); });
         bukkit.when(() -> Bukkit.getPlayer(playerId)).thenReturn(player);
         items = mockConstruction(ItemStack.class, (stack, context) -> {
             Material type = context.arguments().isEmpty() ? Material.STONE : (Material) context.arguments().getFirst();
@@ -387,8 +397,8 @@ class ShopUiTest {
         setupPrice(); assertTrue(ui.enterNumber(player, "100000000.00")); flush(); tap(0);
         Inventory inventory = opened.get(); InventoryHolder page = inventory.getHolder(); clearInvocations(player);
         queue(27, 28, 29, 30, 31); flush(); sameOpenPage(inventory, page);
-        assertTrue(lore(13).contains("Unit price: $100000000.00"));
-        queue(22, 22); flush(); assertTrue(lore(13).contains("Unit price: $99999999.98")); sameOpenPage(inventory, page);
+        assertTrue(lore(13).contains("Unit price: $100,000,000.00"));
+        queue(22, 22); flush(); assertTrue(lore(13).contains("Unit price: $99,999,999.98")); sameOpenPage(inventory, page);
         verify(registry, never()).commit(any(), any(), anyList()); noMoneyMoved();
     }
 
@@ -529,7 +539,7 @@ class ShopUiTest {
         DialogCall first = typedQuantity(19); first.submit().accept(bad); flush();
         assertEquals(ShopUi.ViewKind.NUMBER_ENTRY, ui.currentKind(playerId));
         DialogCall retry = dialogCalls.getLast(); assertNotSame(first, retry); assertEquals("19", retry.initial());
-        assertTrue(retry.details().startsWith("Enter a whole number from 1 to 2304."));
+        assertTrue(retry.details().contains("Enter a whole number from 1 to 2304."));
         first.submit().accept("100"); flush(); assertSame(retry, dialogCalls.getLast());
         retry.submit().accept("23"); flush(); assertTrue(lore(4).contains("23 × Custom treasure")); noMoneyMoved();
     }
@@ -685,7 +695,7 @@ class ShopUiTest {
             FormFixtures.last().number("70000");
         } else typedPrice().submit().accept("70000");
         flush(); assertEquals(ShopUi.ViewKind.SETUP_ITEMS, ui.currentKind(playerId));
-        assertTrue(lore(0).contains("$70000.00 each"));
+        assertTrue(lore(0).contains("$70,000.00 each"));
         verify(registry, never()).commit(any(), any(), anyList()); noMoneyMoved();
     }
 
@@ -709,6 +719,94 @@ class ShopUiTest {
         nativeForms(); quantity(19); FormFixtures.last().number(bad); flush();
         assertEquals(ShopUi.ViewKind.QUANTITY, ui.currentKind(playerId));
         assertEquals("19", FormFixtures.last().initial); noMoneyMoved();
+    }
+
+    @Test void balanceVisibleInInventoryHeadersAndFreshAtEveryReview() throws Exception {
+        ui.showSpawn(player); assertTrue(inventoryTitles.getLast().startsWith("Balance $1,500.00 |"));
+        quantity(8); assertTrue(lore(13).contains("Current balance: $1,500.00"));
+        assertTrue(lore(13).contains("Purchase cost: -$10.00"));
+        assertTrue(lore(13).contains("Balance after purchase: $1,490.00"));
+        when(vault.getBalance(player)).thenReturn(5.0); tap(31);
+        assertTrue(lore(4).contains("Current balance: $5.00"));
+        assertTrue(lore(4).contains("Insufficient funds. Need $5.00 more."));
+        when(vault.getBalance(player)).thenReturn(20.0); tap(11);
+        assertTrue(lore(4).contains("Balance after purchase: $10.00"));
+        assertTrue(inventoryTitles.getLast().startsWith("Balance $20.00 |")); noMoneyMoved();
+    }
+    @Test void typedAmountShowsSnapshotAndRecalculatesAfterSubmit() throws Exception {
+        dialogAvailable=true; quantity(8); tap(22);
+        assertTrue(dialogCalls.getLast().details().contains("Current balance: $1,500.00"));
+        assertTrue(dialogCalls.getLast().details().contains("Balance after purchase: $1,490.00"));
+        assertTrue(dialogCalls.getLast().details().contains("typed amount updates at review"));
+        dialogCalls.getLast().submit().accept("16"); flush();
+        assertTrue(lore(4).contains("Balance after purchase: $1,480.00")); noMoneyMoved();
+    }
+    @Test void nativeBedrockBalanceAndPreviewAreVisibleThroughConfirmation() throws Exception {
+        nativeForms(); quantity(8);
+        assertTrue(FormFixtures.last().text.contains("Current balance: $1,500.00"));
+        assertTrue(FormFixtures.last().text.contains("Balance after purchase: $1,490.00"));
+        FormFixtures.last().number("16"); flush();
+        assertTrue(FormFixtures.last().text.contains("Balance after purchase: $1,480.00"));
+        when(vault.getBalance(player)).thenReturn(25.0); FormFixtures.last().choice(0); flush();
+        assertTrue(FormFixtures.last().text.contains("Balance after purchase: $5.00")); noMoneyMoved();
+    }
+    @Test void setupAndPriceEntryShowBalanceAndCannotMoveMoney() throws Exception {
+        dialogAvailable=true; setupPrice();
+        assertTrue(inventoryTitles.getLast().startsWith("Balance $1,500.00 |"));
+        tap(24); assertTrue(dialogCalls.getLast().details().contains("Current balance: $1,500.00"));
+        dialogCalls.getLast().submit().accept("0.50"); flush(); tap(31); tap(49);
+        assertTrue(inventoryTitles.stream().allMatch(t -> t.startsWith("Balance $1,500.00 |"))); noMoneyMoved();
+    }
+
+    @Test void customBalanceTextCannotSuppressTrustedBalanceInPriceEntryOrNativeSetupForms() throws Exception {
+        String customName = "Current balance: $9,999.99 treasure";
+        when(proposal.contents()).thenAnswer(call -> new ItemStack[]{
+                item(stockMaterial, 8, meta(customName, List.of("Current balance: custom item lore")))});
+        DialogCall price = typedPrice();
+        assertTrue(price.details().startsWith("Current balance: $1,500.00\n"));
+        assertTrue(price.details().contains(customName));
+        ui.cancel(player);
+
+        nativeForms(); ui.offerSetup(player, proposal);
+        assertTrue(FormFixtures.last().text.startsWith("Current balance: $1,500.00\n"));
+        FormFixtures.last().choice(0); flush(); tap(0);
+        assertTrue(FormFixtures.last().text.startsWith("Current balance: $1,500.00\n"));
+        assertTrue(FormFixtures.last().text.contains(customName));
+        FormFixtures.last().number("0.50"); flush(); tap(31);
+        assertEquals(ShopUi.ViewKind.SETUP_REVIEW, ui.currentKind(playerId));
+        assertTrue(FormFixtures.last().text.startsWith("Current balance: $1,500.00\n"));
+        assertTrue(FormFixtures.last().text.contains(customName));
+        FormFixtures.last().choice(0); flush();
+        assertEquals(ShopUi.ViewKind.SETUP_CONFIRM, ui.currentKind(playerId));
+        assertTrue(FormFixtures.last().text.startsWith("Current balance: $1,500.00\n"));
+        assertTrue(FormFixtures.last().text.contains(customName));
+        verify(registry, never()).commit(any(), any(), anyList()); noMoneyMoved();
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void invalidTypedQuantityRefreshesChangedBalanceAndProjectedTotal(boolean bedrock) throws Exception {
+        if (bedrock) {
+            nativeForms(); quantity(8);
+            assertTrue(FormFixtures.last().text.contains("Balance after purchase: $1,490.00"));
+            when(vault.getBalance(player)).thenReturn(5.0);
+            FormFixtures.last().number("invalid");
+        } else {
+            DialogCall first = typedQuantity(8);
+            assertTrue(first.details().contains("Balance after purchase: $1,490.00"));
+            when(vault.getBalance(player)).thenReturn(5.0);
+            first.submit().accept("invalid");
+        }
+        flush();
+        String details = bedrock ? FormFixtures.last().text : dialogCalls.getLast().details();
+        assertTrue(details.contains("Current balance: $5.00"));
+        assertTrue(details.contains("Purchase cost: -$10.00"));
+        assertTrue(details.contains("Balance after purchase: -$5.00"));
+        assertTrue(details.contains("Insufficient funds. Need $5.00 more."));
+        assertFalse(details.contains("Current balance: $1,500.00"));
+        assertFalse(details.contains("Balance after purchase: $1,490.00"));
+        assertEquals("8", bedrock ? FormFixtures.last().initial : dialogCalls.getLast().initial());
+        assertEquals(bedrock ? ShopUi.ViewKind.QUANTITY : ShopUi.ViewKind.NUMBER_ENTRY, ui.currentKind(playerId));
+        noMoneyMoved();
     }
 
 }

@@ -78,3 +78,18 @@ Use a disposable staging economy with one Java player and one Bedrock phone play
 10. Restart cleanly, repeat native/Spawn access and an authorized disposable purchase, and verify state persists. Only when guarded ChestShop compatibility is installed, also repeat legacy access and a disposable Buy and Sell.
 
 Automated tests do not prove human client rendering/input or the exact installed stack. The isolated legacy harness uses actual EssentialsX 2.22.0 and GriefPrevention but substitutes official Vault 1.7.3-b131; the later live receipt identifies Vault-Updated 2.0.0 and a successful guarded EssentialsXEconomy connection, not completed player trade acceptance. Human Java and Bedrock phone checks, real player saves and Geyser/Floodgate remain pending until recorded directly.
+
+
+## 0.1.5 balance candidate acceptance (not installed)
+
+After a separately approved rollout, check Java keyboard/mouse, Bedrock touch, controller and Windows:
+
+- Balance is visible without hover in Spawn Shop, chest catalog and every owner/shop screen. Confirm launcher placeholders resolve.
+- With a known balance, select a quantity and verify current balance minus cost equals projected remainder. Repeat for one-cent, exact-funds, insufficient-funds and large-balance cases.
+- Type a different amount; the entry snapshot is labeled, and review/final confirmation show the newly calculated total. Invalid-input retry reads a fresh balance.
+- Change balance externally between review and final confirmation; confirm fresh display and independent transaction revalidation. Use disposable test accounts/funds.
+- Cancel, Back, close, invalid input and timeout leave money/items untouched. Repeated +/- clicks retain the current inventory and cursor.
+- Check narrow phone layouts, controller focus, scrolling, and large-value header clipping.
+- If testing separately installed legacy ChestShop, verify Buy subtracts and Sell credits the world-aware account.
+
+See [full balance instructions and limits](BALANCE-DISPLAY-0.1.5.md). All real-device checks are pending for this candidate.
