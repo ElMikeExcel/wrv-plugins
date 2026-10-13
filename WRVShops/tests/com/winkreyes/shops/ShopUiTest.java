@@ -51,6 +51,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.geysermc.fixtures.FormFixtures;
 import org.geysermc.fixtures.GeyserFixture;
+import org.geysermc.fixtures.FloodgateFixture;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -89,7 +90,7 @@ class ShopUiTest {
     private record DialogCall(String title, String details, String initial, Consumer<String> submit, Runnable cancel) {}
 
     @BeforeEach void setup() throws Exception {
-        FormFixtures.reset(); GeyserFixture.reset();
+        FormFixtures.reset(); GeyserFixture.reset(); FloodgateFixture.reset();
         plugin = mock(WRVShops.class); registry = mock(ShopRegistry.class); player = mock(Player.class);
         Server server = mock(Server.class); plugins = mock(PluginManager.class);
         BukkitScheduler scheduler = mock(BukkitScheduler.class);
@@ -643,6 +644,71 @@ class ShopUiTest {
         verify(dialogs.constructed().getFirst()).close(player);
         dialog.cancel().run(); timeouts.getLast().run(); flush();
         assertNull(ui.currentKind(playerId)); noMoneyMoved();
+    }
+
+    @Test void failedBedrockFormNeverFallsThroughToJavaDialog() throws Exception {
+        nativeForms(); dialogAvailable = true; GeyserFixture.sendAccepted = false;
+        quantity(19); tap(22); assertTrue(dialogCalls.isEmpty(), "Bedrock must never receive a Java-only dialog");
+        assertEquals(ShopUi.ViewKind.QUANTITY, ui.currentKind(playerId)); assertQuantity(19); noMoneyMoved();
+    }
+
+    @Test void disabledBedrockFormsStillCannotSendJavaDialogToGeyserPlayer() throws Exception {
+        nativeForms(); config.set("bedrock-forms", false); dialogAvailable = true;
+        quantity(19); tap(22); assertTrue(dialogCalls.isEmpty()); assertQuantity(19); noMoneyMoved();
+    }
+
+    @Test void uncertainBridgeDetectionKeepsUsableButtonsWithoutJavaDialog() throws Exception {
+        Plugin geyser = mock(Plugin.class); when(plugins.getPlugin("Geyser-Spigot")).thenReturn(geyser);
+        when(geyser.isEnabled()).thenReturn(false); dialogAvailable = true;
+        quantity(19); tap(22); assertTrue(dialogCalls.isEmpty()); assertQuantity(19); noMoneyMoved();
+    }
+
+    @Test void bedrockFiftyCentInputRemainsDraftAndNeverCallsJavaDialog() throws Exception {
+        nativeForms(); dialogAvailable = true; ui.offerSetup(player, proposal);
+        FormFixtures.last().choice(0); flush(); tap(0); FormFixtures.last().number("0.50"); flush();
+        assertEquals(ShopUi.ViewKind.SETUP_ITEMS, ui.currentKind(playerId)); assertTrue(lore(0).contains("$0.50 each"));
+        assertTrue(dialogCalls.isEmpty()); verify(registry, never()).commit(any(), any(), anyList());
+        tap(31); assertTrue(FormFixtures.last().text.contains("$0.50 each"));
+        FormFixtures.last().choice(2); flush(); assertNull(ui.currentKind(playerId)); noMoneyMoved();
+    }
+
+    @Test void floodgateOnlyProxyPlayerNeverReceivesJavaDialog() throws Exception {
+        Plugin floodgate = mock(Plugin.class); when(plugins.getPlugin("floodgate")).thenReturn(floodgate);
+        when(floodgate.isEnabled()).thenReturn(true); dialogAvailable = true;
+        quantity(19); tap(22); assertTrue(dialogCalls.isEmpty()); assertQuantity(19); noMoneyMoved();
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void exactSeventyThousandPriceIsAcceptedOnJavaAndBedrockWithoutPublishing(boolean bedrock) throws Exception {
+        if (bedrock) {
+            nativeForms(); ui.offerSetup(player, proposal); FormFixtures.last().choice(0); flush(); tap(0);
+            FormFixtures.last().number("70000");
+        } else typedPrice().submit().accept("70000");
+        flush(); assertEquals(ShopUi.ViewKind.SETUP_ITEMS, ui.currentKind(playerId));
+        assertTrue(lore(0).contains("$70000.00 each"));
+        verify(registry, never()).commit(any(), any(), anyList()); noMoneyMoved();
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"-0", "-1", "-70000", "NaN", "Infinity", "-Infinity", "1e6", "999999999999999999999999999", "0", "100000000.01"})
+    void javaAndBedrockRejectNonPositiveOrUnsafePrices(String bad) throws Exception {
+        typedPrice().submit().accept(bad); flush();
+        assertEquals(ShopUi.ViewKind.NUMBER_ENTRY, ui.currentKind(playerId));
+        assertEquals("1.00", dialogCalls.getLast().initial()); ui.cancel(player);
+        nativeForms(); ui.offerSetup(player, proposal); FormFixtures.last().choice(0); flush(); tap(0);
+        FormFixtures.last().number(bad); flush();
+        assertEquals(ShopUi.ViewKind.SETUP_PRICE, ui.currentKind(playerId));
+        assertEquals("1.00", FormFixtures.last().initial);
+        verify(registry, never()).commit(any(), any(), anyList()); noMoneyMoved();
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"-0", "-1", "-70000", "NaN", "Infinity", "-Infinity", "1e3", "999999999999999999999999999", "0", "70000", "1.5"})
+    void javaAndBedrockRejectNonPositiveOrUnsafeQuantities(String bad) throws Exception {
+        typedQuantity(19).submit().accept(bad); flush();
+        assertEquals(ShopUi.ViewKind.NUMBER_ENTRY, ui.currentKind(playerId));
+        assertEquals("19", dialogCalls.getLast().initial()); ui.cancel(player);
+        nativeForms(); quantity(19); FormFixtures.last().number(bad); flush();
+        assertEquals(ShopUi.ViewKind.QUANTITY, ui.currentKind(playerId));
+        assertEquals("19", FormFixtures.last().initial); noMoneyMoved();
     }
 
 }

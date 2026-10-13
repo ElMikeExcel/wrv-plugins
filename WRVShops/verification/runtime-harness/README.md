@@ -75,9 +75,9 @@ Every renamed-plugin boot compares all legacy file hashes, directory/file types 
 
 ## Verified ExcelShops 0.1.4 typed-entry candidate
 
-Tested JAR SHA-256: `d4c1a0f8e21ad536577242f5b6522e24d8e03255985b359d765da2886ec2374c`.
+Tested JAR SHA-256: `565ae9e91e7a4516908e2d245f87ef1936aae23d055f084dc4159112e445f83c`.
 
-The 2026-10-12 run passed **4 full server boots / 1,104 assertions / zero failures**
+The 2026-10-13 serial run passed **4 full server boots / 1,104 assertions / zero failures**
 on exact Paper 26.2 #123 and Temurin 25.0.4+7-LTS:
 
 - Normal boot: 83 groups / 543 assertions
@@ -102,6 +102,16 @@ per-group results, exact API compile/source hashes and shutdown verification.
 The clean/dirty/conflict legacy migration suite was not rerun for this UI-only
 candidate. Its earlier evidence below is historical. Client rendering and the
 other limitations stated above remain unverified.
+
+The final candidate includes the Bedrock-safe Java-dialog routing guard. This
+runtime fixture has no actual Geyser/Floodgate provider and verifies the native
+Java branch; separate synthetic API fixtures cannot establish real-device support.
+An earlier concurrent build/runtime attempt timed out after 81 passing groups,
+with no failed assertion and no completed boot. It is not acceptance evidence.
+Its dirty synthetic world, registry and journal were archived intact outside the
+repository, then the existing clean accepted fixture was restored and byte-checked
+before this serial four-boot pass. No recovery marker was cleared in place, and
+no new EULA acceptance or live-server action occurred.
 
 ## Historical ExcelShops 0.1.1 candidate
 

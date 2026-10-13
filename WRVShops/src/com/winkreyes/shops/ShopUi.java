@@ -91,7 +91,7 @@ public final class ShopUi implements Listener {
         Runnable cancel=()->later(p,entry,back);
         String prompt=error==null?details:error+"\n\n"+details;
         boolean sent=forms.number(p,title,prompt,initial,submit,cancel);
-        if(!sent){entry.numberDialog=true;sent=dialogs.number(p,title,prompt,initial,submit,cancel);if(!sent)entry.numberDialog=false;}
+        if(!sent&&forms.canUseJavaDialog(p)){entry.numberDialog=true;sent=dialogs.number(p,title,prompt,initial,submit,cancel);if(!sent)entry.numberDialog=false;}
         if(!sent){p.sendMessage(ChatColor.YELLOW+"Text entry is unavailable on this client. Use the amount buttons for now.");back.run();return;}
         plugin.getServer().getScheduler().runTaskLater(plugin,()->{
             if(plugin.isEnabled()&&p.isOnline()&&pages.get(p.getUniqueId())==entry){

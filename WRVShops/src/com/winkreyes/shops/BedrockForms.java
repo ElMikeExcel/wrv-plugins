@@ -33,6 +33,39 @@ public final class BedrockForms {
         }
         return type;
     }
+    /**
+     * Native Java dialogs are safe only with no installed bridge, or when every
+     * installed bridge positively identifies this UUID as a non-Bedrock player.
+     * This check deliberately ignores the form preference and fails closed for
+     * disabled bridges, unavailable APIs, and detection errors.
+     */
+    public boolean canUseJavaDialog(Player player) {
+        try {
+            UUID id = Objects.requireNonNull(player.getUniqueId());
+            var manager = plugin.getServer().getPluginManager();
+            Plugin geyser = manager.getPlugin("Geyser-Spigot");
+            if (geyser != null) {
+                if (!geyser.isEnabled()) return false;
+                Class<?> apiType = publicApi("org.geysermc.geyser.api.GeyserApi", geyser.getClass().getClassLoader());
+                Object api = apiType.getMethod("api").invoke(null);
+                if (!apiType.isInstance(api)) return false;
+                if (apiType.getMethod("connectionByUuid", UUID.class).invoke(api, id) != null) return false;
+            }
+            // Floodgate may be the only local bridge when Geyser runs on a proxy.
+            Plugin floodgate = manager.getPlugin("floodgate");
+            if (floodgate == null) floodgate = manager.getPlugin("Floodgate");
+            if (floodgate != null) {
+                if (!floodgate.isEnabled()) return false;
+                Class<?> apiType = publicApi("org.geysermc.floodgate.api.FloodgateApi", floodgate.getClass().getClassLoader());
+                Object api = apiType.getMethod("getInstance").invoke(null);
+                if (!apiType.isInstance(api)) return false;
+                if (!Boolean.FALSE.equals(apiType.getMethod("isFloodgatePlayer", UUID.class).invoke(api, id))) return false;
+            }
+            return true;
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
+            return false;
+        }
+    }
     private Connection connect(Player player) throws ReflectiveOperationException {
         if (!plugin.getConfig().getBoolean("bedrock-forms", true)) return null;
         Plugin geyser = plugin.getServer().getPluginManager().getPlugin("Geyser-Spigot");

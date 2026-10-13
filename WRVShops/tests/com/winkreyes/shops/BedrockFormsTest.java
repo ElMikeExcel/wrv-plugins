@@ -16,6 +16,7 @@ import org.bukkit.plugin.PluginManager;
 import org.geysermc.cumulus.form.Form;
 import org.geysermc.fixtures.FormFixtures;
 import org.geysermc.fixtures.GeyserFixture;
+import org.geysermc.fixtures.FloodgateFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,7 +35,7 @@ public class BedrockFormsTest {
     private final AtomicInteger closes = new AtomicInteger();
 
     @BeforeEach void setup() {
-        GeyserFixture.reset(); FormFixtures.reset();
+        GeyserFixture.reset(); FormFixtures.reset(); FloodgateFixture.reset();
         plugin = mock(WRVShops.class); geyser = mock(Plugin.class);
         Server server = mock(Server.class); plugins = mock(PluginManager.class);
         player = mock(Player.class); config = new YamlConfiguration();
@@ -52,6 +53,78 @@ public class BedrockFormsTest {
     }
     private boolean number() { return forms.number(player, "Quantity", "How many?", "4", numbers::add, closes::incrementAndGet); }
     private boolean choices() { return forms.choices(player, "Confirm", "Buy 4 items?", new String[] {"Confirm", "Back", "Cancel"}, choices::add, closes::incrementAndGet); }
+
+    @Test void javaDialogsAreAllowedWithoutInstalledBridges() {
+        when(plugins.getPlugin("Geyser-Spigot")).thenReturn(null);
+        assertTrue(forms.canUseJavaDialog(player));
+    }
+
+    @Test void javaDialogsAreAllowedForPositivelyIdentifiedJavaPlayer() {
+        installFloodgate();
+        GeyserFixture.online = false; FloodgateFixture.bedrock = false;
+        assertTrue(forms.canUseJavaDialog(player));
+        assertEquals(player.getUniqueId(), FloodgateFixture.lastPlayer);
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {true, false})
+    void knownBedrockNeverGetsJavaDialogRegardlessOfFormPreference(boolean enabled) {
+        config.set("bedrock-forms", enabled);
+        assertFalse(forms.canUseJavaDialog(player));
+    }
+
+    @Test void rejectedFormDoesNotTurnBedrockIntoJava() {
+        GeyserFixture.sendAccepted = false;
+        assertFalse(number());
+        assertFalse(forms.canUseJavaDialog(player));
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {true, false})
+    void floodgateOnlyProxyPlayerNeverGetsJavaDialog(boolean enabled) {
+        when(plugins.getPlugin("Geyser-Spigot")).thenReturn(null);
+        installFloodgate(); config.set("bedrock-forms", enabled);
+        assertFalse(forms.canUseJavaDialog(player));
+        assertEquals(player.getUniqueId(), FloodgateFixture.lastPlayer);
+    }
+
+    @Test void negativeGeyserResultDoesNotOverrideFloodgateBedrockDetection() {
+        installFloodgate(); GeyserFixture.online = false;
+        assertFalse(forms.canUseJavaDialog(player));
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"geyser-disabled", "geyser-api-null", "geyser-class-missing", "geyser-method-missing", "floodgate-disabled", "floodgate-api-null", "floodgate-class-missing", "floodgate-method-missing", "floodgate-throws", "linkage", "manager-throws"})
+    void uncertainDetectionNeverEnablesJavaDialog(String failure) {
+        Plugin floodgate = installFloodgate();
+        GeyserFixture.online = false; FloodgateFixture.bedrock = false;
+        switch (failure) {
+            case "geyser-disabled" -> when(geyser.isEnabled()).thenReturn(false);
+            case "geyser-api-null" -> GeyserFixture.apiAvailable = false;
+            case "geyser-class-missing" -> forms = missingDetectionApi("org.geysermc.geyser.api.GeyserApi");
+            case "geyser-method-missing" -> forms = replacement("org.geysermc.geyser.api.GeyserApi", MissingResponseMethod.class);
+            case "floodgate-disabled" -> when(floodgate.isEnabled()).thenReturn(false);
+            case "floodgate-api-null" -> FloodgateFixture.apiAvailable = false;
+            case "floodgate-class-missing" -> forms = missingDetectionApi("org.geysermc.floodgate.api.FloodgateApi");
+            case "floodgate-method-missing" -> forms = replacement("org.geysermc.floodgate.api.FloodgateApi", MissingResponseMethod.class);
+            case "floodgate-throws" -> FloodgateFixture.throwOnLookup = true;
+            case "linkage" -> forms = new BedrockForms(plugin, (name, loader) -> { throw new NoClassDefFoundError("fixture"); });
+            case "manager-throws" -> when(plugins.getPlugin("Geyser-Spigot")).thenThrow(new IllegalStateException("fixture"));
+            default -> fail("Unhandled fixture");
+        }
+        assertFalse(forms.canUseJavaDialog(player));
+    }
+
+    private Plugin installFloodgate() {
+        Plugin floodgate = mock(Plugin.class);
+        when(plugins.getPlugin("floodgate")).thenReturn(floodgate);
+        when(floodgate.isEnabled()).thenReturn(true);
+        return floodgate;
+    }
+
+    private BedrockForms missingDetectionApi(String missing) {
+        return new BedrockForms(plugin, (name, loader) -> {
+            if (name.equals(missing)) throw new ClassNotFoundException(name);
+            return Class.forName(name, true, loader);
+        });
+    }
 
     @Test void numberUsesPublicInterfacesWithNonpublicImplementationClasses() {
         assertTrue(number());

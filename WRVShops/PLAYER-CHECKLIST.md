@@ -4,7 +4,7 @@
 
 ## 0.1.4 typed-entry candidate (not installed)
 
-The following typing instructions apply after a separately approved 0.1.4 installation. Choose **Enter Amount**, type a price such as `0.50` or whole-number quantity such as `19`, then **Use amount**. Review and separate final confirmation remain mandatory. See [the full typed-entry checklist](AMOUNT-ENTRY-0.1.4.md). Current live 0.1.3 still uses Java buttons; Bedrock already has native numeric forms.
+The following typing instructions apply after a separately approved 0.1.4 installation. Java keyboard/mouse, Bedrock touch, Bedrock controller and Bedrock desktop require their own [real-device checks](AMOUNT-ENTRY-0.1.4.md#cross-platform-acceptance-matrix); none is marked passed by server/API tests. Choose **Enter Amount**, type a price such as `0.50` or whole-number quantity such as `19`, then **Use amount**. Review and separate final confirmation remain mandatory. See [the full typed-entry checklist](AMOUNT-ENTRY-0.1.4.md). Current live 0.1.3 still uses Java buttons; Bedrock already has native numeric forms.
 
 ## Priority retest: Java plus/minus controls
 
