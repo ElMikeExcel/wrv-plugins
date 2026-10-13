@@ -86,12 +86,16 @@ public class WealthBoard extends JavaPlugin implements Listener {
                     + ChatColor.WHITE + e.name
                     + ChatColor.GREEN + " $" + formatMoney(e.balance);
             int fadeIn = (i == 0) ? 10 : 0;
-            int fadeOut = (i == top.size() - 1) ? 15 : 5;
+            boolean last = i == top.size() - 1;
+            int fadeOut = last ? 15 : 0;
+            // Keep intermediate frames opaque past the next 60-tick update.
+            // A 55-tick stay plus 5-tick fade allows a fade before rank 3.
+            int stay = last ? 55 : 70;
             // 60 ticks (3s) per entry: mobile.3's ~1.75s was too fast to read.
             long delay = (long) i * 60L;
             Bukkit.getScheduler().runTaskLater(this, () -> {
                 if (player.isOnline()) {
-                    player.sendTitle(title, subtitle, fadeIn, 55, fadeOut);
+                    player.sendTitle(title, subtitle, fadeIn, stay, fadeOut);
                 }
             }, delay);
         }

@@ -1,5 +1,16 @@
 # Changelog - ExcelWealthBoard (WealthBoard)
 
+## 1.3.0-mobile.7 - unreleased candidate
+
+- Remove intermediate 5-tick fade-outs and extend intermediate stays to 70 ticks,
+  overlapping the unchanged 60-tick ranking updates. Keep the first fade-in and
+  final 55-tick stay / 15-tick fade-out unchanged.
+- Preserve the welcome title, one-ranking-per-subtitle layout, text, sorting,
+  currency formatting, 10-second join delay and Jobs behavior.
+- Add a pinned standalone build and eleven scheduler/API regression cases.
+  Identical tests against mobile.6 fail three timing checks as expected.
+- Not installed. Real Java and Bedrock/Geyser rendering checks remain pending.
+
 ## 1.3.0-mobile.6 - 2026-10-13 (live)
 
 - Popup start delayed to 10 seconds after joining (was 6s in mobile.5).
