@@ -6,7 +6,7 @@ Installed October 13, 2026, America/Chicago (October 14 UTC). The server enabled
 
 - Installed production JAR SHA-256, verified on the server: `66e7e50821b439f51a9c1882ce9e60d0011d97065b7b4ed26b407e81d35080fc`.
 - Exact reviewed source is published in [draft PR 14](https://github.com/ElMikeExcel/wrv-plugins/pull/14), initially at `be7baf81e7ad3353ab4697b67ebe1e3b74796178`. This addendum changes documentation only.
-- The latest live Spawn Shop was rechecked, then one Veil Potion entry was appended in the available **slot 28**. Existing entries, including Death Protection slots 31 and 34, were retained.
+- The latest live Spawn Shop was rechecked, all 22 original entries were preserved byte-for-byte, then one Veil Potion entry was appended in the available **slot 28**. Existing entries, including Death Protection slots 31 and 34, were retained.
 - Prior menu SHA-256: `9f328011cb78bf11d86fdbf15519db96c86ea3638b0672137c7eed242d2124b2`.
 - Installed menu readback SHA-256: `44b714b9a46d0f18fadaa787b3b0019746cecb7b492fa39e851f59dc3918f52a`.
 - Only the public new-entry snippet is committed at [integration/deluxemenus-item.installed.yml](integration/deluxemenus-item.installed.yml); the private full menu and rollback copies are not published.
@@ -16,7 +16,7 @@ Installed October 13, 2026, America/Chicago (October 14 UTC). The server enabled
 
 An empty-server check preceded the saved-world shutdown. The installed plugin reported version 0.1.0 and the $2,000 price; its configuration matched the authoritative defaults. All three existing menus and `/shop` loaded. The new purchase journal was empty, and no real purchase was performed. No ExcelMobVeil warning or error was observed.
 
-ExcelDeathProtection remained 0.1.3 with basic $15,000 / premium $30,000 prices. ExcelShops remained 0.1.5 with EssentialsX Economy, and WealthBoard remained mobile.7. Initial empty-server TPS was 19.9/19.9/19.9; this is not a load test. Existing unrelated Essentials version-support, Query UDP bind, DeluxeMenus NMS/deprecation, optional EliteMobs model and Paper-update notices remain.
+ExcelDeathProtection remained 0.1.3 with basic $15,000 / premium $30,000 prices. ExcelShops remained 0.1.5 with EssentialsX Economy, and WealthBoard remained mobile.7. At the final 02:23:06 UTC stability check, the server was Online with 0/10 players and TPS 20.0/20.0/20.0. The post-start menu readback still matched the installed checksum. This empty-server observation is not a load test. Existing unrelated Essentials version-support, Query UDP bind, DeluxeMenus NMS/deprecation, optional EliteMobs model and Paper-update notices remain.
 
 ## Acceptance and rollback boundaries
 
