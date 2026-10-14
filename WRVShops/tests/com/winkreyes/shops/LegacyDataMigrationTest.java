@@ -307,9 +307,15 @@ class LegacyDataMigrationTest {
         try {
             var reader = holder.inputReader();
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
-            while (!reader.ready() && holder.isAlive() && System.nanoTime() < deadline) Thread.sleep(10);
-            assertTrue(reader.ready(), "Lock-holder process did not become ready");
-            assertEquals("ready", reader.readLine());
+            String ready = null;
+            while (holder.isAlive() && System.nanoTime() < deadline) {
+                if (!reader.ready()) { Thread.sleep(10); continue; }
+                String line = reader.readLine();
+                // The controlled test runner sets safe JVM limits; the launcher prints this before main().
+                if (line != null && line.startsWith("Picked up JAVA_TOOL_OPTIONS:")) continue;
+                ready = line; break;
+            }
+            assertEquals("ready", ready, "Lock-holder process did not become ready");
             assertBlocked();
             assertFalse(Files.exists(stage()));
             assertFalse(Files.exists(excel()));

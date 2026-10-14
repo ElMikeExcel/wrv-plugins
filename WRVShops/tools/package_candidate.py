@@ -12,7 +12,7 @@ import zipfile
 
 MODULE = Path(__file__).resolve().parents[1]
 ROOT = MODULE.parent
-VERSION = "1.0"
+VERSION = "1.1"
 GUARD = ROOT / "ChestShop-ConfirmationGuard"
 GUARD_NAME = "ChestShop-3.13-pre-1-build474-confirmation.1"
 GUARD_BUILD = "chestshop474-confirmation.1"
@@ -145,10 +145,10 @@ def package(jar, expected_sha256, output, source_commit=None, *, guarded_jar=Non
         for value in ("name: ExcelShops\n", "  excelshop:\n", "aliases: [wrvshop]", "wrvshops.use", "wrvshops.create"):
             if value not in text:
                 raise ValueError("Unexpected plugin identity, alias or permissions")
-        for path in ("config.yml", "spawn-catalog.yml", "LICENSE"):
+        for path in ("config.yml", "spawn-catalog.yml", "LICENSE", *["mobile-menus/" + name + ".yml" for name in ("spawnshop", "spawnshop_food", "spawnshop_building", "spawnshop_travel_animals", "spawnshop_enchanting", "spawnshop_potions_protection")]):
             if z.read(path) != (MODULE / path).read_bytes():
                 raise ValueError("JAR resource mismatch: " + path)
-        for path in ("com/winkreyes/shops/WRVShops.class", "com/winkreyes/shops/LegacyDataMigration.class", "com/winkreyes/shops/LegacyShopBridge.class", "com/winkreyes/shops/LegacyShopUi.class", "com/winkreyes/shops/LegacyTransactionFence.class", "com/winkreyes/shops/store/ShopRegistry.class"):
+        for path in ("com/winkreyes/shops/WRVShops.class", "com/winkreyes/shops/MobileCatalog.class", "com/winkreyes/shops/MobileMenuBridge.class", "com/winkreyes/shops/LegacyDataMigration.class", "com/winkreyes/shops/LegacyShopBridge.class", "com/winkreyes/shops/LegacyShopUi.class", "com/winkreyes/shops/LegacyTransactionFence.class", "com/winkreyes/shops/store/ShopRegistry.class"):
             if path not in names:
                 raise ValueError("Required production class is missing: " + path)
         registry = z.read("com/winkreyes/shops/store/ShopRegistry.class")

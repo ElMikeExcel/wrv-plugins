@@ -368,4 +368,14 @@ public class BedrockFormsTest {
         static MissingSendApi api() { return id -> new Object(); }
         Object connectionByUuid(UUID id);
     }
+    @Test void positiveBedrockDetectionIgnoresFormPreference(){
+        config.set("bedrock-forms",false);assertTrue(forms.isBedrock(player));
+    }
+    @Test void positiveBedrockDetectionFallsBackToFloodgateWhenGeyserApiIsUnavailable(){
+        installFloodgate();GeyserFixture.apiAvailable=false;FloodgateFixture.bedrock=true;assertTrue(forms.isBedrock(player));
+    }
+    @Test void positiveBedrockDetectionDoesNotClassifyJavaOrApiErrorsAsBedrock(){
+        GeyserFixture.online=false;assertFalse(forms.isBedrock(player));GeyserFixture.apiAvailable=false;assertFalse(forms.isBedrock(player));
+    }
+
 }

@@ -1,0 +1,89 @@
+# ORGANIZATION CANDIDATE: 21 unchanged offers, grouped into five categories.
+menu_title: '&eBalance $%vault_eco_balance_2dp% &8| &2Spawn Shop'
+open_command: shop
+register_command: true
+size: 9
+update_interval: 1
+inventory_type: DISPENSER
+items:
+  category_food:
+    material: BREAD
+    slot: 0
+    display_name: '&a&lFood'
+    lore:
+    - '&7Bread, steak, golden carrots'
+    - '&7and golden apples.'
+    - '&e4 products'
+    - '&8Tap to browse. No charge yet.'
+    left_click_commands:
+    - '[openguimenu] spawnshop_food'
+    right_click_commands:
+    - '[openguimenu] spawnshop_food'
+  category_building:
+    material: OAK_LOG
+    slot: 1
+    display_name: '&a&lBuilding'
+    lore:
+    - '&7Torches, oak logs, glass,'
+    - '&7iron ingots and water buckets.'
+    - '&e5 products'
+    - '&8Tap to browse. No charge yet.'
+    left_click_commands:
+    - '[openguimenu] spawnshop_building'
+    right_click_commands:
+    - '[openguimenu] spawnshop_building'
+  category_travel_animals:
+    material: SADDLE
+    slot: 2
+    display_name: '&a&lTravel & Animals'
+    lore:
+    - '&7Saddles, name tags, leads,'
+    - '&7ender pearls and fireworks.'
+    - '&e5 products'
+    - '&8Tap to browse. No charge yet.'
+    left_click_commands:
+    - '[openguimenu] spawnshop_travel_animals'
+    right_click_commands:
+    - '[openguimenu] spawnshop_travel_animals'
+  category_enchanting:
+    material: ENCHANTED_BOOK
+    slot: 3
+    display_name: '&a&lEnchanting'
+    lore:
+    - '&7XP bottles, Mending,'
+    - '&7Unbreaking III and Efficiency IV.'
+    - '&e4 products'
+    - '&8Tap to browse. No charge yet.'
+    left_click_commands:
+    - '[openguimenu] spawnshop_enchanting'
+    right_click_commands:
+    - '[openguimenu] spawnshop_enchanting'
+  category_potions_protection:
+    material: POTION
+    slot: 4
+    display_name: '&a&lPotions & Protection'
+    lore:
+    - '&7Veil Potions, Death Protection'
+    - '&7and +Death Protection Potions.'
+    - '&e3 products'
+    - '&8Tap to browse. No charge yet.'
+    left_click_commands:
+    - '[openguimenu] spawnshop_potions_protection'
+    right_click_commands:
+    - '[openguimenu] spawnshop_potions_protection'
+  balance:
+    material: GOLD_NUGGET
+    slot: 5
+    update: true
+    display_name: '&e&lCurrent balance: &f$%vault_eco_balance_2dp%'
+    lore:
+    - '&7Choose a category to browse.'
+    - '&7Browsing does not spend money.'
+  back:
+    material: ARROW
+    slot: 6
+    display_name: '&c&lBack to Menu'
+    left_click_commands:
+    - '[player] menu'
+    right_click_commands:
+    - '[player] menu'

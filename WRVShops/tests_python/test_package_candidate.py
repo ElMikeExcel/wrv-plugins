@@ -85,9 +85,10 @@ class PackageTests(unittest.TestCase):
 
     def fake_jar(self, path, changes=None):
         files = {n: (MODULE / n).read_bytes() for n in ("plugin.yml", "config.yml", "spawn-catalog.yml", "LICENSE")}
-        files.update({"com/winkreyes/shops/WRVShops.class": b"fixture only", "com/winkreyes/shops/LegacyDataMigration.class": b"fixture only", "com/winkreyes/shops/store/ShopRegistry.class": b"fixture wrvshops shop_id chest_identity"})
+        files.update({"com/winkreyes/shops/MobileCatalog.class": b"fixture only", "com/winkreyes/shops/MobileMenuBridge.class": b"fixture only", "com/winkreyes/shops/WRVShops.class": b"fixture only", "com/winkreyes/shops/LegacyDataMigration.class": b"fixture only", "com/winkreyes/shops/store/ShopRegistry.class": b"fixture wrvshops shop_id chest_identity"})
         for name in ("LegacyShopBridge", "LegacyShopUi", "LegacyTransactionFence"):
             files["com/winkreyes/shops/" + name + ".class"] = b"fixture only"
+        files.update({"mobile-menus/" + p.name: p.read_bytes() for p in (MODULE / "mobile-menus").glob("*.yml")})
         files.update(changes or {})
         with zipfile.ZipFile(path, "w") as z:
             for name, value in files.items():
@@ -97,7 +98,7 @@ class PackageTests(unittest.TestCase):
     def test_custom_version_is_an_exact_quoted_two_part_string(self):
         self.assertIsInstance(pack.VERSION, str)
         pack.validate_version((MODULE / "plugin.yml").read_text(), pack.VERSION)
-        self.assertEqual("1.0", pack.VERSION)
+        self.assertEqual("1.1", pack.VERSION)
 
     def test_two_part_minor_versions_preserve_trailing_zero(self):
         pack.validate_version("version: '1.10'\n", "1.10")
@@ -132,7 +133,7 @@ class PackageTests(unittest.TestCase):
                 for name, entry in first["files"].items():
                     self.assertEqual(entry["sha256"], hashlib.sha256(z.read(name)).hexdigest())
                 self.assertIn(b"[player] excelshop browse bread", z.read("plugins/DeluxeMenus/gui_menus/spawnshop.yml"))
-                self.assertEqual({"plugins/ExcelShops-1.0.jar", "plugins/" + pack.GUARD_NAME + ".jar"},
+                self.assertEqual({"plugins/ExcelShops-1.1.jar", "plugins/" + pack.GUARD_NAME + ".jar"},
                                  {name for name in z.namelist() if name.endswith(".jar")})
                 self.assertEqual(self.guard_sources.read_bytes(), z.read("THIRD-PARTY/ChestShop/" + pack.GUARD_NAME + "-sources.zip"))
                 self.assertIn("THIRD-PARTY/ChestShop/COPYING.LESSER", z.namelist())

@@ -17,7 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 /** Server-owned inventory buttons plus native Bedrock number/review forms. */
 public final class ShopUi implements Listener {
-    public enum ViewKind { NUMBER_ENTRY, CATALOG, QUANTITY, BUY_REVIEW, BUY_CONFIRM, SETUP_PROMPT, SETUP_ITEMS, SETUP_PRICE, SETUP_REVIEW, SETUP_CONFIRM, MANAGE, CLOSE_CONFIRM }
+    public enum ViewKind { MOBILE_ROOT, MOBILE_CATEGORY, MOBILE_HUB, MOBILE_ENTRY, NUMBER_ENTRY, CATALOG, QUANTITY, BUY_REVIEW, BUY_CONFIRM, SETUP_PROMPT, SETUP_ITEMS, SETUP_PRICE, SETUP_REVIEW, SETUP_CONFIRM, MANAGE, CLOSE_CONFIRM }
     public static final class Page implements InventoryHolder {
         final UUID player;
         final ViewKind kind;
@@ -27,10 +27,12 @@ public final class ShopUi implements Listener {
         // Read at callback execution time so queued clicks compose on the current value.
         long numberValue;
         boolean numberDialog;
+        MobileOrigin mobileOrigin;
         Page(UUID player,ViewKind kind){this.player=player;this.kind=kind;}
         @Override public Inventory getInventory(){return inventory;}
         public ViewKind kind(){return kind;}
     }
+    private record MobileOrigin(String category, String product) {}
     private static final class Draft {
         final SetupProposal proposal;
         final LinkedHashMap<UUID,ShopOffer> offers=new LinkedHashMap<>();
@@ -44,6 +46,7 @@ public final class ShopUi implements Listener {
     private static String cash(long minor){return BalanceDisplay.money(minor);}
     private static String stockValue(long unit,int stock){return BalanceDisplay.money(Math.multiplyExact(unit,(long)stock));}
     public ViewKind currentKind(UUID id){Page p=pages.get(id);return p==null?null:p.kind;}
+    Object sessionToken(UUID id){return pages.get(id);}
     private String balance(Player p){return plugin.getBalanceDisplay()==null?"Current balance: unavailable":plugin.getBalanceDisplay().current(p,false);}
     private String preview(Player p,long total){return plugin.getBalanceDisplay()==null?balance(p)+"\nPurchase cost: -"+cash(total)+"\nBalance after purchase: unavailable":plugin.getBalanceDisplay().preview(p,total,false,false);}
     private String title(Player p,String title){return plugin.getBalanceDisplay()==null?"Balance unavailable | "+title:plugin.getBalanceDisplay().title(p,title,false);}
@@ -114,7 +117,7 @@ public final class ShopUi implements Listener {
     }
     @EventHandler public void opened(InventoryOpenEvent e){
         Page current=pages.get(e.getPlayer().getUniqueId());
-        if(current!=null&&current.kind==ViewKind.NUMBER_ENTRY&&e.getPlayer() instanceof Player p){
+        if(current!=null&&(current.kind==ViewKind.NUMBER_ENTRY||isMobilePage(current)||current.mobileOrigin!=null)&&e.getInventory()!=current.inventory&&e.getPlayer() instanceof Player p){
             pages.remove(p.getUniqueId());if(current.numberDialog)dialogs.close(p);plugin.getCheckout().invalidateBuyer(p.getUniqueId());
         }
     }
@@ -129,6 +132,138 @@ public final class ShopUi implements Listener {
             button(page,slot++,icon,e.name(),()->quantity(p,s,1),e.bundleSize()+" per bundle",cash(e.bundlePrice())+" per bundle","Tap to choose quantity. No charge yet.");
         }
         button(page,49,Material.BARRIER,"Close",()->cancel(p));open(p,page);
+    }
+    private MobileCatalog mobileCatalog(){
+        MobileCatalog catalog=plugin.getMobileCatalog();
+        if(catalog==null)throw new IllegalStateException("Mobile shop details are unavailable. Please try again later.");
+        return catalog;
+    }
+    private static boolean isMobilePage(Page page){
+        return page.kind==ViewKind.MOBILE_ROOT||page.kind==ViewKind.MOBILE_CATEGORY
+                ||page.kind==ViewKind.MOBILE_HUB||page.kind==ViewKind.MOBILE_ENTRY;
+    }
+    /** Only the verified DeluxeMenus entry bridge calls this; there is no arbitrary route command. */
+    public void showMobileMenu(Player p,String menu){
+        cancel(p); // Retire older inventory/form tokens and any quote before entering native navigation.
+        if(!p.hasPermission("wrvshops.use")){p.sendMessage(ChatColor.RED+"You cannot use shops.");return;}
+        if(plugin.getCheckout().recoveryRequired()){fail(p,"Shops are paused for an administrator check.");return;}
+        try{
+            if(menu.equals("spawnshop"))showMobileRoot(p);
+            else if(menu.startsWith("spawnshop_"))showMobileCategory(p,menu.substring("spawnshop_".length()));
+            else throw new IllegalArgumentException("Unknown mobile menu.");
+        }catch(RuntimeException failure){fail(p,failure.getMessage());}
+    }
+    private void mobileExpiry(Player p,Page expected){
+        plugin.getServer().getScheduler().runTaskLater(plugin,()->{
+            if(plugin.isEnabled()&&p.isOnline()&&pages.get(p.getUniqueId())==expected){
+                fail(p,"Mobile shop session expired. Reopen /shop to continue.");
+            }
+        },1200L);
+    }
+    private void mobileUnavailable(Player p){fail(p,"Mobile shop forms are unavailable. The shop is closed; no purchase was started. Try /shop later.");}
+    private void mobileChoices(Player p,Page page,String title,String text,String[] labels,java.util.function.IntConsumer action){
+        p.closeInventory();
+        if(!forms.choices(p,title,text,labels,id->later(p,page,()->{
+            if(!p.hasPermission("wrvshops.use")){fail(p,"You can no longer use shops.");return;}
+            action.accept(id);
+        }),()->later(p,page,()->cancel(p)))){mobileUnavailable(p);return;}
+        mobileExpiry(p,page);
+    }
+    private void showMobileRoot(Player p){
+        List<MobileCatalog.Category> categories=List.copyOf(mobileCatalog().categories());
+        Page page=page(p,ViewKind.MOBILE_ROOT,"Spawn Shop",9);
+        String[] labels=new String[categories.size()+2];
+        for(int i=0;i<categories.size();i++)labels[i]=categories.get(i).name()+" ("+categories.get(i).products().size()+" products)";
+        labels[categories.size()]="Back to Menu";labels[categories.size()+1]="Cancel";
+        mobileChoices(p,page,"Spawn Shop",balance(p)+"\nChoose a category. Each item has its own details screen.\nBrowsing never spends money.",labels,
+            id->{if(id==categories.size()){cancel(p);if(!p.performCommand("menu"))p.sendMessage(ChatColor.RED+"The main menu could not open.");}
+                else if(id==categories.size()+1)cancel(p);else showMobileCategory(p,categories.get(id).id());});
+    }
+    private String mobileLore(Player p,List<String> lore){
+        // Expand only this known balance token. Never evaluate arbitrary placeholders or commands.
+        String snapshot=balance(p);String value=snapshot.startsWith("Current balance: ")?snapshot.substring("Current balance: ".length()):"unavailable";
+        return String.join("\n",lore.stream().map(MobileCatalog::plain)
+            .map(line->line.replace("$%vault_eco_balance_2dp%",value).replace("%vault_eco_balance_2dp%",value)).toList());
+    }
+    private void showMobileCategory(Player p,String categoryId){
+        MobileCatalog.Category category=mobileCatalog().category(categoryId);
+        Page page=page(p,ViewKind.MOBILE_CATEGORY,category.name(),9);
+        List<MobileCatalog.Product> products=category.products();String[] labels=new String[products.size()+2];
+        for(int i=0;i<products.size();i++){
+            MobileCatalog.Product product=products.get(i);
+            labels[i]=MobileCatalog.labelName(product)+" — view details\n"+product.bundleSize()+(product.bundleSize()>1?" per bundle":" item")+" • "+cash(product.price());
+        }
+        labels[products.size()]="Back to categories";labels[products.size()+1]="Cancel";
+        mobileChoices(p,page,category.name(),balance(p)+"\n"+mobileLore(p,category.lore())+"\nChoose an item to read its own details. No charge yet.",labels,id->{
+            if(id==products.size())showMobileRoot(p);
+            else if(id==products.size()+1)cancel(p);
+            else showMobileHub(p,products.get(id),1); // Every new product selection starts with its own identity and count.
+        });
+    }
+    private ShopAdapter.Selection mobileSelection(MobileCatalog.Product product){
+        ShopAdapter.Selection selection=plugin.getAdapter().spawn(product.id());mobileCatalog().validate(product,selection);return selection;
+    }
+    private String mobileDetails(Player p,MobileCatalog.Product product,int count){
+        String details=product.name()+"\n"+mobileLore(p,product.lore());
+        if(product.route()==MobileCatalog.Route.ORDINARY){
+            ShopAdapter.Selection selection=mobileSelection(product);
+            return details+"\n\nSelected quantity: "+count+(product.bundleSize()>1?" bundles = "+Math.multiplyExact(count,product.bundleSize())+" items":" item(s)")
+                +"\n"+cash(selection.price())+" × "+count+" = "+cash(Money.multiply(selection.price(),count))
+                +"\n"+preview(p,Money.multiply(selection.price(),count))+"\nNo money moves until final Confirm purchase.";
+        }
+        return details+"\n\nFixed quantity: 1\n"+preview(p,product.price())+"\nOpen the existing guarded review; only its Confirm button can purchase.";
+    }
+    private void showMobileHub(Player p,MobileCatalog.Product product,int count){
+        int max=product.route()==MobileCatalog.Route.ORDINARY?MobileCatalog.maximum(mobileSelection(product)):1;
+        if(max<1||count<1||count>max){fail(p,"That quantity is no longer available. Reopen the item to review it again.");return;}
+        Page page=page(p,ViewKind.MOBILE_HUB,product.name(),9);page.mobileOrigin=new MobileOrigin(product.category(),product.id());
+        String[] labels=product.route()==MobileCatalog.Route.ORDINARY
+            ?new String[]{"Enter exact amount","Review this quantity","Back to "+mobileCatalog().category(product.category()).name(),"Cancel"}
+            :new String[]{"Open guarded review","Back to "+mobileCatalog().category(product.category()).name(),"Cancel"};
+        mobileChoices(p,page,product.name(),mobileDetails(p,product,count),labels,id->{
+            if(product.route()==MobileCatalog.Route.ORDINARY){
+                if(id==0)mobileExactAmount(p,product,count);
+                else if(id==1)buyReview(p,mobileSelection(product),count,new MobileOrigin(product.category(),product.id()));
+                else if(id==2)showMobileCategory(p,product.category());else cancel(p);
+            }else{
+                if(id==0)mobileSpecialReview(p,product);
+                else if(id==1)showMobileCategory(p,product.category());else cancel(p);
+            }
+        });
+    }
+    private void mobileExactAmount(Player p,MobileCatalog.Product product,int count){mobileExactAmount(p,product,count,null);}
+    private void mobileExactAmount(Player p,MobileCatalog.Product product,int count,String error){
+        int max=MobileCatalog.maximum(mobileSelection(product));
+        Page entry=page(p,ViewKind.MOBILE_ENTRY,"Enter exact amount",9);entry.mobileOrigin=new MobileOrigin(product.category(),product.id());
+        p.closeInventory();
+        // Details stay in the existing input label. It remains input index zero; no mixed action buttons.
+        String details=(error==null?"":error+"\n\n")+mobileDetails(p,product,count)+"\n\nEnter a whole number from 1 to "+max+".\nSubmit returns to this item's details; it does not purchase. Closing cancels.";
+        if(!forms.number(p,"Enter exact amount",details,String.valueOf(count),value->later(p,entry,()->{
+            if(!p.hasPermission("wrvshops.use")){fail(p,"You can no longer use shops.");return;}
+            int currentMaximum=MobileCatalog.maximum(mobileSelection(product));
+            final int amount;
+            try{amount=MobileCatalog.quantity(value,currentMaximum);}
+            catch(IllegalArgumentException invalid){p.sendMessage(ChatColor.RED+invalid.getMessage());mobileExactAmount(p,product,count,invalid.getMessage());return;}
+            showMobileHub(p,product,amount);
+        }),()->later(p,entry,()->cancel(p)))){mobileUnavailable(p);return;}
+        mobileExpiry(p,entry);
+    }
+    private void mobileSpecialReview(Player p,MobileCatalog.Product product){
+        // All strings below are fixed trusted routes. No user input, arbitrary command, OP, or permission change.
+        // Floodgate names can contain Unicode. Reject command argument separators/control characters, not alphabets.
+        String name=p.getName();
+        if(name==null||name.isEmpty()||name.codePoints().anyMatch(c->Character.isWhitespace(c)||Character.isSpaceChar(c)||Character.isISOControl(c))){fail(p,"This player name cannot safely open that review.");return;}
+        String command=switch(product.route()){
+            case VEIL -> "mobveil buy "+name;
+            case BASIC_PROTECTION -> "deathprotection buy basic "+name;
+            case PROTECTION_POTION -> "deathprotection buy premium "+name;
+            default -> throw new IllegalArgumentException("Only a fixed special product may open this review.");
+        };
+        String dependency=product.route()==MobileCatalog.Route.VEIL?"ExcelMobVeil":"ExcelDeathProtection";
+        if(!plugin.getServer().getPluginManager().isPluginEnabled(dependency)){fail(p,"That guarded review is unavailable. No purchase was started.");return;}
+        cancel(p); // Consume the native token before dispatch; duplicate or late form responses cannot dispatch twice.
+        if(!plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(),command))
+            p.sendMessage(ChatColor.RED+"That guarded review could not open. No purchase was started.");
     }
     public void showShop(Player p,ShopRecord shop){
         if(shop.ownerId().equals(p.getUniqueId())){showManage(p,shop);return;}
@@ -182,15 +317,27 @@ public final class ShopUi implements Listener {
         if(meta.hasLore())for(String line:meta.getLore())info.append("\n").append(ChatColor.stripColor(line));
         return info.toString();
     }
-    private void buyReview(Player p,ShopAdapter.Selection s,int quantity){
-        Page page=page(p,ViewKind.BUY_REVIEW,"Review purchase",27);String text=purchaseText(p,s,quantity);
+    private void buyReview(Player p,ShopAdapter.Selection s,int quantity){buyReview(p,s,quantity,null);}
+    private void buyReview(Player p,ShopAdapter.Selection s,int quantity,MobileOrigin origin){
+        Page page=page(p,ViewKind.BUY_REVIEW,"Review purchase",27);page.mobileOrigin=origin;String text=purchaseText(p,s,quantity);
         p.closeInventory();
-        if(forms.choices(p,"Review purchase",text,new String[]{"Continue to confirmation","Change quantity","Cancel"},id->later(p,page,()->{if(id==0)buyConfirm(p,s,quantity);else if(id==1)quantity(p,s,quantity);else cancel(p);}),()->later(p,page,()->cancel(p))))return;
-        button(page,4,s.item(),s.name(),null,text.split("\n"));button(page,11,Material.LIME_CONCRETE,"Continue to confirmation",()->buyConfirm(p,s,quantity),"No money has moved.");button(page,13,Material.ARROW,"Change quantity",()->quantity(p,s,quantity));button(page,15,Material.BARRIER,"Cancel",()->cancel(p));open(p,page);
+        if(forms.choices(p,"Review purchase",text,new String[]{"Continue to confirmation","Change quantity","Cancel"},id->later(p,page,()->{if(id==0)buyConfirm(p,s,quantity,origin);else if(id==1)changePurchaseQuantity(p,s,quantity,origin);else cancel(p);}),()->later(p,page,()->cancel(p))))return;
+        if(origin!=null){mobileUnavailable(p);return;}
+        button(page,4,s.item(),s.name(),null,text.split("\n"));button(page,11,Material.LIME_CONCRETE,"Continue to confirmation",()->buyConfirm(p,s,quantity,origin),"No money has moved.");button(page,13,Material.ARROW,"Change quantity",()->changePurchaseQuantity(p,s,quantity,origin));button(page,15,Material.BARRIER,"Cancel",()->cancel(p));open(p,page);
     }
-    private void buyConfirm(Player p,ShopAdapter.Selection s,int quantity){
+    private void changePurchaseQuantity(Player p,ShopAdapter.Selection s,int quantity,MobileOrigin origin){
+        if(origin==null){quantity(p,s,quantity);return;}
+        plugin.getCheckout().invalidateBuyer(p.getUniqueId());
+        MobileCatalog.Product product=mobileCatalog().product(origin.product());
+        if(!product.category().equals(origin.category())||!s.offerId().equals("spawn:"+product.id())){
+            fail(p,"That mobile item changed. Please reopen the shop.");return;
+        }
+        showMobileHub(p,product,quantity);
+    }
+    private void buyConfirm(Player p,ShopAdapter.Selection s,int quantity){buyConfirm(p,s,quantity,null);}
+    private void buyConfirm(Player p,ShopAdapter.Selection s,int quantity,MobileOrigin origin){
         CheckoutService.Quote quote=plugin.getCheckout().quote(p.getUniqueId(),s.seller(),s.offerId(),s.revision(),quantity,Money.multiply(s.price(),quantity),s.fingerprint());
-        Page page=page(p,ViewKind.BUY_CONFIRM,"Are you sure?",27);String text=purchaseText(p,s,quantity)+"\nOnly Confirm purchase spends money.";
+        Page page=page(p,ViewKind.BUY_CONFIRM,"Are you sure?",27);page.mobileOrigin=origin;String text=purchaseText(p,s,quantity)+"\nOnly Confirm purchase spends money.";
         Runnable confirm=()->{
             pages.remove(p.getUniqueId());p.closeInventory();
             CheckoutService.Result result=plugin.getCheckout().confirm(quote.id(),p.getUniqueId());
@@ -198,9 +345,10 @@ public final class ShopUi implements Listener {
             else p.sendMessage(ChatColor.YELLOW+result.message());
             if(result.status()==CheckoutService.Status.RECOVERY_REQUIRED)plugin.getLogger().severe("Checkout recovery required, transaction "+result.transactionId()+": "+plugin.getCheckout().recoveryReason());
         };
-        Runnable back=()->{plugin.getCheckout().cancel(quote.id(),p.getUniqueId());quantity(p,s,quantity);};
+        Runnable back=()->{plugin.getCheckout().cancel(quote.id(),p.getUniqueId());changePurchaseQuantity(p,s,quantity,origin);};
         p.closeInventory();
         if(forms.choices(p,"Are you sure?",text,new String[]{"Confirm purchase: "+cash(quote.amountMinorUnits()),"Back","Cancel"},id->later(p,page,()->{if(id==0)confirm.run();else if(id==1)back.run();else cancel(p);}),()->later(p,page,()->cancel(p))))return;
+        if(origin!=null){mobileUnavailable(p);return;} // cancel() invalidates the freshly created quote.
         button(page,4,s.item(),s.name(),null,purchaseText(p,s,quantity).split("\n"));button(page,11,Material.LIME_CONCRETE,"Confirm purchase: "+cash(quote.amountMinorUnits()),confirm,"This button spends money.");button(page,13,Material.ARROW,"Back",back);button(page,15,Material.BARRIER,"Cancel",()->cancel(p));open(p,page);
     }
     public void offerSetup(Player p,SetupProposal proposal){
