@@ -20,4 +20,4 @@ PUBLICATION-MANIFEST.json records the public file hashes and each original relea
 
 ## Current status
 
-This source PR is draft and must remain unmerged. Source publication, live installation, website deployment and real-client/live-purchase acceptance are separate outcomes. See any later installation addendum for a verified server outcome. The website is not published as installed until the installer confirms it.
+This source PR is draft and must remain unmerged. Source publication, live installation, website deployment and real-client/live-purchase acceptance are separate outcomes. The installer confirmed this exact artifact and the new shop entry at 02:18 UTC on October 14. See INSTALLATION-0.1.0.md for the public-safe record and remaining unverified checks. The subsequent README/player-guide status changes and installed entry snippet are documentation-only additions; the production source/resources/tests remain unchanged.

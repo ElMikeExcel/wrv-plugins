@@ -1,0 +1,21 @@
+# Verified installed entry, October 13, 2026 America/Chicago.
+# Merge under the existing items mapping; never overwrite the whole menu.
+  veil_potion:
+    material: POTION
+    slot: 28
+    amount: 1
+    display_name: '&b&lVeil Potion'
+    lore:
+      - '&7Price: &a$2,000'
+      - '&7Each drink adds 8 real-time minutes.'
+      - '&bMore potions stack time.'
+      - '&7Farm while standard mobs ignore you.'
+      - '&7Works in armor; armor stays visible.'
+      - '&cAttacking ends all accumulated time.'
+      - '&7Milk/death end it. No damage immunity.'
+      - '&8Custom bosses/dragon may still attack.'
+      - '&eClick to review purchase.'
+    left_click_commands:
+      - '[console] mobveil buy %player_name%'
+    right_click_commands:
+      - '[console] mobveil buy %player_name%'

@@ -1,5 +1,7 @@
 # ExcelMobVeil 0.1.0
 
+**Installed October 13, 2026 (America/Chicago).** Exact JAR and menu readback, loaded version, $2,000 price and startup were verified. Real Java/Bedrock screens, live purchases and gameplay remain unverified. See [installation evidence](INSTALLATION-0.1.0.md). Source [PR 14](https://github.com/ElMikeExcel/wrv-plugins/pull/14) remains draft and unmerged.
+
 Created for Wink Reyes Valley. This is a fresh reconstruction after an earlier local workspace became unavailable. Its new build and test evidence stand on their own; old hashes and test results do not validate this reconstruction. See VERIFICATION.md for current evidence.
 
 ## Player behavior
