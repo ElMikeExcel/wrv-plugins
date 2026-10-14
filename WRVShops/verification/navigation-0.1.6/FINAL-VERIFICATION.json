@@ -1,0 +1,70 @@
+{
+  "candidate_version": "0.1.6",
+  "source_commit": "f054ab577e74990e73e9f9990928206ef5dd1f1f",
+  "candidate_sha256": "a5191eef70a4fdbd1326c14c36c9fd36afa25fe712762cc1850943a1a75c6d4e",
+  "candidate_bytes": 206987,
+  "baseline_sha256": "c4f84625e3ed60fa15d4146cd2a30865fe8602a90942e2e348050c7db2c4c92b",
+  "java": {
+    "tests": 769,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python_checks": 57,
+  "python_failures": 0,
+  "jar_members_changed": [
+    "com/winkreyes/shops/ShopUi.class",
+    "plugin.yml",
+    "META-INF/maven/com.winkreyes/ExcelShops/pom.xml",
+    "META-INF/maven/com.winkreyes/ExcelShops/pom.properties"
+  ],
+  "version_metadata_verified": true,
+  "repeated_clean_build_byte_identical": true,
+  "runtime": {
+    "paper": "26.2 build 123",
+    "java": "Temurin 25.0.4+7-LTS",
+    "boots": 4,
+    "stages": [
+      {
+        "stage": "first",
+        "passed_groups": 93,
+        "failures": 0,
+        "assertions": 629,
+        "clean_exit": true,
+        "port_released": true
+      },
+      {
+        "stage": "restart",
+        "passed_groups": 93,
+        "failures": 0,
+        "assertions": 634,
+        "clean_exit": true,
+        "port_released": true
+      },
+      {
+        "stage": "no-economy",
+        "passed_groups": 1,
+        "failures": 0,
+        "assertions": 7,
+        "clean_exit": true,
+        "port_released": true
+      },
+      {
+        "stage": "no-vault",
+        "passed_groups": 1,
+        "failures": 0,
+        "assertions": 11,
+        "clean_exit": true,
+        "port_released": true
+      }
+    ],
+    "assertions": 1281,
+    "failures": 0,
+    "independent_final_port_check": true,
+    "synthetic_players_and_economy": true,
+    "actual_deluxemenus_and_client_acceptance": "not tested"
+  },
+  "real_clients_and_real_deluxemenus": "not_tested",
+  "installed": false,
+  "published": false
+}

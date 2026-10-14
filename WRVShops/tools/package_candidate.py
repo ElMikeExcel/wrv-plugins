@@ -12,7 +12,7 @@ import zipfile
 
 MODULE = Path(__file__).resolve().parents[1]
 ROOT = MODULE.parent
-VERSION = "0.1.5"
+VERSION = "1.0"
 GUARD = ROOT / "ChestShop-ConfirmationGuard"
 GUARD_NAME = "ChestShop-3.13-pre-1-build474-confirmation.1"
 GUARD_BUILD = "chestshop474-confirmation.1"
@@ -112,6 +112,15 @@ def validate_guard(guarded_jar, expected_guarded_sha256, guard_sources, expected
     return binary, sources
 
 
+def validate_version(text, version):
+    """Version components are labels, never numeric YAML values (1.10 != 1.1)."""
+    if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+", version):
+        raise ValueError("Custom version must be a two-part string")
+    matches = re.findall(r"(?m)^version: (['\"])([0-9]+\.[0-9]+)\1[ \t]*$", text)
+    if len(matches) != 1 or matches[0][1] != version:
+        raise ValueError("Plugin version must be the exact quoted two-part string")
+
+
 def package(jar, expected_sha256, output, source_commit=None, *, guarded_jar=None,
             expected_guarded_sha256=None, guard_sources=None, expected_sources_sha256=None):
     jar, output = Path(jar), Path(output)
@@ -132,7 +141,8 @@ def package(jar, expected_sha256, output, source_commit=None, *, guarded_jar=Non
         if z.read("plugin.yml") != descriptor:
             raise ValueError("JAR descriptor does not match this source checkout")
         text = descriptor.decode()
-        for value in ("name: ExcelShops\n", "version: " + VERSION + "\n", "  excelshop:\n", "aliases: [wrvshop]", "wrvshops.use", "wrvshops.create"):
+        validate_version(text, VERSION)
+        for value in ("name: ExcelShops\n", "  excelshop:\n", "aliases: [wrvshop]", "wrvshops.use", "wrvshops.create"):
             if value not in text:
                 raise ValueError("Unexpected plugin identity, alias or permissions")
         for path in ("config.yml", "spawn-catalog.yml", "LICENSE"):

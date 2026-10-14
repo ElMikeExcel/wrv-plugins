@@ -1,0 +1,8 @@
+PASS spawnshop: 7 buttons, DISPENSER
+PASS spawnshop_building: 7 buttons, DISPENSER
+PASS spawnshop_enchanting: 6 buttons, DISPENSER
+PASS spawnshop_food: 6 buttons, DISPENSER
+PASS spawnshop_potions_protection: 5 buttons, DISPENSER
+PASS spawnshop_travel_animals: 7 buttons, DISPENSER
+PASS: 273 assertions; exact Paper YAML API accepts all seven install files.
+Scope: offline YAML/API checks only; not a live DeluxeMenus/Geyser/client test.

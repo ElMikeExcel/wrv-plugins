@@ -94,6 +94,27 @@ class PackageTests(unittest.TestCase):
                 z.writestr(name, value)
         return hashlib.sha256(path.read_bytes()).hexdigest()
 
+    def test_custom_version_is_an_exact_quoted_two_part_string(self):
+        self.assertIsInstance(pack.VERSION, str)
+        pack.validate_version((MODULE / "plugin.yml").read_text(), pack.VERSION)
+        self.assertEqual("1.0", pack.VERSION)
+
+    def test_two_part_minor_versions_preserve_trailing_zero(self):
+        pack.validate_version("version: '1.10'\n", "1.10")
+        pack.validate_version('version: "1.10"\n', "1.10")
+        with self.assertRaises(ValueError):
+            pack.validate_version("version: '1.1'\n", "1.10")
+
+    def test_unquoted_numeric_or_three_part_versions_are_rejected(self):
+        for text, version in [("version: 1.0\n", "1.0"), ("version: 1.10\n", "1.10"),
+                              ("version: '1.0.0'\n", "1.0.0"), ("version: '1.0'\n", 1.0)]:
+            with self.subTest(text=text, version=version), self.assertRaises(ValueError):
+                pack.validate_version(text, version)
+
+    def test_duplicate_version_lines_are_rejected(self):
+        with self.assertRaises(ValueError):
+            pack.validate_version("version: '1.0'\nversion: '1.0'\n", "1.0")
+
     def test_manifest_and_payload_are_exact_and_reproducible(self):
         with tempfile.TemporaryDirectory() as tmp:
             d = Path(tmp); jar = d / "test.jar"; h = self.fake_jar(jar)
@@ -111,7 +132,7 @@ class PackageTests(unittest.TestCase):
                 for name, entry in first["files"].items():
                     self.assertEqual(entry["sha256"], hashlib.sha256(z.read(name)).hexdigest())
                 self.assertIn(b"[player] excelshop browse bread", z.read("plugins/DeluxeMenus/gui_menus/spawnshop.yml"))
-                self.assertEqual({"plugins/ExcelShops-0.1.5.jar", "plugins/" + pack.GUARD_NAME + ".jar"},
+                self.assertEqual({"plugins/ExcelShops-1.0.jar", "plugins/" + pack.GUARD_NAME + ".jar"},
                                  {name for name in z.namelist() if name.endswith(".jar")})
                 self.assertEqual(self.guard_sources.read_bytes(), z.read("THIRD-PARTY/ChestShop/" + pack.GUARD_NAME + "-sources.zip"))
                 self.assertIn("THIRD-PARTY/ChestShop/COPYING.LESSER", z.namelist())

@@ -1,0 +1,44 @@
+{
+  "paper": "26.2 build 123",
+  "java": "Temurin 25.0.4+7-LTS",
+  "boots": 4,
+  "stages": [
+    {
+      "stage": "first",
+      "passed_groups": 93,
+      "failures": 0,
+      "assertions": 629,
+      "clean_exit": true,
+      "port_released": true
+    },
+    {
+      "stage": "restart",
+      "passed_groups": 93,
+      "failures": 0,
+      "assertions": 634,
+      "clean_exit": true,
+      "port_released": true
+    },
+    {
+      "stage": "no-economy",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 7,
+      "clean_exit": true,
+      "port_released": true
+    },
+    {
+      "stage": "no-vault",
+      "passed_groups": 1,
+      "failures": 0,
+      "assertions": 11,
+      "clean_exit": true,
+      "port_released": true
+    }
+  ],
+  "assertions": 1281,
+  "failures": 0,
+  "independent_final_port_check": true,
+  "synthetic_players_and_economy": true,
+  "actual_deluxemenus_and_client_acceptance": "not tested"
+}
