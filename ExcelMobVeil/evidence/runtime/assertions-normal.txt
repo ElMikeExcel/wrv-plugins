@@ -1,0 +1,26 @@
+fresh candidate loads on real Paper
+custom item is one drinkable native potion
+ordinary potions are not custom potions
+native item serialization preserves metadata
+default price exactly2000
+mob fixtures are registered in loaded world chunks
+armored player starts with zombie target and Warden anger
+activation waits until native consumption finishes
+first native drink consumes one potion and returns glass bottle
+next-tick activation grants native invisibility and eight-minute deadline
+activation clears existing zombie target and Warden anger
+armor remains equipped during veil
+standard target event rejects armored veiled player
+native event-bearing target setter cannot reacquire player
+Warden anger-change is suppressed
+active second potion is consumed exactly once
+actual watchdog clears direct event-bypassing API target
+sequential native drink extends exact old deadline
+late-canceled native consumption retains potion without effect
+late replacement of consumed item prevents activation
+ordinary invisibility blocks drink without replacement
+attack invalidates pending activation
+melee immediately clears veil
+targeting resumes after attack
+new potion activates after previous veil ended
+player projectile damage ends veil

@@ -1,0 +1,17 @@
+name: ExcelMobVeil
+version: 0.1.0
+author: Argus
+main: com.winkreyes.excelmobveil.ExcelMobVeil
+api-version: "1.21"
+description: "Stored Veil Potion: each drink adds eight real-time minutes; farming keeps it, attacking clears it."
+depend: [Vault]
+softdepend: [Essentials, DeluxeMenus]
+commands:
+  mobveil:
+    aliases: [veil]
+    description: Veil Potion purchase review, status, and admin potion giving
+    usage: /mobveil [status|buy|give <player> [amount]]
+permissions:
+  excelmobveil.admin:
+    description: Give Veil Potions and use console purchase forms
+    default: op
