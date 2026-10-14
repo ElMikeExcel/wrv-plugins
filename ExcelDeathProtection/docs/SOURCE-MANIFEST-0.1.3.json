@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "candidate_version": "0.1.3",
-  "status": "0.1.3 installed; real-client/provider and gameplay acceptance remain pending",
-  "publication_base_commit": "18dd40ae73e1a5a01bb99f5c5f8afb2969c466cd",
+  "status": "0.1.3 installed; limited owner-reported phone display and Back/close balance checks recorded; further human/client/live-purchase/gameplay checks waived by owner for now and unverified, not passed",
+  "publication_base_commit": "0955e1090c91264a5a7e96d9c4e2bb15fe4b8c66",
   "baseline_implementation_commit": "a2586bf17d2322f5e3b313b7e45bc0fe32fc56ac",
   "last_verified_installed": {
     "version": "0.1.3",
@@ -12,7 +12,7 @@
     "jar_sha256": "f0224d18a51e430b81ec8fb02f9408fd6038e64b893d84d738368fd288cb4093",
     "menu_sha256": "9f328011cb78bf11d86fdbf15519db96c86ea3638b0672137c7eed242d2124b2",
     "config_sha256": "d6e3208761c5b08dee1687237946b85d4821dd9f3020aa39b54bfbf082115efc",
-    "acceptance": "Actual Java, Bedrock phone, live purchases and gameplay remain pending."
+    "acceptance": "Owner reported correct phone review display and unchanged balance after Back/closing. Exact shortfall, remaining phone scenarios, Java, actual purchases and gameplay remain unverified; owner waived further human/client/live-purchase/gameplay checks for now, not recorded as passed."
   },
   "candidate_artifact": {
     "filename": "ExcelDeathProtection-0.1.3.jar",
@@ -157,8 +157,8 @@
     },
     {
       "path": "PLAYER-GUIDE.md",
-      "bytes": 3617,
-      "sha256": "810f5d17fd6e4de308b7f6473cc7c5a2382e0ec6a72807b6685f61f0db866ba4"
+      "bytes": 4038,
+      "sha256": "440e5ba62114a6445084c09edb029307325773bb91ea1a528ef3023e378b8c6e"
     },
     {
       "path": "PURCHASE-JOURNAL.md",
@@ -167,8 +167,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 11189,
-      "sha256": "d2ae2a35d9968ebd1adf3a41239f05c1925e259942d814de5e0dbc2893ee38e1"
+      "bytes": 11640,
+      "sha256": "6c3054a7bb9ff4fd0ecc19924597875f95cb73d0a5ab9df1db857e6f158a2440"
     },
     {
       "path": "SPEC.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/VERIFICATION.md",
-      "bytes": 13684,
-      "sha256": "176d5cf3168419d050a6398b6d2f39abaa7b80d9e766bd1c0642ccfd2cbc3e0d"
+      "bytes": 15123,
+      "sha256": "53c1e4d29981f4b74e2e7b0cd9cddd58a041f9da41929364458d499094cdb9ae"
     },
     {
       "path": "integration/README.md",
@@ -223,9 +223,31 @@
   ],
   "manifest_self_hash": "Excluded to avoid a circular hash. The publishing Git commit identifies this file.",
   "historical_evidence": "INSTALLATION-0.1.2.md, VERIFICATION-RESULTS-0.1.2.md and SOURCE-MANIFEST-0.1.2.json are retained byte-for-byte from the publication base.",
-  "verification_scope": "99 candidate tests; 107 includes those 99 plus eight reviewer additions; 196 isolated Paper assertions. Actual Java, Bedrock phone, live provider purchases and gameplay acceptance remain pending.",
+  "verification_scope": "Initial offline verification: 99 candidate tests; 107 includes those 99 plus eight reviewer additions; 196 isolated Paper assertions. Subsequent limited owner-reported phone display and Back/close balance evidence is recorded in owner_reported_acceptance. Remaining human/client/live-purchase/gameplay checks are waived by the owner for now and unverified, not passed.",
   "initial_candidate_publication_commit": "18dd40ae73e1a5a01bb99f5c5f8afb2969c466cd",
   "initial_candidate_publication_base_commit": "721ebcfb02bde4edf283fffdc2cb6e8fa4681730",
-  "documentation_update": "Installed-status documentation only, based on the initial candidate publication. The enclosing Git commit identifies the subsequent documentation revision; implementation/build/resources/tests remain byte-identical.",
-  "initial_published_manifest_sha256": "2d50806af5a62ff53e8e91d19c99e283f2096a2ad2a1b4aa53ce84fb18283ac4"
+  "documentation_update": "Limited owner-reported phone acceptance addendum based on installed-status commit 0955e1090c91264a5a7e96d9c4e2bb15fe4b8c66. Only current README, player guide, verification checklist and their publication manifest are updated. Implementation/build/resources/tests and historical installation/automated evidence remain unchanged.",
+  "initial_published_manifest_sha256": "2d50806af5a62ff53e8e91d19c99e283f2096a2ad2a1b4aa53ce84fb18283ac4",
+  "owner_reported_acceptance": {
+    "version": "0.1.3",
+    "display_report_at_utc": "2026-10-14T00:00:28Z",
+    "back_or_close_balance_confirmation_verified_at_utc": "2026-10-14T00:00:52Z",
+    "evidence_type": "Owner report and verified affirmative response; not independently observed or instrumented",
+    "scope": [
+      "New review window displays correctly on phone",
+      "Owner confirmed Back or closing left balance unchanged"
+    ],
+    "not_established": [
+      "Exact-shortfall visibility",
+      "Full phone or exit-route acceptance",
+      "Java client behavior",
+      "Actual purchase, withdrawal or delivery",
+      "Activation or death/respawn gameplay"
+    ],
+    "remaining_checks_waiver": {
+      "owner_instruction_at_utc": "2026-10-14T00:02:49Z",
+      "scope": "Further human/client/live-purchase/gameplay checks",
+      "status": "Waived by owner for now; unverified, not passed; no further testing queued"
+    }
+  }
 }

@@ -1,6 +1,13 @@
 # Two-tier verification checklist
 
-**0.1.3 installed October 13, 2026; loaded version verified at 23:51:04 UTC. All real Java, Bedrock-phone, live-purchase, and gameplay acceptance below remains pending.** [Installation evidence](INSTALLATION-0.1.3.md), [automated results](VERIFICATION-RESULTS-0.1.3.md), and [0.1.2 history](INSTALLATION-0.1.2.md) are separate. Checked evidence items below are narrowly scoped; unchecked real-client/provider cases have not passed merely because startup or synthetic tests passed.
+**0.1.3 installed October 13, 2026; loaded version verified at 23:51:04 UTC. A limited owner-reported phone display and Back/close balance check is recorded below. Exact-shortfall visibility, remaining phone scenarios, Java, live-purchase, and gameplay acceptance remain unverified. The owner waived further human/client/live-purchase/gameplay checks for now at 00:02:49 UTC; they are not passed or queued for further testing.** [Installation evidence](INSTALLATION-0.1.3.md), [automated results](VERIFICATION-RESULTS-0.1.3.md), and [0.1.2 history](INSTALLATION-0.1.2.md) are separate. Checked evidence items below are narrowly scoped; unchecked real-client/provider cases have not passed merely because startup or synthetic tests passed.
+
+## Owner-reported phone check, October 14, 2026
+
+- [x] **Owner-reported display:** at 00:00:28 UTC, the owner reported that the new 0.1.3 review window was showing correctly and working well on his phone.
+- [x] **Owner-confirmed Back/close balance:** an affirmative response was verified at 00:00:52 UTC to the specific question whether Back or closing the review left his balance unchanged.
+
+These are narrow user-reported checks, not independently observed or instrumented results. The Back/close response is not a separately documented test of every exit route, menu-navigation detail, or transaction boundary. Neither report establishes exact-shortfall visibility, an actual purchase/withdrawal/delivery, Java behavior, activation, or death/respawn. At **00:02:49 UTC**, the owner said no further tests were needed and asked to move on. Further human/client/live-purchase/gameplay checks are therefore **waived by the owner for now and unverified, not passed**. The broader checklist items below remain unchecked as an evidence record, not a request or queue to continue those tests. Historical installation and automated reports retain their original point-in-time evidence.
 
 ## Evidence and release gates
 

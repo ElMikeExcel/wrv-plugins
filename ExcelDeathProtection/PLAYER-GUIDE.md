@@ -1,6 +1,6 @@
 # Death Protection
 
-**Version 0.1.3 was installed October 13, 2026; loaded version was verified at 23:51:04 UTC.** All real Java, Bedrock-phone, actual-purchase, and gameplay acceptance checks remain pending. The owner's earlier report that both shop entries looked good on his phone applies to 0.1.2, and he accepted buying one at a time without a quantity dialog. Exact-shortfall visibility motivated the new review. Prices below are in-game money.
+**Version 0.1.3 was installed October 13, 2026; loaded version was verified at 23:51:04 UTC.** On October 14, the owner reported that the new review displays correctly on his phone and confirmed that Back/closing left his balance unchanged. This limited user report does not establish exact-shortfall visibility, remaining phone scenarios, Java, actual purchases, or gameplay. The owner waived further human/client/live-purchase/gameplay checks for now at 00:02:49 UTC; those checks remain unverified, not passed. See the [acceptance addendum](docs/VERIFICATION.md#owner-reported-phone-check-october-14-2026). The owner's earlier report that both shop entries looked good on his phone applies to 0.1.2, and he accepted buying one at a time without a quantity dialog. Exact-shortfall visibility motivated the new review. Prices below are in-game money.
 
 ## Death Protection — $15,000
 
