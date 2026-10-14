@@ -1,8 +1,8 @@
-# ExcelShops 0.1.6: organized Spawn Shop navigation
+# ExcelShops 1.0: version-only candidate
 
-**Installed October 13, 2026 (America/Chicago); source review remains draft.** See the [exact installation record](../SpawnShop-DeluxeMenus/organized-0.1.6/INSTALLATION.md). Real client screens and purchases remain unverified. Based on the exact verified installed 0.1.5 binary. The only behavioral change routes Spawn quantity Back through the registered `/shop` launcher when DeluxeMenus is available, with the built-in catalog as a safe fallback. Old page actions and buyer quotes are invalidated before the handoff. Chest-shop, typed-entry, Bedrock cancellation, review, confirmation, stock, and economy behavior are preserved. Plugin and Maven metadata identify this candidate as 0.1.6.
+**Verified candidate; prepared off-server, not installed or published.** The final quoted-version source passes 769 Java tests and 80 Python checks. Its exact artifact passes 1,281 assertions across four isolated Paper 26.2 build 123 boots; all owned processes exited cleanly. A separate clean-source rebuild produced the identical JAR. All 76 production classes are byte-identical to installed 0.1.6. These are automated/synthetic-player checks, not a new physical-client acceptance claim. This candidate changes only the version metadata, packaging references, and documentation from the exact verified installed ExcelShops 0.1.6 source (JAR SHA-256 `a5191eef70a4fdbd1326c14c36c9fd36afa25fe712762cc1850943a1a75c6d4e`). It adopts the user-selected two-part custom version `1.0`. All production Java source, catalog/configuration resources, and behavior remain unchanged. The mobile interaction redesign is separate and is not included. The existing six DeluxeMenus launchers must remain unchanged. Plugin and Maven metadata both identify this candidate as `1.0`; parent and other plugin/upstream versions are untouched.
 
-Current verification is supplied with the navigation candidate bundle and `verification/navigation-0.1.6`. The deployment and balance records below are retained as historical source context; they do not describe this candidate as installed. Preserve the existing live catalog and data. The source baseline catalog is not a deployment replacement for the current server catalog.
+The installed 0.1.6 history is retained in [the exact installation record](../SpawnShop-DeluxeMenus/organized-0.1.6/INSTALLATION.md) and `verification/navigation-0.1.6`. Those records are historical and do not claim this 1.0 candidate is installed. Current 1.0 verification is supplied in the separate version-only candidate bundle. The deployment and balance records below are retained as historical source context; they do not describe this candidate as installed. Preserve the existing live catalog and data. The source baseline catalog is not a deployment replacement for the current server catalog.
 
 ## Historical 0.1.4/0.1.5 documentation
 
@@ -103,7 +103,7 @@ A possible `plugins/WRVShops/` folder is **not discarded**. Before creating defa
 
 
 1. **Do not hot-install this on production.** Back up plugin files, world/chest data, player inventories and economy data together. Use a disposable copy with the intended exact plugin versions first.
-2. Build with `./build.sh` at the repository root or `./WRVShops/build.sh`; Java 21+ and Maven 3.9+ are required. The build bootstraps the official hash-pinned ChestShop binary/source, compiles the provided API overlay first, and packages the full guarded binary plus corresponding source. Outputs include `WRVShops/target/ExcelShops-0.1.6.jar` and `ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1.jar`.
+2. Build with `./build.sh` at the repository root or `./WRVShops/build.sh`; Java 21+ and Maven 3.9+ are required. The build bootstraps the official hash-pinned ChestShop binary/source, compiles the provided API overlay first, and packages the full guarded binary plus corresponding source. Outputs include `WRVShops/target/ExcelShops-1.0.jar` and `ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1.jar`.
 3. Stage both reviewed JARs with Vault and the supported EssentialsX provider. Replace the original ChestShop JAR with the full guarded JAR; never load both or install the overlay-only build artifact. Retain the entire ChestShop data folder. Defaults require working GriefPrevention ownership checks. Geyser is optional for native Bedrock forms.
 4. Complete the read-only live preflight in DEPLOYMENT.md first. The bundled catalog contains repository baseline prices, not newly verified live prices. If a legacy WRVShops folder exists, follow the migration branch of that plan rather than pre-populating a conflicting target. Then install the matching generated `SpawnShop-DeluxeMenus/spawnshop.yml` into DeluxeMenus' `gui_menus/` and `SpawnShop-DeluxeMenus/spawn-catalog.yml` into `plugins/ExcelShops/`. Keep DeluxeMenus' existing menu registration and ShopVillager target.
 5. **Replace the old immediate-purchase menu as part of the same maintenance change.** Merely adding the JAR does not remove `[takemoney]`/`minecraft:give` from an old live DeluxeMenus file. Merely replacing the menu without the plugin fails closed but cannot open checkout. Compare both deployed files to the reviewed candidate.
@@ -150,20 +150,20 @@ For the installed 0.1.3 cursor update, use the new artifact-specific results in 
 
 For the installed 0.1.4 typed-entry update, see [its verification and compatibility limits](AMOUNT-ENTRY-0.1.4.md); earlier results do not certify it.
 
-CI uploads the nine custom JARs, the distinctly named full guarded ChestShop JAR with complete LGPL corresponding source, and a reproducible `ExcelShops-0.1.6-install-candidate.zip`. The installation pack contains exactly the two deployable shop JARs, unchanged matching 18-offer menu/catalog, legal/source material, the offline pause generator/spec, hashes and these instructions. Packaging verifies the official upstream hash, preserves every unmodified upstream entry, checks guard/source correspondence, and rejects an original or overlay-only JAR. It performs no server access.
+CI uploads the nine custom JARs, the distinctly named full guarded ChestShop JAR with complete LGPL corresponding source, and a reproducible `ExcelShops-1.0-install-candidate.zip`. The installation pack contains exactly the two deployable shop JARs, unchanged matching 18-offer menu/catalog, legal/source material, the offline pause generator/spec, hashes and these instructions. Packaging verifies the official upstream hash, preserves every unmodified upstream entry, checks guard/source correspondence, and rejects an original or overlay-only JAR. It performs no server access.
 
 After bootstrap/build, reproduce the pair from independently reviewed artifact hashes:
 
 ```sh
 python3 WRVShops/tools/package_candidate.py \
-  --jar WRVShops/target/ExcelShops-0.1.6.jar \
+  --jar WRVShops/target/ExcelShops-1.0.jar \
   --expected-sha256 VERIFIED_EXCELSHOPS_SHA256 \
   --guarded-jar ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1.jar \
   --expected-guarded-sha256 VERIFIED_GUARDED_CHESTSHOP_SHA256 \
   --guard-sources ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1-sources.zip \
   --expected-sources-sha256 VERIFIED_CORRESPONDING_SOURCE_SHA256 \
   --source-commit FULL_SOURCE_COMMIT_SHA \
-  --output /staging/ExcelShops-0.1.6-install-candidate.zip
+  --output /staging/ExcelShops-1.0-install-candidate.zip
 ```
 
 The output must not exist; packaging never overwrites a prior candidate. Runtime evidence must bind both final JAR hashes. Before live use, complete the read-only preflight and human checklist with the installed Vault/Essentials/GriefPrevention/Geyser/Floodgate combination. The earlier preflight reported Essentials 2.22.0 warning about an unsupported server version; the guard does not remove that warning. For a deployment actually using legacy ChestShop trading, rollback must retain the guard or disable that trading. Standalone native/Spawn-only ExcelShops does not require ChestShop. Restoring instant purchases is not a safe silent rollback.
