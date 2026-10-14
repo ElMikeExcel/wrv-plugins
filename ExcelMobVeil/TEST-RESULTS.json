@@ -1,0 +1,173 @@
+{
+  "candidate_sha256": "66e7e50821b439f51a9c1882ce9e60d0011d97065b7b4ed26b407e81d35080fc",
+  "unit_tests": [
+    {
+      "name": "com.winkreyes.excelmobveil.PurchaseCoordinatorTest",
+      "tests": "49",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.winkreyes.excelmobveil.PurchaseJournalTest",
+      "tests": "11",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.winkreyes.excelmobveil.PurchaseReviewMenuTest",
+      "tests": "33",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.winkreyes.excelmobveil.ResourceConfigurationTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.winkreyes.excelmobveil.VeilGameplayTest",
+      "tests": "71",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.winkreyes.excelmobveil.VeilTimingTest",
+      "tests": "13",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ],
+  "runtime_modes": [
+    {
+      "mode": "stacking",
+      "fresh_execution": true,
+      "exit_code": 0,
+      "result": "PASS 15 assertions",
+      "elapsed_seconds": 11.516,
+      "port_released": true,
+      "candidate_sha256": "66e7e50821b439f51a9c1882ce9e60d0011d97065b7b4ed26b407e81d35080fc",
+      "server": "Paper 26.2 build 123",
+      "new_eula_acceptance": false,
+      "companion_plugins": {}
+    },
+    {
+      "mode": "edges",
+      "fresh_execution": true,
+      "exit_code": 0,
+      "result": "PASS 22 assertions",
+      "elapsed_seconds": 11.015,
+      "port_released": true,
+      "candidate_sha256": "66e7e50821b439f51a9c1882ce9e60d0011d97065b7b4ed26b407e81d35080fc",
+      "server": "Paper 26.2 build 123",
+      "new_eula_acceptance": false,
+      "companion_plugins": {}
+    },
+    {
+      "mode": "normal",
+      "fresh_execution": true,
+      "exit_code": 0,
+      "result": "PASS 26 assertions",
+      "elapsed_seconds": 11.512,
+      "port_released": true,
+      "candidate_sha256": "66e7e50821b439f51a9c1882ce9e60d0011d97065b7b4ed26b407e81d35080fc",
+      "server": "Paper 26.2 build 123",
+      "new_eula_acceptance": false,
+      "companion_plugins": {}
+    },
+    {
+      "mode": "purchase",
+      "fresh_execution": true,
+      "exit_code": 0,
+      "result": "PASS 39 assertions",
+      "elapsed_seconds": 12.012,
+      "port_released": true,
+      "candidate_sha256": "66e7e50821b439f51a9c1882ce9e60d0011d97065b7b4ed26b407e81d35080fc",
+      "server": "Paper 26.2 build 123",
+      "new_eula_acceptance": false,
+      "companion_plugins": {}
+    },
+    {
+      "mode": "lifecycle",
+      "fresh_execution": true,
+      "exit_code": 0,
+      "result": "PASS 19 assertions",
+      "elapsed_seconds": 11.009,
+      "port_released": true,
+      "candidate_sha256": "66e7e50821b439f51a9c1882ce9e60d0011d97065b7b4ed26b407e81d35080fc",
+      "server": "Paper 26.2 build 123",
+      "new_eula_acceptance": false,
+      "companion_plugins": {}
+    },
+    {
+      "mode": "restart",
+      "fresh_execution": true,
+      "exit_code": 0,
+      "result": "PASS 4 assertions",
+      "elapsed_seconds": 10.507,
+      "port_released": true,
+      "candidate_sha256": "66e7e50821b439f51a9c1882ce9e60d0011d97065b7b4ed26b407e81d35080fc",
+      "server": "Paper 26.2 build 123",
+      "new_eula_acceptance": false,
+      "companion_plugins": {}
+    },
+    {
+      "mode": "no-economy",
+      "fresh_execution": true,
+      "exit_code": 0,
+      "result": "PASS 3 assertions",
+      "elapsed_seconds": 10.518,
+      "port_released": true,
+      "candidate_sha256": "66e7e50821b439f51a9c1882ce9e60d0011d97065b7b4ed26b407e81d35080fc",
+      "server": "Paper 26.2 build 123",
+      "new_eula_acceptance": false,
+      "companion_plugins": {}
+    },
+    {
+      "mode": "review-races",
+      "fresh_execution": true,
+      "exit_code": 0,
+      "result": "PASS 7 assertions",
+      "elapsed_seconds": 10.01,
+      "port_released": true,
+      "candidate_sha256": "66e7e50821b439f51a9c1882ce9e60d0011d97065b7b4ed26b407e81d35080fc",
+      "server": "Paper 26.2 build 123",
+      "new_eula_acceptance": false,
+      "companion_plugins": {}
+    },
+    {
+      "mode": "coexist",
+      "fresh_execution": true,
+      "exit_code": 0,
+      "result": "PASS 11 assertions",
+      "elapsed_seconds": 10.506,
+      "port_released": true,
+      "candidate_sha256": "66e7e50821b439f51a9c1882ce9e60d0011d97065b7b4ed26b407e81d35080fc",
+      "server": "Paper 26.2 build 123",
+      "new_eula_acceptance": false,
+      "companion_plugins": {
+        "ExcelDeathProtection-0.1.3.jar": "82d14a37cccaa212a78f8a8d96dde7c7de6b192057e5cd82b733eadfdcc0a468"
+      }
+    },
+    {
+      "mode": "soak",
+      "fresh_execution": true,
+      "exit_code": 0,
+      "result": "PASS 4 assertions",
+      "elapsed_seconds": 491.788,
+      "port_released": true,
+      "candidate_sha256": "66e7e50821b439f51a9c1882ce9e60d0011d97065b7b4ed26b407e81d35080fc",
+      "server": "Paper 26.2 build 123",
+      "new_eula_acceptance": false,
+      "companion_plugins": {}
+    }
+  ],
+  "unit_total": 180,
+  "runtime_assertions": 150
+}

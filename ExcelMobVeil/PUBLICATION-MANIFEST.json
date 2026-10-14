@@ -1,0 +1,570 @@
+[
+  {
+    "path": ".gitignore",
+    "bytes": 20,
+    "sha256": "02950a7a5e559fee5bbab65e7bbe6f9b219400077a2195f20dae914333b8ecf5",
+    "release_path": "ExcelMobVeil/.gitignore",
+    "release_sha256": "02950a7a5e559fee5bbab65e7bbe6f9b219400077a2195f20dae914333b8ecf5",
+    "exact_release_copy": true
+  },
+  {
+    "path": "INSTALLATION-0.1.0.md",
+    "bytes": 3130,
+    "sha256": "18870601e53e14de5e71a7346498567030108ab08b4220e1c20952695ff26f70",
+    "release_path": null,
+    "release_sha256": null,
+    "exact_release_copy": false
+  },
+  {
+    "path": "PLAYER-GUIDE.md",
+    "bytes": 1418,
+    "sha256": "97bd694df1ff6c69ce3bbf38ad8290c6abdfe62b554edf083db2875db42fc6f4",
+    "release_path": "ExcelMobVeil/PLAYER-GUIDE.md",
+    "release_sha256": "1c2d19918e4fa945d8d020354207c8e549344c9eff651b9e004ea84a520cab34",
+    "exact_release_copy": false
+  },
+  {
+    "path": "PUBLICATION.md",
+    "bytes": 2686,
+    "sha256": "68b13935575b67c9db121e1fa32d54f973d8497a418c47539a964d6830c02114",
+    "release_path": null,
+    "release_sha256": null,
+    "exact_release_copy": false
+  },
+  {
+    "path": "PURCHASE-JOURNAL.md",
+    "bytes": 692,
+    "sha256": "9f5e1a828c4a68a7b53bc6afd83b3294f37511eba3ce45cd0b261b0d4217b95f",
+    "release_path": "ExcelMobVeil/PURCHASE-JOURNAL.md",
+    "release_sha256": "9f5e1a828c4a68a7b53bc6afd83b3294f37511eba3ce45cd0b261b0d4217b95f",
+    "exact_release_copy": true
+  },
+  {
+    "path": "README.md",
+    "bytes": 6399,
+    "sha256": "33430c338f49bf2dc09af107c4ef9e9b0282c4a9937b52222db3d3a900b0b1f7",
+    "release_path": "ExcelMobVeil/README.md",
+    "release_sha256": "45f6db13909f3af30bb9b8855ab7de7ee5353a77ef60270eabf2affe83f3751f",
+    "exact_release_copy": false
+  },
+  {
+    "path": "RELEASE-CHECKLIST.md",
+    "bytes": 1807,
+    "sha256": "f00463393d0582177bba232491902ee201c7b7e507ab5cc99af6cc49b6ca8d54",
+    "release_path": "ExcelMobVeil/RELEASE-CHECKLIST.md",
+    "release_sha256": "f00463393d0582177bba232491902ee201c7b7e507ab5cc99af6cc49b6ca8d54",
+    "exact_release_copy": true
+  },
+  {
+    "path": "TEST-RESULTS.json",
+    "bytes": 5199,
+    "sha256": "5d9baa73f883f8f380fbff09f35c528237af3c1c15ed5eee4da38e930b1849b5",
+    "release_path": "TEST-RESULTS.json",
+    "release_sha256": "5d9baa73f883f8f380fbff09f35c528237af3c1c15ed5eee4da38e930b1849b5",
+    "exact_release_copy": true
+  },
+  {
+    "path": "VERIFICATION.md",
+    "bytes": 6522,
+    "sha256": "2c543a0e353373494046b6b17e82033f771393941cd4cef663de1b47fb8563f3",
+    "release_path": "ExcelMobVeil/VERIFICATION.md",
+    "release_sha256": "2c543a0e353373494046b6b17e82033f771393941cd4cef663de1b47fb8563f3",
+    "exact_release_copy": true
+  },
+  {
+    "path": "build.sh",
+    "bytes": 635,
+    "sha256": "e6a83c9b12674fe8ef137df8327d26e7f081e0dc08924565ee09ce9b1070d32d",
+    "release_path": "ExcelMobVeil/build.sh",
+    "release_sha256": "e6a83c9b12674fe8ef137df8327d26e7f081e0dc08924565ee09ce9b1070d32d",
+    "exact_release_copy": true
+  },
+  {
+    "path": "config.yml",
+    "bytes": 333,
+    "sha256": "fe5ceea01561f3e9e929dfdbd956346abf76e43cd358b4c91d87379b7e2ec331",
+    "release_path": "ExcelMobVeil/config.yml",
+    "release_sha256": "fe5ceea01561f3e9e929dfdbd956346abf76e43cd358b4c91d87379b7e2ec331",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/build-tests.log",
+    "bytes": 6166,
+    "sha256": "546c4300d4036407f7df06784825728a685fe2be929b7f68a6e1e114d0f1e931",
+    "release_path": "evidence/build-tests.log",
+    "release_sha256": "f581a3e2ca37000607c58050c161177ee1ad3d6ba3c09127d41b5123a65a22c3",
+    "exact_release_copy": false
+  },
+  {
+    "path": "evidence/runtime/assertions-coexist.txt",
+    "bytes": 430,
+    "sha256": "bfa6c2b5d7cb4f771e4db920bde5d808b5fae826c0ebda4e92fca22e62bc9b85",
+    "release_path": "evidence/runtime/assertions-coexist.txt",
+    "release_sha256": "bfa6c2b5d7cb4f771e4db920bde5d808b5fae826c0ebda4e92fca22e62bc9b85",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/assertions-edges.txt",
+    "bytes": 859,
+    "sha256": "6387c7687562015e36c7b843ecffc8bb998345f937048dabd0a3f6d726c5ac3a",
+    "release_path": "evidence/runtime/assertions-edges.txt",
+    "release_sha256": "6387c7687562015e36c7b843ecffc8bb998345f937048dabd0a3f6d726c5ac3a",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/assertions-lifecycle.txt",
+    "bytes": 641,
+    "sha256": "7ecefb40b73487fd88cc8c5b4ab967a816270433a8efe283830c9b6a9108caae",
+    "release_path": "evidence/runtime/assertions-lifecycle.txt",
+    "release_sha256": "7ecefb40b73487fd88cc8c5b4ab967a816270433a8efe283830c9b6a9108caae",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/assertions-no-economy.txt",
+    "bytes": 107,
+    "sha256": "135dde990a58d5ace316c28304a6f92a423b36975cd2f3b6ddb40f4fc4427bfa",
+    "release_path": "evidence/runtime/assertions-no-economy.txt",
+    "release_sha256": "135dde990a58d5ace316c28304a6f92a423b36975cd2f3b6ddb40f4fc4427bfa",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/assertions-normal.txt",
+    "bytes": 1233,
+    "sha256": "1497a89ee4d6ff7796af2811e1be93918589e26f46a339474c8b97480fa72e40",
+    "release_path": "evidence/runtime/assertions-normal.txt",
+    "release_sha256": "1497a89ee4d6ff7796af2811e1be93918589e26f46a339474c8b97480fa72e40",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/assertions-purchase.txt",
+    "bytes": 1450,
+    "sha256": "606fb67ecef2be171303ecac29c380c6fde2e22ba825871f5a0f8151e8f8ec2c",
+    "release_path": "evidence/runtime/assertions-purchase.txt",
+    "release_sha256": "606fb67ecef2be171303ecac29c380c6fde2e22ba825871f5a0f8151e8f8ec2c",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/assertions-restart.txt",
+    "bytes": 171,
+    "sha256": "171a51945cf5aedd7f89d6058c2b5cddd00a28ecae63a26b6c8003e1e62e640a",
+    "release_path": "evidence/runtime/assertions-restart.txt",
+    "release_sha256": "171a51945cf5aedd7f89d6058c2b5cddd00a28ecae63a26b6c8003e1e62e640a",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/assertions-review-races.txt",
+    "bytes": 275,
+    "sha256": "26c0c07a799cf5117d66093dba720be3acd48a66ec09be3562b992823f54fc64",
+    "release_path": "evidence/runtime/assertions-review-races.txt",
+    "release_sha256": "26c0c07a799cf5117d66093dba720be3acd48a66ec09be3562b992823f54fc64",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/assertions-soak.txt",
+    "bytes": 197,
+    "sha256": "af1f8e120a4ca871c01a78eac27601a918b99de098f3a36c6eab2f2b852b9a28",
+    "release_path": "evidence/runtime/assertions-soak.txt",
+    "release_sha256": "af1f8e120a4ca871c01a78eac27601a918b99de098f3a36c6eab2f2b852b9a28",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/assertions-stacking.txt",
+    "bytes": 868,
+    "sha256": "1ccefce90acbd367d35e7a2bc07d2d025946580776d7665007b5b5ff3bd3442f",
+    "release_path": "evidence/runtime/assertions-stacking.txt",
+    "release_sha256": "1ccefce90acbd367d35e7a2bc07d2d025946580776d7665007b5b5ff3bd3442f",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/results-coexist.json",
+    "bytes": 449,
+    "sha256": "585fbaf770c77da612214b4ac1e5c502d4a8e985a429d83f42fcc273bce7da6c",
+    "release_path": "evidence/runtime/results-coexist.json",
+    "release_sha256": "585fbaf770c77da612214b4ac1e5c502d4a8e985a429d83f42fcc273bce7da6c",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/results-edges.json",
+    "bytes": 339,
+    "sha256": "096e5655d61f776c0dc55beae7dab1024a55fee3e7f797a72bf420f20b8d12f6",
+    "release_path": "evidence/runtime/results-edges.json",
+    "release_sha256": "096e5655d61f776c0dc55beae7dab1024a55fee3e7f797a72bf420f20b8d12f6",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/results-lifecycle.json",
+    "bytes": 343,
+    "sha256": "919f59e78e8592d2d8537459ddcc05cdc17a6c73ad5667cc28860325d65d0a2f",
+    "release_path": "evidence/runtime/results-lifecycle.json",
+    "release_sha256": "919f59e78e8592d2d8537459ddcc05cdc17a6c73ad5667cc28860325d65d0a2f",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/results-no-economy.json",
+    "bytes": 343,
+    "sha256": "7f3814bdec54d0638886ebaccceb83d4f9f4d40d5c811ce83dce363f15a48632",
+    "release_path": "evidence/runtime/results-no-economy.json",
+    "release_sha256": "7f3814bdec54d0638886ebaccceb83d4f9f4d40d5c811ce83dce363f15a48632",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/results-normal.json",
+    "bytes": 340,
+    "sha256": "8a87cc6e729f7628e4cfaf9e457789cc2c629a4c14ce2a9a16c0c5333912f51c",
+    "release_path": "evidence/runtime/results-normal.json",
+    "release_sha256": "8a87cc6e729f7628e4cfaf9e457789cc2c629a4c14ce2a9a16c0c5333912f51c",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/results-purchase.json",
+    "bytes": 342,
+    "sha256": "799fdd09d07301195ff1947fd802fe6bf0c5c659e9cf4f3073174af59ba2be13",
+    "release_path": "evidence/runtime/results-purchase.json",
+    "release_sha256": "799fdd09d07301195ff1947fd802fe6bf0c5c659e9cf4f3073174af59ba2be13",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/results-restart.json",
+    "bytes": 340,
+    "sha256": "1190ea7d62188275429b6198efd0adff37c12431fa427ec24f97887f69b51e4f",
+    "release_path": "evidence/runtime/results-restart.json",
+    "release_sha256": "1190ea7d62188275429b6198efd0adff37c12431fa427ec24f97887f69b51e4f",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/results-review-races.json",
+    "bytes": 344,
+    "sha256": "40acaa79ca98556e87ec11ec88bfe13f55a57581753b775b3616105b87b1da36",
+    "release_path": "evidence/runtime/results-review-races.json",
+    "release_sha256": "40acaa79ca98556e87ec11ec88bfe13f55a57581753b775b3616105b87b1da36",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/results-soak.json",
+    "bytes": 338,
+    "sha256": "cae680f049080ed5f1b7336c2779b8ba54efd6be4d7e5dd8cc5b3788facc1792",
+    "release_path": "evidence/runtime/results-soak.json",
+    "release_sha256": "cae680f049080ed5f1b7336c2779b8ba54efd6be4d7e5dd8cc5b3788facc1792",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/results-stacking.json",
+    "bytes": 342,
+    "sha256": "74fd8683ea124eda90b9ccc12a003184a941de2ef01dfd5ab36f947f3fd24bd0",
+    "release_path": "evidence/runtime/results-stacking.json",
+    "release_sha256": "74fd8683ea124eda90b9ccc12a003184a941de2ef01dfd5ab36f947f3fd24bd0",
+    "exact_release_copy": true
+  },
+  {
+    "path": "evidence/runtime/runtime-coexist.log",
+    "bytes": 17534,
+    "sha256": "d643ed1a82276bfde13da775b4a0246237027d44f59b8db01c4071bcebc989e4",
+    "release_path": "evidence/runtime/runtime-coexist.log",
+    "release_sha256": "239d51d67a7eb7d12f3b0be84e7e713c401cd0d760c56edd06614c634162eb28",
+    "exact_release_copy": false
+  },
+  {
+    "path": "evidence/runtime/runtime-edges.log",
+    "bytes": 18044,
+    "sha256": "8acdaf0d78c502cfdccc2d95968d18b02e3c749b63c5349de188876628a0fa93",
+    "release_path": "evidence/runtime/runtime-edges.log",
+    "release_sha256": "295f3554838dec21d2a5aee556b62ba0a496cbb98b200048063cac026dc9e609",
+    "exact_release_copy": false
+  },
+  {
+    "path": "evidence/runtime/runtime-lifecycle.log",
+    "bytes": 17681,
+    "sha256": "241b4fa2aeca7587b8d2200ce4e51ef11292e1408408a94ad9c96389029ac57c",
+    "release_path": "evidence/runtime/runtime-lifecycle.log",
+    "release_sha256": "676d44e5de8ae7607148eb9de8945249ee1645f5807375f5188e7cf0aa1fc7f7",
+    "exact_release_copy": false
+  },
+  {
+    "path": "evidence/runtime/runtime-no-economy.log",
+    "bytes": 16516,
+    "sha256": "b9edcf0ed03f9b37189b92f3116903c5437999cf1c7d1ad16368975a17ad9438",
+    "release_path": "evidence/runtime/runtime-no-economy.log",
+    "release_sha256": "29267195c3e803c326582e23d69860fd27ab11d7172398529e44196862b0132a",
+    "exact_release_copy": false
+  },
+  {
+    "path": "evidence/runtime/runtime-normal.log",
+    "bytes": 18589,
+    "sha256": "4ae18f16e6d5aa1be0f3f62f427252086dd93ab8f673002167ad926558be50a4",
+    "release_path": "evidence/runtime/runtime-normal.log",
+    "release_sha256": "5f9a2024489d48c916f4e7c2863a3844411631cef0cd12e569096259e64e3d01",
+    "exact_release_copy": false
+  },
+  {
+    "path": "evidence/runtime/runtime-purchase.log",
+    "bytes": 19590,
+    "sha256": "e9549b4008e9cca42fba283a0a4bb39e9d7d482eef1f7dfd016793d80fcacc0d",
+    "release_path": "evidence/runtime/runtime-purchase.log",
+    "release_sha256": "8f1d4f355c41565173b7c0d6c83fe574f67c4b354a1d147d327e4b12bf009080",
+    "exact_release_copy": false
+  },
+  {
+    "path": "evidence/runtime/runtime-restart.log",
+    "bytes": 16528,
+    "sha256": "306e42ff6d7f46cec1666213f041aecd1831531b9aded22e36cb859d6963f21f",
+    "release_path": "evidence/runtime/runtime-restart.log",
+    "release_sha256": "0b60c83658dae20431e9d99b0bbc841fdbbeeef7fec9015272de4f7f7de3bb62",
+    "exact_release_copy": false
+  },
+  {
+    "path": "evidence/runtime/runtime-review-races.log",
+    "bytes": 16811,
+    "sha256": "64e56e5a885fad76ab5ed5c6a85c155b4360642522eb64e7914db122b97567b4",
+    "release_path": "evidence/runtime/runtime-review-races.log",
+    "release_sha256": "2c4b26b0505bf91f67a8c69c7c3e32206a6e74f6d00f0c83c861e7831375e4a4",
+    "exact_release_copy": false
+  },
+  {
+    "path": "evidence/runtime/runtime-soak.log",
+    "bytes": 19957,
+    "sha256": "216125703b8f7ef5da0ac8d3d24bf1222c4d23b718b7540f731264715b9e5667",
+    "release_path": "evidence/runtime/runtime-soak.log",
+    "release_sha256": "6949551d238bfb90492aaee55ca9ecb08e11130f22985d45a6181d13a4413f92",
+    "exact_release_copy": false
+  },
+  {
+    "path": "evidence/runtime/runtime-stacking.log",
+    "bytes": 18733,
+    "sha256": "eb53497d41432560788170f93a5461c8cd4f9a970af1c80bd536c87f6415ec2b",
+    "release_path": "evidence/runtime/runtime-stacking.log",
+    "release_sha256": "afbb9ec26a66212caab28d08b4e600fe5c60c0513ec4d9410d67e224db91e1fd",
+    "exact_release_copy": false
+  },
+  {
+    "path": "independent-review.md",
+    "bytes": 7354,
+    "sha256": "cfe7d70982bf928aad8cb48a21a72e100e65bc367fe53e64fdb9f16e28a4cd38",
+    "release_path": "ExcelMobVeil/independent-review.md",
+    "release_sha256": "5a76506775b3cb04b69f6b98f3da46ecb8457591d10ddd55b3de1958efeba34c",
+    "exact_release_copy": false
+  },
+  {
+    "path": "integration/README.md",
+    "bytes": 857,
+    "sha256": "f9ee7937e6fdc5b7be6a96ab40b1c557f73c599795ca291bf878d5355fdd7783",
+    "release_path": "ExcelMobVeil/integration/README.md",
+    "release_sha256": "f9ee7937e6fdc5b7be6a96ab40b1c557f73c599795ca291bf878d5355fdd7783",
+    "exact_release_copy": true
+  },
+  {
+    "path": "integration/deluxemenus-item.installed.yml",
+    "bytes": 789,
+    "sha256": "cf51e6735126c0041792a400186cb138828be10bb75f5411be4c06bf669d0f2f",
+    "release_path": null,
+    "release_sha256": null,
+    "exact_release_copy": false
+  },
+  {
+    "path": "integration/deluxemenus-item.template.yml",
+    "bytes": 625,
+    "sha256": "e4e477e9e53a800cbcf2270fdd4b77e893ffd3093b19f77d8286eeb7a5c83c18",
+    "release_path": "ExcelMobVeil/integration/deluxemenus-item.template.yml",
+    "release_sha256": "e4e477e9e53a800cbcf2270fdd4b77e893ffd3093b19f77d8286eeb7a5c83c18",
+    "exact_release_copy": true
+  },
+  {
+    "path": "package_release.py",
+    "bytes": 4377,
+    "sha256": "c7706234c5c1df2089e41af71fc5b75cc4e02fcc5e812c92049724d742cd8f29",
+    "release_path": "ExcelMobVeil/package_release.py",
+    "release_sha256": "c7706234c5c1df2089e41af71fc5b75cc4e02fcc5e812c92049724d742cd8f29",
+    "exact_release_copy": true
+  },
+  {
+    "path": "plugin.yml",
+    "bytes": 575,
+    "sha256": "01787d0e997598b4306b16a79a6c8cd6b1d1e278365aaf1ecf24147cf3651fec",
+    "release_path": "ExcelMobVeil/plugin.yml",
+    "release_sha256": "01787d0e997598b4306b16a79a6c8cd6b1d1e278365aaf1ecf24147cf3651fec",
+    "exact_release_copy": true
+  },
+  {
+    "path": "pom.xml",
+    "bytes": 3807,
+    "sha256": "1bb300067121da50d131c19f9d79bca732d811f106266a2d0e31dee7e2984e73",
+    "release_path": "ExcelMobVeil/pom.xml",
+    "release_sha256": "1bb300067121da50d131c19f9d79bca732d811f106266a2d0e31dee7e2984e73",
+    "exact_release_copy": true
+  },
+  {
+    "path": "release_checkpoint.py",
+    "bytes": 2446,
+    "sha256": "6cb9eeb7fd12113cdaf8fdd6007a108c353d94977358e79e8f4fc5655b02232c",
+    "release_path": "ExcelMobVeil/release_checkpoint.py",
+    "release_sha256": "6cb9eeb7fd12113cdaf8fdd6007a108c353d94977358e79e8f4fc5655b02232c",
+    "exact_release_copy": true
+  },
+  {
+    "path": "reviewed-source-manifest.json",
+    "bytes": 1846,
+    "sha256": "c71c7aeebaf55acfe23ac9394c0a2b5d6f77f6b75b8ad2e44f2fc586db82468e",
+    "release_path": "ExcelMobVeil/reviewed-source-manifest.json",
+    "release_sha256": "c71c7aeebaf55acfe23ac9394c0a2b5d6f77f6b75b8ad2e44f2fc586db82468e",
+    "exact_release_copy": true
+  },
+  {
+    "path": "src/com/winkreyes/excelmobveil/ExcelMobVeil.java",
+    "bytes": 33672,
+    "sha256": "0274e119a580d3345ddce43ab1aedcd382cdbfe118d42f00689e419182f31c7c",
+    "release_path": "ExcelMobVeil/src/com/winkreyes/excelmobveil/ExcelMobVeil.java",
+    "release_sha256": "0274e119a580d3345ddce43ab1aedcd382cdbfe118d42f00689e419182f31c7c",
+    "exact_release_copy": true
+  },
+  {
+    "path": "src/com/winkreyes/excelmobveil/PurchaseCoordinator.java",
+    "bytes": 14570,
+    "sha256": "19e82bd1ddd624ee52baf5eb9c33fdeec604cd1ba779723865dc49d266ba5204",
+    "release_path": "ExcelMobVeil/src/com/winkreyes/excelmobveil/PurchaseCoordinator.java",
+    "release_sha256": "19e82bd1ddd624ee52baf5eb9c33fdeec604cd1ba779723865dc49d266ba5204",
+    "exact_release_copy": true
+  },
+  {
+    "path": "src/com/winkreyes/excelmobveil/PurchaseJournal.java",
+    "bytes": 6775,
+    "sha256": "d3071a5bbd21e11ad334c358a5fdec749d7046f1d2dca52347ba8fb82cf734ac",
+    "release_path": "ExcelMobVeil/src/com/winkreyes/excelmobveil/PurchaseJournal.java",
+    "release_sha256": "d3071a5bbd21e11ad334c358a5fdec749d7046f1d2dca52347ba8fb82cf734ac",
+    "exact_release_copy": true
+  },
+  {
+    "path": "src/com/winkreyes/excelmobveil/PurchaseReviewMenu.java",
+    "bytes": 12748,
+    "sha256": "c024dc3a4fc207f3f812d73be61b863e05fe13be109bae4675f998168a41e01f",
+    "release_path": "ExcelMobVeil/src/com/winkreyes/excelmobveil/PurchaseReviewMenu.java",
+    "release_sha256": "c024dc3a4fc207f3f812d73be61b863e05fe13be109bae4675f998168a41e01f",
+    "exact_release_copy": true
+  },
+  {
+    "path": "src/com/winkreyes/excelmobveil/VeilTiming.java",
+    "bytes": 861,
+    "sha256": "8f0c698d9a34a085c911823e84acb3c6814e7fe4e9f8b6e11c54cd20687a334d",
+    "release_path": "ExcelMobVeil/src/com/winkreyes/excelmobveil/VeilTiming.java",
+    "release_sha256": "8f0c698d9a34a085c911823e84acb3c6814e7fe4e9f8b6e11c54cd20687a334d",
+    "exact_release_copy": true
+  },
+  {
+    "path": "test/com/winkreyes/excelmobveil/PurchaseCoordinatorTest.java",
+    "bytes": 27322,
+    "sha256": "6e7ca618b7a91ac9dcb08e485c111c2b8b22fdfc8b5109b20b3b0577b7503a03",
+    "release_path": "ExcelMobVeil/test/com/winkreyes/excelmobveil/PurchaseCoordinatorTest.java",
+    "release_sha256": "6e7ca618b7a91ac9dcb08e485c111c2b8b22fdfc8b5109b20b3b0577b7503a03",
+    "exact_release_copy": true
+  },
+  {
+    "path": "test/com/winkreyes/excelmobveil/PurchaseJournalTest.java",
+    "bytes": 6046,
+    "sha256": "216ce871b950842c9800609f088f44711658577969f9d5b933f3af2756e368ef",
+    "release_path": "ExcelMobVeil/test/com/winkreyes/excelmobveil/PurchaseJournalTest.java",
+    "release_sha256": "216ce871b950842c9800609f088f44711658577969f9d5b933f3af2756e368ef",
+    "exact_release_copy": true
+  },
+  {
+    "path": "test/com/winkreyes/excelmobveil/PurchaseReviewMenuTest.java",
+    "bytes": 16207,
+    "sha256": "d9a87ed8ce6bdf7d3b9c223315f39eecedad320e385d2b08e615fef49e73df1a",
+    "release_path": "ExcelMobVeil/test/com/winkreyes/excelmobveil/PurchaseReviewMenuTest.java",
+    "release_sha256": "d9a87ed8ce6bdf7d3b9c223315f39eecedad320e385d2b08e615fef49e73df1a",
+    "exact_release_copy": true
+  },
+  {
+    "path": "test/com/winkreyes/excelmobveil/ResourceConfigurationTest.java",
+    "bytes": 1940,
+    "sha256": "3359f621b08b5b5fdfdd6a28b1b49d2f941c9e1f91222df178391c6403d0f6ff",
+    "release_path": "ExcelMobVeil/test/com/winkreyes/excelmobveil/ResourceConfigurationTest.java",
+    "release_sha256": "3359f621b08b5b5fdfdd6a28b1b49d2f941c9e1f91222df178391c6403d0f6ff",
+    "exact_release_copy": true
+  },
+  {
+    "path": "test/com/winkreyes/excelmobveil/VeilGameplayTest.java",
+    "bytes": 36280,
+    "sha256": "4e54bd57656499b1ef34d45418bf4973240cca1f8f2129eca3f901b1d36aed6c",
+    "release_path": "ExcelMobVeil/test/com/winkreyes/excelmobveil/VeilGameplayTest.java",
+    "release_sha256": "4e54bd57656499b1ef34d45418bf4973240cca1f8f2129eca3f901b1d36aed6c",
+    "exact_release_copy": true
+  },
+  {
+    "path": "test/com/winkreyes/excelmobveil/VeilTimingTest.java",
+    "bytes": 4261,
+    "sha256": "9586256169bd3c99f206d259641783f0e780ac8c005716e655038ddf68727e0e",
+    "release_path": "ExcelMobVeil/test/com/winkreyes/excelmobveil/VeilTimingTest.java",
+    "release_sha256": "9586256169bd3c99f206d259641783f0e780ac8c005716e655038ddf68727e0e",
+    "exact_release_copy": true
+  },
+  {
+    "path": "verification/runtime/README.md",
+    "bytes": 3285,
+    "sha256": "eb887add27c6a2cfe9a6c51aae3d8b971f92252fddbbaad53b25aa56f4d1a7b2",
+    "release_path": "verification/runtime/README.md",
+    "release_sha256": "bc1f3d228c54b49ef80309441e29a71d48b451e9967654d2a081dff3b2a47efc",
+    "exact_release_copy": false
+  },
+  {
+    "path": "verification/runtime/VERIFICATION-REPORT.md",
+    "bytes": 5169,
+    "sha256": "826567ef7c331d296e758466c676e5dfb805cc574f4917c7d124937779604a9b",
+    "release_path": "verification/runtime/VERIFICATION-REPORT.md",
+    "release_sha256": "826567ef7c331d296e758466c676e5dfb805cc574f4917c7d124937779604a9b",
+    "exact_release_copy": true
+  },
+  {
+    "path": "verification/runtime/build_fixture.sh",
+    "bytes": 1126,
+    "sha256": "65077f7ecb23d4801faaee0e52dc2addb7054a473d8786f9d6975e1fbbf16f78",
+    "release_path": "verification/runtime/build_fixture.sh",
+    "release_sha256": "7a65ad038d6ebfd2225ff1d2b2340fe9a175f36dd58282170a982d2a84ec5889",
+    "exact_release_copy": false
+  },
+  {
+    "path": "verification/runtime/fixture-provenance.json",
+    "bytes": 293,
+    "sha256": "904dc8a9a1cab72cfc4061d22786f641a9eb7ae4d9d2c133693b973a758f815d",
+    "release_path": "verification/runtime/fixture-provenance.json",
+    "release_sha256": "1f400a3c30de50b57b6ea42255da6166ee51acdeb789508c40e9a77b4b8b0494",
+    "exact_release_copy": false
+  },
+  {
+    "path": "verification/runtime/results-final.json",
+    "bytes": 4306,
+    "sha256": "eabf6e332227bcbe97911319cf8317f92987b71866254616fe72843e4464bb14",
+    "release_path": "verification/runtime/results-final.json",
+    "release_sha256": "eabf6e332227bcbe97911319cf8317f92987b71866254616fe72843e4464bb14",
+    "exact_release_copy": true
+  },
+  {
+    "path": "verification/runtime/run_fixture.py",
+    "bytes": 2043,
+    "sha256": "26e857c583001a6387a12bbc977219d1afa3ec5d1d046fe8e128f5e97146f7aa",
+    "release_path": "verification/runtime/run_fixture.py",
+    "release_sha256": "ef24b4945a8597c2b67c2726ddb06cca8870cf03028b27e2f782d8b23981c341",
+    "exact_release_copy": false
+  },
+  {
+    "path": "verification/runtime/src/verification/FixtureVault.java",
+    "bytes": 2044,
+    "sha256": "b8d684de888735154b67cf93b90b0e1b1ede160c1a70d828b0049975c24c78da",
+    "release_path": "verification/runtime/src/verification/FixtureVault.java",
+    "release_sha256": "b8d684de888735154b67cf93b90b0e1b1ede160c1a70d828b0049975c24c78da",
+    "exact_release_copy": true
+  },
+  {
+    "path": "verification/runtime/src/verification/MobVeilProbe.java",
+    "bytes": 33746,
+    "sha256": "dca6b4eab84c3a66e2b7f673c24c5e3d77e57c8117f2a8a1e7f848b06191f2d0",
+    "release_path": "verification/runtime/src/verification/MobVeilProbe.java",
+    "release_sha256": "dca6b4eab84c3a66e2b7f673c24c5e3d77e57c8117f2a8a1e7f848b06191f2d0",
+    "exact_release_copy": true
+  },
+  {
+    "path": "verified-bundle-source-manifest.json",
+    "bytes": 4243,
+    "sha256": "f8bc1a9a6af48c6e3e04798c2e02d006ee36db1210d1d2ebe5ccbb4623d80858",
+    "release_path": "SOURCE-MANIFEST.json",
+    "release_sha256": "f8bc1a9a6af48c6e3e04798c2e02d006ee36db1210d1d2ebe5ccbb4623d80858",
+    "exact_release_copy": true
+  }
+]

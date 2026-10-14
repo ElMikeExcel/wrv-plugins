@@ -1,0 +1,19 @@
+fresh candidate loads on real Paper
+NewMilk starts veiled
+NewDeath starts veiled
+NewWorld starts veiled
+NewExpiry starts veiled
+NewSaved starts veiled
+NewSavedExpired starts veiled
+NewQuit starts veiled
+NewCancelMilk starts veiled
+native death clears veil immediately
+native milk ends state and effect
+canceled native milk retains bucket and veil
+native reset leaves no veil effect
+world-change event preserves unexpired state
+actual scheduler expires shortened real-time deadline
+quit preserves remaining deadline
+join preserves entitlement
+two successful drinks retain stacked time before save
+native saveData writes file for separate JVM

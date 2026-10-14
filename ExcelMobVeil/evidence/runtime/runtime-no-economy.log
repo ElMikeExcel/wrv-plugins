@@ -1,0 +1,324 @@
+Starting org.bukkit.craftbukkit.Main
+[20:52:01 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4+7-LTS; Eclipse Adoptium Temurin-25.0.4+7) on Linux 6.18.44 (amd64)
+[20:52:01 INFO]: [bootstrap] Loading Paper 26.2-123-main@5001879 (2026-09-09T17:32:22Z) for Minecraft 26.2
+[20:52:01 INFO]: [PluginInitializerManager] Initializing plugins...
+[20:52:01 INFO]: [PluginInitializerManager] Initialized 3 plugins
+[20:52:01 INFO]: [PluginInitializerManager] Bukkit plugins (3):
+ - ExcelMobVeil (0.1.0), MobVeilProbe (0.0.0-fresh-fixture), Vault (0.0.0-fixture)
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:<local-test-root>/mob-veil-rebuild-20261014/runtime/server/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[20:52:04 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[20:52:04 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[31;1m[20:52:04 ERROR]: Failed to request yggdrasil public key
+com.mojang.authlib.exceptions.MinecraftClientException: Failed to read from https://api.minecraftservices.com/publickeys due to api.minecraftservices.com
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readServiceResponse(MinecraftClient.java:151) ~[authlib-9.0.75.jar:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.getWithEtag(MinecraftClient.java:81) ~[authlib-9.0.75.jar:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.get(MinecraftClient.java:65) ~[authlib-9.0.75.jar:?]
+	at com.mojang.authlib.yggdrasil.YggdrasilServicesKeyInfo.fetch(YggdrasilServicesKeyInfo.java:114) ~[authlib-9.0.75.jar:?]
+	at com.mojang.authlib.yggdrasil.YggdrasilServicesKeyInfo$1.run(YggdrasilServicesKeyInfo.java:89) ~[authlib-9.0.75.jar:?]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[?:?]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328) ~[?:?]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:309) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+Caused by: java.net.UnknownHostException: api.minecraftservices.com
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:569) ~[?:?]
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:284) ~[?:?]
+	at java.base/java.net.Socket.connect(Socket.java:659) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.connect(SSLSocketImpl.java:304) ~[?:?]
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:161) ~[?:?]
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:516) ~[?:?]
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:604) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.<init>(HttpsClient.java:207) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.New(HttpsClient.java:289) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.getNewHttpClient(AbstractDelegateHttpsURLConnection.java:196) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1008) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:899) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:872) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:181) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1377) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1302) ~[?:?]
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:493) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getResponseCode(HttpsURLConnectionImpl.java:307) ~[?:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readServiceResponse(MinecraftClient.java:130) ~[authlib-9.0.75.jar:?]
+	... 10 more
+[m[20:52:05 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 366.6ms
+[20:52:06 INFO]: Loaded 1585 recipes
+[20:52:06 INFO]: Loaded 1688 advancements
+[20:52:06 INFO]: Starting minecraft server version 26.2
+[20:52:06 INFO]: Loading properties
+[20:52:06 INFO]: This server is running Paper version 26.2-123-main@5001879 (2026-09-09T17:32:22Z) (Implementing API version 26.2.build.123-stable)
+[20:52:06 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[20:52:06 INFO]: Server Ping Player Sample Count: 12
+[20:52:06 INFO]: Using 4 threads for Netty based IO
+[20:52:06 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[20:52:06 INFO]: Default game type: SURVIVAL
+[20:52:06 INFO]: Generating keypair
+> 
+  
+[20:52:07 INFO]: Starting Minecraft server on 127.0.0.1:25591
+> 
+  
+[20:52:07 INFO]: Paper: Using libdeflate (Linux x86_64) compression from Velocity.
+> 
+  
+[20:52:07 INFO]: Paper: Using OpenSSL 3.x.x (Linux x86_64) cipher from Velocity.
+> 
+  
+[33;1m[20:52:07 WARN]: [io.netty.util.internal.MacAddressUtil] Failed to find a usable hardware address from the network interfaces; using random bytes: 79:73:00:c8:b1:0b:a8:b8
+[m> 
+  
+[20:52:07 INFO]: [Vault] Loading server plugin Vault v0.0.0-fixture
+> 
+  
+[20:52:07 INFO]: [ExcelMobVeil] Loading server plugin ExcelMobVeil v0.1.0
+> 
+  
+[20:52:07 INFO]: [MobVeilProbe] Loading server plugin MobVeilProbe v0.0.0-fresh-fixture
+> 
+  
+[20:52:07 INFO]: Preparing level "leaderboard-isolated-world"
+> 
+  
+[20:52:07 INFO]: Loading 0 persistent chunks for level 'minecraft:overworld'...
+> 
+  
+[20:52:07 INFO]: Prepared spawn area in 0 ms
+> 
+  
+[20:52:07 INFO]: Loading 0 persistent chunks for level 'minecraft:the_nether'...
+> 
+  
+[20:52:07 INFO]: Prepared spawn area in 0 ms
+> 
+  
+[20:52:07 INFO]: Loading 0 persistent chunks for level 'minecraft:the_end'...
+> 
+  
+[20:52:07 INFO]: Prepared spawn area in 0 ms
+> 
+  
+[20:52:07 INFO]: Done preparing level "leaderboard-isolated-world" (0.268s)
+> 
+  
+[20:52:07 INFO]: [Vault] Enabling Vault v0.0.0-fixture
+> 
+  
+[20:52:07 INFO]: [ExcelMobVeil] Enabling ExcelMobVeil v0.1.0
+> 
+  
+[33;1m[20:52:07 WARN]: [ExcelMobVeil] No Vault economy provider; purchases disabled.
+[m> 
+  
+[20:52:07 INFO]: [ExcelMobVeil] ExcelMobVeil 0.1.0: $2,000.00; each drink adds eight real-time minutes. Attacking ends all time. Scripted bosses and area damage remain possible.
+> 
+  
+[20:52:07 INFO]: [MobVeilProbe] Enabling MobVeilProbe v0.0.0-fresh-fixture
+> 
+  
+[20:52:07 INFO]: [spark] Starting background profiler...
+> 
+  
+[20:52:07 INFO]: Saving chunks for level 'ServerLevel[leaderboard-isolated-world]'/minecraft:overworld
+> 
+  
+[20:52:07 INFO]: Saving chunks for level 'ServerLevel[leaderboard-isolated-world]'/minecraft:the_nether
+> 
+  
+[20:52:07 INFO]: Saving chunks for level 'ServerLevel[leaderboard-isolated-world]'/minecraft:the_end
+> 
+  
+[20:52:07 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+> 
+  
+[20:52:07 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+> 
+  
+[20:52:07 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+> 
+  
+[20:52:07 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+> 
+  
+[20:52:07 INFO]: Running delayed init tasks
+> 
+  
+[20:52:07 INFO]: Done (7.485s)! For help, type "help"
+> 
+  
+[31;1m[20:52:07 ERROR]: [PaperVersionFetcher] Error while parsing version list
+java.net.UnknownHostException: fill.papermc.io
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:569) ~[?:?]
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:284) ~[?:?]
+	at java.base/java.net.Socket.connect(Socket.java:659) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.connect(SSLSocketImpl.java:304) ~[?:?]
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:161) ~[?:?]
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:516) ~[?:?]
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:604) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.<init>(HttpsClient.java:207) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.New(HttpsClient.java:289) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.getNewHttpClient(AbstractDelegateHttpsURLConnection.java:196) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:963) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:899) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:872) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:181) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1377) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1302) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:223) ~[?:?]
+	at com.destroystokyo.paper.PaperVersionFetcher.fetchMinecraftVersionList(PaperVersionFetcher.java:150) ~[paper-26.2.jar:?]
+	at com.destroystokyo.paper.PaperVersionFetcher.getUpdateStatusStartupMessage(PaperVersionFetcher.java:74) ~[paper-26.2.jar:?]
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1825) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+[m> 
+  
+[31;1m[20:52:07 ERROR]: [PaperVersionFetcher] Error while parsing version
+java.net.UnknownHostException: fill.papermc.io
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:569) ~[?:?]
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:284) ~[?:?]
+	at java.base/java.net.Socket.connect(Socket.java:659) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.connect(SSLSocketImpl.java:304) ~[?:?]
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:161) ~[?:?]
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:516) ~[?:?]
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:604) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.<init>(HttpsClient.java:207) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.New(HttpsClient.java:289) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.getNewHttpClient(AbstractDelegateHttpsURLConnection.java:196) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:963) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:899) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:872) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:181) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1377) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1302) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:223) ~[?:?]
+	at com.destroystokyo.paper.PaperVersionFetcher.fetchDistanceFromSiteApi(PaperVersionFetcher.java:209) ~[paper-26.2.jar:?]
+	at com.destroystokyo.paper.PaperVersionFetcher.getUpdateStatusStartupMessage(PaperVersionFetcher.java:76) ~[paper-26.2.jar:?]
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1825) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+[m> 
+  
+[31;1m[20:52:07 ERROR]: *** Error obtaining version information! Cannot fetch version info ***
+[m> 
+  
+[20:52:08 INFO]: [MobVeilProbe] PASS fresh candidate loads on real Paper
+> 
+  
+[20:52:09 INFO]: [MobVeilProbe] PASS no economy safely prevents purchase
+> 
+  
+[20:52:09 INFO]: [MobVeilProbe] PASS owned potion works without economy
+> 
+  
+[20:52:09 INFO]: [MobVeilProbe] FRESH_MOBVEIL_PASS 3
+> 
+  
+[20:52:09 INFO]: Stopping server
+> 
+  
+[20:52:09 INFO]: [MobVeilProbe] Disabling MobVeilProbe v0.0.0-fresh-fixture
+> 
+  
+[20:52:09 INFO]: [ExcelMobVeil] Disabling ExcelMobVeil v0.1.0
+> 
+  
+[20:52:09 INFO]: [Vault] Disabling Vault v0.0.0-fixture
+> 
+  
+[20:52:09 INFO]: Saving players
+> 
+  
+[20:52:09 INFO]: Saving worlds
+> 
+  
+[20:52:09 INFO]: Saving chunks for level 'ServerLevel[leaderboard-isolated-world]'/minecraft:overworld
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:overworld'
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:overworld'
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:overworld'
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:overworld' in 0.00s
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:overworld'
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:overworld'
+> 
+  
+[20:52:09 INFO]: Saving chunks for level 'ServerLevel[leaderboard-isolated-world]'/minecraft:the_nether
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_nether'
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_nether'
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_nether'
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_nether' in 0.00s
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_nether'
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_nether'
+> 
+  
+[20:52:09 INFO]: Saving chunks for level 'ServerLevel[leaderboard-isolated-world]'/minecraft:the_end
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_end'
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_end'
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_end'
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_end' in 0.00s
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_end'
+> 
+  
+[20:52:09 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_end'
+> 
+  
+[20:52:09 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+> 
+  
+[20:52:09 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+> 
+  
+[20:52:09 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+> 
+  
+[20:52:09 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+> 
+  
+[20:52:09 INFO]: Waiting for all RegionFile I/O tasks to complete...
+> 
+  
+[20:52:09 INFO]: All RegionFile I/O tasks to complete
+> 
+  
+[20:52:09 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+> 
+  
+[20:52:09 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+> 

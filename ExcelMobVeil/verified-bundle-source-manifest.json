@@ -1,0 +1,137 @@
+[
+  {
+    "path": ".gitignore",
+    "sha256": "02950a7a5e559fee5bbab65e7bbe6f9b219400077a2195f20dae914333b8ecf5",
+    "bytes": 20
+  },
+  {
+    "path": "PLAYER-GUIDE.md",
+    "sha256": "1c2d19918e4fa945d8d020354207c8e549344c9eff651b9e004ea84a520cab34",
+    "bytes": 1095
+  },
+  {
+    "path": "PURCHASE-JOURNAL.md",
+    "sha256": "9f5e1a828c4a68a7b53bc6afd83b3294f37511eba3ce45cd0b261b0d4217b95f",
+    "bytes": 692
+  },
+  {
+    "path": "README.md",
+    "sha256": "45f6db13909f3af30bb9b8855ab7de7ee5353a77ef60270eabf2affe83f3751f",
+    "bytes": 6042
+  },
+  {
+    "path": "RELEASE-CHECKLIST.md",
+    "sha256": "f00463393d0582177bba232491902ee201c7b7e507ab5cc99af6cc49b6ca8d54",
+    "bytes": 1807
+  },
+  {
+    "path": "VERIFICATION.md",
+    "sha256": "2c543a0e353373494046b6b17e82033f771393941cd4cef663de1b47fb8563f3",
+    "bytes": 6522
+  },
+  {
+    "path": "build.sh",
+    "sha256": "e6a83c9b12674fe8ef137df8327d26e7f081e0dc08924565ee09ce9b1070d32d",
+    "bytes": 635
+  },
+  {
+    "path": "config.yml",
+    "sha256": "fe5ceea01561f3e9e929dfdbd956346abf76e43cd358b4c91d87379b7e2ec331",
+    "bytes": 333
+  },
+  {
+    "path": "independent-review.md",
+    "sha256": "5a76506775b3cb04b69f6b98f3da46ecb8457591d10ddd55b3de1958efeba34c",
+    "bytes": 7673
+  },
+  {
+    "path": "integration/README.md",
+    "sha256": "f9ee7937e6fdc5b7be6a96ab40b1c557f73c599795ca291bf878d5355fdd7783",
+    "bytes": 857
+  },
+  {
+    "path": "integration/deluxemenus-item.template.yml",
+    "sha256": "e4e477e9e53a800cbcf2270fdd4b77e893ffd3093b19f77d8286eeb7a5c83c18",
+    "bytes": 625
+  },
+  {
+    "path": "package_release.py",
+    "sha256": "c7706234c5c1df2089e41af71fc5b75cc4e02fcc5e812c92049724d742cd8f29",
+    "bytes": 4377
+  },
+  {
+    "path": "plugin.yml",
+    "sha256": "01787d0e997598b4306b16a79a6c8cd6b1d1e278365aaf1ecf24147cf3651fec",
+    "bytes": 575
+  },
+  {
+    "path": "pom.xml",
+    "sha256": "1bb300067121da50d131c19f9d79bca732d811f106266a2d0e31dee7e2984e73",
+    "bytes": 3807
+  },
+  {
+    "path": "release_checkpoint.py",
+    "sha256": "6cb9eeb7fd12113cdaf8fdd6007a108c353d94977358e79e8f4fc5655b02232c",
+    "bytes": 2446
+  },
+  {
+    "path": "reviewed-source-manifest.json",
+    "sha256": "c71c7aeebaf55acfe23ac9394c0a2b5d6f77f6b75b8ad2e44f2fc586db82468e",
+    "bytes": 1846
+  },
+  {
+    "path": "src/com/winkreyes/excelmobveil/ExcelMobVeil.java",
+    "sha256": "0274e119a580d3345ddce43ab1aedcd382cdbfe118d42f00689e419182f31c7c",
+    "bytes": 33672
+  },
+  {
+    "path": "src/com/winkreyes/excelmobveil/PurchaseCoordinator.java",
+    "sha256": "19e82bd1ddd624ee52baf5eb9c33fdeec604cd1ba779723865dc49d266ba5204",
+    "bytes": 14570
+  },
+  {
+    "path": "src/com/winkreyes/excelmobveil/PurchaseJournal.java",
+    "sha256": "d3071a5bbd21e11ad334c358a5fdec749d7046f1d2dca52347ba8fb82cf734ac",
+    "bytes": 6775
+  },
+  {
+    "path": "src/com/winkreyes/excelmobveil/PurchaseReviewMenu.java",
+    "sha256": "c024dc3a4fc207f3f812d73be61b863e05fe13be109bae4675f998168a41e01f",
+    "bytes": 12748
+  },
+  {
+    "path": "src/com/winkreyes/excelmobveil/VeilTiming.java",
+    "sha256": "8f0c698d9a34a085c911823e84acb3c6814e7fe4e9f8b6e11c54cd20687a334d",
+    "bytes": 861
+  },
+  {
+    "path": "test/com/winkreyes/excelmobveil/PurchaseCoordinatorTest.java",
+    "sha256": "6e7ca618b7a91ac9dcb08e485c111c2b8b22fdfc8b5109b20b3b0577b7503a03",
+    "bytes": 27322
+  },
+  {
+    "path": "test/com/winkreyes/excelmobveil/PurchaseJournalTest.java",
+    "sha256": "216ce871b950842c9800609f088f44711658577969f9d5b933f3af2756e368ef",
+    "bytes": 6046
+  },
+  {
+    "path": "test/com/winkreyes/excelmobveil/PurchaseReviewMenuTest.java",
+    "sha256": "d9a87ed8ce6bdf7d3b9c223315f39eecedad320e385d2b08e615fef49e73df1a",
+    "bytes": 16207
+  },
+  {
+    "path": "test/com/winkreyes/excelmobveil/ResourceConfigurationTest.java",
+    "sha256": "3359f621b08b5b5fdfdd6a28b1b49d2f941c9e1f91222df178391c6403d0f6ff",
+    "bytes": 1940
+  },
+  {
+    "path": "test/com/winkreyes/excelmobveil/VeilGameplayTest.java",
+    "sha256": "4e54bd57656499b1ef34d45418bf4973240cca1f8f2129eca3f901b1d36aed6c",
+    "bytes": 36280
+  },
+  {
+    "path": "test/com/winkreyes/excelmobveil/VeilTimingTest.java",
+    "sha256": "9586256169bd3c99f206d259641783f0e780ac8c005716e655038ddf68727e0e",
+    "bytes": 4261
+  }
+]

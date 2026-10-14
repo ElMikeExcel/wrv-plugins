@@ -1,0 +1,15 @@
+fresh candidate loads on real Paper
+pending duplicate retains offhand potion after one native drink
+known pre-consume save failure retains bottle
+first drink grants only one eight-minute interval
+successful offhand drink returns offhand glass bottle
+pre-save failure grants no veil
+post-consume save failure restores proven main-hand potion without timer
+offhand second drink adds exactly480000 to original deadline
+late-canceled extension preserves old deadline and potion
+post-save failed extension restores exact old timer and offhand bottle
+duplicate during extension retains extra potion
+three successful native drinks give three intervals without duplicate extension or two-potion cap
+attack removes all accumulated time and invisibility
+overflow extension fails before consumption without altering existing deadline
+drinking and extensions never invoke economy
