@@ -1,0 +1,18 @@
+# Public registration-only fixture. Do not deploy as a full config.
+gui_menus:
+  basics_menu:
+    file: basics_menu.yml
+  server_menu:
+    file: server_menu.yml
+  spawnshop:
+    file: spawnshop.yml
+  spawnshop_food:
+    file: spawnshop_food.yml
+  spawnshop_building:
+    file: spawnshop_building.yml
+  spawnshop_travel_animals:
+    file: spawnshop_travel_animals.yml
+  spawnshop_enchanting:
+    file: spawnshop_enchanting.yml
+  spawnshop_potions_protection:
+    file: spawnshop_potions_protection.yml

@@ -1,0 +1,62 @@
+{
+  "status": "OFF-SERVER CANDIDATE; NOT INSTALLED",
+  "source_menu_sha256": "44b714b9a46d0f18fadaa787b3b0019746cecb7b492fa39e851f59dc3918f52a",
+  "source_registration_sha256": "1b61bccc880422d06f20a0901d59aa57c2014479d586181a49fa10da6493e43a",
+  "categories": {
+    "food": {
+      "title": "Food",
+      "product_ids": [
+        "bread",
+        "steak",
+        "gcarrot",
+        "gapple"
+      ]
+    },
+    "building": {
+      "title": "Building",
+      "product_ids": [
+        "torch",
+        "logs",
+        "glass",
+        "iron",
+        "water"
+      ]
+    },
+    "travel_animals": {
+      "title": "Travel & Animals",
+      "product_ids": [
+        "saddle",
+        "nametag",
+        "lead",
+        "pearl",
+        "rocket"
+      ]
+    },
+    "enchanting": {
+      "title": "Enchanting",
+      "product_ids": [
+        "xp",
+        "mending",
+        "unbreaking",
+        "efficiency"
+      ]
+    },
+    "potions_protection": {
+      "title": "Potions & Protection",
+      "product_ids": [
+        "veil_potion",
+        "deathprotection_basic",
+        "deathpotion"
+      ]
+    }
+  },
+  "files": {
+    "config.yml": "ddf14588af788ed9cd66fad3517f9e1b7018960b02874a555a76ea1b8a30630d",
+    "gui_menus/spawnshop.yml": "b70ab2f552b34b9c1abeb2a553797bd3d6513f44c25b1d188769c8b7630ec7f2",
+    "gui_menus/spawnshop_building.yml": "53db933185ff43a3b6cccaeb0acb307f1c53193dfc4c6f648ee04262ad9385ac",
+    "gui_menus/spawnshop_enchanting.yml": "6e7d7b90cc633df506c24128fd2400e555851cb011c378269da247d009fd2f69",
+    "gui_menus/spawnshop_food.yml": "47b22f75759850912a1553184af448e768919a8b7d6e2b091d6316a3f75aa6f4",
+    "gui_menus/spawnshop_potions_protection.yml": "5c136217ac213586c0742048176cee25538f75e9f5d5430d28f42dad76ff83ba",
+    "gui_menus/spawnshop_travel_animals.yml": "1c0cd5f1080747fa271f71cb0cf914ace78d849cd20b27864f4f8a4f433908a7"
+  }
+}

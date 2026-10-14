@@ -142,7 +142,16 @@ public final class ShopUi implements Listener {
             button(page,49,Material.BARRIER,"Close",()->cancel(p));open(p,page);
         }catch(RegistryException e){fail(p,e.getMessage());}
     }
-    private void backToCatalog(Player p,ShopAdapter.Selection s){if(s.shop()==null)showSpawn(p);else showShop(p,s.shop());}
+    private void backToCatalog(Player p,ShopAdapter.Selection s){
+        if(s.shop()!=null){showShop(p,s.shop());return;}
+        // Retire this page and any quote before handing navigation to DeluxeMenus.
+        cancel(p);
+        if(plugin.getServer().getPluginManager().isPluginEnabled("DeluxeMenus")){
+            try{if(p.performCommand("shop"))return;}
+            catch(RuntimeException e){plugin.getLogger().warning("Spawn Shop /shop navigation failed; using the built-in catalog.");}
+        }
+        showSpawn(p); // Keep standalone use available if the launcher is absent or fails.
+    }
     public void quantity(Player p,ShopAdapter.Selection s,int count){
         int max=(int)Math.min(Math.min(s.available(),2304/s.bundleSize()),10000000000L/s.price());count=Math.max(1,Math.min(count,max));if(max<1){fail(p,"This item is out of stock.");return;}
         final int n=count;Page page=page(p,ViewKind.QUANTITY,"How many?",45);page.numberValue=n;

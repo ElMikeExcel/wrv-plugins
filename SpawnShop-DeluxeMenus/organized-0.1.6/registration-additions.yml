@@ -1,0 +1,12 @@
+# Merge under the existing gui_menus key; do not replace the whole live config with this fragment.
+gui_menus:
+  spawnshop_food:
+    file: spawnshop_food.yml
+  spawnshop_building:
+    file: spawnshop_building.yml
+  spawnshop_travel_animals:
+    file: spawnshop_travel_animals.yml
+  spawnshop_enchanting:
+    file: spawnshop_enchanting.yml
+  spawnshop_potions_protection:
+    file: spawnshop_potions_protection.yml

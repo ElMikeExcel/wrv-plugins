@@ -1,0 +1,24 @@
+test_all_21_products_exist_exactly_once (test_candidate.ShopOrganizationTests.test_all_21_products_exist_exactly_once) ... ok
+test_all_category_buttons_have_exact_target (test_candidate.ShopOrganizationTests.test_all_category_buttons_have_exact_target) ... ok
+test_back_routes_are_reachable (test_candidate.ShopOrganizationTests.test_back_routes_are_reachable) ... ok
+test_balance_visible_and_updated_on_every_page (test_candidate.ShopOrganizationTests.test_balance_visible_and_updated_on_every_page) ... ok
+test_categories_match_intended_order (test_candidate.ShopOrganizationTests.test_categories_match_intended_order) ... ok
+test_child_pages_add_no_public_command_or_permission_requirements (test_candidate.ShopOrganizationTests.test_child_pages_add_no_public_command_or_permission_requirements) ... ok
+test_click_handlers_are_single_actions_no_double_dispatch (test_candidate.ShopOrganizationTests.test_click_handlers_are_single_actions_no_double_dispatch) ... ok
+test_every_product_field_except_slot_is_unchanged (test_candidate.ShopOrganizationTests.test_every_product_field_except_slot_is_unchanged) ... ok
+test_exact_six_menu_files_and_only_seven_install_files (test_candidate.ShopOrganizationTests.test_exact_six_menu_files_and_only_seven_install_files) ... ok
+test_five_and_nine_column_order_has_no_leading_or_internal_gaps (test_candidate.ShopOrganizationTests.test_five_and_nine_column_order_has_no_leading_or_internal_gaps) ... ok
+test_generator_is_deterministic (test_candidate.ShopOrganizationTests.test_generator_is_deterministic) ... ok
+test_live_registration_only_appends_five_unique_entries (test_candidate.ShopOrganizationTests.test_live_registration_only_appends_five_unique_entries) ... ok
+test_minimum_size_contiguous_slots_no_overlaps (test_candidate.ShopOrganizationTests.test_minimum_size_contiguous_slots_no_overlaps) ... ok
+test_no_new_purchase_give_or_charge_commands (test_candidate.ShopOrganizationTests.test_no_new_purchase_give_or_charge_commands) ... ok
+test_product_text_blocks_only_change_slot (test_candidate.ShopOrganizationTests.test_product_text_blocks_only_change_slot) ... ok
+test_root_route_and_existing_global_settings_preserved (test_candidate.ShopOrganizationTests.test_root_route_and_existing_global_settings_preserved) ... ok
+test_source_is_exact_verified_live_checkpoint (test_candidate.ShopOrganizationTests.test_source_is_exact_verified_live_checkpoint) ... ok
+test_special_purchase_review_commands_remain_exact (test_candidate.ShopOrganizationTests.test_special_purchase_review_commands_remain_exact) ... ok
+test_yaml_rejects_duplicates (test_candidate.ShopOrganizationTests.test_yaml_rejects_duplicates) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.085s
+
+OK

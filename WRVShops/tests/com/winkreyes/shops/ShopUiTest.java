@@ -349,6 +349,89 @@ class ShopUiTest {
         quantity(10); queue(44, 31); flush(); assertNull(ui.currentKind(playerId)); noMoneyMoved();
     }
 
+    @ParameterizedTest @EnumSource(value = ClickType.class, names = {"LEFT", "RIGHT"})
+    void spawnBackOpensRegisteredShopOnceAfterRetiringOldPage(ClickType type) throws Exception {
+        when(plugins.isPluginEnabled("DeluxeMenus")).thenReturn(true);
+        Inventory categories = inventory(null, 9);
+        when(player.performCommand("shop")).thenAnswer(call -> {
+            assertNull(ui.currentKind(playerId));
+            verify(checkout).invalidateBuyer(playerId);
+            player.openInventory(categories); return true;
+        });
+        quantity(19); Inventory old = opened.get();
+        click(old, 36, type); click(old, 36, type); click(old, 31, type); flush();
+        click(old, 31, type); closeEvent(old); flush();
+        assertSame(categories, opened.get()); assertNull(ui.currentKind(playerId));
+        verify(player, times(1)).performCommand("shop");
+        verify(checkout, never()).quote(any(), any(), anyString(), anyLong(), anyInt(), anyLong(), anyString());
+        noMoneyMoved();
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"unavailable", "unhandled", "throws"})
+    void spawnBackFallsBackSafelyWhenLauncherIsUnavailable(String failure) throws Exception {
+        when(plugins.isPluginEnabled("DeluxeMenus")).thenReturn(!failure.equals("unavailable"));
+        if(failure.equals("throws")) when(player.performCommand("shop")).thenThrow(new IllegalStateException("Fixture failure"));
+        quantity(19); queue(36, 31); flush();
+        assertEquals(ShopUi.ViewKind.CATALOG, ui.currentKind(playerId));
+        assertEquals(54, opened.get().getSize());
+        verify(player, times(failure.equals("unavailable") ? 0 : 1)).performCommand("shop");
+        noMoneyMoved();
+    }
+
+    @Test void chestShopBackNeverUsesSpawnLauncher() throws Exception {
+        when(plugins.isPluginEnabled("DeluxeMenus")).thenReturn(true);
+        ShopRecord shop = mock(ShopRecord.class);
+        when(shop.ownerId()).thenReturn(sellerId); when(shop.ownerName()).thenReturn("Seller");
+        when(shop.offers()).thenReturn(List.of());
+        selection = new ShopAdapter.Selection(selection.offerId(), selection.revision(), selection.seller(),
+                selection.name(), selection.item(), selection.bundleSize(), selection.price(), selection.available(), selection.fingerprint(), shop);
+        quantity(19); tap(36);
+        assertEquals(ShopUi.ViewKind.CATALOG, ui.currentKind(playerId));
+        verify(registry).validate(shop); verify(player, never()).performCommand(anyString()); noMoneyMoved();
+    }
+
+    @Test void typedQuantityCancelPreservesAmountBeforeBackUsesLauncher() throws Exception {
+        when(plugins.isPluginEnabled("DeluxeMenus")).thenReturn(true);
+        when(player.performCommand("shop")).thenReturn(true);
+        DialogCall dialog = typedQuantity(19); dialog.cancel().run(); flush();
+        assertEquals(ShopUi.ViewKind.QUANTITY, ui.currentKind(playerId)); assertQuantity(19);
+        verify(player, never()).performCommand(anyString());
+        tap(36); dialog.submit().accept("500"); timeouts.getLast().run(); flush();
+        verify(player, times(1)).performCommand("shop"); assertNull(ui.currentKind(playerId)); noMoneyMoved();
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"quantity", "review", "confirmation"})
+    void nativeCancelStaysClosedAndNeverRoutesToLauncher(String stage) throws Exception {
+        when(plugins.isPluginEnabled("DeluxeMenus")).thenReturn(true);
+        nativeForms(); quantity(19);
+        if(!stage.equals("quantity")){FormFixtures.last().number("19"); flush();}
+        if(stage.equals("confirmation")){FormFixtures.last().choice(0); flush();}
+        FormFixtures.State current = FormFixtures.last(); current.close(); flush();
+        if(stage.equals("quantity")) current.number("500"); else current.choice(0);
+        flush(); assertNull(ui.currentKind(playerId));
+        verify(player, never()).performCommand(anyString()); noMoneyMoved();
+    }
+
+    @Test void nativeConfirmationBackKeepsQuantityWithoutOpeningLauncher() throws Exception {
+        when(plugins.isPluginEnabled("DeluxeMenus")).thenReturn(true);
+        nativeForms(); quantity(19); FormFixtures.last().number("19"); flush();
+        FormFixtures.last().choice(0); flush(); FormFixtures.State confirm = FormFixtures.last();
+        confirm.choice(1); flush(); confirm.choice(0); flush();
+        assertEquals(ShopUi.ViewKind.QUANTITY, ui.currentKind(playerId));
+        assertEquals("19", FormFixtures.last().initial);
+        verify(player, never()).performCommand(anyString()); noMoneyMoved();
+    }
+
+    @Test void rejectedBedrockFormInventoryBackUsesLauncherWithoutJavaDialog() throws Exception {
+        when(plugins.isPluginEnabled("DeluxeMenus")).thenReturn(true);
+        when(player.performCommand("shop")).thenReturn(true);
+        nativeForms(); GeyserFixture.sendAccepted = false; dialogAvailable = true;
+        quantity(19); FormFixtures.State rejected = FormFixtures.last(); tap(36);
+        rejected.number("500"); rejected.close(); flush();
+        verify(player, times(1)).performCommand("shop");
+        assertTrue(dialogCalls.isEmpty()); assertNull(ui.currentKind(playerId)); noMoneyMoved();
+    }
+
     @ParameterizedTest @EnumSource(value = ClickType.class, names = {"LEFT", "RIGHT"}, mode = EnumSource.Mode.EXCLUDE)
     void nonTapClicksCannotAdjustOrConfirm(ClickType type) throws Exception {
         quantity(10); InventoryClickEvent event = click(opened.get(), 24, type); flush();

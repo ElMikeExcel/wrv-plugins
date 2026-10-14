@@ -111,7 +111,7 @@ class PackageTests(unittest.TestCase):
                 for name, entry in first["files"].items():
                     self.assertEqual(entry["sha256"], hashlib.sha256(z.read(name)).hexdigest())
                 self.assertIn(b"[player] excelshop browse bread", z.read("plugins/DeluxeMenus/gui_menus/spawnshop.yml"))
-                self.assertEqual({"plugins/ExcelShops-0.1.5.jar", "plugins/" + pack.GUARD_NAME + ".jar"},
+                self.assertEqual({"plugins/ExcelShops-0.1.6.jar", "plugins/" + pack.GUARD_NAME + ".jar"},
                                  {name for name in z.namelist() if name.endswith(".jar")})
                 self.assertEqual(self.guard_sources.read_bytes(), z.read("THIRD-PARTY/ChestShop/" + pack.GUARD_NAME + "-sources.zip"))
                 self.assertIn("THIRD-PARTY/ChestShop/COPYING.LESSER", z.namelist())

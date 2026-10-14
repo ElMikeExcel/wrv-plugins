@@ -1,5 +1,7 @@
 # Spawn Shop entry menu
 
+The five-category 21-product layout and its exact preservation checks are in [organized-0.1.6](organized-0.1.6/README.md). Use that verified layout for the current shop. The historical generator below builds the older 18-product flat catalog and must not overwrite the organized shop or its three separately reviewed protection/potion products.
+
 **Installed on Wink Reyes Valley on October 12, 2026.** The matching menu/catalog was installed with ExcelShops; it continues to work with standalone ExcelShops after ChestShop was removed. See the [live deployment record](../WRVShops/DEPLOYMENT-2026-10-12.md). A later player report passed menu access/prices/cancellation and a torch purchase. This is limited user-reported Java acceptance on a gaming PC; wider UI/transaction checks remain pending. The generated DeluxeMenus file is now display-only. Every item opens ExcelShops' server-side quantity, review and final-confirmation flow. Neither click side withdraws money or issues a give command.
 
 Read [ExcelShops usage and deployment instructions](../WRVShops/README.md) for the complete Java/Bedrock buyer flow, guided chest-shop setup, preserved bundle prices, administrator migration and safety limits.

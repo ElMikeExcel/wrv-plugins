@@ -1,0 +1,313 @@
+# AUTO-GENERATED. Install matching ExcelShops spawn-catalog.yml with this menu.
+menu_title: '&eBalance $%vault_eco_balance_2dp% &8| &2Spawn Shop'
+open_command: shop
+register_command: true
+size: 45
+update_interval: 1
+items:
+  balance:
+    material: GOLD_NUGGET
+    slot: 4
+    update: true
+    display_name: '&e&lCurrent balance: &f$%vault_eco_balance_2dp%'
+    lore:
+      - '&7Tap an item, choose quantity, then confirm.'
+  back:
+    material: ARROW
+    slot: 40
+    display_name: '&c&lBack to Menu'
+    left_click_commands:
+      - '[player] menu'
+    right_click_commands:
+      - '[player] menu'
+  bread:
+    material: BREAD
+    slot: 10
+    amount: 16
+    display_name: '&a&l16 Bread'
+    lore:
+      - '&7Fill up on a trip'
+      - '&eBundle price: &f$40'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse bread'
+    right_click_commands:
+      - '[player] excelshop browse bread'
+  steak:
+    material: COOKED_BEEF
+    slot: 11
+    amount: 16
+    display_name: '&a&l16 Steak'
+    lore:
+      - '&7Great food'
+      - '&eBundle price: &f$80'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse steak'
+    right_click_commands:
+      - '[player] excelshop browse steak'
+  gcarrot:
+    material: GOLDEN_CARROT
+    slot: 12
+    amount: 16
+    display_name: '&a&l16 Golden Carrots'
+    lore:
+      - '&7Best normal food'
+      - '&eBundle price: &f$250'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse gcarrot'
+    right_click_commands:
+      - '[player] excelshop browse gcarrot'
+  gapple:
+    material: GOLDEN_APPLE
+    slot: 13
+    amount: 1
+    display_name: '&a&lGolden Apple'
+    lore:
+      - '&7Heals you fast'
+      - '&eBundle price: &f$300'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse gapple'
+    right_click_commands:
+      - '[player] excelshop browse gapple'
+  torch:
+    material: TORCH
+    slot: 14
+    amount: 64
+    display_name: '&a&l64 Torches'
+    lore:
+      - '&7Light up your base'
+      - '&eBundle price: &f$40'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse torch'
+    right_click_commands:
+      - '[player] excelshop browse torch'
+  logs:
+    material: OAK_LOG
+    slot: 15
+    amount: 64
+    display_name: '&a&l64 Oak Logs'
+    lore:
+      - '&7Wood for building'
+      - '&eBundle price: &f$150'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse logs'
+    right_click_commands:
+      - '[player] excelshop browse logs'
+  glass:
+    material: GLASS
+    slot: 16
+    amount: 64
+    display_name: '&a&l64 Glass'
+    lore:
+      - '&7See-through windows'
+      - '&eBundle price: &f$180'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse glass'
+    right_click_commands:
+      - '[player] excelshop browse glass'
+  iron:
+    material: IRON_INGOT
+    slot: 19
+    amount: 16
+    display_name: '&a&l16 Iron Ingots'
+    lore:
+      - '&7Tools and armor'
+      - '&eBundle price: &f$300'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse iron'
+    right_click_commands:
+      - '[player] excelshop browse iron'
+  water:
+    material: WATER_BUCKET
+    slot: 20
+    amount: 1
+    display_name: '&a&lWater Bucket'
+    lore:
+      - '&7Start a farm'
+      - '&eBundle price: &f$100'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse water'
+    right_click_commands:
+      - '[player] excelshop browse water'
+  saddle:
+    material: SADDLE
+    slot: 21
+    amount: 1
+    display_name: '&a&lSaddle'
+    lore:
+      - '&7Ride horses and pigs'
+      - '&eBundle price: &f$400'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse saddle'
+    right_click_commands:
+      - '[player] excelshop browse saddle'
+  nametag:
+    material: NAME_TAG
+    slot: 22
+    amount: 1
+    display_name: '&a&lName Tag'
+    lore:
+      - '&7Name your pet'
+      - '&eBundle price: &f$350'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse nametag'
+    right_click_commands:
+      - '[player] excelshop browse nametag'
+  lead:
+    material: LEAD
+    slot: 23
+    amount: 2
+    display_name: '&a&l2 Leads'
+    lore:
+      - '&7Walk your animals'
+      - '&eBundle price: &f$150'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse lead'
+    right_click_commands:
+      - '[player] excelshop browse lead'
+  pearl:
+    material: ENDER_PEARL
+    slot: 24
+    amount: 4
+    display_name: '&a&l4 Ender Pearls'
+    lore:
+      - '&7Throw to teleport'
+      - '&eBundle price: &f$400'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse pearl'
+    right_click_commands:
+      - '[player] excelshop browse pearl'
+  rocket:
+    material: FIREWORK_ROCKET
+    slot: 25
+    amount: 16
+    display_name: '&a&l16 Fireworks'
+    lore:
+      - '&7Party time'
+      - '&eBundle price: &f$200'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse rocket'
+    right_click_commands:
+      - '[player] excelshop browse rocket'
+  xp:
+    material: EXPERIENCE_BOTTLE
+    slot: 29
+    amount: 16
+    display_name: '&a&l16 Bottles o'' Enchanting'
+    lore:
+      - '&7Free XP'
+      - '&eBundle price: &f$500'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse xp'
+    right_click_commands:
+      - '[player] excelshop browse xp'
+  mending:
+    material: ENCHANTED_BOOK
+    slot: 30
+    amount: 1
+    display_name: '&a&lMending Book'
+    lore:
+      - '&7Fixes gear with XP'
+      - '&eBundle price: &f$600'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse mending'
+    right_click_commands:
+      - '[player] excelshop browse mending'
+  unbreaking:
+    material: ENCHANTED_BOOK
+    slot: 32
+    amount: 1
+    display_name: '&a&lUnbreaking III Book'
+    lore:
+      - '&7Gear lasts longer'
+      - '&eBundle price: &f$450'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse unbreaking'
+    right_click_commands:
+      - '[player] excelshop browse unbreaking'
+  efficiency:
+    material: ENCHANTED_BOOK
+    slot: 33
+    amount: 1
+    display_name: '&a&lEfficiency IV Book'
+    lore:
+      - '&7Dig faster'
+      - '&eBundle price: &f$450'
+      - '&8Tap to choose quantity. No charge yet.'
+    left_click_commands:
+      - '[player] excelshop browse efficiency'
+    right_click_commands:
+      - '[player] excelshop browse efficiency'
+  deathprotection_basic:
+    material: CHEST
+    slot: 31
+    amount: 1
+    display_name: '&a&lDeath Protection'
+    lore:
+      - '&7Buy to activate protection immediately.'
+      - '&7Your next death keeps items &fonce&7.'
+      - '&7You still die and respawn normally.'
+      - '&7No extra abilities. One active protection.'
+      - '&cDoes NOT save your XP levels.'
+      - '&ePrice: &f$15,000'
+      - '&7Your balance: &f$%vault_eco_balance_2dp%'
+      - '&8Tap to review 1. No charge yet.'
+    left_click_commands:
+      - '[console] deathprotection buy basic %player_name%'
+    right_click_commands:
+      - '[console] deathprotection buy basic %player_name%'
+  deathpotion:
+    material: POTION
+    slot: 34
+    amount: 1
+    display_name: '&5&l+Death Protection Potion'
+    lore:
+      - '&7Drink it and your next death'
+      - '&7keeps all your items &fonce&7.'
+      - '&7You still die and respawn normally.'
+      - '&cDoes NOT save your XP levels.'
+      - '&bConduit: underwater breathing and vision.'
+      - '&bFaster mining, including on land.'
+      - '&7One active protection at a time.'
+      - '&ePrice: &f$30,000'
+      - '&7Your balance: &f$%vault_eco_balance_2dp%'
+      - '&8Tap to review 1. No charge yet.'
+    left_click_commands:
+      - '[console] deathprotection buy premium %player_name%'
+    right_click_commands:
+      - '[console] deathprotection buy premium %player_name%'
+  veil_potion:
+    material: POTION
+    slot: 28
+    amount: 1
+    display_name: '&b&lVeil Potion'
+    lore:
+      - '&7Price: &a$2,000'
+      - '&7Each drink adds 8 real-time minutes.'
+      - '&bMore potions stack time.'
+      - '&7Farm while standard mobs ignore you.'
+      - '&7Works in armor; armor stays visible.'
+      - '&cAttacking ends all accumulated time.'
+      - '&7Milk/death end it. No damage immunity.'
+      - '&8Custom bosses/dragon may still attack.'
+      - '&eClick to review purchase.'
+    left_click_commands:
+      - '[console] mobveil buy %player_name%'
+    right_click_commands:
+      - '[console] mobveil buy %player_name%'

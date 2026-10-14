@@ -21,7 +21,7 @@ jobs:
         env:
           CANDIDATE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          JAR=WRVShops/target/ExcelShops-0.1.5.jar
+          JAR=WRVShops/target/ExcelShops-0.1.6.jar
           GUARD=ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1.jar
           SOURCES=ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1-sources.zip
           python3 WRVShops/tools/package_candidate.py \
@@ -29,7 +29,7 @@ jobs:
             --guarded-jar "$GUARD" --expected-guarded-sha256 "$(sha256sum "$GUARD" | cut -d' ' -f1)" \
             --guard-sources "$SOURCES" --expected-sources-sha256 "$(sha256sum "$SOURCES" | cut -d' ' -f1)" \
             --source-commit "$CANDIDATE_COMMIT" \
-            --output WRVShops/target/ExcelShops-0.1.5-install-candidate.zip
+            --output WRVShops/target/ExcelShops-0.1.6-install-candidate.zip
       - name: Upload candidate JARs and matching shop pack (not deployed)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -43,9 +43,9 @@ jobs:
             ShopVillager/target/ShopVillager-*.jar
             WealthBoard/target/WealthBoard-*.jar
             WeekendXP/target/WeekendXP-*.jar
-            WRVShops/target/ExcelShops-0.1.5.jar
+            WRVShops/target/ExcelShops-0.1.6.jar
             ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1.jar
             ChestShop-ConfirmationGuard/target/ChestShop-3.13-pre-1-build474-confirmation.1-sources.zip
             ChestShop-ConfirmationGuard/target/guarded-artifacts.json
-            WRVShops/target/ExcelShops-0.1.5-install-candidate.zip
+            WRVShops/target/ExcelShops-0.1.6-install-candidate.zip
           if-no-files-found: error

@@ -1,0 +1,8 @@
+# Public registration-only fixture. Do not deploy as a full config.
+gui_menus:
+  basics_menu:
+    file: basics_menu.yml
+  server_menu:
+    file: server_menu.yml
+  spawnshop:
+    file: spawnshop.yml
