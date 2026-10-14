@@ -1,3 +1,19 @@
+# ExcelShops 1.1: mobile details and quantity candidate
+
+**Prepared for a controlled rollout; not installed yet.** The last verified live release is version-only 1.0. This candidate starts from that exact source and preserves the earlier 0.1.6 history below. Its descriptor, Maven metadata, and packaging use the quoted two-part version `1.1`. This is separate from the behavior-identical version-only 1.0 release and requires its own installation/publication approval.
+
+For positively identified Bedrock players, the five native category lists lead to item-first labels, then an item-specific description and quantity hub. Ordinary items have Enter exact amount, Review this quantity, Back to the same category, and Cancel. Exact input repeats the selected item details and returns to the hub; invalid typed numbers get a fresh bound input prompt. Native close or an invalid form response cancels. Existing separate review and final Confirm remain the only purchase path. Fixed-quantity special products show full native details before their unchanged guarded review commands.
+
+Java and chest-shop flows retain their inventory behavior. All six installed-menu files are bundled byte-for-byte as read-only display resources; they are never written over DeluxeMenus or the live catalog. The public organized 0.1.6 history remains under [organized-0.1.6](../SpawnShop-DeluxeMenus/organized-0.1.6/README.md). Preserve the current live catalog, configuration, player data, and all 21 offers.
+
+Read [MOBILE-DETAILS-CANDIDATE.md](MOBILE-DETAILS-CANDIDATE.md) for navigation, verified integration boundaries and safe rollback. The final JAR passes 760 Java tests, 47 Python checks, an independent byte-identical rebuild, 1,299 assertions over four pinned-Paper boots, and 50 additional checks with official DeluxeMenus/Geyser/Floodgate/PlaceholderAPI binaries. The latter exercise public API/Cumulus builders and actual DeluxeMenus holder registration/cleanup with synthetic players. Geyser encryption initialization was limited by isolated JVM DNS failures to Minecraft discovery/auth services; actual Bedrock form delivery, touch behavior and live transactions remain unverified. No physical-client success is claimed.
+
+- Candidate 1.1 SHA-256: `f28c5c4ba5d231219735228d1d556b39de57cc8a965d5fb62eddb31dbceab9e4`.
+- Last verified installed 1.0 SHA-256: `6acede0322655ad03818d781ff6676fee3c2e79a3659ed4c54db46608f361106`.
+- Deployment scope is one JAR only. Do not replace current menus, catalog, configuration or player/economy data from the historical paired package; ChestShop remains removed.
+
+## Preserved 1.0 deployment and earlier history
+
 # ExcelShops 1.0: installed version-only milestone
 
 **Installed and version-confirmed October 14, 2026, at 06:03:51 UTC (1:03 a.m. Central).** This source PR remains draft and unmerged. The final quoted-version source passes 769 Java tests and 80 Python checks. Its exact artifact passes 1,281 assertions across four isolated Paper 26.2 build 123 boots; all owned processes exited cleanly. A separate clean-source rebuild produced the identical JAR. All 76 production classes are byte-identical to installed 0.1.6. These are automated/synthetic-player checks, not a new physical-client acceptance claim. This candidate changes only the version metadata, packaging references, and documentation from the exact verified installed ExcelShops 0.1.6 source (JAR SHA-256 `a5191eef70a4fdbd1326c14c36c9fd36afa25fe712762cc1850943a1a75c6d4e`). It adopts the user-selected two-part custom version `1.0`. All production Java source, catalog/configuration resources, and behavior remain unchanged. The mobile interaction redesign is separate and is not included. The existing six DeluxeMenus launchers must remain unchanged. Plugin and Maven metadata both identify this candidate as `1.0`; parent and other plugin/upstream versions are untouched.
@@ -175,3 +191,4 @@ python3 WRVShops/tools/package_candidate.py \
 ```
 
 The output must not exist; packaging never overwrites a prior candidate. Runtime evidence must bind both final JAR hashes. Before live use, complete the read-only preflight and human checklist with the installed Vault/Essentials/GriefPrevention/Geyser/Floodgate combination. The earlier preflight reported Essentials 2.22.0 warning about an unsupported server version; the guard does not remove that warning. For a deployment actually using legacy ChestShop trading, rollback must retain the guard or disable that trading. Standalone native/Spawn-only ExcelShops does not require ChestShop. Restoring instant purchases is not a safe silent rollback.
+

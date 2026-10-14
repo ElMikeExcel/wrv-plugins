@@ -28,6 +28,8 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
     private ShopRegistry registry;
     private LegacyDataMigration.Session migrationSession;
     private SpawnCatalog catalog;
+    private MobileCatalog mobileCatalog;
+    private MobileMenuBridge mobileBridge;
     private CheckoutService checkout;
     private ShopAdapter adapter;
     private ShopUi ui;
@@ -63,8 +65,10 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
             try(FileJournal legacyProbe=new FileJournal(getDataFolder().toPath().resolve("legacy-checkout"))){
                 if(legacyProbe.requiresRecovery())checkout.pauseExternal("Legacy checkout: "+legacyProbe.recoveryReason());
             }
+            try{mobileCatalog=MobileCatalog.load(this);}catch(RuntimeException failure){getLogger().warning("Mobile shop descriptions unavailable: "+failure.getMessage());}
             ui=new ShopUi(this);Objects.requireNonNull(getCommand("excelshop")).setExecutor(this);
             getServer().getPluginManager().registerEvents(ui,this);
+            mobileBridge=new MobileMenuBridge(this);getServer().getPluginManager().registerEvents(mobileBridge,this);
             if(getServer().getPluginManager().getPlugin("ChestShop")!=null){
                 try{legacyBridge=new LegacyShopBridge(this,provider.getProvider(),ttl);legacyUi=new LegacyShopUi(this,legacyBridge);legacyBridge.setUi(legacyUi);getServer().getPluginManager().registerEvents(legacyUi,this);}
                 catch(Exception|LinkageError failure){getLogger().severe("Legacy ChestShop trading paused: "+failure+". Install the matching guarded ChestShop; do not remove its stock protection.");}
@@ -74,7 +78,7 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
         }catch(Exception|LinkageError e){if(checkout!=null)checkout.pauseExternal("Startup validation failed: "+e);getLogger().severe("ExcelShops entered protection-only mode; purchases/setup unavailable: "+e.getMessage());}
     }
     @Override public void onDisable(){
-        if(ui!=null)ui.closeAll();if(legacyUi!=null)legacyUi.closeAll();placedSigns.clear();
+        if(mobileBridge!=null)mobileBridge.closeAll();if(ui!=null)ui.closeAll();if(legacyUi!=null)legacyUi.closeAll();placedSigns.clear();
         if(checkout==null){closeLegacy(false);closeMigration();return;}
         try{
             // Money and world persistence are separate. Only a fully saved clean shutdown may
@@ -97,6 +101,7 @@ public final class WRVShops extends JavaPlugin implements Listener,CommandExecut
     public CheckoutService getCheckout(){return checkout;}
     public ShopAdapter getAdapter(){return adapter;}
     public SpawnCatalog getCatalog(){return catalog;}
+    public MobileCatalog getMobileCatalog(){return mobileCatalog;}
     public ShopUi getUi(){return ui;}
     public BalanceDisplay getBalanceDisplay(){return balanceDisplay;}
     public LegacyShopUi getLegacyUi(){return legacyUi;}

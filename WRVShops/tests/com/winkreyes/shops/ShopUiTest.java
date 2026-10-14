@@ -892,4 +892,138 @@ class ShopUiTest {
         noMoneyMoved();
     }
 
+    private void mobileCatalogFixture(){
+        nativeForms();when(player.hasPermission("wrvshops.use")).thenReturn(true);
+        MobileCatalog mobile=new MobileCatalog(name->YamlConfiguration.loadConfiguration(new java.io.File("mobile-menus/"+name+".yml")));
+        when(plugin.getMobileCatalog()).thenReturn(mobile);ShopAdapter adapter=mock(ShopAdapter.class);when(plugin.getAdapter()).thenReturn(adapter);
+        for(MobileCatalog.Category category:mobile.categories())for(MobileCatalog.Product product:category.products()){
+            if(product.route()!=MobileCatalog.Route.ORDINARY)continue;
+            ShopAdapter.Selection value=new ShopAdapter.Selection("spawn:"+product.id(),1,null,product.name(),item(stockMaterial,1,meta(product.name(),List.of())),
+                product.bundleSize(),product.price(),2304/product.bundleSize(),"fixture-"+product.id(),null);
+            when(adapter.spawn(product.id())).thenReturn(value);
+        }
+    }
+    private void mobileBreadHub(){mobileCatalogFixture();ui.showMobileMenu(player,"spawnshop_food");FormFixtures.last().choice(0);flush();assertEquals(ShopUi.ViewKind.MOBILE_HUB,ui.currentKind(playerId));}
+    @Test void mobileCategoryShowsNamesAndPricesThenOnlySelectedItemDetails() throws Exception {
+        mobileCatalogFixture();ui.showMobileMenu(player,"spawnshop");assertEquals(7,FormFixtures.last().buttons.size());
+        FormFixtures.last().choice(0);flush();assertTrue(FormFixtures.last().buttons.get(1).startsWith("Steak — view details"));assertTrue(FormFixtures.last().buttons.get(1).contains("16 per bundle • $80.00"));
+        FormFixtures.last().choice(1);flush();assertTrue(FormFixtures.last().text.contains("Great food"));
+        assertFalse(FormFixtures.last().text.contains("Fill up on a trip"));assertEquals("Enter exact amount",FormFixtures.last().buttons.getFirst());noMoneyMoved();
+    }
+    @Test void mobileExactInputReturnsToSameHubWithUpdatedCountAndTotal() throws Exception {
+        mobileBreadHub();FormFixtures.last().choice(0);flush();
+        assertEquals(ShopUi.ViewKind.MOBILE_ENTRY,ui.currentKind(playerId));assertTrue(FormFixtures.last().text.contains("Fill up on a trip"));
+        FormFixtures.last().number("19");flush();assertEquals(ShopUi.ViewKind.MOBILE_HUB,ui.currentKind(playerId));
+        assertTrue(FormFixtures.last().text.contains("19 bundles = 304 items"));assertTrue(FormFixtures.last().text.contains("$760.00"));noMoneyMoved();
+    }
+    @Test void mobileHubBackReturnsOriginCategoryAndNewProductResetsCount() throws Exception {
+        mobileBreadHub();FormFixtures.last().choice(0);flush();FormFixtures.last().number("19");flush();
+        FormFixtures.last().choice(2);flush();assertEquals(ShopUi.ViewKind.MOBILE_CATEGORY,ui.currentKind(playerId));assertEquals("Food",FormFixtures.last().title);
+        FormFixtures.last().choice(1);flush();assertTrue(FormFixtures.last().text.startsWith("16 Steak"));assertTrue(FormFixtures.last().text.contains("Selected quantity: 1 bundles"));noMoneyMoved();
+    }
+    @Test void mobileReviewAndFinalBackReturnToTheSameItemHubWithoutCharge() throws Exception {
+        mobileBreadHub();FormFixtures.last().choice(1);flush();assertEquals(ShopUi.ViewKind.BUY_REVIEW,ui.currentKind(playerId));
+        FormFixtures.last().choice(1);flush();assertEquals(ShopUi.ViewKind.MOBILE_HUB,ui.currentKind(playerId));
+        FormFixtures.last().choice(1);flush();FormFixtures.last().choice(0);flush();assertEquals(ShopUi.ViewKind.BUY_CONFIRM,ui.currentKind(playerId));
+        FormFixtures.last().choice(1);flush();assertEquals(ShopUi.ViewKind.MOBILE_HUB,ui.currentKind(playerId));assertTrue(FormFixtures.last().text.startsWith("16 Bread"));noMoneyMoved();
+    }
+    @Test void mobileRequiresExistingSeparateFinalConfirmAndDoesNotReplay() throws Exception {
+        mobileBreadHub();FormFixtures.last().choice(1);flush();FormFixtures.last().choice(0);flush();noMoneyMoved();
+        FormFixtures.State confirm=FormFixtures.last();confirm.choice(0);confirm.choice(0);flush();
+        verify(economy,times(1)).withdraw(eq(playerId),eq(4000L));verify(transfer,times(1)).apply();assertNull(ui.currentKind(playerId));
+    }
+    @ParameterizedTest @ValueSource(strings={"close","invalid","disconnect","new_inventory","expire","disable","world","teleport"})
+    void mobileEntryInterruptionCannotReopenOrPurchase(String interruption) throws Exception {
+        mobileBreadHub();FormFixtures.last().choice(0);flush();FormFixtures.State entry=FormFixtures.last();
+        var uiField=WRVShops.class.getDeclaredField("ui");uiField.setAccessible(true);uiField.set(plugin,ui);
+        switch(interruption){
+            case "close"->entry.close();case "invalid"->entry.invalid();
+            case "disconnect"->ui.disconnected(playerId);
+            case "new_inventory"->{InventoryOpenEvent event=mock(InventoryOpenEvent.class);when(event.getPlayer()).thenReturn(player);Inventory unrelated=inventory(null,9);when(event.getInventory()).thenReturn(unrelated);ui.opened(event);}
+            case "expire"->timeouts.getLast().run();
+            case "disable"->{when(plugin.isEnabled()).thenReturn(false);ui.closeAll();}
+            case "world"->{PlayerChangedWorldEvent event=mock(PlayerChangedWorldEvent.class);when(event.getPlayer()).thenReturn(player);doCallRealMethod().when(plugin).changedWorld(event);plugin.changedWorld(event);}
+            case "teleport"->{PlayerTeleportEvent event=mock(PlayerTeleportEvent.class);when(event.getPlayer()).thenReturn(player);doCallRealMethod().when(plugin).teleported(event);plugin.teleported(event);}
+        }
+        flush();entry.number("19");entry.close();flush();assertNull(ui.currentKind(playerId));noMoneyMoved();
+    }
+    @Test void mobileRejectedFormClosesRatherThanFallingThroughUnread() throws Exception {
+        mobileCatalogFixture();GeyserFixture.sendAccepted=false;ui.showMobileMenu(player,"spawnshop_food");
+        assertNull(ui.currentKind(playerId));assertTrue(dialogCalls.isEmpty());verify(player,never()).openInventory(any(Inventory.class));
+        FormFixtures.last().choice(0);flush();assertNull(ui.currentKind(playerId));noMoneyMoved();
+    }
+    @Test void mobileOldHubResponseCannotReplaceNewProduct() throws Exception {
+        mobileBreadHub();FormFixtures.State old=FormFixtures.last();ui.showMobileMenu(player,"spawnshop_food");FormFixtures.last().choice(1);flush();
+        FormFixtures.State steak=FormFixtures.last();old.choice(1);old.close();flush();assertSame(steak,FormFixtures.last());noMoneyMoved();
+    }
+    @Test void mobileSpecialProductShowsFullLoreBeforeExactlyOneFixedDispatch() throws Exception {
+        mobileCatalogFixture();when(plugins.isPluginEnabled("ExcelMobVeil")).thenReturn(true);
+        org.bukkit.command.ConsoleCommandSender console=mock(org.bukkit.command.ConsoleCommandSender.class);
+        when(plugin.getServer().getConsoleSender()).thenReturn(console);when(plugin.getServer().dispatchCommand(eq(console),anyString())).thenReturn(true);
+        ui.showMobileMenu(player,"spawnshop_potions_protection");FormFixtures.last().choice(0);flush();
+        FormFixtures.State details=FormFixtures.last();assertTrue(details.text.contains("Attacking ends all accumulated time."));
+        assertEquals(List.of("Open guarded review","Back to Potions & Protection","Cancel"),details.buttons);
+        verify(plugin.getServer(),never()).dispatchCommand(any(),anyString());details.choice(0);details.choice(0);details.close();flush();
+        verify(plugin.getServer(),times(1)).dispatchCommand(console,"mobveil buy Buyer");assertNull(ui.currentKind(playerId));noMoneyMoved();
+    }
+
+    @Test void mobileBadNumberGivesFreshBoundInputAndCannotReplayOldResponse() throws Exception {
+        mobileBreadHub();FormFixtures.last().choice(0);flush();FormFixtures.State old=FormFixtures.last();old.number("-1");flush();
+        FormFixtures.State retry=FormFixtures.last();assertNotSame(old,retry);assertEquals(ShopUi.ViewKind.MOBILE_ENTRY,ui.currentKind(playerId));
+        assertTrue(retry.text.contains("Enter a whole number from 1 to 144."));assertTrue(retry.text.contains("16 Bread"));
+        old.number("20");old.close();flush();assertSame(retry,FormFixtures.last());retry.number("19");flush();
+        assertEquals(ShopUi.ViewKind.MOBILE_HUB,ui.currentKind(playerId));assertTrue(FormFixtures.last().text.contains("19 bundles"));noMoneyMoved();
+    }
+    @Test void mobileRootBackUsesOnlyFixedMenuCommandOnce() throws Exception {
+        mobileCatalogFixture();ui.showMobileMenu(player,"spawnshop");FormFixtures.State root=FormFixtures.last();
+        assertEquals("Back to Menu",root.buttons.get(5));root.choice(5);root.choice(5);flush();
+        verify(player,times(1)).performCommand("menu");assertNull(ui.currentKind(playerId));noMoneyMoved();
+    }
+
+    @ParameterizedTest @ValueSource(strings={"review","confirm"})
+    void mobileMidFlowFormFailureNeverSubstitutesUnreadInventory(String stage) throws Exception {
+        mobileBreadHub();
+        if(stage.equals("confirm")){FormFixtures.last().choice(1);flush();assertEquals(ShopUi.ViewKind.BUY_REVIEW,ui.currentKind(playerId));}
+        FormFixtures.State previous=FormFixtures.last();GeyserFixture.sendAccepted=false;
+        previous.choice(stage.equals("confirm")?0:1);flush();assertNull(ui.currentKind(playerId));
+        verify(player,never()).openInventory(any(Inventory.class));FormFixtures.last().choice(0);previous.choice(0);flush();noMoneyMoved();
+        verify(checkout,atLeastOnce()).invalidateBuyer(playerId);
+    }
+
+    @Test void mobileStaleFinalConfirmCannotBuyAfterAnotherProductIsOpened() throws Exception {
+        mobileBreadHub();FormFixtures.last().choice(1);flush();FormFixtures.last().choice(0);flush();FormFixtures.State stale=FormFixtures.last();
+        ui.showMobileMenu(player,"spawnshop_food");FormFixtures.last().choice(1);flush();FormFixtures.State steak=FormFixtures.last();
+        stale.choice(0);stale.close();flush();assertSame(steak,FormFixtures.last());noMoneyMoved();
+    }
+    @ParameterizedTest @CsvSource({"1,basic","2,premium"})
+    void mobileProtectionProductsKeepFixedDetailsAndOriginalReviewRoutes(int index,String variant) throws Exception {
+        mobileCatalogFixture();when(plugins.isPluginEnabled("ExcelDeathProtection")).thenReturn(true);
+        org.bukkit.command.ConsoleCommandSender console=mock(org.bukkit.command.ConsoleCommandSender.class);
+        when(plugin.getServer().getConsoleSender()).thenReturn(console);when(plugin.getServer().dispatchCommand(eq(console),anyString())).thenReturn(true);
+        ui.showMobileMenu(player,"spawnshop_potions_protection");FormFixtures.last().choice(index);flush();
+        assertTrue(FormFixtures.last().text.contains("Does NOT save your XP levels."));assertEquals(3,FormFixtures.last().buttons.size());
+        FormFixtures.last().choice(0);flush();verify(plugin.getServer()).dispatchCommand(console,"deathprotection buy "+variant+" Buyer");noMoneyMoved();
+    }
+
+    @ParameterizedTest @ValueSource(strings={".玩家", ".José", ".Игрок", ".Player_1"})
+    void mobileSpecialReviewPreservesUnicodeServerPlayerName(String name) throws Exception {
+        mobileCatalogFixture();when(player.getName()).thenReturn(name);when(plugins.isPluginEnabled("ExcelMobVeil")).thenReturn(true);
+        org.bukkit.command.ConsoleCommandSender console=mock(org.bukkit.command.ConsoleCommandSender.class);
+        when(plugin.getServer().getConsoleSender()).thenReturn(console);when(plugin.getServer().dispatchCommand(eq(console),anyString())).thenReturn(true);
+        ui.showMobileMenu(player,"spawnshop_potions_protection");FormFixtures.last().choice(0);flush();
+        FormFixtures.State details=FormFixtures.last();details.choice(0);details.choice(0);flush();
+        verify(plugin.getServer(),times(1)).dispatchCommand(console,"mobveil buy "+name);assertNull(ui.currentKind(playerId));noMoneyMoved();
+    }
+    @ParameterizedTest @ValueSource(strings={"Buyer extra", "Buyer\nop", "Buyer\u0000", "Buyer\u00a0other", "", "\u2028"})
+    void mobileSpecialReviewRejectsWhitespaceAndControlNames(String name) throws Exception {
+        mobileCatalogFixture();when(player.getName()).thenReturn(name);when(plugins.isPluginEnabled("ExcelMobVeil")).thenReturn(true);
+        ui.showMobileMenu(player,"spawnshop_potions_protection");FormFixtures.last().choice(0);flush();FormFixtures.last().choice(0);flush();
+        verify(plugin.getServer(),never()).dispatchCommand(any(),anyString());assertNull(ui.currentKind(playerId));noMoneyMoved();
+    }
+    @Test void mobileSpecialReviewRejectsMissingServerPlayerName() throws Exception {
+        mobileCatalogFixture();when(player.getName()).thenReturn(null);when(plugins.isPluginEnabled("ExcelMobVeil")).thenReturn(true);
+        ui.showMobileMenu(player,"spawnshop_potions_protection");FormFixtures.last().choice(0);flush();FormFixtures.last().choice(0);flush();
+        verify(plugin.getServer(),never()).dispatchCommand(any(),anyString());assertNull(ui.currentKind(playerId));noMoneyMoved();
+    }
+
 }

@@ -66,6 +66,29 @@ public final class BedrockForms {
             return false;
         }
     }
+    /** Positive detection only, independent of the native-form preference. Errors never identify Java as Bedrock. */
+    public boolean isBedrock(Player player) {
+        UUID id = player.getUniqueId();
+        var manager = plugin.getServer().getPluginManager();
+        Plugin geyser = manager.getPlugin("Geyser-Spigot");
+        if (geyser != null && geyser.isEnabled()) {
+            try {
+                Class<?> type = publicApi("org.geysermc.geyser.api.GeyserApi", geyser.getClass().getClassLoader());
+                Object api = type.getMethod("api").invoke(null);
+                if (type.isInstance(api) && type.getMethod("connectionByUuid", UUID.class).invoke(api, id) != null) return true;
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError unavailable) { /* Try Floodgate independently. */ }
+        }
+        Plugin floodgate = manager.getPlugin("floodgate");
+        if (floodgate == null) floodgate = manager.getPlugin("Floodgate");
+        if (floodgate != null && floodgate.isEnabled()) {
+            try {
+                Class<?> type = publicApi("org.geysermc.floodgate.api.FloodgateApi", floodgate.getClass().getClassLoader());
+                Object api = type.getMethod("getInstance").invoke(null);
+                return type.isInstance(api) && Boolean.TRUE.equals(type.getMethod("isFloodgatePlayer", UUID.class).invoke(api, id));
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError unavailable) { return false; }
+        }
+        return false;
+    }
     private Connection connect(Player player) throws ReflectiveOperationException {
         if (!plugin.getConfig().getBoolean("bedrock-forms", true)) return null;
         Plugin geyser = plugin.getServer().getPluginManager().getPlugin("Geyser-Spigot");
@@ -159,7 +182,7 @@ public final class BedrockForms {
                 .invoke(connection.api(), connection.playerId(), form));
     }
     private void fallback(String kind, Throwable failure) {
-        plugin.getLogger().warning("Bedrock " + kind + " form unavailable; using inventory controls: " + failure.getClass().getSimpleName());
+        plugin.getLogger().warning("Bedrock " + kind + " form unavailable; caller will use safe fallback or cancellation: " + failure.getClass().getSimpleName());
     }
 
     /** One result total, including close/invalid. Rejected sends cannot leave actionable late callbacks. */
