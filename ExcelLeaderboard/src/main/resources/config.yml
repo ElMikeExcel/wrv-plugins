@@ -1,0 +1,9 @@
+# ExcelLeaderboard configuration.
+# Boards refresh on this cache; opening the menu never recomputes.
+cache-seconds: 60
+
+# Bedrock players (through Geyser/Floodgate) get native form menus when
+# this is true. Set false to turn forms off; a Bedrock player then gets
+# the chest fallback menu instead. Java players always get the
+# clickable chat menu either way.
+bedrock-forms: true
