@@ -1,0 +1,14 @@
+# PROPOSAL ONLY. Merge into the generated official WorldEdit 7.4.5 config.
+# Do not replace the full config or discard its existing disallowed-block defaults.
+limits:
+    max-blocks-changed:
+        default: 5000
+        maximum: 5000
+    max-radius: 16
+    max-brush-radius: 4
+history:
+    size: 10
+logging:
+    log-commands: true
+files:
+    allow-symbolic-links: false
