@@ -1,0 +1,15 @@
+name: ExcelBuildMode
+version: '1.1'
+main: com.winkreyes.buildmode.paper.ExcelBuildMode
+api-version: '26.2'
+loadbefore: [Jobs, mcMMO, EliteMobs]
+softdepend: [WorldEdit, LuckPerms, Essentials, MenuJoin, ExcelDeathProtection]
+description: Trusted self-only Build Mode with durable Survival recovery. 1.1 adds the construction-only pilot profile (session Jobs denial plus early input gates).
+commands:
+  buildmode:
+    description: Choose Build Mode or Play Normally for yourself.
+    usage: /buildmode [on|off|status]
+permissions:
+  excelbuildmode.use:
+    description: May enter self-only Build Mode.
+    default: false
