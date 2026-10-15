@@ -1,0 +1,24 @@
+# PILOT 1.2: installed as a jar swap only; the live config file on the server is
+# preserved across the swap. Entry still requires the private allowlist,
+# verified cohort replicas and provisioned recovery storage (private install data).
+# Construction-only pilot profile: reward-provider registration is NOT an entry
+# requirement. Earning while building is suppressed by the session jobs.use denial
+# plus input gates (combat, projectiles, fishing, NPCs, harvesting, stripping).
+# Set false only for the strict reward-provider profile.
+pilot-construction-only: true
+guard-accidental-transfers: true
+# In Build Mode allow /buildmode, optional chat/help, and the fixed WorldEdit subset.
+# Does not intercept plugin-internal economy calls, console commands or every custom GUI.
+guard-commands: true
+# Keep ordinary private chat, replies, /help and /list usable. No shop/main-menu GUI exemption.
+allow-chat-help-commands: true
+# Requires a separately installed, tested WorldEdit. In-memory attachment only;
+# does not remove permissions inherited from other plugins/groups. No wildcard grants.
+temporary-worldedit: false
+# Private installation data only. Empty by default; permission wildcards never bypass this list.
+# Each UUID must also be in both verified private cohort replicas outside the snapshot directory.
+eligible-builder-uuids: []
+storage:
+  maximum-retained-bytes: 134217728
+  maximum-retained-sessions: 2048
+  minimum-free-bytes: 536870912
