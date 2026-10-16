@@ -1,0 +1,7 @@
+# ExcelWaypoints 0.1.0
+max-places-per-player: 5
+# Places can NOT be saved in these worlds (guild world is a guild-gate area; change only if Mike says so).
+blocked-worlds:
+  - em_adventurers_guild
+# Seconds a player must wait between "Ask to visit" requests (Essentials has its own timeout too).
+visit-request-cooldown-seconds: 30
