@@ -1,0 +1,65 @@
+diff -ruN o/plugin.yml n/plugin.yml
+--- o/plugin.yml	2026-10-16 16:14:31.647123470 -0500
++++ n/plugin.yml	2026-10-16 16:14:31.647123470 -0500
+@@ -1,5 +1,5 @@
+ name: ExcelBedrockMenu
+-version: 1.5.6
++version: 1.5.7
+ author: Argus
+ main: com.winkreyes.excelbedrockmenu.ExcelBedrockMenu
+ api-version: "1.13"
+diff -ruN o/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java n/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java
+--- o/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java	2026-10-16 16:14:31.647123470 -0500
++++ n/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java	2026-10-16 16:14:31.647123470 -0500
+@@ -37,6 +37,7 @@
+  * button (mirroring the Java menu). It runs /ag as the player via the same
+  * performCommand path as the other command buttons. Nothing else changed.
+  *
++ * v1.5.7: new "Party" button (opens ExcelTogether's /excelparty menu).
+  * v1.5.6: Spawn button always targets the overworld (see teleportToSpawn).
+  * Village fallback X/Y/Z are read from config.yml (spawn.x/y/z).
+  *
+@@ -73,12 +74,12 @@
+ public class ExcelBedrockMenu extends JavaPlugin implements CommandExecutor {
+ 
+     private static final String[] BUTTONS = {
+-        "Spawn", "Teleport to a player", "Excel Shop", "Adventurers Guild",
++        "Spawn", "Teleport to a player", "Party", "Excel Shop", "Adventurers Guild",
+         "Jobs & Money", "mcMMO Stats", "Leaderboard", "Server Info", "Server Commands",
+         "Server Website", "Auto-open on join"
+     };
+     private static final String[] COMMANDS = {
+-        "spawn", "tpmenu", "shop", "ag", "jobs browse",
++        "spawn", "tpmenu", "excelparty", "shop", "ag", "jobs browse",
+         "mcstats", "leaderboard", "motd", "servercommands", "serverwebsite", "menujoin"
+     };
+     // Village spawn coordinates (fallback if Essentials spawn lookup fails)
+@@ -531,6 +532,14 @@
+             case "tpmenu":
+                 TeleportMenu.open(this, player);
+                 break;
++            case "excelparty":
++                // v1.5.7: ExcelTogether 0.2.0 owns this command. Not /party: mcMMO has that one.
++                if (Bukkit.getPluginCommand("excelparty") == null) {
++                    player.sendMessage("\u00a7eParties aren't available right now. Ask an adult to check the server.");
++                } else {
++                    player.performCommand("excelparty");
++                }
++                break;
+             default:
+                 player.performCommand(command);
+                 break;
+diff -ruN o/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java n/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java
+--- o/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java	2026-10-16 16:14:31.647123470 -0500
++++ n/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java	2026-10-16 16:14:31.647123470 -0500
+@@ -6,7 +6,9 @@
+         try{
+             String src=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java")));
+             String yml=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("commands_menu.yml")));
+-            check(src.contains("\"Excel Shop\", \"Adventurers Guild\""),"button array says Excel Shop");
++            check(src.contains("\"Party\", \"Excel Shop\", \"Adventurers Guild\""),"button array has Party before Excel Shop");
++            check(src.contains("\"spawn\", \"tpmenu\", \"excelparty\", \"shop\""),"command array runs excelparty at the same index as Party");
++            check(!src.contains("performCommand(\"party\")")&&!src.contains("\"spawn\", \"tpmenu\", \"party\""),"never runs bare /party (mcMMO)");
+             check(!src.contains("\"Spawn Shop\"")||src.indexOf("\"Spawn Shop\"")<src.indexOf("class ExcelBedrockMenu"),"no Spawn Shop label in code");
+             check(src.contains("{\"/shop\", \"shop\", \"Open the Excel Shop\"}"),"/shop kept, Excel Shop description");
+             check(yml.contains("Open the Excel Shop")&&!yml.contains("Open the Spawn Shop"),"commands_menu.yml renamed");

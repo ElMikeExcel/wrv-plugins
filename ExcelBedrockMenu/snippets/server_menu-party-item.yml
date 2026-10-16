@@ -1,0 +1,11 @@
+# DeluxeMenus server_menu.yml (Java /menu). NOT installed. Add this item under "items:" (slot 18 is free in the 27-slot menu).
+# It runs /excelparty, never /party (mcMMO owns /party on this server).
+  party:
+    material: PLAYER_HEAD
+    slot: 18
+    display_name: '&a&lParty'
+    lore:
+      - '&7Invite family to a party'
+      - '&7and see who is in yours'
+    left_click_commands:
+      - '[player] excelparty'
