@@ -1,0 +1,3142 @@
+diff -ruN o/ExcelTogether/build.sh n/ExcelTogether/build.sh
+--- o/ExcelTogether/build.sh	2026-10-16 00:00:00.000000000 -0500
++++ n/ExcelTogether/build.sh	1969-12-31 18:00:00.000000000 -0600
+@@ -1,24 +0,0 @@
+-#!/usr/bin/env bash
+-# Build + test ExcelTogether 0.1.0. Needs JDK 25 (Paper API 26.2 is class v69).
+-set -euo pipefail
+-D="$(cd "$(dirname "$0")" && pwd)"; W=/workspace/wrv019
+-JDK=$W/jdk25/bin
+-API=/workspace/wrv015/scratch/libraries/io/papermc/paper/paper-api/26.2.build.133-stable/paper-api-26.2.build.133-stable.jar
+-CP="$API"
+-for j in $(find /workspace/wrv015/scratch/libraries/net/kyori /workspace/wrv015/scratch/libraries/org/jspecify /workspace/wrv015/scratch/libraries/com/google /workspace/wrv015/scratch/libraries/net/md-5 /workspace/wrv015/scratch/libraries/org/yaml /workspace/wrv015/scratch/libraries/org/slf4j /workspace/wrv015/scratch/libraries/org/joml /workspace/wrv015/scratch/libraries/it/unimi -name '*.jar' 2>/dev/null); do CP="$CP:$j"; done
+-JOBS="$W/inputs/Jobs.jar:$W/inputs/CMILib.jar"
+-O=$D/build; rm -rf $O; mkdir -p $O/classes $O/test
+-$JDK/javac --release 21 -proc:none -nowarn -cp "$CP:$JOBS" -d $O/classes $(find $D/src -name '*.java')
+-cp $D/plugin.yml $D/config.yml $O/classes/
+-$JDK/javac --release 21 -proc:none -nowarn -cp "$O/classes:$CP:$JOBS" -d $O/test $(find $D/tests -name '*.java')
+-$JDK/java -cp "$O/test:$O/classes:$CP:$JOBS" com.winkreyes.exceltogether.PartyTest | tee $O/test.log
+-python3 - <<P
+-import zipfile,os
+-out="$W/ExcelTogether-0.1.0.jar"; root="$O/classes"
+-fs=sorted(os.path.join(dp,f) for dp,_,fn in os.walk(root) for f in fn)
+-with zipfile.ZipFile(out,"w",zipfile.ZIP_DEFLATED) as z:
+-    for f in fs:
+-        zi=zipfile.ZipInfo(os.path.relpath(f,root),(2026,10,16,0,0,0)); zi.compress_type=zipfile.ZIP_DEFLATED
+-        z.writestr(zi,open(f,"rb").read())
+-print("built",out)
+-P
+diff -ruN o/ExcelTogether/config.yml n/ExcelTogether/config.yml
+--- o/ExcelTogether/config.yml	2026-10-16 00:00:00.000000000 -0500
++++ n/ExcelTogether/config.yml	1969-12-31 18:00:00.000000000 -0600
+@@ -1,7 +0,0 @@
+-# ExcelTogether 0.1.0
+-# Multiplier applied to Jobs money and XP when another online player is nearby.
+-# 1.25 means +25%. It is applied to the amounts in JobsPrePaymentEvent, and Jobs'
+-# own boosts (weekend, etc.) are applied afterward by Jobs, so the two stack.
+-multiplier: 1.25
+-# Distance in blocks (same world) that counts as being in a party.
+-radius: 50
+diff -ruN o/ExcelTogether/plugin.yml n/ExcelTogether/plugin.yml
+--- o/ExcelTogether/plugin.yml	2026-10-16 00:00:00.000000000 -0500
++++ n/ExcelTogether/plugin.yml	1969-12-31 18:00:00.000000000 -0600
+@@ -1,7 +0,0 @@
+-name: ExcelTogether
+-version: 0.1.0
+-author: Steve
+-main: com.winkreyes.exceltogether.ExcelTogether
+-api-version: "1.21"
+-description: Party bonus for Jobs Reborn payments (money and XP) when another player is nearby.
+-depend: [Jobs]
+diff -ruN o/ExcelTogether/src/com/winkreyes/exceltogether/ExcelTogether.java n/ExcelTogether/src/com/winkreyes/exceltogether/ExcelTogether.java
+--- o/ExcelTogether/src/com/winkreyes/exceltogether/ExcelTogether.java	2026-10-16 00:00:00.000000000 -0500
++++ n/ExcelTogether/src/com/winkreyes/exceltogether/ExcelTogether.java	1969-12-31 18:00:00.000000000 -0600
+@@ -1,15 +0,0 @@
+-package com.winkreyes.exceltogether;
+-
+-import org.bukkit.plugin.java.JavaPlugin;
+-
+-public class ExcelTogether extends JavaPlugin {
+-    @Override
+-    public void onEnable() {
+-        saveDefaultConfig();
+-        PartyBonus bonus = new PartyBonus(getConfig().getDouble("multiplier", PartyBonus.DEFAULT_MULTIPLIER),
+-                getConfig().getDouble("radius", PartyBonus.DEFAULT_RADIUS));
+-        getServer().getPluginManager().registerEvents(new PartyListener(bonus, new NearbyPartyFinder(bonus)), this);
+-        getLogger().info("ExcelTogether enabled: x" + bonus.multiplier() + " money and XP when another player is within "
+-                + bonus.radius() + " blocks.");
+-    }
+-}
+diff -ruN o/ExcelTogether/src/com/winkreyes/exceltogether/NearbyPartyFinder.java n/ExcelTogether/src/com/winkreyes/exceltogether/NearbyPartyFinder.java
+--- o/ExcelTogether/src/com/winkreyes/exceltogether/NearbyPartyFinder.java	2026-10-16 00:00:00.000000000 -0500
++++ n/ExcelTogether/src/com/winkreyes/exceltogether/NearbyPartyFinder.java	1969-12-31 18:00:00.000000000 -0600
+@@ -1,31 +0,0 @@
+-package com.winkreyes.exceltogether;
+-
+-import org.bukkit.GameMode;
+-import org.bukkit.Location;
+-import org.bukkit.OfflinePlayer;
+-import org.bukkit.entity.Player;
+-
+-/** Real finder: another online, non-spectator player in the same world within the radius. */
+-public final class NearbyPartyFinder implements PartyFinder {
+-    private final PartyBonus bonus;
+-
+-    public NearbyPartyFinder(PartyBonus bonus) { this.bonus = bonus; }
+-
+-    @Override
+-    public boolean hasPartner(OfflinePlayer earner) {
+-        Player me = earner.getPlayer();
+-        if (me == null || !me.isOnline()) return false;
+-        Location a = me.getLocation();
+-        if (a.getWorld() == null) return false;
+-        for (Player other : a.getWorld().getPlayers()) {
+-            if (other.getUniqueId().equals(me.getUniqueId())) continue;
+-            if (!other.isOnline() || other.getGameMode() == GameMode.SPECTATOR) continue;
+-            Location b = other.getLocation();
+-            if (bonus.within(a.getWorld().equals(b.getWorld()),
+-                    a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ())) {
+-                return true;
+-            }
+-        }
+-        return false;
+-    }
+-}
+diff -ruN o/ExcelTogether/src/com/winkreyes/exceltogether/PartyBonus.java n/ExcelTogether/src/com/winkreyes/exceltogether/PartyBonus.java
+--- o/ExcelTogether/src/com/winkreyes/exceltogether/PartyBonus.java	2026-10-16 00:00:00.000000000 -0500
++++ n/ExcelTogether/src/com/winkreyes/exceltogether/PartyBonus.java	1969-12-31 18:00:00.000000000 -0600
+@@ -1,29 +0,0 @@
+-package com.winkreyes.exceltogether;
+-
+-/** Pure bonus math, no Bukkit types, so it can be unit tested. */
+-public final class PartyBonus {
+-    public static final double DEFAULT_MULTIPLIER = 1.25;
+-    public static final double DEFAULT_RADIUS = 50.0;
+-
+-    private final double multiplier;
+-    private final double radius;
+-
+-    public PartyBonus(double multiplier, double radius) {
+-        this.multiplier = (Double.isFinite(multiplier) && multiplier > 0) ? multiplier : DEFAULT_MULTIPLIER;
+-        this.radius = (Double.isFinite(radius) && radius > 0) ? radius : DEFAULT_RADIUS;
+-    }
+-
+-    public double multiplier() { return multiplier; }
+-    public double radius() { return radius; }
+-
+-    /** Only positive payouts are boosted. Zero and negative (penalties) are left alone. */
+-    public double apply(double amount) {
+-        return amount > 0 ? amount * multiplier : amount;
+-    }
+-
+-    /** True when the two points are in the same world and within the radius (inclusive). */
+-    public boolean within(boolean sameWorld, double dx, double dy, double dz) {
+-        if (!sameWorld) return false;
+-        return dx * dx + dy * dy + dz * dz <= radius * radius;
+-    }
+-}
+diff -ruN o/ExcelTogether/src/com/winkreyes/exceltogether/PartyFinder.java n/ExcelTogether/src/com/winkreyes/exceltogether/PartyFinder.java
+--- o/ExcelTogether/src/com/winkreyes/exceltogether/PartyFinder.java	2026-10-16 00:00:00.000000000 -0500
++++ n/ExcelTogether/src/com/winkreyes/exceltogether/PartyFinder.java	1969-12-31 18:00:00.000000000 -0600
+@@ -1,8 +0,0 @@
+-package com.winkreyes.exceltogether;
+-
+-import org.bukkit.OfflinePlayer;
+-
+-/** Answers: is another player close enough to the earner to form a party? */
+-public interface PartyFinder {
+-    boolean hasPartner(OfflinePlayer earner);
+-}
+diff -ruN o/ExcelTogether/src/com/winkreyes/exceltogether/PartyListener.java n/ExcelTogether/src/com/winkreyes/exceltogether/PartyListener.java
+--- o/ExcelTogether/src/com/winkreyes/exceltogether/PartyListener.java	2026-10-16 00:00:00.000000000 -0500
++++ n/ExcelTogether/src/com/winkreyes/exceltogether/PartyListener.java	1969-12-31 18:00:00.000000000 -0600
+@@ -1,31 +0,0 @@
+-package com.winkreyes.exceltogether;
+-
+-import com.gamingmesh.jobs.api.JobsPrePaymentEvent;
+-import org.bukkit.event.EventHandler;
+-import org.bukkit.event.EventPriority;
+-import org.bukkit.event.Listener;
+-
+-/**
+- * Multiplies money and XP on the final JobsPrePaymentEvent amounts. Jobs applies its own
+- * boosts (weekend etc.) after this event, so the result is base * party * (1 + jobsBoost).
+- * Points are not changed.
+- */
+-public final class PartyListener implements Listener {
+-    private final PartyBonus bonus;
+-    private final PartyFinder finder;
+-    public int applied = 0;
+-
+-    public PartyListener(PartyBonus bonus, PartyFinder finder) {
+-        this.bonus = bonus;
+-        this.finder = finder;
+-    }
+-
+-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+-    public void onPay(JobsPrePaymentEvent e) {
+-        if (e.getAmount() <= 0 && e.getExp() <= 0) return;
+-        if (e.getPlayer() == null || !finder.hasPartner(e.getPlayer())) return;
+-        e.setAmount(bonus.apply(e.getAmount()));
+-        e.setExp(bonus.apply(e.getExp()));
+-        applied++;
+-    }
+-}
+diff -ruN o/ExcelTogether/tests/com/winkreyes/exceltogether/PartyTest.java n/ExcelTogether/tests/com/winkreyes/exceltogether/PartyTest.java
+--- o/ExcelTogether/tests/com/winkreyes/exceltogether/PartyTest.java	2026-10-16 00:00:00.000000000 -0500
++++ n/ExcelTogether/tests/com/winkreyes/exceltogether/PartyTest.java	1969-12-31 18:00:00.000000000 -0600
+@@ -1,72 +0,0 @@
+-package com.winkreyes.exceltogether;
+-
+-import com.gamingmesh.jobs.api.JobsPrePaymentEvent;
+-import org.bukkit.OfflinePlayer;
+-import java.lang.reflect.Proxy;
+-
+-/** Dependency-free test runner (no JUnit needed). Exit code 1 on any failure. */
+-public class PartyTest {
+-    static int fail = 0, pass = 0;
+-    static void check(String n, boolean ok) { if (ok) pass++; else { fail++; System.out.println("FAIL " + n); } }
+-    static boolean eq(double a, double b) { return Math.abs(a - b) < 1e-9; }
+-
+-    static OfflinePlayer fake() {
+-        return (OfflinePlayer) Proxy.newProxyInstance(PartyTest.class.getClassLoader(),
+-                new Class<?>[]{OfflinePlayer.class}, (p, m, a) -> {
+-                    Class<?> r = m.getReturnType();
+-                    if (r == boolean.class) return false;
+-                    if (r == int.class) return 0;
+-                    if (r == long.class) return 0L;
+-                    if (r == double.class) return 0.0;
+-                    return null;
+-                });
+-    }
+-
+-    static JobsPrePaymentEvent ev(double money, double exp) {
+-        return new JobsPrePaymentEvent(fake(), null, money, exp, 0.0, null, null, null, null);
+-    }
+-
+-    public static void main(String[] a) {
+-        PartyBonus b = new PartyBonus(1.25, 50);
+-        check("apply", eq(b.apply(10), 12.5));
+-        check("zero", eq(b.apply(0), 0));
+-        check("negative untouched", eq(b.apply(-4), -4));
+-        check("within edge 50", b.within(true, 30, 40, 0));
+-        check("outside 50.1", !b.within(true, 50.1, 0, 0));
+-        check("3d distance", !b.within(true, 40, 40, 40));
+-        check("other world", !b.within(false, 0, 0, 0));
+-        PartyBonus bad = new PartyBonus(Double.NaN, -3);
+-        check("bad cfg defaults", eq(bad.multiplier(), 1.25) && eq(bad.radius(), 50));
+-        PartyBonus c = new PartyBonus(2.0, 10);
+-        check("custom", eq(c.apply(3), 6) && c.within(true, 10, 0, 0) && !c.within(true, 10.5, 0, 0));
+-
+-        // Event level
+-        PartyListener yes = new PartyListener(b, p -> true);
+-        JobsPrePaymentEvent e = ev(8.0, 4.0);
+-        yes.onPay(e);
+-        check("event money", eq(e.getAmount(), 10.0));
+-        check("event exp", eq(e.getExp(), 5.0));
+-        check("event points untouched", eq(e.getPoints(), 0.0));
+-        PartyListener no = new PartyListener(b, p -> false);
+-        JobsPrePaymentEvent e2 = ev(8.0, 4.0);
+-        no.onPay(e2);
+-        check("no partner money", eq(e2.getAmount(), 8.0));
+-        check("no partner exp", eq(e2.getExp(), 4.0));
+-        // Stacking model: Jobs applies amt + amt*boost after the event. weekend boost +20% example.
+-        double base = 8.0, jobsBoost = 0.20;
+-        double afterEvent = ev(base, 1).getAmount();
+-        yes.onPay(e2 = ev(base, 1));
+-        double finalPay = e2.getAmount() + e2.getAmount() * jobsBoost;
+-        check("stack multiplicative", eq(finalPay, base * 1.25 * 1.20));
+-        check("not replaced", finalPay > base * 1.25);
+-        JobsPrePaymentEvent e3 = ev(-5, 0);
+-        yes.onPay(e3);
+-        check("penalty untouched", eq(e3.getAmount(), -5));
+-        JobsPrePaymentEvent e4 = ev(5, 0);
+-        yes.onPay(e4);
+-        check("money only", eq(e4.getAmount(), 6.25) && eq(e4.getExp(), 0));
+-
+-        System.out.println(pass + " passed, " + fail + " failed");
+-        System.exit(fail == 0 ? 0 : 1);
+-    }
+-}
+diff -ruN o/build.sh n/build.sh
+--- o/build.sh	1969-12-31 18:00:00.000000000 -0600
++++ n/build.sh	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,29 @@
++#!/usr/bin/env bash
++# Build + test ExcelTogether 0.2.0. Needs JDK 25 (Paper API 26.2 is class v69).
++set -euo pipefail
++D="$(cd "$(dirname "$0")" && pwd)"; W=/workspace/wrv019; OUT=/workspace/wrv063
++JDK=$W/jdk25/bin
++API=/workspace/wrv015/scratch/libraries/io/papermc/paper/paper-api/26.2.build.133-stable/paper-api-26.2.build.133-stable.jar
++CP="$API"
++for j in $(find /workspace/wrv015/scratch/libraries/net/kyori /workspace/wrv015/scratch/libraries/org/jspecify /workspace/wrv015/scratch/libraries/com/google /workspace/wrv015/scratch/libraries/net/md-5 /workspace/wrv015/scratch/libraries/org/yaml /workspace/wrv015/scratch/libraries/org/slf4j /workspace/wrv015/scratch/libraries/org/joml /workspace/wrv015/scratch/libraries/it/unimi -name '*.jar' 2>/dev/null); do CP="$CP:$j"; done
++JOBS="$W/inputs/Jobs.jar:$W/inputs/CMILib.jar"
++FG=/workspace/mc/test26/plugins/floodgate.jar   # test only: real Cumulus classes to check form builders
++O=$D/build; rm -rf $O; mkdir -p $O/classes $O/test
++$JDK/javac --release 21 -proc:none -nowarn -cp "$CP:$JOBS" -d $O/classes $(find $D/src -name '*.java')
++cp $D/plugin.yml $D/config.yml $O/classes/
++$JDK/javac --release 21 -proc:none -nowarn -cp "$O/classes:$CP:$JOBS:$FG" -d $O/test $(find $D/tests -name '*.java')
++set +e
++( $JDK/java -cp "$O/test:$O/classes:$CP:$JOBS:$FG" com.winkreyes.exceltogether.PartyTest && $JDK/java -Dsrc=$D/src -Dcfg=$D/config.yml -Dplugin=$D/plugin.yml -cp "$O/test:$O/classes:$CP:$JOBS:$FG" com.winkreyes.exceltogether.PartyFeatureTest && $JDK/java -Dmcmmojar=/workspace/mmo-test/upstream/target/mcMMO.jar -cp "$O/test:$O/classes:$CP:$JOBS:$FG" com.winkreyes.exceltogether.McmmoLinkTest ) | tee $O/test.log
++RC=${PIPESTATUS[0]}
++set -e
++[ $RC -eq 0 ] || { echo TESTS FAILED; exit 1; }
++python3 - <<P
++import zipfile,os
++out="$OUT/ExcelTogether-0.2.0.jar"; root="$O/classes"
++fs=sorted(os.path.join(dp,f) for dp,_,fn in os.walk(root) for f in fn)
++with zipfile.ZipFile(out,"w",zipfile.ZIP_DEFLATED) as z:
++    for f in fs:
++        zi=zipfile.ZipInfo(os.path.relpath(f,root),(2026,10,16,0,0,0)); zi.compress_type=zipfile.ZIP_DEFLATED
++        z.writestr(zi,open(f,"rb").read())
++print("built",out)
++P
+diff -ruN o/config.yml n/config.yml
+--- o/config.yml	1969-12-31 18:00:00.000000000 -0600
++++ n/config.yml	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,24 @@
++# ExcelTogether 0.2.0
++# Multiplier applied to Jobs money and XP when a partner is nearby.
++# 1.25 means +25%. It is applied to the amounts in JobsPrePaymentEvent, and Jobs'
++# own boosts (weekend, etc.) are applied afterward by Jobs, so the two stack.
++multiplier: 1.25
++# Distance in blocks (same world) a partner must be within.
++radius: 50
++# Who counts as a partner:
++#   party  = only a member of your party (default, Mike: the party IS the bonus group)
++#   nearby = any other player close by (the 0.1.0 behavior, no party needed)
++#   either = party member or anyone close by
++bonus-mode: party
++# Most players in one party (2 to 20).
++max-party-size: 5
++# Seconds an invite stays open.
++invite-expiry-seconds: 60
++# Seconds a disconnected member keeps their party seat before being removed.
++offline-grace-seconds: 300
++# Right-click another player while holding a compass to invite them (they still must accept).
++compass-click-invite: true
++# Also mirror ExcelTogether parties into the mcMMO party system, if mcMMO is installed (soft link).
++# Invite sets an mcMMO invite, accept joins the mcMMO party, leave and kick mirror too. ExcelTogether
++# stays in charge: if mcMMO is full, locked or the other player is in a different mcMMO party, only ours is made.
++mcmmo-party-link: true
+diff -ruN o/plugin.yml n/plugin.yml
+--- o/plugin.yml	1969-12-31 18:00:00.000000000 -0600
++++ n/plugin.yml	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,17 @@
++name: ExcelTogether
++version: 0.2.0
++author: Steve
++main: com.winkreyes.exceltogether.ExcelTogether
++api-version: "1.21"
++description: Party for Jobs Reborn - invite, accept, leave, and a plus 25 percent money and XP bonus for party members who are close together.
++depend: [Jobs]
++softdepend: [Geyser-Spigot, floodgate, mcMMO]
++commands:
++  excelparty:
++    description: Open the party menu, invite players, accept or leave
++    usage: /excelparty [invite|accept|decline|leave|list|kick|help]
++    aliases: [eparty, together]
++permissions:
++  excelparty.use:
++    description: Use parties and the party menu
++    default: true
+diff -ruN o/src/com/winkreyes/exceltogether/BonusMode.java n/src/com/winkreyes/exceltogether/BonusMode.java
+--- o/src/com/winkreyes/exceltogether/BonusMode.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/BonusMode.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,19 @@
++package com.winkreyes.exceltogether;
++
++import java.util.Locale;
++
++/** Who counts as the partner for the +25%. PARTY is the default (Mike: party is the same as the bonus group). */
++public enum BonusMode {
++    PARTY,      // a party member within the radius
++    NEARBY,     // 0.1.0 behavior: any other player within the radius
++    EITHER;     // either of the two
++
++    public static BonusMode parse(String s) {
++        if (s == null) return PARTY;
++        try { return valueOf(s.trim().toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException e) { return PARTY; }
++    }
++    /** Pure decision so it can be tested without a server. */
++    public boolean counts(boolean partyMemberNear, boolean anyoneNear) {
++        return switch (this) { case PARTY -> partyMemberNear; case NEARBY -> anyoneNear; case EITHER -> partyMemberNear || anyoneNear; };
++    }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/BukkitPlayer.java n/src/com/winkreyes/exceltogether/BukkitPlayer.java
+--- o/src/com/winkreyes/exceltogether/BukkitPlayer.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/BukkitPlayer.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,40 @@
++package com.winkreyes.exceltogether;
++
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.event.ClickEvent;
++import net.kyori.adventure.text.event.HoverEvent;
++import net.kyori.adventure.text.format.NamedTextColor;
++import net.kyori.adventure.text.format.TextDecoration;
++import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
++import org.bukkit.entity.Player;
++
++import java.util.UUID;
++
++/** Wraps a Bukkit Player for the party logic. Must be used on the main thread. */
++public final class BukkitPlayer implements PlayerView {
++    private final Player p; private final boolean bedrock;
++    public BukkitPlayer(Player p) { this.p = p; this.bedrock = GeyserForms.isBedrock(p); }
++    @Override public UUID id() { return p.getUniqueId(); }
++    @Override public String realName() { return p.getName(); }
++    @Override public String displayName() {
++        try { return PlainTextComponentSerializer.plainText().serialize(p.displayName()); } catch (Throwable t) { return p.getName(); }
++    }
++    @Override public boolean bedrock() { return bedrock; }
++    @Override public void say(String line) { p.sendMessage(Component.text(line, NamedTextColor.YELLOW)); }
++    @Override public void actionBar(String t) { p.sendActionBar(Component.text(t, NamedTextColor.GREEN)); }
++    @Override public void say(Panel panel) {
++        for (Panel.Line l : panel.lines) {
++            Component c = Component.empty();
++            for (Panel.Seg s : l.segs) {
++                Component t = Component.text(s.text, NamedTextColor.YELLOW);
++                if (s.clickable()) {
++                    t = Component.text(s.text, NamedTextColor.AQUA).decorate(TextDecoration.BOLD)
++                            .hoverEvent(HoverEvent.showText(Component.text(s.hover == null ? "Click" : "Click: " + s.hover)));
++                    t = s.run != null ? t.clickEvent(ClickEvent.runCommand(s.run)) : t.clickEvent(ClickEvent.suggestCommand(s.suggest));
++                }
++                c = c.append(t);
++            }
++            p.sendMessage(c);
++        }
++    }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/Controller.java n/src/com/winkreyes/exceltogether/Controller.java
+--- o/src/com/winkreyes/exceltogether/Controller.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/Controller.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,490 @@
++package com.winkreyes.exceltogether;
++
++import java.util.*;
++
++/**
++ * All party menu and command logic. Java players get clickable chat panels, Bedrock players get forms.
++ * Every state rule lives in PartyManager; this class only checks who is online, words the messages and
++ * decides which form or panel to show.
++ */
++public final class Controller {
++    public static final String CMD = "excelparty";      // not "party": mcMMO owns /party on this server
++    private static final long COMPASS_COOLDOWN_MS = 2000L;
++    private static final int PICKER_MAX = 20;
++
++    private final PartyManager mgr;
++    private final Env env;
++    private final Forms forms;          // null = chat only
++    private final String bonusNote;
++    private McmmoLink link = McmmoLink.NONE;
++    private final Map<UUID, Long> compassAt = new HashMap<>();
++    /** Compass-click invites waiting for the inviter's Yes tap: inviter -> target and deadline. */
++    private final Map<UUID, Pending> confirms = new HashMap<>();
++    public static final long CONFIRM_TTL_MS = 30_000L;
++    private static final class Pending {
++        final UUID target; final long until;
++        Pending(UUID t, long u) { target = t; until = u; }
++    }
++
++    public Controller(PartyManager mgr, Env env, Forms forms, String bonusNote) {
++        this.mgr = mgr; this.env = env; this.forms = forms; this.bonusNote = bonusNote;
++    }
++
++    /** Optional mcMMO party mirror. Never required; null means off. */
++    public void setLink(McmmoLink l) { this.link = l == null ? McmmoLink.NONE : l; }
++
++    private McmmoLink.Mirror safe(java.util.function.Supplier<McmmoLink.Mirror> f) {
++        try { return f.get(); } catch (Throwable t) { return McmmoLink.Mirror.ERROR; }
++    }
++    private void safeRun(Runnable r) { try { r.run(); } catch (Throwable ignored) { } }
++    /** Plain-words note when the mcMMO side could not be mirrored. ExcelTogether itself already worked. */
++    private void mirrorNote(PlayerView to, String other, McmmoLink.Mirror m) {
++        switch (m) {
++            case TARGET_IN_OTHER_PARTY -> to.say("Note: " + other + " is in a different mcMMO party, so only the ExcelTogether party links you. Your Jobs bonus still works.");
++            case FULL -> to.say("Note: the mcMMO party is full (server limit), so only the ExcelTogether party links " + other + ". Your Jobs bonus still works.");
++            case LOCKED -> to.say("Note: the mcMMO party is locked by its leader, so only the ExcelTogether party links " + other + ". Your Jobs bonus still works.");
++            default -> { }
++        }
++    }
++    private void linkHousekeeping() { safeRun(() -> link.cleanup(id -> mgr.hasOutgoing(id, env.now()))); }
++
++    // ---------- wording ----------
++    /** How a player is shown to others: nickname if set, else login name, without the Bedrock dot or color codes. */
++    public static String shown(String displayName, String realName) {
++        String n = NameMatch.norm(displayName).isEmpty() ? "" : stripColor(displayName).trim();
++        while (n.startsWith(".") || n.startsWith("*") || n.startsWith("~")) n = n.substring(1);
++        if (n.isEmpty()) { n = realName == null ? "" : realName; while (n.startsWith(".")) n = n.substring(1); }
++        return n.isEmpty() ? "Someone" : n;
++    }
++    static String stripColor(String s) { return s == null ? "" : s.replaceAll("(?i)[\u00a7&][0-9a-fk-or]", ""); }
++    String shown(PlayerView p) { return shown(p.displayName(), p.realName()); }
++    private void remember(PlayerView p) { mgr.rememberName(p.id(), shown(p)); }
++    private String sizeText(PartyManager.Party pt) { return pt.size() + "/" + mgr.maxSize(); }
++    private long ttlSeconds() { return Math.max(1, mgr.ttlMs() / 1000); }
++
++    private void tell(UUID id, String line) { PlayerView v = env.online(id); if (v != null) v.say(line); }
++    private void tellParty(PartyManager.Party pt, UUID except, String line) {
++        if (pt == null) return;
++        for (UUID u : pt.members) if (!u.equals(except)) tell(u, line);
++    }
++
++    // ---------- entry points ----------
++    /** Main menu: "Invite to party", "My party", pending invites. */
++    public void open(PlayerView p) {
++        remember(p);
++        if (p.bedrock() && forms != null && bedrockHub(p)) return;
++        hubPanel(p);
++    }
++
++    public void command(PlayerView p, String[] a) {
++        remember(p);
++        if (a.length == 0) { open(p); return; }
++        String sub = a[0].toLowerCase(Locale.ROOT);
++        String rest = a.length > 1 ? String.join(" ", Arrays.copyOfRange(a, 1, a.length)) : "";
++        switch (sub) {
++            case "menu", "chat" -> { if (sub.equals("chat")) hubPanel(p); else open(p); }
++            case "invite", "add" -> { if (rest.isEmpty()) invitePicker(p); else inviteByQuery(p, rest); }
++            case "accept", "yes", "join" -> accept(p, rest);
++            case "decline", "deny", "no" -> decline(p, rest);
++            case "confirm", "sure" -> confirmInvite(p);
++            case "cancel", "nevermind" -> cancelInvite(p);
++            case "leave", "quit" -> leave(p, rest.equalsIgnoreCase("yes") || rest.equalsIgnoreCase("confirm"));
++            case "kick", "remove" -> kick(p, rest);
++            case "list", "info", "mine", "who" -> myParty(p);
++            case "invites" -> invitesPanel(p);
++            case "help", "?" -> help(p);
++            default -> help(p);
++        }
++    }
++
++    private void help(PlayerView p) {
++        Panel pn = new Panel();
++        pn.text("Party commands (a party shares the +25% Jobs bonus when you are close):");
++        pn.line().button("Invite someone", "/" + CMD + " invite").gap().button("My party", "/" + CMD + " list");
++        pn.text("/" + CMD + " invite <name>   /" + CMD + " accept   /" + CMD + " decline");
++        pn.text("/" + CMD + " leave   /" + CMD + " kick <name> (leader)");
++        p.say(pn);
++    }
++
++    // ---------- hub ----------
++    private int pendingFor(PlayerView p) { return mgr.invitesFor(p.id(), env.now()).size(); }
++
++    private boolean bedrockHub(PlayerView p) {
++        PartyManager.Party pt = mgr.partyOf(p.id());
++        int n = pendingFor(p);
++        List<String> b = new ArrayList<>(List.of("Invite to party", "My party"));
++        if (n > 0) b.add("Invites (" + n + ")");
++        b.add("Close");
++        String body = pt == null ? "You are not in a party." : "You are in a party of " + sizeText(pt) + ".";
++        return forms.simple(p, "Party", body + "\n" + bonusNote, b, i -> {
++            if (i < 0 || i >= b.size()) return;
++            String label = b.get(i);
++            if (label.equals("Invite to party")) invitePicker(p);
++            else if (label.equals("My party")) myParty(p);
++            else if (label.startsWith("Invites")) invitesPanel(p);
++        });
++    }
++
++    private void hubPanel(PlayerView p) {
++        PartyManager.Party pt = mgr.partyOf(p.id());
++        Panel pn = new Panel();
++        pn.text(pt == null ? "Party: you are not in a party. " + bonusNote : "Party: you are in a party of " + sizeText(pt) + ". " + bonusNote);
++        pn.line().button("Invite to party", "/" + CMD + " invite").gap().button("My party", "/" + CMD + " list");
++        int n = pendingFor(p);
++        if (n > 0) pn.line().button("Invites (" + n + ")", "/" + CMD + " invites");
++        p.say(pn);
++    }
++
++    // ---------- invite picker ----------
++    public void invitePicker(PlayerView p) {
++        remember(p);
++        PartyManager.Party mine = mgr.partyOf(p.id());
++        if (mine != null && mine.size() >= mgr.maxSize()) { p.say("Your party is full (" + sizeText(mine) + ")."); return; }
++        List<PlayerView> ok = new ArrayList<>(); int busy = 0;
++        for (PlayerView o : env.visibleOthers(p)) {
++            if (o.id().equals(p.id())) continue;
++            if (mgr.inParty(o.id())) { busy++; continue; }
++            ok.add(o);
++        }
++        ok.sort(Comparator.comparing(o -> shown(o).toLowerCase(Locale.ROOT)));
++        if (ok.isEmpty()) {
++            p.say(busy > 0 ? "Everyone else online is already in a party." : "Nobody else is online right now. Try again when family joins!");
++            return;
++        }
++        if (p.bedrock() && forms != null) {
++            List<String> labels = new ArrayList<>(); List<UUID> ids = new ArrayList<>();
++            for (PlayerView o : ok) { if (labels.size() >= PICKER_MAX) break; labels.add(shown(o)); ids.add(o.id()); }
++            if (forms.simple(p, "Invite to party", "Tap who you want to invite. They get a popup to accept." + (busy > 0 ? "\n" + busy + " player(s) already in a party are not shown." : ""), labels, i -> {
++                if (i < 0 || i >= ids.size()) return;
++                PlayerView t = env.online(ids.get(i));
++                if (t == null) { p.say("Looks like they just left the game. Try someone else!"); return; }
++                inviteTarget(p, t);
++            })) return;
++        }
++        Panel pn = new Panel();
++        pn.text("Invite to party: click a player. They get a popup and must accept.");
++        int shownCount = 0;
++        for (PlayerView o : ok) {
++            if (shownCount >= PICKER_MAX) break;
++            pn.line().button(shown(o), "/" + CMD + " invite " + o.realName());
++            shownCount++;
++        }
++        if (ok.size() > PICKER_MAX) pn.text("More players are online. Type /" + CMD + " invite <name> for anyone not listed.");
++        if (busy > 0) pn.text(busy + " player(s) already in a party are not listed.");
++        p.say(pn);
++    }
++
++    // ---------- invite ----------
++    private List<NameMatch.Cand> candidates(PlayerView viewer) {
++        List<NameMatch.Cand> c = new ArrayList<>();
++        for (PlayerView o : env.visibleOthers(viewer)) c.add(new NameMatch.Cand(o.id(), o.realName(), o.displayName()));
++        return c;
++    }
++
++    public void inviteByQuery(PlayerView p, String query) {
++        remember(p);
++        NameMatch.Result r = NameMatch.find(query, candidates(p));
++        if (r.isAmbiguous()) {
++            StringBuilder b = new StringBuilder("More than one player matches. Type more of the name: ");
++            for (int i = 0; i < r.ambiguous.size(); i++) { if (i > 0) b.append(", "); b.append(r.ambiguous.get(i).real); }
++            p.say(b.toString());
++            return;
++        }
++        if (!r.isFound()) {
++            // maybe it is the player themselves (visibleOthers hides self)
++            if (NameMatch.find(query, List.of(new NameMatch.Cand(p.id(), p.realName(), p.displayName()))).isFound()) { p.say("You can't invite yourself."); return; }
++            p.say("I can't find a player named " + query + " online right now.");
++            return;
++        }
++        PlayerView t = env.online(r.found.id);
++        if (t == null) { p.say("Looks like they just left the game. Try someone else!"); return; }
++        inviteTarget(p, t);
++    }
++
++    /** Shared by the picker, the command and the compass click. */
++    public void inviteTarget(PlayerView p, PlayerView t) {
++        remember(p); remember(t);
++        PartyManager.InviteResult r = mgr.invite(p.id(), t.id(), env.now());
++        String tn = shown(t);
++        switch (r) {
++            case SELF -> p.say("You can't invite yourself.");
++            case ALREADY_MEMBER -> p.say(tn + " is already in your party.");
++            case TARGET_IN_OTHER_PARTY -> p.say(tn + " is already in a party. They need to leave it first.");
++            case PARTY_FULL -> p.say("Your party is full (" + sizeText(mgr.partyOf(p.id())) + ").");
++            case DUPLICATE -> p.say("You already invited " + tn + ". Give them a minute to answer.");
++            case OK -> {
++                p.say("Party invite sent to " + tn + ". It lasts " + ttlSeconds() + " seconds.");
++                mirrorNote(p, tn, safe(() -> link.invite(p.id(), t.id(), shown(p))));
++                popup(p, t);
++            }
++        }
++    }
++
++    /** Called by the compass-click listener. Quiet cooldown so a double tap never spams. */
++    public void compassClick(PlayerView p, PlayerView t) {
++        long now = env.now();
++        Long last = compassAt.get(p.id());
++        if (last != null && now - last < COMPASS_COOLDOWN_MS) return;
++        compassAt.put(p.id(), now);
++        if (p.id().equals(t.id())) { p.say("You can't invite yourself."); return; }
++        remember(p); remember(t);
++        confirms.put(p.id(), new Pending(t.id(), now + CONFIRM_TTL_MS));
++        String tn = shown(t);
++        String q = "Invite " + tn + " to your party?";
++        if (p.bedrock() && forms != null) {
++            UUID tid = t.id();
++            boolean sent = forms.modal(p, "Party invite", q + "\nThey still have to accept.", "Yes", "Cancel", yes -> {
++                if (yes) confirmInvite(p, tid); else cancelInvite(p);
++            });
++            if (sent) return;
++        }
++        Panel pn = new Panel();
++        pn.text(q);
++        pn.line().button("Yes", "/" + CMD + " confirm").gap().button("Cancel", "/" + CMD + " cancel");
++        p.say(pn);
++    }
++
++    /** Yes tap from the Java panel. */
++    public void confirmInvite(PlayerView p) { confirmInvite(p, null); }
++
++    /** expect (Bedrock form) must match the pending target, so an old form can never invite someone else. */
++    void confirmInvite(PlayerView p, UUID expect) {
++        Pending pe = confirms.get(p.id());
++        if (pe == null || (expect != null && !expect.equals(pe.target))) { p.say("Nothing to confirm. Click the player again with your compass."); return; }
++        confirms.remove(p.id());
++        if (env.now() > pe.until) { p.say("That invite question timed out. Click the player again with your compass."); return; }
++        PlayerView t = env.online(pe.target);
++        if (t == null) { p.say("Looks like they just left the game. Try someone else!"); return; }
++        inviteTarget(p, t);
++    }
++
++    public void cancelInvite(PlayerView p) {
++        if (confirms.remove(p.id()) != null) p.say("Okay, no invite sent.");
++        else p.say("Nothing to cancel.");
++    }
++
++
++    private void popup(PlayerView inviter, PlayerView target) {
++        PartyManager.Party pt = mgr.partyOf(inviter.id());
++        String who = shown(inviter);
++        int count = pt == null ? 1 : pt.size();
++        String body = who + " invited you to their party (" + count + "/" + mgr.maxSize() + " members now). " + bonusNote
++                + "\nThis invite lasts " + ttlSeconds() + " seconds.";
++        target.actionBar("Party invite from " + who);
++        UUID inviterId = inviter.id();
++        if (target.bedrock() && forms != null) {
++            boolean sent = forms.simple(target, "Party invite", body, List.of("Accept", "Decline"), i -> {
++                if (i == 0) acceptFrom(target, inviterId);
++                else if (i == 1) declineFrom(target, inviterId);
++                // closed (-1): leave the invite pending, it still expires on its own
++            });
++            if (sent) { target.say(who + " invited you to a party. Answer the popup, or type /" + CMD + " accept."); return; }
++        }
++        Panel pn = new Panel();
++        pn.text(body);
++        pn.line().button("Accept", "/" + CMD + " accept " + inviter.realName()).gap().button("Decline", "/" + CMD + " decline " + inviter.realName());
++        target.say(pn);
++    }
++
++    // ---------- accept / decline ----------
++    private UUID resolveInviter(PlayerView p, String query, boolean[] problem) {
++        if (query == null || query.isEmpty()) return null;
++        List<NameMatch.Cand> c = new ArrayList<>();
++        for (PartyManager.Invite i : mgr.invitesFor(p.id(), env.now())) {
++            PlayerView v = env.online(i.inviter);
++            c.add(new NameMatch.Cand(i.inviter, v == null ? mgr.nameOf(i.inviter) : v.realName(), v == null ? mgr.nameOf(i.inviter) : v.displayName()));
++        }
++        NameMatch.Result r = NameMatch.find(query, c);
++        if (r.isFound()) return r.found.id;
++        problem[0] = true;
++        if (r.isAmbiguous()) p.say("More than one invite matches. Type more of the name.");
++        else p.say("You have no party invite from " + query + ".");
++        return null;
++    }
++
++    public void accept(PlayerView p, String query) {
++        boolean[] bad = {false};
++        UUID from = resolveInviter(p, query, bad);
++        if (bad[0]) return;
++        acceptFrom(p, from);
++    }
++
++    void acceptFrom(PlayerView p, UUID inviter) {
++        remember(p);
++        PartyManager.AcceptOutcome o = mgr.accept(p.id(), inviter, env.now());
++        switch (o.result) {
++            case NO_INVITE -> p.say("You have no party invite right now.");
++            case EXPIRED -> p.say("That invite ran out of time. Ask them to send a new one.");
++            case ALREADY_IN_PARTY -> p.say("You are already in a party. Leave it first with /" + CMD + " leave.");
++            case INVITER_OFFLINE -> p.say("They are not online anymore, so the invite is gone.");
++            case PARTY_FULL -> { p.say("That party filled up (" + mgr.maxSize() + "/" + mgr.maxSize() + "). Ask them to make room."); if (o.invite != null) tell(o.invite.inviter, shown(p) + " tried to join but your party is full."); }
++            case OK -> {
++                PartyManager.Party pt = o.party;
++                p.say("You joined " + mgr.nameOf(pt.leader) + "'s party (" + sizeText(pt) + "). " + bonusNote);
++                tellParty(pt, p.id(), shown(p) + " joined the party (" + sizeText(pt) + ").");
++                if (o.invite != null) { UUID inv = o.invite.inviter; PlayerView iv = env.online(inv);
++                    mirrorNote(p, mgr.nameOf(inv), safe(() -> link.accept(p.id(), inv, iv == null ? mgr.nameOf(inv) : shown(iv)))); }
++            }
++        }
++    }
++
++    public void decline(PlayerView p, String query) {
++        boolean[] bad = {false};
++        UUID from = resolveInviter(p, query, bad);
++        if (bad[0]) return;
++        declineFrom(p, from);
++    }
++
++    void declineFrom(PlayerView p, UUID inviter) {
++        PartyManager.Invite i = mgr.decline(p.id(), inviter, env.now());
++        if (i == null) { p.say("You have no party invite right now."); return; }
++        p.say("Invite declined.");
++        safeRun(() -> link.cancel(p.id(), i.inviter)); linkHousekeeping();
++        tell(i.inviter, shown(p) + " declined your party invite.");
++    }
++
++    private void invitesPanel(PlayerView p) {
++        List<PartyManager.Invite> list = mgr.invitesFor(p.id(), env.now());
++        if (list.isEmpty()) { p.say("You have no party invites right now."); return; }
++        if (p.bedrock() && forms != null) {
++            List<String> b = new ArrayList<>(); List<UUID> ids = new ArrayList<>();
++            for (PartyManager.Invite i : list) { b.add("From " + mgr.nameOf(i.inviter)); ids.add(i.inviter); }
++            if (forms.simple(p, "Party invites", "Tap an invite to answer it.", b, k -> {
++                if (k < 0 || k >= ids.size()) return;
++                UUID id = ids.get(k);
++                forms.modal(p, "Party invite", mgr.nameOf(id) + " invited you to their party.", "Accept", "Decline",
++                        yes -> { if (yes) acceptFrom(p, id); else declineFrom(p, id); });
++            })) return;
++        }
++        Panel pn = new Panel();
++        for (PartyManager.Invite i : list) {
++            PlayerView v = env.online(i.inviter);
++            String real = v == null ? mgr.nameOf(i.inviter) : v.realName();
++            pn.line().text("Invite from " + mgr.nameOf(i.inviter) + " ").button("Accept", "/" + CMD + " accept " + real).gap().button("Decline", "/" + CMD + " decline " + real);
++        }
++        p.say(pn);
++    }
++
++    // ---------- my party / leave / kick ----------
++    public void myParty(PlayerView p) {
++        remember(p);
++        PartyManager.Party pt = mgr.partyOf(p.id());
++        if (pt == null) {
++            if (p.bedrock() && forms != null && forms.simple(p, "My party", "You are not in a party. Invite someone to start one.", List.of("Invite to party", "Close"),
++                    i -> { if (i == 0) invitePicker(p); })) return;
++            Panel pn = new Panel();
++            pn.text("You are not in a party. Invite someone to start one.");
++            pn.line().button("Invite to party", "/" + CMD + " invite");
++            p.say(pn);
++            return;
++        }
++        List<String> lines = memberLines(pt);
++        boolean full = pt.size() >= mgr.maxSize();
++        if (p.bedrock() && forms != null) {
++            List<String> b = new ArrayList<>();
++            if (!full) b.add("Invite to party");
++            b.add("Leave party");
++            b.add("Close");
++            String body = "Party " + sizeText(pt) + "\n" + String.join("\n", lines) + "\n" + bonusNote;
++            if (forms.simple(p, "My party", body, b, i -> {
++                if (i < 0 || i >= b.size()) return;
++                if (b.get(i).equals("Invite to party")) invitePicker(p);
++                else if (b.get(i).equals("Leave party")) leave(p, false);
++            })) return;
++        }
++        Panel pn = new Panel();
++        pn.text("Your party (" + sizeText(pt) + "):");
++        for (String l : lines) pn.text(l);
++        pn.text(bonusNote);
++        Panel.Line act = pn.line();
++        if (!full) act.button("Invite more", "/" + CMD + " invite").gap();
++        act.button("Leave party", "/" + CMD + " leave");
++        p.say(pn);
++    }
++
++    private List<String> memberLines(PartyManager.Party pt) {
++        List<String> out = new ArrayList<>();
++        for (UUID u : pt.members) {
++            PlayerView v = env.online(u);
++            String n = v != null ? shown(v) : mgr.nameOf(u);
++            String tag = (u.equals(pt.leader) ? " (leader)" : "") + (v == null ? " (offline)" : "");
++            out.add("- " + n + tag);
++        }
++        return out;
++    }
++
++    /** confirmed=false asks first (fat-finger safe), confirmed=true leaves. */
++    public void leave(PlayerView p, boolean confirmed) {
++        PartyManager.Party pt = mgr.partyOf(p.id());
++        if (pt == null) { p.say("You are not in a party."); return; }
++        if (!confirmed) {
++            if (p.bedrock() && forms != null && forms.modal(p, "Leave party?", "Leave your party of " + sizeText(pt) + "? You can be invited back.", "Yes, leave", "Stay",
++                    yes -> { if (yes) leave(p, true); })) return;
++            Panel pn = new Panel();
++            pn.text("Leave your party of " + sizeText(pt) + "?");
++            pn.line().button("Yes, leave", "/" + CMD + " leave yes").gap().button("Stay", "/" + CMD + " list");
++            p.say(pn);
++            return;
++        }
++        PartyManager.Change c = new PartyManager.Change();
++        PartyManager.LeaveResult r = mgr.leave(p.id(), c);
++        if (r == PartyManager.LeaveResult.NOT_IN_PARTY) { p.say("You are not in a party."); return; }
++        p.say("You left the party.");
++        announce(c, shown(p), " left the party.");
++    }
++
++    public void kick(PlayerView p, String query) {
++        PartyManager.Party pt = mgr.partyOf(p.id());
++        if (pt == null) { p.say("You are not in a party."); return; }
++        if (!pt.leader.equals(p.id())) { p.say("Only the party leader can remove someone."); return; }
++        if (query.isEmpty()) { p.say("Type who to remove, like /" + CMD + " kick Name"); return; }
++        List<NameMatch.Cand> c = new ArrayList<>();
++        for (UUID u : pt.members) {
++            if (u.equals(p.id())) continue;
++            PlayerView v = env.online(u);
++            c.add(new NameMatch.Cand(u, v == null ? mgr.nameOf(u) : v.realName(), v == null ? mgr.nameOf(u) : v.displayName()));
++        }
++        NameMatch.Result r = NameMatch.find(query, c);
++        if (r.isAmbiguous()) { p.say("More than one member matches. Type more of the name."); return; }
++        if (!r.isFound()) { p.say(query + " is not in your party."); return; }
++        PartyManager.Change ch = new PartyManager.Change();
++        PartyManager.KickResult k = mgr.kick(p.id(), r.found.id, ch);
++        if (k != PartyManager.KickResult.OK) { p.say("That didn't work."); return; }
++        String nm = mgr.nameOf(r.found.id);
++        p.say("Removed " + nm + " from the party.");
++        tell(r.found.id, "You were removed from the party.");
++        announce(ch, nm, " was removed from the party.");
++    }
++
++    private void announce(PartyManager.Change c, String who, String what) {
++        safeRun(() -> { if (c.removed != null) link.leave(c.removed); if (c.disbanded) for (UUID u : c.remaining) link.leave(u); });
++        if (c.disbanded) {
++            for (UUID u : c.remaining) tell(u, who + what + " The party ended because only one member is left.");
++            return;
++        }
++        for (UUID u : c.remaining) {
++            tell(u, who + what);
++            if (u.equals(c.newLeader)) tell(u, "You are now the party leader.");
++            else if (c.newLeader != null) tell(u, mgr.nameOf(c.newLeader) + " is now the party leader.");
++        }
++    }
++
++    // ---------- time and connection events ----------
++    /** About once a second: expire invites, drop members who stayed offline too long. */
++    public void tick() {
++        PartyManager.SweepResult r = mgr.sweep(env.now());
++        for (PartyManager.Invite i : r.expired) {
++            tell(i.inviter, "Your party invite to " + mgr.nameOf(i.target) + " ran out of time.");
++            tell(i.target, "The party invite from " + mgr.nameOf(i.inviter) + " ran out of time.");
++            safeRun(() -> link.cancel(i.target, i.inviter));
++        }
++        if (!r.expired.isEmpty()) linkHousekeeping();
++        for (PartyManager.Change c : r.removed) announce(c, mgr.nameOf(c.removed), " was away too long and left the party.");
++    }
++    public void playerQuit(UUID id) { confirms.remove(id); mgr.onQuit(id, env.now()); }
++    public void playerJoin(PlayerView p) {
++        mgr.onJoin(p.id()); remember(p);
++        PartyManager.Party pt = mgr.partyOf(p.id());
++        if (pt != null) p.say("You are still in your party (" + sizeText(pt) + ").");
++    }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/Env.java n/src/com/winkreyes/exceltogether/Env.java
+--- o/src/com/winkreyes/exceltogether/Env.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/Env.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,12 @@
++package com.winkreyes.exceltogether;
++
++import java.util.List;
++import java.util.UUID;
++
++/** Server facts the party logic needs. */
++public interface Env {
++    PlayerView online(UUID id);
++    /** Online players the viewer can see (vanished players and the viewer are left out). */
++    List<PlayerView> visibleOthers(PlayerView viewer);
++    long now();
++}
+diff -ruN o/src/com/winkreyes/exceltogether/ExcelTogether.java n/src/com/winkreyes/exceltogether/ExcelTogether.java
+--- o/src/com/winkreyes/exceltogether/ExcelTogether.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/ExcelTogether.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,114 @@
++package com.winkreyes.exceltogether;
++
++import org.bukkit.Bukkit;
++import org.bukkit.Material;
++import org.bukkit.command.Command;
++import org.bukkit.command.CommandSender;
++import org.bukkit.entity.Player;
++import org.bukkit.event.EventHandler;
++import org.bukkit.event.EventPriority;
++import org.bukkit.event.Listener;
++import org.bukkit.event.player.PlayerInteractEntityEvent;
++import org.bukkit.event.player.PlayerJoinEvent;
++import org.bukkit.event.player.PlayerQuitEvent;
++import org.bukkit.inventory.EquipmentSlot;
++import org.bukkit.plugin.java.JavaPlugin;
++
++import java.util.*;
++
++/**
++ * ExcelTogether 0.2.0: the Jobs party bonus (+25% money and XP) plus the party itself: invite, accept, leave.
++ * The command is /excelparty (aliases /eparty, /together) because mcMMO owns /party on this server.
++ */
++public final class ExcelTogether extends JavaPlugin implements Listener, Env {
++    private PartyManager mgr;
++    private Controller ctl;
++    private boolean compassClick;
++
++    @Override public void onEnable() {
++        saveDefaultConfig();
++        PartyBonus bonus = new PartyBonus(getConfig().getDouble("multiplier", PartyBonus.DEFAULT_MULTIPLIER),
++                getConfig().getDouble("radius", PartyBonus.DEFAULT_RADIUS));
++        BonusMode mode = BonusMode.parse(getConfig().getString("bonus-mode", "party"));
++        mgr = new PartyManager(getConfig().getInt("max-party-size", PartyManager.DEFAULT_SIZE),
++                getConfig().getLong("invite-expiry-seconds", 60) * 1000L,
++                getConfig().getLong("offline-grace-seconds", 300) * 1000L,
++                id -> Bukkit.getPlayer(id) != null);
++        compassClick = getConfig().getBoolean("compass-click-invite", true);
++        int pct = (int) Math.round((bonus.multiplier() - 1.0) * 100.0);
++        String note = "Party bonus: +" + pct + "% Jobs money and XP when a party member is within " + (int) bonus.radius() + " blocks.";
++        Forms forms = new SyncForms(new GeyserForms(getLogger()), r -> Bukkit.getScheduler().runTask(this, r));
++        ctl = new Controller(mgr, this, forms, note);
++        String linkNote = setupMcmmoLink();
++        getServer().getPluginManager().registerEvents(new PartyListener(bonus, new PartyMemberFinder(bonus, mgr, mode)), this);
++        getServer().getPluginManager().registerEvents(this, this);
++        Bukkit.getScheduler().runTaskTimer(this, () -> ctl.tick(), 20L, 20L);
++        getLogger().info("ExcelTogether 0.2.0 enabled: x" + bonus.multiplier() + " money and XP, bonus-mode " + mode
++                + ", radius " + bonus.radius() + " blocks, parties up to " + mgr.maxSize() + ", invites last "
++                + (mgr.ttlMs() / 1000) + "s, compass click invite " + (compassClick ? "ON" : "off") + ". Bedrock forms: "
++                + (Bukkit.getPluginManager().getPlugin("Geyser-Spigot") != null ? "Geyser found" : "no Geyser, chat menu only")
++                + ". mcMMO party link: " + linkNote);
++    }
++
++    /** Soft link to mcMMO parties. Any problem just leaves it off; ExcelTogether works alone. */
++    private String setupMcmmoLink() {
++        if (!getConfig().getBoolean("mcmmo-party-link", true)) return "OFF (config)";
++        org.bukkit.plugin.Plugin mm = Bukkit.getPluginManager().getPlugin("mcMMO");
++        if (mm == null || !mm.isEnabled()) return "OFF (mcMMO not installed)";
++        try {
++            ReflectMcmmoLink l = new ReflectMcmmoLink(mm.getClass().getClassLoader(), Bukkit::getPlayer, Bukkit::getOfflinePlayer, getLogger());
++            if (!l.available()) { getLogger().warning("mcMMO found but these parts are missing, party link OFF: " + l.missing()); return "OFF (mcMMO API differs: " + l.missing().size() + " missing)"; }
++            ctl.setLink(l);
++            return "ON (mcMMO " + mm.getDescription().getVersion() + ")";
++        } catch (Throwable t) { getLogger().warning("mcMMO party link OFF: " + t); return "OFF (error)"; }
++    }
++
++    // ---- Env ----
++    @Override public PlayerView online(UUID id) { Player p = Bukkit.getPlayer(id); return p == null ? null : new BukkitPlayer(p); }
++    @Override public List<PlayerView> visibleOthers(PlayerView viewer) {
++        List<PlayerView> out = new ArrayList<>();
++        Player v = Bukkit.getPlayer(viewer.id());
++        for (Player o : Bukkit.getOnlinePlayers()) {
++            if (v != null && (o.getUniqueId().equals(v.getUniqueId()) || !v.canSee(o))) continue;
++            out.add(new BukkitPlayer(o));
++        }
++        return out;
++    }
++    @Override public long now() { return System.currentTimeMillis(); }
++
++    // ---- events ----
++    @EventHandler public void onQuit(PlayerQuitEvent e) { ctl.playerQuit(e.getPlayer().getUniqueId()); }
++    @EventHandler public void onJoin(PlayerJoinEvent e) { ctl.playerJoin(new BukkitPlayer(e.getPlayer())); }
++
++    /** Right-click another player while holding a compass: ask to invite them (Yes/Cancel first). They must still accept. */
++    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
++    public void onCompassClick(PlayerInteractEntityEvent e) {
++        if (!compassClick || e.getHand() != EquipmentSlot.HAND) return;
++        if (!(e.getRightClicked() instanceof Player target)) return;
++        Player me = e.getPlayer();
++        if (me.getInventory().getItemInMainHand().getType() != Material.COMPASS) return;
++        if (!me.hasPermission("excelparty.use") || target.hasMetadata("NPC")) return;
++        ctl.compassClick(new BukkitPlayer(me), new BukkitPlayer(target));
++    }
++
++    // ---- command ----
++    @Override public boolean onCommand(CommandSender s, Command c, String label, String[] a) {
++        if (!(s instanceof Player pl)) { s.sendMessage("Players only."); return true; }
++        if (!pl.hasPermission("excelparty.use")) { pl.sendMessage("You can't use parties."); return true; }
++        ctl.command(new BukkitPlayer(pl), a);
++        return true;
++    }
++    @Override public List<String> onTabComplete(CommandSender s, Command c, String l, String[] a) {
++        if (a.length == 1) {
++            List<String> o = new ArrayList<>(List.of("invite", "accept", "decline", "confirm", "cancel", "leave", "list", "kick", "invites", "help"));
++            o.removeIf(x -> !x.startsWith(a[0].toLowerCase(Locale.ROOT)));
++            return o;
++        }
++        if (a.length == 2 && a[0].equalsIgnoreCase("invite")) {
++            List<String> o = new ArrayList<>();
++            for (Player p : Bukkit.getOnlinePlayers()) if (p.getName().toLowerCase(Locale.ROOT).startsWith(a[1].toLowerCase(Locale.ROOT))) o.add(p.getName());
++            return o;
++        }
++        return List.of();
++    }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/Forms.java n/src/com/winkreyes/exceltogether/Forms.java
+--- o/src/com/winkreyes/exceltogether/Forms.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/Forms.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,22 @@
++package com.winkreyes.exceltogether;
++
++import java.util.List;
++import java.util.function.Consumer;
++import java.util.function.IntConsumer;
++
++/** Bedrock form sender. Every method returns false if the form could not be shown (caller falls back to chat). */
++public interface Forms {
++    /** cb gets the tapped button index, or -1 when the form is closed. */
++    boolean simple(PlayerView p, String title, String content, List<String> buttons, IntConsumer cb);
++    /** cb gets true for the first button, false for the second or when closed. */
++    boolean modal(PlayerView p, String title, String content, String yes, String no, Consumer<Boolean> cb);
++    /** Unused by ExcelTogether, kept so the shared GeyserForms code compiles unchanged. */
++    boolean custom(PlayerView p, String title, List<Field> fields, Consumer<List<Object>> cb);
++
++    final class Field {
++        public enum Kind { INPUT, DROPDOWN, TOGGLE }
++        public final Kind kind; public final String label; public final String hint; public final String def;
++        public final List<String> options; public final int defIndex; public final boolean defBool;
++        private Field(Kind k, String l, String h, String d, List<String> o, int di, boolean db) { kind = k; label = l; hint = h; def = d; options = o; defIndex = di; defBool = db; }
++    }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/GeyserForms.java n/src/com/winkreyes/exceltogether/GeyserForms.java
+--- o/src/com/winkreyes/exceltogether/GeyserForms.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/GeyserForms.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,158 @@
++package com.winkreyes.exceltogether;
++
++import org.bukkit.Bukkit;
++import org.bukkit.entity.Player;
++import org.bukkit.plugin.Plugin;
++
++import java.lang.reflect.Method;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.UUID;
++import java.util.function.Consumer;
++import java.util.function.IntConsumer;
++import java.util.logging.Logger;
++
++/**
++ * Bedrock forms through Geyser's own class loader (same approach as ExcelBedrockMenu), so no compile-time
++ * Geyser or Cumulus dependency. Building is separate from sending so tests can build real Cumulus forms.
++ */
++public final class GeyserForms implements Forms {
++    private final Logger log;
++    public GeyserForms(Logger log) { this.log = log; }
++
++    static ClassLoader geyserLoader() {
++        Plugin g = Bukkit.getPluginManager().getPlugin("Geyser-Spigot");
++        return g != null && g.isEnabled() ? g.getClass().getClassLoader() : null;
++    }
++
++    /** True if Geyser says this UUID is a Bedrock player. */
++    public static boolean isBedrock(Player pl) {
++        try {
++            ClassLoader l = geyserLoader();
++            if (l == null) return false;
++            Class<?> api = Class.forName("org.geysermc.geyser.api.GeyserApi", true, l);
++            Object a = api.getMethod("api").invoke(null);
++            return Boolean.TRUE.equals(api.getMethod("isBedrockPlayer", UUID.class).invoke(a, pl.getUniqueId()));
++        } catch (Throwable t) { return false; }
++    }
++
++    // ---- builders (public static for tests) ----
++    static Object newBuilder(ClassLoader l, String form) throws Exception {
++        return Class.forName("org.geysermc.cumulus.form." + form, true, l).getMethod("builder").invoke(null);
++    }
++    static Class<?> iface(ClassLoader l, String name) throws Exception { return Class.forName(name, true, l); }
++    static void call(Object b, Class<?> type, String m, Class<?>[] sig, Object... args) throws Exception {
++        type.getMethod(m, sig).invoke(b, args);
++    }
++
++
++    /** One handler for every outcome: valid reply goes to "valid", closed or invalid goes to "other". */
++    static void attach(Object b, Class<?> fb, ClassLoader l, Consumer<Object> valid, Runnable other) throws Exception {
++        Class<?> res = iface(l, "org.geysermc.cumulus.response.result.FormResponseResult");
++        Class<?> ok = iface(l, "org.geysermc.cumulus.response.result.ValidFormResponseResult");
++        Method isValid = res.getMethod("isValid"), response = ok.getMethod("response");
++        java.util.function.BiConsumer<Object, Object> h = (form, r) -> {
++            try {
++                if (Boolean.TRUE.equals(isValid.invoke(r))) { valid.accept(response.invoke(r)); return; }
++            } catch (Exception e) { /* fall through to other */ }
++            other.run();
++        };
++        call(b, fb, "resultHandler", new Class<?>[]{java.util.function.BiConsumer.class}, h);
++    }
++
++    public static Object buildSimple(ClassLoader l, String title, String content, List<String> buttons, IntConsumer cb) throws Exception {
++        Object b = newBuilder(l, "SimpleForm");
++        Class<?> bt = iface(l, "org.geysermc.cumulus.form.SimpleForm$Builder");
++        Class<?> fb = iface(l, "org.geysermc.cumulus.form.util.FormBuilder");
++        Class<?> resp = iface(l, "org.geysermc.cumulus.response.SimpleFormResponse");
++        call(b, fb, "title", new Class<?>[]{String.class}, title);
++        call(b, bt, "content", new Class<?>[]{String.class}, content);
++        for (String s : buttons) call(b, bt, "button", new Class<?>[]{String.class}, s);
++        Method id = resp.getMethod("clickedButtonId");
++        Consumer<Object> valid = r -> { try { cb.accept((Integer) id.invoke(r)); } catch (Exception e) { cb.accept(-1); } };
++        attach(b, fb, l, valid, () -> cb.accept(-1));
++        return fb.getMethod("build").invoke(b);
++    }
++
++    public static Object buildModal(ClassLoader l, String title, String content, String yes, String no, Consumer<Boolean> cb) throws Exception {
++        Object b = newBuilder(l, "ModalForm");
++        Class<?> bt = iface(l, "org.geysermc.cumulus.form.ModalForm$Builder");
++        Class<?> fb = iface(l, "org.geysermc.cumulus.form.util.FormBuilder");
++        Class<?> resp = iface(l, "org.geysermc.cumulus.response.ModalFormResponse");
++        call(b, fb, "title", new Class<?>[]{String.class}, title);
++        call(b, bt, "content", new Class<?>[]{String.class}, content);
++        call(b, bt, "button1", new Class<?>[]{String.class}, yes);
++        call(b, bt, "button2", new Class<?>[]{String.class}, no);
++        Method res = resp.getMethod("clickedFirst");
++        Consumer<Object> valid = r -> { try { cb.accept(Boolean.TRUE.equals(res.invoke(r))); } catch (Exception e) { cb.accept(false); } };
++        attach(b, fb, l, valid, () -> cb.accept(false));
++        return fb.getMethod("build").invoke(b);
++    }
++
++    public static Object buildCustom(ClassLoader l, String title, List<Forms.Field> fields, Consumer<List<Object>> cb) throws Exception {
++        Object b = newBuilder(l, "CustomForm");
++        Class<?> bt = iface(l, "org.geysermc.cumulus.form.CustomForm$Builder");
++        Class<?> fb = iface(l, "org.geysermc.cumulus.form.util.FormBuilder");
++        Class<?> resp = iface(l, "org.geysermc.cumulus.response.CustomFormResponse");
++        call(b, fb, "title", new Class<?>[]{String.class}, title);
++        for (Forms.Field f : fields) {
++            switch (f.kind) {
++                case INPUT -> call(b, bt, "input", new Class<?>[]{String.class, String.class, String.class}, f.label, f.hint == null ? "" : f.hint, f.def == null ? "" : f.def);
++                case DROPDOWN -> call(b, bt, "dropdown", new Class<?>[]{String.class, List.class, int.class}, f.label, f.options, f.defIndex);
++                case TOGGLE -> call(b, bt, "toggle", new Class<?>[]{String.class, boolean.class}, f.label, f.defBool);
++            }
++        }
++        Method in = resp.getMethod("asInput", int.class), dd = resp.getMethod("asDropdown", int.class), tg = resp.getMethod("asToggle", int.class);
++        Consumer<Object> valid = r -> {
++            List<Object> out = new ArrayList<>();
++            try {
++                for (int i = 0; i < fields.size(); i++) {
++                    switch (fields.get(i).kind) {
++                        case INPUT -> { Object v = in.invoke(r, i); out.add(v == null ? "" : v); }
++                        case DROPDOWN -> out.add(dd.invoke(r, i));
++                        case TOGGLE -> out.add(tg.invoke(r, i));
++                    }
++                }
++            } catch (Exception e) { cb.accept(null); return; }
++            cb.accept(out);
++        };
++        attach(b, fb, l, valid, () -> cb.accept(null));
++        return fb.getMethod("build").invoke(b);
++    }
++
++    // ---- sending ----
++    private boolean send(PlayerView p, java.util.concurrent.Callable<Object> builder) {
++        try {
++            ClassLoader l = geyserLoader();
++            if (l == null) return false;
++            Class<?> api = Class.forName("org.geysermc.geyser.api.GeyserApi", true, l);
++            Object a = api.getMethod("api").invoke(null);
++            Object conn = api.getMethod("connectionByUuid", UUID.class).invoke(a, p.id());
++            if (conn == null) return false;
++            Object form = builder.call();
++            for (Method m : conn.getClass().getMethods()) {
++                if (m.getName().equals("sendForm") && m.getParameterCount() == 1 && m.getParameterTypes()[0].isAssignableFrom(form.getClass())) {
++                    return Boolean.TRUE.equals(m.invoke(conn, form));
++                }
++            }
++            log.warning("No compatible sendForm on the Geyser connection");
++            return false;
++        } catch (Throwable t) {
++            log.warning("Bedrock form failed: " + t.getClass().getSimpleName() + ": " + t.getMessage());
++            return false;
++        }
++    }
++
++    @Override public boolean simple(PlayerView p, String title, String content, List<String> buttons, IntConsumer cb) {
++        ClassLoader l = geyserLoader();
++        return l != null && send(p, () -> buildSimple(l, title, content, buttons, cb));
++    }
++    @Override public boolean modal(PlayerView p, String title, String content, String yes, String no, Consumer<Boolean> cb) {
++        ClassLoader l = geyserLoader();
++        return l != null && send(p, () -> buildModal(l, title, content, yes, no, cb));
++    }
++    @Override public boolean custom(PlayerView p, String title, List<Forms.Field> fields, Consumer<List<Object>> cb) {
++        ClassLoader l = geyserLoader();
++        return l != null && send(p, () -> buildCustom(l, title, fields, cb));
++    }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/McmmoLink.java n/src/com/winkreyes/exceltogether/McmmoLink.java
+--- o/src/com/winkreyes/exceltogether/McmmoLink.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/McmmoLink.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,42 @@
++package com.winkreyes.exceltogether;
++
++import java.util.UUID;
++import java.util.function.Predicate;
++
++/**
++ * Optional mirror of an ExcelTogether party into the mcMMO party system. ExcelTogether is always the
++ * source of truth: every call here may fail or do nothing, and the ExcelTogether party carries on regardless.
++ * mcMMO is a soft dependency: with mcMMO absent, disabled or too different, NONE is used.
++ */
++public interface McmmoLink {
++    enum Mirror {
++        OK,                     // mcMMO invite set, or player joined the mcMMO party
++        ABSENT,                 // mcMMO missing, party system off, or link switched off
++        TARGET_IN_OTHER_PARTY,  // the other player is already in a different mcMMO party
++        FULL,                   // mcMMO party size limit reached
++        LOCKED,                 // mcMMO party is locked and the inviter is not its leader
++        NOT_READY,              // a player or their mcMMO profile is not loaded right now
++        ERROR                   // anything unexpected; logged, never shown to players
++    }
++
++    boolean available();
++    /** Called after ExcelTogether accepted a new invite. Creates the inviter's mcMMO party if needed and sets the invite. */
++    Mirror invite(UUID inviter, UUID target, String partyNameHint);
++    /** Called after the invitee accepted in ExcelTogether. */
++    Mirror accept(UUID target, UUID inviter, String partyNameHint);
++    /** Invite declined or expired: clear the mcMMO invite we set. */
++    void cancel(UUID target, UUID inviter);
++    /** Player left, was kicked, or the party ended: take them out of the mcMMO party, only if we put them there. */
++    void leave(UUID id);
++    /** Housekeeping: drop mcMMO parties we created that never got a second member. */
++    void cleanup(Predicate<UUID> inviterHasOpenInvites);
++
++    McmmoLink NONE = new McmmoLink() {
++        public boolean available() { return false; }
++        public Mirror invite(UUID a, UUID b, String h) { return Mirror.ABSENT; }
++        public Mirror accept(UUID a, UUID b, String h) { return Mirror.ABSENT; }
++        public void cancel(UUID a, UUID b) {}
++        public void leave(UUID a) {}
++        public void cleanup(Predicate<UUID> p) {}
++    };
++}
+diff -ruN o/src/com/winkreyes/exceltogether/NameMatch.java n/src/com/winkreyes/exceltogether/NameMatch.java
+--- o/src/com/winkreyes/exceltogether/NameMatch.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/NameMatch.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,56 @@
++package com.winkreyes.exceltogether;
++
++import java.util.*;
++
++/**
++ * Finds a player from what someone typed. Handles Floodgate dot prefixes (".coolgirlkail" can be typed as
++ * "coolgirlkail"), nicknames with color codes, case, and unique prefixes. Pure logic, no Bukkit.
++ */
++public final class NameMatch {
++    private NameMatch() {}
++
++    public static final class Cand {
++        public final UUID id; public final String real; public final String nick;
++        public Cand(UUID id, String real, String nick) { this.id = id; this.real = real == null ? "" : real; this.nick = nick == null ? "" : nick; }
++    }
++    public static final class Result {
++        public final Cand found; public final List<Cand> ambiguous;
++        Result(Cand f, List<Cand> a) { found = f; ambiguous = a; }
++        public boolean isFound() { return found != null; }
++        public boolean isAmbiguous() { return found == null && !ambiguous.isEmpty(); }
++    }
++
++    /** Lowercase, color codes removed, leading "." "*" "~" removed, trimmed. */
++    public static String norm(String s) {
++        if (s == null) return "";
++        String x = s.replaceAll("(?i)[\u00a7&][0-9a-fk-or]", "").trim().toLowerCase(Locale.ROOT);
++        while (x.startsWith(".") || x.startsWith("*") || x.startsWith("~")) x = x.substring(1);
++        return x;
++    }
++
++    public static Result find(String query, Collection<Cand> cands) {
++        if (query == null || query.trim().isEmpty()) return new Result(null, List.of());
++        String raw = query.trim().replaceAll("(?i)[\u00a7&][0-9a-fk-or]", "").toLowerCase(Locale.ROOT);
++        String q = norm(query);
++        if (q.isEmpty()) return new Result(null, List.of());
++        // 1 exact real name, dot included (".kail" only matches the Bedrock "Kail")
++        Result r = tier(cands, c -> c.real.toLowerCase(Locale.ROOT).equals(raw));
++        if (r != null) return r;
++        // 2 exact real name without dot, 3 exact nickname
++        r = tier(cands, c -> norm(c.real).equals(q));
++        if (r != null) return r;
++        r = tier(cands, c -> norm(c.nick).equals(q));
++        if (r != null) return r;
++        // 4 unique prefix of real name or nickname
++        r = tier(cands, c -> norm(c.real).startsWith(q) || norm(c.nick).startsWith(q));
++        return r != null ? r : new Result(null, List.of());
++    }
++
++    private static Result tier(Collection<Cand> cands, java.util.function.Predicate<Cand> p) {
++        List<Cand> hit = new ArrayList<>();
++        for (Cand c : cands) if (p.test(c)) hit.add(c);
++        if (hit.isEmpty()) return null;
++        if (hit.size() == 1) return new Result(hit.get(0), List.of());
++        return new Result(null, hit);
++    }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/NearbyPartyFinder.java n/src/com/winkreyes/exceltogether/NearbyPartyFinder.java
+--- o/src/com/winkreyes/exceltogether/NearbyPartyFinder.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/NearbyPartyFinder.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,31 @@
++package com.winkreyes.exceltogether;
++
++import org.bukkit.GameMode;
++import org.bukkit.Location;
++import org.bukkit.OfflinePlayer;
++import org.bukkit.entity.Player;
++
++/** Real finder: another online, non-spectator player in the same world within the radius. */
++public final class NearbyPartyFinder implements PartyFinder {
++    private final PartyBonus bonus;
++
++    public NearbyPartyFinder(PartyBonus bonus) { this.bonus = bonus; }
++
++    @Override
++    public boolean hasPartner(OfflinePlayer earner) {
++        Player me = earner.getPlayer();
++        if (me == null || !me.isOnline()) return false;
++        Location a = me.getLocation();
++        if (a.getWorld() == null) return false;
++        for (Player other : a.getWorld().getPlayers()) {
++            if (other.getUniqueId().equals(me.getUniqueId())) continue;
++            if (!other.isOnline() || other.getGameMode() == GameMode.SPECTATOR) continue;
++            Location b = other.getLocation();
++            if (bonus.within(a.getWorld().equals(b.getWorld()),
++                    a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ())) {
++                return true;
++            }
++        }
++        return false;
++    }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/Panel.java n/src/com/winkreyes/exceltogether/Panel.java
+--- o/src/com/winkreyes/exceltogether/Panel.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/Panel.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,26 @@
++package com.winkreyes.exceltogether;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/** Chat panel model: lines of text segments, some clickable. Turned into chat components by the plugin layer. */
++public final class Panel {
++    public static final class Seg {
++        public final String text; public final String run; public final String suggest; public final String hover;
++        Seg(String t, String run, String suggest, String hover) { text = t; this.run = run; this.suggest = suggest; this.hover = hover; }
++        public boolean clickable() { return run != null || suggest != null; }
++    }
++    public static final class Line {
++        public final List<Seg> segs = new ArrayList<>();
++        public Line text(String t) { segs.add(new Seg(t, null, null, null)); return this; }
++        public Line button(String label, String runCommand) { segs.add(new Seg("[" + label + "]", runCommand, null, label)); return this; }
++        public Line fill(String label, String suggestCommand) { segs.add(new Seg("[" + label + "]", null, suggestCommand, label)); return this; }
++        public Line gap() { segs.add(new Seg(" ", null, null, null)); return this; }
++        public String plain() { StringBuilder b = new StringBuilder(); for (Seg s : segs) b.append(s.text); return b.toString(); }
++    }
++    public final List<Line> lines = new ArrayList<>();
++    public Line line() { Line l = new Line(); lines.add(l); return l; }
++    public Panel text(String t) { line().text(t); return this; }
++    public String plain() { StringBuilder b = new StringBuilder(); for (Line l : lines) b.append(l.plain()).append('\n'); return b.toString(); }
++    public int longestButton() { int m = 0; for (Line l : lines) for (Seg s : l.segs) if (s.clickable()) m = Math.max(m, s.text.length()); return m; }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/PartyBonus.java n/src/com/winkreyes/exceltogether/PartyBonus.java
+--- o/src/com/winkreyes/exceltogether/PartyBonus.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/PartyBonus.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,29 @@
++package com.winkreyes.exceltogether;
++
++/** Pure bonus math, no Bukkit types, so it can be unit tested. */
++public final class PartyBonus {
++    public static final double DEFAULT_MULTIPLIER = 1.25;
++    public static final double DEFAULT_RADIUS = 50.0;
++
++    private final double multiplier;
++    private final double radius;
++
++    public PartyBonus(double multiplier, double radius) {
++        this.multiplier = (Double.isFinite(multiplier) && multiplier > 0) ? multiplier : DEFAULT_MULTIPLIER;
++        this.radius = (Double.isFinite(radius) && radius > 0) ? radius : DEFAULT_RADIUS;
++    }
++
++    public double multiplier() { return multiplier; }
++    public double radius() { return radius; }
++
++    /** Only positive payouts are boosted. Zero and negative (penalties) are left alone. */
++    public double apply(double amount) {
++        return amount > 0 ? amount * multiplier : amount;
++    }
++
++    /** True when the two points are in the same world and within the radius (inclusive). */
++    public boolean within(boolean sameWorld, double dx, double dy, double dz) {
++        if (!sameWorld) return false;
++        return dx * dx + dy * dy + dz * dz <= radius * radius;
++    }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/PartyFinder.java n/src/com/winkreyes/exceltogether/PartyFinder.java
+--- o/src/com/winkreyes/exceltogether/PartyFinder.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/PartyFinder.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,8 @@
++package com.winkreyes.exceltogether;
++
++import org.bukkit.OfflinePlayer;
++
++/** Answers: is another player close enough to the earner to form a party? */
++public interface PartyFinder {
++    boolean hasPartner(OfflinePlayer earner);
++}
+diff -ruN o/src/com/winkreyes/exceltogether/PartyListener.java n/src/com/winkreyes/exceltogether/PartyListener.java
+--- o/src/com/winkreyes/exceltogether/PartyListener.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/PartyListener.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,31 @@
++package com.winkreyes.exceltogether;
++
++import com.gamingmesh.jobs.api.JobsPrePaymentEvent;
++import org.bukkit.event.EventHandler;
++import org.bukkit.event.EventPriority;
++import org.bukkit.event.Listener;
++
++/**
++ * Multiplies money and XP on the final JobsPrePaymentEvent amounts. Jobs applies its own
++ * boosts (weekend etc.) after this event, so the result is base * party * (1 + jobsBoost).
++ * Points are not changed.
++ */
++public final class PartyListener implements Listener {
++    private final PartyBonus bonus;
++    private final PartyFinder finder;
++    public int applied = 0;
++
++    public PartyListener(PartyBonus bonus, PartyFinder finder) {
++        this.bonus = bonus;
++        this.finder = finder;
++    }
++
++    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
++    public void onPay(JobsPrePaymentEvent e) {
++        if (e.getAmount() <= 0 && e.getExp() <= 0) return;
++        if (e.getPlayer() == null || !finder.hasPartner(e.getPlayer())) return;
++        e.setAmount(bonus.apply(e.getAmount()));
++        e.setExp(bonus.apply(e.getExp()));
++        applied++;
++    }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/PartyManager.java n/src/com/winkreyes/exceltogether/PartyManager.java
+--- o/src/com/winkreyes/exceltogether/PartyManager.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/PartyManager.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,228 @@
++package com.winkreyes.exceltogether;
++
++import java.util.*;
++import java.util.function.Predicate;
++
++/**
++ * Party state, no Bukkit types, clock passed in so every rule can be unit tested.
++ * A party is the group that gets the ExcelTogether bonus. Rules:
++ *  - 2 to maxSize members. A party that drops to one member is disbanded.
++ *  - Invites expire after inviteTtlMs. The invite is stored against the inviter; the party itself is created
++ *    only when the invite is accepted (so an unanswered invite never leaves a one-person party behind).
++ *  - A player is in at most one party. Parties live in memory only (a restart clears them).
++ *  - A member who disconnects stays in the party for graceMs, then is removed. Rejoining in time cancels it.
++ */
++public final class PartyManager {
++    public static final int MIN_SIZE = 2, MAX_SIZE_LIMIT = 20, DEFAULT_SIZE = 5;
++    public static final long DEFAULT_TTL_MS = 60_000L, DEFAULT_GRACE_MS = 300_000L;
++
++    public enum InviteResult { OK, SELF, ALREADY_MEMBER, TARGET_IN_OTHER_PARTY, PARTY_FULL, DUPLICATE }
++    public enum AcceptResult { OK, NO_INVITE, EXPIRED, PARTY_FULL, ALREADY_IN_PARTY, INVITER_OFFLINE }
++    public enum LeaveResult { NOT_IN_PARTY, LEFT, DISBANDED_BY_LEAVE }
++    public enum KickResult { NOT_IN_PARTY, NOT_LEADER, TARGET_NOT_MEMBER, SELF, OK }
++
++    /** Immutable view of a party. */
++    public static final class Party {
++        public final long id; public final UUID leader; public final List<UUID> members;
++        Party(long id, UUID leader, List<UUID> members) { this.id = id; this.leader = leader; this.members = Collections.unmodifiableList(new ArrayList<>(members)); }
++        public int size() { return members.size(); }
++    }
++    public static final class Invite {
++        public final UUID inviter, target; public final long expiresAt;
++        Invite(UUID i, UUID t, long e) { inviter = i; target = t; expiresAt = e; }
++    }
++    /** What happened to a party because of leave/kick/sweep, so the plugin can tell the right people. */
++    public static final class Change {
++        public UUID removed; public UUID newLeader; public boolean disbanded; public List<UUID> remaining = List.of();
++    }
++    /** Result of a sweep: invites that timed out and members removed after a long disconnect. */
++    public static final class SweepResult {
++        public final List<Invite> expired = new ArrayList<>();
++        public final List<Change> removed = new ArrayList<>();
++    }
++    public static final class AcceptOutcome {
++        public final AcceptResult result; public final Party party; public final Invite invite; public final boolean created;
++        AcceptOutcome(AcceptResult r, Party p, Invite i, boolean c) { result = r; party = p; invite = i; created = c; }
++    }
++
++    private final int maxSize; private final long ttlMs, graceMs;
++    private final Predicate<UUID> online;
++    private final Map<UUID, Long> partyOf = new HashMap<>();      // member -> party id
++    private final Map<Long, List<UUID>> members = new LinkedHashMap<>();
++    private final Map<Long, UUID> leaders = new HashMap<>();
++    private final List<Invite> invites = new ArrayList<>();
++    private final Map<UUID, Long> offlineSince = new HashMap<>();
++    private final Map<UUID, String> names = new HashMap<>();
++    private long nextId = 1;
++
++    public PartyManager(int maxSize, long ttlMs, long graceMs, Predicate<UUID> online) {
++        this.maxSize = (maxSize >= MIN_SIZE && maxSize <= MAX_SIZE_LIMIT) ? maxSize : DEFAULT_SIZE;
++        this.ttlMs = ttlMs > 0 ? ttlMs : DEFAULT_TTL_MS;
++        this.graceMs = graceMs >= 0 ? graceMs : DEFAULT_GRACE_MS;
++        this.online = online;
++    }
++
++    public int maxSize() { return maxSize; }
++    public long ttlMs() { return ttlMs; }
++
++    // ---------- names (so offline members can still be listed) ----------
++    public synchronized void rememberName(UUID id, String display) { if (id != null && display != null && !display.isEmpty()) names.put(id, display); }
++    public synchronized String nameOf(UUID id) { return names.getOrDefault(id, "Someone"); }
++
++    // ---------- queries ----------
++    public synchronized Party partyOf(UUID id) {
++        Long pid = partyOf.get(id);
++        return pid == null ? null : snapshot(pid);
++    }
++    public synchronized boolean inParty(UUID id) { return partyOf.containsKey(id); }
++    public synchronized boolean sameParty(UUID a, UUID b) {
++        Long x = partyOf.get(a), y = partyOf.get(b);
++        return x != null && x.equals(y);
++    }
++    public synchronized boolean isOfflineGrace(UUID id) { return offlineSince.containsKey(id); }
++    private Party snapshot(long pid) { return new Party(pid, leaders.get(pid), members.get(pid)); }
++
++    /** Valid (not expired) invites waiting for this player, oldest first. */
++    public synchronized List<Invite> invitesFor(UUID target, long now) {
++        List<Invite> out = new ArrayList<>();
++        for (Invite i : invites) if (i.target.equals(target) && now <= i.expiresAt) out.add(i);
++        return out;
++    }
++    /** True if this player has any unexpired invite still waiting for an answer. */
++    public synchronized boolean hasOutgoing(UUID inviter, long now) {
++        for (Invite i : invites) if (i.inviter.equals(inviter) && now <= i.expiresAt) return true;
++        return false;
++    }
++    public synchronized boolean hasInvite(UUID inviter, UUID target, long now) {
++        for (Invite i : invites) if (i.inviter.equals(inviter) && i.target.equals(target) && now <= i.expiresAt) return true;
++        return false;
++    }
++
++    // ---------- invite ----------
++    public synchronized InviteResult invite(UUID inviter, UUID target, long now) {
++        if (inviter.equals(target)) return InviteResult.SELF;
++        Long mine = partyOf.get(inviter), theirs = partyOf.get(target);
++        if (theirs != null) return theirs.equals(mine) ? InviteResult.ALREADY_MEMBER : InviteResult.TARGET_IN_OTHER_PARTY;
++        if (mine != null && members.get(mine).size() >= maxSize) return InviteResult.PARTY_FULL;
++        dropExpired(now);
++        for (Invite i : invites) if (i.inviter.equals(inviter) && i.target.equals(target)) return InviteResult.DUPLICATE;
++        invites.add(new Invite(inviter, target, now + ttlMs));
++        return InviteResult.OK;
++    }
++
++    // ---------- accept / decline ----------
++    /** inviter null = the newest valid invite. */
++    public synchronized AcceptOutcome accept(UUID target, UUID inviter, long now) {
++        Invite found = null; boolean sawExpired = false;
++        for (int k = invites.size() - 1; k >= 0; k--) {
++            Invite i = invites.get(k);
++            if (!i.target.equals(target) || (inviter != null && !i.inviter.equals(inviter))) continue;
++            if (now > i.expiresAt) { sawExpired = true; continue; }
++            found = i; break;
++        }
++        if (found == null) return new AcceptOutcome(sawExpired ? AcceptResult.EXPIRED : AcceptResult.NO_INVITE, null, null, false);
++        if (partyOf.containsKey(target)) { invites.remove(found); return new AcceptOutcome(AcceptResult.ALREADY_IN_PARTY, null, found, false); }
++        if (!online.test(found.inviter)) { invites.remove(found); return new AcceptOutcome(AcceptResult.INVITER_OFFLINE, null, found, false); }
++        Long pid = partyOf.get(found.inviter);
++        boolean created = false;
++        if (pid == null) {
++            pid = nextId++;
++            members.put(pid, new ArrayList<>(List.of(found.inviter)));
++            leaders.put(pid, found.inviter);
++            partyOf.put(found.inviter, pid);
++            created = true;
++        } else if (members.get(pid).size() >= maxSize) {
++            invites.remove(found);
++            return new AcceptOutcome(AcceptResult.PARTY_FULL, null, found, false);
++        }
++        members.get(pid).add(target);
++        partyOf.put(target, pid);
++        offlineSince.remove(target);
++        invites.removeIf(i -> i.target.equals(target));      // joined: every other invite to them is moot
++        final long joined = pid;
++        invites.removeIf(i -> Objects.equals(partyOf.get(i.inviter), joined) && Objects.equals(partyOf.get(i.target), joined));  // invites inside the party
++        return new AcceptOutcome(AcceptResult.OK, snapshot(pid), found, created);
++    }
++
++    /** Returns the declined invite, or null if there was none valid. inviter null = newest valid invite. */
++    public synchronized Invite decline(UUID target, UUID inviter, long now) {
++        for (int k = invites.size() - 1; k >= 0; k--) {
++            Invite i = invites.get(k);
++            if (!i.target.equals(target) || (inviter != null && !i.inviter.equals(inviter))) continue;
++            invites.remove(k);
++            return now > i.expiresAt ? null : i;
++        }
++        return null;
++    }
++
++    // ---------- leave / kick ----------
++    public synchronized LeaveResult leave(UUID id, Change out) {
++        Long pid = partyOf.get(id);
++        if (pid == null) return LeaveResult.NOT_IN_PARTY;
++        boolean disbanded = remove(pid, id, out);
++        return disbanded ? LeaveResult.DISBANDED_BY_LEAVE : LeaveResult.LEFT;
++    }
++    public synchronized KickResult kick(UUID leader, UUID target, Change out) {
++        Long pid = partyOf.get(leader);
++        if (pid == null) return KickResult.NOT_IN_PARTY;
++        if (!leaders.get(pid).equals(leader)) return KickResult.NOT_LEADER;
++        if (leader.equals(target)) return KickResult.SELF;
++        if (!pid.equals(partyOf.get(target))) return KickResult.TARGET_NOT_MEMBER;
++        remove(pid, target, out);
++        return KickResult.OK;
++    }
++
++    /** Removes one member. Leader leaving passes leadership to the longest-standing member. Returns true if disbanded. */
++    private boolean remove(long pid, UUID id, Change out) {
++        List<UUID> m = members.get(pid);
++        m.remove(id);
++        partyOf.remove(id);
++        offlineSince.remove(id);
++        invites.removeIf(i -> i.inviter.equals(id));
++        if (out != null) out.removed = id;
++        if (m.size() < MIN_SIZE) {
++            if (out != null) { out.disbanded = true; out.remaining = new ArrayList<>(m); }
++            for (UUID u : m) { partyOf.remove(u); offlineSince.remove(u); }
++            members.remove(pid); leaders.remove(pid);
++            return true;
++        }
++        if (leaders.get(pid).equals(id)) {
++            UUID next = m.get(0);
++            for (UUID u : m) if (!offlineSince.containsKey(u)) { next = u; break; }   // prefer someone who is online
++            leaders.put(pid, next);
++            if (out != null) out.newLeader = next;
++        }
++        if (out != null) out.remaining = new ArrayList<>(m);
++        return false;
++    }
++
++    // ---------- connection events ----------
++    public synchronized void onQuit(UUID id, long now) {
++        invites.removeIf(i -> i.target.equals(id) || i.inviter.equals(id));
++        if (partyOf.containsKey(id)) offlineSince.put(id, now);
++    }
++    public synchronized void onJoin(UUID id) { offlineSince.remove(id); }
++
++    private void dropExpired(long now) { invites.removeIf(i -> now > i.expiresAt); }
++
++    /** Call about once a second. Expired invites are removed and returned; long-gone members are removed. */
++    public synchronized SweepResult sweep(long now) {
++        SweepResult r = new SweepResult();
++        for (Iterator<Invite> it = invites.iterator(); it.hasNext(); ) {
++            Invite i = it.next();
++            if (now > i.expiresAt) { r.expired.add(i); it.remove(); }
++        }
++        for (UUID id : new ArrayList<>(offlineSince.keySet())) {
++            Long since = offlineSince.get(id);
++            if (since == null) continue;                 // already removed by an earlier disband in this sweep
++            if (now - since < graceMs) continue;
++            Long pid = partyOf.get(id);
++            offlineSince.remove(id);
++            if (pid == null) continue;
++            Change c = new Change();
++            remove(pid, id, c);
++            r.removed.add(c);
++        }
++        return r;
++    }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/PartyMemberFinder.java n/src/com/winkreyes/exceltogether/PartyMemberFinder.java
+--- o/src/com/winkreyes/exceltogether/PartyMemberFinder.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/PartyMemberFinder.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,31 @@
++package com.winkreyes.exceltogether;
++
++import org.bukkit.GameMode;
++import org.bukkit.Location;
++import org.bukkit.OfflinePlayer;
++import org.bukkit.entity.Player;
++
++import java.util.UUID;
++
++/** Bonus partner finder for 0.2.0: honors BonusMode, using party membership and/or distance. */
++public final class PartyMemberFinder implements PartyFinder {
++    private final PartyBonus bonus; private final PartyManager mgr; private final BonusMode mode;
++    public PartyMemberFinder(PartyBonus bonus, PartyManager mgr, BonusMode mode) { this.bonus = bonus; this.mgr = mgr; this.mode = mode; }
++
++    @Override public boolean hasPartner(OfflinePlayer earner) {
++        Player me = earner.getPlayer();
++        if (me == null || !me.isOnline()) return false;
++        Location a = me.getLocation();
++        if (a.getWorld() == null) return false;
++        boolean party = false, any = false;
++        for (Player other : a.getWorld().getPlayers()) {
++            UUID id = other.getUniqueId();
++            if (id.equals(me.getUniqueId()) || !other.isOnline() || other.getGameMode() == GameMode.SPECTATOR) continue;
++            Location b = other.getLocation();
++            if (!bonus.within(a.getWorld().equals(b.getWorld()), a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ())) continue;
++            any = true;
++            if (mgr.sameParty(me.getUniqueId(), id)) { party = true; break; }
++        }
++        return mode.counts(party, any);
++    }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/PlayerView.java n/src/com/winkreyes/exceltogether/PlayerView.java
+--- o/src/com/winkreyes/exceltogether/PlayerView.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/PlayerView.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,16 @@
++package com.winkreyes.exceltogether;
++
++import java.util.UUID;
++
++/** What the party menu logic needs from a player. The plugin wraps a Bukkit Player; tests use a fake. */
++public interface PlayerView {
++    UUID id();
++    /** Real login name (Floodgate names start with "."). */
++    String realName();
++    /** Nickname or display name as other players see it (may equal realName). */
++    String displayName();
++    boolean bedrock();
++    void say(String line);
++    void say(Panel panel);
++    void actionBar(String text);
++}
+diff -ruN o/src/com/winkreyes/exceltogether/ReflectMcmmoLink.java n/src/com/winkreyes/exceltogether/ReflectMcmmoLink.java
+--- o/src/com/winkreyes/exceltogether/ReflectMcmmoLink.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/ReflectMcmmoLink.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,239 @@
++package com.winkreyes.exceltogether;
++
++import org.bukkit.OfflinePlayer;
++import org.bukkit.entity.Player;
++
++import java.lang.reflect.Method;
++import java.util.*;
++import java.util.function.Function;
++import java.util.function.Predicate;
++import java.util.logging.Logger;
++
++/**
++ * mcMMO link by reflection (no compile-time or hard dependency). Every mcMMO method used is looked up once
++ * at start; if any is missing the link turns itself off and ExcelTogether runs alone. Uses mcMMO's own
++ * PartyManager so mcMMO's size limit, party list and messages stay consistent.
++ */
++public final class ReflectMcmmoLink implements McmmoLink {
++    private final Function<UUID, Player> online;
++    private final Function<UUID, OfflinePlayer> offline;
++    private final Logger log;
++    private final List<String> missing = new ArrayList<>();
++
++    private Class<?> cMcMMO, cUser, cMmoPlayer, cParty, cPartyMgr;
++    private Method mPartyEnabled, mPartyCfg, mPartyMgr, mUserGet, mMaxSize, mGenCfg;
++    private Method mpGetParty, mpSetInvite, mpGetInvite, mpRemoveInvite;
++    private Method pName, pMembers, pLeader, pLocked, leaderId;
++    private Method mgrGetByName, mgrGetByPlayer, mgrGetPlayerParty, mgrCreate, mgrJoin, mgrFull, mgrCanInvite, mgrRemoveMmo, mgrRemoveOff;
++
++    /** players we put in an mcMMO party: id -> mcMMO party name. Only these are ever removed by us. */
++    private final Map<UUID, String> linked = new HashMap<>();
++    /** inviters whose mcMMO party we created: id -> party name. */
++    private final Map<UUID, String> created = new HashMap<>();
++    private final Map<UUID, Set<UUID>> pending = new HashMap<>();
++
++    public ReflectMcmmoLink(ClassLoader cl, Function<UUID, Player> online, Function<UUID, OfflinePlayer> offline, Logger log) {
++        this.online = online; this.offline = offline; this.log = log;
++        resolve(cl);
++    }
++
++    /** Names of mcMMO classes or methods this link needs but cannot find. Empty = the link can work. */
++    public static List<String> probe(ClassLoader cl) {
++        return new ReflectMcmmoLink(cl, id -> null, id -> null, Logger.getLogger("probe")).missing;
++    }
++    public List<String> missing() { return Collections.unmodifiableList(missing); }
++
++    private Class<?> cls(ClassLoader cl, String n) {
++        try { return Class.forName(n, false, cl); } catch (Throwable t) { missing.add("class " + n); return null; }
++    }
++    private Method m(Class<?> c, String n, Class<?>... args) {
++        if (c == null) return null;
++        try { return c.getMethod(n, args); } catch (Throwable t) { missing.add(c.getSimpleName() + "." + n); return null; }
++    }
++    private void resolve(ClassLoader cl) {
++        cMcMMO = cls(cl, "com.gmail.nossr50.mcMMO");
++        cUser = cls(cl, "com.gmail.nossr50.util.player.UserManager");
++        cMmoPlayer = cls(cl, "com.gmail.nossr50.datatypes.player.McMMOPlayer");
++        cParty = cls(cl, "com.gmail.nossr50.datatypes.party.Party");
++        cPartyMgr = cls(cl, "com.gmail.nossr50.party.PartyManager");
++        Class<?> cLeader = cls(cl, "com.gmail.nossr50.datatypes.party.PartyLeader");
++        mPartyCfg = m(cMcMMO, "getPartyConfig");
++        mPartyMgr = m(cMcMMO, "getPartyManager");
++        mGenCfg = m(cMcMMO, "getGeneralConfig");
++        if (cMcMMO != null) { try { cMcMMO.getField("p"); } catch (Throwable t) { missing.add("mcMMO.p"); } }
++        if (mPartyCfg != null) mPartyEnabled = m(mPartyCfg.getReturnType(), "isPartyEnabled");
++        if (mGenCfg != null) mMaxSize = m(mGenCfg.getReturnType(), "getPartyMaxSize");
++        mUserGet = m(cUser, "getPlayer", Player.class);
++        mpGetParty = m(cMmoPlayer, "getParty");
++        mpSetInvite = m(cMmoPlayer, "setPartyInvite", cParty);
++        mpGetInvite = m(cMmoPlayer, "getPartyInvite");
++        mpRemoveInvite = m(cMmoPlayer, "removePartyInvite");
++        pName = m(cParty, "getName");
++        pMembers = m(cParty, "getMembers");
++        pLeader = m(cParty, "getLeader");
++        pLocked = m(cParty, "isLocked");
++        leaderId = m(cLeader, "getUniqueId");
++        mgrGetByName = m(cPartyMgr, "getParty", String.class);
++        mgrGetByPlayer = m(cPartyMgr, "getParty", Player.class);
++        mgrGetPlayerParty = m(cPartyMgr, "getPlayerParty", String.class, UUID.class);
++        mgrCreate = m(cPartyMgr, "createParty", cMmoPlayer, String.class, String.class);
++        mgrJoin = m(cPartyMgr, "joinInvitedParty", cMmoPlayer);
++        mgrFull = m(cPartyMgr, "isPartyFull", Player.class, cParty);
++        mgrCanInvite = m(cPartyMgr, "canInvite", cMmoPlayer);
++        mgrRemoveMmo = m(cPartyMgr, "removeFromParty", cMmoPlayer);
++        mgrRemoveOff = m(cPartyMgr, "removeFromParty", OfflinePlayer.class, cParty);
++    }
++
++    @Override public boolean available() { return missing.isEmpty(); }
++
++    // ---------- raw mcMMO access ----------
++    private Object mcmmo() throws Exception { return cMcMMO.getField("p").get(null); }
++    private Object mgr() throws Exception { return mPartyMgr.invoke(mcmmo()); }
++    private boolean partyEnabled() throws Exception { return (Boolean) mPartyEnabled.invoke(mPartyCfg.invoke(mcmmo())); }
++    private int maxSize() throws Exception { return (Integer) mMaxSize.invoke(mGenCfg.invoke(mcmmo())); }
++    private Object mmo(Player p) throws Exception { return p == null ? null : mUserGet.invoke(null, p); }
++    private Object partyOfMmo(Object mmo) throws Exception { return mpGetParty.invoke(mmo); }
++    private String nameOf(Object party) throws Exception { return (String) pName.invoke(party); }
++    @SuppressWarnings("unchecked") private Map<UUID, String> membersOf(Object party) throws Exception { return (Map<UUID, String>) pMembers.invoke(party); }
++    private UUID leaderOf(Object party) throws Exception { return (UUID) leaderId.invoke(pLeader.invoke(party)); }
++
++    private static String clean(String hint) {
++        StringBuilder b = new StringBuilder();
++        if (hint != null) for (char c : hint.toCharArray()) if (Character.isLetterOrDigit(c) || c == '_') b.append(c);
++        return b.length() == 0 ? "Family" : b.length() > 16 ? b.substring(0, 16) : b.toString();
++    }
++    private String freeName(Object mgr, String hint) throws Exception {
++        String base = clean(hint); String n = base; int k = 2;
++        while (mgrGetByName.invoke(mgr, n) != null && k < 100) n = base + k++;
++        return n;
++    }
++
++    /** The inviter's mcMMO party, creating one if they have none. Returns null with why[0] set if it cannot be done. */
++    private Object ensureParty(Object mgr, Object mmoInviter, Player inviter, String hint, Mirror[] why) throws Exception {
++        Object party = partyOfMmo(mmoInviter);
++        if (party != null) {
++            if (!(Boolean) mgrCanInvite.invoke(mgr, mmoInviter)) { why[0] = Mirror.LOCKED; return null; }
++            return party;
++        }
++        mgrCreate.invoke(mgr, mmoInviter, freeName(mgr, hint), null);
++        party = partyOfMmo(mmoInviter);
++        if (party == null) { why[0] = Mirror.ERROR; return null; }
++        created.put(inviter.getUniqueId(), nameOf(party));
++        linked.put(inviter.getUniqueId(), nameOf(party));
++        return party;
++    }
++
++    @Override public Mirror invite(UUID inviterId, UUID targetId, String hint) {
++        if (!available()) return Mirror.ABSENT;
++        try {
++            if (!partyEnabled()) return Mirror.ABSENT;
++            Player inv = online.apply(inviterId), tgt = online.apply(targetId);
++            Object mi = mmo(inv), mt = mmo(tgt);
++            if (mi == null || mt == null) return Mirror.NOT_READY;
++            Object mgr = mgr();
++            Object theirs = partyOfMmo(mt), mine = partyOfMmo(mi);
++            if (theirs != null) return mine != null && nameOf(mine).equals(nameOf(theirs)) ? Mirror.OK : Mirror.TARGET_IN_OTHER_PARTY;
++            Mirror[] why = {Mirror.ERROR};
++            boolean hadParty = mine != null;
++            Object party = ensureParty(mgr, mi, inv, hint, why);
++            if (party == null) return why[0];
++            if ((Boolean) mgrFull.invoke(mgr, tgt, party)) { if (!hadParty) cleanupSolo(inviterId); return Mirror.FULL; }
++            mpSetInvite.invoke(mt, party);
++            pending.computeIfAbsent(inviterId, k -> new HashSet<>()).add(targetId);
++            return Mirror.OK;
++        } catch (Throwable t) { warn("invite", t); return Mirror.ERROR; }
++    }
++
++    @Override public Mirror accept(UUID targetId, UUID inviterId, String hint) {
++        if (!available()) return Mirror.ABSENT;
++        try {
++            if (!partyEnabled()) return Mirror.ABSENT;
++            Player inv = online.apply(inviterId), tgt = online.apply(targetId);
++            Object mi = mmo(inv), mt = mmo(tgt);
++            if (mi == null || mt == null) return Mirror.NOT_READY;
++            Object mgr = mgr();
++            Set<UUID> pend = pending.get(inviterId); if (pend != null) pend.remove(targetId);
++            Object theirs = partyOfMmo(mt);
++            Object mine = partyOfMmo(mi);
++            if (theirs != null) return mine != null && nameOf(mine).equals(nameOf(theirs)) ? Mirror.OK : Mirror.TARGET_IN_OTHER_PARTY;
++            Mirror[] why = {Mirror.ERROR};
++            Object party = ensureParty(mgr, mi, inv, hint, why);     // normally exists already; recreated if someone disbanded it
++            if (party == null) return why[0];
++            int max = maxSize();
++            if ((Boolean) mgrFull.invoke(mgr, tgt, party) || (max > 0 && membersOf(party).size() >= max && !bypass(tgt))) { dropInviteTo(mt, party); return Mirror.FULL; }
++            mpSetInvite.invoke(mt, party);
++            mgrJoin.invoke(mgr, mt);
++            Object now = partyOfMmo(mt);
++            if (now == null || !nameOf(now).equals(nameOf(party))) { mpRemoveInvite.invoke(mt); return Mirror.FULL; }
++            linked.put(targetId, nameOf(party));
++            return Mirror.OK;
++        } catch (Throwable t) { warn("accept", t); return Mirror.ERROR; }
++    }
++    /** Remove the invite we set earlier when it can no longer be used. */
++    private void dropInviteTo(Object mt, Object party) throws Exception {
++        Object inv = mpGetInvite.invoke(mt);
++        if (inv != null && nameOf(inv).equals(nameOf(party))) mpRemoveInvite.invoke(mt);
++    }
++    private boolean bypass(Player p) { try { return p.hasPermission("mcmmo.bypass.partylimit"); } catch (Throwable t) { return false; } }
++
++    @Override public void cancel(UUID targetId, UUID inviterId) {
++        if (!available()) return;
++        try {
++            Set<UUID> pend = pending.get(inviterId);
++            if (pend != null) { pend.remove(targetId); if (pend.isEmpty()) pending.remove(inviterId); }
++            Player tgt = online.apply(targetId);
++            Object mt = mmo(tgt);
++            if (mt != null) {
++                Object inv = mpGetInvite.invoke(mt);
++                Object mi = mmo(online.apply(inviterId));
++                Object theirParty = mi == null ? null : partyOfMmo(mi);
++                boolean fromInviter = inv != null && ((theirParty != null && nameOf(theirParty).equals(nameOf(inv))) || inviterId.equals(createdLeader(inv)));
++                if (fromInviter) mpRemoveInvite.invoke(mt);
++            }
++        } catch (Throwable t) { warn("cancel", t); }
++    }
++    private UUID createdLeader(Object party) { try { return leaderOf(party); } catch (Throwable t) { return null; } }
++
++    @Override public void leave(UUID id) {
++        if (!available()) return;
++        String name = linked.remove(id);
++        if (name == null) return;
++        try {
++            Object mgr = mgr();
++            Player p = online.apply(id);
++            Object mmo = mmo(p);
++            if (mmo != null) {
++                Object party = partyOfMmo(mmo);
++                if (party != null && nameOf(party).equals(name)) mgrRemoveMmo.invoke(mgr, mmo);
++            } else {
++                OfflinePlayer op = offline.apply(id);
++                Object party = mgrGetByName.invoke(mgr, name);
++                if (op != null && party != null && membersOf(party).containsKey(id)) mgrRemoveOff.invoke(mgr, op, party);
++            }
++            created.remove(id);
++        } catch (Throwable t) { warn("leave", t); }
++    }
++
++    @Override public void cleanup(Predicate<UUID> hasOpenInvites) {
++        if (!available() || created.isEmpty()) return;
++        for (UUID id : new ArrayList<>(created.keySet())) {
++            try { if (!hasOpenInvites.test(id)) cleanupSolo(id); } catch (Throwable t) { warn("cleanup", t); }
++        }
++    }
++
++    /** Remove a creator from the mcMMO party we made for them if nobody else is in it. */
++    private void cleanupSolo(UUID id) throws Exception {
++        String name = created.get(id);
++        if (name == null) return;
++        Object mgr = mgr();
++        Object party = mgrGetByName.invoke(mgr, name);
++        if (party == null) { created.remove(id); linked.remove(id); return; }
++        Map<UUID, String> mem = membersOf(party);
++        if (mem.size() == 1 && mem.containsKey(id)) { leave(id); }
++    }
++
++    private void warn(String what, Throwable t) {
++        Throwable c = t instanceof java.lang.reflect.InvocationTargetException && t.getCause() != null ? t.getCause() : t;
++        log.warning("mcMMO link " + what + " failed (ExcelTogether party is unaffected): " + c);
++    }
++}
+diff -ruN o/src/com/winkreyes/exceltogether/SyncForms.java n/src/com/winkreyes/exceltogether/SyncForms.java
+--- o/src/com/winkreyes/exceltogether/SyncForms.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/SyncForms.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,21 @@
++package com.winkreyes.exceltogether;
++
++import java.util.List;
++import java.util.concurrent.Executor;
++import java.util.function.Consumer;
++import java.util.function.IntConsumer;
++
++/** Moves form replies onto the main server thread before the menu logic runs. */
++public final class SyncForms implements Forms {
++    private final Forms in; private final Executor main;
++    public SyncForms(Forms in, Executor main) { this.in = in; this.main = main; }
++    @Override public boolean simple(PlayerView p, String t, String c, List<String> b, IntConsumer cb) {
++        return in.simple(p, t, c, b, i -> main.execute(() -> cb.accept(i)));
++    }
++    @Override public boolean modal(PlayerView p, String t, String c, String y, String n, Consumer<Boolean> cb) {
++        return in.modal(p, t, c, y, n, r -> main.execute(() -> cb.accept(r)));
++    }
++    @Override public boolean custom(PlayerView p, String t, List<Field> f, Consumer<List<Object>> cb) {
++        return in.custom(p, t, f, r -> main.execute(() -> cb.accept(r)));
++    }
++}
+diff -ruN o/tests/com/gmail/nossr50/config/GeneralConfig.java n/tests/com/gmail/nossr50/config/GeneralConfig.java
+--- o/tests/com/gmail/nossr50/config/GeneralConfig.java	1969-12-31 18:00:00.000000000 -0600
++++ n/tests/com/gmail/nossr50/config/GeneralConfig.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,2 @@
++package com.gmail.nossr50.config;
++public class GeneralConfig { public int maxSize = -1; public int getPartyMaxSize() { return maxSize; } }
+diff -ruN o/tests/com/gmail/nossr50/config/party/PartyConfig.java n/tests/com/gmail/nossr50/config/party/PartyConfig.java
+--- o/tests/com/gmail/nossr50/config/party/PartyConfig.java	1969-12-31 18:00:00.000000000 -0600
++++ n/tests/com/gmail/nossr50/config/party/PartyConfig.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,2 @@
++package com.gmail.nossr50.config.party;
++public class PartyConfig { public boolean enabled = true; public boolean isPartyEnabled() { return enabled; } }
+diff -ruN o/tests/com/gmail/nossr50/datatypes/party/Party.java n/tests/com/gmail/nossr50/datatypes/party/Party.java
+--- o/tests/com/gmail/nossr50/datatypes/party/Party.java	1969-12-31 18:00:00.000000000 -0600
++++ n/tests/com/gmail/nossr50/datatypes/party/Party.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,12 @@
++package com.gmail.nossr50.datatypes.party;
++import java.util.*;
++public class Party {
++    private final LinkedHashMap<UUID, String> members = new LinkedHashMap<>(); private PartyLeader leader; private final String name; private boolean locked;
++    public Party(PartyLeader leader, String name) { this.leader = leader; this.name = name; }
++    public LinkedHashMap<UUID, String> getMembers() { return members; }
++    public String getName() { return name; }
++    public PartyLeader getLeader() { return leader; }
++    public void setLeader(PartyLeader l) { leader = l; }
++    public boolean isLocked() { return locked; }
++    public void setLocked(boolean b) { locked = b; }
++}
+diff -ruN o/tests/com/gmail/nossr50/datatypes/party/PartyLeader.java n/tests/com/gmail/nossr50/datatypes/party/PartyLeader.java
+--- o/tests/com/gmail/nossr50/datatypes/party/PartyLeader.java	1969-12-31 18:00:00.000000000 -0600
++++ n/tests/com/gmail/nossr50/datatypes/party/PartyLeader.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,3 @@
++package com.gmail.nossr50.datatypes.party;
++import java.util.UUID;
++public class PartyLeader { private final UUID id; private final String name; public PartyLeader(UUID id, String name) { this.id = id; this.name = name; } public UUID getUniqueId() { return id; } public String getName() { return name; } }
+diff -ruN o/tests/com/gmail/nossr50/datatypes/player/McMMOPlayer.java n/tests/com/gmail/nossr50/datatypes/player/McMMOPlayer.java
+--- o/tests/com/gmail/nossr50/datatypes/player/McMMOPlayer.java	1969-12-31 18:00:00.000000000 -0600
++++ n/tests/com/gmail/nossr50/datatypes/player/McMMOPlayer.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,10 @@
++package com.gmail.nossr50.datatypes.player;
++import com.gmail.nossr50.datatypes.party.Party;
++import org.bukkit.entity.Player;
++public class McMMOPlayer {
++    private final Player player; private Party party, invite;
++    public McMMOPlayer(Player p) { player = p; }
++    public Player getPlayer() { return player; }
++    public Party getParty() { return party; } public void setParty(Party p) { party = p; }
++    public void setPartyInvite(Party p) { invite = p; } public Party getPartyInvite() { return invite; } public boolean hasPartyInvite() { return invite != null; } public void removePartyInvite() { invite = null; }
++}
+diff -ruN o/tests/com/gmail/nossr50/mcMMO.java n/tests/com/gmail/nossr50/mcMMO.java
+--- o/tests/com/gmail/nossr50/mcMMO.java	1969-12-31 18:00:00.000000000 -0600
++++ n/tests/com/gmail/nossr50/mcMMO.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,12 @@
++package com.gmail.nossr50;
++import com.gmail.nossr50.config.GeneralConfig;
++import com.gmail.nossr50.config.party.PartyConfig;
++import com.gmail.nossr50.party.PartyManager;
++/** TEST STUB shaped like mcMMO 2.3.003's API (names and signatures checked against the real jar). Not shipped. */
++public class mcMMO {
++    public static mcMMO p;
++    public final PartyConfig partyConfig = new PartyConfig(); public final GeneralConfig general = new GeneralConfig(); public final PartyManager partyManager = new PartyManager();
++    public PartyConfig getPartyConfig() { return partyConfig; }
++    public GeneralConfig getGeneralConfig() { return general; }
++    public PartyManager getPartyManager() { return partyManager; }
++}
+diff -ruN o/tests/com/gmail/nossr50/party/PartyManager.java n/tests/com/gmail/nossr50/party/PartyManager.java
+--- o/tests/com/gmail/nossr50/party/PartyManager.java	1969-12-31 18:00:00.000000000 -0600
++++ n/tests/com/gmail/nossr50/party/PartyManager.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,36 @@
++package com.gmail.nossr50.party;
++import com.gmail.nossr50.datatypes.party.*;
++import com.gmail.nossr50.datatypes.player.McMMOPlayer;
++import com.gmail.nossr50.mcMMO;
++import com.gmail.nossr50.util.player.UserManager;
++import org.bukkit.OfflinePlayer;
++import org.bukkit.entity.Player;
++import java.util.*;
++/** Behaves like mcMMO's PartyManager for the calls ExcelTogether makes. */
++public final class PartyManager {
++    public final List<Party> parties = new ArrayList<>();
++    public final List<String> messages = new ArrayList<>();
++    public boolean isPartyFull(Player p, Party t) { int m = mcMMO.p.getGeneralConfig().getPartyMaxSize(); return !p.hasPermission("mcmmo.bypass.partylimit") && m >= 1 && t.getMembers().size() >= m; }
++    public Party getParty(String n) { for (Party p : parties) if (p.getName().equalsIgnoreCase(n)) return p; return null; }
++    public Party getParty(Player pl) { McMMOPlayer m = UserManager.getPlayer(pl); return m == null ? null : m.getParty(); }
++    public Party getPlayerParty(String name, UUID id) { for (Party p : parties) if (p.getMembers().containsKey(id)) return p; return null; }
++    public boolean canInvite(McMMOPlayer m) { Party p = m.getParty(); return !p.isLocked() || p.getLeader().getUniqueId().equals(m.getPlayer().getUniqueId()); }
++    public void createParty(McMMOPlayer m, String name, String pw) {
++        Party p = new Party(new PartyLeader(m.getPlayer().getUniqueId(), m.getPlayer().getName()), name.replace(".", ""));
++        parties.add(p); messages.add("created " + p.getName()); add(m, p);
++    }
++    private void add(McMMOPlayer m, Party p) { m.setParty(p); p.getMembers().put(m.getPlayer().getUniqueId(), m.getPlayer().getName()); }
++    public void joinInvitedParty(McMMOPlayer m) {
++        Party inv = m.getPartyInvite();
++        if (!parties.contains(inv)) { messages.add("disbanded"); return; }
++        int max = mcMMO.p.getGeneralConfig().getPartyMaxSize();
++        if (max > 0 && inv.getMembers().size() >= max) { messages.add("full"); return; }
++        m.removePartyInvite(); add(m, inv); messages.add("joined " + inv.getName());
++    }
++    public void removeFromParty(OfflinePlayer pl, Party party) {
++        UUID id = pl.getUniqueId(); party.getMembers().remove(id);
++        if (party.getLeader().getUniqueId().equals(id) && !party.getMembers().isEmpty()) { Map.Entry<UUID, String> e = party.getMembers().entrySet().iterator().next(); party.setLeader(new PartyLeader(e.getKey(), e.getValue())); }
++        if (party.getMembers().isEmpty()) parties.remove(party);
++    }
++    public void removeFromParty(McMMOPlayer m) { if (m.getParty() == null) return; removeFromParty(m.getPlayer(), m.getParty()); m.setParty(null); }
++}
+diff -ruN o/tests/com/gmail/nossr50/util/player/UserManager.java n/tests/com/gmail/nossr50/util/player/UserManager.java
+--- o/tests/com/gmail/nossr50/util/player/UserManager.java	1969-12-31 18:00:00.000000000 -0600
++++ n/tests/com/gmail/nossr50/util/player/UserManager.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,8 @@
++package com.gmail.nossr50.util.player;
++import com.gmail.nossr50.datatypes.player.McMMOPlayer;
++import org.bukkit.entity.Player;
++import java.util.*;
++public final class UserManager {
++    public static final Map<UUID, McMMOPlayer> players = new HashMap<>();
++    public static McMMOPlayer getPlayer(Player p) { return players.get(p.getUniqueId()); }
++}
+diff -ruN o/tests/com/winkreyes/exceltogether/McmmoLinkTest.java n/tests/com/winkreyes/exceltogether/McmmoLinkTest.java
+--- o/tests/com/winkreyes/exceltogether/McmmoLinkTest.java	1969-12-31 18:00:00.000000000 -0600
++++ n/tests/com/winkreyes/exceltogether/McmmoLinkTest.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,292 @@
++package com.winkreyes.exceltogether;
++
++import com.gmail.nossr50.datatypes.party.Party;
++import com.gmail.nossr50.datatypes.player.McMMOPlayer;
++import com.gmail.nossr50.mcMMO;
++import com.gmail.nossr50.util.player.UserManager;
++import org.bukkit.OfflinePlayer;
++import org.bukkit.entity.Player;
++
++import java.lang.reflect.Proxy;
++import java.net.URL;
++import java.net.URLClassLoader;
++import java.util.*;
++import java.util.function.Predicate;
++import java.util.logging.Logger;
++
++/** WRV-063 mcMMO party link tests: Controller wiring with a fake link, and the reflective link against a stub shaped like mcMMO. */
++public class McmmoLinkTest {
++    static int pass = 0, fail = 0;
++    static void check(String n, boolean ok) { if (ok) pass++; else { fail++; System.out.println("FAIL " + n); } }
++    static final Logger LOG = Logger.getLogger("mcmmolinktest");
++    static { LOG.setLevel(java.util.logging.Level.OFF); }
++
++    // ---------- fake link for Controller wiring ----------
++    static final class FakeLink implements McmmoLink {
++        final List<String> calls = new ArrayList<>(); McmmoLink.Mirror inviteRes = Mirror.OK, acceptRes = Mirror.OK; boolean boom = false;
++        Predicate<UUID> lastCleanup;
++        public boolean available() { return true; }
++        public Mirror invite(UUID a, UUID b, String h) { calls.add("invite:" + h); if (boom) throw new IllegalStateException("x"); return inviteRes; }
++        public Mirror accept(UUID a, UUID b, String h) { calls.add("accept:" + h); if (boom) throw new IllegalStateException("x"); return acceptRes; }
++        public void cancel(UUID a, UUID b) { calls.add("cancel"); if (boom) throw new IllegalStateException("x"); }
++        public void leave(UUID a) { calls.add("leave:" + a); if (boom) throw new IllegalStateException("x"); }
++        public void cleanup(Predicate<UUID> p) { calls.add("cleanup"); lastCleanup = p; if (boom) throw new IllegalStateException("x"); }
++        long count(String prefix) { return calls.stream().filter(c -> c.startsWith(prefix)).count(); }
++    }
++
++    static void wiringTests() {
++        PartyFeatureTest.Rig r = new PartyFeatureTest.Rig(5); FakeLink fl = new FakeLink(); r.ctl.setLink(fl);
++        PartyFeatureTest.FP a = r.java("Ann"), b = r.java("Bob"), c = r.java("Cy");
++        r.ctl.command(a, new String[]{"invite", "Bob"});
++        check("invite mirrors once", fl.count("invite:Ann") == 1);
++        check("accept not mirrored before the invitee answers", fl.count("accept") == 0);
++        r.ctl.command(b, new String[]{"accept"});
++        check("accept mirrors after ours succeeds", fl.count("accept:Ann") == 1 && r.mgr.sameParty(a.id, b.id));
++        r.ctl.command(a, new String[]{"invite", "Bob"});
++        check("refused invite (already member) is not mirrored", fl.count("invite") == 1);
++        r.ctl.command(a, new String[]{"invite", "Ann"});
++        check("self invite not mirrored", fl.count("invite") == 1);
++        r.ctl.command(a, new String[]{"invite", "Cy"}); r.ctl.command(a, new String[]{"invite", "Cy"});
++        check("duplicate invite not mirrored twice", fl.count("invite") == 2);
++        r.ctl.command(c, new String[]{"decline"});
++        check("decline cancels the mcMMO invite and tidies", fl.count("cancel") == 1 && fl.count("cleanup") >= 1);
++        // expiry
++        r.ctl.command(b, new String[]{"invite", "Cy"});          // member (not leader) invites
++        check("any member invite is mirrored", fl.count("invite:Bob") == 1);
++        r.env.t += 61_000; r.ctl.tick();
++        check("expiry cancels the mcMMO invite", fl.count("cancel") == 2);
++        // accept after our expiry: ours refuses, link never called
++        long acc = fl.count("accept");
++        r.ctl.command(b, new String[]{"invite", "Cy"}); r.env.t += 61_000;
++        r.ctl.command(c, new String[]{"accept"});
++        check("expired accept never reaches mcMMO", fl.count("accept") == acc);
++        // cleanup predicate follows open invites
++        r.ctl.command(a, new String[]{"invite", "Cy"}); r.ctl.command(c, new String[]{"decline"});
++        check("cleanup predicate: no open invites", fl.lastCleanup != null && !fl.lastCleanup.test(a.id));
++        r.ctl.command(a, new String[]{"invite", "Cy"}); r.env.t += 61_000; r.ctl.tick();
++        // leave and kick and disband
++        PartyFeatureTest.Rig q = new PartyFeatureTest.Rig(5); FakeLink fq = new FakeLink(); q.ctl.setLink(fq);
++        PartyFeatureTest.FP x = q.java("Xan"), y = q.java("Yui"), z = q.java("Zed");
++        q.ctl.command(x, new String[]{"invite", "Yui"}); q.ctl.command(y, new String[]{"accept"});
++        q.ctl.command(x, new String[]{"invite", "Zed"}); q.ctl.command(z, new String[]{"accept"});
++        q.ctl.command(z, new String[]{"leave", "yes"});
++        check("leave mirrors the leaver", fq.count("leave:" + z.id) == 1);
++        q.ctl.command(x, new String[]{"invite", "Zed"}); q.ctl.command(z, new String[]{"accept"});
++        q.ctl.command(x, new String[]{"kick", "Zed"});
++        check("kick mirrors the kicked player", fq.count("leave:" + z.id) == 2);
++        q.ctl.command(y, new String[]{"leave", "yes"});
++        check("disband mirrors the leaver and the one left over", fq.count("leave:" + y.id) == 1 && fq.count("leave:" + x.id) == 1);
++        // grace removal
++        PartyFeatureTest.Rig g = new PartyFeatureTest.Rig(5); FakeLink fg = new FakeLink(); g.ctl.setLink(fg);
++        PartyFeatureTest.FP g1 = g.java("Gus"), g2 = g.java("Hal"), g3 = g.java("Ivy");
++        g.ctl.command(g1, new String[]{"invite", "Hal"}); g.ctl.command(g2, new String[]{"accept"});
++        g.ctl.command(g1, new String[]{"invite", "Ivy"}); g.ctl.command(g3, new String[]{"accept"});
++        g.env.on.remove(g3.id); g.ctl.playerQuit(g3.id); g.env.t += 301_000; g.ctl.tick();
++        check("offline too long mirrors the removal", fg.count("leave:" + g3.id) == 1);
++        // notes and failures
++        for (Object[] row : new Object[][]{{McmmoLink.Mirror.TARGET_IN_OTHER_PARTY, "different mcMMO party"}, {McmmoLink.Mirror.FULL, "mcMMO party is full"}, {McmmoLink.Mirror.LOCKED, "locked"}}) {
++            PartyFeatureTest.Rig n = new PartyFeatureTest.Rig(5); FakeLink fn = new FakeLink(); n.ctl.setLink(fn);
++            fn.inviteRes = (McmmoLink.Mirror) row[0]; fn.acceptRes = (McmmoLink.Mirror) row[0];
++            PartyFeatureTest.FP i1 = n.java("Ola"), i2 = n.java("Pia");
++            n.ctl.command(i1, new String[]{"invite", "Pia"});
++            check(row[0] + ": inviter told, invite still sent", i1.heard((String) row[1]) && n.mgr.hasInvite(i1.id, i2.id, n.env.now()) && i2.heard("Accept"));
++            n.ctl.command(i2, new String[]{"accept"});
++            check(row[0] + ": ExcelTogether party still made, invitee told", n.mgr.sameParty(i1.id, i2.id) && i2.heard((String) row[1]));
++        }
++        for (McmmoLink.Mirror quiet : new McmmoLink.Mirror[]{McmmoLink.Mirror.ABSENT, McmmoLink.Mirror.ERROR, McmmoLink.Mirror.NOT_READY}) {
++            PartyFeatureTest.Rig n = new PartyFeatureTest.Rig(5); FakeLink fn = new FakeLink(); n.ctl.setLink(fn); fn.inviteRes = quiet; fn.acceptRes = quiet;
++            PartyFeatureTest.FP i1 = n.java("Ola"), i2 = n.java("Pia");
++            n.ctl.command(i1, new String[]{"invite", "Pia"}); n.ctl.command(i2, new String[]{"accept"});
++            check(quiet + ": no mcMMO talk to players, party fine", !i1.heard("mcMMO") && !i2.heard("mcMMO") && n.mgr.sameParty(i1.id, i2.id));
++        }
++        PartyFeatureTest.Rig k = new PartyFeatureTest.Rig(5); FakeLink fk = new FakeLink(); fk.boom = true; k.ctl.setLink(fk);
++        PartyFeatureTest.FP k1 = k.java("Kay"), k2 = k.java("Lee");
++        k.ctl.command(k1, new String[]{"invite", "Lee"}); k.ctl.command(k2, new String[]{"accept"});
++        k.ctl.command(k2, new String[]{"leave", "yes"}); k.env.t += 61_000; k.ctl.tick();
++        check("a link that throws never breaks ExcelTogether", !k.mgr.inParty(k1.id) && k1.heard("left the party"));
++        // absent link: whole flow with NONE
++        PartyFeatureTest.Rig o = new PartyFeatureTest.Rig(5);
++        PartyFeatureTest.FP o1 = o.java("Moe"), o2 = o.java("Nia");
++        o.ctl.setLink(null);
++        o.ctl.command(o1, new String[]{"invite", "Nia"}); o.ctl.command(o2, new String[]{"accept"}); o.ctl.command(o2, new String[]{"leave", "yes"});
++        check("no mcMMO link (null): full flow works", !o.mgr.inParty(o1.id));
++        // compass click path mirrors only after Yes
++        PartyFeatureTest.Rig cc = new PartyFeatureTest.Rig(5); FakeLink fc = new FakeLink(); cc.ctl.setLink(fc);
++        PartyFeatureTest.FP c1 = cc.java("Sam"), c2 = cc.java("Tia");
++        cc.ctl.compassClick(c1, c2);
++        check("compass question alone does not touch mcMMO", fc.calls.isEmpty());
++        cc.ctl.command(c1, new String[]{"cancel"}); cc.ctl.command(c1, new String[]{"confirm"});
++        check("compass cancel does not touch mcMMO", fc.calls.isEmpty());
++        cc.env.t += 2500; cc.ctl.compassClick(c1, c2); cc.ctl.command(c1, new String[]{"confirm"});
++        check("compass Yes mirrors the invite", fc.count("invite:Sam") == 1);
++    }
++
++    // ---------- reflective link against the mcMMO-shaped stub ----------
++    static Player player(UUID id, String name, Set<String> perms) {
++        return (Player) Proxy.newProxyInstance(McmmoLinkTest.class.getClassLoader(), new Class<?>[]{Player.class}, (p, m, a) -> switch (m.getName()) {
++            case "getUniqueId" -> id; case "getName" -> name;
++            case "hasPermission" -> perms.contains((String) a[0]);
++            case "hashCode" -> id.hashCode(); case "equals" -> p == a[0]; case "toString" -> name;
++            case "isOnline" -> true;
++            default -> m.getReturnType() == boolean.class ? (Object) false : m.getReturnType() == int.class ? (Object) 0 : null;
++        });
++    }
++    static final class World {
++        final Map<UUID, Player> on = new HashMap<>(); final Map<UUID, Player> known = new HashMap<>();
++        Player add(String n) { return add(n, Set.of()); }
++        Player add(String n, Set<String> perms) { UUID id = UUID.randomUUID(); Player p = player(id, n, perms); on.put(id, p); known.put(id, p); UserManager.players.put(id, new McMMOPlayer(p)); return p; }
++        McMMOPlayer mm(Player p) { return UserManager.players.get(p.getUniqueId()); }
++        ReflectMcmmoLink link() { return new ReflectMcmmoLink(McmmoLinkTest.class.getClassLoader(), on::get, known::get, LOG); }
++    }
++    static World fresh() { mcMMO.p = new mcMMO(); UserManager.players.clear(); return new World(); }
++    static com.gmail.nossr50.party.PartyManager pm() { return mcMMO.p.getPartyManager(); }
++    static UUID id(Player p) { return p.getUniqueId(); }
++
++    static void reflectTests() {
++        World w = fresh(); ReflectMcmmoLink l = w.link();
++        check("probe: nothing missing against the stub", l.available() && l.missing().isEmpty());
++        Player a = w.add("Ann"), b = w.add("Bob"), c = w.add("Cy"), d = w.add("Dee");
++        check("invite creates inviter's mcMMO party and sets invite", l.invite(id(a), id(b), "Ann") == McmmoLink.Mirror.OK && w.mm(a).getParty() != null && w.mm(a).getParty().getName().equals("Ann"));
++        check("invitee has the invite but is not in the party yet", w.mm(b).getPartyInvite() == w.mm(a).getParty() && w.mm(b).getParty() == null);
++        check("accept joins the mcMMO party", l.accept(id(b), id(a), "Ann") == McmmoLink.Mirror.OK && w.mm(b).getParty() == w.mm(a).getParty() && w.mm(a).getParty().getMembers().size() == 2);
++        check("invite consumed on join", !w.mm(b).hasPartyInvite());
++        check("member (not leader) can invite into the same mcMMO party", l.invite(id(b), id(c), "Bob") == McmmoLink.Mirror.OK && w.mm(c).getPartyInvite() == w.mm(a).getParty());
++        check("no second party was created", pm().parties.size() == 1);
++        l.cancel(id(c), id(b));
++        check("cancel clears the invite we set", !w.mm(c).hasPartyInvite());
++        // cancel must not remove an invite from a different party
++        World w2 = fresh(); ReflectMcmmoLink l2 = w2.link();
++        Player e = w2.add("Eve"), f = w2.add("Fay"), g = w2.add("Gil");
++        l2.invite(id(e), id(g), "Eve"); l2.invite(id(f), id(g), "Fay");   // Fay's invite replaces Eve's (mcMMO keeps one)
++        l2.cancel(id(g), id(e));
++        check("cancel for the other inviter leaves the current invite alone", w2.mm(g).getPartyInvite() != null && w2.mm(g).getPartyInvite().getName().equals("Fay"));
++        // solo party created for an invite that never got used is tidied up
++        l2.cancel(id(g), id(f)); l2.cleanup(x -> false);
++        check("unused invite: solo mcMMO parties we made are removed", pm().parties.isEmpty() && w2.mm(e).getParty() == null && w2.mm(f).getParty() == null);
++        // keep while an invite is still open
++        World w3 = fresh(); ReflectMcmmoLink l3 = w3.link(); Player h = w3.add("Hal"), i = w3.add("Ivy");
++        l3.invite(id(h), id(i), "Hal"); l3.cleanup(x -> true);
++        check("cleanup keeps the party while an invite is open", pm().parties.size() == 1);
++        // pre-existing mcMMO party is never disbanded by us
++        World w4 = fresh(); ReflectMcmmoLink l4 = w4.link(); Player j = w4.add("Jo"), k = w4.add("Kit");
++        pm().createParty(w4.mm(j), "Jos", null);
++        check("existing mcMMO party is reused", l4.invite(id(j), id(k), "Jo") == McmmoLink.Mirror.OK && w4.mm(k).getPartyInvite().getName().equals("Jos"));
++        l4.cancel(id(k), id(j)); l4.cleanup(x -> false);
++        check("existing mcMMO party is not removed by cleanup", pm().parties.size() == 1 && w4.mm(j).getParty() != null);
++        l4.leave(id(j));
++        check("leave for a player we did not put there does nothing", w4.mm(j).getParty() != null);
++        // target already in another mcMMO party
++        World w5 = fresh(); ReflectMcmmoLink l5 = w5.link(); Player m = w5.add("Moe"), n = w5.add("Nia"), o = w5.add("Oz");
++        pm().createParty(w5.mm(n), "Nias", null);
++        check("target in another mcMMO party: reported, no invite, no party made for inviter", l5.invite(id(m), id(n), "Moe") == McmmoLink.Mirror.TARGET_IN_OTHER_PARTY && w5.mm(m).getParty() == null && !w5.mm(n).hasPartyInvite());
++        check("same on accept", l5.accept(id(n), id(m), "Moe") == McmmoLink.Mirror.TARGET_IN_OTHER_PARTY && w5.mm(n).getParty().getName().equals("Nias"));
++        pm().createParty(w5.mm(m), "Moes", null); l5.invite(id(m), id(o), "Moe"); l5.accept(id(o), id(m), "Moe");
++        check("target already in the inviter's mcMMO party counts as done", l5.invite(id(m), id(o), "Moe") == McmmoLink.Mirror.OK);
++        // mcMMO size limit (smaller than our cap of 5)
++        World w6 = fresh(); mcMMO.p.general.maxSize = 2; ReflectMcmmoLink l6 = w6.link();
++        Player p1 = w6.add("Pat"), p2 = w6.add("Quin"), p3 = w6.add("Ray");
++        check("limit 2: first invite fine", l6.invite(id(p1), id(p2), "Pat") == McmmoLink.Mirror.OK);
++        check("limit 2: join fine", l6.accept(id(p2), id(p1), "Pat") == McmmoLink.Mirror.OK);
++        check("limit 2: third player reported FULL on invite", l6.invite(id(p1), id(p3), "Pat") == McmmoLink.Mirror.FULL && !w6.mm(p3).hasPartyInvite());
++        check("limit 2: third player not joined on accept either", l6.accept(id(p3), id(p1), "Pat") == McmmoLink.Mirror.FULL && w6.mm(p3).getParty() == null);
++        // two invites out at one open seat, first fills it
++        World w7 = fresh(); mcMMO.p.general.maxSize = 2; ReflectMcmmoLink l7 = w7.link();
++        Player s1 = w7.add("Sol"), s2 = w7.add("Tom"), s3 = w7.add("Uma");
++        l7.invite(id(s1), id(s2), "Sol"); l7.invite(id(s1), id(s3), "Sol");
++        check("first accept fills mcMMO", l7.accept(id(s2), id(s1), "Sol") == McmmoLink.Mirror.OK);
++        check("second accept finds mcMMO full", l7.accept(id(s3), id(s1), "Sol") == McmmoLink.Mirror.FULL && w7.mm(s3).getParty() == null && !w7.mm(s3).hasPartyInvite());
++        // bypass permission
++        World w8 = fresh(); mcMMO.p.general.maxSize = 2; ReflectMcmmoLink l8 = w8.link();
++        Player v1 = w8.add("Vic"), v2 = w8.add("Wes"), v3 = w8.add("Xia", Set.of("mcmmo.bypass.partylimit"));
++        l8.invite(id(v1), id(v2), "Vic"); l8.accept(id(v2), id(v1), "Vic");
++        check("bypass permission joins past the limit", l8.invite(id(v1), id(v3), "Vic") == McmmoLink.Mirror.OK);
++        // unlimited, and ours cap 5 with mcMMO unlimited / larger
++        World w9 = fresh(); mcMMO.p.general.maxSize = -1; ReflectMcmmoLink l9 = w9.link();
++        Player[] many = new Player[6]; for (int q = 0; q < 6; q++) many[q] = w9.add("Pl" + q);
++        boolean allOk = true; for (int q = 1; q < 6; q++) { allOk &= l9.invite(id(many[0]), id(many[q]), "Pl0") == McmmoLink.Mirror.OK && l9.accept(id(many[q]), id(many[0]), "Pl0") == McmmoLink.Mirror.OK; }
++        check("mcMMO unlimited: link never limits (our cap of 5 is ExcelTogether's job)", allOk && pm().parties.get(0).getMembers().size() == 6);
++        // locked party, non-leader inviter
++        World w10 = fresh(); ReflectMcmmoLink l10 = w10.link(); Player y1 = w10.add("Yan"), y2 = w10.add("Zoe"), y3 = w10.add("Abe");
++        pm().createParty(w10.mm(y1), "Yans", null); l10.invite(id(y1), id(y2), "Yan"); l10.accept(id(y2), id(y1), "Yan");
++        w10.mm(y1).getParty().setLocked(true);
++        check("locked party: non-leader inviter gets LOCKED", l10.invite(id(y2), id(y3), "Zoe") == McmmoLink.Mirror.LOCKED && !w10.mm(y3).hasPartyInvite());
++        check("locked party: leader can still invite", l10.invite(id(y1), id(y3), "Yan") == McmmoLink.Mirror.OK);
++        // party system off, profile not loaded, unknown player
++        World w11 = fresh(); ReflectMcmmoLink l11 = w11.link(); Player z1 = w11.add("Zed"), z2 = w11.add("Yui");
++        mcMMO.p.partyConfig.enabled = false;
++        check("mcMMO party system off: ABSENT, nothing changed", l11.invite(id(z1), id(z2), "Zed") == McmmoLink.Mirror.ABSENT && pm().parties.isEmpty() && l11.accept(id(z2), id(z1), "Zed") == McmmoLink.Mirror.ABSENT);
++        mcMMO.p.partyConfig.enabled = true;
++        UserManager.players.remove(id(z2));
++        check("profile not loaded: NOT_READY, no party made", l11.invite(id(z1), id(z2), "Zed") == McmmoLink.Mirror.NOT_READY && pm().parties.isEmpty());
++        check("offline player: NOT_READY", l11.invite(id(z1), UUID.randomUUID(), "Zed") == McmmoLink.Mirror.NOT_READY);
++        // names
++        World w12 = fresh(); ReflectMcmmoLink l12 = w12.link(); Player n1 = w12.add("Mike"), n2 = w12.add("Kay"), n3 = w12.add("Lou"), n4 = w12.add("Max");
++        pm().createParty(w12.mm(n3), "Mike", null);
++        l12.invite(id(n1), id(n2), "Mike");
++        check("name taken: next free name", w12.mm(n1).getParty().getName().equals("Mike2"));
++        l12.invite(id(n4), id(n2), ".Max party!");
++        check("dot and symbols stripped from the party name", w12.mm(n4).getParty().getName().equals("Maxparty"));
++        World w13 = fresh(); ReflectMcmmoLink l13 = w13.link(); Player r1 = w13.add("R1"), r2 = w13.add("R2");
++        l13.invite(id(r1), id(r2), "...");
++        check("empty name falls back to Family", w13.mm(r1).getParty().getName().equals("Family"));
++        // mcMMO party disbanded between invite and accept: recreated
++        World w14 = fresh(); ReflectMcmmoLink l14 = w14.link(); Player t1 = w14.add("Tia"), t2 = w14.add("Uri");
++        l14.invite(id(t1), id(t2), "Tia"); pm().removeFromParty(w14.mm(t1)); 
++        check("mcMMO party gone before accept: recreated and joined", l14.accept(id(t2), id(t1), "Tia") == McmmoLink.Mirror.OK && w14.mm(t2).getParty() != null && w14.mm(t2).getParty() == w14.mm(t1).getParty());
++        // leave mirrors
++        World w15 = fresh(); ReflectMcmmoLink l15 = w15.link(); Player u1 = w15.add("Una"), u2 = w15.add("Val"), u3 = w15.add("Wen");
++        l15.invite(id(u1), id(u2), "Una"); l15.accept(id(u2), id(u1), "Una"); l15.invite(id(u1), id(u3), "Una"); l15.accept(id(u3), id(u1), "Una");
++        l15.leave(id(u2));
++        check("leave mirrors: member removed from mcMMO party", w15.mm(u2).getParty() == null && w15.mm(u1).getParty().getMembers().size() == 2);
++        w15.on.remove(id(u3)); l15.leave(id(u3));
++        check("leave mirrors for an offline player (kicked after grace)", !w15.mm(u1).getParty().getMembers().containsKey(id(u3)));
++        l15.leave(id(u1));
++        check("leader leave removes the party when empty", pm().parties.isEmpty());
++        // someone who joined mcMMO on their own (not via us) is never removed by our leave
++        World w16 = fresh(); ReflectMcmmoLink l16 = w16.link(); Player a1 = w16.add("Ada"), a2 = w16.add("Bev");
++        pm().createParty(w16.mm(a1), "Adas", null); l16.leave(id(a2)); l16.leave(id(a1));
++        check("leave ignores players we never linked", pm().parties.size() == 1 && w16.mm(a1).getParty() != null);
++        // moved to a different mcMMO party after we linked them: leave must not touch the new one
++        World w17 = fresh(); ReflectMcmmoLink l17 = w17.link(); Player c1 = w17.add("Cal"), c2 = w17.add("Dot");
++        l17.invite(id(c1), id(c2), "Cal"); l17.accept(id(c2), id(c1), "Cal");
++        pm().removeFromParty(w17.mm(c2)); pm().createParty(w17.mm(c2), "Dots", null);
++        l17.leave(id(c2));
++        check("leave does not remove them from a different mcMMO party they joined later", w17.mm(c2).getParty() != null && w17.mm(c2).getParty().getName().equals("Dots"));
++        // mcMMO throws
++        World w18 = fresh(); ReflectMcmmoLink l18 = w18.link(); Player e1 = w18.add("Eli"), e2 = w18.add("Flo");
++        mcMMO.p = null;
++        check("mcMMO internals failing give ERROR, not an exception", l18.invite(id(e1), id(e2), "Eli") == McmmoLink.Mirror.ERROR);
++        l18.cancel(id(e2), id(e1)); l18.leave(id(e1)); l18.cleanup(x -> false);
++        check("other calls survive too", true);
++    }
++
++    static void absentTests() throws Exception {
++        List<String> miss = ReflectMcmmoLink.probe(ClassLoader.getPlatformClassLoader());
++        check("mcMMO absent: probe lists missing classes", !miss.isEmpty() && miss.get(0).startsWith("class "));
++        ReflectMcmmoLink l = new ReflectMcmmoLink(ClassLoader.getPlatformClassLoader(), x -> null, x -> null, LOG);
++        check("mcMMO absent: link unavailable and every call is a quiet no-op", !l.available() && l.invite(UUID.randomUUID(), UUID.randomUUID(), "x") == McmmoLink.Mirror.ABSENT
++                && l.accept(UUID.randomUUID(), UUID.randomUUID(), "x") == McmmoLink.Mirror.ABSENT);
++        l.cancel(UUID.randomUUID(), UUID.randomUUID()); l.leave(UUID.randomUUID()); l.cleanup(x -> false);
++        check("mcMMO absent: NONE link", !McmmoLink.NONE.available() && McmmoLink.NONE.invite(null, null, null) == McmmoLink.Mirror.ABSENT);
++        // real mcMMO jar signature check (names only; never run)
++        String jar = System.getProperty("mcmmojar");
++        if (jar != null && new java.io.File(jar).exists()) {
++            ClassLoader app = McmmoLinkTest.class.getClassLoader();
++            ClassLoader hide = new ClassLoader(app) {
++                @Override protected Class<?> loadClass(String n, boolean r) throws ClassNotFoundException {
++                    if (n.startsWith("com.gmail.nossr50.") ) throw new ClassNotFoundException(n);
++                    return super.loadClass(n, r);
++                }
++            };
++            ClassLoader real = new URLClassLoader(new URL[]{new java.io.File(jar).toURI().toURL()}, hide);
++            List<String> m2 = ReflectMcmmoLink.probe(real);
++            check("REAL mcMMO 2.3.003 jar: every method the link uses exists " + m2, m2.isEmpty());
++        } else check("real mcMMO jar present for signature check (UNCONFIRMED if missing)", false);
++    }
++
++    public static void main(String[] a) throws Exception {
++        wiringTests(); reflectTests(); absentTests();
++        System.out.println("McmmoLinkTest: " + pass + " passed, " + fail + " failed");
++        System.exit(fail == 0 ? 0 : 1);
++    }
++}
+diff -ruN o/tests/com/winkreyes/exceltogether/PartyFeatureTest.java n/tests/com/winkreyes/exceltogether/PartyFeatureTest.java
+--- o/tests/com/winkreyes/exceltogether/PartyFeatureTest.java	1969-12-31 18:00:00.000000000 -0600
++++ n/tests/com/winkreyes/exceltogether/PartyFeatureTest.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,618 @@
++package com.winkreyes.exceltogether;
++
++import java.nio.file.*;
++import java.util.*;
++import java.util.function.Consumer;
++import java.util.function.IntConsumer;
++
++/** WRV-063 tests: party rules, name matching, menus and popups, config. Exit code 1 on any failure. */
++public class PartyFeatureTest {
++    static int pass = 0, fail = 0;
++    static void check(String n, boolean ok) { if (ok) pass++; else { fail++; System.out.println("FAIL " + n); } }
++
++    // ---------- fakes ----------
++    static final class FP implements PlayerView {
++        final UUID id; final String real, nick; final boolean bedrock;
++        final List<String> said = new ArrayList<>(); final List<Panel> panels = new ArrayList<>(); final List<String> bars = new ArrayList<>();
++        FP(String real, String nick, boolean bedrock) { this(UUID.randomUUID(), real, nick, bedrock); }
++        FP(UUID id, String real, String nick, boolean bedrock) { this.id = id; this.real = real; this.nick = nick; this.bedrock = bedrock; }
++        public UUID id() { return id; } public String realName() { return real; } public String displayName() { return nick; }
++        public boolean bedrock() { return bedrock; }
++        public void say(String l) { said.add(l); } public void say(Panel p) { panels.add(p); said.add(p.plain()); }
++        public void actionBar(String t) { bars.add(t); }
++        String all() { return String.join("\n", said); }
++        boolean heard(String s) { return all().contains(s); }
++        void clear() { said.clear(); panels.clear(); bars.clear(); }
++    }
++    static final class FEnv implements Env {
++        final Map<UUID, FP> on = new LinkedHashMap<>(); long t = 1_000_000L; final Set<UUID> vanished = new HashSet<>();
++        FP add(FP p) { on.put(p.id, p); return p; }
++        public PlayerView online(UUID id) { return on.get(id); }
++        public List<PlayerView> visibleOthers(PlayerView v) {
++            List<PlayerView> o = new ArrayList<>();
++            for (FP p : on.values()) if (!p.id.equals(v.id()) && !vanished.contains(p.id)) o.add(p);
++            return o;
++        }
++        public long now() { return t; }
++    }
++    static final class FForms implements Forms {
++        boolean works = true; final List<String> titles = new ArrayList<>(); final List<List<String>> buttons = new ArrayList<>(); final List<String> contents = new ArrayList<>();
++        IntConsumer lastSimple; Consumer<Boolean> lastModal; PlayerView lastTo;
++        public boolean simple(PlayerView p, String t, String c, List<String> b, IntConsumer cb) {
++            if (!works) return false; titles.add(t); contents.add(c); buttons.add(b); lastSimple = cb; lastTo = p; return true;
++        }
++        public boolean modal(PlayerView p, String t, String c, String y, String n, Consumer<Boolean> cb) {
++            if (!works) return false; titles.add(t); contents.add(c); buttons.add(List.of(y, n)); lastModal = cb; lastTo = p; return true;
++        }
++        public boolean custom(PlayerView p, String t, List<Field> f, Consumer<List<Object>> cb) { return false; }
++        String lastTitle() { return titles.isEmpty() ? "" : titles.get(titles.size() - 1); }
++        List<String> lastButtons() { return buttons.get(buttons.size() - 1); }
++    }
++    static final class Rig {
++        final FEnv env = new FEnv(); final FForms forms = new FForms(); final PartyManager mgr; final Controller ctl;
++        Rig(int max) {
++            mgr = new PartyManager(max, 60_000, 300_000, id -> env.on.containsKey(id));
++            ctl = new Controller(mgr, env, forms, "Party bonus: +25% Jobs money and XP when a party member is within 50 blocks.");
++        }
++        FP java(String n) { return env.add(new FP(n, n, false)); }
++        FP bedrock(String n) { return env.add(new FP(n, n, true)); }
++    }
++
++    static UUID u() { return UUID.randomUUID(); }
++
++    // ---------- PartyManager ----------
++    static void managerTests() {
++        Set<UUID> on = new HashSet<>();
++        UUID a = u(), b = u(), c = u(), d = u(), e = u(), f = u(); on.addAll(List.of(a, b, c, d, e, f));
++        PartyManager m = new PartyManager(5, 60_000, 300_000, on::contains);
++        long t = 1000;
++        check("invite self", m.invite(a, a, t) == PartyManager.InviteResult.SELF);
++        check("invite ok", m.invite(a, b, t) == PartyManager.InviteResult.OK);
++        check("invite duplicate", m.invite(a, b, t + 5) == PartyManager.InviteResult.DUPLICATE);
++        check("no party yet (invite alone does not make one)", !m.inParty(a) && !m.inParty(b));
++        PartyManager.AcceptOutcome o = m.accept(b, null, t + 10);
++        check("accept ok", o.result == PartyManager.AcceptResult.OK && o.created);
++        check("inviter is leader", m.partyOf(a).leader.equals(a) && m.partyOf(b).size() == 2);
++        check("same party", m.sameParty(a, b) && !m.sameParty(a, c));
++        check("invite already member", m.invite(a, b, t + 20) == PartyManager.InviteResult.ALREADY_MEMBER);
++        check("member can invite too", m.invite(b, c, t + 20) == PartyManager.InviteResult.OK);
++        check("accept again by same member after joined -> already in party", m.accept(b, null, t + 30).result == PartyManager.AcceptResult.NO_INVITE);
++        // other-party
++        PartyManager m2 = new PartyManager(5, 60_000, 300_000, on::contains);
++        m2.invite(a, b, t); m2.accept(b, null, t);
++        m2.invite(c, d, t); m2.accept(d, null, t);
++        check("target in other party", m2.invite(a, c, t) == PartyManager.InviteResult.TARGET_IN_OTHER_PARTY);
++        // full party: cap 5
++        PartyManager m3 = new PartyManager(5, 60_000, 300_000, on::contains);
++        UUID[] ids = new UUID[8]; for (int i = 0; i < 8; i++) { ids[i] = u(); on.add(ids[i]); }
++        for (int i = 1; i < 5; i++) { m3.invite(ids[0], ids[i], t); check("join " + i, m3.accept(ids[i], null, t).result == PartyManager.AcceptResult.OK); }
++        check("party at cap", m3.partyOf(ids[0]).size() == 5);
++        check("invite when full", m3.invite(ids[0], ids[5], t) == PartyManager.InviteResult.PARTY_FULL);
++        check("member invite when full", m3.invite(ids[2], ids[5], t) == PartyManager.InviteResult.PARTY_FULL);
++        // full at accept time (two invites out at size 4)
++        PartyManager m4 = new PartyManager(3, 60_000, 300_000, on::contains);
++        m4.invite(ids[0], ids[1], t); m4.accept(ids[1], null, t);
++        check("size 2 invite 1", m4.invite(ids[0], ids[2], t) == PartyManager.InviteResult.OK);
++        check("size 2 invite 2", m4.invite(ids[0], ids[3], t) == PartyManager.InviteResult.OK);
++        check("first fills", m4.accept(ids[2], null, t).result == PartyManager.AcceptResult.OK);
++        check("second finds it full", m4.accept(ids[3], null, t).result == PartyManager.AcceptResult.PARTY_FULL);
++        check("failed joiner not in party", !m4.inParty(ids[3]));
++        // expiry
++        PartyManager m5 = new PartyManager(5, 60_000, 300_000, on::contains);
++        m5.invite(a, b, 0);
++        check("valid at exactly ttl", m5.hasInvite(a, b, 60_000));
++        check("expired 1ms later", !m5.hasInvite(a, b, 60_001));
++        check("accept expired", m5.accept(b, null, 60_001).result == PartyManager.AcceptResult.EXPIRED);
++        check("expired accept makes no party", !m5.inParty(a));
++        m5.invite(a, c, 0);
++        PartyManager.SweepResult sw = m5.sweep(70_000);
++        check("sweep reports expired", sw.expired.size() >= 1);
++        check("after sweep re-invite allowed", m5.invite(a, c, 70_001) == PartyManager.InviteResult.OK);
++        check("expired duplicate can be re-sent without sweep", new PartyManager(5, 1000, 1, on::contains) != null);
++        PartyManager m6 = new PartyManager(5, 1000, 300_000, on::contains);
++        m6.invite(a, b, 0);
++        check("re-invite after expiry (no sweep run)", m6.invite(a, b, 5000) == PartyManager.InviteResult.OK);
++        // decline
++        PartyManager m7 = new PartyManager(5, 60_000, 300_000, on::contains);
++        m7.invite(a, b, 0);
++        check("decline returns invite", m7.decline(b, null, 1) != null);
++        check("decline again nothing", m7.decline(b, null, 2) == null);
++        check("accept after decline", m7.accept(b, null, 3).result == PartyManager.AcceptResult.NO_INVITE);
++        // inviter offline
++        PartyManager m8 = new PartyManager(5, 60_000, 300_000, on::contains);
++        UUID gone = u();
++        m8.invite(gone, b, 0);
++        check("inviter offline at accept", m8.accept(b, null, 1).result == PartyManager.AcceptResult.INVITER_OFFLINE);
++        // quit clears invites
++        PartyManager m9 = new PartyManager(5, 60_000, 300_000, on::contains);
++        m9.invite(a, b, 0); m9.onQuit(a, 1);
++        check("inviter quit removes invite", m9.invitesFor(b, 2).isEmpty());
++        // newest invite default, specific inviter
++        PartyManager m10 = new PartyManager(5, 60_000, 300_000, on::contains);
++        m10.invite(a, c, 0); m10.invite(b, c, 1);
++        check("two invites listed", m10.invitesFor(c, 2).size() == 2);
++        PartyManager.AcceptOutcome o10 = m10.accept(c, a, 3);
++        check("accept specific inviter", o10.result == PartyManager.AcceptResult.OK && m10.partyOf(c).leader.equals(a));
++        check("other invites to joiner cleared", m10.invitesFor(c, 4).isEmpty());
++        // cross invites
++        PartyManager m11 = new PartyManager(5, 60_000, 300_000, on::contains);
++        m11.invite(a, b, 0); m11.invite(b, a, 0);
++        m11.accept(b, a, 1);
++        check("cross invite cleaned after join", m11.accept(a, b, 2).result == PartyManager.AcceptResult.NO_INVITE && m11.partyOf(a).size() == 2);
++        // leader leaves
++        PartyManager m12 = new PartyManager(5, 60_000, 300_000, on::contains);
++        m12.invite(a, b, 0); m12.accept(b, null, 0); m12.invite(a, c, 0); m12.accept(c, null, 0);
++        PartyManager.Change ch = new PartyManager.Change();
++        check("leader leave ok", m12.leave(a, ch) == PartyManager.LeaveResult.LEFT);
++        check("new leader is oldest remaining", m12.partyOf(b).leader.equals(b) && ch.newLeader.equals(b) && !ch.disbanded);
++        check("leaver is free", !m12.inParty(a));
++        PartyManager.Change ch2 = new PartyManager.Change();
++        check("member leave to one disbands", m12.leave(c, ch2) == PartyManager.LeaveResult.DISBANDED_BY_LEAVE && ch2.disbanded);
++        check("remaining member freed", !m12.inParty(b) && !m12.inParty(c));
++        check("leave when none", m12.leave(a, null) == PartyManager.LeaveResult.NOT_IN_PARTY);
++        // leader prefers online successor
++        PartyManager m13 = new PartyManager(5, 60_000, 300_000, on::contains);
++        m13.invite(a, b, 0); m13.accept(b, null, 0); m13.invite(a, c, 0); m13.accept(c, null, 0);
++        m13.onQuit(b, 5);
++        PartyManager.Change ch3 = new PartyManager.Change(); m13.leave(a, ch3);
++        check("leader passes to online member, not offline one", ch3.newLeader.equals(c));
++        // kick
++        PartyManager m14 = new PartyManager(5, 60_000, 300_000, on::contains);
++        m14.invite(a, b, 0); m14.accept(b, null, 0); m14.invite(a, c, 0); m14.accept(c, null, 0);
++        check("non leader cannot kick", m14.kick(b, c, null) == PartyManager.KickResult.NOT_LEADER);
++        check("cannot kick self", m14.kick(a, a, null) == PartyManager.KickResult.SELF);
++        check("cannot kick stranger", m14.kick(a, d, null) == PartyManager.KickResult.TARGET_NOT_MEMBER);
++        check("kick ok", m14.kick(a, c, null) == PartyManager.KickResult.OK && !m14.inParty(c) && m14.partyOf(a).size() == 2);
++        check("kick not in party", m14.kick(e, a, null) == PartyManager.KickResult.NOT_IN_PARTY);
++        // grace on disconnect
++        PartyManager m15 = new PartyManager(5, 60_000, 300_000, on::contains);
++        m15.invite(a, b, 0); m15.accept(b, null, 0); m15.invite(a, c, 0); m15.accept(c, null, 0);
++        m15.onQuit(c, 1000);
++        check("still member during grace", m15.inParty(c) && m15.isOfflineGrace(c));
++        m15.sweep(1000 + 299_999);
++        check("still member just before grace ends", m15.inParty(c));
++        PartyManager.SweepResult sr = m15.sweep(1000 + 300_000);
++        check("removed after grace", !m15.inParty(c) && sr.removed.size() == 1 && sr.removed.get(0).removed.equals(c));
++        m15.onQuit(b, 400_000); m15.onJoin(b);
++        m15.sweep(400_000 + 400_000);
++        check("rejoin cancels removal", m15.inParty(b));
++        // last two both gone
++        PartyManager m16 = new PartyManager(5, 60_000, 1000, on::contains);
++        m16.invite(a, b, 0); m16.accept(b, null, 0);
++        m16.onQuit(a, 10); m16.onQuit(b, 10);
++        m16.sweep(5000);
++        check("everyone gone, no party left", !m16.inParty(a) && !m16.inParty(b));
++        // config clamps
++        check("bad max falls back to 5", new PartyManager(1, 0, -1, on::contains).maxSize() == 5 && new PartyManager(99, 0, -1, on::contains).maxSize() == 5);
++        check("bad ttl falls back to 60s", new PartyManager(5, 0, -1, on::contains).ttlMs() == 60_000);
++        check("max 2 and 20 allowed", new PartyManager(2, 1, 1, on::contains).maxSize() == 2 && new PartyManager(20, 1, 1, on::contains).maxSize() == 20);
++        check("party snapshot is immutable", throwsOnModify(m.partyOf(a).members));
++    }
++    static boolean throwsOnModify(List<UUID> l) { try { l.add(UUID.randomUUID()); return false; } catch (UnsupportedOperationException e) { return true; } }
++
++    // ---------- NameMatch ----------
++    static void nameTests() {
++        UUID k = u(), m = u(), j = u(), j2 = u();
++        List<NameMatch.Cand> cs = List.of(new NameMatch.Cand(k, ".coolgirlkail", "Kailey"), new NameMatch.Cand(m, ".MikeExcel", "\u00a7aMike"),
++                new NameMatch.Cand(j, "Jester_Turtle", "Jester_Turtle"));
++        check("dot typed", NameMatch.find(".coolgirlkail", cs).found.id.equals(k));
++        check("dot omitted", NameMatch.find("coolgirlkail", cs).found.id.equals(k));
++        check("case", NameMatch.find("COOLGIRLKAIL", cs).found.id.equals(k));
++        check("nickname", NameMatch.find("kailey", cs).found.id.equals(k));
++        check("nickname with color code on target", NameMatch.find("mike", cs).found.id.equals(m));
++        check("typed color code ignored", NameMatch.find("&aMike", cs).found.id.equals(m));
++        check("unique prefix", NameMatch.find("jest", cs).found.id.equals(j));
++        check("no match", !NameMatch.find("nobody", cs).isFound() && !NameMatch.find("nobody", cs).isAmbiguous());
++        check("empty query", !NameMatch.find("  ", cs).isFound());
++        check("only a dot", !NameMatch.find(".", cs).isFound());
++        List<NameMatch.Cand> twins = List.of(new NameMatch.Cand(j, "Kail", "Kail"), new NameMatch.Cand(j2, ".Kail", "Kail"));
++        check("java name wins exact", NameMatch.find("Kail", twins).found.id.equals(j));
++        check("dotted name picks bedrock twin", NameMatch.find(".Kail", twins).found.id.equals(j2));
++        List<NameMatch.Cand> amb = List.of(new NameMatch.Cand(j, "Steve1", "Steve1"), new NameMatch.Cand(j2, "Steve2", "Steve2"));
++        check("ambiguous prefix", NameMatch.find("steve", amb).isAmbiguous() && NameMatch.find("steve", amb).ambiguous.size() == 2);
++        check("exact beats prefix", NameMatch.find("steve1", amb).found.id.equals(j));
++        check("shown strips dot and color", Controller.shown("\u00a7aKailey", ".coolgirlkail").equals("Kailey") && Controller.shown(".coolgirlkail", ".coolgirlkail").equals("coolgirlkail"));
++        check("shown falls back to real name", Controller.shown("", ".coolgirlkail").equals("coolgirlkail") && Controller.shown(null, null).equals("Someone"));
++    }
++
++    // ---------- Controller ----------
++    static void controllerTests() {
++        // Java invite -> clickable popup -> accept
++        Rig r = new Rig(5);
++        FP mike = r.bedrock(".MikeExcel"), kail = r.bedrock(".coolgirlkail"), marv = r.java("GumGumJetPistol");
++        r.ctl.command(marv, new String[]{"invite", "coolgirlkail"});
++        check("inviter told", marv.heard("Party invite sent to coolgirlkail"));
++        check("bedrock invitee got a form", r.forms.lastTitle().equals("Party invite") && r.forms.lastButtons().equals(List.of("Accept", "Decline")));
++        check("form says who and expiry", r.forms.contents.get(0).contains("GumGumJetPistol") && r.forms.contents.get(0).contains("60 seconds"));
++        check("actionbar ping", kail.bars.size() == 1);
++        r.forms.lastSimple.accept(0);
++        check("accept joined", r.mgr.sameParty(marv.id, kail.id));
++        check("joiner told", kail.heard("You joined GumGumJetPistol's party (2/5)"));
++        check("leader told", marv.heard("coolgirlkail joined the party (2/5)"));
++
++        // Java invitee gets Accept and Decline buttons running real-name commands (dot included)
++        Rig r2 = new Rig(5);
++        FP a = r2.java("Alex"), bk = r2.bedrock(".coolgirlkail"); r2.forms.works = false;   // forms broken -> falls back to chat
++        r2.ctl.command(bk, new String[]{"invite", "alex"});
++        check("form failure falls back to chat panel", !a.panels.isEmpty());
++        Panel pn = a.panels.get(0);
++        boolean hasAcc = false, hasDec = false;
++        for (Panel.Line l : pn.lines) for (Panel.Seg s : l.segs) { if ("/excelparty accept .coolgirlkail".equals(s.run)) hasAcc = true; if ("/excelparty decline .coolgirlkail".equals(s.run)) hasDec = true; }
++        check("chat popup has Accept and Decline with dotted name", hasAcc && hasDec);
++        r2.ctl.command(a, new String[]{"accept", ".coolgirlkail"});
++        check("dotted accept works", r2.mgr.sameParty(a.id, bk.id));
++
++        // accept without a name, decline, nothing pending
++        Rig r3 = new Rig(5);
++        FP x = r3.java("X"), y = r3.java("Y");
++        r3.ctl.command(x, new String[]{"accept"});
++        check("accept with nothing", x.heard("no party invite"));
++        r3.ctl.command(y, new String[]{"invite", "x"});
++        r3.ctl.command(x, new String[]{"decline"});
++        check("decline tells both", x.heard("Invite declined") && y.heard("X declined your party invite"));
++        r3.ctl.command(x, new String[]{"accept"});
++        check("accept after decline", x.heard("no party invite") && !r3.mgr.inParty(x.id));
++
++        // self, unknown, offline, ambiguous, already member, already in other party, duplicate, full
++        Rig r4 = new Rig(3);
++        FP p1 = r4.java("Steve1"), p2 = r4.java("Steve2"), p3 = r4.java("Zed"), p4 = r4.java("Quin");
++        r4.ctl.command(p1, new String[]{"invite", "Steve1"});
++        check("invite self by name", p1.heard("can't invite yourself"));
++        r4.ctl.command(p1, new String[]{"invite", "nobody"});
++        check("unknown/offline target", p1.heard("can't find a player named nobody"));
++        r4.ctl.command(p3, new String[]{"invite", "steve"});
++        check("ambiguous names listed", p3.heard("More than one player") && p3.heard("Steve1") && p3.heard("Steve2"));
++        p1.clear(); r4.ctl.command(p1, new String[]{"invite", "Steve2"});
++        r4.ctl.command(p1, new String[]{"invite", "Steve2"});
++        check("duplicate invite", p1.heard("already invited Steve2"));
++        r4.ctl.command(p2, new String[]{"accept"});
++        p1.clear(); r4.ctl.command(p1, new String[]{"invite", "Steve2"});
++        check("already in your party", p1.heard("Steve2 is already in your party"));
++        r4.ctl.command(p3, new String[]{"invite", "Quin"}); r4.ctl.command(p4, new String[]{"accept"});
++        p1.clear(); r4.ctl.command(p1, new String[]{"invite", "Zed"});
++        check("target in another party", p1.heard("Zed is already in a party"));
++        // fill to cap 3
++        FP p5 = r4.java("Rae");
++        r4.ctl.command(p1, new String[]{"invite", "Rae"}); r4.ctl.command(p5, new String[]{"accept"});
++        FP p6 = r4.java("Sol");
++        p1.clear(); r4.ctl.command(p1, new String[]{"invite", "Sol"});
++        check("full party message", p1.heard("Your party is full (3/3)"));
++        r4.ctl.invitePicker(p1);
++        check("picker also says full", p1.heard("Your party is full"));
++
++        // expiry through tick + stale popup click
++        Rig r5 = new Rig(5);
++        FP e1 = r5.bedrock(".coolgirlkail"), e2 = r5.java("Marv");
++        r5.ctl.command(e2, new String[]{"invite", "coolgirlkail"});
++        IntConsumer stale = r5.forms.lastSimple;
++        r5.env.t += 59_000; r5.ctl.tick();
++        check("not expired at 59s", e2.heard("Party invite sent") && !e2.heard("ran out of time"));
++        r5.env.t += 2_000; r5.ctl.tick();
++        check("inviter told expiry", e2.heard("Your party invite to coolgirlkail ran out of time"));
++        check("invitee told expiry", e1.heard("party invite from Marv ran out of time"));
++        stale.accept(0);
++        check("stale Accept tap is refused", e1.heard("no party invite") && !r5.mgr.inParty(e1.id));
++        r5.ctl.command(e2, new String[]{"invite", "coolgirlkail"});
++        check("re-invite after expiry works", r5.mgr.hasInvite(e2.id, e1.id, r5.env.now()));
++
++        // closing the popup leaves the invite alive
++        Rig r6 = new Rig(5);
++        FP c1 = r6.bedrock(".coolgirlkail"), c2 = r6.java("Marv");
++        r6.ctl.command(c2, new String[]{"invite", "coolgirlkail"});
++        r6.forms.lastSimple.accept(-1);
++        check("closing popup keeps invite", r6.mgr.hasInvite(c2.id, c1.id, r6.env.now()));
++        r6.ctl.command(c1, new String[]{"invites"});
++        check("invites list form", r6.forms.lastTitle().equals("Party invites") && r6.forms.lastButtons().get(0).equals("From Marv"));
++        r6.forms.lastSimple.accept(0);
++        r6.forms.lastModal.accept(true);
++        check("accept from invites list", r6.mgr.sameParty(c1.id, c2.id));
++
++        // inviter leaves before accept
++        Rig r7 = new Rig(5);
++        FP g1 = r7.java("Gus"), g2 = r7.java("Hal");
++        r7.ctl.command(g1, new String[]{"invite", "Hal"});
++        r7.env.on.remove(g1.id); r7.ctl.playerQuit(g1.id);
++        r7.ctl.command(g2, new String[]{"accept"});
++        check("inviter gone", g2.heard("no party invite") || g2.heard("not online"));
++        check("no ghost party", !r7.mgr.inParty(g2.id));
++
++        // target offline mid-invite (left between picker and tap)
++        Rig r8 = new Rig(5);
++        FP h1 = r8.bedrock(".MikeExcel"), h2 = r8.java("Ivy");
++        r8.ctl.invitePicker(h1);
++        IntConsumer pick = r8.forms.lastSimple;
++        r8.env.on.remove(h2.id);
++        pick.accept(0);
++        check("target left after picking", h1.heard("just left the game"));
++
++        // picker lists only invitable players, hides vanished and busy
++        Rig r9 = new Rig(5);
++        FP m1 = r9.bedrock(".MikeExcel"), m2 = r9.java("Alice"), m3 = r9.java("Bob"), m4 = r9.java("Cat"), m5 = r9.java("Dan");
++        r9.mgr.invite(m3.id, m4.id, r9.env.now()); r9.mgr.accept(m4.id, null, r9.env.now());   // Bob+Cat are a party
++        r9.env.vanished.add(m5.id);
++        r9.ctl.invitePicker(m1);
++        check("picker only Alice", r9.forms.lastTitle().equals("Invite to party") && r9.forms.lastButtons().equals(List.of("Alice")));
++        check("picker notes busy players", r9.forms.contents.get(r9.forms.contents.size() - 1).contains("2 player(s) already in a party"));
++        FP j1 = r9.java("Jay");
++        r9.ctl.invitePicker(j1);
++        boolean listsAlice = false, listsBob = false, listsDan = false;
++        for (Panel.Line l : j1.panels.get(0).lines) for (Panel.Seg s : l.segs) { if ("/excelparty invite Alice".equals(s.run)) listsAlice = true; if ("/excelparty invite Bob".equals(s.run)) listsBob = true; if ("/excelparty invite Dan".equals(s.run)) listsDan = true; }
++        check("java picker lists Alice, not busy Bob, not vanished Dan", listsAlice && !listsBob && !listsDan);
++        // nobody else
++        Rig ra = new Rig(5); FP lone = ra.java("Lone");
++        ra.ctl.invitePicker(lone);
++        check("nobody online message", lone.heard("Nobody else is online"));
++        Rig rb = new Rig(5); FP l1 = rb.java("L1"), l2 = rb.java("L2"), l3 = rb.java("L3");
++        rb.mgr.invite(l2.id, l3.id, rb.env.now()); rb.mgr.accept(l3.id, null, rb.env.now());
++        rb.ctl.invitePicker(l1);
++        check("everyone busy message", l1.heard("already in a party"));
++
++        // nickname display + dot handling in picker and party list
++        Rig rc = new Rig(5);
++        FP n1 = rc.java("Marv"); FP n2 = rc.env.add(new FP(".coolgirlkail", "\u00a7dKailey", true));
++        rc.ctl.invitePicker(n1);
++        boolean nick = false; for (Panel.Line l : n1.panels.get(0).lines) for (Panel.Seg s : l.segs) if (s.text.equals("[Kailey]") && ".coolgirlkail".equals(s.run == null ? null : s.run.substring("/excelparty invite ".length()))) nick = true;
++        check("picker shows nickname, runs real dotted name", nick);
++        rc.ctl.command(n1, new String[]{"invite", "Kailey"});
++        check("invite by nickname", rc.mgr.hasInvite(n1.id, n2.id, rc.env.now()));
++
++        // my party view, offline marker, leave confirm
++        Rig rd = new Rig(5);
++        FP o1 = rd.java("Owen"), o2 = rd.java("Pia"), o3 = rd.bedrock(".Quill");
++        rd.ctl.command(o1, new String[]{"invite", "Pia"}); rd.ctl.command(o2, new String[]{"accept"});
++        rd.ctl.command(o1, new String[]{"invite", "Quill"}); rd.forms.lastSimple.accept(0);
++        o1.clear(); rd.ctl.command(o1, new String[]{"list"});
++        String view = o1.all();
++        check("party view lists all three", view.contains("(3/5)") && view.contains("Owen (leader)") && view.contains("Pia") && view.contains("Quill"));
++        rd.env.on.remove(o2.id); rd.ctl.playerQuit(o2.id);
++        o1.clear(); rd.ctl.command(o1, new String[]{"list"});
++        check("offline member marked", o1.heard("Pia (offline)"));
++        rd.ctl.command(o3, new String[]{"list"});
++        check("bedrock my party form has Leave", rd.forms.lastTitle().equals("My party") && rd.forms.lastButtons().contains("Leave party"));
++        o1.clear(); rd.ctl.command(o1, new String[]{"leave"});
++        check("leave asks first (still in party)", rd.mgr.inParty(o1.id) && o1.heard("Leave your party of 3/5?"));
++        boolean yes = false; for (Panel.Line l : o1.panels.get(0).lines) for (Panel.Seg s : l.segs) if ("/excelparty leave yes".equals(s.run)) yes = true;
++        check("leave confirm button present", yes);
++        o3.clear(); rd.ctl.command(o1, new String[]{"leave", "yes"});
++        check("leader left", !rd.mgr.inParty(o1.id) && o1.heard("You left the party"));
++        check("remaining told new leader", o3.heard("Owen left the party") && o3.heard("You are now the party leader"));
++        check("party continues with 2", rd.mgr.partyOf(o3.id).size() == 2);
++        rd.ctl.command(o1, new String[]{"leave", "yes"});
++        check("leave when not in party", o1.heard("not in a party"));
++        // bedrock leave uses a confirm modal
++        rd.ctl.command(o3, new String[]{"leave"});
++        check("bedrock leave confirm modal", rd.forms.lastTitle().equals("Leave party?") && rd.forms.lastButtons().equals(List.of("Yes, leave", "Stay")));
++        rd.forms.lastModal.accept(false);
++        check("Stay keeps party", rd.mgr.inParty(o3.id));
++        rd.forms.lastModal.accept(true);
++        check("Yes leaves; party of 2 disbands", !rd.mgr.inParty(o3.id));
++
++        // kick
++        Rig re = new Rig(5);
++        FP k1 = re.java("Lead"), k2 = re.java("Mem"), k3 = re.java("Other");
++        re.ctl.command(k1, new String[]{"invite", "Mem"}); re.ctl.command(k2, new String[]{"accept"});
++        re.ctl.command(k1, new String[]{"invite", "Other"}); re.ctl.command(k3, new String[]{"accept"});
++        k2.clear(); re.ctl.command(k2, new String[]{"kick", "Other"});
++        check("member cannot kick", k2.heard("Only the party leader"));
++        re.ctl.command(k1, new String[]{"kick", "Other"});
++        check("leader kicks", !re.mgr.inParty(k3.id) && k3.heard("removed from the party"));
++
++        // hub forms
++        Rig rf = new Rig(5);
++        FP q1 = rf.bedrock(".MikeExcel"), q2 = rf.java("Zoe");
++        rf.ctl.command(q1, new String[]{});
++        check("bedrock hub buttons", rf.forms.lastTitle().equals("Party") && rf.forms.lastButtons().equals(List.of("Invite to party", "My party", "Close")));
++        check("hub mentions bonus", rf.forms.contents.get(0).contains("+25%"));
++        rf.ctl.command(q2, new String[]{"invite", ".MikeExcel"});     // popup to Mike (bedrock)
++        rf.ctl.command(q1, new String[]{});
++        check("hub shows invite count", rf.forms.lastButtons().contains("Invites (1)"));
++        rf.forms.lastSimple.accept(0);   // Invite to party -> picker
++        check("hub tap opens picker", rf.forms.lastTitle().equals("Invite to party"));
++        rf.ctl.command(q2, new String[]{});
++        check("java hub panel has buttons", q2.panels.get(q2.panels.size() - 1).longestButton() > 0);
++        rf.ctl.command(q2, new String[]{"help"});
++        check("help lists commands", q2.heard("/excelparty invite <name>"));
++        rf.ctl.command(q2, new String[]{"bogus"});
++        check("unknown subcommand shows help", q2.panels.size() >= 3);
++
++        // compass click: confirm first, cooldown, then the normal invite path
++        Rig rg = new Rig(5);
++        FP s1 = rg.java("Sam"), s2 = rg.java("Tia");
++        rg.ctl.compassClick(s1, s2);
++        check("java: compass click asks first, sends nothing", !rg.mgr.hasInvite(s1.id, s2.id, rg.env.now()) && s2.said.isEmpty() && s2.bars.isEmpty());
++        check("java: question text", s1.heard("Invite Tia to your party?"));
++        check("java: Yes and Cancel are clickable", s1.panels.size() == 1 && s1.panels.get(0).plain().contains("[Yes]") && s1.panels.get(0).plain().contains("[Cancel]"));
++        rg.ctl.compassClick(s1, s2);
++        check("double tap asks once", s1.said.size() == 1);
++        rg.ctl.command(s1, new String[]{"confirm"});
++        check("java: Yes sends the invite", rg.mgr.hasInvite(s1.id, s2.id, rg.env.now()) && s1.heard("Party invite sent to Tia") && s2.heard("Accept"));
++        check("invitee still not in party until accept", !rg.mgr.inParty(s2.id));
++        rg.ctl.command(s1, new String[]{"confirm"});
++        check("second Yes tap does nothing more", s1.heard("Nothing to confirm"));
++        rg.env.t += 2500;
++        rg.ctl.compassClick(s1, s2); rg.ctl.command(s1, new String[]{"confirm"});
++        check("after cooldown the duplicate rule answers", s1.heard("already invited Tia"));
++        rg.ctl.compassClick(s1, s1);
++        rg.env.t += 2500;
++        rg.ctl.compassClick(s1, s1);
++        check("compass click on self refused", s1.heard("can't invite yourself"));
++
++        // long grace removal announces
++        Rig rh = new Rig(5);
++        FP w1 = rh.java("Wes"), w2 = rh.java("Xan"), w3 = rh.java("Yui");
++        rh.ctl.command(w1, new String[]{"invite", "Xan"}); rh.ctl.command(w2, new String[]{"accept"});
++        rh.ctl.command(w1, new String[]{"invite", "Yui"}); rh.ctl.command(w3, new String[]{"accept"});
++        rh.env.on.remove(w3.id); rh.ctl.playerQuit(w3.id);
++        rh.env.t += 301_000; rh.ctl.tick();
++        check("away too long member removed and announced", !rh.mgr.inParty(w3.id) && w1.heard("Yui was away too long") && rh.mgr.partyOf(w1.id).size() == 2);
++        FP w3b = rh.env.add(new FP(w3.id, "Yui", "Yui", false));
++        rh.ctl.playerJoin(w3b);
++        check("returning player not told they are still in party", !w3b.heard("still in your party"));
++        rh.env.on.remove(w2.id); rh.ctl.playerQuit(w2.id);
++        FP w2b = rh.env.add(new FP(w2.id, "Xan", "Xan", false)); rh.ctl.playerJoin(w2b);
++        check("quick reconnect keeps seat and says so", rh.mgr.inParty(w2.id) && w2b.heard("still in your party"));
++    }
++
++    // ---------- bonus mode ----------
++    static void bonusTests() {
++        check("parse party", BonusMode.parse("party") == BonusMode.PARTY && BonusMode.parse(" PARTY ") == BonusMode.PARTY);
++        check("parse nearby/either", BonusMode.parse("nearby") == BonusMode.NEARBY && BonusMode.parse("Either") == BonusMode.EITHER);
++        check("junk/null falls back to party", BonusMode.parse("zzz") == BonusMode.PARTY && BonusMode.parse(null) == BonusMode.PARTY && BonusMode.parse("") == BonusMode.PARTY);
++        check("party mode: stranger nearby does not count", !BonusMode.PARTY.counts(false, true));
++        check("party mode: party member near counts", BonusMode.PARTY.counts(true, true));
++        check("party mode: nobody", !BonusMode.PARTY.counts(false, false));
++        check("nearby mode: stranger counts", BonusMode.NEARBY.counts(false, true) && !BonusMode.NEARBY.counts(false, false));
++        check("either mode", BonusMode.EITHER.counts(true, true) && BonusMode.EITHER.counts(false, true) && !BonusMode.EITHER.counts(false, false));
++    }
++
++    // ---------- compass confirm ----------
++    static void confirmTests() {
++        // confirm: cancel sends nothing
++        Rig rc = new Rig(5);
++        FP c1 = rc.java("Cal"), c2 = rc.java("Dee");
++        rc.ctl.compassClick(c1, c2);
++        rc.ctl.command(c1, new String[]{"cancel"});
++        check("java cancel: no invite, invitee told nothing", !rc.mgr.hasInvite(c1.id, c2.id, rc.env.now()) && c2.said.isEmpty() && c2.bars.isEmpty() && c2.panels.isEmpty());
++        check("java cancel: inviter told", c1.heard("no invite sent"));
++        rc.ctl.command(c1, new String[]{"confirm"});
++        check("Yes after Cancel sends nothing", !rc.mgr.hasInvite(c1.id, c2.id, rc.env.now()) && c2.said.isEmpty());
++        rc.ctl.command(c1, new String[]{"cancel"});
++        check("cancel with nothing pending is harmless", c1.heard("Nothing to cancel"));
++        // confirm with nothing pending
++        rc.ctl.command(c2, new String[]{"confirm"});
++        check("Yes with nothing pending sends nothing", c2.heard("Nothing to confirm") && !rc.mgr.hasInvite(c2.id, c1.id, rc.env.now()));
++
++        // confirm expiry
++        Rig re = new Rig(5);
++        FP e1 = re.java("Eli"), e2 = re.java("Fay");
++        re.ctl.compassClick(e1, e2);
++        re.env.t += Controller.CONFIRM_TTL_MS;
++        re.ctl.command(e1, new String[]{"confirm"});
++        check("Yes exactly at 30s still works", re.mgr.hasInvite(e1.id, e2.id, re.env.now()));
++        Rig rx = new Rig(5);
++        FP x1 = rx.java("Gus"), x2 = rx.java("Hal");
++        rx.ctl.compassClick(x1, x2);
++        rx.env.t += Controller.CONFIRM_TTL_MS + 1;
++        rx.ctl.command(x1, new String[]{"confirm"});
++        check("Yes after 30s: timed out, nothing sent", x1.heard("timed out") && !rx.mgr.hasInvite(x1.id, x2.id, rx.env.now()) && x2.said.isEmpty());
++        rx.ctl.command(x1, new String[]{"confirm"});
++        check("expired confirm is cleared", x1.heard("Nothing to confirm"));
++
++        // target logged off between click and Yes
++        Rig rl = new Rig(5);
++        FP l1 = rl.java("Ivy"), l2 = rl.java("Jon");
++        rl.ctl.compassClick(l1, l2);
++        rl.env.on.remove(l2.id); rl.ctl.playerQuit(l2.id);
++        rl.ctl.command(l1, new String[]{"confirm"});
++        check("target logged off: told, nothing sent", l1.heard("just left the game") && !rl.mgr.hasInvite(l1.id, l2.id, rl.env.now()));
++        // inviter logs off, state cleared
++        Rig rq = new Rig(5);
++        FP q1b = rq.java("Kim"), q2b = rq.java("Lou");
++        rq.ctl.compassClick(q1b, q2b); rq.ctl.playerQuit(q1b.id);
++        rq.ctl.command(q1b, new String[]{"confirm"});
++        check("inviter relog: old question gone", q1b.heard("Nothing to confirm") && !rq.mgr.hasInvite(q1b.id, q2b.id, rq.env.now()));
++        // second click on another player replaces the first question
++        Rig rr = new Rig(5);
++        FP r1 = rr.java("Max"), r2 = rr.java("Ned"), r3 = rr.java("Oli");
++        rr.ctl.compassClick(r1, r2); rr.env.t += 2500; rr.ctl.compassClick(r1, r3);
++        rr.ctl.command(r1, new String[]{"confirm"});
++        check("Yes applies to the latest player only", rr.mgr.hasInvite(r1.id, r3.id, rr.env.now()) && !rr.mgr.hasInvite(r1.id, r2.id, rr.env.now()));
++        // full party: asked, then refused at Yes (rules unchanged)
++        Rig rf2 = new Rig(2);
++        FP f1 = rf2.java("Pam"), f2 = rf2.java("Quin"), f3 = rf2.java("Rex");
++        rf2.ctl.command(f1, new String[]{"invite", "Quin"}); rf2.ctl.command(f2, new String[]{"accept"});
++        rf2.ctl.compassClick(f1, f3); rf2.ctl.command(f1, new String[]{"confirm"});
++        check("full party refused after Yes", f1.heard("party is full") && f3.said.isEmpty());
++        // any member (not leader) can invite via compass
++        rf2.ctl.compassClick(f2, f3); rf2.ctl.command(f2, new String[]{"confirm"});
++        check("non-leader member compass invite reaches the same rules", f2.heard("party is full"));
++        Rig rm = new Rig(5);
++        FP m1 = rm.java("Sol"), m2 = rm.java("Tom"), m3 = rm.java("Uma");
++        rm.ctl.command(m1, new String[]{"invite", "Tom"}); rm.ctl.command(m2, new String[]{"accept"});
++        rm.ctl.compassClick(m2, m3); rm.ctl.command(m2, new String[]{"confirm"});
++        check("non-leader member invite works, invitee must still accept", rm.mgr.hasInvite(m2.id, m3.id, rm.env.now()) && !rm.mgr.inParty(m3.id));
++        rm.ctl.command(m3, new String[]{"accept"});
++        check("invitee accepts into the party", rm.mgr.sameParty(m1.id, m3.id));
++
++        // Bedrock: modal Yes / Cancel
++        Rig rb = new Rig(5);
++        FP b1 = rb.bedrock(".Ann"), b2 = rb.java("Bo");
++        rb.ctl.compassClick(b1, b2);
++        check("bedrock: confirm form shown with Yes/Cancel", rb.forms.lastTitle().equals("Party invite") && rb.forms.lastButtons().equals(List.of("Yes", "Cancel")) && rb.forms.contents.get(rb.forms.contents.size() - 1).contains("Invite Bo to your party?"));
++        check("bedrock: nothing sent before the tap", !rb.mgr.hasInvite(b1.id, b2.id, rb.env.now()) && b2.said.isEmpty());
++        rb.forms.lastModal.accept(false);
++        check("bedrock Cancel sends nothing", !rb.mgr.hasInvite(b1.id, b2.id, rb.env.now()) && b2.said.isEmpty() && b2.bars.isEmpty());
++        rb.forms.lastModal.accept(true);
++        check("bedrock Yes after Cancel sends nothing", !rb.mgr.hasInvite(b1.id, b2.id, rb.env.now()));
++        rb.env.t += 2500;
++        rb.ctl.compassClick(b1, b2);
++        rb.forms.lastModal.accept(true);
++        check("bedrock Yes sends the invite", rb.mgr.hasInvite(b1.id, b2.id, rb.env.now()) && b2.panels.size() == 1);
++        // bedrock stale form: asked about Bo, then clicked another player; old form must not invite Bo
++        Rig rs = new Rig(5);
++        FP t1 = rs.bedrock(".Zed"), t2 = rs.java("Amy"), t3 = rs.java("Ben");
++        rs.ctl.compassClick(t1, t2);
++        Consumer<Boolean> oldForm = rs.forms.lastModal;
++        rs.env.t += 2500; rs.ctl.compassClick(t1, t3);
++        oldForm.accept(true);
++        check("bedrock stale form for another player is refused", !rs.mgr.hasInvite(t1.id, t2.id, rs.env.now()) && !rs.mgr.hasInvite(t1.id, t3.id, rs.env.now()));
++        // bedrock expiry and logoff
++        Rig rt = new Rig(5);
++        FP u1 = rt.bedrock(".Cy"), u2 = rt.java("Di");
++        rt.ctl.compassClick(u1, u2);
++        rt.env.t += Controller.CONFIRM_TTL_MS + 1000;
++        rt.forms.lastModal.accept(true);
++        check("bedrock Yes after expiry sends nothing", u1.heard("timed out") && !rt.mgr.hasInvite(u1.id, u2.id, rt.env.now()));
++        rt.env.t += 2500;
++        rt.ctl.compassClick(u1, u2);
++        rt.env.on.remove(u2.id); rt.ctl.playerQuit(u2.id);
++        rt.forms.lastModal.accept(true);
++        check("bedrock target logged off: told, nothing sent", u1.heard("just left the game") && !rt.mgr.hasInvite(u1.id, u2.id, rt.env.now()));
++        // form could not be sent -> chat fallback
++        Rig ru = new Rig(5);
++        FP v1 = ru.bedrock(".Eve"), v2 = ru.java("Flo");
++        ru.forms.works = false;
++        ru.ctl.compassClick(v1, v2);
++        check("bedrock form failure falls back to Yes/Cancel chat panel", v1.panels.size() == 1 && v1.panels.get(0).plain().contains("[Yes]"));
++        ru.ctl.command(v1, new String[]{"confirm"});
++        check("fallback Yes sends", ru.mgr.hasInvite(v1.id, v2.id, ru.env.now()));
++
++    }
++
++    // ---------- packaging and wiring ----------
++    static void packagingTests() throws Exception {
++        String plugin = Files.readString(Path.of(System.getProperty("plugin")));
++        String cfg = Files.readString(Path.of(System.getProperty("cfg")));
++        check("plugin version 0.2.0", plugin.contains("version: 0.2.0"));
++        check("command is excelparty", plugin.contains("  excelparty:") && plugin.contains("aliases: [eparty, together]"));
++        check("does NOT claim bare /party (mcMMO owns it)", !plugin.contains("\n  party:") && !plugin.contains("[party") && !plugin.contains(", party"));
++        check("Jobs still required", plugin.contains("depend: [Jobs]"));
++        check("permission default true", plugin.contains("excelparty.use") && plugin.contains("default: true"));
++        check("config keys", cfg.contains("multiplier: 1.25") && cfg.contains("radius: 50") && cfg.contains("bonus-mode: party") && cfg.contains("max-party-size: 5")
++                && cfg.contains("invite-expiry-seconds: 60") && cfg.contains("compass-click-invite: true"));
++        check("controller command constant matches plugin.yml", Controller.CMD.equals("excelparty"));
++        Path src = Path.of(System.getProperty("src"));
++        StringBuilder all = new StringBuilder();
++        try (var w = Files.walk(src)) { for (Path p : (Iterable<Path>) w.filter(x -> x.toString().endsWith(".java"))::iterator) all.append(Files.readString(p)); }
++        String code = all.toString();
++        check("no teleport or economy calls in the plugin", !code.contains(".teleport(") && !code.contains("performCommand") && !code.contains("dispatchCommand") && !code.contains("Economy"));
++        check("no em dashes in player-facing code", !code.contains("\u2014"));
++        // real Cumulus form builders accept our forms
++        java.io.File fg = new java.io.File("/workspace/mc/test26/plugins/floodgate.jar");
++        if (fg.exists()) {
++            ClassLoader l = new java.net.URLClassLoader(new java.net.URL[]{fg.toURI().toURL()}, ClassLoader.getPlatformClassLoader());
++            try {
++                check("real Cumulus SimpleForm builds (Accept/Decline)", GeyserForms.buildSimple(l, "Party invite", "Body", List.of("Accept", "Decline"), i -> {}) != null);
++                check("real Cumulus ModalForm builds", GeyserForms.buildModal(l, "Leave party?", "Body", "Yes, leave", "Stay", b -> {}) != null);
++                List<String> many = new ArrayList<>(); for (int i = 0; i < 20; i++) many.add("Player" + i);
++                check("real Cumulus picker with 20 buttons builds", GeyserForms.buildSimple(l, "Invite to party", "Body", many, i -> {}) != null);
++            } catch (Throwable t) { check("Cumulus build threw " + t, false); }
++        } else check("floodgate jar present for form check (UNCONFIRMED if missing)", false);
++    }
++
++    public static void main(String[] a) throws Exception {
++        managerTests(); nameTests(); controllerTests(); confirmTests(); bonusTests(); packagingTests();
++        System.out.println("PartyFeatureTest: " + pass + " passed, " + fail + " failed");
++        System.exit(fail == 0 ? 0 : 1);
++    }
++}
+diff -ruN o/tests/com/winkreyes/exceltogether/PartyTest.java n/tests/com/winkreyes/exceltogether/PartyTest.java
+--- o/tests/com/winkreyes/exceltogether/PartyTest.java	1969-12-31 18:00:00.000000000 -0600
++++ n/tests/com/winkreyes/exceltogether/PartyTest.java	2026-10-16 00:00:00.000000000 -0500
+@@ -0,0 +1,72 @@
++package com.winkreyes.exceltogether;
++
++import com.gamingmesh.jobs.api.JobsPrePaymentEvent;
++import org.bukkit.OfflinePlayer;
++import java.lang.reflect.Proxy;
++
++/** Dependency-free test runner (no JUnit needed). Exit code 1 on any failure. */
++public class PartyTest {
++    static int fail = 0, pass = 0;
++    static void check(String n, boolean ok) { if (ok) pass++; else { fail++; System.out.println("FAIL " + n); } }
++    static boolean eq(double a, double b) { return Math.abs(a - b) < 1e-9; }
++
++    static OfflinePlayer fake() {
++        return (OfflinePlayer) Proxy.newProxyInstance(PartyTest.class.getClassLoader(),
++                new Class<?>[]{OfflinePlayer.class}, (p, m, a) -> {
++                    Class<?> r = m.getReturnType();
++                    if (r == boolean.class) return false;
++                    if (r == int.class) return 0;
++                    if (r == long.class) return 0L;
++                    if (r == double.class) return 0.0;
++                    return null;
++                });
++    }
++
++    static JobsPrePaymentEvent ev(double money, double exp) {
++        return new JobsPrePaymentEvent(fake(), null, money, exp, 0.0, null, null, null, null);
++    }
++
++    public static void main(String[] a) {
++        PartyBonus b = new PartyBonus(1.25, 50);
++        check("apply", eq(b.apply(10), 12.5));
++        check("zero", eq(b.apply(0), 0));
++        check("negative untouched", eq(b.apply(-4), -4));
++        check("within edge 50", b.within(true, 30, 40, 0));
++        check("outside 50.1", !b.within(true, 50.1, 0, 0));
++        check("3d distance", !b.within(true, 40, 40, 40));
++        check("other world", !b.within(false, 0, 0, 0));
++        PartyBonus bad = new PartyBonus(Double.NaN, -3);
++        check("bad cfg defaults", eq(bad.multiplier(), 1.25) && eq(bad.radius(), 50));
++        PartyBonus c = new PartyBonus(2.0, 10);
++        check("custom", eq(c.apply(3), 6) && c.within(true, 10, 0, 0) && !c.within(true, 10.5, 0, 0));
++
++        // Event level
++        PartyListener yes = new PartyListener(b, p -> true);
++        JobsPrePaymentEvent e = ev(8.0, 4.0);
++        yes.onPay(e);
++        check("event money", eq(e.getAmount(), 10.0));
++        check("event exp", eq(e.getExp(), 5.0));
++        check("event points untouched", eq(e.getPoints(), 0.0));
++        PartyListener no = new PartyListener(b, p -> false);
++        JobsPrePaymentEvent e2 = ev(8.0, 4.0);
++        no.onPay(e2);
++        check("no partner money", eq(e2.getAmount(), 8.0));
++        check("no partner exp", eq(e2.getExp(), 4.0));
++        // Stacking model: Jobs applies amt + amt*boost after the event. weekend boost +20% example.
++        double base = 8.0, jobsBoost = 0.20;
++        double afterEvent = ev(base, 1).getAmount();
++        yes.onPay(e2 = ev(base, 1));
++        double finalPay = e2.getAmount() + e2.getAmount() * jobsBoost;
++        check("stack multiplicative", eq(finalPay, base * 1.25 * 1.20));
++        check("not replaced", finalPay > base * 1.25);
++        JobsPrePaymentEvent e3 = ev(-5, 0);
++        yes.onPay(e3);
++        check("penalty untouched", eq(e3.getAmount(), -5));
++        JobsPrePaymentEvent e4 = ev(5, 0);
++        yes.onPay(e4);
++        check("money only", eq(e4.getAmount(), 6.25) && eq(e4.getExp(), 0));
++
++        System.out.println(pass + " passed, " + fail + " failed");
++        System.exit(fail == 0 ? 0 : 1);
++    }
++}

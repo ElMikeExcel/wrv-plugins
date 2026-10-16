@@ -1,7 +1,17 @@
 name: ExcelTogether
-version: 0.1.0
+version: 0.2.0
 author: Steve
 main: com.winkreyes.exceltogether.ExcelTogether
 api-version: "1.21"
-description: Party bonus for Jobs Reborn payments (money and XP) when another player is nearby.
+description: Party for Jobs Reborn - invite, accept, leave, and a plus 25 percent money and XP bonus for party members who are close together.
 depend: [Jobs]
+softdepend: [Geyser-Spigot, floodgate, mcMMO]
+commands:
+  excelparty:
+    description: Open the party menu, invite players, accept or leave
+    usage: /excelparty [invite|accept|decline|leave|list|kick|help]
+    aliases: [eparty, together]
+permissions:
+  excelparty.use:
+    description: Use parties and the party menu
+    default: true
