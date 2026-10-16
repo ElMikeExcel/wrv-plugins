@@ -1,10 +1,11 @@
-# ExcelWaypoints 0.1.0 (WRV-017 Home Waypoints): BUILT, NOT INSTALLED. Oct 16, 2026
+# ExcelWaypoints 0.1.0 (WRV-017 Home Waypoints): INSTALLED LIVE Oct 16, 2026, 3:51 PM CDT. Java and Bedrock in-game checks UNCONFIRMED.
+The first commit on this branch said the plugin was not installed live. That line is out of date. Installed live Oct 16, 2026, 3:51 PM CDT. Java and Bedrock in-game checks stay UNCONFIRMED.
 | Status | State |
 |---|---|
 | Built | Yes, Oct 16, 2026 (JDK 25, release 21, Paper API 26.2 build 133), reproducible (two builds, same SHA) |
 | Automated tests | 225/225 (see TEST-REPORT-0.1.0.md) |
 | Scratch boot (test server) | Passed twice on Paper 26.2 build 133: full plugin set, and minimal set with a corrupt places.yml |
-| Installed live | NO. Not approved, not installed. Server untouched. |
+| Installed live | YES, Oct 16, 2026, 3:51 PM CDT. Server was empty, save-all first, enabled with 0 places and no errors. |
 | Java check | UNCONFIRMED (no real player has used the chat panel) |
 | Bedrock check | UNCONFIRMED (forms verified against real Cumulus classes, never seen on a phone; longest list button 42 chars) |
 SHA-256 ExcelWaypoints-0.1.0.jar: b68472f177eb390f28809c60524a42247a707f4afb3e83bbb799802eaaad6768
@@ -15,6 +16,6 @@ Mike decisions applied (Oct 16, 2026 3:36 PM): view and compass only, visits via
 Not included: any teleport, /home, placed marker blocks, map markers, a button in ExcelBedrockMenu (would be a 1.5.7 bump of a live plugin, needs Mike's go).
 Dependencies (plain words): none required. Essentials optional for Ask to visit. Geyser/Floodgate optional for Bedrock forms. Data: plugins/ExcelWaypoints/places.yml (small file, atomic writes, corrupt copy kept).
 Defaults chosen in build (change only if Mike says): guild world em_adventurers_guild cannot save places (config blocked-worlds); duplicate name refused; 30 s visit-request cooldown; chat name capture 30 s; delete confirm 30 s; places private by default.
-Install (when Mike approves): server empty (check players twice, Kailey .coolgirlkail rule), save-all, panel Shut Down, drop ExcelWaypoints-0.1.0.jar into plugins, start. New plugin, so no old jar to back up.
-Rollback: panel Shut Down, delete ExcelWaypoints-0.1.0.jar from plugins (leave plugins/ExcelWaypoints/ data), start. Nothing else is changed, so rollback is complete.
+Install: done Oct 16, 2026, 3:51 PM CDT. Server was empty (check players twice, Kailey .coolgirlkail rule), save-all first, panel Shut Down, drop ExcelWaypoints-0.1.0.jar into plugins, start. New plugin, so no old jar to back up. Enabled with 0 places and no errors.
+Rollback: panel Shut Down, delete ExcelWaypoints-0.1.0.jar, Start. Leave plugins/ExcelWaypoints/ data. Nothing else is changed, so rollback is complete.
 Unconfirmed: real Java and Bedrock use, interaction with live /tpa on the live server (checked only that tpa is looked up at click time), phone button length.
