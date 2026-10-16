@@ -1,0 +1,25 @@
+name: ExcelMenuJoin
+version: 1.3.0
+main: com.winkreyesvalley.excelmenujoin.ExcelMenuJoin
+api-version: '1.13'
+author: WinkReyesValley
+description: Opens the DeluxeMenus server menu on join, with a per-player toggle. (Renamed from MenuJoin.)
+depend: [DeluxeMenus]
+softdepend: [PlaceholderAPI]
+commands:
+  excelmenujoin:
+    description: Toggle whether the server menu opens automatically when you join.
+    usage: /excelmenujoin
+    aliases: [menujoin]
+    permission: excelmenujoin.toggle
+  compass:
+    description: Get a new server menu compass if you lost yours.
+    usage: /compass
+    permission: excelmenujoin.compass
+permissions:
+  excelmenujoin.toggle:
+    description: Allows toggling the join menu.
+    default: true
+  excelmenujoin.compass:
+    description: Allows getting a new server menu compass with /compass.
+    default: true
