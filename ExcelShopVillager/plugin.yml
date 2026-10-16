@@ -1,0 +1,16 @@
+name: ExcelShopVillager
+version: 1.1.0
+author: Steve
+main: com.winkreyes.excelshopvillager.ExcelShopVillager
+api-version: "1.21"
+description: Tap the tagged 'Spawn Shop' villager to open the DeluxeMenus Spawn Shop (Java and Bedrock). (Renamed from ShopVillager.)
+softdepend: [DeluxeMenus]
+commands:
+  excelshopvillager:
+    description: Create, remove or tag Spawn Shop villagers
+    usage: /excelshopvillager <create|remove|tag>
+    aliases: [shopvillager]
+    permission: excelshopvillager.admin
+permissions:
+  excelshopvillager.admin:
+    default: op

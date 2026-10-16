@@ -1,0 +1,10 @@
+# Prototype: stage with the deployed economy, claims and Java/Bedrock clients first.
+# When true, GriefPrevention must be enabled and its ownership API readable.
+require-grief-prevention: true
+quote-seconds: 60
+# Native Bedrock number entry/review. All callback actions re-enter the server thread.
+bedrock-forms: true
+# Menu-compass shortcut: tapping your own shop's sign with the server-menu
+# compass opens Manage, and tapping a sign on your own non-shop chest offers
+# shop setup, instead of opening the server menu.
+compass-shop-shortcut: true
