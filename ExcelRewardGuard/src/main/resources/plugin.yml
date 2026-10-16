@@ -1,0 +1,18 @@
+name: ExcelRewardGuard
+version: '1.1'
+main: com.winkreyes.rewardguard.ExcelRewardGuard
+api-version: '1.21'
+author: Moon (provenance candidate) and Argus (enforcement completion)
+softdepend: [Jobs, mcMMO, EliteMobs]
+description: >
+  Farm-reward guard. Mobs born from spawners, spawn eggs or Nether portals are
+  marked at birth, and a marked mob earns a reduced share of its rewards when
+  killed: 65 percent by default, configurable from 0 (nothing, the original
+  1.0 behavior) to 100 (full rewards) via farm-reward-percent in config.yml.
+  Vanilla XP drops are never touched. Optional dependencies, each used only
+  when present: Jobs (its payment and XP event amounts, money, points and XP,
+  are scaled for marked kills), mcMMO (its XP gain events are scaled for
+  marked kills before weekend or party multipliers can grow them), EliteMobs
+  (verdict logging only, because EliteMobs 10.9.8 offers no cancellable reward
+  event to scale through). With none of them installed it still records
+  provenance and answers farmDecision queries for other plugins.
