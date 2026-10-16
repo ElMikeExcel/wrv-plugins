@@ -7,7 +7,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Player-facing wording helpers for the shop buttons and screens (ExcelShops 1.3).
+ * Player-facing wording helpers for the shop buttons and screens (ExcelShops 1.3.1).
  * Display only: never used for prices, quantities, or authorization.
  */
 public final class ShopText {

@@ -48,7 +48,7 @@ public final class ShopUi implements Listener {
     public ViewKind currentKind(UUID id){Page p=pages.get(id);return p==null?null:p.kind;}
     Object sessionToken(UUID id){return pages.get(id);}
     private String balance(Player p){return plugin.getBalanceDisplay()==null?"Current balance: unavailable":plugin.getBalanceDisplay().current(p,false);}
-    private String preview(Player p,long total){return plugin.getBalanceDisplay()==null?balance(p)+"\nPurchase cost: -"+cash(total)+"\nBalance after purchase: unavailable":plugin.getBalanceDisplay().preview(p,total,false,false);}
+    private String preview(Player p,long total){return plugin.getBalanceDisplay()==null?balance(p)+"\nPurchase cost: "+cash(total)+"\nBalance after purchase: unavailable":plugin.getBalanceDisplay().preview(p,total,false,false);}
     private String title(Player p,String title){return plugin.getBalanceDisplay()==null?"Balance unavailable | "+title:plugin.getBalanceDisplay().title(p,title,false);}
     private String withBalance(Player p,String text){return balance(p)+"\n"+text;}
     private Page page(Player p,ViewKind kind,String title,int size){
@@ -182,7 +182,8 @@ public final class ShopUi implements Listener {
     private String mobileLore(Player p,List<String> lore){
         // Expand only this known balance token. Never evaluate arbitrary placeholders or commands.
         String snapshot=balance(p);String value=snapshot.startsWith("Current balance: ")?snapshot.substring("Current balance: ".length()):"unavailable";
-        return String.join("\n",lore.stream().map(MobileCatalog::plain)
+        // Button hints such as "Tap to browse. No charge yet." belong on the Java menu items, not in form bodies (1.3.1).
+        return String.join("\n",lore.stream().map(MobileCatalog::plain).filter(line->!line.stripLeading().startsWith("Tap to "))
             .map(line->line.replace("$%vault_eco_balance_2dp%",value).replace("%vault_eco_balance_2dp%",value)).toList());
     }
     private void showMobileCategory(Player p,String categoryId){
@@ -194,7 +195,7 @@ public final class ShopUi implements Listener {
             labels[i]=ShopText.listLabel(product);
         }
         labels[products.size()]="Back to categories";labels[products.size()+1]="Close shop";
-        mobileChoices(p,page,category.name(),balance(p)+"\n"+mobileLore(p,category.lore())+"\nChoose an item to read its own details. No charge yet.",labels,id->{
+        mobileChoices(p,page,category.name(),balance(p)+"\n"+mobileLore(p,category.lore())+"\nTap an item to see its details. You are not charged until you confirm.",labels,id->{
             if(id==products.size())showMobileRoot(p);
             else if(id==products.size()+1)cancel(p);
             else showMobileHub(p,products.get(id),1); // Every new product selection starts with its own identity and count.
@@ -244,7 +245,7 @@ public final class ShopUi implements Listener {
         String[] labels=new String[presets.size()+2];
         for(int i=0;i<presets.size();i++){int preset=presets.get(i);labels[i]=ShopText.quantity(MobileCatalog.labelName(product),product.bundleSize(),preset)+" for "+ShopText.price(Money.multiply(selection.price(),preset));}
         labels[presets.size()]="Type a number";labels[presets.size()+1]="Back";
-        String text=mobileDetails(p,product,count)+"\n\nPick how many. You pay later, after you confirm.";
+        String text=mobileDetails(p,product,count)+"\n\nPick how many.";
         mobileChoices(p,page,product.name(),text,labels,id->{
             if(id<presets.size())showMobileHub(p,product,presets.get(id));
             else if(id==presets.size())mobileExactAmount(p,product,count);

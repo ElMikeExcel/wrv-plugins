@@ -807,7 +807,7 @@ class ShopUiTest {
     @Test void balanceVisibleInInventoryHeadersAndFreshAtEveryReview() throws Exception {
         ui.showSpawn(player); assertEquals("Balance $1,500.00 | Excel Shop · choose an item", inventoryTitles.getLast());
         quantity(8); assertTrue(lore(13).contains("Current balance: $1,500.00"));
-        assertTrue(lore(13).contains("Purchase cost: -$10.00"));
+        assertTrue(lore(13).contains("Purchase cost: $10.00"));
         assertTrue(lore(13).contains("Balance after purchase: $1,490.00"));
         when(vault.getBalance(player)).thenReturn(5.0); tap(31);
         assertTrue(lore(4).contains("Current balance: $5.00"));
@@ -882,7 +882,7 @@ class ShopUiTest {
         flush();
         String details = bedrock ? FormFixtures.last().text : dialogCalls.getLast().details();
         assertTrue(details.contains("Current balance: $5.00"));
-        assertTrue(details.contains("Purchase cost: -$10.00"));
+        assertTrue(details.contains("Purchase cost: $10.00"));
         assertTrue(details.contains("Balance after purchase: -$5.00"));
         assertTrue(details.contains("Insufficient funds. Need $5.00 more."));
         assertFalse(details.contains("Current balance: $1,500.00"));
@@ -914,6 +914,47 @@ class ShopUiTest {
         FormFixtures.last().choice(1);flush();assertTrue(FormFixtures.last().text.contains("Great food"));
         assertFalse(FormFixtures.last().text.contains("Fill up on a trip"));
         assertEquals(List.of("Buy 16 Steak for $80","Change quantity","Back to Food","Close shop"),FormFixtures.last().buttons);noMoneyMoved();
+    }
+    private void assertNoRepeatedSentence(String where,String text){
+        java.util.Set<String> seen=new java.util.HashSet<>();
+        for(String line:text.split("\\n"))for(String raw:line.split("(?<=[.!?])\\s+")){
+            String sentence=raw.strip();if(sentence.isEmpty())continue;
+            assertTrue(seen.add(sentence),()->where+": sentence repeated: \""+sentence+"\" in:\n"+text);}
+        assertFalse(text.contains("Tap to "),()->where+": button hint leaked into form body: "+text);
+        assertFalse(text.contains("cost: -"),()->where+": purchase cost must not show a minus: "+text);
+        assertTrue(text.split("No charge yet",-1).length<=2,()->where+": more than one no-charge statement: "+text);
+    }
+    @Test void noMobileFormBodyRepeatsASentenceOrLeaksButtonHints() throws Exception {
+        mobileCatalogFixture();
+        for(String menu:new String[]{"spawnshop","spawnshop_food","spawnshop_building","spawnshop_enchanting","spawnshop_travel_animals","spawnshop_potions_protection"}){
+            ui.showMobileMenu(player,menu);assertNoRepeatedSentence(menu,FormFixtures.last().text);
+            int items=FormFixtures.last().buttons.size()-2;
+            if(menu.equals("spawnshop"))continue;
+            for(int i=0;i<items;i++){
+                ui.showMobileMenu(player,menu);FormFixtures.last().choice(i);flush();
+                assertNoRepeatedSentence(menu+" item "+i+" detail",FormFixtures.last().text);
+                if(FormFixtures.last().buttons.size()==4){
+                    FormFixtures.last().choice(1);flush();assertNoRepeatedSentence(menu+" item "+i+" quantity",FormFixtures.last().text);
+                    ui.showMobileMenu(player,menu);FormFixtures.last().choice(i);flush();
+                    FormFixtures.last().choice(0);flush();assertEquals(ShopUi.ViewKind.BUY_CONFIRM,ui.currentKind(playerId));
+                    assertNoRepeatedSentence(menu+" item "+i+" confirm",FormFixtures.last().text);
+                    assertEquals(1,FormFixtures.last().text.split("tap Confirm|when you tap",-1).length-1,"Confirm screen must say pay-on-confirm once");
+                }
+            }
+        }
+        noMoneyMoved();
+    }
+    @Test void categoryFormReadsOnceAndClearly() throws Exception {
+        mobileCatalogFixture();ui.showMobileMenu(player,"spawnshop");FormFixtures.last().choice(2);flush();
+        String text=FormFixtures.last().text;
+        assertTrue(text.contains("Tap an item to see its details. You are not charged until you confirm."),text);
+        assertFalse(text.contains("No charge yet"));assertFalse(text.contains("Choose an item to read"));
+    }
+    @Test void mobileDetailScreenKeepsOnlyOnePayAfterConfirmStatement() throws Exception {
+        mobileBreadHub();String text=FormFixtures.last().text;
+        assertFalse(text.contains("No charge yet"));assertFalse(text.contains("Tap to choose quantity"));
+        assertEquals(1,text.split("You pay only after you tap Confirm\\.",-1).length-1);
+        assertTrue(text.contains("Purchase cost: $40.00"),text);
     }
     @Test void mobileExactInputReturnsToSameHubWithUpdatedCountAndTotal() throws Exception {
         mobileBreadHub();mobileOpenExactEntryFromHub();

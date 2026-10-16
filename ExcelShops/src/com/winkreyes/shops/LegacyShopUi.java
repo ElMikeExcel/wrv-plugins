@@ -83,7 +83,7 @@ public final class LegacyShopUi implements Listener {
         BalanceDisplay display = plugin.getBalanceDisplay();
         boolean selling = quote.direction() == LegacyTrading.Direction.SELL;
         return display == null ? "Current balance: unavailable\n"
-                + (selling ? "Sale proceeds: +" : "Purchase cost: -") + BalanceDisplay.money(quote.totalCents())
+                + (selling ? "Sale proceeds: +" : "Purchase cost: ") + BalanceDisplay.money(quote.totalCents())
                 + "\nBalance after " + (selling ? "sale" : "purchase") + ": unavailable"
                 : display.preview(player, quote.totalCents(), selling, true);
     }

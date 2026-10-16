@@ -44,7 +44,7 @@ public final class BalanceDisplay {
         if(totalCents<0)throw new IllegalArgumentException("Negative trade total");
         BigDecimal value=balance(player,worldAware), total=BigDecimal.valueOf(totalCents,2);
         String text="Current balance: "+(value==null?"unavailable":money(value))
-                +"\n"+(selling?"Sale proceeds: +":"Purchase cost: -")+money(total);
+                +"\n"+(selling?"Sale proceeds: +":"Purchase cost: ")+money(total);
         if(value==null)return text+"\nBalance after "+(selling?"sale":"purchase")+": unavailable";
         BigDecimal projected=selling?value.add(total):value.subtract(total);
         text+="\nBalance after "+(selling?"sale":"purchase")+": "+money(projected);
