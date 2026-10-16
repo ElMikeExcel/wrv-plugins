@@ -1,0 +1,50 @@
+# ExcelGuildGate - The Road to the Guild
+# The Adventurers Guild (/ag, world em_adventurers_guild) stays locked until
+# every enabled seal below is broken. Seals are server-wide: the whole family
+# works on the same road, and progress is saved in state.yml.
+
+# Master switch for the gate. If false, /ag and guild-world teleports are
+# never blocked (seals still get tracked and celebrated).
+gateEnabled: true
+
+seals:
+  ender_dragon:
+    enabled: true
+    name: "The Ender Dragon"
+    hint: "Waits in the End, past the stronghold portal."
+    flavor: "The Ender Dragon has fallen! The End is free."
+  wither:
+    enabled: true
+    name: "The Wither"
+    hint: "Summon it somewhere far from anything you love."
+    flavor: "The Wither has fallen! The sky is quiet again."
+  elder_guardian:
+    enabled: true
+    name: "An Elder Guardian"
+    hint: "Guards an ocean monument. Bring milk for the mining fatigue."
+    flavor: "An Elder Guardian has fallen! The monument treasure is unguarded."
+  warden:
+    enabled: true
+    name: "The Warden"
+    hint: "Sleeps in the deep dark and hunts by sound. Sneak, or bring everyone."
+    flavor: "The Warden has fallen! The deep dark feels safer tonight."
+  raid:
+    enabled: true
+    name: "A Raid Victory"
+    hint: "Bad omen, then a village. Hold the line until the horn sounds victory."
+    flavor: "The raid is broken! The village celebrates its heroes."
+# A disabled seal is not required for the unlock and is left off the /seals
+# quest page entirely (the progress line only counts enabled seals). Turn one
+# off here if the family wants to skip it, no rebuild needed.
+
+messages:
+  questTitle: "The Road to the Guild"
+  lockedCommandMessage: "&cThe Adventurers Guild is still sealed."
+  lockedHeader: "&6— The Road to the Guild —"
+  sealBrokenLine1: "&6Seal broken: &f{flavor}"
+  sealBrokenLine2: "&7Road to the Guild: &a{broken} of {total} &7seals broken."
+  unlockLine1: "&6&lThe Road to the Guild is complete!"
+  unlockLine2: "&eEvery seal is broken. The Adventurers Guild is open! Type /ag to visit."
+  progressLine: "&7Progress: &a{broken} of {total} &7seals broken."
+  questFooterLocked: "&7The guild opens when every seal is broken."
+  questFooterOpen: "&aThe guild is open! &7Type &f/ag &7to visit."
