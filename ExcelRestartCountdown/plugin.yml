@@ -1,0 +1,19 @@
+name: ExcelRestartCountdown
+version: 1.2.0
+author: Argus
+main: com.winkreyes.excelrestartcountdown.ExcelRestartCountdown
+api-version: "1.13"
+description: True 2-minute in-game restart countdown with shutdown.
+commands:
+  excelrestartwarn:
+    description: Start (or cancel) the 2-minute restart countdown
+    usage: /excelrestartwarn [cancel/reason]
+    aliases: [restartwarn]
+    permission: excelrestartcountdown.warn
+permissions:
+  excelrestartcountdown.warn:
+    description: Allows starting the restart countdown
+    default: op
+  restartcountdown.warn:
+    description: Legacy pre-rename permission; still accepted by the command for compatibility
+    default: op
