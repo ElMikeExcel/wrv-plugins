@@ -1,0 +1,317 @@
+diff -ru /workspace/excelshops-src-pr25/ExcelShops/plugin.yml src13/plugin.yml
+--- /workspace/excelshops-src-pr25/ExcelShops/plugin.yml	2026-10-16 13:06:47.169180267 -0500
++++ src13/plugin.yml	2026-10-16 13:15:08.311233608 -0500
+@@ -1,5 +1,5 @@
+ name: ExcelShops
+-version: '1.2'
++version: '1.3'
+ main: com.winkreyes.shops.WRVShops
+ api-version: '1.21'
+ author: Wink Reyes Valley
+diff -ru /workspace/excelshops-src-pr25/ExcelShops/pom.xml src13/pom.xml
+--- /workspace/excelshops-src-pr25/ExcelShops/pom.xml	2026-10-16 13:06:47.169180267 -0500
++++ src13/pom.xml	2026-10-16 13:15:08.311233608 -0500
+@@ -2,7 +2,7 @@
+ <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent><groupId>com.winkreyes</groupId><artifactId>wrv-plugins</artifactId><version>1.0.0</version></parent>
+-  <artifactId>ExcelShops</artifactId><version>1.2</version>
++  <artifactId>ExcelShops</artifactId><version>1.3</version>
+   <dependencies>
+     <dependency><groupId>org.apache.logging.log4j</groupId><artifactId>log4j-core</artifactId><version>2.24.3</version><scope>test</scope></dependency>
+     <dependency><groupId>com.winkreyes</groupId><artifactId>ChestShop-ConfirmationGuard</artifactId><version>1.0.0</version><scope>provided</scope></dependency>
+diff -ru /workspace/excelshops-src-pr25/ExcelShops/src/com/winkreyes/shops/BedrockForms.java src13/src/com/winkreyes/shops/BedrockForms.java
+--- /workspace/excelshops-src-pr25/ExcelShops/src/com/winkreyes/shops/BedrockForms.java	2026-10-16 13:06:47.169180267 -0500
++++ src13/src/com/winkreyes/shops/BedrockForms.java	2026-10-16 13:15:08.311233608 -0500
+@@ -123,7 +123,7 @@
+             Builder builder = builder("org.geysermc.cumulus.form.CustomForm", connection);
+             Class<?> responseApi = publicApi("org.geysermc.cumulus.response.CustomFormResponse", connection.loader());
+             Method input = responseApi.getMethod("asInput", int.class);
+-            strings(builder, "title", title); strings(builder, "input", text, "Enter a number", initial);
++            strings(builder, "title", title); strings(builder, "input", text, "Type a number", initial);
+             register(builder, "validResultHandler", BiConsumer.class, (BiConsumer<Object, Object>) (form, response) -> gate.reply(() -> {
+                 final String value;
+                 try { value = (String) input.invoke(response, 0); }
+Only in src13/src/com/winkreyes/shops: ShopText.java
+diff -ru /workspace/excelshops-src-pr25/ExcelShops/src/com/winkreyes/shops/ShopUi.java src13/src/com/winkreyes/shops/ShopUi.java
+--- /workspace/excelshops-src-pr25/ExcelShops/src/com/winkreyes/shops/ShopUi.java	2026-10-16 13:06:47.173180175 -0500
++++ src13/src/com/winkreyes/shops/ShopUi.java	2026-10-16 13:15:08.311233608 -0500
+@@ -174,7 +174,7 @@
+         Page page=page(p,ViewKind.MOBILE_ROOT,"Excel Shop",9);
+         String[] labels=new String[categories.size()+2];
+         for(int i=0;i<categories.size();i++)labels[i]=categories.get(i).name()+" ("+categories.get(i).products().size()+" products)";
+-        labels[categories.size()]="Back to Menu";labels[categories.size()+1]="Cancel";
++        labels[categories.size()]="Back to Menu";labels[categories.size()+1]="Close shop";
+         mobileChoices(p,page,"Excel Shop",balance(p)+"\nChoose a category. Each item has its own details screen.\nBrowsing never spends money.",labels,
+             id->{if(id==categories.size()){cancel(p);if(!p.performCommand("menu"))p.sendMessage(ChatColor.RED+"The main menu could not open.");}
+                 else if(id==categories.size()+1)cancel(p);else showMobileCategory(p,categories.get(id).id());});
+@@ -191,9 +191,9 @@
+         List<MobileCatalog.Product> products=category.products();String[] labels=new String[products.size()+2];
+         for(int i=0;i<products.size();i++){
+             MobileCatalog.Product product=products.get(i);
+-            labels[i]=MobileCatalog.labelName(product)+" — view details\n"+product.bundleSize()+(product.bundleSize()>1?" per bundle":" item")+" • "+cash(product.price());
++            labels[i]=ShopText.listLabel(product);
+         }
+-        labels[products.size()]="Back to categories";labels[products.size()+1]="Cancel";
++        labels[products.size()]="Back to categories";labels[products.size()+1]="Close shop";
+         mobileChoices(p,page,category.name(),balance(p)+"\n"+mobileLore(p,category.lore())+"\nChoose an item to read its own details. No charge yet.",labels,id->{
+             if(id==products.size())showMobileRoot(p);
+             else if(id==products.size()+1)cancel(p);
+@@ -207,11 +207,11 @@
+         String details=product.name()+"\n"+mobileLore(p,product.lore());
+         if(product.route()==MobileCatalog.Route.ORDINARY){
+             ShopAdapter.Selection selection=mobileSelection(product);
+-            return details+"\n\nSelected quantity: "+count+(product.bundleSize()>1?" bundles = "+Math.multiplyExact(count,product.bundleSize())+" items":" item(s)")
+-                +"\n"+cash(selection.price())+" × "+count+" = "+cash(Money.multiply(selection.price(),count))
+-                +"\n"+preview(p,Money.multiply(selection.price(),count))+"\nNo money moves until final Confirm purchase.";
++            return details+"\n\nYou are buying: "+ShopText.quantity(MobileCatalog.labelName(product),product.bundleSize(),count)
++                +"\n"+ShopText.price(selection.price())+" "+ShopText.unit(product.bundleSize())+" x "+count+" = "+ShopText.price(Money.multiply(selection.price(),count))+" total"
++                +"\n"+preview(p,Money.multiply(selection.price(),count))+"\nYou pay only after you tap Confirm.";
+         }
+-        return details+"\n\nFixed quantity: 1\n"+preview(p,product.price())+"\nOpen the existing guarded review; only its Confirm button can purchase.";
++        return details+"\n\nYou can buy 1 at a time.\n"+preview(p,product.price())+"\nYou confirm on the next screen.";
+     }
+     private void showMobileHub(Player p,MobileCatalog.Product product,int count){
+         int max=product.route()==MobileCatalog.Route.ORDINARY?MobileCatalog.maximum(mobileSelection(product)):1;
+@@ -221,8 +221,8 @@
+         String[] labels;
+         if(product.route()==MobileCatalog.Route.ORDINARY){
+             ShopAdapter.Selection selection=mobileSelection(product);
+-            labels=new String[]{"Buy "+count+" × "+MobileCatalog.labelName(product)+" for "+cash(Money.multiply(selection.price(),count)),"Change quantity",back,"Cancel"};
+-        }else labels=new String[]{"Open guarded review",back,"Cancel"};
++            labels=new String[]{ShopText.buyPhrase(product,count)+" for "+ShopText.price(Money.multiply(selection.price(),count)),"Change quantity",back,"Close shop"};
++        }else labels=new String[]{"Buy for "+ShopText.price(product.price()),back,"Close shop"};
+         mobileChoices(p,page,product.name(),mobileDetails(p,product,count),labels,id->{
+             if(product.route()==MobileCatalog.Route.ORDINARY){
+                 if(id==0)buyConfirm(p,mobileSelection(product),count,new MobileOrigin(product.category(),product.id()));
+@@ -242,9 +242,9 @@
+         List<Integer> presets=new ArrayList<>();
+         for(int preset:new int[]{1,2,4,8,16,32,64})if(preset<=max)presets.add(preset);
+         String[] labels=new String[presets.size()+2];
+-        for(int i=0;i<presets.size();i++){int preset=presets.get(i);labels[i]=preset+" for "+cash(Money.multiply(selection.price(),preset));}
+-        labels[presets.size()]="Enter exact amount";labels[presets.size()+1]="Back";
+-        String text=mobileDetails(p,product,count)+"\n\nChoose a new quantity. Nothing is charged here; the item screen updates with its new total.";
++        for(int i=0;i<presets.size();i++){int preset=presets.get(i);labels[i]=ShopText.quantity(MobileCatalog.labelName(product),product.bundleSize(),preset)+" for "+ShopText.price(Money.multiply(selection.price(),preset));}
++        labels[presets.size()]="Type a number";labels[presets.size()+1]="Back";
++        String text=mobileDetails(p,product,count)+"\n\nPick how many. You pay later, after you confirm.";
+         mobileChoices(p,page,product.name(),text,labels,id->{
+             if(id<presets.size())showMobileHub(p,product,presets.get(id));
+             else if(id==presets.size())mobileExactAmount(p,product,count);
+@@ -254,11 +254,11 @@
+     private void mobileExactAmount(Player p,MobileCatalog.Product product,int count){mobileExactAmount(p,product,count,null);}
+     private void mobileExactAmount(Player p,MobileCatalog.Product product,int count,String error){
+         int max=MobileCatalog.maximum(mobileSelection(product));
+-        Page entry=page(p,ViewKind.MOBILE_ENTRY,"Enter exact amount",9);entry.mobileOrigin=new MobileOrigin(product.category(),product.id());
++        Page entry=page(p,ViewKind.MOBILE_ENTRY,"Type a number",9);entry.mobileOrigin=new MobileOrigin(product.category(),product.id());
+         p.closeInventory();
+         // Details stay in the existing input label. It remains input index zero; no mixed action buttons.
+         String details=(error==null?"":error+"\n\n")+mobileDetails(p,product,count)+"\n\nEnter a whole number from 1 to "+max+".\nSubmit returns to this item's details; it does not purchase. Closing cancels.";
+-        if(!forms.number(p,"Enter exact amount",details,String.valueOf(count),value->later(p,entry,()->{
++        if(!forms.number(p,"Type a number",details,String.valueOf(count),value->later(p,entry,()->{
+             if(!p.hasPermission("wrvshops.use")){fail(p,"You can no longer use shops.");return;}
+             int currentMaximum=MobileCatalog.maximum(mobileSelection(product));
+             final int amount;
+@@ -327,7 +327,7 @@
+         button(page,22,Material.NAME_TAG,"Enter Amount",()->requestNumber(p,"Enter quantity",()->preview(p,Money.multiply(s.price(),(int)page.numberValue))+"\nShown for "+page.numberValue+" selected; typed amount updates at review.\n"+s.name()+"\n"+(s.bundleSize()>1?"Quantity is bundles of "+s.bundleSize()+" items.":"Quantity is individual items.")+"\nEnter a whole number from 1 to "+max+".\nNext: review, then final confirmation.",String.valueOf(page.numberValue),v->parseQuantity(v,max),v->buyReview(p,s,parseQuantity(v,max)),()->quantity(p,s,(int)page.numberValue)),"Type the exact quantity, e.g. 19.","No money moves until final confirmation.");
+         button(page,31,Material.LIME_CONCRETE,"Review purchase",()->buyReview(p,s,(int)page.numberValue),"Nothing is charged yet.");button(page,36,Material.ARROW,"Back",()->backToCatalog(p,s));button(page,44,Material.BARRIER,"Cancel",()->cancel(p));
+     }
+-    private String purchaseText(Player p,ShopAdapter.Selection s,int quantity){return preview(p,Money.multiply(s.price(),quantity))+"\n"+(s.bundleSize()>1?quantity+" bundles = "+(quantity*s.bundleSize()):String.valueOf(quantity))+" × "+s.name()+"\n"+cash(s.price())+(s.bundleSize()>1?" per bundle":" each")+"\nTotal: "+cash(Money.multiply(s.price(),quantity))+itemDetails(s.item());}
++    private String purchaseText(Player p,ShopAdapter.Selection s,int quantity){return preview(p,Money.multiply(s.price(),quantity))+"\nYou are buying: "+ShopText.quantity(s.name(),s.bundleSize(),quantity)+"\n"+ShopText.price(s.price())+" "+ShopText.unit(s.bundleSize())+"\nTotal: "+ShopText.price(Money.multiply(s.price(),quantity))+itemDetails(s.item());}
+     private String itemDetails(ItemStack item){
+         ItemMeta meta=item.getItemMeta();StringBuilder info=new StringBuilder();
+         Map<org.bukkit.enchantments.Enchantment,Integer> enchants=new LinkedHashMap<>(meta.getEnchants());
+@@ -357,19 +357,19 @@
+     private void buyConfirm(Player p,ShopAdapter.Selection s,int quantity){buyConfirm(p,s,quantity,null);}
+     private void buyConfirm(Player p,ShopAdapter.Selection s,int quantity,MobileOrigin origin){
+         CheckoutService.Quote quote=plugin.getCheckout().quote(p.getUniqueId(),s.seller(),s.offerId(),s.revision(),quantity,Money.multiply(s.price(),quantity),s.fingerprint());
+-        Page page=page(p,ViewKind.BUY_CONFIRM,"Are you sure?",27);page.mobileOrigin=origin;String text=purchaseText(p,s,quantity)+"\nOnly Confirm purchase spends money.";
++        Page page=page(p,ViewKind.BUY_CONFIRM,"Confirm your purchase",27);page.mobileOrigin=origin;String text=purchaseText(p,s,quantity)+"\nYou pay when you tap Confirm.";
+         Runnable confirm=()->{
+             pages.remove(p.getUniqueId());p.closeInventory();
+             CheckoutService.Result result=plugin.getCheckout().confirm(quote.id(),p.getUniqueId());
+-            if(result.status()==CheckoutService.Status.SUCCESS)p.sendMessage(ChatColor.GREEN+"Bought "+(quantity*s.bundleSize())+" "+s.name()+" for "+cash(quote.amountMinorUnits())+".");
++            if(result.status()==CheckoutService.Status.SUCCESS)p.sendMessage(ChatColor.GREEN+"You bought "+ShopText.quantity(s.name(),s.bundleSize(),quantity)+" for "+ShopText.price(quote.amountMinorUnits())+".");
+             else p.sendMessage(ChatColor.YELLOW+result.message());
+             if(result.status()==CheckoutService.Status.RECOVERY_REQUIRED)plugin.getLogger().severe("Checkout recovery required, transaction "+result.transactionId()+": "+plugin.getCheckout().recoveryReason());
+         };
+         Runnable back=()->{plugin.getCheckout().cancel(quote.id(),p.getUniqueId());changePurchaseQuantity(p,s,quantity,origin);};
+         p.closeInventory();
+-        if(forms.choices(p,"Are you sure?",text,new String[]{"Confirm purchase: "+cash(quote.amountMinorUnits()),"Back","Cancel"},id->later(p,page,()->{if(id==0)confirm.run();else if(id==1)back.run();else cancel(p);}),()->later(p,page,()->cancel(p))))return;
++        if(forms.choices(p,"Confirm your purchase",text,new String[]{"Confirm: pay "+ShopText.price(quote.amountMinorUnits()),"Back","Cancel"},id->later(p,page,()->{if(id==0)confirm.run();else if(id==1)back.run();else cancel(p);}),()->later(p,page,()->cancel(p))))return;
+         if(origin!=null){mobileUnavailable(p);return;} // cancel() invalidates the freshly created quote.
+-        button(page,4,s.item(),s.name(),null,purchaseText(p,s,quantity).split("\n"));button(page,11,Material.LIME_CONCRETE,"Confirm purchase: "+cash(quote.amountMinorUnits()),confirm,"This button spends money.");button(page,13,Material.ARROW,"Back",back);button(page,15,Material.BARRIER,"Cancel",()->cancel(p));open(p,page);
++        button(page,4,s.item(),s.name(),null,purchaseText(p,s,quantity).split("\n"));button(page,11,Material.LIME_CONCRETE,"Confirm: pay "+ShopText.price(quote.amountMinorUnits()),confirm,"This button spends money.");button(page,13,Material.ARROW,"Back",back);button(page,15,Material.BARRIER,"Cancel",()->cancel(p));open(p,page);
+     }
+     public void offerSetup(Player p,SetupProposal proposal){
+         Page page=page(p,ViewKind.SETUP_PROMPT,"Make this a shop?",27);
+diff -ru /workspace/excelshops-src-pr25/ExcelShops/tests/com/winkreyes/shops/BedrockFormsTest.java src13/tests/com/winkreyes/shops/BedrockFormsTest.java
+--- /workspace/excelshops-src-pr25/ExcelShops/tests/com/winkreyes/shops/BedrockFormsTest.java	2026-10-16 13:06:47.173180175 -0500
++++ src13/tests/com/winkreyes/shops/BedrockFormsTest.java	2026-10-16 13:15:41.871080081 -0500
+@@ -131,7 +131,7 @@
+         FormFixtures.State form = FormFixtures.last();
+         assertEquals("Quantity", form.title);
+         assertEquals("How many?", form.text);
+-        assertEquals("Enter a number", form.placeholder);
++        assertEquals("Type a number", form.placeholder);
+         assertEquals("4", form.initial);
+         assertEquals(player.getUniqueId(), GeyserFixture.lastPlayer);
+         form.number("12");
+Only in src13/tests/com/winkreyes/shops: ShopTextTest.java
+diff -ru /workspace/excelshops-src-pr25/ExcelShops/tests/com/winkreyes/shops/ShopUiTest.java src13/tests/com/winkreyes/shops/ShopUiTest.java
+--- /workspace/excelshops-src-pr25/ExcelShops/tests/com/winkreyes/shops/ShopUiTest.java	2026-10-16 13:06:47.173180175 -0500
++++ src13/tests/com/winkreyes/shops/ShopUiTest.java	2026-10-16 13:16:21.206875704 -0500
+@@ -282,7 +282,7 @@
+         quantity(1); Inventory old = opened.get();
+         queue(24, 25, 31, 26, 31); flush();
+         assertEquals(ShopUi.ViewKind.BUY_REVIEW, ui.currentKind(playerId));
+-        assertNotSame(old, opened.get()); assertTrue(lore(4).contains("10 × Custom treasure"));
++        assertNotSame(old, opened.get()); assertTrue(lore(4).contains("You are buying: 10 Custom treasure"));
+         assertTrue(lore(4).contains("Total: $12.50"));
+         verify(checkout, never()).quote(any(), any(), anyString(), anyLong(), anyInt(), anyLong(), anyString()); noMoneyMoved();
+         tap(11);
+@@ -307,7 +307,7 @@
+         verify(checkout, times(1)).confirm(any(), eq(playerId));
+         verify(economy, times(1)).withdraw(playerId, 1250); verify(economy, times(1)).deposit(sellerId, 1250);
+         verify(transfer, times(1)).apply(); assertNull(ui.currentKind(playerId));
+-        verify(player).sendMessage(ChatColor.GREEN + "Bought 10 Custom treasure for $12.50.");
++        verify(player).sendMessage(ChatColor.GREEN + "You bought 10 Custom treasure for $12.50.");
+     }
+ 
+     @Test void closingCurrentPageDiscardsQueuedQuantityClicks() throws Exception {
+@@ -535,7 +535,7 @@
+         quantity(10); queue(24, 25); flush(); assertQuantity(19);
+         assertTrue(ui.enterNumber(player, input)); flush();
+         assertEquals(ShopUi.ViewKind.QUANTITY, ui.currentKind(playerId)); assertQuantity(19);
+-        tap(31); assertTrue(lore(4).contains("19 × Custom treasure")); noMoneyMoved();
++        tap(31); assertTrue(lore(4).contains("You are buying: 19 Custom treasure")); noMoneyMoved();
+     }
+ 
+     @ParameterizedTest @ValueSource(strings = {"", "0", "-1", "1.001", "100000000.01", "two"})
+@@ -598,7 +598,7 @@
+         assertTrue(dialog.details().contains("whole number from 1 to 2304"));
+         dialog.submit().accept("19"); dialog.submit().accept("500"); flush();
+         assertEquals(ShopUi.ViewKind.BUY_REVIEW, ui.currentKind(playerId));
+-        assertTrue(lore(4).contains("19 × Custom treasure")); assertTrue(lore(4).contains("Total: $23.75"));
++        assertTrue(lore(4).contains("You are buying: 19 Custom treasure")); assertTrue(lore(4).contains("Total: $23.75"));
+         noMoneyMoved(); verify(checkout, never()).quote(any(), any(), anyString(), anyLong(), anyInt(), anyLong(), anyString());
+         tap(11); noMoneyMoved(); tap(11);
+         verify(economy, times(1)).withdraw(playerId, 2375); verify(transfer, times(1)).apply();
+@@ -624,7 +624,7 @@
+         DialogCall retry = dialogCalls.getLast(); assertNotSame(first, retry); assertEquals("19", retry.initial());
+         assertTrue(retry.details().contains("Enter a whole number from 1 to 2304."));
+         first.submit().accept("100"); flush(); assertSame(retry, dialogCalls.getLast());
+-        retry.submit().accept("23"); flush(); assertTrue(lore(4).contains("23 × Custom treasure")); noMoneyMoved();
++        retry.submit().accept("23"); flush(); assertTrue(lore(4).contains("You are buying: 23 Custom treasure")); noMoneyMoved();
+     }
+ 
+     @ParameterizedTest @ValueSource(strings = {"", "0", "-0.50", "0.501", "100000000.01", "NaN", "1e2", "$0.50"})
+@@ -647,8 +647,8 @@
+     @Test void typedBundleQuantityExplainsAndReviewsBundleEconomics() throws Exception {
+         selection = selection(2304, 16, 4000); DialogCall dialog = typedQuantity(1);
+         assertTrue(dialog.details().contains("bundles of 16 items")); dialog.submit().accept("2"); flush();
+-        assertTrue(lore(4).contains("2 bundles = 32 × Custom treasure"));
+-        assertTrue(lore(4).contains("Total: $80.00")); noMoneyMoved();
++        assertTrue(lore(4).contains("You are buying: 2 packs (32 Custom treasure)"));
++        assertTrue(lore(4).contains("Total: $80")); noMoneyMoved();
+     }
+ 
+     @Test void typedCancelWinsOverQueuedSubmitAndRestoresLatestAmount() throws Exception {
+@@ -663,7 +663,7 @@
+         assertEquals(ShopUi.ViewKind.QUANTITY, ui.currentKind(playerId)); assertQuantity(19);
+         tap(22); DialogCall current = dialogCalls.getLast(); old.submit().accept("500"); flush();
+         assertEquals(ShopUi.ViewKind.NUMBER_ENTRY, ui.currentKind(playerId)); assertSame(current, dialogCalls.getLast());
+-        current.submit().accept("20"); flush(); assertTrue(lore(4).contains("20 × Custom treasure")); noMoneyMoved();
++        current.submit().accept("20"); flush(); assertTrue(lore(4).contains("You are buying: 20 Custom treasure")); noMoneyMoved();
+     }
+ 
+     @Test void oldEntryTimeoutCannotDismissNewMenu() throws Exception {
+@@ -905,27 +905,27 @@
+     }
+     private void mobileBreadHub(){mobileCatalogFixture();ui.showMobileMenu(player,"spawnshop_food");FormFixtures.last().choice(0);flush();assertEquals(ShopUi.ViewKind.MOBILE_HUB,ui.currentKind(playerId));}
+     private void mobileOpenExactEntryFromHub(){FormFixtures.last().choice(1);flush();assertEquals(ShopUi.ViewKind.MOBILE_QUANTITY,ui.currentKind(playerId));
+-        int exact=FormFixtures.last().buttons.indexOf("Enter exact amount");assertTrue(exact>=0,"Change-quantity form must offer exact entry");
++        int exact=FormFixtures.last().buttons.indexOf("Type a number");assertTrue(exact>=0,"Change-quantity form must offer exact entry");
+         FormFixtures.last().choice(exact);flush();assertEquals(ShopUi.ViewKind.MOBILE_ENTRY,ui.currentKind(playerId));}
+     @Test void mobileCategoryShowsNamesAndPricesThenOnlySelectedItemDetails() throws Exception {
+         mobileCatalogFixture();ui.showMobileMenu(player,"spawnshop");assertEquals(7,FormFixtures.last().buttons.size());
+         assertEquals("Excel Shop",FormFixtures.last().title);
+-        FormFixtures.last().choice(0);flush();assertTrue(FormFixtures.last().buttons.get(1).startsWith("Steak — view details"));assertTrue(FormFixtures.last().buttons.get(1).contains("16 per bundle • $80.00"));
++        FormFixtures.last().choice(0);flush();assertTrue(FormFixtures.last().buttons.get(1).startsWith("16 Steak\n$80"));assertTrue(FormFixtures.last().buttons.get(1).contains("$80"));
+         FormFixtures.last().choice(1);flush();assertTrue(FormFixtures.last().text.contains("Great food"));
+         assertFalse(FormFixtures.last().text.contains("Fill up on a trip"));
+-        assertEquals(List.of("Buy 1 × Steak for $80.00","Change quantity","Back to Food","Cancel"),FormFixtures.last().buttons);noMoneyMoved();
++        assertEquals(List.of("Buy 16 Steak for $80","Change quantity","Back to Food","Close shop"),FormFixtures.last().buttons);noMoneyMoved();
+     }
+     @Test void mobileExactInputReturnsToSameHubWithUpdatedCountAndTotal() throws Exception {
+         mobileBreadHub();mobileOpenExactEntryFromHub();
+         assertTrue(FormFixtures.last().text.contains("Fill up on a trip"));
+         FormFixtures.last().number("19");flush();assertEquals(ShopUi.ViewKind.MOBILE_HUB,ui.currentKind(playerId));
+-        assertTrue(FormFixtures.last().text.contains("19 bundles = 304 items"));assertTrue(FormFixtures.last().text.contains("$760.00"));
+-        assertEquals("Buy 19 × Bread for $760.00",FormFixtures.last().buttons.getFirst());noMoneyMoved();
++        assertTrue(FormFixtures.last().text.contains("You are buying: 19 packs (304 Bread)"));assertTrue(FormFixtures.last().text.contains("$760.00"));
++        assertEquals("Buy 19 packs (304 Bread) for $760",FormFixtures.last().buttons.getFirst());noMoneyMoved();
+     }
+     @Test void mobileHubBackReturnsOriginCategoryAndNewProductResetsCount() throws Exception {
+         mobileBreadHub();mobileOpenExactEntryFromHub();FormFixtures.last().number("19");flush();
+         FormFixtures.last().choice(2);flush();assertEquals(ShopUi.ViewKind.MOBILE_CATEGORY,ui.currentKind(playerId));assertEquals("Food",FormFixtures.last().title);
+-        FormFixtures.last().choice(1);flush();assertTrue(FormFixtures.last().text.startsWith("16 Steak"));assertTrue(FormFixtures.last().text.contains("Selected quantity: 1 bundles"));noMoneyMoved();
++        FormFixtures.last().choice(1);flush();assertTrue(FormFixtures.last().text.startsWith("16 Steak"));assertTrue(FormFixtures.last().text.contains("You are buying: 16 Steak"));noMoneyMoved();
+     }
+     @Test void mobileReviewAndFinalBackReturnToTheSameItemHubWithoutCharge() throws Exception {
+         mobileBreadHub();FormFixtures.last().choice(0);flush();assertEquals(ShopUi.ViewKind.BUY_CONFIRM,ui.currentKind(playerId));noMoneyMoved();
+@@ -941,20 +941,20 @@
+     @Test void mobileChangeQuantityPresetsUpdateCountAndTotalAndReturnToHub() throws Exception {
+         mobileBreadHub();FormFixtures.last().choice(1);flush();
+         assertEquals(ShopUi.ViewKind.MOBILE_QUANTITY,ui.currentKind(playerId));
+-        assertEquals(List.of("1 for $40.00","2 for $80.00","4 for $160.00","8 for $320.00","16 for $640.00","32 for $1,280.00","64 for $2,560.00","Enter exact amount","Back"),FormFixtures.last().buttons);
++        assertEquals(List.of("16 Bread for $40","2 packs (32 Bread) for $80","4 packs (64 Bread) for $160","8 packs (128 Bread) for $320","16 packs (256 Bread) for $640","32 packs (512 Bread) for $1,280","64 packs (1,024 Bread) for $2,560","Type a number","Back"),FormFixtures.last().buttons);
+         FormFixtures.last().choice(3);flush();
+         assertEquals(ShopUi.ViewKind.MOBILE_HUB,ui.currentKind(playerId));
+-        assertTrue(FormFixtures.last().text.contains("Selected quantity: 8 bundles = 128 items"));
+-        assertTrue(FormFixtures.last().text.contains("$40.00 × 8 = $320.00"));
+-        assertEquals("Buy 8 × Bread for $320.00",FormFixtures.last().buttons.getFirst());noMoneyMoved();
++        assertTrue(FormFixtures.last().text.contains("You are buying: 8 packs (128 Bread)"));
++        assertTrue(FormFixtures.last().text.contains("$40 per pack of 16 x 8 = $320 total"));
++        assertEquals("Buy 8 packs (128 Bread) for $320",FormFixtures.last().buttons.getFirst());noMoneyMoved();
+     }
+     @Test void mobileChangeQuantityOmitsPresetsAboveMaximum() throws Exception {
+         mobileCatalogFixture();ui.showMobileMenu(player,"spawnshop_building");FormFixtures.last().choice(0);flush();
+         assertEquals(ShopUi.ViewKind.MOBILE_HUB,ui.currentKind(playerId));
+         FormFixtures.last().choice(1);flush();assertEquals(ShopUi.ViewKind.MOBILE_QUANTITY,ui.currentKind(playerId));
+-        assertEquals(List.of("1 for $40.00","2 for $80.00","4 for $160.00","8 for $320.00","16 for $640.00","32 for $1,280.00","Enter exact amount","Back"),FormFixtures.last().buttons);
++        assertEquals(List.of("1 stack (64 Torches) for $40","2 stacks (128 Torches) for $80","4 stacks (256 Torches) for $160","8 stacks (512 Torches) for $320","16 stacks (1,024 Torches) for $640","32 stacks (2,048 Torches) for $1,280","Type a number","Back"),FormFixtures.last().buttons);
+         FormFixtures.last().choice(5);flush();assertEquals(ShopUi.ViewKind.MOBILE_HUB,ui.currentKind(playerId));
+-        assertEquals("Buy 32 × Torches for $1,280.00",FormFixtures.last().buttons.getFirst());noMoneyMoved();
++        assertEquals("Buy 32 stacks (2,048 Torches) for $1,280",FormFixtures.last().buttons.getFirst());noMoneyMoved();
+     }
+     @Test void mobileChangeQuantityBackReturnsToHubWithUnchangedCount() throws Exception {
+         mobileBreadHub();mobileOpenExactEntryFromHub();FormFixtures.last().number("19");flush();
+@@ -962,8 +962,8 @@
+         FormFixtures.last().choice(1);flush();assertEquals(ShopUi.ViewKind.MOBILE_QUANTITY,ui.currentKind(playerId));
+         int back=FormFixtures.last().buttons.indexOf("Back");assertTrue(back>=0);
+         FormFixtures.last().choice(back);flush();assertEquals(ShopUi.ViewKind.MOBILE_HUB,ui.currentKind(playerId));
+-        assertTrue(FormFixtures.last().text.contains("19 bundles = 304 items"));
+-        assertEquals("Buy 19 × Bread for $760.00",FormFixtures.last().buttons.getFirst());noMoneyMoved();
++        assertTrue(FormFixtures.last().text.contains("You are buying: 19 packs (304 Bread)"));
++        assertEquals("Buy 19 packs (304 Bread) for $760",FormFixtures.last().buttons.getFirst());noMoneyMoved();
+     }
+     @ParameterizedTest @ValueSource(strings={"close","invalid","disconnect","new_inventory","expire","disable","world","teleport"})
+     void mobileEntryInterruptionCannotReopenOrPurchase(String interruption) throws Exception {
+@@ -995,7 +995,7 @@
+         when(plugin.getServer().getConsoleSender()).thenReturn(console);when(plugin.getServer().dispatchCommand(eq(console),anyString())).thenReturn(true);
+         ui.showMobileMenu(player,"spawnshop_potions_protection");FormFixtures.last().choice(0);flush();
+         FormFixtures.State details=FormFixtures.last();assertTrue(details.text.contains("Attacking ends all accumulated time."));
+-        assertEquals(List.of("Open guarded review","Back to Potions & Protection","Cancel"),details.buttons);
++        assertEquals(List.of("Buy for $2,000","Back to Potions & Protection","Close shop"),details.buttons);
+         verify(plugin.getServer(),never()).dispatchCommand(any(),anyString());details.choice(0);details.choice(0);details.close();flush();
+         verify(plugin.getServer(),times(1)).dispatchCommand(console,"mobveil buy Buyer");assertNull(ui.currentKind(playerId));noMoneyMoved();
+     }
+@@ -1005,7 +1005,7 @@
+         FormFixtures.State retry=FormFixtures.last();assertNotSame(old,retry);assertEquals(ShopUi.ViewKind.MOBILE_ENTRY,ui.currentKind(playerId));
+         assertTrue(retry.text.contains("Enter a whole number from 1 to 144."));assertTrue(retry.text.contains("16 Bread"));
+         old.number("20");old.close();flush();assertSame(retry,FormFixtures.last());retry.number("19");flush();
+-        assertEquals(ShopUi.ViewKind.MOBILE_HUB,ui.currentKind(playerId));assertTrue(FormFixtures.last().text.contains("19 bundles"));noMoneyMoved();
++        assertEquals(ShopUi.ViewKind.MOBILE_HUB,ui.currentKind(playerId));assertTrue(FormFixtures.last().text.contains("19 packs (304 Bread)"));noMoneyMoved();
+     }
+     @Test void mobileRootBackUsesOnlyFixedMenuCommandOnce() throws Exception {
+         mobileCatalogFixture();ui.showMobileMenu(player,"spawnshop");FormFixtures.State root=FormFixtures.last();
