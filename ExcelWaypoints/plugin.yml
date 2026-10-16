@@ -1,0 +1,23 @@
+name: ExcelWaypoints
+version: 0.1.0
+author: Steve
+main: com.winkreyes.excelwaypoints.ExcelWaypoints
+api-version: "1.21"
+description: Save named places (house, farm, mine), see them in a menu, and follow a compass to them. Never teleports anyone by itself.
+softdepend: [Essentials, Geyser-Spigot, floodgate]
+# Plain-word dependencies (Big Brain rule):
+#  - Essentials: optional. Only used so "Ask to visit" can send the normal /tpa request (the owner must accept). Without it the Ask button says it is unavailable.
+#  - Geyser-Spigot / floodgate: optional. Used to show Bedrock phone forms. Without them everyone gets the chat menu.
+#  - Nothing else. No database, no web access, no other plugin is required.
+commands:
+  places:
+    description: Open the My Places menu, or /places save <name>.
+    usage: /places [save <name>]
+    aliases: [waypoints]
+permissions:
+  excelwaypoints.use:
+    description: Use /places (save places, compass, share, ask to visit).
+    default: true
+  excelwaypoints.admin:
+    description: List and delete other players' places.
+    default: op
