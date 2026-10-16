@@ -1,0 +1,8 @@
+name: ExcelWealthBoard
+version: 1.4.0
+author: Argus
+main: com.winkreyes.excelwealthboard.ExcelWealthBoard
+api-version: "1.13"
+description: Wealth join popup + Jobs auto-enroll via Vault.
+depend: [Vault]
+softdepend: [Jobs]
