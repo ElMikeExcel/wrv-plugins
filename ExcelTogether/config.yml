@@ -1,0 +1,7 @@
+# ExcelTogether 0.1.0
+# Multiplier applied to Jobs money and XP when another online player is nearby.
+# 1.25 means +25%. It is applied to the amounts in JobsPrePaymentEvent, and Jobs'
+# own boosts (weekend, etc.) are applied afterward by Jobs, so the two stack.
+multiplier: 1.25
+# Distance in blocks (same world) that counts as being in a party.
+radius: 50
