@@ -1,0 +1,66 @@
+# ExcelRewardGuard 1.2 configuration.
+# Every enforcement piece has its own off switch; turning one off re-opens
+# that reward path for marked (spawner / spawn-egg / Nether-portal) mobs.
+
+# The share of its Jobs and mcMMO rewards that a marked kill still earns,
+# as a whole percent from 0 to 100 (Mike's decision, Oct 15, 2026: farmed
+# kills are reduced, not zeroed, because the player still has to find or
+# build the farm and land the kills).
+#   65  = the default: a marked kill earns 65% of its normal rewards.
+#   0   = block everything, exactly like ExcelRewardGuard 1.0.
+#   100 = no reduction at all; marked kills earn full rewards.
+# Anything outside 0-100 is clamped, and a value that is not a whole
+# number falls back to 65; either way the startup log says what is in use.
+farm-reward-percent: 65
+
+# Fall-softening threshold, NEW in 1.2 (Mike's decision, Oct 16, 2026: the
+# sky farm gets nerfed too — everything except vanilla XP). Sky-farm mobs
+# are born NATURAL, so the birth marks above never see them: they spawn in
+# the dark at height, fall, and are finished with one hit. The guard
+# therefore also tracks fall damage — if a mob's CUMULATIVE fall damage
+# reaches this percent of its max health by the time it dies, the kill
+# counts as farmed and earns the same farm-reward-percent share above, on
+# both the Jobs and mcMMO paths. The total is cumulative for the mob's
+# tracked life: healing or regenerating does NOT wash it off (a mob that
+# fell for 60%, healed to full, and is then killed still counts — how the
+# kill was set up is the signature, not its current health).
+#   50  = the default: half the health bar lost to falling = softened.
+#   100 = only mobs whose cumulative fall damage equals their whole health
+#         bar count (fell, survived, healed, fell again).
+#   0   = any mob that took any fall damage at all counts. There is no
+#         higher "off" setting; see the note above for what 100 leaves.
+# Accepted false positive, stated plainly: a mob that falls down a ravine
+# entirely on its own and is finished off by a player at or above this
+# threshold counts as farmed. No signal separates a built farm's fall from
+# a natural ravine's, so the policy errs toward the farm side.
+# Anything outside 0-100 is clamped, and a value that is not a whole
+# number falls back to 50; either way the startup log says what is in use.
+farm-fall-damage-percent: 50
+
+# Scale Jobs payments and Jobs XP for marked kills (Jobs events carry the
+# killed entity, so this reduction is exact).
+jobs-veto: true
+
+# Scale mcMMO XP for marked kills. mcMMO XP events carry no entity, so the
+# guard plants a short window when a marked mob dies and scales kill XP
+# (PVE and party-share SHARED_PVE gains) inside it.
+mcmmo-veto: true
+
+# Log deaths of marked elites. EliteMobs has no cancellable reward event in
+# 10.9.8, so this is observability only, never a reduction.
+elitemobs-verdict-logging: true
+
+# How far from a marked kill a gaining player can be and still count as
+# party-share range for the mcMMO reduction. The killer always matches, at
+# any distance (bow kills). Party share on this server reaches about 32
+# blocks; 40 gives a small safety margin.
+party-share-radius-blocks: 40.0
+
+# How many ticks after a marked death the mcMMO reduction window stays open.
+# mcMMO grants the kill XP during the same death processing, so this only
+# needs to cover same-tick ordering plus a small margin.
+suppression-window-ticks: 2
+
+# Log every reduction as it happens. Off by default; reductions are still
+# counted either way.
+debug-logging: false
