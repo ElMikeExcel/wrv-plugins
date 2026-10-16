@@ -1,0 +1,283 @@
+diff --git a/ExcelBedrockMenu/build.sh b/ExcelBedrockMenu/build.sh
+index 6c9e6e6..5d177f8 100644
+--- a/ExcelBedrockMenu/build.sh
++++ b/ExcelBedrockMenu/build.sh
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env bash
+-# Builds ExcelBedrockMenu-1.5.4.jar (renamed from BedrockMenu 1.4.2-menu.1;
++# Builds ExcelBedrockMenu-1.5.6.jar (renamed from BedrockMenu 1.4.2-menu.1;
+ # 1.5.1 adds the "Adventurers Guild" button, which runs /ag as the player;
+ # 1.5.3 adds the "Road to the Guild" button before it, which runs /seals,
+ # and makes the Guild button label show a lock while the guild is sealed;
+@@ -18,6 +18,6 @@ PAPER_API=${PAPER_API:-$HOME/.m2/repository/io/papermc/paper/paper-api/1.21.4-R0
+ CP="$PAPER_API:$(find $HOME/.m2/repository/net/kyori $HOME/.m2/repository/net/md-5 $HOME/.m2/repository/com/google/guava -name '*.jar' 2>/dev/null | tr '\n' ':')"
+ rm -rf build && mkdir -p build/classes
+ javac --release 21 -nowarn -cp "$CP" -d build/classes $(find src -name '*.java')
+-cp plugin.yml  build/classes/
+-(cd build/classes && jar cf ../ExcelBedrockMenu-1.5.4.jar .)
+-echo "built build/ExcelBedrockMenu-1.5.4.jar"
++cp plugin.yml config.yml build/classes/
++(cd build/classes && jar cf ../ExcelBedrockMenu-1.5.6.jar .)
++echo "built build/ExcelBedrockMenu-1.5.6.jar"
+diff --git a/ExcelBedrockMenu/commands_menu.yml b/ExcelBedrockMenu/commands_menu.yml
+index 5be6a40..56650ef 100644
+--- a/ExcelBedrockMenu/commands_menu.yml
++++ b/ExcelBedrockMenu/commands_menu.yml
+@@ -216,7 +216,7 @@ items:
+     slot: 24
+     display_name: '&a&l/shop'
+     lore:
+-      - '&7Open the Spawn Shop'
++      - '&7Open the Excel Shop'
+       - '&8Shops & Trading'
+     left_click_commands:
+       - '[player] shop'
+diff --git a/ExcelBedrockMenu/config.yml b/ExcelBedrockMenu/config.yml
+new file mode 100644
+index 0000000..c2d3681
+--- /dev/null
++++ b/ExcelBedrockMenu/config.yml
+@@ -0,0 +1,5 @@
++# Village fallback for the Spawn button (overworld). Y is found automatically.
++# Mike has not chosen between -272 and -336 yet.
++spawn:
++  x: -784
++  z: -272
+diff --git a/ExcelBedrockMenu/plugin.yml b/ExcelBedrockMenu/plugin.yml
+index 77e801e..ce2731d 100644
+--- a/ExcelBedrockMenu/plugin.yml
++++ b/ExcelBedrockMenu/plugin.yml
+@@ -1,5 +1,5 @@
+ name: ExcelBedrockMenu
+-version: 1.5.4
++version: 1.5.6
+ author: Argus
+ main: com.winkreyes.excelbedrockmenu.ExcelBedrockMenu
+ api-version: "1.13"
+diff --git a/ExcelBedrockMenu/server_menu.yml b/ExcelBedrockMenu/server_menu.yml
+index b7ed70e..95038b7 100644
+--- a/ExcelBedrockMenu/server_menu.yml
++++ b/ExcelBedrockMenu/server_menu.yml
+@@ -34,7 +34,7 @@ items:
+     material: BELL
+     slot: 12
+     priority: 1
+-    display_name: '&8🔒 Adventurers Guild'
++    display_name: '&8&lAdventurers Guild'
+     lore:
+       - '&7Sealed by the five challenges'
+       - '&7Tap to see the Road to the Guild'
+@@ -62,15 +62,6 @@ items:
+           output: 'true'
+     left_click_commands:
+       - '[player] ag'
+-  seals:
+-    material: WRITABLE_BOOK
+-    slot: 13
+-    display_name: '&a&lRoad to the Guild'
+-    lore:
+-      - '&7The five seals quest'
+-      - '&7See what is left to break'
+-    left_click_commands:
+-      - '[player] seals'
+   mcmmo:
+     material: EXPERIENCE_BOTTLE
+     slot: 14
+diff --git a/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java b/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java
+index 495b147..81e9892 100644
+--- a/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java
++++ b/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java
+@@ -37,6 +37,14 @@ import java.util.Locale;
+  * button (mirroring the Java menu). It runs /ag as the player via the same
+  * performCommand path as the other command buttons. Nothing else changed.
+  *
++ * v1.5.6: Spawn button always targets the overworld (see teleportToSpawn).
++ * Village fallback X/Y/Z are read from config.yml (spawn.x/y/z).
++ *
++ * v1.5.5: removed the "Road to the Guild" button (it duplicated the locked
++ * "Adventurers Guild" tap, which already runs /seals) and replaced the
++ * emoji lock prefix (1.5.6: no lock text at all, label identical to unlocked): Bedrock has no glyph for
++ * U+1F512, so it drew a box and switched the whole label to a smaller
++ * fallback font. All labels are now plain ASCII, one font and size.
+  * v1.5.3: added the "Road to the Guild" button, immediately before the
+  * "Adventurers Guild" button (the quest sits right next to the door it
+  * unlocks). It runs /seals (ExcelGuildGate) as the player via the same
+@@ -65,12 +73,12 @@ import java.util.Locale;
+ public class ExcelBedrockMenu extends JavaPlugin implements CommandExecutor {
+ 
+     private static final String[] BUTTONS = {
+-        "Spawn", "Teleport to a player", "Spawn Shop", "Road to the Guild", "Adventurers Guild",
++        "Spawn", "Teleport to a player", "Excel Shop", "Adventurers Guild",
+         "Jobs & Money", "mcMMO Stats", "Leaderboard", "Server Info", "Server Commands",
+         "Server Website", "Auto-open on join"
+     };
+     private static final String[] COMMANDS = {
+-        "spawn", "tpmenu", "shop", "seals", "ag", "jobs browse",
++        "spawn", "tpmenu", "shop", "ag", "jobs browse",
+         "mcstats", "leaderboard", "motd", "servercommands", "serverwebsite", "menujoin"
+     };
+     // Village spawn coordinates (fallback if Essentials spawn lookup fails)
+@@ -78,6 +86,16 @@ public class ExcelBedrockMenu extends JavaPlugin implements CommandExecutor {
+     private static final double SPAWN_Y = 70;
+     private static final double SPAWN_Z = -272;
+ 
++    /** Label for the guild button while sealed: identical to unlocked (plain ASCII, no Locked text). */
++    static String lockedLabel(String base) {
++        return base;
++    }
++
++    /** True if a world may be used as the Spawn button target. */
++    static boolean isSpawnWorld(boolean normalEnvironment, String name) {
++        return normalEnvironment && !"em_adventurers_guild".equals(name);
++    }
++
+     static final String WEBSITE_URL = "https://elmikeexcel.github.io/winkreyesvalley/";
+     static final String WEBSITE_DISPLAY = "elmikeexcel.github.io/winkreyesvalley";
+ 
+@@ -126,7 +144,7 @@ public class ExcelBedrockMenu extends JavaPlugin implements CommandExecutor {
+             {"/leaderboard", "leaderboard", "Top players on every board"},
+         },
+         { // Shops & Trading
+-            {"/shop", "shop", "Open the Spawn Shop"},
++            {"/shop", "shop", "Open the Excel Shop"},
+             {"/excelshop setup", "excelshop setup", "Start the guided setup for your own chest shop"},
+             {"/excelshop manage", "excelshop manage", "Manage your own chest shop"},
+             {"/deathprotection status", "deathprotection status", "See if your items are protected from death"},
+@@ -286,6 +304,7 @@ public class ExcelBedrockMenu extends JavaPlugin implements CommandExecutor {
+     @Override
+     public void onEnable() {
+         migrateLegacyDataFolder("BedrockMenu");
++        saveDefaultConfig();
+         getCommand("menu").setExecutor(this);
+         getCommand("servercommands").setExecutor(this);
+         getCommand("serverwebsite").setExecutor(this);
+@@ -380,7 +399,7 @@ public class ExcelBedrockMenu extends JavaPlugin implements CommandExecutor {
+         if (isGuildLocked()) {
+             for (int i = 0; i < labels.length; i++) {
+                 if (COMMANDS[i].equals("ag")) {
+-                    labels[i] = "🔒 " + labels[i];
++                    labels[i] = lockedLabel(labels[i]);
+                     break;
+                 }
+             }
+@@ -518,47 +537,52 @@ public class ExcelBedrockMenu extends JavaPlugin implements CommandExecutor {
+         }
+     }
+ 
++    /** True when the console /spawn did not work and the village fallback must run. */
++    static boolean needsSpawnFallback(boolean commandDispatched, String worldNameAfter) {
++        return !commandDispatched || "em_adventurers_guild".equals(worldNameAfter);
++    }
++
+     /**
+-     * Teleports the player to spawn without relying on the /spawn command.
+-     * Tries EssentialsXSpawn's spawn location first, falls back to the
+-     * hardcoded village coordinates.
++     * v1.5.6 (final2): runs the real EssentialsX spawn for the player from the
++     * console ("spawn <name>"). If the command is unavailable, or one tick later
++     * the player is still in em_adventurers_guild, falls back to the overworld
++     * village coordinates (config spawn.x/spawn.z).
+      */
+     private void teleportToSpawn(Player player) {
++        boolean ok = false;
+         try {
+-            // Try EssentialsXSpawn via reflection
+-            Plugin essentialsSpawn = Bukkit.getPluginManager().getPlugin("EssentialsXSpawn");
+-            if (essentialsSpawn == null) {
+-                essentialsSpawn = Bukkit.getPluginManager().getPlugin("EssentialsSpawn");
++            ok = Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + player.getName());
++        } catch (Exception ignored) {
++            ok = false;
++        }
++        final boolean dispatched = ok;
++        if (!dispatched) {
++            villageFallback(player);
++            return;
++        }
++        Bukkit.getScheduler().runTask(this, () -> {
++            if (player.isOnline() && needsSpawnFallback(true, player.getWorld().getName())) {
++                villageFallback(player);
+             }
+-            if (essentialsSpawn != null) {
+-                // EssentialsXSpawn stores spawn; get it via the Essentials API
+-                Plugin essentials = Bukkit.getPluginManager().getPlugin("Essentials");
+-                if (essentials != null) {
+-                    ClassLoader essLoader = essentials.getClass().getClassLoader();
+-                    Class<?> essClass = Class.forName("com.earth2me.essentials.Essentials",
+-                            true, essLoader);
+-                    Object essApi = essClass.getMethod("getInstance").invoke(null);
+-                    Object spawn = essClass.getMethod("getSpawn").invoke(essApi);
+-                    if (spawn != null) {
+-                        // Location is from Bukkit API, use it directly
+-                        org.bukkit.Location loc = (org.bukkit.Location) spawn;
+-                        player.teleport(loc);
+-                        getLogger().info("Teleported " + player.getName() + " to Essentials spawn.");
+-                        return;
+-                    }
+-                }
++        });
++    }
++
++    private void villageFallback(Player player) {
++        org.bukkit.World overworld = null;
++        for (org.bukkit.World w : Bukkit.getWorlds()) {
++            if (isSpawnWorld(w.getEnvironment() == org.bukkit.World.Environment.NORMAL, w.getName())) {
++                overworld = w;
++                break;
+             }
+-        } catch (Exception e) {
+-            getLogger().warning("Essentials spawn lookup failed: " + e.getMessage()
+-                    + ", using village coordinates.");
+         }
+-        // Fallback: village coordinates
+-        org.bukkit.World world = player.getWorld();
+-        org.bukkit.Location village = new org.bukkit.Location(world, SPAWN_X, SPAWN_Y, SPAWN_Z);
+-        // Find safe Y (highest block at x,z)
+-        int safeY = world.getHighestBlockYAt((int) SPAWN_X, (int) SPAWN_Z) + 1;
+-        village.setY(safeY);
++        if (overworld == null) {
++            player.sendMessage("Spawn is unavailable right now. Ask an admin.");
++            return;
++        }
++        double vx = getConfig().getDouble("spawn.x", SPAWN_X);
++        double vz = getConfig().getDouble("spawn.z", SPAWN_Z);
++        org.bukkit.Location village = new org.bukkit.Location(overworld, vx, SPAWN_Y, vz);
++        village.setY(overworld.getHighestBlockYAt((int) vx, (int) vz) + 1);
+         player.teleport(village);
+-        getLogger().info("Teleported " + player.getName() + " to village fallback.");
+     }
+ }
+diff --git a/ExcelBedrockMenu/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java b/ExcelBedrockMenu/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java
+new file mode 100644
+index 0000000..a02be75
+--- /dev/null
++++ b/ExcelBedrockMenu/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java
+@@ -0,0 +1,28 @@
++package com.winkreyes.excelbedrockmenu;
++public class MenuLogicTest {
++    static int fails=0;
++    static void check(boolean c,String m){ if(!c){fails++;System.out.println("FAIL "+m);} else System.out.println("ok   "+m);}
++    public static void main(String[] a){
++        try{
++            String src=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java")));
++            String yml=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("commands_menu.yml")));
++            check(src.contains("\"Excel Shop\", \"Adventurers Guild\""),"button array says Excel Shop");
++            check(!src.contains("\"Spawn Shop\"")||src.indexOf("\"Spawn Shop\"")<src.indexOf("class ExcelBedrockMenu"),"no Spawn Shop label in code");
++            check(src.contains("{\"/shop\", \"shop\", \"Open the Excel Shop\"}"),"/shop kept, Excel Shop description");
++            check(yml.contains("Open the Excel Shop")&&!yml.contains("Open the Spawn Shop"),"commands_menu.yml renamed");
++        }catch(Exception e){check(false,"file read "+e);}
++        String l=ExcelBedrockMenu.lockedLabel("Adventurers Guild");
++        check(l.equals("Adventurers Guild"),"locked label text");
++        boolean ascii=l.chars().allMatch(c->c<128);
++        check(ascii,"locked label is plain ASCII");
++        check(ExcelBedrockMenu.isSpawnWorld(true,"world"),"overworld accepted");
++        check(!ExcelBedrockMenu.isSpawnWorld(true,"em_adventurers_guild"),"guild world rejected");
++        check(!ExcelBedrockMenu.isSpawnWorld(false,"world_nether"),"nether rejected");
++        check(!ExcelBedrockMenu.isSpawnWorld(false,"world_the_end"),"end rejected");
++        check(!ExcelBedrockMenu.needsSpawnFallback(true,"world"),"no fallback when console spawn worked");
++        check(ExcelBedrockMenu.needsSpawnFallback(true,"em_adventurers_guild"),"fallback when still in guild");
++        check(ExcelBedrockMenu.needsSpawnFallback(false,"world"),"fallback when command unavailable");
++        System.out.println(fails==0?"ALL PASS":"FAILED "+fails);
++        if(fails>0)System.exit(1);
++    }
++}
