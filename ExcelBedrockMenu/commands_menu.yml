@@ -1,0 +1,447 @@
+# Server Commands menu (DeluxeMenus, Java) - WRV-058.
+# Generated from the same catalogue data as ExcelBedrockMenu
+# 1.5.4's /servercommands (build/gen_commands_menu.py +
+# verify_menus.py keep the two in sync triple-for-triple).
+# Runnable entries run [player] <command>; entries that need
+# typed words are display-only and answer with the typed form.
+menu_title: '&6&lServer Commands'
+size: 54
+items:
+  hdr_ga:
+    material: MAP
+    slot: 0
+    display_name: '&6&lGetting Around'
+    lore:
+      - '&8Command group'
+  ga_menu:
+    material: COMPASS
+    slot: 1
+    display_name: '&a&l/menu'
+    lore:
+      - '&7Open the server menu'
+      - '&8Getting Around'
+    left_click_commands:
+      - '[player] menu'
+  ga_spawn:
+    material: LODESTONE
+    slot: 2
+    display_name: '&a&l/spawn'
+    lore:
+      - '&7Teleport back to the village spawn'
+      - '&8Getting Around'
+    left_click_commands:
+      - '[player] spawn'
+  ga_tpmenu:
+    material: ENDER_PEARL
+    slot: 3
+    display_name: '&a&l/tpmenu'
+    lore:
+      - '&7Pick a player to send a teleport request to'
+      - '&8Getting Around'
+    left_click_commands:
+      - '[player] tpmenu'
+  ga_tpa_player:
+    material: PAPER
+    slot: 4
+    display_name: '&a&l/tpa <player>'
+    lore:
+      - '&7Ask to teleport to a player'
+      - '&8Getting Around'
+    left_click_commands:
+      - '[message] &7Type it in chat: &e/tpa <player>'
+  ga_tpaccept:
+    material: LIME_DYE
+    slot: 5
+    display_name: '&a&l/tpaccept'
+    lore:
+      - '&7Accept a request (/tpdeny says no)'
+      - '&8Getting Around'
+    left_click_commands:
+      - '[player] tpaccept'
+  ga_sethome:
+    material: TORCH
+    slot: 6
+    display_name: '&a&l/sethome'
+    lore:
+      - '&7Set your home where you are standing'
+      - '&8Getting Around'
+    left_click_commands:
+      - '[player] sethome'
+  ga_home:
+    material: RED_BED
+    slot: 7
+    display_name: '&a&l/home'
+    lore:
+      - '&7Teleport to your home'
+      - '&8Getting Around'
+    left_click_commands:
+      - '[player] home'
+  ga_warps:
+    material: FILLED_MAP
+    slot: 8
+    display_name: '&a&l/warps'
+    lore:
+      - '&7List the server warps (/warp <name> to go)'
+      - '&8Getting Around'
+    left_click_commands:
+      - '[player] warps'
+  hdr_mj:
+    material: GOLD_INGOT
+    slot: 9
+    display_name: '&6&lMoney & Jobs'
+    lore:
+      - '&8Command group'
+  mj_balance:
+    material: EMERALD
+    slot: 10
+    display_name: '&a&l/balance'
+    lore:
+      - '&7See how much money you have'
+      - '&8Money & Jobs'
+    left_click_commands:
+      - '[player] balance'
+  mj_pay_player_amount:
+    material: SUNFLOWER
+    slot: 11
+    display_name: '&a&l/pay <player> <amount>'
+    lore:
+      - '&7Send money to another player'
+      - '&8Money & Jobs'
+    left_click_commands:
+      - '[message] &7Type it in chat: &e/pay <player> <amount>'
+  mj_balancetop:
+    material: GOLD_BLOCK
+    slot: 12
+    display_name: '&a&l/balancetop'
+    lore:
+      - '&7The richest players on the server'
+      - '&8Money & Jobs'
+    left_click_commands:
+      - '[player] balancetop'
+  mj_sell_hand:
+    material: HOPPER
+    slot: 13
+    display_name: '&a&l/sell hand'
+    lore:
+      - '&7Sell the stack in your hand to the server'
+      - '&8Money & Jobs'
+    left_click_commands:
+      - '[player] sell hand'
+  mj_jobs:
+    material: IRON_PICKAXE
+    slot: 14
+    display_name: '&a&l/jobs'
+    lore:
+      - '&7Browse jobs and join one'
+      - '&8Money & Jobs'
+    left_click_commands:
+      - '[player] jobs browse'
+  mj_jobs_stats:
+    material: BOOK
+    slot: 15
+    display_name: '&a&l/jobs stats'
+    lore:
+      - '&7Your job levels, XP and pay rates'
+      - '&8Money & Jobs'
+    left_click_commands:
+      - '[player] jobs stats'
+  mj_jobs_join_job:
+    material: WRITABLE_BOOK
+    slot: 16
+    display_name: '&a&l/jobs join <job>'
+    lore:
+      - '&7Join a job by name (or browse with /jobs)'
+      - '&8Money & Jobs'
+    left_click_commands:
+      - '[message] &7Type it in chat: &e/jobs join <job>'
+  hdr_sl:
+    material: EXPERIENCE_BOTTLE
+    slot: 17
+    display_name: '&6&lSkills & Levels'
+    lore:
+      - '&8Command group'
+  sl_mcstats:
+    material: ENCHANTED_BOOK
+    slot: 18
+    display_name: '&a&l/mcstats'
+    lore:
+      - '&7Your mcMMO skill levels'
+      - '&8Skills & Levels'
+    left_click_commands:
+      - '[player] mcstats'
+  sl_mctop:
+    material: DIAMOND
+    slot: 19
+    display_name: '&a&l/mctop'
+    lore:
+      - '&7The top mcMMO players'
+      - '&8Skills & Levels'
+    left_click_commands:
+      - '[player] mctop'
+  sl_skill_name:
+    material: IRON_SWORD
+    slot: 20
+    display_name: '&a&l/<skill name>'
+    lore:
+      - '&7Inspect one skill: /mining, /swords, /axes, /fishing and more'
+      - '&8Skills & Levels'
+    left_click_commands:
+      - '[message] &7Type it in chat: &e/<skill name>'
+  sl_party:
+    material: CAKE
+    slot: 21
+    display_name: '&a&l/party'
+    lore:
+      - '&7Your mcMMO party: members, chat and invites'
+      - '&8Skills & Levels'
+    left_click_commands:
+      - '[player] party'
+  sl_leaderboard:
+    material: BEACON
+    slot: 22
+    display_name: '&a&l/leaderboard'
+    lore:
+      - '&7Top players on every board'
+      - '&8Skills & Levels'
+    left_click_commands:
+      - '[player] leaderboard'
+  hdr_st:
+    material: CHEST
+    slot: 23
+    display_name: '&6&lShops & Trading'
+    lore:
+      - '&8Command group'
+  st_shop:
+    material: EMERALD
+    slot: 24
+    display_name: '&a&l/shop'
+    lore:
+      - '&7Open the Spawn Shop'
+      - '&8Shops & Trading'
+    left_click_commands:
+      - '[player] shop'
+  st_excelshop_setup:
+    material: CRAFTING_TABLE
+    slot: 25
+    display_name: '&a&l/excelshop setup'
+    lore:
+      - '&7Start the guided setup for your own chest shop'
+      - '&8Shops & Trading'
+    left_click_commands:
+      - '[player] excelshop setup'
+  st_excelshop_manage:
+    material: BARREL
+    slot: 26
+    display_name: '&a&l/excelshop manage'
+    lore:
+      - '&7Manage your own chest shop'
+      - '&8Shops & Trading'
+    left_click_commands:
+      - '[player] excelshop manage'
+  st_deathprotection_status:
+    material: TOTEM_OF_UNDYING
+    slot: 27
+    display_name: '&a&l/deathprotection status'
+    lore:
+      - '&7See if your items are protected from death'
+      - '&8Shops & Trading'
+    left_click_commands:
+      - '[player] deathprotection status'
+  st_mobveil_status:
+    material: GLASS_BOTTLE
+    slot: 28
+    display_name: '&a&l/mobveil status'
+    lore:
+      - '&7See how much Mob Veil time you have left'
+      - '&8Shops & Trading'
+    left_click_commands:
+      - '[player] mobveil status'
+  hdr_cl:
+    material: GOLDEN_SHOVEL
+    slot: 29
+    display_name: '&6&lClaims & Land'
+    lore:
+      - '&8Command group'
+  cl_claim:
+    material: OAK_FENCE
+    slot: 30
+    display_name: '&a&l/claim'
+    lore:
+      - '&7Claim the land around you'
+      - '&8Claims & Land'
+    left_click_commands:
+      - '[player] claim'
+  cl_claimslist:
+    material: MAP
+    slot: 31
+    display_name: '&a&l/claimslist'
+    lore:
+      - '&7Your claim blocks and where your claims are'
+      - '&8Claims & Land'
+    left_click_commands:
+      - '[player] claimslist'
+  cl_trust_player:
+    material: LEAD
+    slot: 32
+    display_name: '&a&l/trust <player>'
+    lore:
+      - '&7Give a player full access to your claims'
+      - '&8Claims & Land'
+    left_click_commands:
+      - '[message] &7Type it in chat: &e/trust <player>'
+  cl_extendclaim_blocks:
+    material: STICK
+    slot: 33
+    display_name: '&a&l/extendclaim <blocks>'
+    lore:
+      - '&7Grow the claim you are standing in'
+      - '&8Claims & Land'
+    left_click_commands:
+      - '[message] &7Type it in chat: &e/extendclaim <blocks>'
+  cl_buyclaimblocks_amount:
+    material: GOLD_INGOT
+    slot: 34
+    display_name: '&a&l/buyclaimblocks <amount>'
+    lore:
+      - '&7Buy more claim blocks with server money'
+      - '&8Claims & Land'
+    left_click_commands:
+      - '[message] &7Type it in chat: &e/buyclaimblocks <amount>'
+  cl_trapped:
+    material: IRON_BARS
+    slot: 35
+    display_name: '&a&l/trapped'
+    lore:
+      - '&7Escape if you are stuck inside a claim'
+      - '&8Claims & Land'
+    left_click_commands:
+      - '[player] trapped'
+  cl_abandonclaim:
+    material: BARRIER
+    slot: 36
+    display_name: '&a&l/abandonclaim'
+    lore:
+      - '&7Delete the claim you stand in (no undo)'
+      - '&8Claims & Land'
+    left_click_commands:
+      - '[message] &7Type it in chat: &e/abandonclaim'
+  hdr_gq:
+    material: BELL
+    slot: 37
+    display_name: '&6&lGuild & Quests'
+    lore:
+      - '&8Command group'
+  gq_ag:
+    material: NETHER_STAR
+    slot: 38
+    display_name: '&a&l/ag'
+    lore:
+      - '&7Teleport to the Adventurers Guild'
+      - '&8Guild & Quests'
+    left_click_commands:
+      - '[player] ag'
+  gq_seals:
+    material: WRITABLE_BOOK
+    slot: 39
+    display_name: '&a&l/seals'
+    lore:
+      - '&7Road to the Guild: the five seals quest (also /road)'
+      - '&8Guild & Quests'
+    left_click_commands:
+      - '[player] seals'
+  gq_em:
+    material: ZOMBIE_HEAD
+    slot: 40
+    display_name: '&a&l/em'
+    lore:
+      - '&7EliteMobs: your elite level, gear skills and menus'
+      - '&8Guild & Quests'
+    left_click_commands:
+      - '[player] em'
+  gq_em_party:
+    material: SHIELD
+    slot: 41
+    display_name: '&a&l/em party'
+    lore:
+      - '&7Dungeon parties: add create, invite or ready'
+      - '&8Guild & Quests'
+    left_click_commands:
+      - '[message] &7Type it in chat: &e/em party'
+  hdr_si:
+    material: BOOK
+    slot: 42
+    display_name: '&6&lServer Info'
+    lore:
+      - '&8Command group'
+  si_motd:
+    material: OAK_SIGN
+    slot: 43
+    display_name: '&a&l/motd'
+    lore:
+      - '&7Server info and news'
+      - '&8Server Info'
+    left_click_commands:
+      - '[player] motd'
+  si_list:
+    material: PLAYER_HEAD
+    slot: 44
+    display_name: '&a&l/list'
+    lore:
+      - '&7See who is online right now'
+      - '&8Server Info'
+    left_click_commands:
+      - '[player] list'
+  si_msg_player_message:
+    material: FEATHER
+    slot: 45
+    display_name: '&a&l/msg <player> <message>'
+    lore:
+      - '&7Send a private message (/r replies)'
+      - '&8Server Info'
+    left_click_commands:
+      - '[message] &7Type it in chat: &e/msg <player> <message>'
+  si_playermap:
+    material: FILLED_MAP
+    slot: 46
+    display_name: '&a&l/playermap'
+    lore:
+      - '&7How player maps work and who is on them'
+      - '&8Server Info'
+    left_click_commands:
+      - '[player] playermap'
+  si_compass:
+    material: COMPASS
+    slot: 47
+    display_name: '&a&l/compass'
+    lore:
+      - '&7Get a new server menu compass'
+      - '&8Server Info'
+    left_click_commands:
+      - '[player] compass'
+  si_menujoin:
+    material: LEVER
+    slot: 48
+    display_name: '&a&l/menujoin'
+    lore:
+      - '&7Turn the auto-open menu on or off'
+      - '&8Server Info'
+    left_click_commands:
+      - '[player] menujoin'
+  si_servercommands:
+    material: KNOWLEDGE_BOOK
+    slot: 49
+    display_name: '&a&l/servercommands'
+    lore:
+      - '&7This command list'
+      - '&8Server Info'
+    left_click_commands:
+      - '[player] servercommands'
+  si_serverwebsite:
+    material: ENDER_EYE
+    slot: 50
+    display_name: '&a&l/serverwebsite'
+    lore:
+      - '&7Get the server website address'
+      - '&8Server Info'
+    left_click_commands:
+      - '[player] serverwebsite'
