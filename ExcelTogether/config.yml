@@ -1,0 +1,41 @@
+# ExcelTogether 0.3.0
+# Multiplier applied to Jobs money and XP when a partner is nearby.
+# 1.25 means +25%. It is applied to the amounts in JobsPrePaymentEvent, and Jobs'
+# own boosts (weekend, etc.) are applied afterward by Jobs, so the two stack.
+multiplier: 1.25
+# Distance in blocks (same world) a partner must be within.
+radius: 50
+# Who counts as a partner:
+#   party  = only a member of your party (default, Mike: the party IS the bonus group)
+#   nearby = any other player close by (the 0.1.0 behavior, no party needed)
+#   either = party member or anyone close by
+bonus-mode: party
+# Range indicator (WRV-068, display only, no settings): while you are in a party, an action bar
+# line re-checked every 2.5 seconds shows whether a party member is within the radius, using the
+# same range test as the bonus itself. A title flashes when the bonus turns on or off (a flip must
+# hold 3 seconds first, so the edge of the range does not strobe), with a soft sound when it turns
+# on. Each player can turn the flashes and sound off for themselves: /excelparty cue off
+# Most players in one party (2 to 20).
+max-party-size: 5
+# Seconds an invite stays open.
+invite-expiry-seconds: 60
+# Seconds a disconnected member keeps their party seat before being removed.
+offline-grace-seconds: 300
+# Right-click another player while holding a compass to invite them (they still must accept).
+compass-click-invite: true
+# Also mirror ExcelTogether parties into the mcMMO party system, if mcMMO is installed (soft link).
+# Invite sets an mcMMO invite, accept joins the mcMMO party, leave and kick mirror too. ExcelTogether
+# stays in charge: if mcMMO is full, locked or the other player is in a different mcMMO party, only ours is made.
+mcmmo-party-link: true
+# Sharing (Mike's spec): when a party member earns Jobs money/XP, every OTHER party member within the
+# radius (same world, online, not idle) gets share-percent of that boosted gain too, in the SAME job
+# (skipped if they do not have that job). Shared gains never trigger more sharing.
+#   full = 100% of the earner's boosted gain (default)    off = no sharing, only the +25% bonus
+share-mode: full
+share-percent: 100
+# Anti-leech: a member who has not moved a block, clicked or broken a block for this many seconds gets
+# no shared gains (0 = check off). The earner is never affected.
+share-idle-seconds: 120
+# Also copy mcMMO skill XP (same skill, final amount) to nearby party members. Skipped automatically for
+# an mcMMO party whose leader turned on mcMMO XP share (mode EQUAL) so XP is never paid twice.
+share-mcmmo-xp: true
