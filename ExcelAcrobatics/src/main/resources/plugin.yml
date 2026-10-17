@@ -1,0 +1,7 @@
+name: ExcelAcrobatics
+version: 1.1
+main: com.winkreyes.acrobatics.ExcelAcrobatics
+api-version: '1.21'
+description: >-
+  Pays mcMMO Acrobatics XP for falls mcMMO itself never pays: falling from height into water (at the land-fall rate, plus a style bonus, with diminishing repeats at the same spot) and fatal falls that cost the player real vanilla XP. Requires mcMMO: awards are granted through mcMMO's own experience API, and if mcMMO is missing or its API does not verify at startup, awards stay off and the plugin only logs why. ExcelBuildMode is an optional companion: Build Mode sessions never pay.
+softdepend: [mcMMO, ExcelBuildMode]
