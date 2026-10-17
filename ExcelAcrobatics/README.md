@@ -10,7 +10,7 @@ That tarball is in this folder, and its source is extracted here (`build.sh` and
 
 In-game: UNTESTED. Built: yes. Unit tests: pass. Scratch boot: partial. Installed live: yes, 7:57 PM CDT Oct 16, 2026. Java check: UNCONFIRMED. Bedrock check: UNCONFIRMED.
 
-`CHANGES-1.1.md` was written as not installed live. This record says installed live at 7:57 PM CDT Oct 16, 2026.
+`CHANGES-1.1.md` records the 1.1 fix and the live install at 7:57 PM CDT Oct 16, 2026. In-game UNTESTED. Java and Bedrock UNCONFIRMED.
 
 Mike's rule (Oct 14, 2026): falling from a high place and landing in water
 should pay mcMMO Acrobatics XP. Vanilla mcMMO pays Acrobatics XP only
