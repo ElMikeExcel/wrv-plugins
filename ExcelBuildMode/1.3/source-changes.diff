@@ -1,0 +1,156 @@
+diff --git a/ExcelBuildMode/build.sh b/ExcelBuildMode/build.sh
+index 3ba50cc..16b88b3 100644
+--- a/ExcelBuildMode/build.sh
++++ b/ExcelBuildMode/build.sh
+@@ -18,5 +18,5 @@ find src/test/java -name '*.java' | sort > target/test-sources.txt
+ "$JAVA_HOME/bin/java" -XX:-UsePerfData -XX:ActiveProcessorCount=2 -Xmx256M -ea -cp "target/classes:target/test-classes:$CP" com.winkreyes.buildmode.RecoverySafetyTests
+ "$JAVA_HOME/bin/java" -XX:-UsePerfData -XX:ActiveProcessorCount=2 -Xmx256M -ea -cp "target/classes:target/test-classes:$CP" com.winkreyes.buildmode.core.PlayerDataProofTests
+ "$JAVA_HOME/bin/java" -XX:-UsePerfData -XX:ActiveProcessorCount=2 -Xmx256M -ea -cp "target/classes:target/test-classes:$CP" com.winkreyes.buildmode.PilotGateTests
+-"$JAVA_HOME/bin/jar" -J-XX:-UsePerfData -J-XX:ActiveProcessorCount=2 -J-Xmx128M --create --file target/ExcelBuildMode-1.2.jar --date=2026-10-14T03:00:00Z -C target/classes .
+-sha256sum target/ExcelBuildMode-1.2.jar
++"$JAVA_HOME/bin/jar" -J-XX:-UsePerfData -J-XX:ActiveProcessorCount=2 -J-Xmx128M --create --file target/ExcelBuildMode-1.3.jar --date=2026-10-14T03:00:00Z -C target/classes .
++sha256sum target/ExcelBuildMode-1.3.jar
+diff --git a/ExcelBuildMode/src/main/java/com/winkreyes/buildmode/paper/BuildPolicy.java b/ExcelBuildMode/src/main/java/com/winkreyes/buildmode/paper/BuildPolicy.java
+index cf26944..b52c404 100644
+--- a/ExcelBuildMode/src/main/java/com/winkreyes/buildmode/paper/BuildPolicy.java
++++ b/ExcelBuildMode/src/main/java/com/winkreyes/buildmode/paper/BuildPolicy.java
+@@ -24,7 +24,12 @@ public final class BuildPolicy {
+         "worldedit.brush.set", "worldedit.brush.smooth", "worldedit.brush.snow",
+         "worldedit.brush.snowsmooth", "worldedit.brush.sphere", "worldedit.brush.splatter",
+         "worldedit.brush.options.material", "worldedit.brush.options.range",
+-        "worldedit.brush.options.size", "worldedit.brush.options.mask");
++        "worldedit.brush.options.size", "worldedit.brush.options.mask",
++        // Added in 1.3 (Marvin's request Oct 16, 2026): generation, stack and schematic save/load/list.
++        // Deliberately NOT included: schematic delete/share/list.other/load.other, history .other, worldedit.* .
++        "worldedit.generation.cylinder", "worldedit.generation.sphere", "worldedit.region.stack",
++        "worldedit.schematic.save", "worldedit.schematic.load", "worldedit.schematic.list",
++        "worldedit.clipboard.save", "worldedit.clipboard.load");
+     /** Blocks whose right-click use is a harvesting/collection or cooking start, never construction. */
+     public static final Set<Material> HARVEST_BLOCKS = Set.of(
+         Material.COMPOSTER, Material.SWEET_BERRY_BUSH, Material.BEEHIVE, Material.BEE_NEST,
+@@ -59,7 +64,8 @@ public final class BuildPolicy {
+     }
+     private static final Set<String> EDIT_COMMANDS = Set.of(
+         "/wand", "/pos1", "/pos2", "/hpos1", "/hpos2", "/expand", "/contract", "/shift",
+-        "/set", "/replace", "/walls", "/faces", "/copy", "/paste", "/rotate", "/flip", "undo", "redo", "/undo", "/redo");
++        "/set", "/replace", "/walls", "/faces", "/copy", "/paste", "/rotate", "/flip",
++        "/cyl", "/hcyl", "/sphere", "/hsphere", "/stack", "undo", "redo", "/undo", "/redo");
+     private static final Set<String> CHAT_HELP = Set.of("msg", "tell", "w", "m", "message", "r", "reply", "help", "?", "list");
+     public static boolean allowsCommand(String text, boolean worldEdit) { return allowsCommand(text, worldEdit, true); }
+     public static boolean allowsCommand(String text, boolean worldEdit, boolean chatHelp) {
+@@ -72,6 +78,16 @@ public final class BuildPolicy {
+         if (chatHelp && CHAT_HELP.contains(ordinary)) return true;
+         if (!worldEdit) return false;
+         if (root.startsWith("worldedit:")) root = root.substring("worldedit:".length());
+-        return EDIT_COMMANDS.contains(root);
++        if (EDIT_COMMANDS.contains(root)) return true;
++        if (root.equals("/schem") || root.equals("/schematic")) return allowsSchematic(text);
++        return false;
++    }
++    private static final Set<String> SCHEM_SUBCOMMANDS = Set.of("save", "load", "list");
++    /** //schem is allowed only for save, load and list; delete, share, formats, unload and anything else is denied. */
++    private static boolean allowsSchematic(String text) {
++        String[] parts = text.trim().split("\\s+");
++        if (parts.length < 2) return false;
++        if (text.contains("..")) return false;
++        return SCHEM_SUBCOMMANDS.contains(parts[1].toLowerCase(Locale.ROOT));
+     }
+ }
+diff --git a/ExcelBuildMode/src/main/java/com/winkreyes/buildmode/paper/ExcelBuildMode.java b/ExcelBuildMode/src/main/java/com/winkreyes/buildmode/paper/ExcelBuildMode.java
+index a193e15..b22e5af 100644
+--- a/ExcelBuildMode/src/main/java/com/winkreyes/buildmode/paper/ExcelBuildMode.java
++++ b/ExcelBuildMode/src/main/java/com/winkreyes/buildmode/paper/ExcelBuildMode.java
+@@ -138,7 +138,7 @@ public final class ExcelBuildMode extends JavaPlugin implements Listener, Comman
+             }
+         }, 10L, 10L);
+         getLogger().warning(pilot
+-            ? "ExcelBuildMode 1.2 PILOT: construction-only profile. Reward-provider admission is OFF by configuration; earning is suppressed by the session jobs.use denial and the pilot input gates. Trust-based building, not a security boundary."
++            ? "ExcelBuildMode 1.3 PILOT: construction-only profile. Reward-provider admission is OFF by configuration; earning is suppressed by the session jobs.use denial and the pilot input gates. Trust-based building, not a security boundary."
+             : "ExcelBuildMode 1.1: cold-start reward integration; trust-based shared-world building. Validate provider artifacts before deployment.");
+     }
+     @Override public void onDisable() {
+diff --git a/ExcelBuildMode/src/main/resources/plugin.yml b/ExcelBuildMode/src/main/resources/plugin.yml
+index 863e1a0..71b79c9 100644
+--- a/ExcelBuildMode/src/main/resources/plugin.yml
++++ b/ExcelBuildMode/src/main/resources/plugin.yml
+@@ -1,5 +1,5 @@
+ name: ExcelBuildMode
+-version: '1.2'
++version: '1.3'
+ main: com.winkreyes.buildmode.paper.ExcelBuildMode
+ api-version: '26.2'
+ loadbefore: [Jobs, mcMMO, EliteMobs]
+diff --git a/ExcelBuildMode/src/test/java/com/winkreyes/buildmode/CoreTests.java b/ExcelBuildMode/src/test/java/com/winkreyes/buildmode/CoreTests.java
+index 75dc4e6..7333323 100644
+--- a/ExcelBuildMode/src/test/java/com/winkreyes/buildmode/CoreTests.java
++++ b/ExcelBuildMode/src/test/java/com/winkreyes/buildmode/CoreTests.java
+@@ -138,7 +138,7 @@ public final class CoreTests {
+             check(!BuildPolicy.allowsCommand(command, false), "default command guard denies " + command);
+         for (String command : List.of("//set stone", "//pos1", "//copy", "/worldedit:/paste", "//undo"))
+             check(BuildPolicy.allowsCommand(command, true), "allowlisted WE root " + command);
+-        for (String command : List.of("/op Marvin", "//schem load foo", "/we reload", "//limit -1", "//regen", "/worldedit:reload", "//setbiome forest"))
++        for (String command : List.of("/op Marvin", "/we reload", "//limit -1", "//regen", "/worldedit:reload", "//setbiome forest"))
+             check(!BuildPolicy.allowsCommand(command, true), "WE enable does not allow admin roots");
+         for (String history : List.of("/undo", "/redo", "//undo", "//redo", "/worldedit:undo", "/worldedit:redo", "/worldedit:/undo", "/worldedit:/redo")) {
+             check(BuildPolicy.allowsCommand(history, true), "native and alias history command allowed " + history);
+@@ -152,7 +152,7 @@ public final class CoreTests {
+             check(!BuildPolicy.allowsCommand(chat, false, false), "chat/help option disabled " + chat);
+         }
+         check(!BuildPolicy.allowsCommand("/untrustedplugin:msg hello", false), "unknown namespaced command does not inherit chat allowance");
+-        check(BuildPolicy.WORLD_EDIT_PERMISSIONS.stream().noneMatch(s -> s.contains("*") || s.contains("bypass") || s.contains("admin") || s.contains("reload") || s.contains("schematic")), "attachment has no broad/dangerous node");
++        check(BuildPolicy.WORLD_EDIT_PERMISSIONS.stream().noneMatch(s -> s.contains("*") || s.contains("bypass") || s.contains("admin") || s.contains("reload") || s.contains("delete") || s.contains("share") || s.endsWith(".other")), "attachment has no broad/dangerous node");
+     }
+     private static final class FakePort implements SessionCoordinator.PlayerPort {
+         byte[] current = SURVIVAL.clone(); boolean build; int enters, restores, saves; String fail = "";
+diff --git a/ExcelBuildMode/src/test/java/com/winkreyes/buildmode/PilotGateTests.java b/ExcelBuildMode/src/test/java/com/winkreyes/buildmode/PilotGateTests.java
+index 8f75faa..6b1c78b 100644
+--- a/ExcelBuildMode/src/test/java/com/winkreyes/buildmode/PilotGateTests.java
++++ b/ExcelBuildMode/src/test/java/com/winkreyes/buildmode/PilotGateTests.java
+@@ -22,7 +22,7 @@ public final class PilotGateTests {
+     }
+ 
+     private static void worldEditSetIsFixed() {
+-        check(BuildPolicy.WORLD_EDIT_PERMISSIONS.size() == 41, "WorldEdit set has exactly 41 nodes (16 pilot + 25 added for brushes in 1.2)");
++        check(BuildPolicy.WORLD_EDIT_PERMISSIONS.size() == 49, "WorldEdit set has exactly 49 nodes (16 pilot + 25 brushes + 8 added in 1.3)");
+         check(BuildPolicy.WORLD_EDIT_PERMISSIONS.contains("worldedit.brush.sphere"), "sphere brush granted in 1.2");
+         check(BuildPolicy.WORLD_EDIT_PERMISSIONS.contains("worldedit.brush.options.size"), "brush size option granted in 1.2");
+         check(!BuildPolicy.WORLD_EDIT_PERMISSIONS.contains("worldedit.brush.butcher"), "butcher brush (kills entities) deliberately excluded");
+@@ -36,7 +36,7 @@ public final class PilotGateTests {
+         check(off.size() == 1, "without WorldEdit the session attachment has one node");
+         check(Boolean.FALSE.equals(off.get("jobs.use")), "jobs.use is denied in session");
+         Map<String, Boolean> on = BuildPolicy.sessionPermissions(true);
+-        check(on.size() == 42, "with WorldEdit the session attachment has 42 nodes (jobs.use denial + 41 WorldEdit)");
++        check(on.size() == 50, "with WorldEdit the session attachment has 50 nodes (jobs.use denial + 49 WorldEdit)");
+         check(Boolean.FALSE.equals(on.get("jobs.use")), "jobs.use stays denied with WorldEdit on");
+         check(BuildPolicy.WORLD_EDIT_PERMISSIONS.stream().allMatch(n -> Boolean.TRUE.equals(on.get(n))), "every WorldEdit node granted true");
+         check(on.keySet().stream().noneMatch(n -> n.contains("*")), "no wildcard session nodes");
+@@ -74,6 +74,29 @@ public final class PilotGateTests {
+         check(!BuildPolicy.allowsCommand("//set 64 stone", false, true), "WorldEdit set denied without session WorldEdit");
+         check(BuildPolicy.allowsCommand("//copy", true, true) && BuildPolicy.allowsCommand("//paste", true, true), "clipboard allowed with session WorldEdit");
+         check(BuildPolicy.allowsCommand("/msg Marvin done", true, true), "chat stays allowed");
++        v13Commands();
++    }
++
++    private static void v13Commands() {
++        for (String c : List.of("//cyl stone 5 3", "//hcyl stone 5 3", "//sphere stone 5", "//hsphere stone 5", "//stack 5 up", "//STACK 3", "//Sphere -r stone 4",
++                "/worldedit:/cyl stone 5", "/worldedit:/hcyl stone 5", "/worldedit:/sphere stone 5", "/worldedit:/hsphere stone 5", "/worldedit:/stack 5",
++                "//schem save house", "//schem load house", "//schem list", "//SCHEM SAVE house", "//schem save -f house", "//schem list -p 2",
++                "//schematic save house", "//schematic load house", "//schematic list", "/worldedit:/schem save house", "/worldedit:/schem load house", "/worldedit:/schematic list",
++                "//undo", "//redo", "//undo 3", "//redo 2", "/undo", "/redo", "/worldedit:undo", "/worldedit:redo"))
++            check(BuildPolicy.allowsCommand(c, true, true) && BuildPolicy.allowsCommand(c, true, false), "1.3 allowed in build mode: " + c);
++        for (String c : List.of("//cyl stone 5", "//hcyl stone 5", "//sphere stone 5", "//hsphere stone 5", "//stack 5", "//schem save a", "//schem load a", "//schem list", "/worldedit:/schem list"))
++            check(!BuildPolicy.allowsCommand(c, false, true), "1.3 denied outside build mode (worldEdit off): " + c);
++        for (String c : List.of("//schem", "//schem delete house", "//schem share house", "//schem formats", "//schem unload", "//schem clear", "//schem save ../../x", "//schem load ..\\x",
++                "/schem save house", "/schematic save house", "/sphere stone 5", "/cyl stone 5", "/stack 5", "/worldedit:schem save a", "//schem  delete a", "//schem -f delete a", "/we schem save a", "//brush butcher"))
++            check(!BuildPolicy.allowsCommand(c, true, true), "1.3 still denied in build mode: " + c);
++        for (String n : List.of("worldedit.generation.cylinder", "worldedit.generation.sphere", "worldedit.region.stack", "worldedit.schematic.save", "worldedit.schematic.load",
++                "worldedit.schematic.list", "worldedit.clipboard.save", "worldedit.clipboard.load", "worldedit.history.undo.self", "worldedit.history.redo.self")) {
++            check(BuildPolicy.WORLD_EDIT_PERMISSIONS.contains(n), "node in WORLD_EDIT_PERMISSIONS: " + n);
++            check(Boolean.TRUE.equals(BuildPolicy.sessionPermissions(true).get(n)), "node granted in session: " + n);
++            check(BuildPolicy.sessionPermissions(false).get(n) == null, "node never attached without WorldEdit: " + n);
++        }
++        for (String n : List.of("worldedit.schematic.delete", "worldedit.schematic.share", "worldedit.schematic.list.other", "worldedit.schematic.load.other", "worldedit.history.undo", "worldedit.history.redo", "worldedit.*", "worldedit.clipboard.load.other"))
++            check(!BuildPolicy.WORLD_EDIT_PERMISSIONS.contains(n), "node excluded: " + n);
+     }
+ 
+     private static void pilotAdmissionNeedsNoProviders() throws Exception {
