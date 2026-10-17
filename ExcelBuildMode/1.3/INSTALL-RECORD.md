@@ -5,7 +5,7 @@ Statuses:
 - Built: YES (jar SHA in SHA256SUMS)
 - Tests: PASS (all 5 suites, see test-log.txt; 153 pilot-gate assertions incl. every new command, args, uppercase, worldedit: namespace, denial when WE off, excluded nodes)
 - Scratch boot: PARTIAL. Paper 26.2 build 133 loads and enables 1.3; no WorldEdit/LuckPerms in scratch and recovery storage unprovisioned (same as 1.2 by design), so Build entry disabled. No in-game command run.
-- Installed live: NO
+- Installed live: YES, 7:57 PM CDT Oct 16, 2026. In-game UNTESTED
 - Java check: UNCONFIRMED
 - Bedrock check: UNCONFIRMED
 Unverified: real WorldEdit permission-node names on live WE 7.4.5 (from docs, not runtime); //schem inside Build Mode end to end; exit removes new nodes (covered by existing loop, not run live); Marvin's 5,000 block cap still limits big shapes.
