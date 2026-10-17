@@ -1,0 +1,1112 @@
+diff -ruN -x tests -x build.sh o020/old/config.yml n/config.yml
+--- o020/old/config.yml	2026-10-16 00:00:00.000000000 -0500
++++ n/config.yml	2026-10-16 18:14:55.134558932 -0500
+@@ -1,4 +1,4 @@
+-# ExcelTogether 0.2.0
++# ExcelTogether 0.2.1
+ # Multiplier applied to Jobs money and XP when a partner is nearby.
+ # 1.25 means +25%. It is applied to the amounts in JobsPrePaymentEvent, and Jobs'
+ # own boosts (weekend, etc.) are applied afterward by Jobs, so the two stack.
+@@ -22,3 +22,15 @@
+ # Invite sets an mcMMO invite, accept joins the mcMMO party, leave and kick mirror too. ExcelTogether
+ # stays in charge: if mcMMO is full, locked or the other player is in a different mcMMO party, only ours is made.
+ mcmmo-party-link: true
++# Sharing (Mike's spec): when a party member earns Jobs money/XP, every OTHER party member within the
++# radius (same world, online, not idle) gets share-percent of that boosted gain too, in the SAME job
++# (skipped if they do not have that job). Shared gains never trigger more sharing.
++#   full = 100% of the earner's boosted gain (default)    off = no sharing, only the +25% bonus
++share-mode: full
++share-percent: 100
++# Anti-leech: a member who has not moved a block, clicked or broken a block for this many seconds gets
++# no shared gains (0 = check off). The earner is never affected.
++share-idle-seconds: 120
++# Also copy mcMMO skill XP (same skill, final amount) to nearby party members. Skipped automatically for
++# an mcMMO party whose leader turned on mcMMO XP share (mode EQUAL) so XP is never paid twice.
++share-mcmmo-xp: true
+diff -ruN -x tests -x build.sh o020/old/plugin.yml n/plugin.yml
+--- o020/old/plugin.yml	2026-10-16 00:00:00.000000000 -0500
++++ n/plugin.yml	2026-10-16 18:14:55.134558932 -0500
+@@ -1,5 +1,5 @@
+ name: ExcelTogether
+-version: 0.2.0
++version: 0.2.1
+ author: Steve
+ main: com.winkreyes.exceltogether.ExcelTogether
+ api-version: "1.21"
+diff -ruN -x tests -x build.sh o020/old/src/com/winkreyes/exceltogether/Controller.java n/src/com/winkreyes/exceltogether/Controller.java
+--- o020/old/src/com/winkreyes/exceltogether/Controller.java	2026-10-16 00:00:00.000000000 -0500
++++ n/src/com/winkreyes/exceltogether/Controller.java	2026-10-16 18:14:55.134558932 -0500
+@@ -30,8 +30,31 @@
+         this.mgr = mgr; this.env = env; this.forms = forms; this.bonusNote = bonusNote;
+     }
+ 
++    private java.util.function.Function<PlayerView, List<String>> statusFn = v -> List.of();
++    /** Plugin supplies the live bonus status lines (needs Bukkit). */
++    public void setStatus(java.util.function.Function<PlayerView, List<String>> f) { this.statusFn = f == null ? v -> List.of() : f; }
++    public void status(PlayerView p) {
++        remember(p);
++        List<String> ls; try { ls = statusFn.apply(p); } catch (Throwable t) { ls = List.of("Could not check the bonus right now."); }
++        for (String l : ls) p.say(l);
++    }
++
+     /** Optional mcMMO party mirror. Never required; null means off. */
+     public void setLink(McmmoLink l) { this.link = l == null ? McmmoLink.NONE : l; }
++    McmmoLink link() { return link; }
++    PartyManager mgr() { return mgr; }
++    Env env() { return env; }
++    String bonusNote() { return bonusNote; }
++    private final McmmoSync sync = new McmmoSync(this);
++    /** mcMMO says these players' parties may have changed (a join, leave, kick or disband by hand). Safe to call with any ids, any time. */
++    public void mcmmoChanged(Collection<UUID> ids, Collection<UUID> joined) { safeRun(() -> sync.reconcile(ids, joined)); }
++    /** Pre-change mcMMO event: who might be affected. Plugin reconciles them a tick later via mcmmoChanged. */
++    public List<UUID> mcmmoEventIds(UUID player, String oldParty, String newParty) {
++        try { return sync.collect(player, oldParty, newParty); } catch (Throwable t) { return player == null ? List.of() : List.of(player); }
++    }
++    /** Login or plugin enable: adopt these players' mcMMO parties (retries a short while until mcMMO has loaded their profile). */
++    public void mcmmoWatch(Collection<UUID> ids) { safeRun(() -> { for (UUID id : ids) sync.watch(id); }); }
++    private int pollTick = 0;
+ 
+     private McmmoLink.Mirror safe(java.util.function.Supplier<McmmoLink.Mirror> f) {
+         try { return f.get(); } catch (Throwable t) { return McmmoLink.Mirror.ERROR; }
+@@ -59,11 +82,12 @@
+     static String stripColor(String s) { return s == null ? "" : s.replaceAll("(?i)[\u00a7&][0-9a-fk-or]", ""); }
+     String shown(PlayerView p) { return shown(p.displayName(), p.realName()); }
+     private void remember(PlayerView p) { mgr.rememberName(p.id(), shown(p)); }
+-    private String sizeText(PartyManager.Party pt) { return pt.size() + "/" + mgr.maxSize(); }
++    String nameOf(UUID id) { PlayerView v = env.online(id); if (v != null) remember(v); return mgr.nameOf(id); }
++    String sizeText(PartyManager.Party pt) { return pt.size() + "/" + mgr.maxSize(); }
+     private long ttlSeconds() { return Math.max(1, mgr.ttlMs() / 1000); }
+ 
+-    private void tell(UUID id, String line) { PlayerView v = env.online(id); if (v != null) v.say(line); }
+-    private void tellParty(PartyManager.Party pt, UUID except, String line) {
++    void tell(UUID id, String line) { PlayerView v = env.online(id); if (v != null) v.say(line); }
++    void tellParty(PartyManager.Party pt, UUID except, String line) {
+         if (pt == null) return;
+         for (UUID u : pt.members) if (!u.equals(except)) tell(u, line);
+     }
+@@ -92,6 +116,7 @@
+             case "kick", "remove" -> kick(p, rest);
+             case "list", "info", "mine", "who" -> myParty(p);
+             case "invites" -> invitesPanel(p);
++            case "status", "bonus", "check" -> status(p);
+             case "help", "?" -> help(p);
+             default -> help(p);
+         }
+@@ -320,10 +345,12 @@
+             case PARTY_FULL -> { p.say("That party filled up (" + mgr.maxSize() + "/" + mgr.maxSize() + "). Ask them to make room."); if (o.invite != null) tell(o.invite.inviter, shown(p) + " tried to join but your party is full."); }
+             case OK -> {
+                 PartyManager.Party pt = o.party;
++                sync.clear(p.id());
+                 p.say("You joined " + mgr.nameOf(pt.leader) + "'s party (" + sizeText(pt) + "). " + bonusNote);
+                 tellParty(pt, p.id(), shown(p) + " joined the party (" + sizeText(pt) + ").");
+                 if (o.invite != null) { UUID inv = o.invite.inviter; PlayerView iv = env.online(inv);
+-                    mirrorNote(p, mgr.nameOf(inv), safe(() -> link.accept(p.id(), inv, iv == null ? mgr.nameOf(inv) : shown(iv)))); }
++                    mirrorNote(p, mgr.nameOf(inv), safe(() -> link.accept(p.id(), inv, iv == null ? mgr.nameOf(inv) : shown(iv))));
++                    mcmmoChanged(List.of(p.id(), inv), List.of()); }   // record both as in both systems, so a later hand quit is mirrored at once
+             }
+         }
+     }
+@@ -385,7 +412,7 @@
+             if (!full) b.add("Invite to party");
+             b.add("Leave party");
+             b.add("Close");
+-            String body = "Party " + sizeText(pt) + "\n" + String.join("\n", lines) + "\n" + bonusNote;
++            String body = "Party " + sizeText(pt) + "\n" + String.join("\n", lines) + "\n" + bonusNote + statusBody(p);
+             if (forms.simple(p, "My party", body, b, i -> {
+                 if (i < 0 || i >= b.size()) return;
+                 if (b.get(i).equals("Invite to party")) invitePicker(p);
+@@ -396,12 +423,16 @@
+         pn.text("Your party (" + sizeText(pt) + "):");
+         for (String l : lines) pn.text(l);
+         pn.text(bonusNote);
++        try { for (String l : statusFn.apply(p)) pn.text(l); } catch (Throwable ignored) { }
+         Panel.Line act = pn.line();
+         if (!full) act.button("Invite more", "/" + CMD + " invite").gap();
+         act.button("Leave party", "/" + CMD + " leave");
+         p.say(pn);
+     }
+ 
++    private String statusBody(PlayerView p) {
++        try { StringBuilder sb = new StringBuilder(); for (String l : statusFn.apply(p)) sb.append("\n").append(l); return sb.toString(); } catch (Throwable t) { return ""; }
++    }
+     private List<String> memberLines(PartyManager.Party pt) {
+         List<String> out = new ArrayList<>();
+         for (UUID u : pt.members) {
+@@ -456,8 +487,16 @@
+         announce(ch, nm, " was removed from the party.");
+     }
+ 
+-    private void announce(PartyManager.Change c, String who, String what) {
+-        safeRun(() -> { if (c.removed != null) link.leave(c.removed); if (c.disbanded) for (UUID u : c.remaining) link.leave(u); });
++    void announce(PartyManager.Change c, String who, String what) {
++        announce(c, who, what, true);
++    }
++    /** mirror=false: the change itself came from mcMMO, so never push it back (no feedback loop). */
++    void announce(PartyManager.Change c, String who, String what, boolean mirror) {
++        if (mirror) {
++            safeRun(() -> { if (c.removed != null) link.leave(c.removed); if (c.disbanded) for (UUID u : c.remaining) link.leave(u); });
++            // we removed them from ours on purpose: a leftover mcMMO membership must not pull them back in
++            safeRun(() -> { if (c.removed != null) sync.suppress(c.removed); if (c.disbanded) for (UUID u : c.remaining) sync.suppress(u); });
++        }
+         if (c.disbanded) {
+             for (UUID u : c.remaining) tell(u, who + what + " The party ended because only one member is left.");
+             return;
+@@ -473,6 +512,7 @@
+     /** About once a second: expire invites, drop members who stayed offline too long. */
+     public void tick() {
+         PartyManager.SweepResult r = mgr.sweep(env.now());
++        if (++pollTick % McmmoSync.POLL_EVERY_TICKS == 0) safeRun(sync::poll);
+         for (PartyManager.Invite i : r.expired) {
+             tell(i.inviter, "Your party invite to " + mgr.nameOf(i.target) + " ran out of time.");
+             tell(i.target, "The party invite from " + mgr.nameOf(i.inviter) + " ran out of time.");
+@@ -484,6 +524,7 @@
+     public void playerQuit(UUID id) { confirms.remove(id); mgr.onQuit(id, env.now()); }
+     public void playerJoin(PlayerView p) {
+         mgr.onJoin(p.id()); remember(p);
++        mcmmoWatch(List.of(p.id()));
+         PartyManager.Party pt = mgr.partyOf(p.id());
+         if (pt != null) p.say("You are still in your party (" + sizeText(pt) + ").");
+     }
+diff -ruN -x tests -x build.sh o020/old/src/com/winkreyes/exceltogether/ExcelTogether.java n/src/com/winkreyes/exceltogether/ExcelTogether.java
+--- o020/old/src/com/winkreyes/exceltogether/ExcelTogether.java	2026-10-16 00:00:00.000000000 -0500
++++ n/src/com/winkreyes/exceltogether/ExcelTogether.java	2026-10-16 18:14:55.134558932 -0500
+@@ -17,18 +17,35 @@
+ import java.util.*;
+ 
+ /**
+- * ExcelTogether 0.2.0: the Jobs party bonus (+25% money and XP) plus the party itself: invite, accept, leave.
++ * ExcelTogether 0.2.1: the Jobs party bonus (+25% money and XP) plus the party itself: invite, accept, leave.
+  * The command is /excelparty (aliases /eparty, /together) because mcMMO owns /party on this server.
+  */
+ public final class ExcelTogether extends JavaPlugin implements Listener, Env {
+     private PartyManager mgr;
+     private Controller ctl;
+     private boolean compassClick;
++    private long idleMs; private double bonusMult = PartyBonus.DEFAULT_MULTIPLIER;
++    private final Map<UUID, Long> lastActive = new HashMap<>();
++    /** Anti-leech: a player who has not moved a block, clicked or broken a block for share-idle-seconds gets no shared gains. 0 turns the check off. */
++    private boolean isActive(UUID id) {
++        if (idleMs <= 0) return true;
++        Long t = lastActive.get(id);
++        return t == null || System.currentTimeMillis() - t <= idleMs;
++    }
++    private void touch(UUID id) { lastActive.put(id, System.currentTimeMillis()); }
++    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
++    public void onMove(org.bukkit.event.player.PlayerMoveEvent e) {
++        if (e.getTo() == null || (e.getFrom().getBlockX() == e.getTo().getBlockX() && e.getFrom().getBlockY() == e.getTo().getBlockY() && e.getFrom().getBlockZ() == e.getTo().getBlockZ())) return;
++        touch(e.getPlayer().getUniqueId());
++    }
++    @EventHandler(priority = EventPriority.MONITOR) public void onClick(org.bukkit.event.player.PlayerInteractEvent e) { touch(e.getPlayer().getUniqueId()); }
++    @EventHandler(priority = EventPriority.MONITOR) public void onBreak(org.bukkit.event.block.BlockBreakEvent e) { touch(e.getPlayer().getUniqueId()); }
+ 
+     @Override public void onEnable() {
+         saveDefaultConfig();
+         PartyBonus bonus = new PartyBonus(getConfig().getDouble("multiplier", PartyBonus.DEFAULT_MULTIPLIER),
+                 getConfig().getDouble("radius", PartyBonus.DEFAULT_RADIUS));
++        bonusMult = bonus.multiplier();
+         BonusMode mode = BonusMode.parse(getConfig().getString("bonus-mode", "party"));
+         mgr = new PartyManager(getConfig().getInt("max-party-size", PartyManager.DEFAULT_SIZE),
+                 getConfig().getLong("invite-expiry-seconds", 60) * 1000L,
+@@ -36,18 +53,42 @@
+                 id -> Bukkit.getPlayer(id) != null);
+         compassClick = getConfig().getBoolean("compass-click-invite", true);
+         int pct = (int) Math.round((bonus.multiplier() - 1.0) * 100.0);
+-        String note = "Party bonus: +" + pct + "% Jobs money and XP when a party member is within " + (int) bonus.radius() + " blocks.";
++        double sharePct = "off".equalsIgnoreCase(getConfig().getString("share-mode", "full")) ? 0 : getConfig().getDouble("share-percent", 100);
++        idleMs = getConfig().getLong("share-idle-seconds", 120) * 1000L;
++        String note = "Party bonus: +" + pct + "% Jobs money and XP when a party member is within " + (int) bonus.radius() + " blocks"
++                + (sharePct > 0 ? ", and nearby party members get " + (int) sharePct + "% of each other's Jobs gains." : ".");
++        PartyMemberFinder finder = new PartyMemberFinder(bonus, mgr, mode, this::isActive);
+         Forms forms = new SyncForms(new GeyserForms(getLogger()), r -> Bukkit.getScheduler().runTask(this, r));
+         ctl = new Controller(mgr, this, forms, note);
+         String linkNote = setupMcmmoLink();
+-        getServer().getPluginManager().registerEvents(new PartyListener(bonus, new PartyMemberFinder(bonus, mgr, mode)), this);
++        String xpNote = setupMcmmoXpShare(finder, sharePct, pct);
++        ctl.setStatus(v -> { Player pl = Bukkit.getPlayer(v.id()); return pl == null ? List.of() : finder.status(pl); });
++        ShareSink sink = sharePct > 0 ? new JobsShareSink() : null;
++        getServer().getPluginManager().registerEvents(new PartyListener(bonus, finder, sink, sharePct,
++                (op, t) -> { Player pl = op.getPlayer(); if (pl != null) new BukkitPlayer(pl).actionBar(t); },
++                (op, t) -> { Player pl = op.getPlayer(); if (pl != null) new BukkitPlayer(pl).say(t); },
++                System::currentTimeMillis), this);
+         getServer().getPluginManager().registerEvents(this, this);
+         Bukkit.getScheduler().runTaskTimer(this, () -> ctl.tick(), 20L, 20L);
+-        getLogger().info("ExcelTogether 0.2.0 enabled: x" + bonus.multiplier() + " money and XP, bonus-mode " + mode
++        getLogger().info("ExcelTogether 0.2.1 enabled: x" + bonus.multiplier() + " money and XP, bonus-mode " + mode
+                 + ", radius " + bonus.radius() + " blocks, parties up to " + mgr.maxSize() + ", invites last "
+                 + (mgr.ttlMs() / 1000) + "s, compass click invite " + (compassClick ? "ON" : "off") + ". Bedrock forms: "
+                 + (Bukkit.getPluginManager().getPlugin("Geyser-Spigot") != null ? "Geyser found" : "no Geyser, chat menu only")
+-                + ". mcMMO party link: " + linkNote);
++                + ". Jobs sharing: " + (sharePct > 0 ? (int) sharePct + "%" : "OFF") + ", idle limit " + (idleMs / 1000) + "s. mcMMO XP sharing: " + xpNote + ". mcMMO party link: " + linkNote);
++    }
++
++    /** mcMMO skill XP copy to nearby party members (reflection; off with a plain reason if anything is missing). */
++    @SuppressWarnings("unchecked")
++    private String setupMcmmoXpShare(PartyFinder finder, double sharePct, int pct) {
++        if (sharePct <= 0) return "OFF (share-mode off)";
++        if (!getConfig().getBoolean("share-mcmmo-xp", true)) return "OFF (config)";
++        org.bukkit.plugin.Plugin mm = Bukkit.getPluginManager().getPlugin("mcMMO");
++        if (mm == null || !mm.isEnabled()) return "OFF (mcMMO not installed)";
++        McmmoXpShare x = new McmmoXpShare(mm.getClass().getClassLoader(), finder, sharePct, Bukkit::getPlayer,
++                (op, t) -> { Player pl = op.getPlayer(); if (pl != null) new BukkitPlayer(pl).actionBar(t); }, "+" + pct + "% party bonus: shared skill XP", bonusMult);
++        if (!x.available()) { getLogger().warning("mcMMO XP sharing OFF, missing: " + x.missing); return "OFF (mcMMO API differs)"; }
++        getServer().getPluginManager().registerEvent(x.eventClass, this, EventPriority.MONITOR, (l, e) -> x.onGain(e), this, true);
++        return "ON (" + (int) sharePct + "%, skipped for parties where mcMMO XP share is EQUAL)";
+     }
+ 
+     /** Soft link to mcMMO parties. Any problem just leaves it off; ExcelTogether works alone. */
+@@ -59,10 +100,37 @@
+             ReflectMcmmoLink l = new ReflectMcmmoLink(mm.getClass().getClassLoader(), Bukkit::getPlayer, Bukkit::getOfflinePlayer, getLogger());
+             if (!l.available()) { getLogger().warning("mcMMO found but these parts are missing, party link OFF: " + l.missing()); return "OFF (mcMMO API differs: " + l.missing().size() + " missing)"; }
+             ctl.setLink(l);
+-            return "ON (mcMMO " + mm.getDescription().getVersion() + ")";
++            String ev = registerMcmmoEvents(mm);
++            List<UUID> here = new ArrayList<>(); for (Player op : Bukkit.getOnlinePlayers()) here.add(op.getUniqueId());
++            if (!here.isEmpty()) Bukkit.getScheduler().runTask(this, () -> ctl.mcmmoWatch(here));      // reload: adopt players already online
++            return "ON (mcMMO " + mm.getDescription().getVersion() + ", hand joins mirrored by " + ev + ")";
+         } catch (Throwable t) { getLogger().warning("mcMMO party link OFF: " + t); return "OFF (error)"; }
+     }
+ 
++    /** Listens for mcMMO party changes by reflection (no hard dependency). The 2-second poll covers anything the event misses. */
++    @SuppressWarnings("unchecked")
++    private String registerMcmmoEvents(org.bukkit.plugin.Plugin mm) {
++        try {
++            Class<? extends org.bukkit.event.Event> ev = (Class<? extends org.bukkit.event.Event>) Class.forName("com.gmail.nossr50.events.party.McMMOPartyChangeEvent", false, mm.getClass().getClassLoader());
++            java.lang.reflect.Method gOld = ev.getMethod("getOldParty"), gNew = ev.getMethod("getNewParty"), gPlayer = ev.getMethod("getPlayer");
++            getServer().getPluginManager().registerEvent(ev, this, EventPriority.MONITOR, (l, e) -> {
++                try {
++                    if (!ev.isInstance(e)) return;
++                    Player p = (Player) gPlayer.invoke(e);
++                    String oldP = (String) gOld.invoke(e), newP = (String) gNew.invoke(e);
++                    UUID id = p == null ? null : p.getUniqueId();
++                    List<UUID> ids = ctl.mcmmoEventIds(id, oldP, newP);
++                    List<UUID> joined = (newP != null && id != null) ? List.of(id) : List.of();
++                    Bukkit.getScheduler().runTask(this, () -> ctl.mcmmoChanged(ids, joined));
++                } catch (Throwable t) { getLogger().warning("mcMMO party event ignored: " + t); }
++            }, this, true);
++            return "event + poll";
++        } catch (Throwable t) {
++            getLogger().warning("mcMMO party event not available, using poll only: " + t);
++            return "poll only";
++        }
++    }
++
+     // ---- Env ----
+     @Override public PlayerView online(UUID id) { Player p = Bukkit.getPlayer(id); return p == null ? null : new BukkitPlayer(p); }
+     @Override public List<PlayerView> visibleOthers(PlayerView viewer) {
+@@ -77,8 +145,8 @@
+     @Override public long now() { return System.currentTimeMillis(); }
+ 
+     // ---- events ----
+-    @EventHandler public void onQuit(PlayerQuitEvent e) { ctl.playerQuit(e.getPlayer().getUniqueId()); }
+-    @EventHandler public void onJoin(PlayerJoinEvent e) { ctl.playerJoin(new BukkitPlayer(e.getPlayer())); }
++    @EventHandler public void onQuit(PlayerQuitEvent e) { lastActive.remove(e.getPlayer().getUniqueId()); ctl.playerQuit(e.getPlayer().getUniqueId()); }
++    @EventHandler public void onJoin(PlayerJoinEvent e) { touch(e.getPlayer().getUniqueId()); ctl.playerJoin(new BukkitPlayer(e.getPlayer())); }
+ 
+     /** Right-click another player while holding a compass: ask to invite them (Yes/Cancel first). They must still accept. */
+     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+@@ -100,7 +168,7 @@
+     }
+     @Override public List<String> onTabComplete(CommandSender s, Command c, String l, String[] a) {
+         if (a.length == 1) {
+-            List<String> o = new ArrayList<>(List.of("invite", "accept", "decline", "confirm", "cancel", "leave", "list", "kick", "invites", "help"));
++            List<String> o = new ArrayList<>(List.of("invite", "accept", "decline", "confirm", "cancel", "leave", "list", "status", "kick", "invites", "help"));
+             o.removeIf(x -> !x.startsWith(a[0].toLowerCase(Locale.ROOT)));
+             return o;
+         }
+diff -ruN -x tests -x build.sh o020/old/src/com/winkreyes/exceltogether/JobsShareSink.java n/src/com/winkreyes/exceltogether/JobsShareSink.java
+--- o020/old/src/com/winkreyes/exceltogether/JobsShareSink.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/JobsShareSink.java	2026-10-16 18:14:55.134558932 -0500
+@@ -0,0 +1,36 @@
++package com.winkreyes.exceltogether;
++
++import com.gamingmesh.jobs.Jobs;
++import com.gamingmesh.jobs.container.CurrencyType;
++import com.gamingmesh.jobs.container.Job;
++import com.gamingmesh.jobs.container.JobsPlayer;
++import org.bukkit.OfflinePlayer;
++
++import java.util.HashMap;
++import java.util.Map;
++
++/**
++ * Pays a party member their copy straight through Jobs (experience via the player manager so level ups
++ * work, money via Jobs' buffered economy). Neither path fires JobsPrePaymentEvent, so no loops.
++ * The receiver is credited in the SAME job as the earner and only if they have that job.
++ */
++public final class JobsShareSink implements ShareSink {
++    /** Pure helper: apply a receiver's Jobs boost to a pre-boost money/xp pair. A null boost leaves the amounts alone. */
++    static double[] withReceiverBoosts(com.gamingmesh.jobs.container.Boost b, double money, double xp) {
++        if (b == null) return new double[]{money, xp};
++        return new double[]{b.getFinalAmount(CurrencyType.MONEY, money), b.getFinalAmount(CurrencyType.EXP, xp)};
++    }
++
++    @Override public boolean give(OfflinePlayer receiver, Job job, double money, double xp, String fromName) {
++        JobsPlayer jp = Jobs.getPlayerManager().getJobsPlayer(receiver.getUniqueId());
++        if (jp == null || job == null || jp.getJobProgression(job) == null) return false;
++        // The copy is the earner's amount BEFORE any Jobs boost (the earner's own boosts are applied by Jobs to the
++        // earner only). Here the RECEIVER's own boosts (global/schedule, permission, item, etc.) go on top, exactly as
++        // Jobs would for a normal gain of theirs, so being together on a boosted weekend pays the most.
++        double[] f = withReceiverBoosts(Jobs.getPlayerManager().getFinalBonus(jp, job), money, xp);
++        money = f[0]; xp = f[1];
++        if (xp > 0) Jobs.getPlayerManager().addExperience(jp, job, xp);
++        if (money > 0) { Map<CurrencyType, Double> m = new HashMap<>(); m.put(CurrencyType.MONEY, money); Jobs.getEconomy().pay(jp, m); }
++        return xp > 0 || money > 0;
++    }
++}
+diff -ruN -x tests -x build.sh o020/old/src/com/winkreyes/exceltogether/McmmoLink.java n/src/com/winkreyes/exceltogether/McmmoLink.java
+--- o020/old/src/com/winkreyes/exceltogether/McmmoLink.java	2026-10-16 00:00:00.000000000 -0500
++++ n/src/com/winkreyes/exceltogether/McmmoLink.java	2026-10-16 18:14:55.134558932 -0500
+@@ -19,7 +19,24 @@
+         ERROR                   // anything unexpected; logged, never shown to players
+     }
+ 
++    /** A read-only picture of one mcMMO party. UNKNOWN = could not tell right now (profile not loaded, error): never act on it. NONE = definitely in no party. */
++    final class McParty {
++        public final String name; public final UUID leader; public final java.util.LinkedHashMap<UUID, String> members;
++        public McParty(String name, UUID leader, java.util.Map<UUID, String> members) {
++            this.name = name; this.leader = leader; this.members = new java.util.LinkedHashMap<>(members);
++        }
++        public static final McParty NONE = new McParty(null, null, java.util.Map.of());
++        public static final McParty UNKNOWN = new McParty(null, null, java.util.Map.of());
++        public boolean real() { return name != null; }
++    }
++
+     boolean available();
++    /** The mcMMO party this player is in right now (works for offline players too). NONE or UNKNOWN when there is none or it cannot be read. */
++    default McParty partyOf(UUID id) { return McParty.UNKNOWN; }
++    /** An mcMMO party by name (members as they are right now), or NONE / UNKNOWN. */
++    default McParty partyByName(String name) { return McParty.UNKNOWN; }
++    /** A hand-made mcMMO join was mirrored into ExcelTogether: remember the player as linked so a later ExcelTogether leave also takes them out of mcMMO. */
++    default void adopted(UUID id, String mcPartyName) { }
+     /** Called after ExcelTogether accepted a new invite. Creates the inviter's mcMMO party if needed and sets the invite. */
+     Mirror invite(UUID inviter, UUID target, String partyNameHint);
+     /** Called after the invitee accepted in ExcelTogether. */
+diff -ruN -x tests -x build.sh o020/old/src/com/winkreyes/exceltogether/McmmoSync.java n/src/com/winkreyes/exceltogether/McmmoSync.java
+--- o020/old/src/com/winkreyes/exceltogether/McmmoSync.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/McmmoSync.java	2026-10-16 18:14:55.134558932 -0500
+@@ -0,0 +1,228 @@
++package com.winkreyes.exceltogether;
++
++import java.util.*;
++
++/**
++ * Mirrors mcMMO party changes made BY HAND (/party accept, /party join, /party quit, kick, disband, leader
++ * invite, new owner) into ExcelTogether parties. State-based: it compares what mcMMO says with what we hold and
++ * fixes the difference, so running it twice or from our own mirroring is harmless.
++ *
++ * Loop guards: it never calls the link's invite/accept/leave (it only reads mcMMO), and anything we remove from
++ * ours on purpose ({@link #suppress}) is not pulled back in until mcMMO shows them leaving or joining again.
++ * Only players seen together in an mcMMO party and an ExcelTogether party ("mirrored") are ever removed from
++ * ours because of an mcMMO leave, so players the mcMMO link never touched stay put.
++ */
++final class McmmoSync {
++    static final int POLL_EVERY_TICKS = 2;      // Controller.tick runs about once a second
++    private final Controller c;
++    /** players known to be in both systems together: id -> mcMMO party name */
++    private final Map<UUID, String> mirrored = new HashMap<>();
++    /** removed from ours on purpose; do not re-adopt while mcMMO still lists them */
++    private final Set<UUID> suppressed = new HashSet<>();
++    /** told once that ours was full */
++    private final Set<UUID> fullNoted = new HashSet<>();
++    /** in an mcMMO party but did not fit in ours; retried on every poll until a seat frees (no new notes) */
++    private final Set<UUID> waiting = new LinkedHashSet<>();
++    /** just logged in (or plugin just enabled): check until mcMMO has their profile loaded, then adopt */
++    private final Map<UUID, Integer> watching = new LinkedHashMap<>();
++    static final int WATCH_MAX_POLLS = 30;     // about a minute
++    /** told once that an mcMMO party joined by hand could not take them out of their ExcelTogether party */
++    private final Set<UUID> keptNoted = new HashSet<>();
++
++    McmmoSync(Controller c) { this.c = c; }
++
++    /** Login or enable: adopt this player's mcMMO party (profile may load a moment later, so keep checking for a while). */
++    void watch(UUID id) { if (id != null) watching.put(id, 0); }
++    boolean isWaiting(UUID id) { return waiting.contains(id); }
++    void suppress(UUID id) { suppressed.add(id); mirrored.remove(id); }
++    void clear(UUID id) { suppressed.remove(id); }
++    boolean isMirrored(UUID id) { return mirrored.containsKey(id); }
++    boolean isSuppressed(UUID id) { return suppressed.contains(id); }
++
++    /** Poll: everyone in an ExcelTogether party, plus players we mirrored. */
++    void poll() {
++        if (!c.link().available()) return;
++        Set<UUID> ids = new LinkedHashSet<>(c.mgr().allMembers());
++        ids.addAll(mirrored.keySet());
++        ids.addAll(waiting);                  // full-party retry
++        ids.addAll(watching.keySet());        // login adoption
++        ids.addAll(suppressed);               // so a suppression ends as soon as mcMMO shows them gone
++        if (!ids.isEmpty()) reconcile(ids, List.of());
++    }
++
++    /**
++     * Called from inside an mcMMO party event. mcMMO fires these BEFORE it changes anything, so the old and new
++     * parties still list their members here: collect who might be affected now, reconcile one tick later.
++     */
++    List<UUID> collect(UUID player, String oldParty, String newParty) {
++        Set<UUID> ids = new LinkedHashSet<>();
++        if (player != null) ids.add(player);
++        McmmoLink link = c.link();
++        for (String n : new String[]{oldParty, newParty}) {
++            if (n == null) continue;
++            McmmoLink.McParty p = link.partyByName(n);
++            if (p.real()) ids.addAll(p.members.keySet());
++        }
++        // anyone we hold in a party with an affected player
++        for (UUID u : new ArrayList<>(ids)) { PartyManager.Party pt = c.mgr().partyOf(u); if (pt != null) ids.addAll(pt.members); }
++        return new ArrayList<>(ids);
++    }
++
++    void reconcile(Collection<UUID> ids, Collection<UUID> joined) {
++        McmmoLink link = c.link();
++        if (!link.available()) return;
++        for (UUID id : new ArrayList<>(new LinkedHashSet<>(ids))) {
++            if (id == null) continue;
++            try { one(link, id, joined.contains(id)); } catch (RuntimeException ignored) { }
++        }
++    }
++
++    private void one(McmmoLink link, UUID id, boolean explicitJoin) {
++        McmmoLink.McParty mc = link.partyOf(id);
++        if (mc == McmmoLink.McParty.UNKNOWN) {
++            Integer n = watching.get(id);
++            if (n != null) { if (n + 1 > WATCH_MAX_POLLS) watching.remove(id); else watching.put(id, n + 1); }
++            return;
++        }
++        watching.remove(id);
++        if (waiting.contains(id) && c.env().online(id) == null) waiting.remove(id);
++        PartyManager mgr = c.mgr();
++        PartyManager.Party ours = mgr.partyOf(id);
++
++        if (!mc.real()) {                                   // not in any mcMMO party
++            suppressed.remove(id); fullNoted.remove(id); waiting.remove(id); keptNoted.remove(id);
++            if (mirrored.remove(id) != null && ours != null) quietLeave(id, "left the mcMMO party", " left the mcMMO party and so left the party.");
++            return;
++        }
++        if (suppressed.contains(id)) {
++            if (!explicitJoin) return;
++            suppressed.remove(id);
++        }
++        Set<UUID> mates = new LinkedHashSet<>(mc.members.keySet()); mates.remove(id);
++
++        if (ours != null) {
++            boolean together = false;
++            for (UUID m : mates) if (ours.members.contains(m)) { together = true; break; }
++            if (together) { markMirrored(link, id, mc); syncLeader(mc, ours); return; }
++            if (mirrored.containsKey(id)) {                 // they were together; now their mcMMO mates are different people (or nobody)
++                quietLeave(id, mates.isEmpty() ? "left the mcMMO party" : "moved to another mcMMO party",
++                        mates.isEmpty() ? " left the mcMMO party and so left the party." : " moved to another mcMMO party and so left the party.");
++                ours = null;
++                if (mates.isEmpty()) { mirrored.remove(id); return; }
++            } else {
++                // Never linked (ours was made without mcMMO, or the link could not follow). Decide only on a deliberate join by hand,
++                // never on a poll: the player picked this mcMMO party, so mcMMO wins and they move, but only if there is somewhere to land.
++                if (!explicitJoin || mates.isEmpty()) return;
++                Landing l = landing(mc, mates, id);
++                if (l == Landing.FULL) {
++                    if (keptNoted.add(id)) c.tell(id, "Note: you joined an mcMMO party with different people, but their ExcelTogether party is full (" + mgr.maxSize() + "/" + mgr.maxSize() + "), so you stay in your current ExcelTogether party.");
++                    return;
++                }
++                if (l == Landing.NONE) {
++                    if (keptNoted.add(id)) c.tell(id, "Note: you joined an mcMMO party with different people, but none of them is online to form an ExcelTogether party yet, so you stay in your current one.");
++                    return;
++                }
++                c.tell(id, "Note: you joined an mcMMO party with different people, so you left your old ExcelTogether party and joined theirs.");
++                quietLeave(id, "joined a different mcMMO party", " joined a different mcMMO party and so left the party.");
++                ours = null;
++            }
++        }
++        if (mates.isEmpty()) return;                        // a one-person mcMMO party has nothing to mirror
++        join(link, id, mc, mates);
++    }
++
++    /** id has no ExcelTogether party; give them the one their mcMMO mates are in, or make one. */
++    private enum Landing { ANCHOR, FULL, BUILD, NONE }
++    /** An ExcelTogether party that already holds some of the mates: the mcMMO leader's, else the biggest. */
++    private PartyManager.Party anchorOf(McmmoLink.McParty mc, Set<UUID> mates) {
++        PartyManager mgr = c.mgr();
++        PartyManager.Party lp = mc.leader == null ? null : mgr.partyOf(mc.leader);
++        if (lp != null && mates.contains(mc.leader)) return lp;
++        PartyManager.Party anchor = null;
++        for (UUID m : mates) { PartyManager.Party p = mgr.partyOf(m); if (p != null && (anchor == null || p.size() > anchor.size())) anchor = p; }
++        return anchor;
++    }
++    /** Where would id land if adopted now (nothing is changed)? */
++    private Landing landing(McmmoLink.McParty mc, Set<UUID> mates, UUID id) {
++        PartyManager.Party a = anchorOf(mc, mates);
++        if (a != null) return a.size() >= c.mgr().maxSize() ? Landing.FULL : Landing.ANCHOR;
++        for (UUID m : mates) if (eligible(m)) return Landing.BUILD;
++        return Landing.NONE;
++    }
++
++    private void join(McmmoLink link, UUID id, McmmoLink.McParty mc, Set<UUID> mates) {
++        PartyManager mgr = c.mgr();
++        if (c.env().online(id) == null) { waiting.remove(id); return; }      // only online players are adopted
++        // 1) an ExcelTogether party that already holds some of the mates
++        PartyManager.Party anchor = anchorOf(mc, mates);
++        if (anchor != null) {
++            PartyManager.AdoptOutcome o = mgr.adopt(id, anchor.leader);
++            if (o.result == PartyManager.AdoptResult.FULL) {
++                waiting.add(id);
++                if (fullNoted.add(id)) c.tell(id, "Note: your mcMMO party joined, but the ExcelTogether party is full (" + mgr.maxSize() + "/" + mgr.maxSize() + "), so you stay in mcMMO only. Your Jobs bonus won't include them.");
++                return;
++            }
++            if (o.result == PartyManager.AdoptResult.JOINED) joined(link, id, mc, o.party);
++            return;
++        }
++        // 2) none of them has one: make one from everyone online who is free, mcMMO leader first, capped at the party size
++        List<UUID> order = new ArrayList<>();
++        Set<UUID> pool = new LinkedHashSet<>(); pool.add(id); pool.addAll(mates);
++        if (mc.leader != null && pool.contains(mc.leader) && eligible(mc.leader)) order.add(mc.leader);
++        for (UUID u : pool) if (!order.contains(u) && eligible(u)) order.add(u);
++        if (order.size() < PartyManager.MIN_SIZE) return;     // not enough online, free players yet; a later pass or event retries
++        UUID first = order.get(0); PartyManager.Party made = null;
++        for (int k = 1; k < order.size(); k++) {
++            UUID u = order.get(k);
++            PartyManager.AdoptOutcome o = mgr.adopt(u, first);
++            if (o.result == PartyManager.AdoptResult.FULL) {
++                waiting.add(u);
++                if (fullNoted.add(u)) c.tell(u, "Note: your mcMMO party joined, but the ExcelTogether party is full (" + mgr.maxSize() + "/" + mgr.maxSize() + "), so you stay in mcMMO only. Your Jobs bonus won't include them.");
++                continue;
++            }
++            if (o.party != null) made = o.party;
++            if (o.result == PartyManager.AdoptResult.CREATED) {
++                markMirrored(link, first, mc);
++                c.tell(first, "Your mcMMO party also made an ExcelTogether party (" + c.sizeText(o.party) + "). " + c.bonusNote());
++            } else if (o.result == PartyManager.AdoptResult.JOINED) {
++                c.tellParty(o.party, u, c.nameOf(u) + " joined the party (" + c.sizeText(o.party) + ").");
++            }
++            if (o.party != null) { waiting.remove(u); markMirrored(link, u, mc); c.tell(u, "You were added to the ExcelTogether party (" + c.sizeText(o.party) + ") because you are in the same mcMMO party. " + c.bonusNote()); }
++        }
++        // overflow: online mates that did not fit were noted above; others stay in mcMMO only
++    }
++
++    private boolean eligible(UUID u) { return c.env().online(u) != null && !c.mgr().inParty(u) && !suppressed.contains(u); }
++
++    private void joined(McmmoLink link, UUID id, McmmoLink.McParty mc, PartyManager.Party p) {
++        markMirrored(link, id, mc); waiting.remove(id);
++        fullNoted.remove(id);
++        c.tell(id, "You were added to the ExcelTogether party (" + c.sizeText(p) + ") because you joined their mcMMO party. " + c.bonusNote());
++        c.tellParty(p, id, c.nameOf(id) + " joined the party (" + c.sizeText(p) + ").");
++    }
++
++    private void markMirrored(McmmoLink link, UUID id, McmmoLink.McParty mc) {
++        mirrored.put(id, mc.name);
++        link.adopted(id, mc.name);          // keeps the link's own leave/cleanup bookkeeping right (also after an mcMMO rename)
++    }
++
++    private void quietLeave(UUID id, String why, String others) {
++        PartyManager.Change ch = new PartyManager.Change();
++        PartyManager.LeaveResult r = c.mgr().leave(id, ch);
++        mirrored.remove(id);
++        if (ch.disbanded) for (UUID u : ch.remaining) mirrored.remove(u);
++        if (r == PartyManager.LeaveResult.NOT_IN_PARTY) return;
++        c.tell(id, "You left the ExcelTogether party because you " + why + ".");
++        c.announce(ch, c.nameOf(id), others, false);
++    }
++
++    /** mcMMO is the source for the leader when it was changed by hand (/party owner). One way only: ours never pushes a leader back. */
++    private void syncLeader(McmmoLink.McParty mc, PartyManager.Party ours) {
++        if (mc.leader == null || mc.leader.equals(ours.leader) || !ours.members.contains(mc.leader)) return;
++        if (!mirrored.containsKey(mc.leader)) return;
++        if (c.mgr().setLeader(mc.leader)) {
++            PartyManager.Party now = c.mgr().partyOf(mc.leader);
++            for (UUID u : now.members) c.tell(u, u.equals(mc.leader) ? "You are now the party leader." : c.nameOf(mc.leader) + " is now the party leader.");
++        }
++    }
++}
+diff -ruN -x tests -x build.sh o020/old/src/com/winkreyes/exceltogether/McmmoXpShare.java n/src/com/winkreyes/exceltogether/McmmoXpShare.java
+--- o020/old/src/com/winkreyes/exceltogether/McmmoXpShare.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/McmmoXpShare.java	2026-10-16 18:14:55.134558932 -0500
+@@ -0,0 +1,114 @@
++package com.winkreyes.exceltogether;
++
++import org.bukkit.OfflinePlayer;
++import org.bukkit.entity.Player;
++import org.bukkit.event.Event;
++
++import java.lang.reflect.Method;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.UUID;
++import java.util.function.Function;
++
++/** Reflection bridge from mcMMO's XP gain event to XpShareCore. If any mcMMO piece is missing it reports why and stays off. */
++public final class McmmoXpShare {
++    private final XpShareCore core; private final PartyFinder finder; private final Function<UUID, Player> online;
++    private Method modXp, togetherMult; private Object srcSelf; private final double partyMult;
++    public boolean receiverBoosts = false; private boolean plain = false;
++    private Method evPlayer, evSkill, evXp, evReason, uGet, applyXp, mpParty, partyMode;
++    private Object partyMembersSource;
++    public final List<String> missing = new ArrayList<>();
++    public Class<? extends Event> eventClass;
++    public int indicators = 0;
++    private final java.util.function.BiConsumer<OfflinePlayer, String> bar; private final String barText;
++
++    public McmmoXpShare(ClassLoader cl, PartyFinder finder, double percent, Function<UUID, Player> online,
++                        java.util.function.BiConsumer<OfflinePlayer, String> bar, String barText, double partyMult) {
++        this.barText = barText; this.partyMult = partyMult;
++        this.finder = finder; this.online = online; this.bar = bar;
++        resolve(cl);
++        this.core = new XpShareCore(this::apply, percent);
++    }
++    public boolean available() { return missing.isEmpty(); }
++    public XpShareCore core() { return core; }
++
++    @SuppressWarnings("unchecked")
++    private void resolve(ClassLoader cl) {
++        try {
++            eventClass = (Class<? extends Event>) Class.forName("com.gmail.nossr50.events.experience.McMMOPlayerXpGainEvent", false, cl);
++            Class<?> exp = Class.forName("com.gmail.nossr50.events.experience.McMMOPlayerExperienceEvent", false, cl);
++            evPlayer = eventClass.getMethod("getPlayer"); evSkill = exp.getMethod("getSkill"); evReason = exp.getMethod("getXpGainReason");
++            evXp = eventClass.getMethod("getRawXpGained");
++            Class<?> user = Class.forName("com.gmail.nossr50.util.player.UserManager", false, cl);
++            uGet = user.getMethod("getPlayer", Player.class);
++            Class<?> mmo = Class.forName("com.gmail.nossr50.datatypes.player.McMMOPlayer", false, cl);
++            Class<?> skill = Class.forName("com.gmail.nossr50.datatypes.skills.PrimarySkillType", false, cl);
++            Class<?> reason = Class.forName("com.gmail.nossr50.datatypes.experience.XPGainReason", false, cl);
++            Class<?> src = Class.forName("com.gmail.nossr50.datatypes.experience.XPGainSource", false, cl);
++            for (Method m : mmo.getMethods())
++                if (m.getName().equals("applyXpGain") && m.getParameterCount() == 4 && m.getParameterTypes()[1] == float.class
++                        && m.getParameterTypes()[0].getName().equals(skill.getName()) && m.getParameterTypes()[3].getName().equals(src.getName())) applyXp = m;
++            if (applyXp == null) { StringBuilder sb = new StringBuilder(); for (Method m : mmo.getMethods()) if (true) sb.append(java.util.Arrays.toString(new Object[0])); for (Method m : mmo.getMethods()) if (m.getName().equals("applyXpGain")) sb.append(java.util.Arrays.toString(m.getParameterTypes())).append(" skill=").append(skill.getName()); sb.append(" mmoFrom=").append(mmo.getProtectionDomain().getCodeSource()).append(" n=").append(mmo.getMethods().length); throw new NoSuchMethodException("applyXpGain candidates: " + sb); }
++            partyMembersSource = Enum.valueOf((Class<Enum>) src.asSubclass(Enum.class), "PARTY_MEMBERS");
++            mpParty = mmo.getMethod("getParty");
++            Class<?> party = Class.forName("com.gmail.nossr50.datatypes.party.Party", false, cl);
++            partyMode = party.getMethod("getXpShareMode");
++            srcSelf = Enum.valueOf((Class<Enum>) src.asSubclass(Enum.class), "SELF");
++            // Optional: lets the receiver get THEIR OWN mcMMO multipliers (global /xprate, e.g. ExcelWeekendXP, perks, skill modifiers).
++            // modifyXpGain is package-private in mcMMO, so this needs setAccessible; if anything is missing we fall back to a plain copy.
++            try {
++                Method mx = mmo.getDeclaredMethod("modifyXpGain", skill, float.class); mx.setAccessible(true); modXp = mx;
++                try { togetherMult = Class.forName("com.gmail.nossr50.party.PartyTogetherBonus", false, cl).getMethod("getSkillXpMultiplier", mmo, src); }
++                catch (Throwable t) { togetherMult = null; }          // upstream mcMMO has no Together bonus: multiplier is 1
++                receiverBoosts = true;
++            } catch (Throwable t) { modXp = null; receiverBoosts = false; }
++        } catch (Throwable t) { missing.add(String.valueOf(t)); }
++    }
++
++    private boolean apply(UUID receiver, Object skill, float xp, Object reason) throws Exception {
++        Player p = online.apply(receiver);
++        if (p == null) return false;
++        Object mmo = uGet.invoke(null, p);
++        if (mmo == null) return false;                       // mcMMO profile not loaded yet
++        float amount = xp;
++        if (receiverBoosts && !plain) {
++            // xp is the earner's amount with the earner's own multipliers removed; the receiver gets their own, then the party multiplier
++            float mine = (Float) modXp.invoke(mmo, skill, xp);
++            amount = (float) (mine * partyMult);   // mine already includes the receiver's rate (e.g. weekend), perks and skill modifiers
++        }
++        if (!(amount > 0) || Float.isInfinite(amount)) return false;
++        applyXp.invoke(mmo, skill, amount, reason, partyMembersSource);
++        if (bar != null) { indicators++; } if (bar != null) bar.accept(p, barText);
++        return true;
++    }
++
++    /** Earner's final gain divided by the earner's own multipliers (mcMMO modifiers/rate/perks and the Together bonus), giving the base amount. */
++    float baseXp(Object earnerMmo, Object skill, float finalXp) {
++        try {
++            double mine = (Float) modXp.invoke(earnerMmo, skill, 1f);
++            double together = togetherMult == null ? 1.0 : ((Number) togetherMult.invoke(null, earnerMmo, srcSelf)).doubleValue();
++            return XpShareCore.baseOf(finalXp, mine, together);   // NaN = unusable: caller shares the final amount as a plain copy
++        } catch (Throwable t) { return Float.NaN; }
++    }
++
++    /** Call from the (MONITOR, ignoreCancelled) XP gain event. Never throws. */
++    public void onGain(Event e) {
++        try {
++            if (!eventClass.isInstance(e)) return;
++            Player p = (Player) evPlayer.invoke(e);
++            if (p == null) return;
++            float xp = (Float) evXp.invoke(e);
++            boolean mmoShares = false;
++            Object mmo = uGet.invoke(null, p);
++            if (mmo != null) { Object party = mpParty.invoke(mmo); mmoShares = party != null && "EQUAL".equals(String.valueOf(partyMode.invoke(party))); }
++            Object skill = evSkill.invoke(e);
++            float base = xp; plain = true;
++            if (receiverBoosts && mmo != null) { float b = baseXp(mmo, skill, xp); if (!Float.isNaN(b)) { base = b; plain = false; } }
++            core.onGain(p.getUniqueId(), skill, base, evReason.invoke(e), mmoShares, () -> {
++                List<UUID> ids = new ArrayList<>();
++                for (OfflinePlayer o : finder.sharers(p)) ids.add(o.getUniqueId());
++                return ids;
++            });
++        } catch (Throwable t) { /* sharing must never break the earner's XP */ }
++    }
++}
+diff -ruN -x tests -x build.sh o020/old/src/com/winkreyes/exceltogether/PartyFinder.java n/src/com/winkreyes/exceltogether/PartyFinder.java
+--- o020/old/src/com/winkreyes/exceltogether/PartyFinder.java	2026-10-16 00:00:00.000000000 -0500
++++ n/src/com/winkreyes/exceltogether/PartyFinder.java	2026-10-16 18:14:55.134558932 -0500
+@@ -2,7 +2,13 @@
+ 
+ import org.bukkit.OfflinePlayer;
+ 
++import java.util.List;
++
+ /** Answers: is another player close enough to the earner to form a party? */
+ public interface PartyFinder {
+     boolean hasPartner(OfflinePlayer earner);
++    /** Name to show in the "+25% party bonus (with NAME)" indicator. Null when the bonus is not active. */
++    default String partnerName(OfflinePlayer earner) { return hasPartner(earner) ? "your party" : null; }
++    /** Party members who also receive a copy of the earner's gain (online, same world, in range, active). */
++    default List<OfflinePlayer> sharers(OfflinePlayer earner) { return List.of(); }
+ }
+diff -ruN -x tests -x build.sh o020/old/src/com/winkreyes/exceltogether/PartyListener.java n/src/com/winkreyes/exceltogether/PartyListener.java
+--- o020/old/src/com/winkreyes/exceltogether/PartyListener.java	2026-10-16 00:00:00.000000000 -0500
++++ n/src/com/winkreyes/exceltogether/PartyListener.java	2026-10-16 18:14:55.134558932 -0500
+@@ -1,31 +1,88 @@
+ package com.winkreyes.exceltogether;
+ 
+ import com.gamingmesh.jobs.api.JobsPrePaymentEvent;
++import org.bukkit.OfflinePlayer;
+ import org.bukkit.event.EventHandler;
+ import org.bukkit.event.EventPriority;
+ import org.bukkit.event.Listener;
+ 
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.UUID;
++import java.util.function.BiConsumer;
++import java.util.function.LongSupplier;
++
+ /**
+- * Multiplies money and XP on the final JobsPrePaymentEvent amounts. Jobs applies its own
+- * boosts (weekend etc.) after this event, so the result is base * party * (1 + jobsBoost).
+- * Points are not changed.
++ * Multiplies money and XP on the final JobsPrePaymentEvent amounts (Jobs applies its own boosts
++ * afterwards, so the result is base * party * (1 + jobsBoost)). Points are not changed.
++ * With share-percent above 0, each nearby party member also gets that percent of the boosted gain,
++ * in the same job, paid straight through Jobs (never through JobsPrePaymentEvent, and a re-entry
++ * guard makes a shared gain impossible to share again).
+  */
+ public final class PartyListener implements Listener {
++    public static final long BAR_THROTTLE_MS = 3_000L, CHAT_THROTTLE_MS = 120_000L;
+     private final PartyBonus bonus;
+     private final PartyFinder finder;
+-    public int applied = 0;
++    private final ShareSink sink;
++    private final double sharePercent;
++    private final BiConsumer<OfflinePlayer, String> bar, chat;
++    private final LongSupplier clock;
++    private final Map<UUID, Long> lastBar = new HashMap<>(), lastChat = new HashMap<>();
++    private boolean sharing = false;
++    public int applied = 0, shared = 0;
++
++    public PartyListener(PartyBonus bonus, PartyFinder finder) { this(bonus, finder, null, 0, null, null, System::currentTimeMillis); }
++
++    public PartyListener(PartyBonus bonus, PartyFinder finder, ShareSink sink, double sharePercent,
++                         BiConsumer<OfflinePlayer, String> bar, BiConsumer<OfflinePlayer, String> chat, LongSupplier clock) {
++        this.bonus = bonus; this.finder = finder; this.sink = sink;
++        this.sharePercent = Double.isFinite(sharePercent) ? Math.max(0, Math.min(sharePercent, 100)) : 0;
++        this.bar = bar; this.chat = chat; this.clock = clock;
++    }
++
++    private static String jobName(JobsPrePaymentEvent e) {
++        try { String n = e.getJob().getName(); return n == null ? "Jobs" : n; } catch (Throwable t) { return "Jobs"; }
++    }
++    private int pct() { return (int) Math.round((bonus.multiplier() - 1.0) * 100.0); }
+ 
+-    public PartyListener(PartyBonus bonus, PartyFinder finder) {
+-        this.bonus = bonus;
+-        this.finder = finder;
++    private boolean due(Map<UUID, Long> m, UUID id, long gap) {
++        long now = clock.getAsLong(); Long t = m.get(id);
++        if (t != null && now - t < gap) return false;
++        m.put(id, now); return true;
+     }
+ 
+     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+     public void onPay(JobsPrePaymentEvent e) {
++        if (sharing) return;                                   // a shared gain never triggers more sharing or bonus
+         if (e.getAmount() <= 0 && e.getExp() <= 0) return;
+-        if (e.getPlayer() == null || !finder.hasPartner(e.getPlayer())) return;
++        OfflinePlayer who = e.getPlayer();
++        if (who == null || !finder.hasPartner(who)) return;
+         e.setAmount(bonus.apply(e.getAmount()));
+         e.setExp(bonus.apply(e.getExp()));
+         applied++;
++        UUID id = who.getUniqueId();
++        String with = finder.partnerName(who);
++        if (with == null) with = "your party";
++        if (bar != null && due(lastBar, id, BAR_THROTTLE_MS)) bar.accept(who, "+" + pct() + "% party bonus (with " + with + ")");
++        if (chat != null && due(lastChat, id, CHAT_THROTTLE_MS))
++            chat.accept(who, "Party bonus is on: +" + pct() + "% Jobs money and XP with " + with + ". Type /excelparty status to check it any time.");
++        if (sink != null && sharePercent > 0 && e.getJob() != null) {
++            double f = sharePercent / 100.0, money = e.getAmount() * f, xp = e.getExp() * f;
++            List<OfflinePlayer> rs = finder.sharers(who);
++            sharing = true;
++            try {
++                for (OfflinePlayer r : rs) {
++                    if (r == null || r.getUniqueId().equals(id)) continue;
++                    try {
++                        if (sink.give(r, e.getJob(), money, xp, who.getName() == null ? "a party member" : who.getName())) {
++                            shared++;
++                            if (bar != null && due(lastBar, r.getUniqueId(), BAR_THROTTLE_MS))
++                                bar.accept(r, "+" + pct() + "% party bonus: shared " + jobName(e) + " gain from " + who.getName());
++                        }
++                    } catch (Throwable t) { /* one bad receiver never breaks the earner's payout */ }
++                }
++            } finally { sharing = false; }
++        }
+     }
+ }
+diff -ruN -x tests -x build.sh o020/old/src/com/winkreyes/exceltogether/PartyManager.java n/src/com/winkreyes/exceltogether/PartyManager.java
+--- o020/old/src/com/winkreyes/exceltogether/PartyManager.java	2026-10-16 00:00:00.000000000 -0500
++++ n/src/com/winkreyes/exceltogether/PartyManager.java	2026-10-16 18:14:55.134558932 -0500
+@@ -155,6 +155,46 @@
+         return null;
+     }
+ 
++    // ---------- adoption (a join that happened in mcMMO by hand) ----------
++    public enum AdoptResult { JOINED, CREATED, FULL, ALREADY_IN_PARTY, SELF }
++    public static final class AdoptOutcome {
++        public final AdoptResult result; public final Party party;
++        AdoptOutcome(AdoptResult r, Party p) { result = r; party = p; }
++    }
++    /** Put joiner into anchor's party, making the party (anchor as leader) if anchor has none. No invite needed: mcMMO already agreed. */
++    public synchronized AdoptOutcome adopt(UUID joiner, UUID anchor) {
++        if (joiner.equals(anchor)) return new AdoptOutcome(AdoptResult.SELF, null);
++        if (partyOf.containsKey(joiner)) return new AdoptOutcome(AdoptResult.ALREADY_IN_PARTY, null);
++        Long pid = partyOf.get(anchor);
++        boolean created = false;
++        if (pid == null) {
++            pid = nextId++;
++            members.put(pid, new ArrayList<>(List.of(anchor)));
++            leaders.put(pid, anchor);
++            partyOf.put(anchor, pid);
++            offlineSince.remove(anchor);
++            created = true;
++        } else if (members.get(pid).size() >= maxSize) {
++            return new AdoptOutcome(AdoptResult.FULL, null);
++        }
++        members.get(pid).add(joiner);
++        partyOf.put(joiner, pid);
++        offlineSince.remove(joiner);
++        invites.removeIf(i -> i.target.equals(joiner));
++        final long fp = pid;
++        invites.removeIf(i -> Objects.equals(partyOf.get(i.inviter), fp) && Objects.equals(partyOf.get(i.target), fp));
++        return new AdoptOutcome(created ? AdoptResult.CREATED : AdoptResult.JOINED, snapshot(pid));
++    }
++    /** Make an existing member the leader. False if they are not in a party or already lead it. */
++    public synchronized boolean setLeader(UUID member) {
++        Long pid = partyOf.get(member);
++        if (pid == null || member.equals(leaders.get(pid))) return false;
++        leaders.put(pid, member);
++        return true;
++    }
++    /** Every player currently in any party (online or in the offline grace window). */
++    public synchronized List<UUID> allMembers() { return new ArrayList<>(partyOf.keySet()); }
++
+     // ---------- leave / kick ----------
+     public synchronized LeaveResult leave(UUID id, Change out) {
+         Long pid = partyOf.get(id);
+diff -ruN -x tests -x build.sh o020/old/src/com/winkreyes/exceltogether/PartyMemberFinder.java n/src/com/winkreyes/exceltogether/PartyMemberFinder.java
+--- o020/old/src/com/winkreyes/exceltogether/PartyMemberFinder.java	2026-10-16 00:00:00.000000000 -0500
++++ n/src/com/winkreyes/exceltogether/PartyMemberFinder.java	2026-10-16 18:14:55.134558932 -0500
+@@ -5,27 +5,93 @@
+ import org.bukkit.OfflinePlayer;
+ import org.bukkit.entity.Player;
+ 
++import java.util.ArrayList;
++import java.util.List;
+ import java.util.UUID;
++import java.util.function.Predicate;
+ 
+-/** Bonus partner finder for 0.2.0: honors BonusMode, using party membership and/or distance. */
++/** Bonus partner finder: honors BonusMode, using party membership and/or distance. Also drives sharing and the status line. */
+ public final class PartyMemberFinder implements PartyFinder {
+     private final PartyBonus bonus; private final PartyManager mgr; private final BonusMode mode;
+-    public PartyMemberFinder(PartyBonus bonus, PartyManager mgr, BonusMode mode) { this.bonus = bonus; this.mgr = mgr; this.mode = mode; }
++    private final Predicate<UUID> active;
++    public PartyMemberFinder(PartyBonus bonus, PartyManager mgr, BonusMode mode) { this(bonus, mgr, mode, id -> true); }
++    /** @param active false for a player who has been idle too long (sharing only). */
++    public PartyMemberFinder(PartyBonus bonus, PartyManager mgr, BonusMode mode, Predicate<UUID> active) {
++        this.bonus = bonus; this.mgr = mgr; this.mode = mode; this.active = active;
++    }
++
++    private boolean near(Player me, Player other) {
++        if (other.getUniqueId().equals(me.getUniqueId()) || !other.isOnline() || other.getGameMode() == GameMode.SPECTATOR) return false;
++        Location a = me.getLocation(), b = other.getLocation();
++        if (a.getWorld() == null || b.getWorld() == null) return false;
++        return bonus.within(a.getWorld().equals(b.getWorld()), a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ());
++    }
+ 
+     @Override public boolean hasPartner(OfflinePlayer earner) {
+         Player me = earner.getPlayer();
+-        if (me == null || !me.isOnline()) return false;
+-        Location a = me.getLocation();
+-        if (a.getWorld() == null) return false;
++        if (me == null || !me.isOnline() || me.getLocation().getWorld() == null) return false;
+         boolean party = false, any = false;
+-        for (Player other : a.getWorld().getPlayers()) {
+-            UUID id = other.getUniqueId();
+-            if (id.equals(me.getUniqueId()) || !other.isOnline() || other.getGameMode() == GameMode.SPECTATOR) continue;
+-            Location b = other.getLocation();
+-            if (!bonus.within(a.getWorld().equals(b.getWorld()), a.getX() - b.getX(), a.getY() - b.getY(), a.getZ() - b.getZ())) continue;
++        for (Player other : me.getLocation().getWorld().getPlayers()) {
++            if (!near(me, other)) continue;
+             any = true;
+-            if (mgr.sameParty(me.getUniqueId(), id)) { party = true; break; }
++            if (mgr.sameParty(me.getUniqueId(), other.getUniqueId())) { party = true; break; }
+         }
+         return mode.counts(party, any);
+     }
++
++    @Override public String partnerName(OfflinePlayer earner) {
++        Player me = earner.getPlayer();
++        if (me == null) return null;
++        List<String> names = new ArrayList<>(); boolean any = false;
++        for (Player other : me.getLocation().getWorld().getPlayers()) {
++            if (!near(me, other)) continue;
++            any = true;
++            if (mgr.sameParty(me.getUniqueId(), other.getUniqueId())) names.add(shortName(other));
++        }
++        if (!names.isEmpty()) return String.join(", ", names);
++        return any ? "a nearby player" : null;
++    }
++
++    @Override public List<OfflinePlayer> sharers(OfflinePlayer earner) {
++        List<OfflinePlayer> out = new ArrayList<>();
++        Player me = earner.getPlayer();
++        if (me == null || me.getLocation().getWorld() == null) return out;
++        for (Player other : me.getLocation().getWorld().getPlayers())
++            if (near(me, other) && mgr.sameParty(me.getUniqueId(), other.getUniqueId()) && active.test(other.getUniqueId())) out.add(other);
++        return out;
++    }
++
++    private static String shortName(Player p) {
++        String n = p.getName();
++        try { n = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(p.displayName()); } catch (Throwable ignored) { }
++        return n.startsWith(".") ? n.substring(1) : n;
++    }
++
++    /** Plain-words status for /excelparty status: whether the bonus is on right now and, if not, why. */
++    public List<String> status(Player me) {
++        List<String> out = new ArrayList<>();
++        int pct = (int) Math.round((bonus.multiplier() - 1.0) * 100.0);
++        PartyManager.Party pt = mgr.partyOf(me.getUniqueId());
++        if (pt == null && mode == BonusMode.PARTY) { out.add("Party bonus is OFF: you are not in a party. Invite someone with /excelparty invite."); return out; }
++        if (hasPartner(me)) {
++            out.add("Party bonus is ON: +" + pct + "% Jobs money and XP with " + partnerName(me) + ".");
++            return out;
++        }
++        if (pt == null) { out.add("Party bonus is OFF: nobody is within " + (int) bonus.radius() + " blocks."); return out; }
++        int others = 0;
++        for (UUID u : pt.members) {
++            if (u.equals(me.getUniqueId())) continue;
++            others++;
++            String n = mgr.nameOf(u); if (n.startsWith(".")) n = n.substring(1);
++            Player o = org.bukkit.Bukkit.getPlayer(u);
++            if (o == null || !o.isOnline()) { out.add("Party bonus is OFF: " + n + " is offline."); continue; }
++            if (o.getGameMode() == GameMode.SPECTATOR) { out.add("Party bonus is OFF: " + n + " is in spectator mode."); continue; }
++            Location a = me.getLocation(), b = o.getLocation();
++            if (a.getWorld() == null || !a.getWorld().equals(b.getWorld())) { out.add("Party bonus is OFF: " + n + " is in another world."); continue; }
++            double d = a.distance(b);
++            out.add("Party bonus is OFF: " + n + " is " + (int) Math.ceil(d) + " blocks away (needs " + (int) bonus.radius() + " or closer).");
++        }
++        if (others == 0) out.add("Party bonus is OFF: you are the only one in your party.");
++        return out;
++    }
+ }
+diff -ruN -x tests -x build.sh o020/old/src/com/winkreyes/exceltogether/ReflectMcmmoLink.java n/src/com/winkreyes/exceltogether/ReflectMcmmoLink.java
+--- o020/old/src/com/winkreyes/exceltogether/ReflectMcmmoLink.java	2026-10-16 00:00:00.000000000 -0500
++++ n/src/com/winkreyes/exceltogether/ReflectMcmmoLink.java	2026-10-16 18:14:55.134558932 -0500
+@@ -86,6 +86,34 @@
+ 
+     @Override public boolean available() { return missing.isEmpty(); }
+ 
++    @Override public McParty partyOf(UUID id) {
++        if (!available() || id == null) return McParty.UNKNOWN;
++        try {
++            if (!partyEnabled()) return McParty.UNKNOWN;
++            Player p = online.apply(id);
++            Object party;
++            if (p != null) {
++                Object mmo = mmo(p);
++                if (mmo == null) return McParty.UNKNOWN;         // profile not loaded yet: do not guess
++                party = partyOfMmo(mmo);
++            } else {
++                OfflinePlayer op = offline.apply(id);
++                if (op == null || op.getName() == null) return McParty.UNKNOWN;
++                party = mgrGetPlayerParty.invoke(mgr(), op.getName(), id);
++            }
++            if (party == null) return McParty.NONE;
++            return new McParty(nameOf(party), leaderOf(party), new LinkedHashMap<>(membersOf(party)));
++        } catch (Throwable t) { warn("read party", t); return McParty.UNKNOWN; }
++    }
++    @Override public McParty partyByName(String name) {
++        if (!available() || name == null) return McParty.UNKNOWN;
++        try {
++            Object party = mgrGetByName.invoke(mgr(), name);
++            return party == null ? McParty.NONE : new McParty(nameOf(party), leaderOf(party), new LinkedHashMap<>(membersOf(party)));
++        } catch (Throwable t) { warn("read party by name", t); return McParty.UNKNOWN; }
++    }
++    @Override public void adopted(UUID id, String mcPartyName) { if (id != null && mcPartyName != null) linked.put(id, mcPartyName); }
++
+     // ---------- raw mcMMO access ----------
+     private Object mcmmo() throws Exception { return cMcMMO.getField("p").get(null); }
+     private Object mgr() throws Exception { return mPartyMgr.invoke(mcmmo()); }
+diff -ruN -x tests -x build.sh o020/old/src/com/winkreyes/exceltogether/ShareSink.java n/src/com/winkreyes/exceltogether/ShareSink.java
+--- o020/old/src/com/winkreyes/exceltogether/ShareSink.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/ShareSink.java	2026-10-16 18:14:55.134558932 -0500
+@@ -0,0 +1,10 @@
++package com.winkreyes.exceltogether;
++
++import com.gamingmesh.jobs.container.Job;
++import org.bukkit.OfflinePlayer;
++
++/** Gives a party member their copy of an earner's Jobs gain. Must never fire JobsPrePaymentEvent (no loops). */
++public interface ShareSink {
++    /** @return true if the receiver was credited (false when they do not have that job, etc.). */
++    boolean give(OfflinePlayer receiver, Job job, double money, double xp, String fromName);
++}
+diff -ruN -x tests -x build.sh o020/old/src/com/winkreyes/exceltogether/XpShareCore.java n/src/com/winkreyes/exceltogether/XpShareCore.java
+--- o020/old/src/com/winkreyes/exceltogether/XpShareCore.java	1969-12-31 18:00:00.000000000 -0600
++++ n/src/com/winkreyes/exceltogether/XpShareCore.java	2026-10-16 18:14:55.134558932 -0500
+@@ -0,0 +1,48 @@
++package com.winkreyes.exceltogether;
++
++import java.util.List;
++import java.util.UUID;
++import java.util.function.Supplier;
++
++/**
++ * mcMMO skill XP sharing rules, with no mcMMO or Bukkit types so they can be tested.
++ * When a player's skill XP gain lands (final amount, after mcMMO's own multipliers and ExcelRewardGuard's
++ * kill scaling), every active nearby party member gets a full copy of it in the SAME skill, applied as a
++ * party-member gain so mcMMO does not boost it again. A re-entry guard stops a copy from being copied.
++ */
++public final class XpShareCore {
++    public interface Applier { boolean apply(UUID receiver, Object skill, float xp, Object reason) throws Exception; }
++    private final Applier applier; private final double fraction;
++    private boolean sharing = false;
++    public int shared = 0;
++
++    /** Earner's final gain with the earner's own multipliers divided out. NaN when unusable (caller then shares a plain copy). */
++    public static float baseOf(float finalXp, double earnerMod, double together) {
++        double div = earnerMod * together;
++        if (!(div > 0) || !Double.isFinite(div) || !(finalXp > 0)) return Float.NaN;
++        return (float) (finalXp / div);
++    }
++    /** What a receiver gets: base through THEIR multipliers (rate such as weekend, perks, modifiers), then the party multiplier. */
++    public static float receiverAmount(float base, double receiverMod, double partyMult) {
++        return (float) (base * receiverMod * partyMult);
++    }
++
++    public XpShareCore(Applier applier, double percent) {
++        this.applier = applier;
++        this.fraction = Double.isFinite(percent) ? Math.max(0, Math.min(percent, 100)) / 100.0 : 0;
++    }
++
++    /** @param mcmmoSharesItself true when the earner's mcMMO party has XP share mode EQUAL (mcMMO already splits it; we stay out). */
++    public int onGain(UUID earner, Object skill, float xp, Object reason, boolean mcmmoSharesItself, Supplier<List<UUID>> receivers) {
++        if (sharing || fraction <= 0 || !(xp > 0) || Float.isInfinite(xp) || skill == null || mcmmoSharesItself) return 0;
++        int n = 0;
++        sharing = true;
++        try {
++            for (UUID r : receivers.get()) {
++                if (r == null || r.equals(earner)) continue;
++                try { if (applier.apply(r, skill, (float) (xp * fraction), reason)) { n++; shared++; } } catch (Throwable ignored) { }
++            }
++        } finally { sharing = false; }
++        return n;
++    }
++}

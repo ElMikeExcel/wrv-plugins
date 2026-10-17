@@ -1,6 +1,8 @@
-# ExcelTogether 0.2.1 (mcMMO hand-join mirror, login adoption, full-party retry): BUILT AND SCRATCH-BOOTED Oct 16, 2026. NOT INSTALLED LIVE. Java, Bedrock and real-mcMMO checks UNCONFIRMED.
+# ExcelTogether 0.2.1 (mcMMO hand-join mirror, login adoption, full-party retry): BUILT AND SCRATCH-BOOTED Oct 16, 2026. INSTALLED LIVE at 7:57 PM CDT Oct 16, 2026. In-game UNTESTED. Java, Bedrock and real-mcMMO checks UNCONFIRMED.
 
 > UPDATE Oct 16, 2026 6:25 PM CDT: 0.2.1 (still NOT installed) holds Jobs and mcMMO party XP sharing WITH the receiver's own boosts stacked on top, the "+25% party bonus (with NAME)" action bar and `/excelparty status`. See SHARING-OPTIONS.md. Jar SHA256 29a6b8923f5d4328749a6ee1d5d222acb5d549eba1b7333dd99694f167dc226b. Tests 392/392 (18 PartyTest + 195 PartyFeatureTest + 79 McmmoLinkTest + 86 McmmoSyncTest + 30 ShareTest + 22 XpShareTest, the last checked against the real mcMMO 2.3.003-SNAPSHOT jar for every reflected method including the receiver-boost path). Scratch boots (logs/scratch-boot-0.2.1-share2-*.log) passed WITH and WITHOUT mcMMO. Live Jobs payout, real two-player sharing, Java and Bedrock look: UNCONFIRMED. The live ExcelTogether config.yml needs no edit (new keys default in code: share-mode full, share-percent 100, share-idle-seconds 120, share-mcmmo-xp true).
+
+> UPDATE Oct 16, 2026 7:57 PM CDT: Installed live. In-game UNTESTED. Java and Bedrock checks UNCONFIRMED.
 
 Replaces 0.2.0 (live since 5:03 PM CDT Oct 16, jar SHA c37e7f5e980669ce709fcaec2f2b769702432fce4d51fdabb4a46ea6bf661044).
 
@@ -10,7 +12,7 @@ Replaces 0.2.0 (live since 5:03 PM CDT Oct 16, jar SHA c37e7f5e980669ce709fcaec2
 | Automated tests | 377/377 (18 PartyTest + 194 PartyFeatureTest + 79 McmmoLinkTest + 86 McmmoSyncTest) |
 | Scratch boot WITH mcMMO (2.3.003-SNAPSHOT, mcMMO-together-bonus.jar SHA d58bb65b...) | Passed. "mcMMO party link: ON (mcMMO 2.3.003-SNAPSHOT, hand joins mirrored by event + poll)". A real McMMOPartyChangeEvent fired by the harness went through our live listener with no error |
 | Scratch boot WITHOUT mcMMO | Passed. "mcMMO party link: OFF (mcMMO not installed)", enabled clean |
-| Installed live | NO |
+| Installed live | Yes, 7:57 PM CDT Oct 16, 2026. In-game UNTESTED |
 | Java check / Bedrock check | UNCONFIRMED |
 | Real two-player hand join through the real mcMMO | UNCONFIRMED (scratch has no player) |
 | GitHub / website / version map / Big Brain | NOT DONE (publish at install time, PR stays an open draft) |
@@ -38,7 +40,7 @@ Replaces 0.2.0 (live since 5:03 PM CDT Oct 16, jar SHA c37e7f5e980669ce709fcaec2
 - UNCONFIRMED: that the live mcMMO jar (2.3.003-WRV-XP-2) is byte-identical to the mcMMO-together-bonus.jar used in the scratch boot; its source diff vs upstream (PartyInfoCommand, GeneralConfig, McMMOPlayer, PartyTogetherBonus) does not touch party events or PartyManager.
 - Tested against a stub shaped like mcMMO and an in-memory fake; never with a real player on the real mcMMO.
 
-## Install plan (when Mike says go; reversible, not a big update)
+## Install (recorded live at 7:57 PM CDT Oct 16, 2026; in-game UNTESTED; Java and Bedrock UNCONFIRMED; reversible)
 1. Players empty (check twice, hold if Kailey .coolgirlkail or anyone is on), run save-all, panel Shut Down.
 2. plugins/: rename ExcelTogether-0.2.0.jar out of the active set (ExcelTogether-0.2.0.jar.bak-YYYYMMDD, outside plugins/*.jar), upload ExcelTogether-0.2.1.jar. Keep plugins/ExcelTogether/config.yml as is.
 3. Start. Expect "ExcelTogether 0.2.1 enabled ... mcMMO party link: ON (mcMMO ..., hand joins mirrored by event + poll)". "poll only" is acceptable but report it.
