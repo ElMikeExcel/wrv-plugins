@@ -1,0 +1,34 @@
+ExcelBedrockMenu 1.5.8 — INSTALLED LIVE
+Installed: Sun Oct 18, 2026, ~1:54 AM CDT (boot complete ~1:54:30 AM CDT)
+Server: Wink Reyes Valley (Shockbyte panel, Paper 26.2)
+
+Coordination gate: server-opt-config-watch removed at its 1:00 AM Oct 18 stand-down (cron.view: schedule does not exist; final opt log 01:37 CDT). APPLIED.txt absent — opt packet NOT fully applied (paper-world-defaults player-max-chunk-send-rate edit + verified restart still owed from that packet); this watch's OR condition was met by the opt watch's removal.
+
+Empty gate (panel console `list`):
+- #1 2026-10-18 01:43:52 CDT — 0 out of maximum 10 players online, no names
+- #2 2026-10-18 01:48:11 CDT — 0 out of maximum 10 players online, no names
+
+Live jar before swap: plugins/ listing showed ExcelBedrockMenu-1.5.7.jar, 20.96 KB, Oct 16 5:02 PM, as the only active ExcelBedrockMenu jar (matching the 01:28 CDT read-only check). Browser downloaded it (artifact f1); parent hashed the retrieved download afterward (~/workspace/browser_downloads/sess-2732866267/): SHA-256 0787c1616d576795b1b50ef7be42bd0f5de0658450b7c859ec1f93f4e56fb7c7, 21,461 B — EXACT match to the packet's expected live 1.5.7 hash. Pre-swap hash check satisfied. Expected 1.5.7 SHA-256: 0787c1616d576795b1b50ef7be42bd0f5de0658450b7c859ec1f93f4e56fb7c7.
+
+Swap:
+- Renamed live jar in place to ExcelBedrockMenu-1.5.7.jar.bak-20261017 (rollback, kept on server)
+- Uploaded ExcelBedrockMenu-1.5.8.jar — panel listing: 21.96 KB (22,486 B), Oct 18 1:53 AM; exactly one active ExcelBedrockMenu jar
+- New jar SHA-256: 52766c5916b50dda597ad3782f414ad3950c15656018699ec177e7e0d3db255c (local staged jar verified before install)
+
+Restart: panel Shut Down ONLY (never console stop). Stopped 01:53:50 CDT; Start Server 01:54:08; starting 01:54:14; Online ~01:54:30 CDT.
+
+Verification after boot:
+- 01:54:23 CDT log: [ExcelBedrockMenu] Enabling ExcelBedrockMenu v1.5.8
+- 01:54:23 CDT log: [ExcelBedrockMenu] ExcelBedrockMenu enabled: /menu uses native Bedrock dialogs.
+- 01:54:52 CDT console `version ExcelBedrockMenu` -> ExcelBedrockMenu version 1.5.8
+- 01:55:32 CDT console `list` -> 0 out of maximum 10 players online
+- No SEVERE / plugin error naming ExcelBedrockMenu (only unrelated Essentials unsupported-version + terminal warnings)
+
+Anomaly noted by browser agent: a plugin-init sequence ~01:45:28-01:45:32 CDT and a `list` at 01:48:22 not issued by it, consistent with another actor/schedule restarting/checking around the same window (ExcelRestartCountdown installed); gates and verification unaffected (all reads 0/10).
+
+Drive deposits (Minecraft WRV, verified by Drive listing 2026-10-18 01:43 CDT; deposited at build time Oct 17):
+- Build files (1c4f3TZDseHvgWXuN7SAD-PxST9xuVqgI): ExcelBedrockMenu-1.5.8.jar, 22,486 B — matches
+- Source (1twtEkZWxY3m-93vUJ_5zLuDYdXWBxJjz): ExcelBedrockMenu-1.5.8-source.zip, 98,544 B
+
+Remaining (morning pass, per packet): publishing — wrv-plugins OPEN DRAFT PR (branch record/excelbedrockmenu-1.5.8-2026-10-17) + website ExcelBedrockMenu entry updated to 1.5.8; Bedrock tap check (Spawn confirm form) still needs a real Bedrock device.
+Watch cron bedrockmenu-158-install-watch: removed by this run after verification.
