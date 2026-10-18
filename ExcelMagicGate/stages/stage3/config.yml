@@ -1,0 +1,66 @@
+#
+# Wink Reyes Valley - Magic SEAL 3 — THE WONDER main config overrides (CUMULATIVE packet).
+# WRV-070. Drop into plugins/Magic/ BEFORE the first boot with the Magic jar
+# (see INSTALL-RUNBOOK.md). Only the options below are overridden; everything
+# else keeps Magic 11.2.5 shipped defaults.
+#
+# THE HARD WHITELIST (ROADMAP.md Phase 1, enforcement layer 1):
+# The four load_default_* switches below are false, and this packet supplies
+# its own spells.yml / paths.yml / wands.yml / classes.yml. The shipped
+# defaults for those four components are NEVER loaded, so the locked shelf
+# (lava, grenade, flamethrower, wither summon, nuke/icbm, all shop spells,
+# vengeance, ...) does not exist on the server at all: nothing to learn,
+# nothing to grant, nothing to discover.
+#
+# wands and classes are included because the shipped defaults for both
+# embed non-Phase-1 spells (rank wand templates carry the full default
+# spell lists; the default mage/battle/archer classes grant missile, fire,
+# poison arrows). The defaults file for spells itself warns about this:
+# "You will need to do the same with wands, since they refer to the
+# default spells." (config.defaults.yml, at load_default_spells)
+#
+# Trade-off, accepted per the roadmap: we own these four files at Magic
+# upgrades - diff them against new defaults on every upgrade.
+#
+
+# Skip defaults/spells.defaults.yml entirely; only packet spells.yml exists.
+load_default_spells: false
+
+# Skip defaults/paths.defaults.yml entirely; only the packet's one curated
+# healer path (beginner -> student -> apprentice -> master) exists.
+load_default_paths: false
+
+# Skip defaults/wands.defaults.yml entirely; the packet's wands.yml carries
+# only the hidden base templates and the four rank wands, whose spell lists
+# are the cumulative Phase 1 lists.
+load_default_wands: false
+
+# Skip defaults/classes.defaults.yml entirely; the packet's classes.yml
+# carries the base storage class, the vanilla attribute class, and a mage
+# class on the curated beginner path with NO spells of its own (the default
+# classes grant missile / fire / arrow_poison outside the path system).
+load_default_classes: false
+
+#
+# BEDROCK ICON FALLBACK (ROADMAP.md Phase 1, enforcement layer 2):
+# false = spell/wand icons use plain vanilla materials instead of
+# player-skull (URL) icons, so Bedrock players on the tablet see readable
+# icons without the Java resource pack. This is set explicitly even though
+# the 11.2.5 shipped default in config.defaults.yml is also false, so the
+# effective value never depends on defaults drift.
+#
+url_icons_enabled: false
+
+#
+# Deliberately NOT set here:
+# - default_resource_pack: left unset (Mike's open decision #3: offer Java
+#   players the full pack look or keep everyone on plain icons).
+# - example / add_examples: none. No example config is layered in.
+# - Shops: there is no config switch to force on; shops stay OFF because
+#   every shop spell is absent from spells.yml and unreferenced by the
+#   packet's paths, wands and classes.
+# - Worlds/mob spawning: plugins/Magic/worlds.yml stays empty (Magic
+#   generated "0 customized worlds" in scratch), so no Magic natural
+#   mob spawning occurs. Automata/engineering templates stay inert:
+#   nothing in the packet grants the items that activate them.
+#

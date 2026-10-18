@@ -1,0 +1,40 @@
+# ExcelMagicGate (WRV-070) - bridge settings.
+#
+# Master switch. When false the seal watch never applies anything
+# automatically; /magicgate status still answers and an operator can
+# still run /magicgate apply by hand.
+enabled: true
+
+# How often the seal watch checks ExcelGuildGate's seal count, in
+# seconds. A player joining also triggers one check.
+poll-seconds: 60
+
+# The unlock announcement (fired once, when a stage applies).
+announce:
+  # Sound played to every online player, as a Minecraft sound key.
+  sound: ui.toast.challenge_complete
+  volume: 1.0
+  pitch: 1.0
+
+# Per-stage announcement text. The built-in defaults (from the WRV-070
+# roadmap) are used for anything not set here; uncomment and edit to
+# override a field. Placeholders: {stage}, {name}, {unlocks}.
+# Color codes use '&'.
+#messages:
+#  stages:
+#    1:
+#      name: The Healer
+#      title: "&6&lThe Healer"
+#      subtitle: "&eMagic returns to the valley"
+#      unlocks: "Heal, Cure, Blessing, Boon and Storm Shackle"
+#      broadcast:
+#        - "&6— Magic returns: &fThe Healer &6—"
+#        - "&eStage {stage} of 5 is open. New magic: &f{unlocks}&e."
+#    2:
+#      name: The Pathfinder
+#    3:
+#      name: The Wonder
+#    4:
+#      name: The Masons
+#    5:
+#      name: "The Guild Opens, the Schools Open"

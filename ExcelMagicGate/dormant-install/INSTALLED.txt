@@ -1,0 +1,40 @@
+Magic DORMANT (Stage 0) — INSTALLED LIVE
+Installed: Sun Oct 18, 2026, boot complete 2:08:44 AM CDT (Done 18.794s)
+Server: Wink Reyes Valley (Shockbyte panel, Paper 26.2)
+Packet: ~/workspace/magic-dormant-install/INSTALL-RUNBOOK.md (WRV-070)
+Decision: Mike, Sat Oct 17, 2026 — skip trial, stage dormant.
+
+Chain gate: ExcelBedrockMenu 1.5.8 INSTALLED.txt present (installed live ~1:54 AM CDT Oct 18, 2026).
+
+Hashes verified locally before upload (sha256sum -c SHA256SUMS.txt: all OK):
+- Magic-11.2.5.jar SHA-256 79e49fe32fdc4e25375c0099d2bd10665b9792bfd9b35fab8d64a498ebfc3532
+- ExcelMagicGate-0.1.0.jar SHA-256 2bc272218d11d8230d54fbf909bd2587e294d6052ba300206e92fd95d237b0ef
+
+Empty gate (panel console `list`):
+- 2026-10-18 02:02:28 CDT — 0 out of maximum 10 players online
+- 2026-10-18 02:04:07 CDT — 0 out of maximum 10 players online
+- 2026-10-18 02:04:35 CDT — confirmatory, 0/10, no names, Online throughout
+
+Pre-existing state: plugins/ search for 'Magic' = no files found; Magic jar, ExcelMagicGate jar, plugins/Magic/, plugins/ExcelMagicGate/ all absent before upload. Plugins 92 files / 46 folders before.
+
+Install:
+- Uploaded plugins/Magic-11.2.5.jar — panel 7.29 MB, Oct 18 2:06 AM
+- Uploaded plugins/ExcelMagicGate-0.1.0.jar — panel 146.34 KB, Oct 18 2:06 AM (plugins 92 -> 94 files)
+- Created plugins/Magic/ and uploaded all six stage0-seed files, verified Oct 18 2:07 AM: classes.yml 2.04 KB, config.yml 3.18 KB, messages.yml 674 B, paths.yml 3.42 KB, spells.yml 28.03 KB, wands.yml 3.45 KB
+
+Restart: panel Shut Down ONLY (never console stop). Stopped 2026-10-18 02:08:05 CDT '[System] Server has stopped.' Start clicked once; startup logged 02:08:23 CDT; Done 02:08:44 CDT; header Online, 0/10. The Offline interval was the normal stopped state — panel/Files remained reachable, not an outage.
+
+Probe evidence (all PASS):
+- Boot: [ExcelMagicGate] ExcelMagicGate enabled: applied stage 0 of 5, watching ExcelGuildGate seals every 60s (02:08:40 CDT); also 'GuildGate seals observed: 0 of 5'
+- Boot: [Magic] Loaded 6 wands (02:08:35 CDT); Loaded 30 spells (02:08:43 CDT); Loaded 5 progression paths — seed counts, NOT defaults
+- No SEVERE/ERROR from Magic/ExcelMagicGate in latest.log lines 1-474; no 'stormshackle' anywhere. Non-fatal warnings noted: YamlConstructor duplicate-key WARNs, and 14 Magic crafting-recipe WARNs ('Unknown output' / 'Failed to create crafting recipe') followed by 'Loaded 2 crafting recipes' — none meet runbook failure criteria. Only ERROR was pre-existing unrelated Essentials unsupported-version.
+- 02:17:43 CDT `magicgate status`: Seals fallen: 0 of 5 / Applied Magic stage: 0 of 5 / Stage 0 APPLIED / Stage 1 The Healer locked (needs 1), Stage 2 locked (2), Stage 3 locked (3), Stage 4 locked (4), Stage 5 locked (5)
+- 02:17:55 CDT `guildgate status`: Guild: LOCKED | Progress: 0 of 5, all five seals unbroken — unchanged
+- 02:18:10 CDT `lp group default permission check magic.cast.heal` -> Result: undefined
+- 02:18:31 CDT `lp group default permission check magic.cast.cure` -> Result: undefined
+- 02:18:41 CDT `list` -> 0 out of maximum 10 players online; version Magic = 11.2.5-baa3d91, version ExcelMagicGate = 0.1.0
+
+Dormant state confirmed: spells loaded, zero grants. No rollback performed; nothing deleted.
+
+Remaining: publishing follows in the next records pass — wrv-plugins record + website Magic entry status update to installed-dormant. Per standing completion gate, install is not 'complete' until that publishing lands.
+Watch cron magic-dormant-install-watch: removed by this run after verification.
