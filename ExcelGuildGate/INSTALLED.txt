@@ -1,0 +1,39 @@
+INSTALLED — ExcelGuildGate 0.3.0 (join catch-up + narrator) + Bedrock narrator pack
+Installed: Sun Oct 18, 2026, ~2:39 AM CDT (boot 2:39:13–2:39:30 AM CDT; verification checks 2:41–2:42 AM CDT)
+Via: guildgate-020-install-watch auto-watch; coordination gate cleared (server-optimization APPLIED.txt existed, completed 1:45 AM CDT).
+
+STEP 0 — RESOURCE PACK HOSTING (verified before install):
+- packs/wrv-guildgate-narrator-pack.zip already present in ElMikeExcel/winkreyesvalley (commit 6137fe91e64ac9454fa8ffeeff34a4ebe751ee2a, 2026-10-18T06:32:55Z, "Add files via upload"); no new GitHub write was needed this run.
+- Served bytes at https://elmikeexcel.github.io/winkreyesvalley/packs/wrv-guildgate-narrator-pack.zip downloaded and verified: 377,104 B, SHA-1 e1ef3b835d59280e613ae435f6efca760389045e (matches PACK-SHA1.txt), SHA-256 8286c09849730283118d4bcef58529add1ccc5bffc99e52554b7f10bea76b6d6.
+
+EMPTY GATE: console `list` 0/10 at 2:19:28 AM CDT and again 0/10 at 2:22:02 AM CDT (2m34s apart). No changes before second check passed.
+
+INSTALL:
+- Live jar backup: ExcelGuildGate-0.1.0.jar.bak-20261017 already existed in /plugins in exactly the required backup form (22.39 KB, Oct 16 1:35 AM — from a prior partial attempt; no live 0.1.0/0.2.0 jar remained to rename). DEVIATION noted: rename step itself was pre-done; end state is exactly as the packet requires. A stale 0.3.0 jar from that prior attempt was overwritten with the granted file.
+- ExcelGuildGate-0.3.0.jar uploaded to /plugins: panel listing 37.55 KB = 38,447 B (granted size; local SHA-256 3c87c3ffbbc33163163ce054a744fad51c1c3bb47c0e0dc0302e3a90cf495699 verified pre-upload; panel offers no in-place hash).
+- server.properties: backed up by download before editing; preserved copy at ~/workspace/excelguildgate-0.3.0/server.properties.bak-20261018-pre030. Pre-edit: resource-pack already = target URL, resource-pack-sha1= (empty), require-resource-pack=false, resource-pack-prompt= (empty). Edited sha1 + prompt; re-read lines verified exactly:
+  resource-pack=https://elmikeexcel.github.io/winkreyesvalley/packs/wrv-guildgate-narrator-pack.zip
+  resource-pack-sha1=e1ef3b835d59280e613ae435f6efca760389045e
+  require-resource-pack=false
+  resource-pack-prompt=The valley has a narrator now. Accept to hear the seal falls spoken aloud — declining changes nothing else.
+- BEDROCK NARRATOR PACK: wrv-guildgate-narrator-bedrock.mcpack uploaded unchanged (no unzip, no rename, no config change) to plugins/Geyser-Spigot/packs/ — panel listing 368.55 KB = 377,396 B (local SHA-256 eed1ea8995010b6398040d231fb1c3c37baa85ab4de8111f3e4db3ad4741d732 verified pre-upload). Folder's only file.
+- Restart ONLY via panel Shut Down button, then panel Start. Console `stop` never used.
+
+VERIFICATION (boot 2:39:27–2:39:30 AM CDT):
+- [ExcelGuildGate] Enabling ExcelGuildGate v0.3.0
+- [ExcelGuildGate] ExcelGuildGate enabled: 0 of 5 seals broken, guild LOCKED
+- [ExcelGuildGate] Join catch-up: on, 0 players tracked.
+- [ExcelGuildGate] Narration: on, catch-up replay on, guide delay 2s (pack sounds wrv:guildgate.seal1..5)
+- [ExcelGuildGate] No state.yml yet: starting the Road to the Guild fresh. (Status still 0 of 5 / LOCKED as required.)
+- [Geyser-Spigot] Loading Geyser version 2.11.3-b1251; [Geyser-Spigot] Started Geyser on UDP port 20795; Done (17.959s)!
+- Console searches: "invalid" 0 matches, "Failed to load" 0 matches, no line naming wrv-guildgate-narrator-bedrock.mcpack — no invalid-pack failure.
+- No SEVERE / stack trace naming ExcelGuildGate (Errors filter showed only known baseline Paper terminal + Essentials unsupported-version entries).
+- `guildgate status` (2:41:38 AM): Gate enabled | Guild LOCKED | Progress 0 of 5, all five seals unbroken.
+- `guildgate narrate 1` (2:41:52 AM): CONSOLE triggered narration preview stage 1; voice line wrv:guildgate.seal1 dispatched; all 5 guide lines sent on the 2s delay, beginning "— What fell open: The Healer —"; campaign state untouched.
+- Final `list` (2:42:04 AM): 0/10. Server left Online and healthy. No rollback.
+
+KNOWN BASELINE NOISE (pre-existing, not rollback triggers): GS4 query listener bind conflict on UDP 20795 (Geyser port), resource-pack-id empty → default UUID notice.
+
+REMAINING AFTER INSTALL:
+- Publishing follows in the next records pass: wrv-plugins draft PR + website GuildGate 0.3.0 entry + changelog bullet (website pack hosting itself is already done, see Step 0).
+- Real-client Bedrock narrator check remains a player check: Mike on his phone joins, admin runs /guildgate narrate 1, confirm he hears the narrator.
