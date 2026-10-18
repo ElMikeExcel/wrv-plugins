@@ -1,0 +1,15 @@
+#
+# Wink Reyes Valley - Magic Phase 1 (HEALER RELEASE) message overrides.
+# WRV-070. This file carries ONLY the strings for our one custom spell.
+# Default messages stay loaded (load_default_messages is untouched), so
+# every other spell keeps the author's shipped name/description; this
+# override adds the entry the defaults cannot have: stormshackle.
+#
+# Format matches Magic 11.2.5 defaults/messages.defaults.yml
+# (spells.<key>.name / description / cast).
+#
+spells:
+  stormshackle:
+    name: Storm Shackle
+    description: A crackling bolt that arcs between enemies, barely hurting them but slowing every one it touches
+    cast: You loose a shackle of storm-lightning

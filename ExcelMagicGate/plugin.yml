@@ -1,0 +1,16 @@
+name: ExcelMagicGate
+version: 0.1.0
+author: Argus
+main: com.winkreyes.excelmagicgate.ExcelMagicGate
+api-version: "1.13"
+description: Automation bridge for the WRV Magic rollout (WRV-070). Watches ExcelGuildGate's seal count and, as each Magic stage becomes eligible, swaps Magic's config to that stage's curated packet, reloads Magic, runs the stage's LuckPerms grants and announces the unlock. Dependencies - ExcelGuildGate provides the seal count, read through its public GuildGateAPI by reflection; Magic by NathanWolf is the spell engine whose six config files are swapped and reloaded via its own /magic reload command; LuckPerms receives the stage grant lists, executed verbatim as its console commands. Without ExcelGuildGate no stage is ever eligible; without Magic or LuckPerms an apply fails safe, advances nothing, and retries on the next watch tick.
+softdepend: [ExcelGuildGate, Magic, LuckPerms]
+commands:
+  magicgate:
+    description: Admin controls for the Magic stage bridge
+    usage: /magicgate <status|apply <stage>>
+    permission: excelmagicgate.admin
+permissions:
+  excelmagicgate.admin:
+    description: Allows /magicgate admin commands and receives bridge warnings
+    default: op
