@@ -1,0 +1,44 @@
+# ExcelQuartermaster - the Old Quartermaster's voice
+# The quartermaster is a Shopkeepers admin-shop villager in the spawn
+# village. He holds no trades on purpose; this plugin turns a right-click
+# on him into the next of his tales instead of his empty trade window.
+
+# The villager's custom name (exactly as it floats over his head).
+# Matching ignores color codes and letter case.
+npc-name: "Old Quartermaster"
+
+# The line sent above each tale. {name} is replaced by npc-name.
+# Color codes with & work.
+header: "&6{name} &7says:"
+
+# Seconds a player must wait between tales. Clicks during the wait are
+# quietly swallowed (the trade window still never opens). 0 = no wait.
+cooldown-seconds: 8
+
+# Safety anchor: the name must ALSO be found near this spot, so a renamed
+# villager elsewhere in the world can never start telling tales.
+# Set enabled: false to match on the name alone, anywhere.
+anchor:
+  enabled: true
+  world: "world"
+  x: -783.0
+  y: 81.0
+  z: -299.0
+  radius: 10.0
+
+# His tales, in rotation order. Each player walks the list in order and
+# loops back to the top; every player has their own place in the list,
+# saved across restarts. Long tales are split into at most two chat
+# lines. Color codes with & work.
+tales:
+  - "&7Sit a moment. I kept the stores for the Adventurers Guild, back when its doors stood open and the road was never quiet."
+  - "&7Five seals hold that guild now. A dragon, a wither, an old guardian of the deep, the thing that hunts by sound, and a village that must be defended. Break them all, and the doors open."
+  - "&7You have seen the guild's name in your menu, grey and locked. That is no decoration. That is a promise the valley made."
+  - "&7In my day, magic ran free through this valley like water in a river. Everything drank from it. Everything."
+  - "&7Aye, the monsters too. The beasts of my time were stronger than yours, because the magic fed them same as it fed us. Many a good adventurer learned that the hard way."
+  - "&7Magic is a double-edged sword, young one. It lifts the hand that holds it, and it sharpens what comes at that hand."
+  - "&7You are wondering about wands. I can see it. When the first seal falls, come back to me. My old stores are not as empty as they look."
+  - "&7A wand is not a toy and not a treasure. It is a promise you make to the valley. I only hand them to those the valley has already called. The seals will do the calling."
+  - "&7Start with the dragon, when you are ready. The End is far, but every road to the guild starts with a single broken seal."
+  - "&7What is coming back to this valley now is stronger than what I knew. Ours was a river. Yours will be a flood. Mind it treats you kindly, and mind what it wakes up."
+  - "&7Train hard while the days are kind. Skills, gear, a full belly and good company. The seals are not beaten by heroes. They are beaten by families."

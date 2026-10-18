@@ -1,0 +1,19 @@
+ExcelQuartermaster 0.1.0 — INSTALLED LIVE, Sun Oct 18, 2026, ~11:37 AM CDT
+Installed under Mike's direct instruction ("Get it done", 11:34 AM) on an empty
+server (0/10; Rylie kicked at 11:11 AM at Mike's direction, she was AFK on a
+tablet while out with the family). The jar had been uploaded to plugins/ at
+11:33 AM (16,221 B, SHA-256 b27f8648f3db0116ab1207c4105681fe9cc06d2c9cd143cdacade231471e0d01,
+matching the build record); the install session verified the size, restarted via
+panel Shut Down -> Start, and verified the boot:
+- "[ExcelQuartermaster] Enabling ExcelQuartermaster v0.1.0" present.
+- Ready line present: 11 tales, anchor world -783,81,-299 r10, cooldown 8s,
+  0 players with saved progress.
+- No SEVERE, no ExcelQuartermaster stack traces (only pre-existing Essentials
+  version notice + terminal warning).
+- guildgate status: LOCKED, 0 of 5. list: 0/10.
+Drive deposit: jar Build ID 1L-Hyo4iEg59my5OeZz-5qSHZRbi9RKGy; source zip ID
+1CzE-PkdAEd60csA77aLkNU31h7dnp0ZT.
+This marker stands down the excelquartermaster-install-watch cron.
+
+Player click check still owed (install-day player check): right-click / Bedrock tap the Old Quartermaster NOT sneaking → tale appears, empty trade window does NOT open; immediate second click silent (cooldown); click after 8s+ → next tale; sneak+click still opens the Shopkeepers editor; a second player starts at tale 1 (per-player rotation).
+Rollback: delete plugins/ExcelQuartermaster-0.1.0.jar and restart panel-style.
