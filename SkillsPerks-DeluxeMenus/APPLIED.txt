@@ -1,0 +1,18 @@
+APPLIED LIVE — Java Skills & Perks menu (DeluxeMenus, config-only)
+Applied: Sun Oct 18, 2026, ~6:31 AM CDT (dm reload 6:32:06 AM CDT)
+Via: upload route (panel editor cannot accept typed characters from automation; completed files were built locally from the captured live baselines and uploaded).
+
+BASELINE STORY (owned plainly): the packet's current/config.yml did NOT byte-match live — the live gui_menus registry orders the spawnshop block BEFORE the teleport_confirm block; the packet copy had them reversed (same lines, different order). A first apply session aborted untouched on that hash gate, exactly as designed. The live files were then downloaded and the packet re-based on them:
+- Live config.yml: 1,025 B, SHA-256 5c9494aeae741c027af59a11fd700a472d5a3787955f0ae59f7b897def3c9699 (preserved at live-backups-20261018/config.yml.live-20261018)
+- Live server_menu.yml: 3,642 B, SHA-256 ea44cc4673da66a414efa1b8f9c89a236db1e97a067256d301a467554abec428 — byte-identical to the packet's current/ copy (preserved at live-backups-20261018/server_menu.yml.live-20261018)
+- Post-build diff proof: the uploaded config.yml differs from the captured live file by EXACTLY the two registry lines (skills_perks / file: skills_perks.yml after commands_menu), nothing else.
+
+UPLOADED (panel listings verified):
+- plugins/DeluxeMenus/config.yml → 1,068 B, SHA-256 3f67e24c675b1c650aa6992561b98522079170313288259c5d9b37dacc5e6d56
+- plugins/DeluxeMenus/gui_menus/server_menu.yml → 3,875 B, SHA-256 a04a6227ad87525c4573198da1e58d6fc988827dbea08c74c0a770b38740605e (packet deploy copy; adds skills item, ENCHANTED_BOOK, slot 13)
+- plugins/DeluxeMenus/gui_menus/skills_perks.yml → 2,030 B, SHA-256 e4fb5f671b5b1e7720c14e812fd1af7eeed0aabe94f056da4dd6191cfedff75a (new)
+
+VERIFICATION: console `dm reload` → "DeluxeMenus successfully reloaded!" + "14 menus loaded". `dm list` shows all 14: basics_menu, commands_menu, server_menu, skills_perks, spawnshop, spawnshop_building, spawnshop_enchanting, spawnshop_food, spawnshop_potions_protection, spawnshop_travel_animals, teleport_confirm_guild, teleport_confirm_home, teleport_confirm_spawn, teleport_confirm_spawncmd. No restart was used or needed.
+Note: the in-place *.bak-20261017-skilltrees panel backups from the packet were NOT created (the upload route replaced them); the rollback backups are the preserved live downloads in live-backups-20261018/ (hashes above). Rollback: re-upload those two files, delete gui_menus/skills_perks.yml, `dm reload`.
+Deviation during the session, fully corrected: an early mis-upload briefly created plugins/ExcelGuildGate/config_1.yml (DeluxeMenus config in the wrong folder); it was deleted immediately and that folder verified restored before work continued.
+STATUS: applied live; Java click check PENDING (needs a player: Server Menu → Skills & Perks slot 13 → Check Your Skills /mcstats → website item → Back).

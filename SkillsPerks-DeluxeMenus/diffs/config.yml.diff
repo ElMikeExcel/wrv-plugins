@@ -1,0 +1,11 @@
+--- a/config.yml
++++ b/config.yml
+@@ -16,6 +16,8 @@
+     file: server_menu.yml
+   commands_menu:
+     file: commands_menu.yml
++  skills_perks:
++    file: skills_perks.yml
+   teleport_confirm_spawn:
+     file: teleport_confirm_spawn.yml
+   teleport_confirm_guild:

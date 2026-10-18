@@ -1,0 +1,38 @@
+# DeluxeMenus 1.14.1-Release main configuration file
+#
+# A full wiki on how to use this plugin can be found at:
+# https://wiki.helpch.at/helpchat-plugins/deluxemenus
+
+check_updates: true
+debug: LOW
+use_admin_commands_in_menus_list: false
+menus_list_page_size: 10
+metas_list_page_size: 15
+gui_menus:
+  basics_menu:
+    file: basics_menu.yml
+  
+  server_menu:
+    file: server_menu.yml
+  commands_menu:
+    file: commands_menu.yml
+  teleport_confirm_spawn:
+    file: teleport_confirm_spawn.yml
+  teleport_confirm_guild:
+    file: teleport_confirm_guild.yml
+  teleport_confirm_spawncmd:
+    file: teleport_confirm_spawncmd.yml
+  teleport_confirm_home:
+    file: teleport_confirm_home.yml
+  spawnshop:
+    file: spawnshop.yml
+  spawnshop_food:
+    file: spawnshop_food.yml
+  spawnshop_building:
+    file: spawnshop_building.yml
+  spawnshop_travel_animals:
+    file: spawnshop_travel_animals.yml
+  spawnshop_enchanting:
+    file: spawnshop_enchanting.yml
+  spawnshop_potions_protection:
+    file: spawnshop_potions_protection.yml

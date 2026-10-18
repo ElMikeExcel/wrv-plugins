@@ -1,0 +1,18 @@
+--- a/server_menu.yml
++++ b/server_menu.yml
+@@ -62,6 +62,15 @@
+           output: 'true'
+     left_click_commands:
+       - '[openguimenu] teleport_confirm_guild'
++  skills:
++    material: ENCHANTED_BOOK
++    slot: 13
++    display_name: '&a&lSkills & Perks'
++    lore:
++      - '&7Every perk ladder, in game'
++      - '&7and on the website'
++    left_click_commands:
++      - '[openguimenu] skills_perks'
+   mcmmo:
+     material: EXPERIENCE_BOTTLE
+     slot: 14
