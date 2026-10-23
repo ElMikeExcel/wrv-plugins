@@ -29,4 +29,12 @@ class MenuStatsTest {
         assertTrue(Files.readString(d.resolve("clicks.csv")).startsWith(ClickLog.HEADER + "\n"));
         assertTrue(Files.readString(d.resolve("clicks.csv")).contains(",'=evil,"));
     }
+    @Test void formTapRowsCountAsBedrock() throws Exception {
+        Path d = Files.createTempDirectory("f");
+        Clock clk = Clock.fixed(Instant.parse("2026-10-24T00:00:00Z"), ZoneOffset.UTC);
+        ClickLog l = new ClickLog(d, ZoneId.of("America/Chicago"), clk, s -> fail(s));
+        l.record(new ClickLog.Click(clk.instant(), ".Kailey", new UUID(0, 9), "bedrock", MenuIndex.plain("\u00a76Server Menu"), "Utility Pouch", 3, "FORM")).get();
+        ClickLog.Stats s = l.stats(1, 5).get(); l.close();
+        assertEquals(1, s.bedrock()); assertEquals("Server Menu > Utility Pouch", s.top().get(0).key());
+    }
 }

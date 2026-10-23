@@ -14,6 +14,6 @@ find "$PROJ/tests" -name "*.java" | sort > "$OUT/test.txt"
 "$JDK/bin/java" -jar "$JUNIT" execute -cp "$OUT/classes:$OUT/test-classes:$CP" --select-package com.winkreyes.menustats --details summary --fail-if-no-tests
 # deterministic jar: fixed timestamps, sorted entries
 cd "$OUT/classes"; find . -exec touch -h -d '2026-10-23 00:00:00' {} +
-rm -f "$HERE/ExcelMenuStats-0.1.0.jar"; find . -type f | sort | sed 's#^\./##' > ../entries.txt
-"$JDK/bin/jar" --create --file "$HERE/ExcelMenuStats-0.1.0.jar" --date=2026-10-23T00:00:00Z --no-manifest @../entries.txt
-sha256sum "$HERE/ExcelMenuStats-0.1.0.jar"
+rm -f "$HERE/ExcelMenuStats-0.2.0.jar"; find . -type f | sort | sed 's#^\./##' > ../entries.txt
+"$JDK/bin/jar" --create --file "$HERE/ExcelMenuStats-0.2.0.jar" --date=2026-10-23T00:00:00Z --no-manifest @../entries.txt
+sha256sum "$HERE/ExcelMenuStats-0.2.0.jar"

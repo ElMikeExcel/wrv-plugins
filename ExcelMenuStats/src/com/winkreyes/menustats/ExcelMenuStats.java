@@ -70,6 +70,22 @@ public final class ExcelMenuStats extends JavaPlugin implements Listener {
         } catch (Throwable t) { getLogger().warning("Click not logged: " + t); }
     }
 
+    /**
+     * Public hook for other plugins (ExcelBedrockMenu 1.5.15+ calls this by reflection, no compile link).
+     * Thread-safe; never throws. menu/button are human-readable names; index is the button position.
+     */
+    public boolean recordTap(Player p, String menu, String button, int index, String platform) {
+        try {
+            if (log == null || p == null) return false;
+            String m = MenuIndex.plain(menu == null ? "" : menu); String b = MenuIndex.plain(button == null ? "" : button);
+            int nl = b.indexOf('\n'); if (nl >= 0) b = b.substring(0, nl).trim();
+            if (m.isEmpty()) m = "bedrock_form"; if (b.isEmpty()) b = "button" + index;
+            String pf = platform == null || platform.isBlank() ? platform(p.getUniqueId()) : platform.toLowerCase(java.util.Locale.ROOT);
+            log.record(new ClickLog.Click(java.time.Instant.now(), p.getName(), p.getUniqueId(), pf, m, b, index, "FORM"));
+            return true;
+        } catch (Throwable t) { getLogger().warning("Tap not logged: " + t); return false; }
+    }
+
     static String platform(UUID id) {
         try {
             Class<?> api = Class.forName("org.geysermc.floodgate.api.FloodgateApi");
@@ -90,7 +106,7 @@ public final class ExcelMenuStats extends JavaPlugin implements Listener {
         log.stats(d, 15).whenComplete((st, err) -> getServer().getScheduler().runTask(this, () -> {
             if (err != null) { s.sendMessage(ChatColor.RED + "Could not read clicks.csv: " + err.getMessage()); return; }
             s.sendMessage(ChatColor.GOLD + "Menu clicks, last " + d + " day" + (d == 1 ? "" : "s") + ": " + st.clicks() + " clicks by " + st.players() + " players");
-            s.sendMessage(ChatColor.GRAY + "Java " + st.java() + " | Bedrock " + st.bedrock());
+            s.sendMessage(ChatColor.GRAY + "Java " + st.java() + " | Bedrock " + st.bedrock() + " (Bedrock form taps show as \"Form title > Button\")");
             int i = 1; for (ClickLog.ButtonStat b : st.top()) s.sendMessage(ChatColor.WHITE + "" + (i++) + ". " + b.key() + ": " + b.clicks() + " clicks (" + b.players() + " players)");
             if (st.top().isEmpty()) s.sendMessage(ChatColor.GRAY + "No clicks logged yet.");
             if (st.badLines() > 0) s.sendMessage(ChatColor.YELLOW + "" + st.badLines() + " unreadable line(s) skipped.");

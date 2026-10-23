@@ -1,12 +1,12 @@
 name: ExcelMenuStats
-version: '0.1.0'
+version: '0.2.0'
 main: com.winkreyes.menustats.ExcelMenuStats
 api-version: '1.21'
 prefix: MenuStats
 author: Wink Reyes Valley
 license: MIT
 softdepend: [ExcelMenu, floodgate]
-description: Read-only click counter for ExcelMenu buttons. Appends clicks.csv; /menustats shows the top buttons. Never cancels or changes a click.
+description: Read-only click counter for ExcelMenu buttons. Appends clicks.csv; /menustats shows the top buttons. Also counts ExcelBedrockMenu form taps via recordTap. Never cancels or changes a click.
 commands:
   menustats:
     description: Show the most-used ExcelMenu buttons
