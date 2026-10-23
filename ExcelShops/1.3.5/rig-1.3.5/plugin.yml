@@ -1,0 +1,6 @@
+name: Rig135
+version: '1'
+main: rig135.Rig135
+api-version: '1.21'
+depend: [Vault]
+loadbefore: [ExcelShops]

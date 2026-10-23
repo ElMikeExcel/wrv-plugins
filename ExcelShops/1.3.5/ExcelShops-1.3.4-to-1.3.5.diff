@@ -1,0 +1,470 @@
+diff -ruN src134/project/config.yml src135/project/config.yml
+--- src134/project/config.yml	2026-10-23 16:51:21.404205015 -0500
++++ src135/project/config.yml	2026-10-23 16:53:38.760716270 -0500
+@@ -11,3 +11,6 @@
+ # compass opens Manage, and tapping a sign on your own non-shop chest offers
+ # shop setup, instead of opening the server menu.
+ compass-shop-shortcut: true
++# Append every completed ExcelShops purchase to purchases.csv (market-trend history).
++# Evidence only; checkout/transactions.log stays the reconciliation journal.
++purchase-log: true
+diff -ruN src134/project/plugin.yml src135/project/plugin.yml
+--- src134/project/plugin.yml	2026-10-23 16:51:21.404205015 -0500
++++ src135/project/plugin.yml	2026-10-23 16:53:38.760716270 -0500
+@@ -1,5 +1,5 @@
+ name: ExcelShops
+-version: '1.3.4'
++version: '1.3.5'
+ main: com.winkreyes.shops.WRVShops
+ api-version: '1.21'
+ author: Wink Reyes Valley
+@@ -10,10 +10,13 @@
+   excelshop:
+     aliases: [wrvshop]
+     description: Browse the confirmed Spawn Shop or manage your chest shop
+-    usage: /excelshop [browse <item>|setup|manage|amount <number>]
++    usage: /excelshop [browse <item>|setup|manage|amount <number>|stats [days]]
+     permission: wrvshops.use
+ permissions:
+   wrvshops.use:
+     default: true
+   wrvshops.create:
+     default: true
++  wrvshops.admin:
++    description: View /excelshop stats (purchase history summary)
++    default: op
+diff -ruN src134/project/src/com/winkreyes/shops/ShopUi.java src135/project/src/com/winkreyes/shops/ShopUi.java
+--- src134/project/src/com/winkreyes/shops/ShopUi.java	2026-10-23 16:51:21.408205030 -0500
++++ src135/project/src/com/winkreyes/shops/ShopUi.java	2026-10-23 16:53:38.760716270 -0500
+@@ -389,7 +389,7 @@
+         Runnable confirm=()->{
+             pages.remove(p.getUniqueId());p.closeInventory();
+             CheckoutService.Result result=plugin.getCheckout().confirm(quote.id(),p.getUniqueId());
+-            if(result.status()==CheckoutService.Status.SUCCESS)p.sendMessage(ChatColor.GREEN+"You bought "+ShopText.quantity(s.name(),s.bundleSize(),quantity)+" for "+ShopText.price(quote.amountMinorUnits())+".");
++            if(result.status()==CheckoutService.Status.SUCCESS){p.sendMessage(ChatColor.GREEN+"You bought "+ShopText.quantity(s.name(),s.bundleSize(),quantity)+" for "+ShopText.price(quote.amountMinorUnits())+".");plugin.logPurchase(p,s,quantity,quote.amountMinorUnits());}
+             else p.sendMessage(ChatColor.YELLOW+result.message());
+             if(result.status()==CheckoutService.Status.RECOVERY_REQUIRED)plugin.getLogger().severe("Checkout recovery required, transaction "+result.transactionId()+": "+plugin.getCheckout().recoveryReason());
+         };
+diff -ruN src134/project/src/com/winkreyes/shops/WRVShops.java src135/project/src/com/winkreyes/shops/WRVShops.java
+--- src134/project/src/com/winkreyes/shops/WRVShops.java	2026-10-23 16:51:21.408205030 -0500
++++ src135/project/src/com/winkreyes/shops/WRVShops.java	2026-10-23 16:54:35.720934939 -0500
+@@ -3,6 +3,8 @@
+ 
+ import com.winkreyes.shops.checkout.CheckoutService;
+ import com.winkreyes.shops.checkout.FileJournal;
++import com.winkreyes.shops.log.Platform;
++import com.winkreyes.shops.log.PurchaseLog;
+ import com.winkreyes.shops.store.*;
+ import java.io.File;
+ import java.time.Clock;
+@@ -37,6 +39,7 @@
+     private LegacyShopUi legacyUi;
+     private final Map<BlockPos,PendingSign> placedSigns=new HashMap<>();
+     private boolean durabilityFailure;
++    private PurchaseLog purchaseLog;private Platform platform;
+     private final Set<UUID> dirtyPlayers=new HashSet<>(),dirtyWorlds=new HashSet<>();
+     private record PendingSign(UUID placer,BlockPos chest,long at){}
+     @Override public void onEnable(){
+@@ -58,6 +61,7 @@
+                 SpawnCatalog.requireMaxEntries(getConfig().getInt("max-catalog-offers",SpawnCatalog.DEFAULT_MAX_ENTRIES)));
+             adapter=new ShopAdapter(this,provider.getProvider());
+             balanceDisplay=new BalanceDisplay(this,provider.getProvider());
++            if(getConfig().getBoolean("purchase-log",true)){purchaseLog=new PurchaseLog(getDataFolder().toPath(),java.time.ZoneId.systemDefault(),Clock.systemUTC(),msg->getLogger().warning(msg));org.bukkit.plugin.Plugin fg=getServer().getPluginManager().getPlugin("floodgate");platform=Platform.detect(fg!=null&&fg.isEnabled()?fg.getClass().getClassLoader():null);}
+             long ttl=getConfig().getLong("quote-seconds",60);if(ttl<1||ttl>300)throw new IllegalArgumentException("quote-seconds must be 1..300");
+             checkout=new CheckoutService(adapter,new FileJournal(getDataFolder().toPath().resolve("checkout")),Clock.systemUTC(),Duration.ofSeconds(ttl));
+             // A missing/unsupported ChestShop must never hide an unfinished legacy trade.
+@@ -77,6 +81,7 @@
+         }catch(Exception|LinkageError e){if(checkout!=null)checkout.pauseExternal("Startup validation failed: "+e);getLogger().severe("ExcelShops entered protection-only mode; purchases/setup unavailable: "+e.getMessage());}
+     }
+     @Override public void onDisable(){
++        if(purchaseLog!=null){purchaseLog.close();purchaseLog=null;}
+         if(ui!=null)ui.closeAll();if(legacyUi!=null)legacyUi.closeAll();placedSigns.clear();
+         if(checkout==null){closeLegacy(false);closeMigration();return;}
+         try{
+@@ -97,6 +102,41 @@
+         if(migrationSession!=null){try{migrationSession.close();}catch(Exception e){getLogger().severe("Could not release migration lock: "+e.getMessage());}finally{migrationSession=null;}}
+     }
+     public ShopRegistry getRegistry(){return registry;}
++    public PurchaseLog getPurchaseLog(){return purchaseLog;}
++    /** Server thread, after a SUCCESS checkout. Reads the post-purchase balance here (Vault is main-thread); the file write is async. */
++    public void logPurchase(Player p,ShopAdapter.Selection s,int quantity,long totalMinor){
++        PurchaseLog log=purchaseLog;if(log==null)return;
++        try{
++            Long after=balanceDisplay==null?null:balanceDisplay.balanceMinor(p,false);
++            log.record(new PurchaseLog.Purchase(java.time.Instant.now(),p.getName(),p.getUniqueId(),platform==null?"unknown":platform.of(p.getUniqueId()),
++                s.offerId().startsWith("spawn:")?"spawn":"player",itemId(s.item()),quantity,s.bundleSize(),s.price(),totalMinor,after,s.offerId()));
++        }catch(RuntimeException|LinkageError failure){getLogger().warning("Purchase log skipped: "+failure);}
++    }
++    static String itemId(ItemStack item){
++        String id=item.getType().getKey().toString();
++        if(item.getItemMeta() instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta book&&!book.getStoredEnchants().isEmpty()){
++            StringBuilder b=new StringBuilder(id).append('[');
++            book.getStoredEnchants().entrySet().stream().sorted(java.util.Map.Entry.comparingByKey(java.util.Comparator.comparing(e->e.getKey().getKey()))).forEach(e->b.append(b.charAt(b.length()-1)=='['?"":";").append(e.getKey().getKey().getKey()).append(':').append(e.getValue()));
++            id=b.append(']').toString();
++        }
++        return id;
++    }
++    private boolean stats(CommandSender sender,String[] args){
++        if(!sender.hasPermission("wrvshops.admin")){sender.sendMessage(ChatColor.RED+"You cannot view shop stats.");return true;}
++        if(purchaseLog==null){sender.sendMessage(ChatColor.YELLOW+"The purchase log is off (purchase-log: false) or shops are paused.");return true;}
++        int days=7;
++        if(args.length==2){try{days=Integer.parseInt(args[1]);}catch(NumberFormatException e){days=-1;}}
++        if(args.length>2||days<1||days>3650){sender.sendMessage(ChatColor.YELLOW+"Usage: /excelshop stats [days 1-3650]");return true;}
++        final int d=days;
++        purchaseLog.stats(d,10).whenComplete((st,err)->getServer().getScheduler().runTask(this,()->{
++            if(err!=null){sender.sendMessage(ChatColor.RED+"Could not read purchases.csv: "+err.getMessage());return;}
++            sender.sendMessage(ChatColor.GOLD+"Shop sales, last "+d+" day"+(d==1?"":"s")+": "+st.purchases()+" purchases by "+st.buyers()+" players, "+BalanceDisplay.money(st.revenueMinor()));
++            sender.sendMessage(ChatColor.GRAY+"Spawn shop "+BalanceDisplay.money(st.spawnRevenueMinor())+" | player shops "+BalanceDisplay.money(st.playerRevenueMinor()));
++            int i=1;for(PurchaseLog.ItemStat it:st.top())sender.sendMessage(ChatColor.WHITE+""+(i++)+". "+it.key()+": "+BalanceDisplay.money(it.revenueMinor())+" ("+it.purchases()+" buys, "+it.items()+" items)");
++            if(st.badLines()>0)sender.sendMessage(ChatColor.YELLOW+""+st.badLines()+" unreadable line(s) skipped.");
++        }));
++        return true;
++    }
+     public CheckoutService getCheckout(){return checkout;}
+     public ShopAdapter getAdapter(){return adapter;}
+     public SpawnCatalog getCatalog(){return catalog;}
+@@ -108,6 +148,7 @@
+     public void markLegacyDirty(Player p,UUID world){dirtyPlayers.add(p.getUniqueId());dirtyWorlds.add(world);}
+     public void markDirty(Player player,ShopRecord shop){dirtyPlayers.add(player.getUniqueId());if(shop!=null)dirtyWorlds.add(shop.chest().worldId());}
+     @Override public boolean onCommand(CommandSender sender,Command command,String label,String[] args){
++        if(args.length>=1&&args[0].equalsIgnoreCase("stats"))return stats(sender,args);
+         if(ui==null){sender.sendMessage("Shops are paused while an administrator checks startup. Stock remains protected.");return true;}
+         if(checkout.recoveryRequired()){sender.sendMessage("Shops are paused for administrator reconciliation. Please do not retry purchases.");return true;}
+         if(!(sender instanceof Player p)){sender.sendMessage("Use this in game. Recovery has no automatic replay command; see WRVShops/README.md.");return true;}
+diff -ruN src134/project/src/com/winkreyes/shops/log/Platform.java src135/project/src/com/winkreyes/shops/log/Platform.java
+--- src134/project/src/com/winkreyes/shops/log/Platform.java	1969-12-31 18:00:00.000000000 -0600
++++ src135/project/src/com/winkreyes/shops/log/Platform.java	2026-10-23 16:54:35.720934939 -0500
+@@ -0,0 +1,26 @@
++// SPDX-License-Identifier: MIT
++package com.winkreyes.shops.log;
++
++import java.lang.reflect.Method;
++import java.util.UUID;
++
++/** Java/Bedrock via the Floodgate API when present (reflection: no compile dependency). */
++public final class Platform {
++    private final Object api; private final Method check;
++    private Platform(Object api, Method check) { this.api = api; this.check = check; }
++    /** @param floodgateLoader the enabled floodgate plugin's class loader, or null when absent. */
++    public static Platform detect(ClassLoader floodgateLoader) {
++        if (floodgateLoader == null) return new Platform(null, null);
++        try {
++            Class<?> c = Class.forName("org.geysermc.floodgate.api.FloodgateApi", true, floodgateLoader);
++            Object api = c.getMethod("getInstance").invoke(null);
++            if (api == null) return new Platform(null, null);
++            return new Platform(api, c.getMethod("isFloodgatePlayer", UUID.class));
++        } catch (ReflectiveOperationException | LinkageError | RuntimeException absent) { return new Platform(null, null); }
++    }
++    public String of(UUID id) {
++        if (api == null) return "java";
++        try { return Boolean.TRUE.equals(check.invoke(api, id)) ? "bedrock" : "java"; }
++        catch (ReflectiveOperationException | RuntimeException failure) { return "unknown"; }
++    }
++}
+diff -ruN src134/project/src/com/winkreyes/shops/log/PurchaseLog.java src135/project/src/com/winkreyes/shops/log/PurchaseLog.java
+--- src134/project/src/com/winkreyes/shops/log/PurchaseLog.java	1969-12-31 18:00:00.000000000 -0600
++++ src135/project/src/com/winkreyes/shops/log/PurchaseLog.java	2026-10-23 16:53:15.108626577 -0500
+@@ -0,0 +1,187 @@
++// SPDX-License-Identifier: MIT
++package com.winkreyes.shops.log;
++
++import java.io.BufferedReader;
++import java.io.IOException;
++import java.io.Writer;
++import java.math.BigDecimal;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.nio.file.StandardOpenOption;
++import java.time.Clock;
++import java.time.Duration;
++import java.time.Instant;
++import java.time.OffsetDateTime;
++import java.time.ZoneId;
++import java.time.ZonedDateTime;
++import java.time.format.DateTimeFormatter;
++import java.util.ArrayList;
++import java.util.Comparator;
++import java.util.LinkedHashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.Objects;
++import java.util.UUID;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.ExecutorService;
++import java.util.concurrent.Executors;
++import java.util.concurrent.RejectedExecutionException;
++import java.util.concurrent.TimeUnit;
++import java.util.function.Consumer;
++
++/**
++ * Append-only purchase history (plugins/ExcelShops/purchases.csv) for market-trend review.
++ * Evidence only: it never gates, retries or replays a purchase. The checkout journal
++ * (checkout/transactions.log) stays the authority for money/inventory reconciliation.
++ *
++ * Thread safety: every file operation runs on ONE private writer thread, so lines never
++ * interleave and the server thread never blocks on disk. Each append opens the file in
++ * APPEND mode, writes one complete line and closes it, so a crash loses at most the line
++ * being written and a day boundary or a long uptime needs no rotation state.
++ */
++public final class PurchaseLog implements AutoCloseable {
++    public static final String FILE = "purchases.csv";
++    public static final String HEADER = "timestamp,player,uuid,platform,shop,item,qty,bundle_size,unit_price,total,balance_after,offer_id";
++    private static final DateTimeFormatter ISO = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
++
++    public record Purchase(Instant at, String player, UUID uuid, String platform, String shop, String item,
++                           int quantity, int bundleSize, long unitPriceMinor, long totalMinor,
++                           Long balanceAfterMinor, String offerId) {
++        public Purchase {
++            Objects.requireNonNull(at); Objects.requireNonNull(uuid);
++            if (quantity < 1 || bundleSize < 1) throw new IllegalArgumentException("quantity and bundle size must be positive");
++        }
++    }
++
++    public record ItemStat(String key, int purchases, long items, long revenueMinor) { }
++    public record Stats(int days, int purchases, long revenueMinor, long spawnRevenueMinor,
++                        long playerRevenueMinor, int buyers, List<ItemStat> top, int badLines) { }
++
++    private final Path file;
++    private final ZoneId zone;
++    private final Clock clock;
++    private final ExecutorService writer;
++    private final Consumer<String> warn;
++    private volatile boolean closed;
++
++    public PurchaseLog(Path folder, ZoneId zone, Clock clock, Consumer<String> warn) {
++        this.file = Objects.requireNonNull(folder).resolve(FILE);
++        this.zone = Objects.requireNonNull(zone);
++        this.clock = Objects.requireNonNull(clock);
++        this.warn = Objects.requireNonNull(warn);
++        this.writer = Executors.newSingleThreadExecutor(r -> {
++            Thread t = new Thread(r, "ExcelShops-PurchaseLog");
++            t.setDaemon(true);
++            return t;
++        });
++    }
++
++    public Path file() { return file; }
++
++    /** Non-blocking. Safe from any thread; never throws into the checkout path. */
++    public CompletableFuture<Void> record(Purchase purchase) {
++        if (closed) return CompletableFuture.completedFuture(null);
++        final String line;
++        try { line = toCsv(purchase, zone); }
++        catch (RuntimeException bad) { warn.accept("Purchase log line skipped: " + bad.getMessage()); return CompletableFuture.completedFuture(null); }
++        try {
++            return CompletableFuture.runAsync(() -> append(line), writer);
++        } catch (RejectedExecutionException shuttingDown) {
++            return CompletableFuture.completedFuture(null);
++        }
++    }
++
++    private void append(String line) {
++        try {
++            Files.createDirectories(file.getParent());
++            boolean fresh = !Files.exists(file) || Files.size(file) == 0;
++            try (Writer out = Files.newBufferedWriter(file, StandardCharsets.UTF_8,
++                    StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE)) {
++                if (fresh) out.write(HEADER + "\n");
++                out.write(line + "\n");
++            }
++        } catch (IOException | RuntimeException failure) {
++            warn.accept("Could not append to " + FILE + ": " + failure.getMessage());
++        }
++    }
++
++    /** Summarise the last {@code days} days off the server thread (same writer thread, so it sees every queued line). */
++    public CompletableFuture<Stats> stats(int days, int topN) {
++        if (days < 1 || days > 3650) throw new IllegalArgumentException("days must be 1..3650");
++        Instant since = clock.instant().minus(Duration.ofDays(days));
++        try { return CompletableFuture.supplyAsync(() -> summarise(file, since, days, topN), writer); }
++        catch (RejectedExecutionException shuttingDown) { return CompletableFuture.failedFuture(shuttingDown); }
++    }
++
++    static Stats summarise(Path file, Instant since, int days, int topN) {
++        Map<String, long[]> byItem = new LinkedHashMap<>();
++        java.util.Set<String> buyers = new java.util.HashSet<>();
++        int purchases = 0, bad = 0; long revenue = 0, spawn = 0, player = 0;
++        if (Files.exists(file)) {
++            try (BufferedReader in = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
++                String line; boolean first = true;
++                while ((line = in.readLine()) != null) {
++                    if (first) { first = false; if (line.equals(HEADER)) continue; }
++                    if (line.isBlank()) continue;
++                    List<String> f = parseCsv(line);
++                    try {
++                        if (f.size() < 12) throw new IllegalArgumentException("short");
++                        Instant at = OffsetDateTime.parse(f.get(0), ISO).toInstant();
++                        if (at.isBefore(since)) continue;
++                        int qty = Integer.parseInt(f.get(6)); int bundle = Integer.parseInt(f.get(7));
++                        long total = minor(f.get(9));
++                        String key = f.get(11).isEmpty() ? f.get(5) : f.get(11);
++                        long[] s = byItem.computeIfAbsent(key, k -> new long[3]);
++                        s[0]++; s[1] += (long) qty * bundle; s[2] += total;
++                        purchases++; revenue += total; buyers.add(f.get(2));
++                        if ("spawn".equals(f.get(4))) spawn += total; else player += total;
++                    } catch (RuntimeException malformed) { bad++; }
++                }
++            } catch (IOException failure) { throw new java.io.UncheckedIOException(failure); }
++        }
++        List<ItemStat> top = new ArrayList<>();
++        byItem.forEach((k, s) -> top.add(new ItemStat(k, (int) s[0], s[1], s[2])));
++        top.sort(Comparator.comparingLong(ItemStat::revenueMinor).reversed().thenComparing(ItemStat::key));
++        return new Stats(days, purchases, revenue, spawn, player, buyers.size(),
++                List.copyOf(top.subList(0, Math.min(Math.max(topN, 0), top.size()))), bad);
++    }
++
++    /** Drain queued lines (bounded wait) then stop. Called from onDisable. */
++    @Override public void close() {
++        closed = true;
++        writer.shutdown();
++        try {
++            if (!writer.awaitTermination(5, TimeUnit.SECONDS)) warn.accept("Purchase log did not drain within 5s; remaining lines dropped.");
++        } catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
++    }
++
++    // ---- CSV helpers (RFC 4180 quoting) ----
++    public static String toCsv(Purchase p, ZoneId zone) {
++        return String.join(",",
++                ZonedDateTime.ofInstant(p.at(), zone).truncatedTo(java.time.temporal.ChronoUnit.SECONDS).format(ISO),
++                esc(p.player()), p.uuid().toString(), esc(p.platform()), esc(p.shop()), esc(p.item()),
++                Integer.toString(p.quantity()), Integer.toString(p.bundleSize()),
++                money(p.unitPriceMinor()), money(p.totalMinor()),
++                p.balanceAfterMinor() == null ? "" : money(p.balanceAfterMinor()), esc(p.offerId()));
++    }
++    static String money(long minor) { return BigDecimal.valueOf(minor, 2).toPlainString(); }
++    static long minor(String money) { return new BigDecimal(money).setScale(2, java.math.RoundingMode.UNNECESSARY).movePointRight(2).longValueExact(); }
++    static String esc(String v) {
++        if (v == null) return "";
++        String s = v.replace('\r', ' ').replace('\n', ' ');
++        // Neutralise spreadsheet formula injection from player-controlled names.
++        if (!s.isEmpty() && "=+-@".indexOf(s.charAt(0)) >= 0) s = "'" + s;
++        return s.indexOf(',') >= 0 || s.indexOf('"') >= 0 ? '"' + s.replace("\"", "\"\"") + '"' : s;
++    }
++    static List<String> parseCsv(String line) {
++        List<String> out = new ArrayList<>(); StringBuilder cur = new StringBuilder(); boolean q = false;
++        for (int i = 0; i < line.length(); i++) {
++            char c = line.charAt(i);
++            if (q) { if (c == '"') { if (i + 1 < line.length() && line.charAt(i + 1) == '"') { cur.append('"'); i++; } else q = false; } else cur.append(c); }
++            else if (c == '"') q = true; else if (c == ',') { out.add(cur.toString()); cur.setLength(0); } else cur.append(c);
++        }
++        out.add(cur.toString());
++        return out;
++    }
++}
+diff -ruN src134/project/tests/com/winkreyes/shops/log/PurchaseLogTest.java src135/project/tests/com/winkreyes/shops/log/PurchaseLogTest.java
+--- src134/project/tests/com/winkreyes/shops/log/PurchaseLogTest.java	1969-12-31 18:00:00.000000000 -0600
++++ src135/project/tests/com/winkreyes/shops/log/PurchaseLogTest.java	2026-10-23 16:54:35.720934939 -0500
+@@ -0,0 +1,112 @@
++package com.winkreyes.shops.log;
++
++import static org.junit.jupiter.api.Assertions.*;
++
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.time.*;
++import java.util.*;
++import java.util.concurrent.*;
++import org.junit.jupiter.api.Test;
++import org.junit.jupiter.api.io.TempDir;
++
++class PurchaseLogTest {
++    @TempDir Path dir;
++    static final ZoneId CHI = ZoneId.of("America/Chicago");
++    static final UUID A = UUID.fromString("00000000-0000-0000-0000-00000000000a");
++
++    PurchaseLog.Purchase p(Instant at, String name, String shop, String offer, int qty, long unit, Long after) {
++        return new PurchaseLog.Purchase(at, name, A, "java", shop, "minecraft:enchanted_book[mending:1]", qty, 1, unit, unit * qty, after, offer);
++    }
++
++    @Test void headerOnceAndIsoTimestampWithZone() throws Exception {
++        Instant at = Instant.parse("2026-10-23T21:30:00Z");
++        try (PurchaseLog log = new PurchaseLog(dir, CHI, Clock.fixed(at, ZoneOffset.UTC), m -> fail(m))) {
++            log.record(p(at, "Kailey", "spawn", "spawn:mending", 2, 200000, 3117100L)).get(5, TimeUnit.SECONDS);
++            log.record(p(at, "Jester", "player", "shop:x", 1, 1050, null)).get(5, TimeUnit.SECONDS);
++        }
++        List<String> lines = Files.readAllLines(dir.resolve("purchases.csv"));
++        assertEquals(PurchaseLog.HEADER, lines.get(0));
++        assertEquals(3, lines.size());
++        assertEquals("2026-10-23T16:30:00-05:00,Kailey,00000000-0000-0000-0000-00000000000a,java,spawn,minecraft:enchanted_book[mending:1],2,1,2000.00,4000.00,31171.00,spawn:mending", lines.get(1));
++        assertTrue(lines.get(2).endsWith(",10.50,10.50,,shop:x"));
++    }
++
++    @Test void concurrentAppendsNeverInterleave() throws Exception {
++        Instant at = Instant.parse("2026-10-23T12:00:00Z");
++        int threads = 8, each = 250;
++        try (PurchaseLog log = new PurchaseLog(dir, CHI, Clock.fixed(at, ZoneOffset.UTC), m -> fail(m))) {
++            ExecutorService pool = Executors.newFixedThreadPool(threads);
++            List<Future<?>> fs = new ArrayList<>();
++            List<CompletableFuture<Void>> writes = Collections.synchronizedList(new ArrayList<>());
++            for (int t = 0; t < threads; t++) { int tt = t; fs.add(pool.submit(() -> { for (int i = 0; i < each; i++) writes.add(log.record(p(at, "P" + tt, "spawn", "spawn:o" + i, 1, 100, 1L))); })); }
++            for (Future<?> f : fs) f.get();
++            pool.shutdown();
++            CompletableFuture.allOf(writes.toArray(CompletableFuture[]::new)).get(30, TimeUnit.SECONDS);
++        }
++        List<String> lines = Files.readAllLines(dir.resolve("purchases.csv"));
++        assertEquals(1 + threads * each, lines.size());
++        assertEquals(1, lines.stream().filter(PurchaseLog.HEADER::equals).count());
++        for (String l : lines.subList(1, lines.size())) assertEquals(12, PurchaseLog.parseCsv(l).size(), l);
++    }
++
++    @Test void escapingAndFormulaNeutralised() {
++        Instant at = Instant.parse("2026-10-23T12:00:00Z");
++        String line = PurchaseLog.toCsv(new PurchaseLog.Purchase(at, "=cmd,\"x\"", A, "bedrock", "spawn", "minecraft:stone", 1, 64, 5, 5, 0L, "spawn:s"), CHI);
++        List<String> f = PurchaseLog.parseCsv(line);
++        assertEquals(12, f.size());
++        assertEquals("'=cmd,\"x\"", f.get(1));
++        assertEquals("bedrock", f.get(3));
++    }
++
++    @Test void statsWindowTopItemsAndBadLines() throws Exception {
++        Instant now = Instant.parse("2026-10-23T22:00:00Z");
++        try (PurchaseLog log = new PurchaseLog(dir, CHI, Clock.fixed(now, ZoneOffset.UTC), m -> { })) {
++            log.record(p(now.minus(Duration.ofDays(10)), "Old", "spawn", "spawn:mending", 5, 200000, 0L));
++            log.record(p(now.minus(Duration.ofHours(1)), "Kailey", "spawn", "spawn:mending", 1, 200000, 0L));
++            log.record(p(now.minus(Duration.ofHours(2)), "Jester", "spawn", "spawn:torch", 3, 1000, 0L));
++            log.record(p(now.minus(Duration.ofHours(3)), "Jester", "player", "shop:x", 1, 500, 0L)).get(5, TimeUnit.SECONDS);
++            Files.writeString(dir.resolve("purchases.csv"), "garbage,line\n", StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.APPEND);
++            PurchaseLog.Stats st = log.stats(7, 10).get(5, TimeUnit.SECONDS);
++            assertEquals(3, st.purchases());
++            assertEquals(200000 + 3000 + 500, st.revenueMinor());
++            assertEquals(203000, st.spawnRevenueMinor());
++            assertEquals(500, st.playerRevenueMinor());
++            assertEquals(1, st.buyers());
++            assertEquals("spawn:mending", st.top().get(0).key());
++            assertEquals(1, st.badLines());
++            assertEquals(1, log.stats(7, 1).get(5, TimeUnit.SECONDS).top().size());
++            assertThrows(IllegalArgumentException.class, () -> log.stats(0, 10));
++        }
++    }
++
++    @Test void statsOnMissingFileIsEmptyAndClosedLogIgnoresWrites() throws Exception {
++        PurchaseLog log = new PurchaseLog(dir, CHI, Clock.systemUTC(), m -> { });
++        assertEquals(0, log.stats(30, 10).get(5, TimeUnit.SECONDS).purchases());
++        log.close();
++        log.record(p(Instant.now(), "X", "spawn", "spawn:a", 1, 1, 1L)).get(1, TimeUnit.SECONDS);
++        assertFalse(Files.exists(dir.resolve("purchases.csv")));
++    }
++
++    @Test void writeFailureWarnsInsteadOfThrowing() throws Exception {
++        Path blocker = dir.resolve("notadir"); Files.writeString(blocker, "x");
++        List<String> warnings = new CopyOnWriteArrayList<>();
++        try (PurchaseLog log = new PurchaseLog(blocker, CHI, Clock.systemUTC(), warnings::add)) {
++            log.record(p(Instant.now(), "X", "spawn", "spawn:a", 1, 1, 1L)).get(5, TimeUnit.SECONDS);
++        }
++        assertEquals(1, warnings.size());
++    }
++
++    @Test void platformDetection() {
++        ClassLoader cl = getClass().getClassLoader();
++        org.geysermc.fixtures.FloodgateFixture.reset();
++        assertEquals("java", Platform.detect(null).of(A));
++        assertEquals("bedrock", Platform.detect(cl).of(A));
++        org.geysermc.fixtures.FloodgateFixture.bedrock = false;
++        assertEquals("java", Platform.detect(cl).of(A));
++        org.geysermc.fixtures.FloodgateFixture.throwOnLookup = true;
++        assertEquals("unknown", Platform.detect(cl).of(A));
++        org.geysermc.fixtures.FloodgateFixture.reset();
++    }
++}
