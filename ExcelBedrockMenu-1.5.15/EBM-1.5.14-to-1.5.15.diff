@@ -1,0 +1,61 @@
+diff -ru -x build base/src/plugin.yml src/src/plugin.yml
+--- base/src/plugin.yml	2026-10-17 00:00:00.000000000 -0500
++++ src/src/plugin.yml	2026-10-23 18:53:02.254898190 -0500
+@@ -1,5 +1,5 @@
+ name: ExcelBedrockMenu
+-version: 1.5.14
++version: 1.5.15
+ author: Argus
+ main: com.winkreyes.excelbedrockmenu.ExcelBedrockMenu
+ api-version: "1.13"
+Only in src/src/src/com/winkreyes/excelbedrockmenu: ClickStats.java
+diff -ru -x build base/src/src/com/winkreyes/excelbedrockmenu/GeyserForms.java src/src/src/com/winkreyes/excelbedrockmenu/GeyserForms.java
+--- base/src/src/com/winkreyes/excelbedrockmenu/GeyserForms.java	2026-10-17 00:00:00.000000000 -0500
++++ src/src/src/com/winkreyes/excelbedrockmenu/GeyserForms.java	2026-10-23 18:52:48.106978042 -0500
+@@ -92,6 +92,7 @@
+                             Object response = methodArgs[1];
+                             int id = (int) responseClass.getMethod("clickedButtonId")
+                                     .invoke(response);
++                            if (id >= 0 && id < buttons.length) ClickStats.tap(player, title, buttons[id], id);
+                             onSelect.accept(id);
+                         }
+                         return null;
+@@ -171,6 +172,7 @@
+                             Object response = methodArgs[1];
+                             boolean first = (boolean) responseClass.getMethod("clickedFirst")
+                                     .invoke(response);
++                            ClickStats.tap(player, title, first ? button1 : button2, first ? 0 : 1);
+                             onResult.accept(first);
+                         }
+                         return null;
+diff -ru -x build base/src/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java src/src/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java
+--- base/src/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java	2026-10-17 00:00:00.000000000 -0500
++++ src/src/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java	2026-10-23 18:53:11.182849807 -0500
+@@ -71,7 +71,7 @@
+             check(src2.contains("runCatalogEntry(player, run)"),"catalogue routing calls the confirm gate");
+             check(src2.contains("if (requiresConfirm(command, isGuildLocked()))"),"action routing is gated by the confirm decision");
+             String yml2=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("plugin.yml")));
+-            check(yml2.contains("version: 1.5.14"),"plugin.yml is 1.5.14");
++            check(yml2.contains("version: 1.5.15"),"plugin.yml is 1.5.15");
+             check(src2.contains("websiteFormContent()")&&src2.contains("websiteChatLines()"),"showWebsite uses the pinned form/chat helpers");
+             check(src2.contains("WEBSITE_SHORT_URL"),"Java website answer carries the short link too");
+         }catch(Exception e){check(false,"1.5.10 source checks "+e);}
+@@ -193,6 +193,18 @@
+             check(restB.size()==13&&java.util.Arrays.equals(restB.toArray(new String[0]),wantRestB),"removing the Pouch leaves the 1.5.13 button order of the other 13 untouched");
+             check(restC.size()==13&&java.util.Arrays.equals(restC.toArray(new String[0]),wantRestC),"removing pouch leaves the 1.5.13 command order of the other 13 untouched");
+         }catch(Exception e){check(false,"1.5.14 pouch move checks "+e);}
++        // v1.5.15: Bedrock form taps forwarded to ExcelMenuStats (reflection, fail-silent)
++        try{
++            String gf=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/GeyserForms.java")));
++            String cs=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/ClickStats.java")));
++            String py=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("plugin.yml")));
++            check(gf.contains("if (id >= 0 && id < buttons.length) ClickStats.tap(player, title, buttons[id], id);\n                            onSelect.accept(id);"),"SimpleForm tap logged before routing, closed form (-1) not logged");
++            check(gf.contains("ClickStats.tap(player, title, first ? button1 : button2, first ? 0 : 1);\n                            onResult.accept(first);"),"ModalForm tap logged before routing");
++            check(cs.contains("getMethod(\"recordTap\", Player.class, String.class, String.class, int.class, String.class)"),"hook calls ExcelMenuStats.recordTap by reflection");
++            check(cs.contains("catch (Throwable t)"),"hook never throws into the form handler");
++            check(!py.contains("ExcelMenuStats"),"no plugin.yml dependency on ExcelMenuStats");
++            check(gf.split("ClickStats.tap",-1).length-1==2,"exactly two hook call sites");
++        }catch(Exception e){check(false,"1.5.15 hook pins: "+e);}
+         System.out.println(fails==0?"ALL PASS":"FAILED "+fails);
+         if(fails>0)System.exit(1);
+     }
