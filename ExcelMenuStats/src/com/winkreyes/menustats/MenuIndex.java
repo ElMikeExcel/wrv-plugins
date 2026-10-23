@@ -66,6 +66,37 @@ public final class MenuIndex {
         for (Menu m : menus) if (plain(m.title()).equals(t)) { if (m.size() == size) return m; if (loose == null) loose = m; }
         return loose;
     }
+    /**
+     * Map a Bedrock form tap to the Java menu id + item key so both platforms share one row.
+     * Order: explicit override, then form title == menu title (colour codes ignored) with the label
+     * equal to an item name, then the label as a prefix of an item name (e.g. "Auto-open on join").
+     * When two items share a name (view_requirement variants), the first in file order wins.
+     * Returns null when nothing matches (the tap keeps its readable title/label).
+     */
+    public String[] mapForm(String title, String label, Map<String, String> overrides) {
+        String t = plain(title), l = plain(label);
+        String o = overrides == null ? null : overrides.get(t + " > " + l);
+        if (o != null && o.contains(" > ")) { String[] ab = o.split(" > ", 2); return new String[]{ab[0].trim(), ab[1].trim()}; }
+        for (int pass = 0; pass < 2; pass++)
+            for (Menu m : menus) {
+                if (!plain(m.title()).equalsIgnoreCase(t)) continue;
+                for (List<Item> items : m.slots().values()) for (Item i : items) {
+                    String n = plain(i.name());
+                    if (pass == 0 ? n.equalsIgnoreCase(l) : (!l.isEmpty() && n.toLowerCase().startsWith(l.toLowerCase()))) return new String[]{m.id(), i.key()};
+                }
+            }
+        return null;
+    }
+    /** Overrides file lines: "Form Title > Button Label: menu_id > button_key" (# comments). */
+    public static Map<String, String> loadOverrides(Path file) {
+        Map<String, String> out = new HashMap<>();
+        try { if (Files.exists(file)) for (String line : Files.readAllLines(file, StandardCharsets.UTF_8)) {
+            String s = line.strip(); if (s.isEmpty() || s.startsWith("#")) continue;
+            int c = s.lastIndexOf(": "); if (c > 0) out.put(s.substring(0, c).strip(), s.substring(c + 2).strip());
+        } } catch (IOException ignored) { }
+        return out;
+    }
+
     public Menu byId(String id) { for (Menu m : menus) if (m.id().equals(id)) return m; return null; }
 
     /** Which item key sits in this slot; ties (view_requirement variants) are broken by the shown item name. */

@@ -1,4 +1,4 @@
-# ExcelMenuStats 0.2.0 (draft, not installed)
+# ExcelMenuStats 0.2.1 (draft, not installed)
 
 Read-only click counter for ExcelMenu buttons, plus Bedrock form taps from ExcelBedrockMenu 1.5.15+.
 
@@ -9,5 +9,12 @@ Read-only click counter for ExcelMenu buttons, plus Bedrock form taps from Excel
 - Admin: `/menustats [days]` (default 7, top 15) and `/menustats reload`. Permission `excelmenustats.admin` (op).
 - Never cancels or changes a click. Writes on its own thread.
 
-0.2.0 jar SHA-256: `e292c08c50757aff764457856b3290d90ca4b36ffbeba12d88bace0e4caa4d64` (0.1.0 was never installed and is superseded).
-Install needs a restart. Boot line: `[MenuStats] READY version=0.2.0 menus=18 failed=0`.
+0.2.1 jar SHA-256: `327e14373d9c35778c61f33fc57d4c381ea8c6f69e708071fc4602595cca9c3d` (0.1.0 and 0.2.0 were never installed and are superseded).
+Install needs a restart. Boot line: `[MenuStats] READY version=0.2.1 menus=18 failed=0`.
+
+## 0.2.1: Java / Bedrock / Total, merged rows
+- Output: `N. server_menu > shop: Java 30 | Bedrock 12 | Total 42 (5 players)`, plus the same split on the summary line. Rows are sorted by total.
+- Merge: a Bedrock tap is mapped to the Java `menu_id > button_key` when its form title matches an ExcelMenu menu title (colour codes ignored) and its button label matches an item name. A prefix match is allowed too (e.g. "Auto-open on join"). Same-name variants (guild_locked/guild_open) go to the first in file order.
+- Overrides: `plugins/ExcelMenuStats/bedrock-map.txt`, with lines like `Form Title > Button Label: menu_id > button_key`, then `/menustats reload`.
+- Bedrock-only buttons (e.g. Teleport to a player) keep their readable `Form Title > Label` row.
+- Pairs unchanged with ExcelBedrockMenu 1.5.15 (PR #48): same `recordTap` signature.

@@ -18,6 +18,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class ExcelMenuStats extends JavaPlugin implements Listener {
     private ClickLog log;
     private MenuIndex idx;
+    private java.util.Map<String, String> overrides = java.util.Map.of();
 
     @Override public void onEnable() {
         log = new ClickLog(getDataFolder().toPath(), ZoneId.of("America/Chicago"), Clock.systemUTC(), getLogger()::warning);
@@ -30,6 +31,9 @@ public final class ExcelMenuStats extends JavaPlugin implements Listener {
     private void reindex() {
         Path dir = getDataFolder().toPath().getParent().resolve("ExcelMenu").resolve("menus");
         idx = MenuIndex.load(dir);
+        java.nio.file.Path map = getDataFolder().toPath().resolve("bedrock-map.txt");
+        if (!java.nio.file.Files.exists(map)) try { java.nio.file.Files.createDirectories(map.getParent()); java.nio.file.Files.writeString(map, "# Optional: map a Bedrock form tap to a Java menu button so both count on one row.\n# Form Title > Button Label: menu_id > button_key\n# Example: Server Menu > Adventurers Guild: server_menu > guild_open\n"); } catch (java.io.IOException ignored) { }
+        overrides = MenuIndex.loadOverrides(map);
         for (String f : idx.failed()) getLogger().warning("Could not index menu " + f);
     }
 
@@ -79,6 +83,8 @@ public final class ExcelMenuStats extends JavaPlugin implements Listener {
             if (log == null || p == null) return false;
             String m = MenuIndex.plain(menu == null ? "" : menu); String b = MenuIndex.plain(button == null ? "" : button);
             int nl = b.indexOf('\n'); if (nl >= 0) b = b.substring(0, nl).trim();
+            String[] mapped = idx.mapForm(m, b, overrides);
+            if (mapped != null) { m = mapped[0]; b = mapped[1]; }
             if (m.isEmpty()) m = "bedrock_form"; if (b.isEmpty()) b = "button" + index;
             String pf = platform == null || platform.isBlank() ? platform(p.getUniqueId()) : platform.toLowerCase(java.util.Locale.ROOT);
             log.record(new ClickLog.Click(java.time.Instant.now(), p.getName(), p.getUniqueId(), pf, m, b, index, "FORM"));
@@ -105,9 +111,8 @@ public final class ExcelMenuStats extends JavaPlugin implements Listener {
         final int d = days;
         log.stats(d, 15).whenComplete((st, err) -> getServer().getScheduler().runTask(this, () -> {
             if (err != null) { s.sendMessage(ChatColor.RED + "Could not read clicks.csv: " + err.getMessage()); return; }
-            s.sendMessage(ChatColor.GOLD + "Menu clicks, last " + d + " day" + (d == 1 ? "" : "s") + ": " + st.clicks() + " clicks by " + st.players() + " players");
-            s.sendMessage(ChatColor.GRAY + "Java " + st.java() + " | Bedrock " + st.bedrock() + " (Bedrock form taps show as \"Form title > Button\")");
-            int i = 1; for (ClickLog.ButtonStat b : st.top()) s.sendMessage(ChatColor.WHITE + "" + (i++) + ". " + b.key() + ": " + b.clicks() + " clicks (" + b.players() + " players)");
+            s.sendMessage(ChatColor.GOLD + "Menu clicks, last " + d + " day" + (d == 1 ? "" : "s") + ": " + ClickLog.split(st.java(), st.bedrock()) + " (" + st.players() + " players)");
+            int i = 1; for (ClickLog.ButtonStat b : st.top()) s.sendMessage(ChatColor.WHITE + "" + (i++) + ". " + b.key() + ": " + ClickLog.split(b.java(), b.bedrock()) + " (" + b.players() + " player" + (b.players() == 1 ? "" : "s") + ")");
             if (st.top().isEmpty()) s.sendMessage(ChatColor.GRAY + "No clicks logged yet.");
             if (st.badLines() > 0) s.sendMessage(ChatColor.YELLOW + "" + st.badLines() + " unreadable line(s) skipped.");
         }));

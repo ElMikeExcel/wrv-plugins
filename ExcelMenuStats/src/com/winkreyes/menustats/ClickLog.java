@@ -83,6 +83,9 @@ public final class ClickLog implements AutoCloseable {
         top.sort(Comparator.comparingInt(ButtonStat::clicks).reversed().thenComparing(ButtonStat::key));
         return new Stats(days, clicks, players.size(), java, bedrock, List.copyOf(top.subList(0, Math.min(Math.max(topN, 0), top.size()))), bad);
     }
+    /** "Java 30 | Bedrock 12 | Total 42" */
+    public static String split(int java, int bedrock) { return "Java " + java + " | Bedrock " + bedrock + " | Total " + (java + bedrock); }
+
     @Override public void close() {
         closed = true; writer.shutdown();
         try { if (!writer.awaitTermination(5, TimeUnit.SECONDS)) warn.accept("Click log did not drain within 5s."); }
