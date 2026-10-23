@@ -1,0 +1,14 @@
+# Proposed ExcelMenu item; pick an unused slot in the target menu (verify against the live file first)
+  trash:
+    material: LIME_DYE
+    slot: 0   # CHOOSE a free slot from the live menu
+    display_name: '&aTrash Bin'
+    lore:
+      - '&7Throw items away.'
+      - '&7Changed your mind? Recover within 5 min.'
+    left_click_commands:
+      - '[close]'
+      - '[player] trash'
+    right_click_commands:
+      - '[close]'
+      - '[player] trash'
