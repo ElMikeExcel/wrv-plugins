@@ -1,0 +1,16 @@
+name: ExcelTrash
+version: '0.1.0'
+main: com.winkreyes.trash.ExcelTrash
+api-version: '1.21'
+author: Wink Reyes Valley
+license: MIT
+description: /trash bin GUI with a 5-minute one-shot undo of your last batch.
+commands:
+  trash:
+    aliases: [bin]
+    description: Open the trash bin, or /trash undo to recover your last batch
+    usage: /trash [undo]
+    permission: exceltrash.use
+permissions:
+  exceltrash.use:
+    default: true
