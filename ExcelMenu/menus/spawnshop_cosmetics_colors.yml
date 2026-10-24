@@ -1,0 +1,329 @@
+# ExcelMenu definition: spawnshop_cosmetics_colors
+# Migrated 2026-10-20 from DeluxeMenus gui_menus/spawnshop_cosmetics_colors.yml
+# (source SHA-256 afa502b8820a7d91073b244c4854fba660805fd279c3cc0212b5003aab67d8b1; provenance in ~/workspace/excelmenu/dm-source/PROVENANCE.md)
+# Prices updated 2026-10-20 for ExcelCosmetics 0.1.1: flat own prices
+# (colors $15,000 / emotes $20,000 / effects $25,000 / sets $30,000) and a
+# 4-week tier on shift-left at 3.5x. The bedrock four-label is forward
+# data for the ExcelMenu renderer extension; ExcelMenu 0.1.1 ignores it.
+format: 1
+title: '&e$%vault_eco_balance_2dp% &8| &dCosmetics - Colors'
+size: 27
+update-interval: 1
+items:
+  pink:
+    material: PINK_DYE
+    slot: 0
+    name: '&d&lPink'
+    lore:
+    - '&7Your name & messages in pink.'
+    - '&aLeft click: rent 1 week - $200'
+    - '&bShift-left click: rent 4 weeks - $700'
+    - '&eRight click: own forever - $15,000'
+    - '&7Rentals end quietly; renewals stack.'
+    clicks:
+      left:
+      - '[console] excelcosmetics buy %player_name% color pink'
+      shift-left:
+      - '[console] excelcosmetics buy %player_name% color pink 4'
+      right:
+      - '[console] excelcosmetics buy %player_name% color pink own'
+    bedrock:
+      mode: modal
+      left-label: Rent 1 week - $200
+      right-label: Own forever - $15,000
+      four-label: Rent 4 weeks - $700
+  bubblegum:
+    material: PINK_WOOL
+    slot: 1
+    name: '&d&lBubblegum Pink'
+    lore:
+    - '&7A brighter, hotter pink.'
+    - '&aLeft click: rent 1 week - $200'
+    - '&bShift-left click: rent 4 weeks - $700'
+    - '&eRight click: own forever - $15,000'
+    - '&7Rentals end quietly; renewals stack.'
+    clicks:
+      left:
+      - '[console] excelcosmetics buy %player_name% color bubblegum'
+      shift-left:
+      - '[console] excelcosmetics buy %player_name% color bubblegum 4'
+      right:
+      - '[console] excelcosmetics buy %player_name% color bubblegum own'
+    bedrock:
+      mode: modal
+      left-label: Rent 1 week - $200
+      right-label: Own forever - $15,000
+      four-label: Rent 4 weeks - $700
+  magenta:
+    material: MAGENTA_DYE
+    slot: 2
+    name: '&d&lMagenta'
+    lore:
+    - '&7Electric pink-purple.'
+    - '&aLeft click: rent 1 week - $200'
+    - '&bShift-left click: rent 4 weeks - $700'
+    - '&eRight click: own forever - $15,000'
+    - '&7Rentals end quietly; renewals stack.'
+    clicks:
+      left:
+      - '[console] excelcosmetics buy %player_name% color magenta'
+      shift-left:
+      - '[console] excelcosmetics buy %player_name% color magenta 4'
+      right:
+      - '[console] excelcosmetics buy %player_name% color magenta own'
+    bedrock:
+      mode: modal
+      left-label: Rent 1 week - $200
+      right-label: Own forever - $15,000
+      four-label: Rent 4 weeks - $700
+  lavender:
+    material: PURPLE_DYE
+    slot: 3
+    name: '&d&lLavender'
+    lore:
+    - '&7Soft purple.'
+    - '&aLeft click: rent 1 week - $200'
+    - '&bShift-left click: rent 4 weeks - $700'
+    - '&eRight click: own forever - $15,000'
+    - '&7Rentals end quietly; renewals stack.'
+    clicks:
+      left:
+      - '[console] excelcosmetics buy %player_name% color lavender'
+      shift-left:
+      - '[console] excelcosmetics buy %player_name% color lavender 4'
+      right:
+      - '[console] excelcosmetics buy %player_name% color lavender own'
+    bedrock:
+      mode: modal
+      left-label: Rent 1 week - $200
+      right-label: Own forever - $15,000
+      four-label: Rent 4 weeks - $700
+  sky:
+    material: LIGHT_BLUE_DYE
+    slot: 4
+    name: '&b&lSky Blue'
+    lore:
+    - '&7Clear sky blue.'
+    - '&aLeft click: rent 1 week - $200'
+    - '&bShift-left click: rent 4 weeks - $700'
+    - '&eRight click: own forever - $15,000'
+    - '&7Rentals end quietly; renewals stack.'
+    clicks:
+      left:
+      - '[console] excelcosmetics buy %player_name% color sky'
+      shift-left:
+      - '[console] excelcosmetics buy %player_name% color sky 4'
+      right:
+      - '[console] excelcosmetics buy %player_name% color sky own'
+    bedrock:
+      mode: modal
+      left-label: Rent 1 week - $200
+      right-label: Own forever - $15,000
+      four-label: Rent 4 weeks - $700
+  aqua:
+    material: CYAN_DYE
+    slot: 5
+    name: '&b&lAqua'
+    lore:
+    - '&7Bright teal.'
+    - '&aLeft click: rent 1 week - $200'
+    - '&bShift-left click: rent 4 weeks - $700'
+    - '&eRight click: own forever - $15,000'
+    - '&7Rentals end quietly; renewals stack.'
+    clicks:
+      left:
+      - '[console] excelcosmetics buy %player_name% color aqua'
+      shift-left:
+      - '[console] excelcosmetics buy %player_name% color aqua 4'
+      right:
+      - '[console] excelcosmetics buy %player_name% color aqua own'
+    bedrock:
+      mode: modal
+      left-label: Rent 1 week - $200
+      right-label: Own forever - $15,000
+      four-label: Rent 4 weeks - $700
+  mint:
+    material: LIME_DYE
+    slot: 6
+    name: '&a&lMint'
+    lore:
+    - '&7Pale fresh green.'
+    - '&aLeft click: rent 1 week - $200'
+    - '&bShift-left click: rent 4 weeks - $700'
+    - '&eRight click: own forever - $15,000'
+    - '&7Rentals end quietly; renewals stack.'
+    clicks:
+      left:
+      - '[console] excelcosmetics buy %player_name% color mint'
+      shift-left:
+      - '[console] excelcosmetics buy %player_name% color mint 4'
+      right:
+      - '[console] excelcosmetics buy %player_name% color mint own'
+    bedrock:
+      mode: modal
+      left-label: Rent 1 week - $200
+      right-label: Own forever - $15,000
+      four-label: Rent 4 weeks - $700
+  lime:
+    material: LIME_WOOL
+    slot: 7
+    name: '&a&lLime'
+    lore:
+    - '&7Loud spring green.'
+    - '&aLeft click: rent 1 week - $200'
+    - '&bShift-left click: rent 4 weeks - $700'
+    - '&eRight click: own forever - $15,000'
+    - '&7Rentals end quietly; renewals stack.'
+    clicks:
+      left:
+      - '[console] excelcosmetics buy %player_name% color lime'
+      shift-left:
+      - '[console] excelcosmetics buy %player_name% color lime 4'
+      right:
+      - '[console] excelcosmetics buy %player_name% color lime own'
+    bedrock:
+      mode: modal
+      left-label: Rent 1 week - $200
+      right-label: Own forever - $15,000
+      four-label: Rent 4 weeks - $700
+  gold:
+    material: YELLOW_DYE
+    slot: 8
+    name: '&e&lGold'
+    lore:
+    - '&7Warm gold.'
+    - '&aLeft click: rent 1 week - $200'
+    - '&bShift-left click: rent 4 weeks - $700'
+    - '&eRight click: own forever - $15,000'
+    - '&7Rentals end quietly; renewals stack.'
+    clicks:
+      left:
+      - '[console] excelcosmetics buy %player_name% color gold'
+      shift-left:
+      - '[console] excelcosmetics buy %player_name% color gold 4'
+      right:
+      - '[console] excelcosmetics buy %player_name% color gold own'
+    bedrock:
+      mode: modal
+      left-label: Rent 1 week - $200
+      right-label: Own forever - $15,000
+      four-label: Rent 4 weeks - $700
+  peach:
+    material: ORANGE_DYE
+    slot: 9
+    name: '&6&lPeach'
+    lore:
+    - '&7Soft peach orange.'
+    - '&aLeft click: rent 1 week - $200'
+    - '&bShift-left click: rent 4 weeks - $700'
+    - '&eRight click: own forever - $15,000'
+    - '&7Rentals end quietly; renewals stack.'
+    clicks:
+      left:
+      - '[console] excelcosmetics buy %player_name% color peach'
+      shift-left:
+      - '[console] excelcosmetics buy %player_name% color peach 4'
+      right:
+      - '[console] excelcosmetics buy %player_name% color peach own'
+    bedrock:
+      mode: modal
+      left-label: Rent 1 week - $200
+      right-label: Own forever - $15,000
+      four-label: Rent 4 weeks - $700
+  coral:
+    material: RED_DYE
+    slot: 10
+    name: '&c&lCoral'
+    lore:
+    - '&7Warm coral red.'
+    - '&aLeft click: rent 1 week - $200'
+    - '&bShift-left click: rent 4 weeks - $700'
+    - '&eRight click: own forever - $15,000'
+    - '&7Rentals end quietly; renewals stack.'
+    clicks:
+      left:
+      - '[console] excelcosmetics buy %player_name% color coral'
+      shift-left:
+      - '[console] excelcosmetics buy %player_name% color coral 4'
+      right:
+      - '[console] excelcosmetics buy %player_name% color coral own'
+    bedrock:
+      mode: modal
+      left-label: Rent 1 week - $200
+      right-label: Own forever - $15,000
+      four-label: Rent 4 weeks - $700
+  red:
+    material: RED_WOOL
+    slot: 11
+    name: '&c&lRed'
+    lore:
+    - '&7Classic bright red.'
+    - '&aLeft click: rent 1 week - $200'
+    - '&bShift-left click: rent 4 weeks - $700'
+    - '&eRight click: own forever - $15,000'
+    - '&7Rentals end quietly; renewals stack.'
+    clicks:
+      left:
+      - '[console] excelcosmetics buy %player_name% color red'
+      shift-left:
+      - '[console] excelcosmetics buy %player_name% color red 4'
+      right:
+      - '[console] excelcosmetics buy %player_name% color red own'
+    bedrock:
+      mode: modal
+      left-label: Rent 1 week - $200
+      right-label: Own forever - $15,000
+      four-label: Rent 4 weeks - $700
+  frost:
+    material: WHITE_DYE
+    slot: 12
+    name: '&f&lFrost White'
+    lore:
+    - '&7Clean frost white.'
+    - '&aLeft click: rent 1 week - $200'
+    - '&bShift-left click: rent 4 weeks - $700'
+    - '&eRight click: own forever - $15,000'
+    - '&7Rentals end quietly; renewals stack.'
+    clicks:
+      left:
+      - '[console] excelcosmetics buy %player_name% color frost'
+      shift-left:
+      - '[console] excelcosmetics buy %player_name% color frost 4'
+      right:
+      - '[console] excelcosmetics buy %player_name% color frost own'
+    bedrock:
+      mode: modal
+      left-label: Rent 1 week - $200
+      right-label: Own forever - $15,000
+      four-label: Rent 4 weeks - $700
+  to_sets:
+    material: SHIELD
+    slot: 17
+    name: '&b&lSets, Effects & Emotes'
+    lore:
+    - '&7Archetype sets, name effects'
+    - '&7and the Emote Pack.'
+    clicks:
+      left:
+      - '[openguimenu] spawnshop_cosmetics_sets'
+      right:
+      - '[openguimenu] spawnshop_cosmetics_sets'
+  balance:
+    material: GOLD_NUGGET
+    slot: 22
+    update: true
+    name: '&e&lCurrent balance: &f$%vault_eco_balance_2dp%'
+    lore:
+    - '&7Left click rents for a week.'
+    - '&7Shift-left rents 4 weeks at a discount.'
+    - '&7Right click owns it forever.'
+    - '&7Browsing does not spend money.'
+  back:
+    material: ARROW
+    slot: 26
+    name: '&c&lBack to Shop'
+    clicks:
+      left:
+      - '[openguimenu] spawnshop'
+      right:
+      - '[openguimenu] spawnshop'

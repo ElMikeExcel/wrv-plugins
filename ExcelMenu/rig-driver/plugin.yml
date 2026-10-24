@@ -1,0 +1,15 @@
+name: MenuRigDriver
+version: 0.1.0
+main: menurig.MenuRigDriver
+api-version: '1.13'
+author: WinkReyesValley
+description: Rig-only self-driving test harness for ExcelMenu. Never ships.
+commands:
+  excelcosmetics:
+    description: Probe standing in for ExcelCosmetics — logs every dispatch it receives.
+    usage: /excelcosmetics ...
+  excelshop:
+    description: Probe standing in for ExcelShops — logs every dispatch it receives (0.1.3 rig).
+    usage: /excelshop ...
+
+# ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)

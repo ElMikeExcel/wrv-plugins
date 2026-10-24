@@ -1,0 +1,32 @@
+# ExcelMenu definition: teleport_confirm_spawn
+# Migrated 2026-10-20 from DeluxeMenus gui_menus/teleport_confirm_spawn.yml
+# (source SHA-256 3dcefe46c3767ac46770d7d69c4e0cbdcba6638d104e12ea50e0572584453f9f; provenance in ~/workspace/excelmenu/dm-source/PROVENANCE.md)
+format: 1
+title: '&6&lTeleport to Spawn?'
+size: 9
+items:
+  'yes':
+    material: LIME_DYE
+    slot: 3
+    name: '&a&lYes, teleport'
+    lore:
+    - '&7Take me to spawn'
+    clicks:
+      left:
+      - '[console] execute in minecraft:overworld run minecraft:tp %player_name% -784 80 -336'
+      - '[close]'
+  info:
+    material: COMPASS
+    slot: 4
+    name: '&e&lSpawn'
+    lore:
+    - '&7Teleport back to the village'
+  cancel:
+    material: RED_DYE
+    slot: 5
+    name: '&c&lCancel'
+    lore:
+    - '&7Stay where I am'
+    clicks:
+      left:
+      - '[close]'

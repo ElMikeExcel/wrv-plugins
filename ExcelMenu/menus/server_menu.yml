@@ -1,0 +1,168 @@
+# ExcelMenu definition: server_menu
+# Migrated 2026-10-20 from DeluxeMenus gui_menus/server_menu.yml
+# (source SHA-256 31a12723a17a79b0dec9c5da132ad387d4845bc431cd7c1f1bae628bc819996f; provenance in ~/workspace/excelmenu/dm-source/PROVENANCE.md)
+format: 1
+title: '&6&lServer Menu'
+size: 27
+items:
+  commands:
+    material: KNOWLEDGE_BOOK
+    slot: 9
+    name: '&a&lServer Commands'
+    lore:
+    - '&7Every command you can use'
+    clicks:
+      left:
+      - '[openguimenu] commands_menu'
+  spawn:
+    material: COMPASS
+    slot: 10
+    name: '&a&lSpawn'
+    lore:
+    - '&7Teleport back to the village'
+    clicks:
+      left:
+      - '[openguimenu] teleport_confirm_spawn'
+  shop:
+    material: EMERALD
+    slot: 11
+    name: '&a&lExcel Shop'
+    lore:
+    - '&7Spend your Jobs money'
+    - '&7on useful items'
+    clicks:
+      left:
+      - '[player] shop'
+      right:
+      - '[player] shop'
+  guild_locked:
+    material: BELL
+    slot: 12
+    priority: 1
+    name: '&8&lAdventurers Guild'
+    lore:
+    - '&7Sealed by the five challenges'
+    - '&7Tap to see the Road to the Guild'
+    view-requirement:
+      requirements:
+      - id: guild_locked
+        type: string-equals
+        input: '%guildgate_unlocked%'
+        output: 'false'
+    clicks:
+      left:
+      - '[player] seals'
+  guild_open:
+    material: BELL
+    slot: 12
+    priority: 2
+    name: '&a&lAdventurers Guild'
+    lore:
+    - '&7Teleport to the EliteMobs'
+    - '&7guild hall'
+    view-requirement:
+      requirements:
+      - id: guild_unlocked
+        type: string-equals
+        input: '%guildgate_unlocked%'
+        output: 'true'
+    clicks:
+      left:
+      - '[openguimenu] teleport_confirm_guild'
+  skills:
+    material: ENCHANTED_BOOK
+    slot: 13
+    name: '&a&lSkills & Perks'
+    lore:
+    - '&7Every perk ladder, in game'
+    - '&7and on the website'
+    clicks:
+      left:
+      - '[openguimenu] skills_perks'
+  mcmmo:
+    material: EXPERIENCE_BOTTLE
+    slot: 14
+    name: '&a&lmcMMO Stats'
+    lore:
+    - '&7See your skill levels'
+    clicks:
+      left:
+      - '[player] mcstats'
+  info:
+    material: BOOK
+    slot: 15
+    name: '&a&lServer Info'
+    lore:
+    - '&7What runs on this server'
+    clicks:
+      left:
+      - '[player] motd'
+  autojoin_on:
+    material: LIME_DYE
+    slot: 16
+    priority: 1
+    name: '&a&lAuto-open on join: ✔ ON'
+    lore:
+    - '&7This menu opens when you join'
+    - '&7Click to turn it off'
+    view-requirement:
+      requirements:
+      - id: menujoin_on
+        type: string-equals
+        input: '%menujoin_status%'
+        output: 'ON'
+    clicks:
+      left:
+      - '[player] menujoin'
+      - '[refresh]'
+  autojoin_off:
+    material: GRAY_DYE
+    slot: 16
+    priority: 2
+    name: '&7&lAuto-open on join: &c&l✘ OFF'
+    lore:
+    - '&7This menu stays closed when you join'
+    - '&7Click to turn it on'
+    view-requirement:
+      requirements:
+      - id: menujoin_off
+        type: string-equals
+        input: '%menujoin_status%'
+        output: 'OFF'
+    clicks:
+      left:
+      - '[player] menujoin'
+      - '[refresh]'
+  website:
+    material: COMPASS
+    slot: 17
+    name: '&a&lServer Website'
+    lore:
+    - '&7Guides, commands and news'
+    - '&7Tap for the address'
+    clicks:
+      left:
+      - '[json] {"text":"» Server Website: elmikeexcel.github.io/winkreyesvalley","color":"aqua","underlined":true,"clickEvent":{"action":"open_url","value":"https://elmikeexcel.github.io/winkreyesvalley/"},"hoverEvent":{"action":"show_text","value":"Open the server website"}}'
+      - '[message] &bhttps://elmikeexcel.github.io/winkreyesvalley/'
+      - '[message] &7Short, easy to type: &btinyurl.com/winkreyesvalley'
+  party:
+    material: PLAYER_HEAD
+    slot: 18
+    name: '&a&lParty'
+    lore:
+    - '&7Invite family to a party'
+    - '&7and see who is in yours'
+    clicks:
+      left:
+      - '[player] excelparty'
+  utility_pouch:
+    material: CHEST
+    slot: 19
+    name: '&6Utility Pouch'
+    lore:
+    - '&7Park your Server Menu compass'
+    - '&7and your Magic wand here.'
+    clicks:
+      any:
+      - '[player] pouch'
+      - '[close]'

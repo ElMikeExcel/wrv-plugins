@@ -1,0 +1,32 @@
+# ExcelMenu definition: teleport_confirm_home
+# Migrated 2026-10-20 from DeluxeMenus gui_menus/teleport_confirm_home.yml
+# (source SHA-256 bb127a0bfa05c604f71c0fecbb9c39004ab274058b6b2943194c671d92daec61; provenance in ~/workspace/excelmenu/dm-source/PROVENANCE.md)
+format: 1
+title: '&6&lTeleport Home?'
+size: 9
+items:
+  'yes':
+    material: LIME_DYE
+    slot: 3
+    name: '&a&lYes, teleport'
+    lore:
+    - '&7Take me home'
+    clicks:
+      left:
+      - '[player] home'
+      - '[close]'
+  info:
+    material: RED_BED
+    slot: 4
+    name: '&e&lHome'
+    lore:
+    - '&7Teleport to your home'
+  cancel:
+    material: RED_DYE
+    slot: 5
+    name: '&c&lCancel'
+    lore:
+    - '&7Stay where I am'
+    clicks:
+      left:
+      - '[close]'
