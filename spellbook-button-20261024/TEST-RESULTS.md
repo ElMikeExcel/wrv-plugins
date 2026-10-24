@@ -59,7 +59,9 @@ Tests are in tests/compass-spawn.js. Bots: an op sets `/setspawn` and `/setspawn
 existing player and a brand-new player (first join) use the compass, then /spawn.
 * Existing player, compass > Spawn > Yes, twice per run: lands on the same block as /spawn, in the overworld.
 * Cancel: no teleport.
-* From the Nether: compass Yes lands on the /spawn spot in the overworld.
+* From the Nether: compass Yes lands on the /spawn spot in the overworld. **Correction (3:05 PM CDT): this
+  line was not a real Nether test.** The script used `execute in minecraft:the_nether run tp`, and EssentialsX
+  took over `/tp`, so the bot stayed in the overworld. The real Nether test is in the next section (passed).
 * New player: first join puts them at the spawn. Compass Yes and /spawn both land on the same spot.
 * Bedrock: Geyser forms can't be driven from the box. The Bedrock button runs `spawn <name>` from the console
   (ExcelBedrockMenu 1.5.18, unchanged), and the test ran that same console command. It landed on the same spot.
@@ -70,4 +72,62 @@ existing player and a brand-new player (first join) use the compass, then /spawn
 * Test-server-only setup: LuckPerms default got `essentials.spawn` (players already have it on live, since
   `/spawn` works there). The first OLD run, before that permission, is kept in the log (2 fails, both from
   the missing permission).
-* Not covered: the Adventurers Guild world. The test server doesn't have it.
+* Not covered here: the Adventurers Guild world. See the next section.
+
+## Compass Spawn fix from every world type, with EliteMobs (MagmaGuy) loaded (Oct 24, 2:49 PM CDT request)
+Tests are in tests/elitemobs-worlds.js. Logs: tests/elitemobs-worlds-run1.log and -run2.log.
+
+**What was really tested**
+* Real EliteMobs (MagmaGuy) 10.9.10, the same version as live. The jar came from Modrinth and its sha512
+  matches Modrinth. It ran with the plugins/EliteMobs config from the Oct 12 live backup.
+* EliteMobs loaded and created `em_adventurers_guild` itself, the same "Loading / Creating / Successfully
+  loaded world em_adventurers_guild" lines as live. The guild's insides are NOT the real Nightbreak hub
+  build: that world folder is not on the box, so it is a flat test world under the same name.
+* There are no EliteMobs instanced dungeon worlds on live (live loads only the guild world), so none were
+  tested. A world named `em_id_test_dungeon` stands in for one. EliteMobs does not manage it, so it only
+  checks the name.
+* The test server also ran Magic (elmakers), ExcelGuildGate, ExcelBossTrial, EssentialsX 2.22, ExcelMenu
+  0.1.5, ExcelBedrockMenu 1.5.18 (the batch jar, ee3d00f0...) and the fixed teleport_confirm_spawn.yml
+  (bc8bb0c5...).
+* Bots entered the Guild the player way, with `/ag` (EliteMobs' own teleport). Test-server-only setting:
+  ExcelGuildGate keeps the guild sealed, so the bots got `excelguildgate.bypass`. Bots entered the other
+  worlds with vanilla `minecraft:tp`.
+* The End was reset before each run. Run 1 and run 2 each tested it with the dragon alive (the real
+  dragon fight; checked: dragon=true, killedBefore=false), and again after the dragon was killed
+  (dragon=false, killedBefore=true).
+* Run 1: spawn at 120,70,140. Run 2 came after a full restart, with spawn moved to 301,-60,-51.
+
+**Paths tested from each world**
+1. Java: compass > Spawn > Yes (the new ExcelMenu line).
+2. Bedrock: console `spawn <name>` (the command ExcelBedrockMenu sends).
+3. Bedrock: the real ExcelBedrockMenu 1.5.18 `teleportToSpawn` method. It includes the Guild-world check
+   one tick later. A rig-only helper called it, because Geyser forms can't be driven from the box.
+4. ExcelBedrockMenu `villageFallback`, called directly. In real play it only runs if path 3 fails.
+
+Each test passes only if the player:
+* ends in the overworld on the same block as `/spawn`;
+* is not at the old village (-784 / -336 or -272);
+* is in air at the feet and head;
+* had no cancelled teleport and no EliteMobs error.
+
+**Results (the same in run 1 and run 2)**
+
+| World | Java compass | console spawn | EBM teleportToSpawn | EBM fallback |
+|---|---|---|---|---|
+| em_adventurers_guild (EliteMobs) | PASS | PASS | PASS | FAIL (old village -784,-272) |
+| em_id_test_dungeon (name only) | PASS | PASS | PASS | FAIL (old village) |
+| Nether | PASS | PASS | PASS | FAIL (old village) |
+| End, dragon alive | PASS | PASS | PASS | FAIL (old village) |
+| End, dragon killed | PASS | PASS | PASS | FAIL (old village) |
+| Overworld | PASS | PASS | PASS | FAIL (old village) |
+| New player in the Guild | PASS | - | PASS | - |
+
+* Each run: 23 pass, 6 fail. All 6 fails are the fallback.
+* The 0 EliteMobs WARN/ERROR lines exclude the known boot notices (an outdated content package, and no
+  FreeMinecraftModels).
+* No teleport was cancelled.
+* The fallback is not reached in normal play: from every world, including the Guild, `spawn <name>` worked
+  and the one-tick Guild check found the player out of the Guild. If it is ever reached (for example,
+  EssentialsX `/spawn` fails), it sends the player to the old village.
+* Decision (Mike, 3:10 PM CDT): the compass fix ships tonight as it is. The fallback fix is a follow-up in
+  batch-next/compass-elitemobs-followup/, as ExcelBedrockMenu 1.5.19. It is not in this batch.

@@ -22,7 +22,8 @@ every jar sha256 in this batch is the same as before.
   `[console] execute in minecraft:overworld run minecraft:tp %player_name% -784 80 -336`.
   New line: `[console] spawn %player_name%`. `[close]` still runs after it.
 * It now runs the same EssentialsX spawn as `/spawn` and the Bedrock button. It follows any future
-  `/setspawn` with no coordinates in the file. It also works from the Nether and the End.
+  `/setspawn` with no coordinates in the file. Tested from the Nether, the End (dragon alive and killed), the
+  Adventurers Guild with real EliteMobs (MagmaGuy) 10.9.10, and an em_ dungeon-style world. See TEST-RESULTS.md.
 * Two comment lines were added at the top of the file. The title, the Yes/Info/Cancel slots (3/4/5), the item
   names and the lore are unchanged. Cancel still only closes the menu.
 * server_menu.yml (1cdc8c29...) is unchanged. Its Spawn item (slot 10) still opens this confirm.
@@ -40,6 +41,11 @@ every jar sha256 in this batch is the same as before.
   player is still in the Adventurers Guild world one tick later. The fallback uses config spawn.x/z (old
   village -784/-272). Changing it would need a new jar, and another build is changing ExcelBedrockMenu right
   now, so it is left for later.
+  World tests (3:05-3:20 PM CDT) found it is not reached in normal play from any world. Calling it directly
+  lands at -784,-272 from every world. Mike (3:10 PM CDT): ship the compass fix as it is. The fix is the
+  follow-up ExcelBedrockMenu 1.5.19 in batch-next/compass-elitemobs-followup/. It is not part of this batch.
+* Correction: the first "from the Nether" test did not leave the overworld, because EssentialsX took over
+  `/tp`. The world tests redo it properly, and it passed.
 * The new spawn's coordinates are not written anywhere in this change. They are not confirmed from logs. The
   box logs end at 1:45 PM CDT, before Marvin set the spawn.
 
