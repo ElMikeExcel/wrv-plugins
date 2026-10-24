@@ -47,7 +47,7 @@ public final class ExcelAuditLog extends JavaPlugin implements Listener {
         }
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::flushQuiet, 100L, 100L); // 5 s
         getLogger().info("[AuditLog] READY version=" + getDescription().getVersion() + " economy=" + eco
-                + " dir=plugins/ExcelAuditLog");
+                + " dir=plugins/ExcelAuditLog sources=" + sourceList());
     }
 
     @Override public void onDisable() {
@@ -172,22 +172,44 @@ public final class ExcelAuditLog extends JavaPlugin implements Listener {
     }
 
     @Override public boolean onCommand(CommandSender s, Command c, String label, String[] a) {
-        if (a.length < 1) { s.sendMessage("Usage: /audit <player> [hours] [type]"); return true; }
-        int hours = 24; String type = null;
-        try { if (a.length > 1) hours = Math.max(1, Math.min(720, Integer.parseInt(a[1]))); }
-        catch (NumberFormatException ex) { type = a[1]; }
-        if (a.length > 2) type = a[2];
-        final String player = a[0]; final int h = hours; final String ty = type;
+        if (a.length == 1 && a[0].equalsIgnoreCase("types")) {
+            s.sendMessage("Audit types: " + String.join(", ", Unified.ALL_TYPES) + ", all");
+            s.sendMessage("Sources now: " + sourceList());
+            return true;
+        }
+        String[] err = new String[1];
+        Unified.Query q = Unified.parse(a, err);
+        if (q == null) { s.sendMessage(err[0]); return true; }
+        java.nio.file.Path plugins = getDataFolder().getParentFile().toPath(), root = plugins.toAbsolutePath().getParent();
+        java.time.ZoneId zone = logZone();
+        boolean cp = cpOn();
         Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
             try {
                 writer.flush();
-                List<List<String>> rows = writer.query(player, h, ty, 20);
-                Bukkit.getScheduler().runTask(this, () -> {
-                    s.sendMessage("Audit " + player + " last " + h + "h" + (ty == null ? "" : " type=" + ty) + ": " + rows.size() + " shown (max 20)");
-                    for (List<String> r : rows) s.sendMessage(r.get(0).substring(11) + " " + r.get(4) + " " + r.get(5));
-                });
+                java.util.function.Supplier<List<Entry>> cps = !cp ? null : () -> {
+                    java.util.Set<String> want = q.type() == null ? new java.util.HashSet<>(Sources.CP_TYPES) : java.util.Set.of(q.type());
+                    return CoreProtectSource.lookup(q.player(), q.hours() * 3600, want, 500);
+                };
+                List<String> lines = Unified.render(q, Unified.collect(q, plugins, root, zone, System.currentTimeMillis(), cps));
+                Bukkit.getScheduler().runTask(this, () -> lines.forEach(s::sendMessage));
             } catch (Exception ex) { getLogger().warning("audit query failed: " + ex); }
         });
         return true;
+    }
+
+    private boolean cpOn() {
+        org.bukkit.plugin.Plugin p = getServer().getPluginManager().getPlugin("CoreProtect");
+        if (p == null || !p.isEnabled()) return false;
+        try { return CoreProtectSource.status() != null; } catch (Throwable t) { return false; }
+    }
+    private java.time.ZoneId logZone() {
+        try { return java.time.ZoneId.of(getConfig().getString("log-zone", "UTC")); } catch (Exception e) { return java.time.ZoneOffset.UTC; }
+    }
+    private String sourceList() {
+        java.nio.file.Path plugins = getDataFolder().getParentFile().toPath();
+        List<String> s = new java.util.ArrayList<>(Unified.available(plugins, plugins.toAbsolutePath().getParent()));
+        String cp = null; try { if (getServer().getPluginManager().isPluginEnabled("CoreProtect")) cp = CoreProtectSource.status(); } catch (Throwable t) { }
+        s.add(cp != null ? cp : "coreprotect:off");
+        return String.join(",", s);
     }
 }

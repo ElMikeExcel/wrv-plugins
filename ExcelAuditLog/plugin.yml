@@ -1,16 +1,16 @@
 name: ExcelAuditLog
-version: '0.1.0'
+version: '0.2.0'
 main: com.winkreyes.auditlog.ExcelAuditLog
 api-version: '1.21'
 prefix: AuditLog
 author: Wink Reyes Valley
 license: MIT
-softdepend: [Vault, Essentials, floodgate]
+softdepend: [Vault, Essentials, floodgate, CoreProtect]
 description: Read-only audit log for money changes, teleports, ender chest diffs, XP levels and enchanting. Daily CSV in plugins/ExcelAuditLog/. Never cancels or changes anything.
 commands:
   audit:
     description: Show audit log entries for a player
-    usage: /audit <player> [hours 1-720] [type money|teleport|enderchest|xp|enchant|command]
+    usage: /audit <player> [hours 1-720] [type|all] [page N]  or  /audit types
     permission: excelauditlog.admin
 permissions:
   excelauditlog.admin:
