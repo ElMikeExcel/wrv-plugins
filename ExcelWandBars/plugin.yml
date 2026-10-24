@@ -1,0 +1,22 @@
+name: ExcelWandBars
+version: 0.1.0
+main: com.winkreyes.excelwandbars.ExcelWandBars
+api-version: '1.13'
+author: WinkReyesValley
+softdepend: [Magic, Geyser-Spigot, floodgate]
+description: Sneak once while your Magic wand's spell bar is open to flip to the next bar (1, 2, 3, back to 1). /spellinfo shows each spell's cost, cooldown, range and rank (Bedrock form or Java chat).
+commands:
+  spellinfo:
+    description: Read your wand's spells (what they do, cost, cooldown, range, rank).
+    usage: /spellinfo [spell]
+    aliases: [spellbook, wandspells]
+    permission: excelwandbars.spells
+  wandbars:
+    description: ExcelWandBars admin (status / reload / flip <player> / info <player>).
+    usage: /wandbars [reload | flip <player> | info <player>]
+    permission: excelwandbars.admin
+permissions:
+  excelwandbars.spells:
+    default: true
+  excelwandbars.admin:
+    default: op
