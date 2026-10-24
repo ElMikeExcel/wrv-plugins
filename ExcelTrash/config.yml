@@ -1,0 +1,5 @@
+# ExcelTrash 0.2.0
+# What closing the Trash screen without pressing OK does:
+#   return = give everything on the red side back (default; nothing is deleted without OK)
+#   delete = delete it like OK (the 0.1.0 behavior)
+close-action: return
