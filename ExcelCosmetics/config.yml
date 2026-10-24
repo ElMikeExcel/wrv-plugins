@@ -1,0 +1,131 @@
+# ExcelCosmetics 0.1.2 — chat colors, name effects, archetype sets and
+# the emote command pack, sold at the spawn shop (ExcelShops) as
+# weekly rentals with an own-it tier. Ownership lives in
+# players.yml (UUID-keyed), never in items, so nothing can be
+# forged, lost or duped. Expiry is SILENT by design: when a rental
+# ends, chat simply goes back to normal on the next line. The
+# only place remaining time is ever shown is inside /cosmetics,
+# when the player goes looking for it.
+#
+# Prices are in dollars. All money movement goes through Vault
+# via the buy route (dispatched by ExcelShops' special-product
+# shelf): charge and grant are one guarded step — a failed charge
+# never grants, a failed grant refunds the charge.
+
+# Master switch. false = renderer off, picker off, emotes off
+# (grants and state are kept, just not applied).
+enabled: true
+
+chat:
+  # Paint chat lines with players' cosmetics (server-side, so
+  # Java and Bedrock see exactly the same line).
+  renderer-enabled: true
+  # Rewrite the free basic chat tokens (:heart:, <3, :star:,
+  # :note:, :sparkle:, :dot:, :diamond:) into glyphs for everyone.
+  token-replacement: true
+
+prices:
+  color-week: 200
+  set-week: 600
+  effect-week: 400
+  emotes-week: 300
+  # The 4-week commitment tier: this many weeks of rent buys 4
+  # weeks (3.5x = $700 a color, $2,100 a set, $1,400 an effect,
+  # $1,050 the Emote Pack) — a discount against 4 single weeks.
+  four-week-multiplier: 3.5
+  # Owning outright is a FLAT whale price per kind, not a rent
+  # multiple. Renting is the designed path; owning is the outlier
+  # for the biggest balances.
+  color-own: 15000
+  set-own: 30000
+  effect-own: 25000
+  emotes-own: 20000
+  rental-days-per-week: 7
+
+# The curated palette (0.1.2 redo, Oct 23, 2026). Every hex is the
+# EXACT RGB of one Bedrock chat color code, so Geyser maps it to that
+# code and Java and Bedrock see the same color. One color per code.
+# Dropped as unreadable on the dark chat box: &0 black, &1 dark blue,
+# &4 dark red, &8 dark gray, &j netherite, &m redstone, &t lapis.
+# Retired ids (for-sale: false) are kept so nobody loses a purchase:
+# they still wear and equip, mapped to the closest new color.
+colors:
+  pink:      { name: "Pink",           hex: "#FF55FF" }   # Bedrock &d
+  amethyst:  { name: "Amethyst",       hex: "#9A5CC6" }   # Bedrock &u
+  grape:     { name: "Grape",          hex: "#AA00AA" }   # Bedrock &5
+  blue:      { name: "Blue",           hex: "#5555FF" }   # Bedrock &9
+  aqua:      { name: "Aqua",           hex: "#55FFFF" }   # Bedrock &b
+  diamond:   { name: "Diamond",        hex: "#2CBAA8" }   # Bedrock &s
+  teal:      { name: "Teal",           hex: "#00AAAA" }   # Bedrock &3
+  lime:      { name: "Lime",           hex: "#55FF55" }   # Bedrock &a
+  emerald:   { name: "Emerald",        hex: "#11A036" }   # Bedrock &q
+  forest:    { name: "Forest Green",   hex: "#00AA00" }   # Bedrock &2
+  yellow:    { name: "Yellow",         hex: "#FFFF55" }   # Bedrock &e
+  minecoin:  { name: "Minecoin Gold",  hex: "#DDD605" }   # Bedrock &g
+  gold:      { name: "Gold",           hex: "#DEB12D" }   # Bedrock &p
+  orange:    { name: "Orange",         hex: "#FFAA00" }   # Bedrock &6
+  resin:     { name: "Resin",          hex: "#EB7214" }   # Bedrock &v
+  copper:    { name: "Copper",         hex: "#B4684D" }   # Bedrock &n
+  red:       { name: "Red",            hex: "#FF5555" }   # Bedrock &c
+  quartz:    { name: "Quartz",         hex: "#E3D4D1" }   # Bedrock &h
+  iron:      { name: "Iron",           hex: "#CECACA" }   # Bedrock &i
+  gray:      { name: "Gray",           hex: "#AAAAAA" }   # Bedrock &7
+  frost:     { name: "Frost White",    hex: "#FFFFFF" }   # Bedrock &f
+  # Retired 0.1.1 ids: not sold, still worn by owners.
+  bubblegum: { name: "Bubblegum Pink", hex: "#FF55FF", for-sale: false }   # = pink
+  magenta:   { name: "Magenta",        hex: "#FF55FF", for-sale: false }   # = pink
+  lavender:  { name: "Lavender",       hex: "#9A5CC6", for-sale: false }   # = amethyst
+  sky:       { name: "Sky Blue",       hex: "#55FFFF", for-sale: false }   # = aqua
+  mint:      { name: "Mint",           hex: "#55FF55", for-sale: false }   # = lime
+  peach:     { name: "Peach",          hex: "#B4684D", for-sale: false }   # = copper
+  coral:     { name: "Coral",          hex: "#FF5555", for-sale: false }   # = red
+
+# Name effects. Effects decorate the sender's NAME only — message
+# bodies stay solid and readable. kind is one of GRADIENT,
+# RAINBOW, BOLD, ITALIC, SPARKLE (flanking accents).
+effects:
+  rainbow-name:    { name: "Rainbow Name",    kind: RAINBOW }
+  gradient-name:   { name: "Gradient Name",   kind: GRADIENT, from: "#FF85C0", to: "#55C8FF" }
+  bold-name:       { name: "Bold Name",       kind: BOLD }
+  italic-name:     { name: "Italic Name",     kind: ITALIC }
+  sparkle-accents: { name: "Sparkle Accents", kind: SPARKLE }
+  ember-gradient:  { name: "Ember Gradient",  kind: GRADIENT, from: "#FF3C3C", to: "#FFC94D" }
+  abyss-gradient:  { name: "Abyss Gradient",  kind: GRADIENT, from: "#9B5CFF", to: "#3FE8D8" }
+
+# Archetype sets: a bundled color + effect at one rental price.
+# 0.1.2: set hexes are exact Bedrock codes too (tank &i iron, healer
+# &c, warlock &u amethyst, firebender &v resin, storm &b aqua).
+# effect must name an effect above (or be left out for color-only).
+sets:
+  tank:       { name: "Tank Set",          hex: "#CECACA", effect: bold-name,
+                flair: "Iron-bright chat with a bold name - the front line." }
+  healer:     { name: "Healer Set",        hex: "#FF5555", effect: sparkle-accents,
+                flair: "Rose-red chat with sparkle accents - the heart of the party." }
+  warlock:    { name: "Warlock Set",       hex: "#9A5CC6", effect: abyss-gradient,
+                flair: "Amethyst chat with an abyss-gradient name - dark pacts, bright letters." }
+  firebender: { name: "Firebender Set",    hex: "#EB7214", effect: ember-gradient,
+                flair: "Flame-orange chat with an ember-gradient name." }
+  storm:      { name: "Lightning/Storm Set", hex: "#55FFFF", effect: italic-name,
+                flair: "Electric-cyan chat with a slanted name - fast as weather." }
+
+tokens:
+  # Free for everyone — seeds chat culture. Only glyphs from the
+  # expected-safe class (present in both clients' chat fonts).
+  basic:
+    ":heart:": "♥"
+    "<3": "♥"
+    ":star:": "★"
+    ":note:": "♪"
+    ":sparkle:": "✦"
+    ":dot:": "●"
+    ":diamond:": "◆"
+  # Premium glyph tokens ride the Emote Pack once each glyph is
+  # verified on a real Java client AND a real Bedrock client.
+  # Ships disabled and empty on purpose — do not add glyphs here
+  # without that two-client check. Note: some symbols may not
+  # display on PlayStation.
+  premium:
+    enabled: false
+    map: {}
+
+# ExcelCosmetics — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
