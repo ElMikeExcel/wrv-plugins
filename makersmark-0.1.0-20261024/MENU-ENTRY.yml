@@ -1,0 +1,80 @@
+# ExcelMakersMark 0.1.0: STAGED compass menu entries (not installed anywhere live).
+# Paste under "items:" in plugins/ExcelMenu/menus/server_menu.yml, then /excelmenu reload.
+# Slots 23 and 24 were free in the rig copy and in the staged spellbook-button menu (9-21 and 26 in use).
+# CHECK THE LIVE FILE FIRST and move them if something else took 23/24.
+# Needs PlaceholderAPI (ExcelMakersMark registers %makersmark_mark% and %makersmark_stats%, ON/OFF).
+# ExcelMenu draws Bedrock forms from the same definitions, so Bedrock players get the same two buttons.
+  makersmark_on:
+    material: NAME_TAG
+    slot: 23
+    priority: 1
+    name: '&a&lMaker''s mark: ✔ ON'
+    lore:
+    - '&7Things you craft say'
+    - '&7"Crafted by" your name'
+    - '&7Click to turn it off'
+    view-requirement:
+      requirements:
+      - id: makersmark_on
+        type: string-equals
+        input: '%makersmark_mark%'
+        output: 'ON'
+    clicks:
+      left:
+      - '[player] mark off'
+      - '[refresh]'
+  makersmark_off:
+    material: PAPER
+    slot: 23
+    priority: 2
+    name: '&7&lMaker''s mark: &c&l✘ OFF'
+    lore:
+    - '&7Your crafts are not signed'
+    - '&7Click to turn it on'
+    view-requirement:
+      requirements:
+      - id: makersmark_off
+        type: string-equals
+        input: '%makersmark_mark%'
+        output: 'OFF'
+    clicks:
+      left:
+      - '[player] mark on'
+      - '[refresh]'
+  gearstats_on:
+    material: IRON_SWORD
+    slot: 24
+    priority: 1
+    name: '&a&lGear stats: ✔ ON'
+    lore:
+    - '&7Weapons count kills and bosses'
+    - '&7Armor counts hits blocked'
+    - '&7Click to turn it off'
+    view-requirement:
+      requirements:
+      - id: gearstats_on
+        type: string-equals
+        input: '%makersmark_stats%'
+        output: 'ON'
+    clicks:
+      left:
+      - '[player] mark stats off'
+      - '[refresh]'
+  gearstats_off:
+    material: WOODEN_SWORD
+    slot: 24
+    priority: 2
+    name: '&7&lGear stats: &c&l✘ OFF'
+    lore:
+    - '&7Nothing is counted'
+    - '&7Click to turn it on'
+    view-requirement:
+      requirements:
+      - id: gearstats_off
+        type: string-equals
+        input: '%makersmark_stats%'
+        output: 'OFF'
+    clicks:
+      left:
+      - '[player] mark stats on'
+      - '[refresh]'

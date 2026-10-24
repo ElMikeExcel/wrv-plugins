@@ -1,0 +1,18 @@
+name: ExcelMakersMark
+version: 0.1.0
+main: com.winkreyes.makersmark.ExcelMakersMark
+api-version: '1.21'
+author: WinkReyesValley
+description: Crafted tools, weapons and armor say who made them. Optional kill, hits blocked and boss trophy counters.
+softdepend: [Essentials, Magic, EliteMobs, PlaceholderAPI, ExcelTips, Geyser-Spigot, floodgate, ExcelShops]
+commands:
+  mark:
+    description: Maker's mark and gear stats. /mark on|off, /mark stats on|off, /mark ok
+    usage: /mark [on|off|stats on|off|ok|menu]  (admin - reload | inspect <player> [slot] | tipreset <player>)
+    aliases: [makersmark]
+    permission: excelmakersmark.use
+permissions:
+  excelmakersmark.use:
+    default: true
+  excelmakersmark.admin:
+    default: op

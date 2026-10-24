@@ -1,0 +1,10 @@
+name: MMRigAid
+version: 0.0.1
+main: rig.MMRigAid
+api-version: '1.21'
+commands:
+  mmrig:
+    permission: mmrig.use
+permissions:
+  mmrig.use:
+    default: op
