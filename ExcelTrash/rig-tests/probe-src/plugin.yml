@@ -1,0 +1,8 @@
+name: RigTrashProbe
+version: 1.0
+main: rig.probe.Probe
+api-version: '1.21'
+commands:
+  probe: {usage: /probe open|break <player> x y z, permission: rig.probe}
+permissions:
+  rig.probe: {default: op}
