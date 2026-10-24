@@ -1,0 +1,13 @@
+=== sbtn v2 rig phase restart Sat Oct 24 2026 13:15:03 GMT-0500 (Central Daylight Time)
+PASS styles.yml still holds the Sneak bars choice after a full restart | # Default: classic /   <uuid>: bars /   <uuid>: bars /   <uuid>: bars /   <uuid>: bars
+PASS after restart, before simbedrock: the saved-bars player is on Java here, so Classic is on the wand | d4: classic (picked) wand master rank=true mode=chest right_click=cycle right_click_sneak=toggle drop=cycle_reverse quick_cast=false matches=true saved=bars bedrock=false
+PASS as Bedrock again: Sneak bars comes back from the saved choice (no re-pick) |  Bd4: bars (picked) wand master rank=true mode=inventory right_click=toggle right_click_sneak=cycle drop=cycle_hotbar quick_cast=true matches=true saved=bars bedrock=true
+PASS after restart: sneak flips the bar | [3,1,3]
+PASS tip acknowledgement survives the restart | [13:15:24] tip Jv4: uses 2/15 ack true popup-this-session false bedrock false
+  [13:15:25] No such player (or wand tip off).
+PASS AutoSort active.txt still holds the Java player after restart (toggle persists)
+PASS after restart, AutoSort kept ON for the Java player: chest sorted | 0:diamondx1,1:dirtx20,2:stonex5
+PASS after restart, AutoSort kept ON for the Java player: barrel sorted | 0:diamondx1,1:dirtx20,2:stonex5
+PASS after restart, AutoSort kept ON for the Java player: shulker box sorted | 0:diamondx1,1:dirtx20,2:stonex5
+PASS after restart, AutoSort kept ON for the Java player: ender chest sorted | 0:diamondx1,1:dirtx20,2:stonex5
+=== phase restart: 10 pass, 0 fail

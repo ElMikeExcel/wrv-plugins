@@ -1,0 +1,147 @@
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: src/com/winkreyes/excelbedrockmenu/ChildproofMenu.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+ee3d00f018fc0d9774583b954ad0114f6628ff2bf2086c8e7c9b2df1c0c09382  /tmp/ebm-rep2.jar
+ok   button array runs Party, then Utility Pouch (1.5.14), Spellbook (1.5.18), before Excel Shop
+ok   command array runs excelparty at the same index as Party, pouch right after it
+ok   never runs bare /party (mcMMO)
+ok   no Spawn Shop label in code
+ok   /shop kept, Excel Shop description
+ok   commands_menu.yml renamed
+ok   locked label text
+ok   locked label is plain ASCII
+ok   overworld accepted
+ok   guild world rejected
+ok   nether rejected
+ok   end rejected
+ok   no fallback when console spawn worked
+ok   fallback when still in guild
+ok   fallback when command unavailable
+ok   spawn tap opens confirm (no instant teleport)
+ok   spawn confirm does not depend on guild state
+ok   guild button confirms while unlocked (it teleports)
+ok   no guild confirm while sealed (/ag opens the quest page, not a teleport)
+ok   catalogue /home confirms
+ok   non-teleport menu buttons never confirm
+ok   catalogue non-teleports never confirm (tpaccept + trapped deliberately excluded)
+ok   spawn confirm title
+ok   guild confirm title
+ok   home confirm title
+ok   no title while sealed
+ok   no title for non-teleports
+ok   confirm Yes teleports
+ok   confirm Cancel does nothing
+ok   form closed without choosing does nothing
+ok   all confirm texts are plain ASCII
+ok   confirm Yes label text
+ok   confirm Cancel label text
+ok   catalogue rows removed: sethome, home, sell hand
+ok   menujoin catalogue row kept (toggle untouched)
+ok   teleport confirm uses the existing Cumulus ModalForm helper
+ok   main-menu routing calls the confirm step
+ok   catalogue routing calls the confirm gate
+ok   action routing is gated by the confirm decision
+ok   plugin.yml is 1.5.18
+ok   showWebsite uses the pinned form/chat helpers
+ok   Java website answer carries the short link too
+ok   short URL constant
+ok   short display constant
+ok   website form shows the short link
+ok   website form still shows the full address
+ok   short link comes before the full address on the form
+ok   form labels the short link as the easy one to type
+ok   form keeps the chat-copy note, now for both addresses
+ok   website form text is plain ASCII
+ok   chat copy is two lines (short + full)
+ok   chat copy line 1 carries the short link
+ok   chat copy line 2 carries the full address
+ok   menu now has 17 buttons (1.5.11's 13 + Skills & Perks + Spellbook, Wand controls and Auto-sort in 1.5.18)
+ok   command array has 17 entries, matching the buttons
+ok   full button set is the 1.5.11 set + Skills & Perks, in the 1.5.14 order (Pouch moved up), Spellbook after the Pouch (1.5.18), Auto-sort before Auto-open (1.5.18)
+ok   full command set is the 1.5.11 set + skillsperks, in the 1.5.14 order (pouch moved up), spellinfo after pouch (1.5.18)
+ok   Utility Pouch sits at index 3 (moved up in 1.5.14; was 12 through 1.5.13)
+ok   pouch command at the same index as the Utility Pouch button
+ok   Utility Pouch is after Party; Spellbook (1.5.18) sits between it and Excel Shop
+ok   pouch command is after excelparty; spellinfo (1.5.18) between it and shop
+ok   Utility Pouch label is plain ASCII
+ok   pouch never opens the teleport confirm (it is not a teleport)
+ok   no confirm title for pouch
+ok   pouch has no special case: it runs through the default performCommand path
+ok   Skills & Perks sits at index 9 (7 through 1.5.13; 8 after the 1.5.14 Pouch move; 9 after the 1.5.18 Spellbook)
+ok   Skills & Perks is immediately after mcMMO Stats, before Leaderboard (spec placement, indices shifted one by 1.5.14)
+ok   skillsperks token at the same index as the Skills & Perks button
+ok   Skills & Perks label is plain ASCII
+ok   skillsperks is special-cased in runAction (it opens a form, not a command)
+ok   the skillsperks case opens the Skills & Perks form
+ok   skillsperks never reaches the default performCommand path
+ok   Skills & Perks never opens the teleport confirm (it teleports nowhere)
+ok   no confirm title for Skills & Perks
+ok   Skills & Perks body matches the spec copy exactly at 0 seals
+ok   seal count renders from GuildGate state (nonzero case)
+ok   nonzero render does not keep the 0 count
+ok   seal count renders at all 5 fallen
+ok   the count is read live from GuildGate (sealsBrokenCount)
+ok   Skills & Perks form buttons are Skill Trees on the Website + Close
+ok   Skill Trees follow-on shows the website address as plain text
+ok   follow-on carries the spec's tap-Skill-Trees line
+ok   follow-on line ends as specced
+ok   follow-on shows no raw URL (plain display address only, Bedrock cannot open links)
+ok   catalogue carries the exact /pouch row
+ok   /pouch appears exactly once in the catalogue
+ok   /pouch sits in the Server Info group
+ok   /pouch entry is runnable (runs pouch as the player)
+ok   /pouch description text
+ok   /pouch sits immediately after /compass
+ok   Server Info group now has 9 entries
+ok   catalogue totals 44 entries (41 + pouch in 1.5.13 + two childproof rows in 1.5.16)
+ok   commands_menu.yml mirror carries si_pouch running [player] pouch
+ok   bundled server_menu.yml mirror carries the Utility Pouch entry
+ok   1.5.14 move kept 14 buttons / 14 commands; 1.5.18 adds Spellbook, Wand controls and Auto-sort (17)
+ok   Utility Pouch now sits at index 3 (4th, top daily-driver cluster)
+ok   pouch command at index 3, matching the button
+ok   top of the menu above the Pouch is unchanged: Spawn / Teleport to a player / Party
+ok   removing the Pouch leaves the 1.5.13 button order of the other 13 untouched
+ok   removing pouch leaves the 1.5.13 command order of the other 13 untouched
+ok   SimpleForm tap logged before routing, closed form (-1) not logged
+ok   ModalForm tap logged before routing
+ok   hook calls ExcelMenuStats.recordTap by reflection
+ok   hook never throws into the form handler
+ok   no plugin.yml dependency on ExcelMenuStats
+ok   exactly two hook call sites
+ok   claims group found
+ok   childproof rows sit right after /trust
+ok   /childproofmenu row is a tap button running childproofmenu
+ok   /unchildproof <player> is display-only (needs a name)
+ok   Bedrock Claims form has the /childproofmenu button
+ok   childproofmenu is not a teleport (its own confirm form)
+ok   picker runs the alias with the exact name (Bedrock dot kept)
+ok   button shows nickname + real name
+ok   no duplicate when nick = name
+ok   null display name falls back to name
+ok   confirm text says what it does and how to undo
+ok   confirm buttons
+ok   help has concrete examples + type-the-name note
+ok   childproof success line uses the real name in the undo example
+ok   unchildproof success line has the redo example
+ok   outside-claim warning
+ok   leftover trust is flagged, not called done
+ok   unknown state never claims success
+ok   childproof that ended with no access is not called done
+ok   plugin.yml 1.5.18 registers /childproofmenu
+ok   Spellbook button and spellinfo command both at index 4
+ok   Spellbook sits right after Utility Pouch, before Excel Shop
+ok   removing Spellbook and Auto-sort leaves the exact 1.5.17 button order
+ok   removing spellinfo and autosort leaves the exact 1.5.17 command order
+ok   Spellbook never opens the teleport confirm
+ok   spellinfo is guarded: missing ExcelWandBars gives a message, not an unknown command
+ok   Spellbook label is plain ASCII
+ok   Auto-sort button and autosort command line up
+ok   Auto-sort sits just before Auto-open on join (the switches together)
+ok   autosort guarded: missing AutoSort gives a message
+ok   Auto-sort never opens the teleport confirm
+ok   menu uses /autosort, never the bare /sort alias
+ok   Wand controls (1.5.18) lines up with wandstyle, just before Auto-sort
+ok   wandstyle guarded: missing ExcelWandBars gives a message
+ok   Wand controls never opens the teleport confirm
+ALL PASS

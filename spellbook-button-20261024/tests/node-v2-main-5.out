@@ -1,0 +1,95 @@
+=== sbtn v2 rig phase main Sat Oct 24 2026 13:17:33 GMT-0500 (Central Daylight Time)
+  spot 0,-60,0
+  compass slot 1 Here's a fresh Server Menu compass! Tap it to open the menu. | [AB]  | [AB] 
+PASS /spellinfo with the compass in hand (wand in inventory) shows the Spell Book | Spell Book (hover or click a spell) |  Feed (Rank 1) |  Extinguish (Rank 1) |  Mend (Rank 2 of 5) |  Boon (Rank 2 of 4) |  Heal (Rank 2 of 3
+PASS /spellbook alias
+PASS compass opens the Java server menu with Spellbook (20) and Auto-sort (21) | aldx1,12:bellx1,13:enchanted_bookx1,14:experience_bottlex1,15:bookx1,17:compassx1,18:player_headx1,19:chestx1,20:writable_bookx1,21:hopperx1
+PASS Java menu has no Wand controls button (Sneak bars is Bedrock only)
+PASS menu Spellbook click closes the menu and shows the Spell Book | Spell Book (hover or click a spell) |  Feed (Rank 1) |  Extinguish (Rank 1) |  Mend (Rank 2 of 5) |  Boon (Rank 2 of 4) 
+PASS compass still in hand
+PASS no wand anywhere: hint mentions inventory and Utility Pouch | No Magic wand found. Keep your wand in your inventory (take it out of your Utility Pouch if it's in there), then try /spellbook again.
+PASS Java: first wand use shows the tip with [OK] | That's too far away. | [AB] Boon | [AB] Boon | Wand tip: you can pick how your wand works! | Classic: right-click to pick the next spell, left-click to cast. | Type /wandstyle to see your controls. Your spells: Spellbook button in the compass menu. | Click [OK] to hide this tip.
+PASS Java tip has no Sneak bars line
+PASS Java tip mentions /wandstyle and the compass menu
+PASS a second click within 2 s is the same use (no repeat)
+PASS next use after 2 s shows it again (not acknowledged yet)
+PASS count 2/15 stored, not acknowledged | [13:18:16] tip Jv5: uses 2/15 ack false popup-this-session false bedrock false
+PASS tips.yml written (persistent)
+PASS [OK] (runs /wandstyle ok) acknowledges | Got it! The wand tip won't show again. /wandstyle any time.
+PASS after OK: no more tips
+PASS ack stored, count frozen | [13:18:22] tip Jv5: uses 2/15 ack true popup-this-session false bedrock false
+PASS Java default: Classic (chest, right click cycle, sneak+right click list) | [13:18:22] style Jv5: classic (default) wand beginner rank=true mode=chest right_click=cycle right_click_sneak=toggle drop=cycle_reverse quick_cast=null matches=true saved=classic bedrock=false
+PASS Java Classic: right click picks the next spell | aqualung -> mend|2
+PASS Java Classic: plain sneak does nothing to the wand | {"mode":"CHEST","open":false,"bar":1,"bars":0,"active":"mend|2"}
+PASS Java Classic: sneak + right click opens the spell list
+PASS Java: /wandstyle sneakbars is refused with a friendly line | Sneak bars are for Bedrock players (phone, tablet, console). | On Java your wand uses Classic: right click picks the next spell, left click casts.
+PASS Java: refusal saves nothing, wand unchanged | [13:18:33] style Jv5: classic (default) wand beginner rank=true mode=chest right_click=cycle right_click_sneak=toggle dr
+PASS Java /wandstyle shows Classic only (no Sneak bars button) | Wand controls: Classic (Java). |  Right click (Bedrock: press and hold, or LT) picks the next spell. |  Sneak + right click opens your spell list. Q goes back one spell. |  Left click casts. |  Sneak 
+PASS Java /wandstyle switch also refused
+PASS simbedrock marks the test player as Bedrock (real Geyser flag false) | [13:18:37] simbedrock Bd5: on (bedrock=true, real=false) apply ALREADY
+PASS Bedrock: tip has the Sneak bars line, compass button and /wandstyle ok | That's too far away. | [AB] Boon | [AB] Boon | Wand tip: you can pick how your wand works! | Classic: right-click to pick the next spell, left-click to cast. | Sneak bars (Bedrock): right-click to open your spell bar, tap a spell to cast, sneak to flip to the next bar. | Pick one with /wandstyle or the Wand controls button in the compass menu. | Tap OK on the pop-up, or type /wandstyle ok, to hide
+PASS Bedrock tip has no clickable [OK] (does not work over Geyser)
+PASS Bedrock: OK pop-up attempted (rig: no real Geyser connection, so "not sent") | 18:42 INFO]: [ExcelWandBars] Wand tip pop-up for Bd5: not sent (no Geyser form connection)
+PASS Bedrock: chat tip repeats, pop-up not repeated in the same session
+PASS Bedrock default is Classic too | st right_click=cycle right_click_sneak=toggle drop=cycle_reverse quick_cast=null matches=true saved=classic bedrock=true
+PASS Bedrock Classic: plain sneak does nothing (controller players keep classic) | {"mode":"CHEST","open":false,"bar":1,"bars":0,"active":"feed"}
+PASS Bedrock chooser offers Classic and Sneak bars (rig shows the chat fallback; real Bedrock gets the form) | Wand controls (now: Classic). Click one, or type /wandstyle classic or /wandstyle sneakbars: |  [Classic] (now) |  [Sneak bars]
+PASS Bedrock: pick Sneak bars | [AB]  | [AB]  | [AB] Feed | [AB] Feed | Wand controls: Sneak bars. | Right click (press and hold, or LT) opens your spell bar. | Tap a spell on the bar to cast it. | Sneak once to flip to the next bar (1, 2, 3, then back to 1). Right click again to close it. |
+PASS picking a style acknowledges the tip | [13:18:56] tip Bd5: uses 2/15 ack true popup-this-session true bedrock true
+PASS Sneak bars on the wand (inventory mode, quick cast) | [13:18:57] style Bd5: bars (picked) wand master rank=true mode=inventory right_click=toggle right_click_sneak=cycle drop=cycle_hotbar quick_cast=true matches=true saved=bars bedrock=true
+PASS saved in styles.yml
+PASS test wand has 3 bars | {"mode":"INVENTORY","open":false,"bar":1,"bars":3,"active":"feed"}
+PASS Sneak bars, bar closed: sneak (moving) does not open or flip anything | {"mode":"INVENTORY","open":false,"bar":1,"bars":3,"active":"feed"}
+PASS right click opens the spell bar | {"mode":"INVENTORY","open":true,"bar":1,"bars":3,"active":"feed"}
+PASS each sneak press goes to the next bar and wraps around | 1->2->3->1
+PASS holding sneak (sneak-walking) flips once, release does not flip | 1->2->2
+PASS double tap within 250 ms = one flip (debounce) | 2->3
+PASS back to Classic: wand controls identical to a never-switched player | rank=true mode=chest right_click=cycle right_click_sneak=toggle drop=cycle_reverse quick_cast=false matches=true VS rank=true mode=chest right_click=cycle right_click_sneak=toggle drop=cycle_reverse quick_cast=false matches=true
+PASS Classic again: right click picks the next spell | feed -> extinguish
+PASS Classic again: plain sneak does nothing
+PASS Classic again: sneak + right click opens the spell list
+PASS same account on Java: Classic is put on the wand, saved choice kept | [13:19:32] style Bd5: classic (picked) wand master rank=true mode=chest right_click=cycle right_click_sneak=toggle drop=cycle_reverse quick_cast=false matches=true saved=bars bedrock=false
+PASS back on Bedrock: Sneak bars again
+PASS after magic load (seal applies): still Sneak bars | entory right_click=toggle right_click_sneak=cycle drop=cycle_hotbar quick_cast=true matches=true saved=bars bedrock=true
+PASS after magic load: Java player still Classic
+PASS never acknowledged: shown on exactly 15 uses, then stops for good | 15 shown; [13:20:38] tip Tpc5: uses 15/15 ack false popup-this-session false bedrock false
+  active.txt lines before (earlier rig runs): 4
+PASS /sort reaches AutoSort (no clash) | Sorting enabled for: Barrel, Chest, Ender Chest, Shulker Box
+PASS /autosort toggles it off
+PASS active.txt back to its start after on+off (this player not added; default off, nothing pre-filled) | 4 -> 4
+  spot now 0,-60,0
+PASS AutoSort OFF: chest left as it was | 0:diamondx1,5:dirtx10,9:stonex5,20:dirtx10
+PASS AutoSort OFF: barrel left as it was | 0:diamondx1,5:dirtx10,9:stonex5,20:dirtx10
+PASS AutoSort OFF: shulker box left as it was | 0:diamondx1,5:dirtx10,9:stonex5,20:dirtx10
+PASS AutoSort OFF: ender chest left as it was | 0:diamondx1,5:dirtx10,9:stonex5,20:dirtx10
+  OFF ExcelMenu server menu: 9:knowledge_bookx1,10:compassx1,11:emeraldx1,12:bellx1,13:enchanted_bookx1,14:experience_bottlex1,15:bookx1,17:compassx1,18:player_headx1,19
+  OFF Utility Pouch (rig build): 0:light_gray_stained_glass_panex1,1:light_gray_stained_glass_panex1,2:light_gray_stained_glass_panex1,4:yellow_stained_glass_panex1,6:light_
+  OFF Trash (ExcelTrash): 27:gray_stained_glass_panex1,28:gray_stained_glass_panex1,29:gray_stained_glass_panex1,30:gray_stained_glass_panex1,31:lime_dyex1,32:gray_st
+  OFF Trash undo / recover: nowin
+  OFF Leaderboard: nowin
+  OFF ExcelShops browse: 0:breadx16,1:cooked_beefx16,2:golden_carrotx16,3:golden_applex1,4:torchx64,5:oak_logx64,6:glassx64,7:iron_ingotx16,8:water_bucketx1,9:saddle
+  OFF TP menu: 0:player_headx1,1:player_headx1
+  OFF Commands menu: 0:mapx1,1:compassx1,2:lodestonex1,3:ender_pearlx1,4:paperx1,5:lime_dyex1,6:filled_mapx1,7:gold_ingotx1,8:emeraldx1,9:sunflowerx1,10:gold_blo
+  OFF spell list: 0:applex1,1:chorus_fruitx1,2:breadx1,3:snowballx1,4:glass_bottlex1,5:glistering_melon_slicex1
+PASS Java menu Auto-sort button turns AutoSort ON | Sorting enabled for: Barrel, Chest, Ender Chest, Shulker Box
+PASS active.txt gains exactly this one player | 4 -> 5
+PASS ExcelMenu server menu: not touched by AutoSort | 9:knowledge_bookx1,10:compassx1,11:emeraldx1,12:bellx1,13:enchanted_bookx1,14:experience_bottlex1,15
+PASS Utility Pouch (rig build): not touched by AutoSort | 0:light_gray_stained_glass_panex1,1:light_gray_stained_glass_panex1,2:light_gray_stained_glass_panex
+PASS Trash (ExcelTrash): not touched by AutoSort | 27:gray_stained_glass_panex1,28:gray_stained_glass_panex1,29:gray_stained_glass_panex1,30:gray_stain
+PASS Trash undo / recover: not touched by AutoSort (no Java window: chat/form based) | nowin
+PASS Leaderboard: not touched by AutoSort (no Java window: chat/form based) | nowin
+PASS ExcelShops browse: not touched by AutoSort | 0:breadx16,1:cooked_beefx16,2:golden_carrotx16,3:golden_applex1,4:torchx64,5:oak_logx64,6:glassx64,7
+PASS TP menu: not touched by AutoSort | 0:player_headx1,1:player_headx1
+PASS Commands menu: not touched by AutoSort | 0:mapx1,1:compassx1,2:lodestonex1,3:ender_pearlx1,4:paperx1,5:lime_dyex1,6:filled_mapx1,7:gold_ingot
+PASS Magic (elmakers) spell list: not touched | 0:applex1,1:chorus_fruitx1,2:breadx1,3:snowballx1,4:glass_bottlex1,5:glistering_
+PASS AutoSort ON (sort on open): chest sorted | 0:diamondx1,1:dirtx20,2:stonex5
+PASS AutoSort ON (sort on open): barrel sorted | 0:diamondx1,1:dirtx20,2:stonex5
+PASS AutoSort ON (sort on open): shulker box sorted | 0:diamondx1,1:dirtx20,2:stonex5
+PASS AutoSort ON (sort on open): ender chest sorted | 0:diamondx1,1:dirtx20,2:stonex5
+PASS sort on close: items added while open are sorted when the chest closes | [13:22:00] System chat: 2, -60, 0 has the following block data: [{Slot: 0b, id: "minecraft:dirt", count: 8}, {Slot: 1b, id: "minecraft:stone", count: 2}] > 
+PASS Observer never toggled: chest left as it was | 0:diamondx1,5:dirtx10,9:stonex5,20:dirtx10
+PASS Observer never toggled: barrel left as it was | 0:diamondx1,5:dirtx10,9:stonex5,20:dirtx10
+PASS Observer never toggled: shulker box left as it was | 0:diamondx1,5:dirtx10,9:stonex5,20:dirtx10
+PASS Observer never toggled: ender chest left as it was | 0:diamondx1,5:dirtx10,9:stonex5,20:dirtx10
+PASS chest already open by another player: AutoSort skips it | 0:diamondx1,5:dirtx10,9:stonex5,20:dirtx10
+=== phase main: 80 pass, 0 fail
