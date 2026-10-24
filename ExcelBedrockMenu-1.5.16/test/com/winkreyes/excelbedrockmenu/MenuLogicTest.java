@@ -71,7 +71,7 @@ public class MenuLogicTest {
             check(src2.contains("runCatalogEntry(player, run)"),"catalogue routing calls the confirm gate");
             check(src2.contains("if (requiresConfirm(command, isGuildLocked()))"),"action routing is gated by the confirm decision");
             String yml2=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("plugin.yml")));
-            check(yml2.contains("version: 1.5.15"),"plugin.yml is 1.5.15");
+            check(yml2.contains("version: 1.5.16"),"plugin.yml is 1.5.16");
             check(src2.contains("websiteFormContent()")&&src2.contains("websiteChatLines()"),"showWebsite uses the pinned form/chat helpers");
             check(src2.contains("WEBSITE_SHORT_URL"),"Java website answer carries the short link too");
         }catch(Exception e){check(false,"1.5.10 source checks "+e);}
@@ -164,7 +164,7 @@ public class MenuLogicTest {
             check(hitGroup>=0&&ExcelBedrockMenu.catalogDescription(hitGroup,hitIdx).equals("Park your menu compass and Magic wand; contents survive death"),"/pouch description text");
             check(hitGroup>=0&&hitIdx>0&&ExcelBedrockMenu.catalogDisplay(hitGroup,hitIdx-1).equals("/compass"),"/pouch sits immediately after /compass");
             check(hitGroup>=0&&ExcelBedrockMenu.catalogEntryCount(hitGroup)==9,"Server Info group now has 9 entries");
-            check(ExcelBedrockMenu.catalogTotalEntries()==42,"catalogue now totals 42 entries (41 + pouch)");
+            check(ExcelBedrockMenu.catalogTotalEntries()==44,"catalogue totals 44 entries (41 + pouch in 1.5.13 + two childproof rows in 1.5.16)");
             String yml5=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("commands_menu.yml")));
             check(yml5.contains("si_pouch")&&yml5.contains("'[player] pouch'"),"commands_menu.yml mirror carries si_pouch running [player] pouch");
             String sm5=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("server_menu.yml")));
@@ -205,6 +205,40 @@ public class MenuLogicTest {
             check(!py.contains("ExcelMenuStats"),"no plugin.yml dependency on ExcelMenuStats");
             check(gf.split("ClickStats.tap",-1).length-1==2,"exactly two hook call sites");
         }catch(Exception e){check(false,"1.5.15 hook pins: "+e);}
+        // v1.5.16: childproof picker (front end for the commands.yml /childproof alias)
+        {
+            int g=ExcelBedrockMenu.catalogGroupIndexFor("claims");
+            check(g>=0&&ExcelBedrockMenu.catalogGroupName(g).equals("Claims & Land"),"claims group found");
+            int at=-1,un=-1,tr=-1;
+            for(int i=0;i<ExcelBedrockMenu.catalogEntryCount(g);i++){
+                String d=ExcelBedrockMenu.catalogDisplay(g,i);
+                if(d.equals("/childproofmenu"))at=i; if(d.equals("/unchildproof <player>"))un=i; if(d.equals("/trust <player>"))tr=i;
+            }
+            check(at==tr+1&&un==at+1,"childproof rows sit right after /trust");
+            check("childproofmenu".equals(ExcelBedrockMenu.catalogRun(g,at)),"/childproofmenu row is a tap button running childproofmenu");
+            check(ExcelBedrockMenu.catalogRun(g,un)==null,"/unchildproof <player> is display-only (needs a name)");
+            check(java.util.Arrays.asList(ExcelBedrockMenu.catalogGroupFormButtons(g)).contains("/childproofmenu"),"Bedrock Claims form has the /childproofmenu button");
+            check(!ExcelBedrockMenu.requiresConfirm("childproofmenu",false),"childproofmenu is not a teleport (its own confirm form)");
+            check(ChildproofMenu.childproofCommand(".KidPlayer").equals("childproof .KidPlayer"),"picker runs the alias with the exact name (Bedrock dot kept)");
+            check(ChildproofMenu.label("~Rylie",".KidPlayer").equals("Rylie (.KidPlayer)"),"button shows nickname + real name");
+            check(ChildproofMenu.label("\u00a7aOwnerPlayer","OwnerPlayer").equals("OwnerPlayer"),"no duplicate when nick = name");
+            check(ChildproofMenu.label(null,"Bob").equals("Bob"),"null display name falls back to name");
+            check(ChildproofMenu.confirmContent("X").contains("doors, buttons, levers and beds")&&ChildproofMenu.confirmContent("X").contains("/unchildproof X"),"confirm text says what it does and how to undo");
+            check(ChildproofMenu.YES.equals("Yes, childproof")&&ChildproofMenu.NO.equals("Cancel"),"confirm buttons");
+            String help=String.join("\n",ChildproofMenu.helpLines());
+            check(help.contains("/childproof Rylie")&&help.contains("/unchildproof Rylie")&&help.contains("type the player's name"),"help has concrete examples + type-the-name note");
+            String ok=ChildproofMenu.resultLine(true,".KidPlayer","access");
+            check(ok.contains("Done!")&&ok.contains("/unchildproof .KidPlayer")&&ok.contains("can't build"),"childproof success line uses the real name in the undo example");
+            check(ChildproofMenu.resultLine(false,"Bob","none").contains("/childproof Bob"),"unchildproof success line has the redo example");
+            check(ChildproofMenu.resultLine(true,"Bob","outside").contains("ALL your claims"),"outside-claim warning");
+            check(ChildproofMenu.resultLine(true,"Bob","other:build").contains("/trustlist"),"leftover trust is flagged, not called done");
+            check(!ChildproofMenu.resultLine(true,"Bob","unknown").contains("Done"),"unknown state never claims success");
+            check(!ChildproofMenu.resultLine(true,"Bob","none").contains("Done"),"childproof that ended with no access is not called done");
+            try{
+                String py=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("plugin.yml")));
+                check(py.contains("version: 1.5.16")&&py.contains("  childproofmenu:"),"plugin.yml 1.5.16 registers /childproofmenu");
+            }catch(Exception e){check(false,"plugin.yml read "+e);}
+        }
         System.out.println(fails==0?"ALL PASS":"FAILED "+fails);
         if(fails>0)System.exit(1);
     }
