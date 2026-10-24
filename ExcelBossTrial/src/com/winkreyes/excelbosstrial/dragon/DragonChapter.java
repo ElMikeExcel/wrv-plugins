@@ -1,5 +1,6 @@
 package com.winkreyes.excelbosstrial.dragon;
 
+import com.winkreyes.excelbosstrial.core.EncounterRetention;
 import com.winkreyes.excelbosstrial.dragon.BattlePhase;
 import com.winkreyes.excelbosstrial.dragon.CrystalPlacementRule;
 import com.winkreyes.excelbosstrial.dragon.DamageGovernor;
@@ -97,6 +98,8 @@ public final class DragonChapter implements Listener {
         int missScans;
         boolean deathSeen;
         boolean ignoreLogged;
+        /** 0.2.7: the "holding while nobody is at the arena" line was logged. */
+        boolean holdLogged;
     }
 
     private final JavaPlugin host;
@@ -325,14 +328,34 @@ public final class DragonChapter implements Listener {
         TrialStateMachine m = wt.machine;
         if (dragon == null) {
             if (m.hasBattle()) {
-                wt.missScans++;
-                if (wt.missScans >= 3) {
-                    finishBattle(world, wt, wt.deathSeen);
+                // 0.2.7 (Iris audit): a dragon nobody is near is
+                // UNLOADED, not gone - vanilla only keeps the arena
+                // loaded while a player is in it. Up to 0.2.6 three
+                // empty scans ended the battle, so a wipe (everyone
+                // respawning in the Overworld), everyone logging off,
+                // or a restart with nobody in the End sent a phase-2
+                // dragon back to a fresh phase 1 at full health
+                // (rig-proven on 0.2.6). Count a miss only when the
+                // death was seen or someone stands at the arena.
+                if (wt.deathSeen || arenaWatched(world)) {
+                    wt.missScans++;
+                    if (wt.missScans >= 3) {
+                        finishBattle(world, wt, wt.deathSeen);
+                    }
+                } else {
+                    wt.missScans = 0;
+                    if (!wt.holdLogged) {
+                        wt.holdLogged = true;
+                        getLogger().info("Nobody at the " + world.getName() + " arena - the "
+                                + m.phase() + " trial is held as it stands until someone "
+                                + "returns (the dragon is unloaded, not gone).");
+                    }
                 }
             }
             return;
         }
         wt.missScans = 0;
+        wt.holdLogged = false;
         String uuid = dragon.getUniqueId().toString();
         if (!m.tracks(uuid)) {
             if (m.hasBattle()) {
@@ -401,6 +424,55 @@ public final class DragonChapter implements Listener {
         }
     }
 
+    /** Radius (from 0,128,0) inside which vanilla keeps the arena loaded
+     *  (vanilla uses 192; a margin keeps us well inside it). */
+    private static final double ARENA_WATCH_RADIUS = 160.0;
+
+    /** True when a living player is close enough that the arena (and
+     *  so a live dragon) is loaded - an empty scan then means gone. */
+    private boolean arenaWatched(World world) {
+        for (Player p : world.getPlayers()) {
+            if (p.isDead()) {
+                continue;
+            }
+            Location l = p.getLocation();
+            double dx = l.getX();
+            double dy = l.getY() - 128.0;
+            double dz = l.getZ();
+            if (dx * dx + dy * dy + dz * dz <= ARENA_WATCH_RADIUS * ARENA_WATCH_RADIUS) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 0.2.7: damage a tracked dragon already carries when the host opens
+     * a fresh ledger for it (a ledger lost to a restart) - set aside
+     * from the share so the remaining fight can still earn the seal.
+     */
+    public double unseenDamage(EnderDragon dragon) {
+        if (dragon == null) {
+            return 0;
+        }
+        String uuid = dragon.getUniqueId().toString();
+        for (WorldTrial wt : worlds.values()) {
+            if (!wt.machine.tracks(uuid)) {
+                continue;
+            }
+            var attr = dragon.getAttribute(Attribute.MAX_HEALTH);
+            double currentMax = attr != null ? attr.getBaseValue() : 0;
+            return switch (wt.machine.phase()) {
+                case PHASE1 -> EncounterRetention.dragonUnseen(false, cfg.phase1MaxHealth,
+                        cfg.phase2MaxHealth, currentMax, dragon.getHealth());
+                case TRANSITION, PHASE2 -> EncounterRetention.dragonUnseen(true,
+                        cfg.phase1MaxHealth, cfg.phase2MaxHealth, currentMax, dragon.getHealth());
+                default -> 0.0;
+            };
+        }
+        return 0;
+    }
+
     private void finishBattle(World world, WorldTrial wt, boolean sawDeath) {
         BattlePhase was = wt.machine.phase();
         wt.machine.endBattle();
@@ -414,6 +486,10 @@ public final class DragonChapter implements Listener {
                     + " (death event seen: " + sawDeath + "). A phase-1 dragon should be "
                     + "unable to die in combat - if an operator /kill or another plugin "
                     + "removed it, check GuildGate's seal state (remedy: /guildgate revoke).");
+        } else if (!sawDeath) {
+            getLogger().warning("Trial battle in " + world.getName() + " ended during " + was
+                    + " without a death event (the dragon vanished from a watched arena)."
+                    + " Total completed here: " + wt.completedBattles + ".");
         } else {
             getLogger().info("Trial battle in " + world.getName() + " completed (phase " + was
                     + "). Total completed here: " + wt.completedBattles + ".");

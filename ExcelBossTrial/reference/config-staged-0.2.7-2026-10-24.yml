@@ -1,0 +1,262 @@
+# ExcelBossTrial 0.2.6 - the seal-boss rules of Wink Reyes Valley.
+# (Comments corrected Oct 24, 2026 audit - every VALUE below is the
+# value live was already running; keys that were missing and ran a
+# code default are now written out with that same default.)
+# Every rule below is Mike's settled design (Oct 18, 2026,
+# SEAL-INTEGRITY-RESEARCH.md) and every rule is individually
+# disable-able: a chapter off, a gate off, or a cap at 0 degrades
+# that one rule toward vanilla and touches nothing else.
+# 0.2 adds PARTICIPANT GROWTH ("the boss rallies" - the scaling:
+# blocks; spec BOSSTRIAL-0.2-SPEC-2026-10-20.md) and SEAL LOOT
+# (the loot: block), Mike's first-attempt doctrine, decisions
+# settled Oct 20, 2026. A config carried over from 0.1.0 without
+# the new blocks runs the settled 0.2 defaults from code.
+
+# Master switch. Off = the plugin watches nothing and vetoes nothing
+# (GuildGate then credits the vanilla way). The dragon chapter has
+# its own switch under dragon.enabled.
+enabled: true
+
+credit:
+  # A seal credits only if player-attributed damage (melee, arrows,
+  # player-lit explosions, tamed pets) reached this fraction of the
+  # boss's max HP (the rallied pool; for the dragon, both phases).
+  # 0.7 = 70%. No near-miss mercy.
+  share-threshold: 0.7
+  # At the death, at least one encounter participant (dealt damage
+  # to the boss OR took damage from it) must be alive, in the same
+  # world, within this many blocks - or no credit.
+  presence-range: 128
+  # After a non-crediting kill, that seal cannot be earned for this
+  # long (server-wide; persists across restarts; shown in
+  # /guildgate status and /bosstrial status).
+  cooldown-hours: 6
+
+spoils:
+  # Seal-boss loot multiplies by the number of champions standing in
+  # range at the death (the dragon's XP scales instead) - but only
+  # on a kill that EARNS the seal: a refused kill drops plain
+  # vanilla loot, however many champions stood by (spoils follow
+  # the verdict, Mike Oct 19, 2026). EliteMobs loot and raid
+  # drops are never touched.
+  enabled: true
+  max-multiplier: 5
+
+wither:
+  enabled: true
+  share-gate: true
+  presence: true
+  caps:
+    # No single damage event may take more than this off the wither.
+    # The strongest legitimate hit in the game tops out near 31
+    # (Impaling V trident crit) - only engineered bursts exceed 60.
+    per-event-damage: 60
+    # All explosion damage pools against this budget per server tick.
+    explosion-per-tick: 75
+  # While the wither's credit cooldown runs, summoning is blocked
+  # entirely; a refused summon never consumes the skulls.
+  # Fought-free (cage) check: a wither that, for the final
+  # fought-free-window of the fight's damage, stayed within
+  # fought-free-radius blocks and never hit a player dies "caged"
+  # and earns no seal. (Was running from code with these values.)
+  fought-free-check: true
+  fought-free-radius: 4.0
+  fought-free-window: 0.25
+  scaling:
+    # Participant growth (0.2): the wither opens at base-health
+    # and grows by per-extra-damager each time a NEW player lands
+    # attributed damage (cap max-damagers-counted). Growth never
+    # reverses. enabled=false (or base-health at the vanilla 300
+    # with a 0 step) is the 0.1.0 fight. Live: 1500 base + 300 per
+    # extra champion, 5 counted = max 2,700.
+    enabled: true
+    base-health: 1500
+    per-extra-damager: 300
+    max-damagers-counted: 5
+
+elder-guardian:
+  enabled: true
+  share-gate: true
+  presence: true
+  caps:
+    # 35 sits just above a point-blank Impaling V trident crit
+    # (~31 fully charged) so the monument's own best weapon lands
+    # whole, while burst stacking and splash tricks trim.
+    per-event-damage: 35
+    explosion-per-tick: 40
+  # The seal needs ALL THREE elder guardians of ONE monument, each
+  # individually fought for. An elder whose kill did not count
+  # respawns at its home after this long, so the trio stays
+  # completable.
+  respawn-hours: 6
+  scaling:
+    # Per elder (each elder scales on its own ledger, as each is
+    # fought): 700 base + 75 per extra champion, 5 counted = max 1,000.
+    enabled: true
+    base-health: 700
+    per-extra-damager: 75
+    max-damagers-counted: 5
+
+warden:
+  enabled: true
+  share-gate: true
+  presence: true
+  caps:
+    per-event-damage: 60
+    explosion-per-tick: 75
+  # Height rule (Mike, Oct 19, 2026 - this supersedes the Oct 18
+  # "no engagement rule" note): damage counts toward the warden
+  # seal's share only when the responsible player stood within
+  # this many blocks VERTICALLY of the warden when the hit landed.
+  # A sky-tower bow kill still lands every arrow and can still
+  # kill - it just earns no seal (the hits count like unattributed
+  # damage). Melee at the warden's own level is in-band by design;
+  # the warden's sonic boom answers hole-camping. 0 disables.
+  share-height-band: 12
+  # Range rule (0.2.1): damage also counts only when the player stood
+  # within this many blocks HORIZONTALLY of the warden ("if it could
+  # not boom you, it does not count"). 0 disables. NOTE: the
+  # deny-share-height / deny-share-range messages below spell out
+  # "12" and "14" in words - change them together with these values.
+  share-range-band: 14
+  # Give-up rule (0.2.2): after this many seconds with only
+  # out-of-band or unattributed damage, the warden digs away - no
+  # death, no verdict, no cooldown. 0 disables.
+  give-up-window-seconds: 45
+  scaling:
+    # 1300 base + 200 per extra champion, 5 counted = max 2,100. Health only -
+    # the warden's outgoing damage is already doctrine-grade and
+    # stays vanilla (spec section 2.3).
+    enabled: true
+    base-health: 1300
+    per-extra-damager: 200
+    max-damagers-counted: 5
+
+# The dragon chapter: ExcelDragonTrial 0.1.2's two-phase machine,
+# ported whole, plus the shared presence rule, the share gate and
+# XP spoils above. The share gate has been ON since 0.2.1 (it ran
+# from code; now written out): players must deal 70% of BOTH
+# phases together - 400 + 900 = 1,300, so 910. Bed blasts count
+# for the player who lit the bed; end crystals for the player who
+# placed them.
+dragon:
+  enabled: true
+  presence: true
+  share-gate: true
+  apply-to-resummons: true
+  phase1:
+    max-health: 400
+  phase2:
+    # Phase 2 bar. Live: 400 + 900 = 1,300 total across both
+    # phases. Reloads live with the chapter, so a slog can be tuned
+    # down in place.
+    max-health: 900
+    damage-multiplier: 1.5
+    aggression-interval-seconds: 7
+    aggression-chance: 0.6
+  transition:
+    invulnerable-seconds: 3
+    broadcast-server-wide: false
+  caps:
+    per-event-damage: 60
+    explosion-per-tick: 75
+    block-crystal-placement: true
+  adds:
+    enabled: true
+    per-wave: 3
+    max-alive: 9
+    name: "&5Sealbound Enderman"
+  messages:
+    title: "&5&lThe Seal Resists"
+    subtitle: "&fThe dragon refuses to fall."
+    chat: "&5The dragon's death-cry shatters against her seal - and she rises again, wreathed in the valley's old anger."
+
+# Seal loot (0.2, spec section 4): curated TROPHY-tier drops on
+# CREDIT kills only. The signature pool pays ONCE per seal, on
+# the kill that breaks it (elder: the trio-completing kill);
+# bonus rolls pay one per champion beyond the first standing at
+# the death (cap +4), materials and curios only. Curated stacks
+# are never multiplied by the spoils rule. durability is the
+# fraction of durability the item KEEPS (0.6 = pre-worn to ~60%).
+loot:
+  enabled: true
+  wither:
+    signature:
+      - {material: DIAMOND_SWORD, count: 1, name: "Gravewhisper", enchants: {smite: 5, sharpness: 2, looting: 2, unbreaking: 3, mending: 1}, durability: 0.6}
+      - {material: WITHER_ROSE, count: 2}
+    bonus:
+      - {material: WITHER_ROSE, count: 1, weight: 40}
+      - {material: COAL, count: 8, weight: 30}
+      - {material: BONE_BLOCK, count: 2, weight: 30}
+  elder-guardian:
+    signature:
+      - {material: TIDE_ARMOR_TRIM_SMITHING_TEMPLATE, count: 1}
+      - {material: HEART_OF_THE_SEA, count: 1}
+      - {material: TRIDENT, count: 1, name: "Monument's Answer", enchants: {impaling: 5, loyalty: 3, unbreaking: 3, mending: 1}, durability: 0.5}
+      - {material: WET_SPONGE, count: 4}
+    bonus:
+      - {material: PRISMARINE_CRYSTALS, count: 4, weight: 50}
+      - {material: WET_SPONGE, count: 2, weight: 30}
+      - {material: NAUTILUS_SHELL, count: 1, weight: 20}
+  warden:
+    signature:
+      - {material: DIAMOND_LEGGINGS, count: 1, name: "Hushwalkers", enchants: {protection: 4, swift_sneak: 3, unbreaking: 3, mending: 1}, durability: 0.6}
+      - {material: ECHO_SHARD, count: 4}
+      - {material: RECOVERY_COMPASS, count: 1}
+      - {material: DISC_FRAGMENT_5, count: 3}
+    bonus:
+      - {material: ECHO_SHARD, min: 1, max: 2, weight: 50}
+      - {material: AMETHYST_SHARD, count: 4, weight: 30}
+      - {material: SCULK_CATALYST, count: 1, weight: 20}
+  dragon:
+    # Signature (once, on the kill that breaks the dragon seal):
+    # "First Breath", one elytra per champion standing at the fall,
+    # each stamped "Earned by <name>" and the date. Before this
+    # block was written out the same elytra was paid from the code
+    # default (a missing signature key falls back to it) - the old
+    # comment "no signature" was wrong.
+    signature:
+      - {material: ELYTRA, count: 1, name: "First Breath", enchants: {unbreaking: 3, mending: 1}, durability: 1.0}
+    # Every credit kill: breath bottles = base + per-champion beyond
+    # the first, capped at breath-cap; plus a flat pair of end
+    # crystals.
+    breath-base: 4
+    breath-per-champion: 2
+    breath-cap: 12
+    crystals: 2
+
+messages:
+  deny-share: "&c{name} has fallen, but the seal does not break: only {pct}% of the killing damage was dealt by players, and a seal costs {need}%. The seal cannot be earned for {cooldown}. It stood at {pool} health, facing {champions} champion(s)."
+  deny-share-height: "&c{name} has fallen, but the seal does not break: blows struck from too far above or below it do not count. This seal only counts blows landed at the warden's own level, within 12 blocks up or down. Counted damage was {pct}%, and a seal costs {need}%. The seal cannot be earned for {cooldown}. It stood at {pool} health, facing {champions} champion(s)."
+  deny-share-range: "&c{name} has fallen, but the seal does not break: blows struck from beyond the warden's reach do not count - if it could not boom you, it does not count. This seal only counts blows landed within 14 blocks of it. Counted damage was {pct}%, and a seal costs {need}%. The seal cannot be earned for {cooldown}. It stood at {pool} health, facing {champions} champion(s)."
+  deny-share-cage: "&c{name} has fallen, but the seal does not break: it died caged. For the whole final stretch it was penned where it could not move or strike back, and it never landed a blow - and a wither that dies caged earns no seal, however honest the blows. The seal cannot be earned for {cooldown}. It stood at {pool} health, facing {champions} champion(s)."
+  deny-presence: "&c{name} has fallen, but the seal does not break: the fight was real ({pct}% player damage), yet no champion who fought it was still standing near when it fell. The seal cannot be earned for {cooldown}. It stood at {pool} health, facing {champions} champion(s)."
+  deny-cooldown: "&e{name} has fallen, but the seal is still cooling down ({left} left) after an earlier unearned kill. This fight was real - the seal simply cannot break yet."
+  rally: "&6{name} feels {ordinal} champion's blow - and swells with rage. Its health rises to {pool}."
+  spoils: "&6{count} champions fought - loot x{mult}!"
+  spoils-dragon: "&6{count} champions fought - dragon XP x{mult}!"
+  elder-progress: "&6Elder seal: {n} of 3 - an elder guardian of this monument has fallen to a true fight."
+  elder-trio: "&6Elder seal: 3 of 3 - every elder guardian of the monument has fallen to true fights. The curse is lifted!"
+  summon-blocked: "&cThe Wither cannot be summoned while its seal cools down ({left} left) after an unearned kill. Your skulls are safe."
+  attempt: "&eSeal attempt! &f{player} &ehas challenged &f{name}&e."
+  attempt-ongoing: "&eSeal attempt under way: &f{player} &eis challenging &f{name}&e right now."
+  deny-headline: "&cSeal attempt failed: &f{name}&c's seal holds."
+  credit-headline: "&aSeal attempt succeeded: &f{name}&a's seal is BROKEN!"
+  cooldown-status: "&eSeal cooldowns: &f{list}&e. Check anytime with &f{command}&e."
+
+# Seal announcements (ExcelBossTrial 0.2.3, installed Oct 22, 2026):
+# 48h window from install boot; re-arm by moving `until` forward + /bosstrial reload.
+# until 1792903841586 = Sat Oct 24, 2026, 11:50:41 PM CDT. After
+# that, attempts / fails / breaks / cooldowns are NOT announced.
+announcements:
+  enabled: true
+  until: 1792903841586
+  cooldown-interval-minutes: 60
+  rally-cooldown-seconds: 300
+  status-command: "/guildgate status"
+
+# XP band governor feed (ExcelBossTrial 0.2.4, block appended
+# Oct 23, 2026 per the 0.2.4 packet Step 2 — visibility only;
+# the code default is ON when this block is absent).
+xp-governor:
+  enabled: true

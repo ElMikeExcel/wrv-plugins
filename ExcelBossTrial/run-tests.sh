@@ -24,7 +24,7 @@ mkdir -p "$WORK/classes"
 find "$PROJ/src" "$PROJ/tests" -name '*.java' > "$WORK/sources.txt"
 echo "== compile: $(wc -l < "$WORK/sources.txt") sources (src + tests)"
 $JAVAC --release 21 -proc:none -nowarn -cp "$CP" -d "$WORK/classes" @"$WORK/sources.txt"
-for t in EncounterLedgerTest CreditJudgeTest CooldownBookTest MonumentTrackerTest BossGovernorTest SpoilsMathTest SpoilsVerdictTest DenialMessageTest BossTrialConfigTest HeightBandTest ScalingRuleTest LedgerGrowthTest SealLootTest ScalingConfigTest SealIntegrityFixTest SealHardeningTest AnnouncementsTest XpBandTokensTest XpBandPlantTest ProvenanceLoreTest SignatureGrantTest CommandAccessTest; do
+for t in EncounterRetentionTest EncounterLedgerTest CreditJudgeTest CooldownBookTest MonumentTrackerTest BossGovernorTest SpoilsMathTest SpoilsVerdictTest DenialMessageTest BossTrialConfigTest HeightBandTest ScalingRuleTest LedgerGrowthTest SealLootTest ScalingConfigTest SealIntegrityFixTest SealHardeningTest AnnouncementsTest XpBandTokensTest XpBandPlantTest ProvenanceLoreTest SignatureGrantTest CommandAccessTest; do
   echo "== run: $t"
   $JAVA -cp "$WORK/classes" com.winkreyes.excelbosstrial.core.$t
 done

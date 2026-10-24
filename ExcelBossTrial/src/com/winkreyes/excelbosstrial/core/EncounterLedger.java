@@ -37,6 +37,10 @@ public final class EncounterLedger {
     private double maxHealth;
     private final long startedMs;
     private long lastTouchMs;
+    /** 0.2.7: damage the boss carried when this ledger opened that no
+     *  ledger saw (a lost ledger re-opened - EncounterRetention). It
+     *  is set aside from the share denominator only. */
+    private double unseenDamage;
 
     private double totalDamage;
     private double playerDamage;
@@ -438,20 +442,39 @@ public final class EncounterLedger {
         return totalDamage - playerDamage;
     }
 
-    /** Player-attributed damage as a percentage of the boss's max HP. */
-    public synchronized double playerSharePercent() {
-        if (maxHealth <= 0) {
-            return 0;
+    /** 0.2.7: set aside damage this ledger never saw (re-open only). */
+    public synchronized void markUnseenDamage(double amount) {
+        if (amount > 0 && !Double.isNaN(amount)) {
+            unseenDamage = amount;
         }
-        return playerDamage / maxHealth * 100.0;
     }
 
-    /** True when player-attributed damage reaches the threshold share of max HP. */
+    public synchronized double unseenDamage() {
+        return unseenDamage;
+    }
+
+    /** The share denominator: the pool minus damage no ledger saw. */
+    public synchronized double shareDenominator() {
+        double d = maxHealth - unseenDamage;
+        return d > 1.0 ? d : Math.min(1.0, maxHealth);
+    }
+
+    /** Player-attributed damage as a percentage of the share denominator. */
+    public synchronized double playerSharePercent() {
+        double d = shareDenominator();
+        if (d <= 0) {
+            return 0;
+        }
+        return playerDamage / d * 100.0;
+    }
+
+    /** True when player-attributed damage reaches the threshold share of the denominator. */
     public synchronized boolean shareMet(double thresholdFraction) {
-        if (maxHealth <= 0) {
+        double d = shareDenominator();
+        if (d <= 0) {
             return false;
         }
-        return playerDamage >= thresholdFraction * maxHealth - 1e-9;
+        return playerDamage >= thresholdFraction * d - 1e-9;
     }
 
     /** Damage dealt by one player in this encounter (0 when none). */

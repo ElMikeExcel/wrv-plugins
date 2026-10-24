@@ -8,6 +8,7 @@ import com.winkreyes.excelbosstrial.core.CommandAccess;
 import com.winkreyes.excelbosstrial.core.CooldownBook;
 import com.winkreyes.excelbosstrial.core.CreditJudge;
 import com.winkreyes.excelbosstrial.core.EncounterLedger;
+import com.winkreyes.excelbosstrial.core.EncounterRetention;
 import com.winkreyes.excelbosstrial.core.MonumentTracker;
 import com.winkreyes.excelbosstrial.core.DenialMessage;
 import com.winkreyes.excelbosstrial.core.LaunchSnapshotLog;
@@ -744,6 +745,34 @@ public final class ExcelBossTrial extends JavaPlugin implements Listener {
     // Encounter bookkeeping
     // ------------------------------------------------------------------
 
+    /** 0.2.7: where each open encounter's boss was last seen (chunk). */
+    private record SeenAt(String world, int cx, int cz) {
+        static SeenAt of(Location loc) {
+            return new SeenAt(loc.getWorld() != null ? loc.getWorld().getName() : "",
+                    loc.getBlockX() >> 4, loc.getBlockZ() >> 4);
+        }
+    }
+
+    private final Map<UUID, SeenAt> encounterSeenAt = new HashMap<>();
+    private final Map<UUID, Integer> encounterGoneStreak = new HashMap<>();
+
+    /** True when the chunk the boss was last seen in is loaded with its entities. */
+    private boolean lastSeenAreaLoaded(UUID id) {
+        SeenAt at = encounterSeenAt.get(id);
+        if (at == null) {
+            return false;
+        }
+        World w = Bukkit.getWorld(at.world());
+        if (w == null || !w.isChunkLoaded(at.cx(), at.cz())) {
+            return false;
+        }
+        try {
+            return w.getChunkAt(at.cx(), at.cz()).isEntitiesLoaded();
+        } catch (Throwable t) {
+            return true; // an API without the entity flag: the streak still guards
+        }
+    }
+
     private EncounterLedger encounter(LivingEntity boss, BossKind kind) {
         EncounterLedger ledger = encounters.computeIfAbsent(boss.getUniqueId(), id -> {
             AttributeInstance attr = boss.getAttribute(Attribute.MAX_HEALTH);
@@ -776,6 +805,28 @@ public final class ExcelBossTrial extends JavaPlugin implements Listener {
             }
             EncounterLedger fresh = new EncounterLedger(kind, id, openingMax,
                     System.currentTimeMillis());
+            // 0.2.7: a boss already wounded under a bar this plugin
+            // raised lost its ledger (server restart, or a fight
+            // untouched past the retention TTL). Set the damage no
+            // ledger saw aside, so the share is judged on the fight
+            // that is left - never on HP nobody can deal any more.
+            double unseen = 0;
+            if (rule.active()) {
+                unseen = EncounterRetention.unseenOnReopen(openingMax, vanillaMax,
+                        rule.baseHealth(), boss.getHealth());
+            } else if (kind == BossKind.ENDER_DRAGON && dragonChapter != null
+                    && boss instanceof EnderDragon dragonBoss) {
+                unseen = dragonChapter.unseenDamage(dragonBoss);
+            }
+            if (unseen > 0) {
+                fresh.markUnseenDamage(unseen);
+                getLogger().info("BossTrial re-open [" + kind.displayName() + "]: the boss "
+                        + "already lost " + fmt(unseen) + " HP that no ledger saw (server "
+                        + "restart or a fight older than "
+                        + (EncounterRetention.DEFAULT_TTL_MS / 3_600_000L) + "h) - set aside; "
+                        + "the share is measured on the fight that is left (boss at "
+                        + fmt(boss.getHealth()) + " HP).");
+            }
             if (kind == BossKind.ELDER_GUARDIAN) {
                 Location loc = boss.getLocation();
                 monuments.register(id, loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
@@ -783,6 +834,7 @@ public final class ExcelBossTrial extends JavaPlugin implements Listener {
             }
             return fresh;
         });
+        encounterSeenAt.put(boss.getUniqueId(), SeenAt.of(boss.getLocation()));
         if (kind == BossKind.WITHER) {
             // The fought-free check (0.2.1) samples the wither's
             // position wherever the encounter is touched - the
@@ -869,6 +921,9 @@ public final class ExcelBossTrial extends JavaPlugin implements Listener {
         if (!(event.getEntity() instanceof LivingEntity boss)) {
             return;
         }
+        if (boss.isDead() || boss.getHealth() <= 0) {
+            return; // 0.2.7: never open a ledger on a corpse
+        }
         BossKind kind = Attribution.kindOf(boss);
         if (kind == null || kind == BossKind.ENDER_DRAGON || !chapterOn(kind)) {
             return; // the dragon's governor lives in its chapter
@@ -896,6 +951,14 @@ public final class ExcelBossTrial extends JavaPlugin implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBossDamageRecord(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof LivingEntity boss)) {
+            return;
+        }
+        if (boss.isDead() || boss.getHealth() <= 0) {
+            // 0.2.7: a hit on a corpse (the dragon's death animation,
+            // an arrow landing after the killing blow) must not re-open
+            // a phantom encounter - its ledger was settled at the death.
+            // MONITOR runs before damage applies, so the killing blow
+            // itself still sees health > 0 and is recorded.
             return;
         }
         BossKind kind = Attribution.kindOf(boss);
@@ -1984,10 +2047,46 @@ public final class ExcelBossTrial extends JavaPlugin implements Listener {
         // Prune encounters whose boss is gone (escape, despawn,
         // remove): the ledger simply evaporates - no cooldown, no
         // verdict (settled: escapes are free).
-        encounters.entrySet().removeIf(e -> {
-            Entity ent = Bukkit.getEntity(e.getKey());
-            return ent == null || ent.isDead();
-        });
+        // 0.2.7 (Iris audit): getEntity is null for an UNLOADED boss
+        // too, so a wounded boss whose area unloaded (the family went
+        // home, logged off, or wiped and respawned far away) is NOT
+        // gone - its ledger is kept (EncounterRetention).
+        for (Map.Entry<UUID, EncounterLedger> e
+                : new ArrayList<>(encounters.entrySet())) {
+            UUID id = e.getKey();
+            Entity ent = Bukkit.getEntity(id);
+            boolean found = ent != null;
+            boolean dead = found && ent.isDead();
+            boolean areaLoaded = false;
+            int streak = 0;
+            if (found && !dead) {
+                encounterSeenAt.put(id, SeenAt.of(ent.getLocation()));
+                encounterGoneStreak.remove(id);
+            } else if (!found) {
+                areaLoaded = lastSeenAreaLoaded(id);
+                if (areaLoaded) {
+                    streak = encounterGoneStreak.merge(id, 1, Integer::sum);
+                } else {
+                    encounterGoneStreak.remove(id);
+                }
+            }
+            EncounterRetention.Decision d = EncounterRetention.decide(found, dead,
+                    areaLoaded, streak, e.getValue().lastTouchMs(), now,
+                    EncounterRetention.DEFAULT_TTL_MS);
+            if (d == EncounterRetention.Decision.PRUNE) {
+                encounters.remove(id);
+                if (!found) {
+                    getLogger().info("BossTrial encounter [" + e.getValue().kind().displayName()
+                            + "] closed without a verdict: "
+                            + (areaLoaded ? "the boss is gone from its loaded area"
+                                    : "untouched and unloaded for over "
+                                    + (EncounterRetention.DEFAULT_TTL_MS / 3_600_000L) + "h")
+                            + " (no cooldown).");
+                }
+            }
+        }
+        encounterSeenAt.keySet().retainAll(encounters.keySet());
+        encounterGoneStreak.keySet().retainAll(encounters.keySet());
         deathOutcomes.entrySet().removeIf(e -> e.getValue().consequencesApplied
                 && Bukkit.getEntity(e.getKey()) == null);
         // The attempt registry (0.2.3) prunes against the live
