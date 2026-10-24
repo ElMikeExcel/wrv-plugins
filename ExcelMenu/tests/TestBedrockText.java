@@ -62,20 +62,23 @@ public final class TestBedrockText {
         MenuDef.ItemDef pink = colors.item("pink");
         String[] pinkLines = Text.bedrockText(pink.name(), pink.lore()).split("\n", -1);
         Check.eq("§d§lPink", pinkLines[0], "Pink title keeps its authored color");
-        Check.eq("§0Your name & messages in pink.", pinkLines[1],
-                "Pink description line is black");
-        Check.eq("§0Left click: rent 1 week - $200", pinkLines[2], "Pink rent line is black");
-        Check.eq("§0Shift-left click: rent 4 weeks - $700", pinkLines[3],
+        Check.eq("§dAlex: hello!", pinkLines[1],
+                "Pink sample line keeps real Bedrock pink ({sample}, 0.1.5)");
+        Check.eq("§0Bright classic pink.", pinkLines[2], "Pink description line is black");
+        Check.eq("§0Left click: rent 1 week - $200", pinkLines[3], "Pink rent line is black");
+        Check.eq("§0Shift-left click: rent 4 weeks - $700", pinkLines[4],
                 "Pink 4-week line is black");
-        Check.eq("§0Right click: own forever - $15,000", pinkLines[4], "Pink own line is black");
-        Check.eq("§0Rentals end quietly; renewals stack.", pinkLines[5],
+        Check.eq("§0Right click: own forever - $15,000", pinkLines[5], "Pink own line is black");
+        Check.eq("§0Rentals end quietly; renewals stack.", pinkLines[6],
                 "Pink rental note is black");
 
-        MenuDef.ItemDef coral = colors.item("coral");
-        String[] coralLines = Text.bedrockText(coral.name(), coral.lore()).split("\n", -1);
-        Check.eq("§c§lCoral", coralLines[0], "Coral title keeps its authored color");
-        Check.eq("§0Warm coral red.", coralLines[1],
-                "Coral description (Mike's screenshot) is black");
+        MenuDef.ItemDef copper = colors.item("copper");
+        String[] copperLines = Text.bedrockText(copper.name(), copper.lore()).split("\n", -1);
+        Check.eq("§n§lCopper", copperLines[0], "Copper title lands on Bedrock &n (material copper)");
+        Check.eq("§nAlex: hello!", copperLines[1], "Copper sample lands on &n too");
+        MenuDef.ItemDef frost = colors.item("frost");
+        String[] frostLines = Text.bedrockText(frost.name(), frost.lore()).split("\n", -1);
+        Check.eq("§fAlex: hello!", frostLines[1], "white sample stays white (not darkened)");
 
         // --- fleet sweep: no pale code survives in ANY menu's content lines ---
         for (MenuDef def : defs) {
@@ -85,6 +88,9 @@ public final class TestBedrockText {
                         item.name() == null ? item.id() : item.name(), item.lore())
                         .split("\n", -1);
                 for (int i = 1; i < lines.length; i++) {
+                    // {sample} lines show a color on purpose (0.1.5)
+                    if (item.lore() != null && i - 1 < item.lore().size()
+                            && Text.isSample(item.lore().get(i - 1))) continue;
                     if (hasPale(lines[i])) violations++;
                 }
             }

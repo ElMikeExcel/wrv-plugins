@@ -19,7 +19,7 @@ public final class TestDefinitions {
 
         int totalItems = 0;
         for (MenuDef d : defs) totalItems += d.items.size();
-        Check.eq(156, totalItems, "156 items across the set (151 migrated + Safe Blocks shelf)");
+        Check.eq(164, totalItems, "164 items across the set (151 migrated + Safe Blocks shelf + 8 chat colors v2)");
 
         List<String> errors = MenuValidator.validate(defs, MenuFixtures.materialNames());
         Check.eq(List.of(), errors, "shipped set validates with zero errors: " + errors);
@@ -49,7 +49,7 @@ public final class TestDefinitions {
         Check.eq(13, server.items.size(), "server_menu 13 items");
 
         MenuDef colors = MenuFixtures.byId(defs, "spawnshop_cosmetics_colors");
-        Check.eq(16, colors.items.size(), "cosmetics colors 16 items");
+        Check.eq(24, colors.items.size(), "cosmetics colors 24 items (21 colors + 3 nav)");
         MenuDef.ItemDef pink = colors.item("pink");
         Check.eq(List.of("[console] excelcosmetics buy %player_name% color pink"),
                 pink.clicks().get("left"), "pink left click = rent dispatch, byte-exact");
