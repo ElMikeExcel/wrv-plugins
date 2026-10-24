@@ -1,0 +1,183 @@
+# ExcelGuide - the Valley Guide's settings
+# The Guide answers server questions in chat from the SAME knowledge the
+# website's Ask page uses (knowledge.yml, generated from the site's
+# ai-knowledge.json by site-ai/make-guide-knowledge.py). It is read-only
+# by construction: it cannot teleport, give, or change anything.
+
+enabled: true
+
+# The name the Guide speaks under. One line changes the whole persona.
+persona-name: "Valley Guide"
+
+doors:
+  command: true          # /ask <question> (alias /guide ask)
+  summon: true           # chat starting with "Guide," / "Valley Guide,"
+  ambient: true          # plain chat watching, tight intent set only
+
+thresholds:
+  intent-min-score: 0.72   # a matched phrase group must confer at least this
+  retrieval-min-score: 8   # top chunk must score at least this (tuned on the
+                           # real corpus Oct 18, 2026 - see SPEC section 6.2)
+  retrieval-margin: 1.5    # ...and beat the runner-up chunk by this factor
+
+cooldowns:
+  per-player-seconds: 20   # between Guide answers to the same player
+  per-question-seconds: 60 # the same question gets answered once a minute
+  global-per-minute: 6     # Guide messages per minute, server-wide
+  clarify-window-seconds: 60
+  combat-quiet-seconds: 10 # no ambient answers right after taking damage
+
+knowledge:
+  source: file           # file | bundled (url arrives in a later version)
+  file: knowledge.yml
+
+# SPEC section 4 flag: when true, the lost-wand answer tells players to
+# run /wand restore themselves. Set true when the Magic Stage 1 grant
+# (magic.commands.wand.restore, added to the Stage 1 grant list Oct 18,
+# 2026) has actually been applied by a seal breaking.
+wand-self-restore-enabled: false
+
+unanswered-log:
+  enabled: true
+  file: unanswered.log
+  max-entries: 2000
+
+# Answer acknowledgments (0.2.2, Mike's rule: a direct question must
+# never be met with silence - "silence is never good with kids").
+# On the direct doors only (/ask and the "Guide," summon): a question
+# blocked by a cooldown (per-player, per-question, global, or the AI
+# bucket) gets ONE whispered line quoting the real wait, and a
+# question handed to the AI gets the thinking line immediately while
+# its answer is on the way. Ambient chat-watching stays silent when
+# blocked, exactly as before. Notices are throttled per player so a
+# blocked streak gets one notice, not a drumbeat. A malformed block
+# (a value of the wrong type, a cooldown line without %seconds%)
+# turns notices off - fail-soft, answers are never affected.
+notices:
+  enabled: true
+  cooldown-line: "One moment — I can answer again in about %seconds% seconds."
+  thinking-line: "Hmm, let me think about that one…"
+  throttle-seconds: 30     # at most one cooldown notice per player per this many seconds
+
+# AI fallback (0.2.0): when a /ask or "Guide," question reaches the
+# honest non-answer, the Guide may ask an AI model - fenced to the
+# same knowledge excerpts plus the asker's own live facts - before
+# giving up. The deterministic answers always go first; personal
+# stats never route here; plain chat watching (ambient) never does.
+# Ships OFF twice over: enabled must be true AND an api-key present.
+#
+# *** The api-key belongs ONLY in the live copy of this file on the
+# *** server (plugins/ExcelGuide/config.yml). Never commit a real key
+# *** to the source tree, a jar, git, or Drive.
+# Provider is pure config (endpoint + key + model): the default is
+# Groq's free tier; Gemini, OpenRouter, and Cloudflare Workers AI all
+# speak the same chat shape - see AI-PROVIDER-RESEARCH.md.
+ai:
+  enabled: false
+  provider-name: "Groq"
+  endpoint: "https://api.groq.com/openai/v1/chat/completions"
+  api-key: ""
+  model: "llama-3.3-70b-versatile"
+  timeout-seconds: 8        # hard cap; on timeout the standard non-answer is served
+  top-chunks: 5             # knowledge excerpts handed to the model
+  per-player-cooldown-seconds: 60  # the AI bucket, stricter than the chat bucket
+  daily-budget: 50          # AI calls per day, counted at engagement
+  max-answer-chars: 380
+  log-file: ai.log
+  log-max-entries: 2000
+  # Learn-cache (0.2.1): a successful AI answer is cached against
+  # its normalized question and re-served later with no AI call and
+  # no budget spent - until the knowledge stamp changes, which makes
+  # every older entry stale (dropped on sight, re-asked fresh).
+  # The cache only serves while the AI fallback itself is active:
+  # the enabled:false kill switch above stops cache serves too.
+  # Privacy gate (always on, not configurable): first-person
+  # questions never cache, and an answer quoting any of the asker's
+  # own fact-sheet numbers never caches - cached answers are served
+  # to other players, so both checks run before anything is stored.
+  cache:
+    enabled: true
+    file: ai-cache.yml
+    max-entries: 500       # LRU by last hit
+
+# Promoted ("learned") answers (0.2.1): AI answers a human reviewed
+# and promoted - from the weekly Guide report - into permanent
+# deterministic answers in this file (same folder). Entries outrank
+# the cache and the AI and never stale-expire. A malformed file is
+# ignored with a console warning, never a dead plugin; /guide reload
+# re-reads it. Format is documented in the file itself and in
+# BUILD-0.2.1.md.
+learned:
+  file: learned.yml
+
+# Peer learning (0.2.3, rebuilt in 0.3.0 on Oct 24, 2026): when the
+# Guide cannot answer a PUBLIC question (plain chat, or "Guide, ...";
+# never a private /ask), it listens for a few minutes. If another
+# player answers in chat, that answer can become a Guide answer - but
+# only after Mike approves it with /guide review. Nothing a player
+# says is ever served before that.
+#
+# The rules (0.3.0):
+# - A window opens only for a real game question: it names a game
+#   word, is not social chat ("do you wanna...", "have you seen..."),
+#   names no player, has no profanity, and is not about seal-fight
+#   mechanics (Mike's learn-by-dying rule).
+# - An answer must come from a different player within
+#   answer-window-seconds, be at least min-answer-chars and
+#   min-answer-words long, share a word with the question or name a
+#   game word, and must not be a question, chit-chat, a hedge
+#   ("idk", "maybe"), a player name call, profanity, someone's
+#   stats, or a seal-fight spoiler. One chat line answers ONE
+#   question at most.
+# - Before the window closes (capture-window-minutes), the answer
+#   needs real backing: min-agreements different players agree
+#   ("yeah thats right", or the same answer in their own words), OR
+#   the asker says thanks / "that worked". Any "no / actually /
+#   thats wrong" kills it. A lone "yeah" is not enough any more.
+# - A backed answer goes to the review queue (review-file). Mike
+#   approves or rejects it: /guide review (Bedrock: a pop-up).
+#   auto-approve is OFF by default.
+# - Approved answers are served on /ask and "Guide, ..." as
+#   "A player said: ..." (serve-prefix) - never with a player name.
+#   They are re-checked against the spoiler, profanity and name
+#   filters every time they are served.
+# - A waiting answer nobody asks about again within
+#   candidate-expire-days expires.
+# - The word lists below ADD to the built-in lists; leave them empty
+#   to use the defaults. blocked-names: names that must never appear
+#   in a stored or served answer even when that player is offline
+#   (online players and anyone seen in chat are blocked already).
+# - First-use tip: a player who gets an "A player said" answer also
+#   gets a short tip explaining it, every time, until they tap OK
+#   ([OK] in Java chat, the Bedrock pop-up, or /guide ok).
+#   Admin: /guide tipreset <player> shows it to them again.
+# - The 0.2.3 store (file: peer-answers.yml) is no longer read or
+#   served; it stays on disk untouched for the record.
+# enabled: false turns all of this off (0.2.2 behavior).
+peer-learning:
+  enabled: true
+  file: peer-answers.yml      # 0.2.3 store - no longer read (kept for the record)
+  review-file: peer-review.yml
+  log-file: peer.log
+  log-max-entries: 2000
+  capture-window-minutes: 5   # how long agreements / the asker's thanks still count
+  answer-window-seconds: 120  # answers must arrive this soon after the question
+  max-answer-chars: 300       # answers are capped like AI answers
+  min-answer-chars: 20
+  min-answer-words: 4
+  min-agreements: 2           # different players (not the asker, not the author); minimum 2
+  candidate-expire-days: 14   # waiting answers nobody asks again expire (0 = never)
+  approved-expire-days: 0     # approved answers nobody asks again expire (0 = never)
+  auto-approve: false         # true = approve without review when the asker said thanks AND
+  auto-approve-min-agreements: 2  # ...at least this many players agreed
+  notify-ops: true            # tell online ops when an answer is waiting for review
+  serve-prefix: "A player said: "
+  first-use-tip: true         # explain "A player said" answers each time until the player taps OK
+  tip-file: peer-tip.yml      # who said OK (data folder only)
+  max-entries: 200            # queue cap (oldest waiting answers evict first)
+  game-terms: []
+  spoiler-terms: []
+  blocked-words: []
+  blocked-names: []
+  social-phrases: []
+  chatter-phrases: []
