@@ -1,0 +1,18 @@
+name: ExcelTips
+version: 0.1.0
+main: com.winkreyes.exceltips.ExcelTips
+api-version: '1.13'
+author: WinkReyesValley
+softdepend: [floodgate, Geyser-Spigot]
+description: Short first-use tips for server features, shown the first few times a player uses one, until they say OK (clickable [OK] on Java, an OK pop-up on Bedrock, or /tips ok).
+commands:
+  tips:
+    description: Your tips. /tips ok hides the last tip, /tips show <tip> reads one again.
+    usage: /tips [ok [tip] | show <tip>] (admin - reset <player> [tip] | status <player> | trigger <player> <tip> | check | reload)
+    aliases: [tip]
+    permission: exceltips.use
+permissions:
+  exceltips.use:
+    default: true
+  exceltips.admin:
+    default: op
