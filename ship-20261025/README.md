@@ -17,7 +17,12 @@ Boot: 0 SEVERE. Every replaced file was kept as `.bak-20261025` (no existing .ba
 | Magic + stage1-5 wands.yml | classic set (part B; live had been overlay e97406d0) | overlay |
 | /time fix | Essentials disabled-commands `time`; commands.yml `day`/`night` aliases | - |
 
-NOT installed: the Lightning slot (waits on Mike's dragon-damage decision). ExcelGuide untouched. EliteMobs untouched.
+LIGHTNING SLOT LIVE Sat Oct 24, 2026, 11:53 AM CDT (Mike approved 11:49 AM CDT, original version: Lightning/Smite count
+toward the boss share, 3.5 per bolt to the dragon). No-restart file swap of plugins/ExcelMagicGate/stages/stage3-5/spells.yml
+(7d43579c / e9e635d2 / 46cc3b14 = lightning-slot/ in the package); backups spells.yml.bak-20261025-L. Live stage is 1, so it
+takes effect when Seal 3 falls. ExcelGuide untouched. EliteMobs untouched.
+
+Next restart: NetherNet plan approved (port decision pending).
 
 Contents: MANIFEST.md + SHA256SUMS (package), records/ (per-plugin install records), merge/ (config merges),
 evidence/ (rig smoke, BossTrial status 0.2.6 vs 0.2.7, /time check, and the Oct 24 EA 0.1.6 dragon-status restart check),
