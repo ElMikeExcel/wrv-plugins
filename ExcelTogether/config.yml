@@ -1,4 +1,4 @@
-# ExcelTogether 0.3.0
+# ExcelTogether 0.4.0
 # Multiplier applied to Jobs money and XP when a partner is nearby.
 # 1.25 means +25%. It is applied to the amounts in JobsPrePaymentEvent, and Jobs'
 # own boosts (weekend, etc.) are applied afterward by Jobs, so the two stack.
@@ -39,3 +39,43 @@ share-idle-seconds: 120
 # Also copy mcMMO skill XP (same skill, final amount) to nearby party members. Skipped automatically for
 # an mcMMO party whose leader turned on mcMMO XP share (mode EQUAL) so XP is never paid twice.
 share-mcmmo-xp: true
+
+# ---------------------------------------------------------------- 0.4.0
+# Party friendly fire. PvP stays on for everyone else; members of the same ExcelTogether party
+# cannot hurt each other: melee, arrows, tridents, fireworks, TNT they lit, Magic spell damage that
+# names the caster, and fire from flame arrows. (mcMMO's own Party.FriendlyFire: false only covers
+# players who are also in the same mcMMO party; this covers every ExcelTogether party.)
+friendly-fire:
+  block-party-damage: true
+  # Also protect a party member's tamed pets (wolves, cats, parrots, horses) from the rest of the party,
+  # and stop party members' pets from biting each other.
+  protect-party-pets: true
+  # Harmful splash and lingering potions (harming, poison, slowness, weakness...) skip party members.
+  # Healing and buff potions still land on them.
+  block-harmful-potions: true
+
+# Party drops (Mike, Oct 23, 2026): when a player kills a normal mob while min-together members of
+# their party (counting the killer) are alive within radius blocks in the same world, the mob's plain
+# loot is multiplied. Never boosted: EliteMobs mobs (ExcelPartyDrops handles elites), spawner mobs,
+# bred/egg/command/plugin-spawned mobs (allow list below), bosses, villagers, golems, pets, players,
+# anything the mob was carrying (picked-up items, chests, saddles, armor), and named/enchanted/unstackable
+# items. Dropped XP, Jobs pay and mcMMO XP are untouched.
+party-drops:
+  enabled: true
+  multiplier: 2.0
+  min-together: 3
+  # -1 = use the party bonus radius above (50).
+  radius: -1
+  # Anti mob-farm: at most this many boosted kills per player per rolling hour (0 = no cap).
+  max-boosted-kills-per-hour: 150
+  # One short gold chat line to the party when a boosted drop lands, at most once per this many seconds.
+  notice-cooldown-seconds: 600
+  allowed-spawn-reasons: [NATURAL, CHUNK_GEN, DEFAULT, JOCKEY, MOUNT, PATROL, REINFORCEMENTS, VILLAGE_INVASION, SLIME_SPLIT, LIGHTNING, DROWNED, INFECTION, TRAP, SILVERFISH_BLOCK, ENDER_PEARL, PIGLIN_ZOMBIFIED, FROZEN, METAMORPHOSIS]
+  excluded-mobs: [PLAYER, ARMOR_STAND, WITHER, ENDER_DRAGON, WARDEN, ELDER_GUARDIAN, VILLAGER, WANDERING_TRADER, IRON_GOLEM, SNOW_GOLEM, COPPER_GOLEM]
+  # Console line for every 1x kill by a player and why (noisy, for testing).
+  debug: false
+
+# The vanilla health scoreboard objective (below_name / tab list). A player shows 0 until their health
+# changes once; ExcelTogether sets their score to their real health shortly after they join.
+# Blank = off. Does nothing if the objective does not exist.
+hp-refresh-objective: hp

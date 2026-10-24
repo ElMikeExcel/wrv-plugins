@@ -583,7 +583,7 @@ public class PartyFeatureTest {
     static void packagingTests() throws Exception {
         String plugin = Files.readString(Path.of(System.getProperty("plugin")));
         String cfg = Files.readString(Path.of(System.getProperty("cfg")));
-        check("plugin version 0.3.0", plugin.contains("version: 0.3.0"));
+        check("plugin version 0.4.0", plugin.contains("version: 0.4.0"));
         check("cue subcommand in usage", plugin.contains("cue"));
         check("command is excelparty", plugin.contains("  excelparty:") && plugin.contains("aliases: [eparty, together]"));
         check("does NOT claim bare /party (mcMMO owns it)", !plugin.contains("\n  party:") && !plugin.contains("[party") && !plugin.contains(", party"));

@@ -17,8 +17,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.*;
 
 /**
- * ExcelTogether 0.3.0: the Jobs party bonus (+25% money and XP) plus the party itself: invite, accept, leave.
+ * ExcelTogether 0.4.0: the Jobs party bonus (+25% money and XP) plus the party itself: invite, accept, leave.
  * 0.3.0 adds the WRV-068 party range indicator (action bar line + transition cues), display only.
+ * 0.4.0 adds party friendly fire blocking, party mob drops (x2 with 3+ together) and the hp scoreboard refresh (PartyCombatDrops).
  * The command is /excelparty (aliases /eparty, /together) because mcMMO owns /party on this server.
  */
 public final class ExcelTogether extends JavaPlugin implements Listener, Env {
@@ -75,14 +76,17 @@ public final class ExcelTogether extends JavaPlugin implements Listener, Env {
                 (op, t) -> { Player pl = op.getPlayer(); if (pl != null) new BukkitPlayer(pl).say(t); },
                 System::currentTimeMillis), this);
         getServer().getPluginManager().registerEvents(this, this);
+        PartyCombatDrops pcd = new PartyCombatDrops(this, mgr, bonus.radius());   // 0.4.0
+        getServer().getPluginManager().registerEvents(pcd, this);
+        for (Player op : Bukkit.getOnlinePlayers()) pcd.refreshHp(op.getUniqueId());
         Bukkit.getScheduler().runTaskTimer(this, () -> ctl.tick(), 20L, 20L);
         Bukkit.getScheduler().runTaskTimer(this, this::tickIndicator, 60L, 50L);   // WRV-068: range line every 2.5s
-        getLogger().info("ExcelTogether 0.3.0 enabled: x" + bonus.multiplier() + " money and XP, bonus-mode " + mode
+        getLogger().info("ExcelTogether 0.4.0 enabled: x" + bonus.multiplier() + " money and XP, bonus-mode " + mode
                 + ", radius " + bonus.radius() + " blocks, parties up to " + mgr.maxSize() + ", invites last "
                 + (mgr.ttlMs() / 1000) + "s, compass click invite " + (compassClick ? "ON" : "off") + ". Bedrock forms: "
                 + (Bukkit.getPluginManager().getPlugin("Geyser-Spigot") != null ? "Geyser found" : "no Geyser, chat menu only")
                 + ". Jobs sharing: " + (sharePct > 0 ? (int) sharePct + "%" : "OFF") + ", idle limit " + (idleMs / 1000) + "s. mcMMO XP sharing: " + xpNote + ". mcMMO party link: " + linkNote
-                + ". Range indicator: ON (action bar every 2.5s, cue hysteresis " + (RangeIndicator.HYSTERESIS_MS / 1000) + "s).");
+                + ". Range indicator: ON (action bar every 2.5s, cue hysteresis " + (RangeIndicator.HYSTERESIS_MS / 1000) + "s). " + pcd.summary() + ".");
     }
 
     /**

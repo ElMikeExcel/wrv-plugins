@@ -1,9 +1,9 @@
 name: ExcelTogether
-version: 0.3.0
+version: 0.4.0
 author: Steve
 main: com.winkreyes.exceltogether.ExcelTogether
 api-version: "1.21"
-description: Party for Jobs Reborn - invite, accept, leave, and a plus 25 percent money and XP bonus for party members who are close together. Includes an on-screen party range indicator with on/off cues.
+description: Party for Jobs Reborn - invite, accept, leave, and a plus 25 percent money and XP bonus for party members who are close together. Includes an on-screen party range indicator with on/off cues. 0.4.0 adds friendly fire blocking between party members and bonus mob drops for groups of 3.
 depend: [Jobs]
 softdepend: [Geyser-Spigot, floodgate, mcMMO]
 commands:
