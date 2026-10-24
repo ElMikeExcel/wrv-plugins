@@ -68,6 +68,11 @@ import java.util.function.Predicate;
  *    into the held slot); while MARTIAL a Magic wand cannot. The
  *    effect locks above stay as the backstop. Live action-bar
  *    countdown, a dull sound and a once-per-stance title explain it.
+ *  - 0.1.5 guild ward (Mike, Oct 24, 2026): in the EliteMobs worlds
+ *    every Magic cast is blocked (heals too), the wand stays a plain
+ *    item, carried-in short Magic buffs are stripped, Magic teleports
+ *    into those worlds are refused, and attunement is ignored there
+ *    entirely (stance and weapon lock clear on arrival). See WorldWard.
  * State is in-memory only: a restart clears every stance, by design.
  * This class contains NO Magic imports — the Magic surface lives in
  * MagicBridge, registered only when Magic is enabled.
@@ -89,6 +94,7 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
     // Set by MagicBridge when Magic is enabled; without Magic nothing is a wand.
     private Predicate<ItemStack> wandTest = item -> false;
     private Predicate<ItemStack> magicItemTest = item -> false;
+    private WorldWard ward;
 
     @Override
     public void onEnable() {
@@ -103,7 +109,9 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
         actionbarLive = getConfig().getBoolean("actionbar-live", true);
         sounds = getConfig().getBoolean("sounds", true);
         classifier = loadClassifier();
+        ward = new WorldWard(this, getConfig().getConfigurationSection("magic-ward"));
         getServer().getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(ward, this);
         Bukkit.getScheduler().runTaskTimer(this, this::tick, 20L, 20L);
         if (getServer().getPluginManager().isPluginEnabled("Magic")) {
             getServer().getPluginManager().registerEvents(
@@ -120,6 +128,7 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
         getLogger().info("Stance lock: weapon-lock " + onOff(weaponLock) + ", wand-lock " + onOff(wandLock)
                 + ", actionbar " + onOff(actionbar) + (actionbar ? " (live " + onOff(actionbarLive) + ")" : "")
                 + ", sounds " + onOff(sounds) + ".");
+        getLogger().info("Guild ward (Magic off in the EliteMobs worlds): " + onOff(ward.enabled()) + ".");
     }
 
     private static String onOff(boolean b) {
@@ -133,6 +142,27 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
     }
 
     // ---------- shared state access (used by MagicBridge too) ----------
+
+    /** 0.1.5 guild ward (never null after onEnable). */
+    WorldWard ward() {
+        return ward;
+    }
+
+    /** 0.1.5: attunement is ignored entirely in a warded (EliteMobs) world, for everyone. */
+    public boolean ignored(Player player) {
+        return ward != null && player != null && ward.isWarded(player.getWorld());
+    }
+
+    /** 0.1.5: arrival in a warded world clears stance, weapon/wand lock and combat context at once. */
+    void clearForWard(Player player) {
+        AttunementState s = states.get(player.getUniqueId());
+        boolean had = s != null && s.activeStance(now()) != Stance.NONE;
+        if (s != null) s.clear();
+        feedback.remove(player.getUniqueId());
+        projectiles.forgetShooter(player.getUniqueId());
+        if (had && debug) getLogger().info(player.getName() + " stance cleared (entered warded world "
+                + player.getWorld().getName() + ")");
+    }
 
     public boolean attunementEnabled() {
         return enabledMaster;
@@ -245,6 +275,10 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
         for (Player player : Bukkit.getOnlinePlayers()) {
             AttunementState s = states.get(player.getUniqueId());
             if (s == null) continue;
+            if (s.activeStance(now) != Stance.NONE && ignored(player)) {
+                clearForWard(player); // safety net: never a stance inside a warded world
+                continue;
+            }
             if (s.pollExpired(now)) {
                 player.sendMessage("§7Your stance fades - wand and weapon are both free again.");
                 if (actionbar) player.sendActionBar(Component.text(StanceText.CLEAR, NamedTextColor.GREEN));
@@ -283,10 +317,10 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
         if (!enabledMaster) return;
         long now = now();
         Attack attack = resolveAttack(event);
-        if (attack != null && event.getEntity() instanceof LivingEntity) {
+        if (attack != null && event.getEntity() instanceof LivingEntity && !ignored(attack.attacker())) {
             state(attack.attacker().getUniqueId()).onDamageDealt(now);
         }
-        if (event.getEntity() instanceof Player victim) {
+        if (event.getEntity() instanceof Player victim && !ignored(victim)) {
             Entity damager = event.getDamager();
             // Entity-sourced and not self-inflicted = hostile. Pure
             // environmental damage never reaches this event type.
@@ -301,7 +335,7 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
     public void onDamageZero(EntityDamageByEntityEvent event) {
         if (!enabledMaster) return;
         Attack attack = resolveAttack(event);
-        if (attack == null) return;
+        if (attack == null || ignored(attack.attacker())) return;
         AttunementState s = stateOrNull(attack.attacker().getUniqueId());
         if (s == null) return;
         if (DamageRule.shouldZero(s.activeStance(now()), attack.kind())) {
@@ -318,7 +352,7 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
         if (!enabledMaster) return;
         if (event.isCancelled()) return;
         Attack attack = resolveAttack(event);
-        if (attack == null) return;
+        if (attack == null || ignored(attack.attacker())) return;
         if (!DamageRule.isMartialTrigger(attack.kind(), false, event.getDamage())) return;
         AttunementState s = state(attack.attacker().getUniqueId());
         AttunementState.HitResult result = s.onMartialHit(now());
@@ -335,6 +369,7 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
     public void onLaunch(ProjectileLaunchEvent event) {
         if (!enabledMaster) return;
         if (!(event.getEntity().getShooter() instanceof Player shooter)) return;
+        if (ignored(shooter)) return;
         String hand = shooter.getInventory().getItemInMainHand().getType().name();
         WeaponKind kind = Weapons.kindOfProjectile(event.getEntityType().name(), hand);
         if (kind.isMartial()) {
@@ -357,6 +392,7 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
     private LockRule.Block lockFor(Player player, ItemStack item) {
         if (!enabledMaster || (!weaponLock && !wandLock)) return LockRule.Block.NONE;
         if (item == null || item.getType().isAir()) return LockRule.Block.NONE;
+        if (ignored(player)) return LockRule.Block.NONE;
         Stance st = activeStance(player);
         if (st == Stance.NONE) return LockRule.Block.NONE;
         boolean wand = wandTest.test(item);
@@ -508,7 +544,15 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
                         .append(" (").append(s.remainingSeconds(now)).append("s left)");
             }
             if (!any) out.append(" none");
+            out.append("\n").append(ward.status(sender instanceof Player p ? p.getWorld() : null));
             sender.sendMessage(out.toString());
+            return true;
+        }
+        if (args.length >= 1 && args[0].equalsIgnoreCase("ward")) {
+            org.bukkit.World w = args.length >= 2 ? Bukkit.getWorld(args[1])
+                    : (sender instanceof Player p ? p.getWorld() : null);
+            if (args.length >= 2 && w == null) sender.sendMessage("No loaded world named " + args[1]);
+            sender.sendMessage(ward.status(w));
             return true;
         }
         if (args.length >= 2 && args[0].equalsIgnoreCase("clear")) {
@@ -523,7 +567,7 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
             sender.sendMessage("Cleared attunement for " + target.getName());
             return true;
         }
-        sender.sendMessage("Usage: /attunement status | /attunement clear <player>");
+        sender.sendMessage("Usage: /attunement status | /attunement clear <player> | /attunement ward [world]");
         return true;
     }
 

@@ -10,6 +10,7 @@ public class TestMain {
         WeaponsTest.run();
         RangedMartialTest.run();
         LockTest.run();
+        WardTest.run();
         SpellClassifierTest.run(stages, table, signals);
         System.out.println("TOTAL: " + Check.passed + " passed, " + Check.failed + " failed");
         if (Check.failed > 0) System.exit(1);

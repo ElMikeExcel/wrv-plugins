@@ -34,3 +34,43 @@ actionbar: true
 actionbar-live: true
 # Short dull sound on a blocked attempt.
 sounds: true
+
+# ---- 0.1.5 guild ward (Mike, Oct 24, 2026) ----
+# Magic (elMakers) is silent inside the EliteMobs (MagmaGuy) worlds:
+# every cast is blocked, heals included, and attunement is ignored
+# there (stance and weapon lock clear on arrival). The EliteMobs
+# classes own combat in the guild. Normal worlds are unchanged.
+magic-ward:
+  # false = no ward at all (0.1.4 behavior everywhere).
+  enabled: true
+  # Ask EliteMobs' own world list (read-only) as well as the names below.
+  use-elitemobs-registry: true
+  # A world whose name starts with one of these is warded
+  # (covers em_adventurers_guild and instanced dungeon copies).
+  world-prefixes:
+    - em_
+  # Exact world names (premium packs without the em_ prefix).
+  worlds:
+    - em_adventurers_guild
+    - GoblinKingdom_vf
+  # The wand stays a plain item (no spell bar, no mana bar).
+  block-wand: true
+  # On arrival: stop running Magic spells and close the wand.
+  stop-active-spells: true
+  # On arrival: remove short buffs of these types (Magic's run 15s or
+  # less; brewed potions and golden apples last longer and are kept).
+  strip-buffs: true
+  strip-buff-types:
+    - resistance
+    - absorption
+    - regeneration
+  strip-max-seconds: 15
+  # Refuse Magic teleports (Recall, Warp spells) INTO these worlds.
+  block-magic-teleport-in: true
+  # Class-name prefixes that mark a teleport as Magic-driven.
+  magic-class-prefixes:
+    - com.elmakers.mine.bukkit.
+  # Line shown on arrival (chat + action bar) and on a blocked cast.
+  notice: "The guild's halls are warded. Magic falls silent inside."
+  # Blocked-cast line at most once per this many seconds per player.
+  notice-cooldown-seconds: 10
