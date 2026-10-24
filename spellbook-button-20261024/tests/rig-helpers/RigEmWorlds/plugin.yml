@@ -1,0 +1,11 @@
+name: RigEmWorlds
+version: 0.0.1
+main: rig.RigEmWorlds
+api-version: '1.21'
+softdepend: [EliteMobs, ExcelBedrockMenu, Essentials, EssentialsSpawn]
+commands:
+  rigem:
+    permission: rig.em
+permissions:
+  rig.em:
+    default: op

@@ -1,0 +1,56 @@
+=== EliteMobs/world-type spawn rig, sfx 2 spawn 301,-60,-50 Sat Oct 24 2026 15:16:20 GMT-0500 (Central Daylight Time)
+$ rigem worlds
+   [15:16:20] RIGWORLDS world/NORMAL world_nether/NETHER world_the_end/THE_END em_id_test_dungeon/NORMAL em_adventurers_guild/NORMAL
+   > 
+  spawn set at {"w":"world","env":"NORMAL","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","fp":true,"hp":true}
+PASS /spawn reference lands on the set spawn | {"w":"world","env":"NORMAL","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","fp":true,"hp":true}
+PASS entering the Guild the player way: /ag (EliteMobs command) puts the player in em_adventurers_guild | {"w":"em_adventurers_guild","p":[208,88,236],"feet":"AIR","below":"STONE"} RIGTP Ex2 cause=PLUGIN cancelled=false from=world to=em_adventurers_guild 208,88,236
+  -- EliteMobs Adventurers Guild (em_adventurers_guild, loaded by EliteMobs): in em_adventurers_guild/NORMAL at 208,88,236
+PASS EliteMobs Adventurers Guild (em_adventurers_guild, loaded by EliteMobs): Java compass > Spawn > Yes -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+PASS EliteMobs Adventurers Guild (em_adventurers_guild, loaded by EliteMobs): Bedrock: console spawn <name> -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+PASS EliteMobs Adventurers Guild (em_adventurers_guild, loaded by EliteMobs): Bedrock: ExcelBedrockMenu teleportToSpawn (real method) -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+FAIL EliteMobs Adventurers Guild (em_adventurers_guild, loaded by EliteMobs): ExcelBedrockMenu villageFallback (only runs if spawn failed) -> /spawn block | {"w":"world","p":[-784,-60,-272],"feet":"AIR","head":"AIR","oldVillage":true}
+  -- EliteMobs-style dungeon name (em_id_test_dungeon, NOT registered by EliteMobs): in em_id_test_dungeon/NORMAL at 40,-50,40
+PASS EliteMobs-style dungeon name (em_id_test_dungeon, NOT registered by EliteMobs): Java compass > Spawn > Yes -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+PASS EliteMobs-style dungeon name (em_id_test_dungeon, NOT registered by EliteMobs): Bedrock: console spawn <name> -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+PASS EliteMobs-style dungeon name (em_id_test_dungeon, NOT registered by EliteMobs): Bedrock: ExcelBedrockMenu teleportToSpawn (real method) -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+FAIL EliteMobs-style dungeon name (em_id_test_dungeon, NOT registered by EliteMobs): ExcelBedrockMenu villageFallback (only runs if spawn failed) -> /spawn block | {"w":"world","p":[-784,-60,-272],"feet":"AIR","head":"AIR","oldVillage":true}
+  -- Nether: in world_nether/NETHER at 10,80,10
+PASS Nether: Java compass > Spawn > Yes -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+PASS Nether: Bedrock: console spawn <name> -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+PASS Nether: Bedrock: ExcelBedrockMenu teleportToSpawn (real method) -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+FAIL Nether: ExcelBedrockMenu villageFallback (only runs if spawn failed) -> /spawn block | {"w":"world","p":[-784,-60,-272],"feet":"AIR","head":"AIR","oldVillage":true}
+$ rigem dragon
+   [15:18:23] RIGDRAGON world=world_the_end battle=true dragon=true killedBefore=false
+   > 
+  -- End, dragon alive [world=world_the_end battle=true dragon=true killedBefore=false]: in world_the_end/THE_END at 0,90,60
+PASS End, dragon alive [world=world_the_end battle=true dragon=true killedBefore=false]: Java compass > Spawn > Yes -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+PASS End, dragon alive [world=world_the_end battle=true dragon=true killedBefore=false]: Bedrock: console spawn <name> -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+PASS End, dragon alive [world=world_the_end battle=true dragon=true killedBefore=false]: Bedrock: ExcelBedrockMenu teleportToSpawn (real method) -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+FAIL End, dragon alive [world=world_the_end battle=true dragon=true killedBefore=false]: ExcelBedrockMenu villageFallback (only runs if spawn failed) -> /spawn block | {"w":"world","p":[-784,-60,-272],"feet":"AIR","head":"AIR","oldVillage":true}
+$ execute in minecraft:the_end run minecraft:kill @e[type=minecraft:ender_dragon]
+   execute in minecraft:the_end run minecraft:kill @e[type=minecraft:ender_dragon]>   [15:18:56 INFO]: [ExcelBossTrial] BossTrial VETOED the ender_dragon seal credit for killer null (share / presence / cooldown / trio rules in the death log).
+   [15:18:56] [ExcelGuildGate] Seal credit VETOED for ender_dragon (killer: none) - a gatekeeper plugin judged the kill unearned.
+   [15:18:56] Seal attempt failed: The Ender Dragon's seal holds.
+   [15:18:56] The Ender Dragon has fallen, but the seal does not break: only 0% of the killing damage was dealt by players, and a seal costs 70%. The seal cannot be earned for 6h 0m. It stood at 400 health, facing 0 champion(s).
+   [15:18:56] [ExcelBossTrial] BossTrial verdict DENY_SHARE: The Ender Dragon seal NOT credited (0.0% player damage, 0 present). Cooldown until 6h 0m from now; wither summons blocked / elder respawn queued as applicable.
+   [15:18:56] [ExcelBossTrial] Tracked dragon died in world_the_end during PHASE1 (deathConsumed=false). Vanilla + GuildGate proceed as stock.
+   [15:18:56] [SealLog] BOSS_DEATH seal=dragon killer=- players=Ex2 at=world_the_end@36,83,-17
+   [15:18:56] System chat: Killed Ender Dragon
+   > 
+  -- End, after dragon killed [world=world_the_end battle=true dragon=false killedBefore=true]: in world_the_end/THE_END at 0,90,60
+PASS End, after dragon killed [world=world_the_end battle=true dragon=false killedBefore=true]: Java compass > Spawn > Yes -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+PASS End, after dragon killed [world=world_the_end battle=true dragon=false killedBefore=true]: Bedrock: console spawn <name> -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+PASS End, after dragon killed [world=world_the_end battle=true dragon=false killedBefore=true]: Bedrock: ExcelBedrockMenu teleportToSpawn (real method) -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+FAIL End, after dragon killed [world=world_the_end battle=true dragon=false killedBefore=true]: ExcelBedrockMenu villageFallback (only runs if spawn failed) -> /spawn block | {"w":"world","p":[-784,-60,-272],"feet":"AIR","head":"AIR","oldVillage":true}
+  -- Overworld (away from spawn): in world/NORMAL at 701,90,-351
+PASS Overworld (away from spawn): Java compass > Spawn > Yes -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+PASS Overworld (away from spawn): Bedrock: console spawn <name> -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+PASS Overworld (away from spawn): Bedrock: ExcelBedrockMenu teleportToSpawn (real method) -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+FAIL Overworld (away from spawn): ExcelBedrockMenu villageFallback (only runs if spawn failed) -> /spawn block | {"w":"world","p":[-784,-60,-272],"feet":"AIR","head":"AIR","oldVillage":true}
+PASS new player is inside em_adventurers_guild before testing | em_adventurers_guild
+PASS new player in Guild world: Java compass > Spawn > Yes -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+PASS new player in Guild world: Bedrock: ExcelBedrockMenu teleportToSpawn (real method) -> overworld /spawn block | {"w":"world","p":[301,-60,-51],"feet":"AIR","head":"AIR","below":"GRASS_BLOCK","cancelled":false,"err":false}
+  EliteMobs WARN/ERROR lines in whole log (minus known boot notices): 0
+=== sfx 2: 23 pass, 6 fail
+ALLDONE

@@ -1,0 +1,70 @@
+=== compass spawn rig, phase old sfx o spawn 120,70,140 Sat Oct 24 2026 14:30:18 GMT-0500 (Central Daylight Time)
+  spawn set at 121,-60,140
+FAIL /spawn (player) goes to the Essentials spawn | [[521,-60,-160],[121,-60,140]]
+  main menu: 9:knowledge_book,10:compass,11:emerald,12:bell,13:enchanted_book,14:experience_bottle,15:book,17:compass,18:player_head,19:chest,20:writable_book,21:hopper
+  confirm: 3:lime_dye,4:compass,5:red_dye
+PASS compass opens the server menu (Spawn 10, Spellbook 20, Auto-sort 21) #1
+PASS Spawn opens the Yes/Cancel confirm #1 | 3:lime_dye,4:compass,5:red_dye
+PASS OLD file: compass Yes lands at the old village -784,-336, not /spawn (the bug) #1 | [-784,80,-336]
+PASS compass opens the server menu (Spawn 10, Spellbook 20, Auto-sort 21) #2
+PASS Spawn opens the Yes/Cancel confirm #2 | 3:lime_dye,4:compass,5:red_dye
+PASS OLD file: compass Yes lands at the old village -784,-336, not /spawn (the bug) #2 | [-784,80,-336]
+PASS Cancel keeps the player where they are | [[521,-60,-160],[521,-60,-160]]
+  new player first-join position 121,-60,140
+PASS OLD file: new player compass lands at the old spot | [-784,80,-336]
+PASS new player: /spawn lands on the same spot | [521,-60,-160]
+FAIL Bedrock Spawn button path (console spawn <name>) lands on the same spot | [121,-60,140]
+=== phase old: 9 pass, 2 fail
+=== compass spawn rig, phase old sfx p spawn 120,70,140 Sat Oct 24 2026 14:31:33 GMT-0500 (Central Daylight Time)
+  spawn set at 120,70,140
+PASS /spawn (player) goes to the Essentials spawn | [[120,70,140],[120,70,140]]
+  main menu: 9:knowledge_book,10:compass,11:emerald,12:bell,13:enchanted_book,14:experience_bottle,15:book,17:compass,18:player_head,19:chest,20:writable_book,21:hopper
+  confirm: 3:lime_dye,4:compass,5:red_dye
+PASS compass opens the server menu (Spawn 10, Spellbook 20, Auto-sort 21) #1
+PASS Spawn opens the Yes/Cancel confirm #1 | 3:lime_dye,4:compass,5:red_dye
+PASS OLD file: compass Yes lands at the old village -784,-336, not /spawn (the bug) #1 | [-784,80,-336]
+PASS compass opens the server menu (Spawn 10, Spellbook 20, Auto-sort 21) #2
+PASS Spawn opens the Yes/Cancel confirm #2 | 3:lime_dye,4:compass,5:red_dye
+PASS OLD file: compass Yes lands at the old village -784,-336, not /spawn (the bug) #2 | [-784,80,-336]
+PASS Cancel keeps the player where they are | [[521,-60,-160],[521,-60,-160]]
+  new player first-join position 120,70,140
+PASS OLD file: new player compass lands at the old spot | [-784,80,-336]
+PASS new player: /spawn lands on the same spot | [120,70,140]
+PASS Bedrock Spawn button path (console spawn <name>) lands on the same spot | [120,70,140]
+=== phase old: 11 pass, 0 fail
+=== compass spawn rig, phase new sfx a spawn 120,70,140 Sat Oct 24 2026 14:33:10 GMT-0500 (Central Daylight Time)
+  spawn set at 120,70,140
+PASS /spawn (player) goes to the Essentials spawn | [[120,70,140],[120,70,140]]
+  main menu: 9:knowledge_book,10:compass,11:emerald,12:bell,13:enchanted_book,14:experience_bottle,15:book,17:compass,18:player_head,19:chest,20:writable_book,21:hopper
+  confirm: 3:lime_dye,4:compass,5:red_dye
+PASS compass opens the server menu (Spawn 10, Spellbook 20, Auto-sort 21) #1
+PASS Spawn opens the Yes/Cancel confirm #1 | 3:lime_dye,4:compass,5:red_dye
+PASS existing player: compass Yes lands on the same spot as /spawn #1 | [[120,70,140],[120,70,140],"minecraft:overworld"]
+PASS compass opens the server menu (Spawn 10, Spellbook 20, Auto-sort 21) #2
+PASS Spawn opens the Yes/Cancel confirm #2 | 3:lime_dye,4:compass,5:red_dye
+PASS existing player: compass Yes lands on the same spot as /spawn #2 | [[120,70,140],[120,70,140],"minecraft:overworld"]
+PASS Cancel keeps the player where they are | [[521,-60,-160],[521,-60,-160]]
+PASS from the Nether: compass Yes still lands on the /spawn spot | [[120,70,140],"minecraft:overworld"]
+  new player first-join position 120,70,140
+PASS new player: compass Yes lands on the same spot as /spawn | [[120,70,140],[120,70,140]]
+PASS new player: /spawn lands on the same spot | [120,70,140]
+PASS Bedrock Spawn button path (console spawn <name>) lands on the same spot | [120,70,140]
+=== phase new: 12 pass, 0 fail
+=== compass spawn rig, phase new sfx b spawn 300,70,-50 Sat Oct 24 2026 14:34:58 GMT-0500 (Central Daylight Time)
+  spawn set at 301,-60,-50
+PASS /spawn (player) goes to the Essentials spawn | [[301,-60,-50],[301,-60,-50]]
+  main menu: 9:knowledge_book,10:compass,11:emerald,12:bell,13:enchanted_book,14:experience_bottle,15:book,17:compass,18:player_head,19:chest,20:writable_book,21:hopper
+  confirm: 3:lime_dye,4:compass,5:red_dye
+PASS compass opens the server menu (Spawn 10, Spellbook 20, Auto-sort 21) #1
+PASS Spawn opens the Yes/Cancel confirm #1 | 3:lime_dye,4:compass,5:red_dye
+PASS existing player: compass Yes lands on the same spot as /spawn #1 | [[301,-60,-50],[301,-60,-50],"minecraft:overworld"]
+PASS compass opens the server menu (Spawn 10, Spellbook 20, Auto-sort 21) #2
+PASS Spawn opens the Yes/Cancel confirm #2 | 3:lime_dye,4:compass,5:red_dye
+PASS existing player: compass Yes lands on the same spot as /spawn #2 | [[301,-60,-50],[301,-60,-50],"minecraft:overworld"]
+PASS Cancel keeps the player where they are | [[701,-60,-350],[701,-60,-350]]
+PASS from the Nether: compass Yes still lands on the /spawn spot | [[301,-60,-50],"minecraft:overworld"]
+  new player first-join position 301,-60,-50
+PASS new player: compass Yes lands on the same spot as /spawn | [[301,-60,-50],[301,-60,-50]]
+PASS new player: /spawn lands on the same spot | [301,-60,-50]
+PASS Bedrock Spawn button path (console spawn <name>) lands on the same spot | [301,-60,-50]
+=== phase new: 12 pass, 0 fail

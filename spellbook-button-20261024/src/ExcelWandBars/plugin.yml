@@ -1,0 +1,29 @@
+name: ExcelWandBars
+version: 0.2.1
+main: com.winkreyes.excelwandbars.ExcelWandBars
+api-version: '1.13'
+author: WinkReyesValley
+softdepend: [Magic, Geyser-Spigot, floodgate]
+description: Wand controls per player (/wandstyle classic or sneakbars, classic by default; Sneak bars is Bedrock only). In Sneak bars, sneak once while your Magic wand's spell bar is open to flip to the next bar (1, 2, 3, back to 1). A short wand tip shows on the first 15 wand uses until OK. /spellinfo shows each spell's cost, cooldown, range and rank (Bedrock form or Java chat).
+commands:
+  spellinfo:
+    description: Read your wand's spells (what they do, cost, cooldown, range, rank).
+    usage: /spellinfo [spell]
+    aliases: [spellbook, wandspells]
+    permission: excelwandbars.spells
+  wandstyle:
+    description: Pick your wand controls, Classic (right click = next spell) or Sneak bars (Bedrock, sneak flips the spell bar).
+    usage: /wandstyle [classic | sneakbars | switch | ok]
+    aliases: [wandcontrols]
+    permission: excelwandbars.style
+  wandbars:
+    description: ExcelWandBars admin (status / reload / flip / info / style / tip / simbedrock <player>).
+    usage: /wandbars [reload | flip <player> | info <player> | style <player> [classic|bars|clear|apply|unset] | tip <player> [reset] | simbedrock <player> [on|off]]
+    permission: excelwandbars.admin
+permissions:
+  excelwandbars.spells:
+    default: true
+  excelwandbars.style:
+    default: true
+  excelwandbars.admin:
+    default: op

@@ -1,0 +1,10 @@
+name: RigOpen
+version: 0.0.1
+main: rig.RigOpen
+api-version: '1.21'
+commands:
+  rigopen:
+    permission: rigopen.use
+permissions:
+  rigopen.use:
+    default: op

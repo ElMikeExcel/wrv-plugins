@@ -1,0 +1,6 @@
+=== sbtn v2 rig phase rollback Sat Oct 24 2026 13:16:33 GMT-0500 (Central Daylight Time)
+  0.2.0 style: [13:16:44] style Bd4: bars (picked) wand master rank=true mode=inventory right_click=toggle right_click_sneak=cycle drop=cycle_hotbar quick_cast=true matches=true
+PASS WandBars 0.2.0 back: a saved Sneak bars choice is plain "bars" to 0.2.0 (applies to that player on any platform, as in live 0.2.0) | tyle Bd4: bars (picked) wand master rank=true mode=inventory right_click=toggle right_click_sneak=cycle drop=cycle_hotbar quick_cast=true matches=true
+PASS 0.2.0: /wandstyle classic restores classic | yle Bd4: classic (picked) wand master rank=true mode=chest right_click=cycle right_click_sneak=toggle drop=cycle_reverse quick_cast=false matches=true
+PASS 0.2.0 ignores the tip (no tip, /wandstyle ok unknown arg): expected after rollback | Use /wandstyle classic or /wandstyle bars (or just /wandstyle to pick).
+=== phase rollback: 3 pass, 0 fail
