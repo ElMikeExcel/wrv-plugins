@@ -1,0 +1,53 @@
+# ExcelTips 0.1.0 (Wink Reyes Valley). Settings. The tips themselves are in tips.yml.
+# After editing either file: /tips reload (no restart needed).
+
+# How many times a tip shows before it stops on its own, if the player never
+# says OK. A tip can set its own max-shows. 0 = keep showing until OK.
+default-max-shows: 3
+# Uses closer together than this count as one (one tip per burst, not ten).
+use-gap-seconds: 3
+# Never two different tips within this many seconds (the second waits for the next use).
+min-gap-between-tips-seconds: 10
+# No tips (chat or pop-up) within this many seconds of hitting or being hurt.
+# A blocked use is not counted, so the tip simply comes back next time.
+combat-quiet-seconds: 10
+
+chat:
+  prefix: '&b[Tip] &f'
+  line-color: '&f'
+  hint-color: '&7'
+  # A plain "ok" / "okay" / "got it" in chat soon after a tip hides that tip.
+  # The chat message itself still goes out as normal.
+  ok-replies: true
+  ok-reply-window-seconds: 120
+
+# Bedrock (phones, tablets, consoles): clickable chat does not work through
+# Geyser, so Bedrock players get an OK pop-up (Floodgate form) instead.
+# It only opens at a calm moment so it never covers a fight or a menu:
+bedrock-form:
+  enabled: true
+  # At most one pop-up per player per this many seconds (other tips stay chat-only).
+  cooldown-seconds: 300
+  # No command, menu, chest, villager or compass use for this long.
+  calm-seconds: 8
+  # The player has moved within the last few seconds (a Bedrock player cannot
+  # move while a menu form is open, so this keeps us off other pop-ups).
+  require-recent-move: true
+  move-window-seconds: 3
+  # Not in the first seconds after joining (the welcome popup and menu come first).
+  quiet-after-join-seconds: 45
+  # Give up on a waiting pop-up after this long (the chat tip already showed).
+  max-wait-seconds: 180
+  ok-button: 'OK, got it!'
+  later-button: 'Remind me later'
+
+# How long after the action the tip appears (20 ticks = 1 second), so it lands
+# after the command's own reply. A trigger can set delay-ticks.
+delays:
+  command-ticks: 10
+  join-ticks: 100
+  respawn-ticks: 40
+  default-ticks: 2
+
+save-interval-seconds: 30
+debug: false

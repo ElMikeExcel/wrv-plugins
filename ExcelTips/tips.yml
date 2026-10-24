@@ -1,0 +1,285 @@
+# ExcelTips: one short tip per server feature. Wink Reyes Valley.
+#
+# HOUSE RULES FOR EVERY TIP (keep these when you edit):
+#  * Short and kid-friendly. Two or three lines. No long dashes. No player names.
+#  * Only real commands and buttons that are live today. Check before adding.
+#  * Java says "click" / "right-click", Bedrock says "tap". Use java: and
+#    bedrock: when the wording differs, text: when it is the same.
+#
+# SEAL AND BOSS RULE (Mike, Oct 24 2026): seal, guild gate and boss tips may
+# ONLY say that a seal fight exists and point the player to it (where to go,
+# or how to start it, or /seals). ZERO information about mechanics, enemies,
+# phases, counters, anti-cheese, or what to expect. The design is
+# learn-by-dying. This applies to every seal, the guild gate, and any future
+# boss tip. Do not add a tip that fires when a boss spawns.
+#
+# Each tip:
+#   title:        name on the Bedrock pop-up
+#   enabled:      true/false
+#   max-shows:    times it shows before it stops on its own (default in config.yml; 0 = until OK)
+#   use-gap-seconds: uses closer than this count as one
+#   bedrock-popup: false = chat only on Bedrock (they can still type /tips ok)
+#   permission:   optional, only players with it see the tip
+#   needs-plugin: 'Name' or 'Name>=1.2.0', tip is on only while that plugin is running
+#   unless-plugin: 'Name>=1.2.0', tip is off while that plugin (version) is running
+#   triggers:     what counts as "using" the feature (any one):
+#     - {type: command, commands: [jobs]}                  first word of a command, aliases listed by hand
+#     - {type: item-use, match: [COMPASS], pdc-keys: [menujoin:menu_compass]}   right-click / tap holding the item
+#     - {type: block-use, match: ['#beds', CHEST]}        right-click / tap a block (#tag or material)
+#     - {type: bed-enter}
+#     - {type: entity-use, match: [VILLAGER], name-contains: [Spawn Shop], name-not-contains: [], metadata: [shopkeeper]}
+#     - {type: inventory-open, match: [title text], holder-contains: [TrashHolder]}
+#     - {type: region, world: world, min: [x, y, z], max: [x, y, z]}     walking in
+#     - {type: world-enter, match: [world_nether]}
+#     - {type: join} / {type: respawn}
+#     - {type: event, class: some.plugin.SomeEvent, player-path: getPlayer}   any plugin event
+#     - {type: api}   our own plugins call ExcelTipsAPI.tip(player, "<tip>")
+#
+# Plugins can also register their own tip with ExcelTipsAPI.register(...).
+# An entry here with the same name wins (words, max-shows, on/off), so you can
+# always reword or switch off a plugin's tip from this file. /tips check lists both.
+#   Optional on any trigger: delay-ticks.
+
+tips:
+
+  compass-menu:
+    title: Server Menu compass
+    triggers:
+      - {type: item-use, match: [COMPASS], pdc-keys: [menujoin:menu_compass, excelmenujoin:menu_compass]}
+      - {type: command, commands: [menu, compass]}
+    java:
+      - 'Your compass is the Server Menu. Right-click it for Spawn, the shop, Party and more.'
+      - 'It stays with you when you die. Lost it? Type /compass for a new one.'
+    bedrock:
+      - 'Your compass is the Server Menu. Tap with it to open Spawn, the shop, Party and more.'
+      - 'It stays with you when you die. Lost it? Type /compass for a new one.'
+
+  # NO WAND TIPS HERE (on purpose, so nobody gets two):
+  #  * ExcelWandBars 0.2.1+ ships its own wand tip (first 15 wand uses, until OK).
+  #  * ExcelWandBars 0.2.2 Spell Book tip registers itself with ExcelTips as
+  #    "spellscreen" through ExcelTipsAPI.register(...). Do not add a
+  #    "spellscreen" entry here unless you want to reword it (an entry here wins).
+  # Do not add "wandstyle", "magic-wand" or "spellscreen" entries. The unit
+  # tests fail if you do.
+
+  jobs:
+    title: Jobs
+    triggers:
+      - {type: command, commands: [jobs, j]}
+    text:
+      - 'Jobs pay you money for normal play, like mining, farming or fishing.'
+      - '/jobs browse shows every job. /jobs join Farmer picks one. You can have more than one.'
+      - '/jobs stats shows your job levels.'
+
+  money:
+    title: Money
+    triggers:
+      - {type: command, commands: [bal, balance, money, baltop, balancetop]}
+    text:
+      - 'You earn money from Jobs. Spend it at the Spawn Shop.'
+      - '/bal shows your money. /baltop shows the richest players.'
+
+  spawn-shop:
+    title: Spawn Shop
+    triggers:
+      - {type: command, commands: [excelshop, wrvshop]}
+      - {type: entity-use, match: [VILLAGER], name-contains: [Spawn Shop]}
+    java:
+      - 'The Spawn Shop sells food, blocks, books and more for your Jobs money.'
+      - 'Open it from the compass menu, or right-click the green Spawn Shop villager at spawn.'
+    bedrock:
+      - 'The Spawn Shop sells food, blocks, books and more for your Jobs money.'
+      - 'Open it from the compass menu, or tap the green Spawn Shop villager at spawn.'
+
+  villager-shops:
+    # Shopkeepers villagers (not the Spawn Shop villager).
+    title: Villager shops
+    triggers:
+      - {type: entity-use, metadata: [shopkeeper], name-not-contains: [Spawn Shop]}
+    text:
+      - 'This villager runs a shop. Pick a trade to swap your items, like at a market stand.'
+
+  tpa:
+    title: Visit family
+    triggers:
+      - {type: command, commands: [tpa, tpaccept, tpyes, tpdeny, tpno, tpmenu]}
+    text:
+      - 'To visit someone, type /tpa and their name, or use Teleport to a player in the compass menu.'
+      - 'They have to say yes first. Someone asking to visit you? /tpaccept says yes, /tpdeny says no.'
+
+  beds:
+    title: Beds
+    triggers:
+      - {type: bed-enter}
+      - {type: block-use, match: ['#beds']}
+    text:
+      - 'Sleeping in a bed sets where you come back after you die.'
+      - 'There are no home teleports, so remember the way home!'
+
+  spawn:
+    title: Spawn
+    triggers:
+      - {type: command, commands: [spawn]}
+    text:
+      - '/spawn takes you back to the village. The compass menu has a Spawn button too.'
+
+  trash:
+    # ExcelTrash 0.1.0 (live today): closing the Trash deletes. Off once 0.2.0 is in.
+    title: Trash
+    unless-plugin: 'ExcelTrash>=0.2.0'
+    triggers:
+      - {type: command, commands: [trash, bin]}
+      - {type: inventory-open, holder-contains: [TrashHolder]}
+    java:
+      - 'Put things you do not want in the Trash, then close it to throw them away.'
+      - 'Oops? Click Recover last trash, or type /trash undo, within 5 minutes to get them back.'
+    bedrock:
+      - 'Put things you do not want in the Trash, then close it to throw them away.'
+      - 'Oops? Tap Recover last trash, or type /trash undo, within 5 minutes to get them back.'
+
+  trash-bin:
+    # ExcelTrash 0.2.0 and newer: red side + OK button, closing deletes nothing.
+    # Words from ExcelTrash 0.2.0 TIPS-NOTE.md (ExcelTrash has no built-in tip).
+    # A new name on purpose: players who said OK to the old tip see the new rules once.
+    title: Trash
+    needs-plugin: 'ExcelTrash>=0.2.0'
+    triggers:
+      - {type: event, class: com.winkreyes.trash.TrashOpenEvent, player-path: getPlayer}
+      - {type: command, commands: [trash, bin]}
+      - {type: inventory-open, holder-contains: [TrashHolder]}
+    java:
+      - 'Put things you do not want on the red side, then click OK to throw them away.'
+      - 'Oops? Click Recover last trash, or type /trash undo, within 5 minutes.'
+    bedrock:
+      - 'Put things you do not want on the red side, then tap OK to throw them away.'
+      - 'Oops? Tap Recover last trash, or type /trash undo, within 5 minutes.'
+
+  autosort:
+    # AutoSort (nothub, Modrinth). Turns itself on when the plugin is installed.
+    title: Chest sorting
+    needs-plugin: AutoSort
+    triggers:
+      - {type: command, commands: [autosort, sort]}
+    text:
+      - '/sort turns chest sorting on or off.'
+      - 'When it is on, the chests you use tidy up their items for you.'
+
+  makersmark:
+    # ExcelMakersMark asks ExcelTips first (feature name "makersmark"). Words match
+    # its own config.yml tip. /mark ok and the [OK] click both hide it.
+    title: Maker's mark
+    needs-plugin: ExcelMakersMark
+    triggers:
+      - {type: api}
+    java:
+      - 'Things you craft now say who made them. Look for the gray Crafted by line.'
+      - 'Weapons also count kills and bosses slain. Armor counts hits blocked.'
+      - 'Turn them off with /mark off or /mark stats off, or in the compass menu.'
+    bedrock:
+      - 'Things you craft now say who made them. Look for the gray Crafted by line.'
+      - 'Weapons also count kills and bosses slain. Armor counts hits blocked.'
+      - 'Turn them off with /mark off or /mark stats off, or tap the buttons in the compass menu.'
+
+  # PLUGINS THAT SHIP THEIR OWN TIP (no entry here, so no duplicates):
+  #  * Lost & Found (ExcelDeathRecord 0.3.0): its own first-use tip. If it ever
+  #    hands the tip over, it calls ExcelTipsAPI.register(this, "lostfound", ...)
+  #    and ExcelTipsAPI.tip(player, "lostfound"). Nothing to add here.
+  #  * ExcelMakersMark: its own tip, handed to ExcelTips through the
+  #    "makersmark" entry above (one tip, never both).
+
+  seals:
+    # SEAL AND BOSS RULE (see top): say the fight exists and where to look. Nothing about how it plays.
+    title: The Five Seals
+    triggers:
+      - {type: command, commands: [seals, road]}
+    text:
+      - 'Five seals guard the road to the Adventurers Guild. Each seal is a fight.'
+      - 'Type /seals any time to see which seals still stand.'
+
+  guild-gate:
+    # SEAL AND BOSS RULE (see top). Turn this tip off when the last seal falls.
+    # /ag belongs to EliteMobs (MagmaGuy); ExcelGuildGate shows the quest page
+    # while sealed. /tips check warns about /ag on a server without EliteMobs.
+    title: Adventurers Guild
+    triggers:
+      - {type: command, commands: [ag]}
+    text:
+      - 'The Adventurers Guild stays sealed until all five seals fall.'
+      - 'Type /seals to see the road there.'
+
+  guide:
+    title: Valley Guide
+    triggers:
+      - {type: command, commands: [ask, guide]}
+    text:
+      - 'The Valley Guide answers questions about the server.'
+      - 'Type /ask and your question, or start a chat message with the word Guide.'
+
+  claims:
+    title: Claims
+    triggers:
+      - {type: item-use, match: [GOLDEN_SHOVEL]}
+      - {type: command, commands: [claim, claimslist, trust, untrust, abandonclaim]}
+    java:
+      - 'Protect your stuff! Hold a golden shovel and right-click one corner of your land, then the opposite corner.'
+      - '/trust and a name lets family build there. /claimslist shows your land.'
+    bedrock:
+      - 'Protect your stuff! Hold a golden shovel and tap one corner of your land, then the opposite corner.'
+      - '/trust and a name lets family build there. /claimslist shows your land.'
+
+  party:
+    title: Party
+    triggers:
+      - {type: command, commands: [party]}
+    text:
+      - 'A party is a little team. /party create Family starts one.'
+      - '/party invite and a name asks someone to join. /party info shows your team.'
+
+  pouch:
+    title: Utility Pouch
+    triggers:
+      - {type: command, commands: [pouch]}
+    text:
+      - 'Your Utility Pouch holds your Server Menu compass and your Magic wand. Nothing else fits.'
+      - 'What you park there stays safe, even if you die.'
+
+  places:
+    title: Places
+    triggers:
+      - {type: command, commands: [places, waypoints]}
+    text:
+      - '/places keeps your own spots, like your house or a cool cave.'
+      - '/places save and a name saves the spot where you stand.'
+
+  leaderboard:
+    title: Leaderboards
+    triggers:
+      - {type: command, commands: [leaderboard]}
+    text:
+      - '/leaderboard shows who is on top: miners, builders, richest and more.'
+
+  skills:
+    title: Skills
+    triggers:
+      - {type: command, commands: [mcstats, stats]}
+    text:
+      - 'Skills level up as you play. Mine to level Mining, chop trees to level Woodcutting.'
+      - '/mcstats shows all your skill levels.'
+
+  after-death:
+    title: You came back
+    triggers:
+      - {type: respawn}
+    text:
+      - 'You came back! Your Server Menu compass always comes with you.'
+      - 'If you dropped things, go back and grab them fast.'
+      - 'Sleep in a bed to come back there next time.'
+
+  # Example only (off): a tip when someone walks into an area.
+  # spawn-village:
+  #   title: The village
+  #   enabled: false
+  #   triggers:
+  #     - {type: region, world: world, min: [0, 60, 0], max: [50, 120, 50]}
+  #   text:
+  #     - 'Welcome to the village!'
