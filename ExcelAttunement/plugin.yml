@@ -1,0 +1,18 @@
+name: ExcelAttunement
+version: 0.1.5
+main: com.winkreyes.excelattunement.ExcelAttunement
+api-version: '1.13'
+author: WinkReyesValley
+softdepend: [Magic, EliteMobs]
+description: Combat Attunement - one fight, one commitment. Landing a weapon hit locks your wand; casting in a fight locks your weapons (they stay out of your hand), with a live action-bar countdown. Magic is silent in the EliteMobs worlds (guild ward).
+commands:
+  attunement:
+    description: Attunement admin (status / clear).
+    usage: /attunement status | /attunement clear <player> | /attunement ward [world]
+    permission: excelattunement.admin
+permissions:
+  excelattunement.admin:
+    default: op
+  excelattunement.ward.bypass:
+    description: Keep Magic (and skip the buff strip) inside the EliteMobs worlds. Grant to admins explicitly; ops do NOT get it by default.
+    default: false
