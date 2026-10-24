@@ -24,12 +24,13 @@ dash 1 0 combat
 day 0 0 master
 disposal 0 0 utility
 earth 1 0 combat
-eat_food 0 1 -
+eat_food 0 0 master
 evade 0 0 specialty
 extinguish 0 0 utility
 familiar 0 0 elemental
 feed 0 1 staff
 flare 0 0 light
+flashheal 0 1 light
 fling 0 0 utility
 force 0 0 master
 frost 1 0 combat
@@ -39,6 +40,7 @@ gather 0 0 master
 giant_house 0 0 utility
 gills 0 0 light
 glide 0 0 utility
+greaterheal 0 1 light
 grow 0 0 combat
 growth 0 0 engineering
 harden 0 0 utility
@@ -48,11 +50,13 @@ healing 0 1 light
 holylight 1 1 master
 hulkleap 0 0 utility
 invincible 0 0 master
+layonhands 0 1 master
 lift 0 0 utility
 lightning 0 0 elemental
 localrain 0 0 -
 magictorch 0 0 specialty
 masterattack 1 0 combat
+mend 0 1 light
 missile 1 0 combat
 music 0 0 music
 night 0 0 elemental
@@ -93,6 +97,7 @@ time 0 0 master
 tiny_house 0 0 utility
 torch 0 0 utility
 walls 0 0 combat
+ward 0 0 light
 wave 1 0 elemental
 wearskates 0 0 -
 weather 0 0 elemental

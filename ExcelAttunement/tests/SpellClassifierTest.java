@@ -25,19 +25,22 @@ public class SpellClassifierTest {
     // action: beneficial buffs (blessing, boon, gills, invincible,
     // cloak) and cure — negative-effect removal; Feed joins cure's own
     // action list at its higher levels. Pinned by name so a definition
-    // change forces a conscious re-decision.
+    // change forces a conscious re-decision. 0.1.3: eat_food is now
+    // "Innervate" (ModifyMana, a self mana restore) and ward is the heal
+    // kit's absorption shield (PotionEffect), both support by design.
     static final Set<String> BUFF_SUPPORT = Set.of(
-            "blessing", "boon", "gills", "invincible", "cloak", "cure");
+            "blessing", "boon", "gills", "invincible", "cloak", "cure",
+            "eat_food", "ward");
 
     static void run(Path stagesDir, Path tableFile, Path signalsFile) throws IOException {
         System.out.println("== SpellClassifierTest ==");
         SpellClassifier c = SpellClassifier.fromLines(Files.readAllLines(tableFile));
 
-        Check.eq(100, c.size(), "table covers exactly the 100 issuable spells");
+        Check.eq(105, c.size(), "table covers exactly the 105 issuable spells");
         Map<SpellClass, Integer> counts = new EnumMap<>(SpellClass.class);
         for (SpellClass cls : c.table().values()) counts.merge(cls, 1, Integer::sum);
         Check.eq(36, counts.getOrDefault(SpellClass.COMBAT, 0), "36 COMBAT");
-        Check.eq(12, counts.getOrDefault(SpellClass.SUPPORT, 0), "12 SUPPORT");
+        Check.eq(17, counts.getOrDefault(SpellClass.SUPPORT, 0), "17 SUPPORT");
         Check.eq(52, counts.getOrDefault(SpellClass.UTILITY, 0), "52 UTILITY");
 
         // Every granted spell in every stage is classified.
@@ -48,7 +51,7 @@ public class SpellClassifierTest {
             Matcher m = grant.matcher(txt);
             while (m.find()) allGrants.add(m.group(1));
         }
-        Check.eq(100, allGrants.size(), "grant universe across stages 0-5 is 100 spells");
+        Check.eq(105, allGrants.size(), "grant universe across stages 0-5 is 105 spells");
         for (String g : allGrants) {
             Check.ok(c.isKnown(g), "granted spell classified: " + g);
         }
@@ -75,6 +78,17 @@ public class SpellClassifierTest {
         Check.eq(SpellClass.SUPPORT, c.classify("heal|3"), "leveled key heal|3 classifies as heal");
         Check.eq(SpellClass.COMBAT, c.classify("CHAINLIGHTNING"), "keys are case-insensitive");
         Check.eq(SpellClass.COMBAT, c.classify("stormshackle"), "our chain-lightning variant is COMBAT");
+
+        // 0.1.3: the heal kit keys (and their leveled forms) are SUPPORT,
+        // Shackle stays COMBAT at every level.
+        for (String k : List.of("mend", "mend|2", "mend|3", "mend|4", "mend|5",
+                "flashheal", "flashheal|2", "flashheal|3", "flashheal|4", "ward",
+                "greaterheal", "greaterheal|2", "greaterheal|3", "layonhands")) {
+            Check.eq(SpellClass.SUPPORT, c.classify(k), "heal kit key is SUPPORT: " + k);
+        }
+        for (String k : List.of("stormshackle|2", "stormshackle|3", "stormshackle|4")) {
+            Check.eq(SpellClass.COMBAT, c.classify(k), "Shackle stays COMBAT: " + k);
+        }
         Check.eq(SpellClass.UTILITY, c.classify("recall"), "recall is UTILITY");
         Check.ok(!c.isKnown("fireball"), "a spell from the locked shelf is not in the table");
         Check.eq(SpellClass.COMBAT, c.classify("fireball"), "unknown key fails closed as COMBAT");

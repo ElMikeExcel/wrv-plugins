@@ -2,7 +2,7 @@
 # Compile and run the ExcelAttunement plain-JVM suites.
 set -euo pipefail
 cd "$(dirname "$0")"
-JDK=~/workspace/.jdk25
+JDK=${JDK:-~/workspace/.jdk25}
 STAGES=${STAGES:-/home/hatch/workspace/excelmagicgate-0.1.0/src/ExcelMagicGate/stages}
 rm -rf build/test-classes && mkdir -p build/test-classes
 # Only the pure core is unit-tested on the plain JVM; the Bukkit/Magic

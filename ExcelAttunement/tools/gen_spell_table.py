@@ -15,7 +15,7 @@ Attunement, Oct 19, 2026). They were derived from the signals in the
 real definitions and are cross-checked by this script:
   * any spell whose resolved cast actions contain Damage -> COMBAT
   * any spell with Heal/Feed and no Damage -> never COMBAT
-  * SUPPORT entries must carry a Heal/Feed/PotionEffect signal
+  * SUPPORT entries must carry a Heal/Feed/PotionEffect/ModifyMana signal
 The Java test suite re-runs the same cross-checks against
 spell-signals.txt, and asserts every granted spell in every stage is
 classified. If MagicGate ever ships a new stage, re-run this script:
@@ -32,7 +32,8 @@ stormshackle dash shell walls grow counterspell shrink tendril push pull
 force critical""".split())
 
 SUPPORT = set("""heal healing superheal cure feed eat_food blessing boon
-gills invincible cloak tamepet""".split())
+gills invincible cloak tamepet
+mend flashheal ward greaterheal layonhands""".split())
 
 RATIONALE = {
     # COMBAT by control/debuff where no Damage action exists
@@ -54,6 +55,14 @@ RATIONALE = {
     "invincible": "beneficial self buff (resistance)",
     "cloak": "beneficial self buff (vanish/invisibility)",
     "tamepet": "heals the caster's pet (Heal action, no Damage)",
+    "eat_food": "now 'Innervate' in the stage configs: restores the caster's mana (ModifyMana, no Damage)",
+    # 0.1.3: the WoW-style heal kit (Oct 23, 2026). Same rule as heal/superheal:
+    # out of combat they never attune; mid-fight they commit to caster.
+    "mend": "filler heal (Heal action, no Damage)",
+    "flashheal": "fast heal (Heal action, no Damage)",
+    "ward": "absorption shield on an ally (PotionEffect, no Damage)",
+    "greaterheal": "cast-time big heal (Heal action, no Damage)",
+    "layonhands": "full-heal cooldown (Heal action, no Damage)",
     # UTILITY judgment calls
     "sparkle": "random-outcome novelty spell; no reliable combat function",
     "bubble": "kit's own category is utility; no damage/heal signal",
@@ -111,8 +120,8 @@ def main(stages):
             problems.append(f"{g}: has Damage action but classified {cls}")
         if ("Heal" in acts or "Feed" in acts) and "Damage" not in acts and cls == "COMBAT":
             problems.append(f"{g}: heal/feed signal but classified COMBAT")
-        if cls == "SUPPORT" and not (acts & {"Heal", "Feed", "PotionEffect"}):
-            problems.append(f"{g}: SUPPORT without a heal/feed/buff signal")
+        if cls == "SUPPORT" and not (acts & {"Heal", "Feed", "PotionEffect", "ModifyMana"}):
+            problems.append(f"{g}: SUPPORT without a heal/feed/buff/mana signal")
         spec = data.get(g) or {}
         table[g] = (cls, spec.get("category"), sorted(acts))
     if problems:
@@ -129,7 +138,7 @@ def main(stages):
         "# Do not hand-edit: change the assignment sets in the generator,",
         "# re-run it, and let the signal cross-checks + tests judge.",
         "# Format: <spell key> = <COMBAT|SUPPORT|UTILITY>",
-        "# Counts: COMBAT 36 / SUPPORT 12 / UTILITY 52 (100 issuable spells).",
+        "# Counts: COMBAT 36 / SUPPORT 17 / UTILITY 52 (105 issuable spells).",
     ]
     sig = ["# key hasDamage hasHealOrFeed magicCategory"]
     for g in sorted(table):
@@ -138,7 +147,7 @@ def main(stages):
         lines.append(f"{g} = {cls}")
         sig.append(f"{g} {'1' if 'Damage' in acts else '0'} "
                    f"{'1' if ('Heal' in acts or 'Feed' in acts) else '0'} {cat or '-'}")
-    assert counts == {"COMBAT": 36, "SUPPORT": 12, "UTILITY": 52}, counts
+    assert counts == {"COMBAT": 36, "SUPPORT": 17, "UTILITY": 52}, counts
     open("spell-classes.txt", "w").write("\n".join(lines) + "\n")
     open("tests/spell-signals.txt", "w").write("\n".join(sig) + "\n")
     print(f"wrote spell-classes.txt + tests/spell-signals.txt: {counts}")

@@ -4,7 +4,7 @@
 # Do not hand-edit: change the assignment sets in the generator,
 # re-run it, and let the signal cross-checks + tests judge.
 # Format: <spell key> = <COMBAT|SUPPORT|UTILITY>
-# Counts: COMBAT 36 / SUPPORT 12 / UTILITY 52 (100 issuable spells).
+# Counts: COMBAT 36 / SUPPORT 17 / UTILITY 52 (105 issuable spells).
 admission = UTILITY
 anvil = COMBAT
 aqualung = UTILITY
@@ -36,6 +36,7 @@ extinguish = UTILITY
 familiar = UTILITY
 feed = SUPPORT
 flare = UTILITY
+flashheal = SUPPORT
 fling = UTILITY
 force = COMBAT
 frost = COMBAT
@@ -45,6 +46,7 @@ gather = UTILITY
 giant_house = UTILITY
 gills = SUPPORT
 glide = UTILITY
+greaterheal = SUPPORT
 grow = COMBAT
 growth = UTILITY
 harden = UTILITY
@@ -54,11 +56,13 @@ healing = SUPPORT
 holylight = COMBAT
 hulkleap = UTILITY
 invincible = SUPPORT
+layonhands = SUPPORT
 lift = UTILITY
 lightning = COMBAT
 localrain = UTILITY
 magictorch = UTILITY
 masterattack = COMBAT
+mend = SUPPORT
 missile = COMBAT
 music = UTILITY
 night = UTILITY
@@ -99,6 +103,7 @@ time = UTILITY
 tiny_house = UTILITY
 torch = UTILITY
 walls = COMBAT
+ward = SUPPORT
 wave = COMBAT
 wearskates = UTILITY
 weather = UTILITY
