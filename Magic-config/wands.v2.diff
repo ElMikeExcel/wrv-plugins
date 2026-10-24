@@ -1,0 +1,39 @@
+--- batch-next/magic-wands/wands.yml	2026-10-23 19:28:35.256905919 -0500
++++ up/wands.yml	2026-10-23 19:39:41.795862550 -0500
+@@ -99,18 +99,27 @@
+ base_wand:
+   hidden: true
+   inherit: base_bound
+-  # WRV-150 (Oct 23, 2026): chest mode for every rank wand. Right-click
+-  # (Bedrock: tap-and-hold / LT) opens a chest spell picker, tap a spell
+-  # to make it active. Inventory mode needed hotbar keys 1-9 / scroll and
+-  # the F swap key, which Bedrock touch and controller players cannot use
+-  # reliably. Drop (Q) also opens the picker as a backup.
++  # WRV-150 (Oct 23, 2026), v2 7:40 PM CDT: combat-speed controls.
++  # Right-click (Bedrock: LT, or press-and-hold on touch) jumps straight
++  # to the next spell, no GUI. Sneak + right-click opens the chest spell
++  # list. Drop (Q) goes back one spell; sneak + drop also opens the list.
++  # Chest mode is kept so the spell list has a picker.
+   mode: chest
+   left_click: cast
+-  drop: toggle
+-  right_click: toggle
+-  right_click_sneak: cycle
++  right_click: cycle
++  right_click_sneak: toggle
++  drop: cycle_reverse
++  drop_sneak: toggle
+   swap: cycle
+-  swap_sneak: none
++  swap_sneak: cycle_reverse
++  # Show the active spell on every cycle: wand item name = spell name,
++  # plus the spell name on the action bar. The very long interval means
++  # the bar is only sent when the spell changes or the wand comes out,
++  # so it does not fight ExcelAttunement's stance line.
++  use_active_name: true
++  action_bar:
++    message: "$spell"
++    interval: 3600000
+   quiet: 1
+   effect_bubbles: false
+   item_attributes:
