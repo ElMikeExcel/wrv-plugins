@@ -1,0 +1,23 @@
+name: ExcelDeathRecord
+version: 0.2.0
+main: com.winkreyes.exceldeathrecord.ExcelDeathRecord
+api-version: '1.13'
+author: WinkReyesValley
+softdepend: [Geyser-Spigot, floodgate, Essentials]
+description: >-
+  Death ledger for Wink Reyes Valley: snapshots every death from the
+  PlayerDeathEvent itself (full drop list + complete inventory, byte-exact),
+  keeps the Burn Ledger (items destroyed by lava, fire, void, or despawned
+  valuables), and restores saved items exactly (typed or tap menu).
+commands:
+  deathrecord:
+    description: Look up deaths and the Burn Ledger, and restore saved items (ops).
+    usage: /deathrecord help
+    permission: exceldeathrecord.admin
+permissions:
+  exceldeathrecord.admin:
+    description: Read the death ledger and the Burn Ledger.
+    default: op
+  exceldeathrecord.restore:
+    description: Restore items from a death or Burn Ledger record.
+    default: op
