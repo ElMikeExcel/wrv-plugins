@@ -2,15 +2,19 @@ package com.winkreyes.excelattunement;
 
 import com.elmakers.mine.bukkit.api.event.CastEvent;
 import com.elmakers.mine.bukkit.api.event.PreCastEvent;
+import com.elmakers.mine.bukkit.api.magic.MagicAPI;
 import com.elmakers.mine.bukkit.api.spell.SpellResult;
 import com.winkreyes.excelattunement.core.AttunementState;
 import com.winkreyes.excelattunement.core.SpellClass;
 import com.winkreyes.excelattunement.core.SpellClassifier;
 import com.winkreyes.excelattunement.core.Stance;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -49,6 +53,35 @@ final class MagicBridge implements Listener {
     MagicBridge(ExcelAttunement plugin, SpellClassifier classifier) {
         this.plugin = plugin;
         this.classifier = classifier;
+        Plugin magic = Bukkit.getPluginManager().getPlugin("Magic");
+        this.api = magic instanceof MagicAPI m ? m : null;
+        if (api == null) {
+            plugin.getLogger().warning("Magic API not found: wand-lock OFF (cast block still ON).");
+        } else {
+            plugin.setMagicItemTests(this::isWand, this::isMagicItem);
+        }
+    }
+
+    private final MagicAPI api;
+
+    /** A Magic wand (Magic API, reads the item's Magic data). */
+    boolean isWand(ItemStack item) {
+        if (api == null || item == null || item.getType().isAir()) return false;
+        try {
+            return api.isWand(item);
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** Any Magic item: a wand, or a spell icon from the action-bar casting mode. */
+    boolean isMagicItem(ItemStack item) {
+        if (api == null || item == null || item.getType().isAir()) return false;
+        try {
+            return api.isWand(item) || api.isSpell(item);
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     /** Martial stance blocks EVERY wand cast, whatever the spell class. */

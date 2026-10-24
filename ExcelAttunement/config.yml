@@ -17,3 +17,20 @@ combat-context-seconds: 10
 
 # Verbose logging of blocks, zeroes and stance transitions.
 debug: false
+
+# ---- 0.1.4 stance lock (Mike, Oct 24, 2026) ----
+# Caster stance: a sword, axe, mace, trident, bow or crossbow cannot be
+# moved into your main hand (hotbar switch, F swap, inventory click,
+# pickup into an empty hand). A weapon already in hand still does 0.
+weapon-lock: true
+# Fighter stance: a Magic wand cannot be moved into your main hand.
+# A wand already in hand is still blocked from casting.
+wand-lock: true
+# Stance line on the action bar with a countdown
+# ("Caster stance: weapons locked 24s"), and "Stance clear" at the end.
+actionbar: true
+# Refresh that line every second while a stance is active.
+# false = only show it on stance start / blocked attempts (0.1.2 style).
+actionbar-live: true
+# Short dull sound on a blocked attempt.
+sounds: true

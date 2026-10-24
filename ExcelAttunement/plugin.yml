@@ -1,10 +1,10 @@
 name: ExcelAttunement
-version: 0.1.3
+version: 0.1.4
 main: com.winkreyes.excelattunement.ExcelAttunement
 api-version: '1.13'
 author: WinkReyesValley
 softdepend: [Magic]
-description: Combat Attunement - an effect lock, not an inventory lock. Landing a weapon hit stills your wand; casting in a fight stills your weapons. One fight, one commitment.
+description: Combat Attunement - one fight, one commitment. Landing a weapon hit locks your wand; casting in a fight locks your weapons (they stay out of your hand), with a live action-bar countdown.
 commands:
   attunement:
     description: Attunement admin (status / clear).

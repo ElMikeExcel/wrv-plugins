@@ -36,6 +36,8 @@ public final class AttunementState {
     private long stanceExpiresAt = Long.MIN_VALUE;
     private long lastCombatAt = Long.MIN_VALUE;
     private boolean expiryPending = false;
+    /** Bumped every time a stance is SET (not refreshed): 0.1.4 lock feedback key. */
+    private long epoch = 0L;
 
     public AttunementState(long windowSeconds, long combatContextSeconds) {
         this.windowMs = windowSeconds * 1000L;
@@ -77,6 +79,7 @@ public final class AttunementState {
         if (active == Stance.MARTIAL) return HitResult.REFRESHED;
         stance = Stance.MARTIAL;
         expiryPending = false;
+        epoch++;
         return HitResult.SET;
     }
 
@@ -98,6 +101,7 @@ public final class AttunementState {
         if (active == Stance.CASTER) return CastResult.REFRESHED;
         stance = Stance.CASTER;
         expiryPending = false;
+        epoch++;
         return CastResult.SET;
     }
 
@@ -132,6 +136,15 @@ public final class AttunementState {
             }
         }
         return false;
+    }
+
+    /**
+     * Counter of stance SETs (0.1.4). A refresh keeps the same epoch, a
+     * new stance gets a new one, so "first blocked attempt per stance"
+     * is simply "first blocked attempt with this epoch".
+     */
+    public long epoch() {
+        return epoch;
     }
 
     /** Admin clear / death / quit: stance and combat context both reset. */
