@@ -286,6 +286,8 @@ public class ExcelBedrockMenu extends JavaPlugin implements CommandExecutor {
             {"/claim", "claim", "Claim the land around you"},
             {"/claimslist", "claimslist", "Your claim blocks and where your claims are"},
             {"/trust <player>", null, "Give a player full access to your claims"},
+            {"/childproofmenu", "childproofmenu", "Pick a player: doors and buttons only in this claim"},
+            {"/unchildproof <player>", null, "Remove that player from the claim you stand in"},
             {"/extendclaim <blocks>", null, "Grow the claim you are standing in"},
             {"/buyclaimblocks <amount>", null, "Buy more claim blocks with server money"},
             {"/trapped", "trapped", "Escape if you are stuck inside a claim"},
@@ -443,6 +445,7 @@ public class ExcelBedrockMenu extends JavaPlugin implements CommandExecutor {
         getCommand("serverwebsite").setExecutor(this);
         TeleportMenu tp = new TeleportMenu(this);
         getCommand("tpmenu").setExecutor(tp);
+        getCommand("childproofmenu").setExecutor(new ChildproofMenu(this));
         getServer().getPluginManager().registerEvents(tp, this);
         getLogger().info("ExcelBedrockMenu enabled: /menu uses native Bedrock dialogs.");
     }

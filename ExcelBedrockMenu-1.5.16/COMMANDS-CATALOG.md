@@ -75,6 +75,8 @@ menu's Jobs & Money button has always used.)
 | `/claim` | GriefPrevention | Claim the land around you | Tap |
 | `/claimslist` | GriefPrevention | Your claim blocks and where your claims are | Tap |
 | `/trust <player>` | GriefPrevention | Give a player full access to your claims | List |
+| `/childproofmenu` | ExcelBedrockMenu 1.5.16 | Pick a player: doors and buttons only in this claim (runs `/childproof <player>`) | Button |
+| `/unchildproof <player>` | commands.yml alias | Remove that player from the claim you stand in | List |
 | `/extendclaim <blocks>` | GriefPrevention | Grow the claim you are standing in | List |
 | `/buyclaimblocks <amount>` | GriefPrevention | Buy more claim blocks with server money | List |
 | `/trapped` | GriefPrevention | Escape if you are stuck inside a claim | Tap |
