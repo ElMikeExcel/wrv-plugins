@@ -1,0 +1,67 @@
+=== EA 0.1.6 restart check PHASE=spawn Sat Oct 24 2026 11:46:27 GMT-0500 (Central Daylight Time)
+  [11:46:37] [RigWorlds] RIGDRAGON world_the_end: [9b2ca7be phase=CIRCLING ai=true hp=400 max=400 inv=false] live=1 dead=0 linked=true respawn=NONE bar=true prevKilled=false portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,yaw=0.0}
+PASS fresh End: dragon spawned, never killed
+  status: world_the_end: dragon ALIVE (zone locked); rig_end: dragon ALIVE (zone locked)
+PASS status ALIVE with a live never-killed dragon
+SUMMARY spawn: 2/2 PASS
+=== EA 0.1.6 restart check PHASE=afterrestart-alive Sat Oct 24 2026 11:47:05 GMT-0500 (Central Daylight Time)
+  [11:47:05] [RigWorlds] RIGDRAGON world_the_end: live=0 dead=0 linked=false respawn=NONE bar=true prevKilled=false portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,yaw=0.0}
+  status: world_the_end: dragon ALIVE (zone locked); rig_end: dragon ALIVE (zone locked)
+PASS restart, no players, never-killed: status ALIVE (by design) | [11:47:05] [RigWorlds] RIGDRAGON world_the_end: live=0 dead=0 linked=false respawn=NONE bar=true prevKilled=false portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,y
+$ execute in minecraft:the_end if entity @e[type=minecraft:ender_dragon]
+   execute in minecraft:the_end if entity @e[type=minecraft:ender_dragon]>   [11:47:07 INFO]: System chat: Test failed
+   > 
+PASS plain entity check without forceload: does NOT see the unloaded dragon (false negative) | e[type=minecraft:ender_dragon]>   [11:47:07 INFO]: System chat: Test failed
+> 
+$ execute in minecraft:the_end run forceload add -128 -128 127 127
+   [11:47:09] System chat: Marked 256 chunks in minecraft:the_end from [-8, -8] to [7, 7] to be force loaded
+   > 
+$ execute in minecraft:the_end if entity @e[type=minecraft:ender_dragon]
+   execute in minecraft:the_end if entity @e[type=minecraft:ender_dragon]>   [11:47:18 INFO]: System chat: Test passed. Count: 1
+   > 
+$ execute in minecraft:the_end run forceload remove all
+   [11:47:20] System chat: Unmarked all force loaded chunks in minecraft:the_end
+   > 
+FAIL forceload check finds the live dragon (count 1) |  minecraft:the_end if entity @e[type=minecraft:ender_dragon]>   [11:47:18 INFO]: System chat: Test passed. Count: 1
+> 
+  [11:47:21] [RigWorlds] RIGDRAGON world_the_end: live=0 dead=0 linked=false respawn=NONE bar=true prevKilled=false portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,yaw=0.0}
+  status: world_the_end: dragon ALIVE (zone locked); rig_end: dragon ALIVE (zone locked)
+PASS after forceload remove: still ALIVE
+SUMMARY afterrestart-alive: 3/4 PASS
+=== EA 0.1.6 restart check PHASE=kill Sat Oct 24 2026 11:47:44 GMT-0500 (Central Daylight Time)
+  [11:47:54] [RigWorlds] RIGDRAGON world_the_end: [9b2ca7be phase=CIRCLING ai=true hp=400 max=400 inv=false] live=1 dead=0 linked=true respawn=NONE bar=true prevKilled=false portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,yaw=0.0}
+  [11:48:18] [RigWorlds] RIGDRAGON world_the_end: [9b2ca7be phase=DYING ai=true hp=1 max=900 inv=false] live=1 dead=0 linked=true respawn=NONE bar=true prevKilled=false portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,yaw=0.0}
+  [11:48:21] [RigWorlds] RIGDRAGON world_the_end: [9b2ca7be phase=DYING ai=true hp=1 max=900 inv=false] live=1 dead=0 linked=true respawn=NONE bar=true prevKilled=false portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,yaw=0.0}
+  [11:48:23] [RigWorlds] RIGDRAGON world_the_end: live=0 dead=0 linked=true respawn=NONE bar=true prevKilled=false portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,yaw=0.0}
+  [11:48:26] [RigWorlds] RIGDRAGON world_the_end: live=0 dead=0 linked=true respawn=NONE bar=true prevKilled=false portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,yaw=0.0}
+  [11:48:29] [RigWorlds] RIGDRAGON world_the_end: live=0 dead=0 linked=true respawn=NONE bar=true prevKilled=false portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,yaw=0.0}
+  [11:48:32] [RigWorlds] RIGDRAGON world_the_end: live=0 dead=0 linked=true respawn=NONE bar=true prevKilled=false portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,yaw=0.0}
+  [11:48:35] [RigWorlds] RIGDRAGON world_the_end: live=0 dead=0 linked=false respawn=NONE bar=false prevKilled=true portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,yaw=0.0}
+PASS dragon killed: live=0, bar=false, prevKilled=true | [11:48:35] [RigWorlds] RIGDRAGON world_the_end: live=0 dead=0 linked=false respawn=NONE bar=false prevKilled=true portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,y
+  status: world_the_end: dragon NONE (zone open); rig_end: dragon ALIVE (zone locked)
+PASS status NONE right after the kill
+  status: world_the_end: dragon NONE (zone open); rig_end: dragon ALIVE (zone locked)
+PASS status NONE with the End empty (20 s later)
+SUMMARY kill: 3/3 PASS
+=== EA 0.1.6 restart check PHASE=afterrestart-dead Sat Oct 24 2026 11:49:20 GMT-0500 (Central Daylight Time)
+  [11:49:20] [RigWorlds] RIGDRAGON world_the_end: live=0 dead=0 linked=false respawn=NONE bar=false prevKilled=true portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,yaw=0.0}
+  status: world_the_end: dragon NONE (zone open); rig_end: dragon ALIVE (zone locked)
+PASS restart, no players, killed dragon: status NONE (early) | [11:49:20] [RigWorlds] RIGDRAGON world_the_end: live=0 dead=0 linked=false respawn=NONE bar=false prevKilled=true portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,y
+  waiting 20 s past the 300-tick empty-world window
+  [11:49:42] [RigWorlds] RIGDRAGON world_the_end: live=0 dead=0 linked=false respawn=NONE bar=false prevKilled=true portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,yaw=0.0}
+  status: world_the_end: dragon NONE (zone open); rig_end: dragon ALIVE (zone locked)
+PASS restart, no players, killed dragon: status NONE (later) | [11:49:42] [RigWorlds] RIGDRAGON world_the_end: live=0 dead=0 linked=false respawn=NONE bar=false prevKilled=true portal=Location{world=CraftWorld{key=minecraft:the_end},x=0.0,y=58.0,z=0.0,pitch=0.0,y
+$ execute in minecraft:the_end run forceload add -128 -128 127 127
+   [11:49:44] System chat: Marked 256 chunks in minecraft:the_end from [-8, -8] to [7, 7] to be force loaded
+   > 
+$ execute in minecraft:the_end if entity @e[type=minecraft:ender_dragon]
+   execute in minecraft:the_end if entity @e[type=minecraft:ender_dragon]>   [11:49:53 INFO]: System chat: Test failed
+   > 
+$ execute in minecraft:the_end run forceload remove all
+   [11:49:55] System chat: Unmarked all force loaded chunks in minecraft:the_end
+   > 
+PASS forceload check finds no dragon | execute in minecraft:the_end if entity @e[type=minecraft:ender_dragon]>   [11:49:53 INFO]: System chat: Test failed
+> 
+  status: world_the_end: dragon NONE (zone open); rig_end: dragon ALIVE (zone locked)
+PASS after forceload remove: still NONE
+SUMMARY afterrestart-dead: 4/4 PASS

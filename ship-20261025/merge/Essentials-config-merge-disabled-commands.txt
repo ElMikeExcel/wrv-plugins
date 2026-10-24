@@ -1,0 +1,9 @@
+Essentials/config.yml - add ONE list item under the existing top-level `disabled-commands:` key
+(do not replace the file; keep every other line, keep any items already listed):
+
+disabled-commands:
+  - time
+
+Effect: EssentialsX stops claiming /time, so /time is vanilla /minecraft:time (works on Paper 26.3,
+sets the overworld clock). /etime still shows the Essentials per-world time readout.
+If `disabled-commands:` is written inline as `disabled-commands: []`, change it to the block form above.

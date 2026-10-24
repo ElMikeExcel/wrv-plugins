@@ -1,0 +1,24 @@
+name: ExcelMenuJoin
+version: 1.4.2
+main: com.winkreyesvalley.excelmenujoin.ExcelMenuJoin
+api-version: '1.13'
+author: WinkReyesValley
+description: Opens the server menu on join, with a per-player toggle. (Renamed from MenuJoin.) 1.4.0 checks the Utility Pouch before giving a compass, so a parked compass never duplicates. 1.4.1 removes the DeluxeMenus hard dependency (the plugin never used its API) that kept it from loading after the ExcelMenu swap. 1.4.2 makes tapping the compass in the air open the menu (it only worked against a block).
+softdepend: [PlaceholderAPI, ExcelPouch]
+commands:
+  excelmenujoin:
+    description: Toggle whether the server menu opens automatically when you join.
+    usage: /excelmenujoin
+    aliases: [menujoin]
+    permission: excelmenujoin.toggle
+  compass:
+    description: Get a new server menu compass if you lost yours.
+    usage: /compass
+    permission: excelmenujoin.compass
+permissions:
+  excelmenujoin.toggle:
+    description: Allows toggling the join menu.
+    default: true
+  excelmenujoin.compass:
+    description: Allows getting a new server menu compass with /compass.
+    default: true

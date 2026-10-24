@@ -1,0 +1,64 @@
+# ---- 0.1.6 arena locks (Mike, Oct 24, 2026) ----
+# Some Magic (elMakers) movement spells are sealed near the Ender Dragon
+# while she lives: inside the zone below, in a world whose dragon is
+# alive, a locked spell cannot be cast (no mana, no cooldown spent).
+# Outside the zone, or with no live dragon, every spell works. This
+# follows the dragon, not a seal: the first fight, every re-fight and
+# every crystal re-summon are covered. A missing section = these
+# default rules.
+arena-locks:
+  # false = no arena locks at all (0.1.5 behavior).
+  enabled: true
+  # Dragon state unreadable (the fight could not be read)? true = treat
+  # her as alive inside the zone (safe), false = open.
+  block-if-dragon-unknown: true
+  # Blocked-cast line (chat + action bar) at most once per this many
+  # seconds per player, per spell.
+  notice-cooldown-seconds: 3
+  # How often (ticks) players in the zone are checked for a running
+  # stop-running spell (Glide) - also catches a dragon re-summoned
+  # while they stand inside.
+  check-ticks: 5
+  zone:
+    # Worlds in scope: environments (THE_END, NETHER, NORMAL) and/or
+    # exact world names.
+    environments:
+      - THE_END
+    worlds: []
+    # A vertical cylinder (every height, void included) around the
+    # main island centre.
+    center-x: 0
+    center-z: 0
+    # 200: the vanilla main island reaches about 100 blocks from 0,0,
+    # the obsidian pillars stand 42 blocks out, the arrival platform is
+    # at 100,49,0 (inside), and vanilla adds players to the dragon fight
+    # within 192 blocks of 0,128,0; 200 covers all of that plus a void
+    # margin, and stays far from the outer islands (1000+ blocks out).
+    radius: 200
+  # One entry per locked spell. A bare entry ("dash: {}") locks that
+  # spell with the default line "<Spell> is sealed near the dragon while
+  # she lives". Optional keys: spells (aliases / base keys, default the
+  # entry name; levels like fling|4 always match), message, stop-running
+  # (stop it if it is still running when the player is inside the
+  # active zone), protect-targets-in-zone (also block casting it AT a
+  # player who is inside the active zone, wherever the caster is).
+  rules:
+    glide:
+      message: "Glide is sealed near the dragon while she lives"
+      stop-running: true
+    # Every Fling level; the leap alias casts as fling|4, so it is covered.
+    fling:
+      message: "Fling is sealed near the dragon while she lives"
+    hulkleap:
+      message: "Hulkleap is sealed near the dragon while she lives"
+    lift:
+      message: "Lift is sealed near the dragon while she lives"
+      protect-targets-in-zone: true
+    blink:
+      message: "Blink is sealed near the dragon while she lives"
+    # Open by default - uncomment one line to lock it too:
+    # backflip: {}
+    # recall: {}
+    # gather: {}
+    # dash: {}
+    # evade: {}

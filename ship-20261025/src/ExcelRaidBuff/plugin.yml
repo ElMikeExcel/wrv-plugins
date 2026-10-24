@@ -1,0 +1,16 @@
+name: ExcelRaidBuff
+version: 0.1.2
+author: Argus
+main: com.winkreyes.excelraidbuff.ExcelRaidBuff
+api-version: "1.21"
+description: The raid-only buff layer of Wink Reyes Valley - Bad Omen-keyed attribute scaling on raid members only, plus a config fraction of each wave converted in place into real EliteMobs elites through EM's public API (raid-scoped; the global high-compatibility flag stays off). Patrols, outposts, mansions and vexes stay vanilla; buffs strip at raid end; one announce line at omen III+. Plus the stuck-wave reveal (0.1.1) - a raid that makes no progress for the configured quiet span glows its living members until the fight resumes, cosmetic only. Plus raid expiry (0.1.2) - a raid older than the configured lifetime cap (6 hours by default, on a clock that survives restarts) dies down and its members leave with no loot and no victor.
+softdepend: [EliteMobs]
+commands:
+  raidbuff:
+    description: ExcelRaidBuff status and admin controls
+    usage: /raidbuff [status|reload]
+    permission: excelraidbuff.admin
+permissions:
+  excelraidbuff.admin:
+    description: Allows /raidbuff admin commands
+    default: op

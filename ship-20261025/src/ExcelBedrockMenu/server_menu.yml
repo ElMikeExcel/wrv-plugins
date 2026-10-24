@@ -1,0 +1,135 @@
+menu_title: '&6&lServer Menu'
+# Note: /menu is owned by the BedrockMenu plugin (native Bedrock dialogs).
+# Java players are routed here via "dm open server_menu <player>".
+size: 27
+items:
+  commands:
+    material: KNOWLEDGE_BOOK
+    slot: 9
+    display_name: '&a&lServer Commands'
+    lore:
+      - '&7Every command you can use'
+    left_click_commands:
+      - '[openguimenu] commands_menu'
+  spawn:
+    material: COMPASS
+    slot: 10
+    display_name: '&a&lSpawn'
+    lore:
+      - '&7Teleport back to the village'
+    left_click_commands:
+      - '[console] execute in minecraft:overworld run minecraft:tp %player_name% -784 80 -336'
+  shop:
+    material: EMERALD
+    slot: 11
+    display_name: '&a&lExcel Shop'
+    lore:
+      - '&7Spend your Jobs money'
+      - '&7on useful items'
+    left_click_commands:
+      - '[player] shop'
+    right_click_commands:
+      - '[player] shop'
+  guild_locked:
+    material: BELL
+    slot: 12
+    priority: 1
+    display_name: '&8&lAdventurers Guild'
+    lore:
+      - '&7Sealed by the five challenges'
+      - '&7Tap to see the Road to the Guild'
+    view_requirement:
+      requirements:
+        guild_locked:
+          type: string equals
+          input: '%guildgate_unlocked%'
+          output: 'false'
+    left_click_commands:
+      - '[player] seals'
+  guild_open:
+    material: BELL
+    slot: 12
+    priority: 2
+    display_name: '&a&lAdventurers Guild'
+    lore:
+      - '&7Teleport to the EliteMobs'
+      - '&7guild hall'
+    view_requirement:
+      requirements:
+        guild_unlocked:
+          type: string equals
+          input: '%guildgate_unlocked%'
+          output: 'true'
+    left_click_commands:
+      - '[player] ag'
+  mcmmo:
+    material: EXPERIENCE_BOTTLE
+    slot: 14
+    display_name: '&a&lmcMMO Stats'
+    lore:
+      - '&7See your skill levels'
+    left_click_commands:
+      - '[player] mcstats'
+  info:
+    material: BOOK
+    slot: 15
+    display_name: '&a&lServer Info'
+    lore:
+      - '&7What runs on this server'
+    left_click_commands:
+      - '[player] motd'
+  autojoin_on:
+    material: LIME_DYE
+    slot: 16
+    priority: 1
+    display_name: '&a&lAuto-open on join: ✔ ON'
+    lore:
+      - '&7This menu opens when you join'
+      - '&7Click to turn it off'
+    view_requirement:
+      requirements:
+        menujoin_on:
+          type: string equals
+          input: '%menujoin_status%'
+          output: 'ON'
+    left_click_commands:
+      - '[player] menujoin'
+      - '[refresh]'
+  autojoin_off:
+    material: GRAY_DYE
+    slot: 16
+    priority: 2
+    display_name: '&7&lAuto-open on join: &c&l✘ OFF'
+    lore:
+      - '&7This menu stays closed when you join'
+      - '&7Click to turn it on'
+    view_requirement:
+      requirements:
+        menujoin_off:
+          type: string equals
+          input: '%menujoin_status%'
+          output: 'OFF'
+    left_click_commands:
+      - '[player] menujoin'
+      - '[refresh]'
+  website:
+    material: COMPASS
+    slot: 17
+    display_name: '&a&lServer Website'
+    lore:
+      - '&7Guides, commands and news'
+      - '&7Tap for the address'
+    left_click_commands:
+      - '[json] {"text":"» Server Website: elmikeexcel.github.io/winkreyesvalley","color":"aqua","underlined":true,"clickEvent":{"action":"open_url","value":"https://elmikeexcel.github.io/winkreyesvalley/"},"hoverEvent":{"action":"show_text","value":"Open the server website"}}'
+      - '[message] &bhttps://elmikeexcel.github.io/winkreyesvalley/'
+      - '[message] &7Short, easy to type: &btinyurl.com/winkreyesvalley'
+  utility_pouch:
+    material: CHEST
+    slot: 19
+    display_name: '&6Utility Pouch'
+    lore:
+      - '&7Park your Server Menu compass'
+      - '&7and your Magic wand here.'
+    click_commands:
+      - '[player] pouch'
+      - '[close]'

@@ -1,0 +1,15 @@
+ExcelBossTrial 0.2.6 - enabled
+The Wither: on, caps 60/75, share gate on, presence on, rally pool 1500 +300 per champion (cap 5), fought-free check on (radius 4.0, final 25%)
+An Elder Guardian: on, caps 35/40, share gate on, presence on, rally pool 700 +75 per champion (cap 5)
+The Warden: on, caps 60/75, share gate on, presence on, rally pool 1300 +200 per champion (cap 5), share height band +/-12.0, share range band 14.0 blocks, give-up 45s of no honest fight
+Dragon chapter: running (two-phase machine), presence rule on, share gate on
+No seal credit cooldowns running.
+Seal loot: on, signatures paid: none yet
+Open encounters: 0
+XP band governor: on, verdicts in flight: 0
+Announcements: OPEN until 2026-10-25T04:50:41.586Z
+[Dragon chapter] ExcelDragonTrial 0.1.2 port - enabled=true, apply-to-resummons=true
+caps: per-event <= 60 HP | explosion <= 75 HP/tick | crystal placement locked during battle
+- world_the_end: phase=DONE, dragon HP -, waves fired=0, completed battles=1
+- rig_end: phase=NONE, dragon HP -, waves fired=0, completed battles=0
+> 

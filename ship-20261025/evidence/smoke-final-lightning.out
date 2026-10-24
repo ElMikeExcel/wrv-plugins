@@ -1,0 +1,32 @@
+=== ship-20261025 combined smoke, spells=lightning-slot Sat Oct 24 2026 11:01:06 GMT-0500 (Central Daylight Time)
+join windows opened (menu on join): 1
+  tw add: [11:01:13] Protected: Sh1 (<uuid>) at factor 0.50
+> 
+PASS TW lifesteal: protected player kills a zombie, +2 HP, LIFESTEAL debug line | 12 -> 14 | LIFESTEAL Sh1: killed ZOMBIE (hostile) +2.0 HP 12.0 -> 14.0 (max 20.0, configured +2.0)
+PASS stage 1: new wand defaults to classic (mode=chest) | ssic (default) wand beginner rank=true mode=chest right_click=cycle right_click_sneak=toggle drop=cycle_reverse quick_cast=null matches=true
+PASS stage 1 spell count | 43
+PASS stage 2 spell count = 81 | 81
+PASS stage 2: Magic/wands.yml = packaged classic stage2 | 3dc1bf99
+PASS stage 2: Magic/spells.yml = package lightning-slot | 3205227a
+PASS stage 3 spell count = 142 | 142
+PASS stage 3: Magic/wands.yml = packaged classic stage3 | a8afb0d8
+PASS stage 3: Magic/spells.yml = package lightning-slot | 7d43579c
+PASS stage 4 spell count = 157 | 157
+PASS stage 4: Magic/wands.yml = packaged classic stage4 | e5165a7e
+PASS stage 4: Magic/spells.yml = package lightning-slot | e9e635d2
+PASS stage 5 spell count = 203 | 203
+PASS stage 5: Magic/wands.yml = packaged classic stage5 | fb5a8896
+PASS stage 5: Magic/spells.yml = package lightning-slot | 46cc3b14
+PASS stage 5: student wand classic (mode=chest) | assic (default) wand student rank=true mode=chest right_click=cycle right_click_sneak=toggle drop=cycle_reverse quick_cast=null matches=true
+  status: [11:02:28] Attunement: ON, window 30s, weapon-lock ON, wand-lock ON. Stanced players: none || Guild ward: ON, EliteMobs registry not used, prefixes [em_], worlds [em_adventurers_guild, goblinkingdom_vf], wand closed, strip [absorption, regeneration, resistance] <=15s, Magic teleports in blocked. ||   Warded worlds loaded: em_adventurers_guild (NAME) ||   Since start: 0 casts blocked, 0 wand opens blocked, 0 teleports blocked, 0 buffs stripped, 0 entries. || Arena locks: ON, sealed near a live dragon: glide (stopped on entry), fling, hulkleap, lift (+ targets in zone), blink; zone radius 200 ar
+PASS attunement status shows End dragon ALIVE/NONE (locked)
+PASS End 100,0 dragon alive: glide blocked | RIGCAST pre Sh1 glide cancelled=true
+PASS End 100,0 dragon alive: blink blocked | RIGCAST pre Sh1 blink cancelled=true
+PASS End 100,0 dragon alive: fling blocked | RIGCAST pre Sh1 fling cancelled=true
+PASS blocked casts cost no mana | 100 -> 100
+PASS overworld: blink works | RIGCAST pre Sh1 blink cancelled=false ; RIGCAST done Sh1 blink result=CAST target=none
+PASS bosstrial status answers (undefined) | [11:02:41] ExcelBossTrial 0.2.7 - enabled || [11:02:41] The Wither: on, caps 60/75, share gate on, presence on, rally pool 1500 +300 per champion (cap 5), fought-free check on (radius 4.0, final 25%) || [11:02:41] An Elder Guardian: on, caps 35/40, share gate on, presence on, rally pool 700 +75 per 
+PASS MenuJoin 1.4.2: compass air tap opens the menu | compass=compass windows 1 -> 2
+PASS /leaderboard in game shows the refreshed boards | rows 9
+PASS 0 SEVERE / NPE / event errors in the whole rig log | count 0
+=== RESULT 26/26 PASS
