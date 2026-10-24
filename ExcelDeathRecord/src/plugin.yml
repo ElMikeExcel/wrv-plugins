@@ -1,0 +1,32 @@
+name: ExcelDeathRecord
+version: 0.3.0
+main: com.winkreyes.exceldeathrecord.ExcelDeathRecord
+api-version: '1.13'
+author: WinkReyesValley
+softdepend: [Geyser-Spigot, floodgate, Essentials, Vault, ExcelTips]
+description: >-
+  Death ledger for Wink Reyes Valley: snapshots every death from the
+  PlayerDeathEvent itself (full drop list + complete inventory, byte-exact),
+  keeps the Burn Ledger (items destroyed by lava, fire, void, or despawned
+  valuables), restores saved items exactly (typed or tap menu), and runs
+  Lost & Found: players bring back their own lost items for a price.
+commands:
+  deathrecord:
+    description: Look up deaths and the Burn Ledger, and restore saved items (ops).
+    usage: /deathrecord help
+    permission: exceldeathrecord.admin
+  lostfound:
+    description: Lost & Found - bring back something you lost to lava, fire, the void or despawning.
+    usage: /lostfound
+    aliases: [recover]
+    permission: exceldeathrecord.lostfound
+permissions:
+  exceldeathrecord.admin:
+    description: Read the death ledger and the Burn Ledger.
+    default: op
+  exceldeathrecord.restore:
+    description: Restore items from a death or Burn Ledger record.
+    default: op
+  exceldeathrecord.lostfound:
+    description: Use Lost & Found (/lostfound) for your own lost items.
+    default: true

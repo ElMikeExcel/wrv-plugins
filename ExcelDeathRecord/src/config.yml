@@ -1,0 +1,41 @@
+# ExcelDeathRecord 0.3.0
+# Time zone for times shown in /deathrecord, the restore menu and Lost & Found.
+# Record files and restores.csv keep their own server/UTC times.
+display-zone: America/Chicago
+
+# ---- 0.3.0 Lost & Found ----
+# Players bring back their OWN items from the Burn Ledger (lost to lava,
+# fire, the void, or a despawn the ledger records) with /lostfound.
+lost-and-found:
+  enabled: true
+  # Price of one recovery, in server money (Vault / Essentials).
+  price: 16000
+  # The first recovery is free when the player has LESS than free-threshold
+  # at the moment they confirm. Once per player, ever.
+  free-first-recovery: true
+  free-threshold: 10000
+  # true: the free one only counts if it is the player's very first recovery
+  # (a player who paid for one earlier does not get a free one later).
+  free-only-if-no-earlier-recovery: true
+  # How long a lost item stays recoverable.
+  window-days: 7
+  # One recovery per player per this many hours.
+  cooldown-hours: 24
+  # Tell the owner in chat when one of their valuables is lost.
+  tell-owner: true
+  tell-owner-text: "Your {item} {how}. Type /lostfound within {days} to get it back."
+
+# A despawning item is logged in the Burn Ledger when it is enchanted or
+# custom-named, OR its type matches one of these. * matches anything.
+despawn-log-types:
+  - "diamond_*"
+  - "netherite_*"
+  - "elytra"
+  - "totem_of_undying"
+  - "trident"
+  - "mace"
+  - "heavy_core"
+  - "*shulker_box"
+  - "enchanted_golden_apple"
+  - "nether_star"
+  - "beacon"

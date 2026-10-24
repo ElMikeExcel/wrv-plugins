@@ -1,0 +1,29 @@
+/** Tiny check harness (house pattern: plain-JVM suites, no framework). */
+public final class Check {
+    public static int passed = 0;
+    public static int failed = 0;
+
+    public static void ok(boolean cond, String name) {
+        if (cond) { passed++; System.out.println("  PASS " + name); }
+        else { failed++; System.out.println("  FAIL " + name); }
+    }
+
+    public static void eq(Object expected, Object actual, String name) {
+        boolean same = expected == null ? actual == null : expected.equals(actual);
+        if (!same) System.out.println("    expected=" + expected + " actual=" + actual);
+        ok(same, name);
+    }
+
+    public static void close(double expected, double actual, String name) {
+        boolean same = Math.abs(expected - actual) < 1e-9;
+        if (!same) System.out.println("    expected=" + expected + " actual=" + actual);
+        ok(same, name);
+    }
+
+    /** Tolerance close for trig results (degrees / vector parts). */
+    public static void near(double expected, double actual, double tol, String name) {
+        boolean same = Math.abs(expected - actual) <= tol;
+        if (!same) System.out.println("    expected=" + expected + " actual=" + actual + " tol=" + tol);
+        ok(same, name);
+    }
+}
