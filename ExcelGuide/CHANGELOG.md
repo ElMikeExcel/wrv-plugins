@@ -1,0 +1,124 @@
+# ExcelGuide changelog
+
+## 0.3.0 (built Oct 24, 2026, CDT) - smarter player-taught answers
+
+STAGED ON THE BOX TEST SERVER ONLY. Not installed live. Needs Mike's go
+and one restart.
+
+Why: 0.2.3 "learned" 65 answers from family chat and almost all of
+them were chatter (a name call, "my brain is fried", answers to a
+different question). On Oct 24 at 1:25 PM CDT the live learned data was
+cleared (`peer-answers.yml` set to `[]`, `learned.yml` to `{}`,
+backups kept as `*.bak-20261024-clear`). 0.3.0 rebuilds peer learning
+so that cannot happen again.
+
+### Player answers now have to earn their place
+- **The answer must match the question.** An answer has to share a
+  meaningful word with the question or name game words. Questions only
+  open a listening window when they are real game questions (they name
+  a game word, are not social chat like "do you wanna...", "have you
+  seen...", and name no player).
+- **Answers must look like answers.** At least 20 characters and 4
+  words, not a question, not chit-chat or a hedge ("lol", "idk",
+  "maybe", "come back", "i was..."), and from a different player than
+  the asker.
+- **One chat line answers one question.** A line can no longer be
+  learned as the answer to several questions at once.
+- **Real backing is required.** 2 or more different players must agree
+  (not the asker, not the author), OR the asker confirms ("thanks",
+  "that worked"). A lone "yeah" no longer counts. Any "no / actually /
+  thats wrong" kills the candidate.
+- **Answers expire when stale.** A waiting answer nobody asks about
+  again within 14 days is dropped (`candidate-expire-days`). Approved
+  answers can expire too if you set `approved-expire-days` (off by
+  default).
+
+### Owner review queue: nothing is served until approved
+- New `/guide review` (admin only):
+  - `/guide review` or `/guide review list`: waiting answers with ids.
+  - `/guide review show <id>`: one answer in full, with why it is
+    there and whether the filters would block it now.
+  - `/guide review approve <id>` / `reject <id>`.
+  - `/guide review approved` and `/guide review remove <id>`.
+- On Bedrock, `/guide review` opens a pop-up list with Approve, Reject
+  and Back buttons. Chat commands work on every client.
+- Online admins get one line when a new answer is waiting.
+- `auto-approve` exists but is OFF by default.
+
+### Filters
+- **Seal-fight spoiler filter** (learn-by-dying rule). Questions about
+  seal-fight mechanics never open a window, and answers that describe
+  fight mechanics, enemies or what to expect are never stored or
+  served. Built-in phrase list plus boss words combined with mechanic
+  words; `spoiler-terms` in the config adds more.
+- **Name filter.** No player names in stored or served answers: every
+  online player and anyone seen in chat is blocked automatically;
+  `blocked-names` in the live config can add names of players who are
+  offline. Names never go in the repo.
+- **Profanity filter**, built in, plus `blocked-words`.
+- **Re-checked at serve time.** All filters run again every time an
+  approved answer is served, so a word added later also blocks older
+  answers.
+- The 0.2.3 privacy screens (no one's stats, no other players'
+  numbers, no links) still apply.
+
+### How learned answers look
+- Approved player answers are served as **"A player said: ..."**, never
+  with a player name (0.2.3 said "<name> figured this one out").
+- They rank below the Guide's own answers, the knowledge base and the
+  AI cache, exactly as before.
+- Answers are only served privately to the asker.
+
+### First-use tip (new player-facing piece)
+- When a player gets an "A player said" answer, the Guide adds a short
+  tip: these answers came from other players and were checked by the
+  owner, and the website's Ask page is the official word.
+- The tip repeats on every player answer until the player says OK:
+  - Java: click **[OK]** in chat (runs `/guide ok`).
+  - Bedrock: tap **OK, got it!** on the pop-up (sent at most once per
+    session), or type `/guide ok`.
+- Admin: `/guide tipreset <player>` shows the tip again.
+- Only the OK flag (player UUID) is stored, in `peer-tip.yml` in the
+  plugin's data folder on the server.
+- Config: `peer-learning.first-use-tip: true`, `tip-file: peer-tip.yml`.
+
+### Files and logs
+- New data files (data folder only): `peer-review.yml` (the queue and
+  approved answers, no player names or UUIDs) and `peer-tip.yml`.
+- `peer.log` lines carry no player names or UUIDs.
+- The 0.2.3 store `peer-answers.yml` is no longer read or written. It
+  stays on disk as it is.
+- **Empty files load cleanly.** An empty, `[]` or `{}` `peer-review.yml`,
+  `peer-tip.yml` or `learned.yml` means "nothing yet" with no warning.
+  (0.2.3 warned "peer file root is not a map" on the cleared `[]` file;
+  0.3.0 does not read that file at all.)
+- The 0.2.3 AI adjudicator for disputed answers is removed. Disputes now
+  simply drop the candidate.
+
+### Replay of the 65 old answers
+The 65 answers 0.2.3 learned (plus 28 it left unresolved) were replayed
+from the box copy of the old data through the 0.3.0 rules:
+- 64 of 65 are rejected. 1 would reach the review queue (backed by the
+  asker saying it worked). **0 would be served** without Mike's approval.
+- All 28 unresolved ones are rejected.
+- Top reasons: question had no game word (11), social question (10),
+  chatter answer (10), question too short (8), off-topic answer (7),
+  no backing (5), answer too short (5), profanity (3), one line reused
+  for another question (2), disputed (2), private `/ask` (1).
+
+### Unchanged
+- `knowledge.yml`, `intents.yml` and the bundled `learned.yml` are
+  byte-identical to 0.2.3. Intents, retrieval, stats answers, AI
+  fallback, notices and toggles behave as in 0.2.3.
+- The live `config.yml` is never replaced by a jar swap. Every new
+  setting has a safe built-in default, so the 0.2.3 config works as is.
+
+### Tests
+- Core harnesses: PeerReviewTest 109/109 (gates, corroboration,
+  queue, serving, decay, persistence, kill switch) and the new
+  PeerTipTest 61/61 (tip repeats until OK, persistence, Bedrock pop-up
+  once per session, empty `[]`/`{}` files, 0.2.3 store untouched).
+  Other harnesses unchanged from 0.2.3 (see TESTS in the PR body).
+- Box test server end to end, run twice: review flow, spoiler and name
+  answers not queued, "A player said" serving, tip repeat and OK,
+  restart persistence, rollback to 0.2.3, and forward again.

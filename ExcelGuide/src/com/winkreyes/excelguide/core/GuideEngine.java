@@ -1,0 +1,1648 @@
+package com.winkreyes.excelguide.core;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.LongSupplier;
+
+/**
+ * The Valley Guide's brain: given one chat line (or /ask), decide
+ * whether to answer, with what, and through which channel - or to
+ * stay silent. Pure logic: all server data arrives through StatsView,
+ * all time through the clock supplier, so the whole behaviour is
+ * unit-testable on a plain JVM (SPEC 10.1).
+ *
+ * Implements SPEC section 3's guardrails: ambient answers only through
+ * the marked tight intent groups; addressed-to-a-player wins; one
+ * clarifying question, then the combined fallback; per-player /
+ * per-question / global cooldowns; per-player off switch (the /ask
+ * command always works); personal stats always private; ambient
+ * answers never right after the asker took damage.
+ *
+ * One documented refinement of guardrail 5: the per-question cooldown
+ * key is the normalized question for PUBLIC answers (the anti-pile-on
+ * case the rule exists for) but is scoped to the asker for PRIVATE
+ * answers, so Avery asking her own balance 30 s after Mike asked his
+ * still gets her answer - she cannot see his, and nothing piles on.
+ */
+public final class GuideEngine {
+
+    public enum Door { COMMAND, SUMMON, AMBIENT }
+
+    public enum Channel { PUBLIC, PRIVATE }
+
+    /** One message to deliver. text has no persona prefix (glue adds it). */
+    public record Reply(Channel channel, String text) {}
+
+    /** Who is speaking. */
+    public record PlayerRef(UUID id, String name) {}
+
+    /**
+     * Where AI work runs (0.2.0). The glue backs this with the
+     * server's async scheduler; tests run tasks inline or from a
+     * queue they drain by hand. The engine never calls the provider
+     * anywhere else, so a chat or command thread never blocks on it.
+     */
+    @FunctionalInterface
+    public interface AiExecutor {
+        void submit(Runnable task);
+    }
+
+    /**
+     * Where an asynchronous answer goes when it is ready (0.2.0).
+     * The glue's sink schedules delivery onto the main thread and
+     * checks the asker is still online.
+     */
+    @FunctionalInterface
+    public interface AsyncSink {
+        void accept(List<Reply> replies);
+    }
+
+    /** The Magic lore line (SPEC 5 amendment, Mike's wording call). */
+    static final String MAGIC_LORE =
+            "Magic is not released into the world yet. It sleeps behind the guild's seals, "
+            + "like everything the old days left us. Break the first seal, then ask me again.";
+
+    static final String CLARIFY_QUESTION = "Which level - mcMMO, Jobs, time played, or Magic?";
+
+    static final String NON_ANSWER =
+            "I don't know that one yet. It's probably on the website's Ask page - "
+            + "and I've written your question down so we can teach me.";
+
+    static final String CANT_SEE = "I can't see that right now - try again in a little while.";
+
+    static final String OTHER_PLAYER_REFUSAL =
+            "That one's theirs to share - the leaderboard shows the top spots.";
+
+    /** mcMMO skill names, normalized-token form. */
+    public static final List<String> SKILLS = List.of(
+            "acrobatics", "alchemy", "archery", "axes", "crossbows", "excavation",
+            "fishing", "herbalism", "maces", "mining", "repair", "smelting",
+            "swords", "taming", "unarmed", "woodcutting");
+
+    /** Words that mark a question as being about someone's personal stats. */
+    private static final Set<String> STAT_WORDS = Set.of(
+            "level", "levels", "balance", "money", "cash", "played", "playtime",
+            "hours", "job", "jobs", "magic", "rich",
+            // 0.2.2: claim-block questions about a named player are
+            // personal too - the refusal, not the asker's own numbers,
+            // is the answer to "how many claim blocks does X have".
+            "claim", "claims", "blocks", "land");
+
+    private enum Choice { MCMMO, JOBS, PLAYTIME, MAGIC }
+
+    private final GuideConfig cfg;
+    private final IntentSet intents;
+    private final KnowledgeBase knowledge;
+    private final StatsView stats;
+    private final LongSupplier clock;
+    private final UnansweredLog unansweredLog; // may be null (logging off)
+    private final RateLimiter limiter;
+    private final AiProvider aiProvider;   // 0.2.0; null = no AI fallback
+    private final FactsView aiFacts;       // 0.2.0; null = no fact sheet
+    private final AiLog aiLog;             // 0.2.0; may be null
+    private final AiExecutor aiExecutor;   // 0.2.0; null = AI cannot run
+    private final AiGate aiGate;           // 0.2.0; the AI bucket
+    private final LearnCache aiCache;      // 0.2.1; null = no learn-cache
+    private final LearnedAnswers learned;  // 0.2.1; promoted answers (never null)
+    private final PeerCandidates peerStore; // 0.3.0 review queue; null = peer learning absent
+    private final PeerLog peerLog;          // 0.2.3; may be null
+    private final Map<UUID, Long> clarifyPending = new HashMap<>();
+    private final Map<UUID, Boolean> togglesOff = new HashMap<>();
+    private final Map<UUID, Long> lastNoticeAt = new HashMap<>(); // 0.2.2 notice throttle
+    private final Map<String, PeerWindow> peerWindows = new java.util.LinkedHashMap<>(); // by topic key
+    private long answersServed;
+    private long unansweredCount;
+    private long aiAnswered;
+    private long cacheServed;
+    private long peerServed;
+
+    /** Concurrent capture windows cap: a busy night cannot fan out unbounded state. */
+    private static final int MAX_PEER_WINDOWS = 8;
+
+    public GuideEngine(GuideConfig cfg, IntentSet intents, KnowledgeBase knowledge,
+                       StatsView stats, LongSupplier clock, UnansweredLog unansweredLog) {
+        this(cfg, intents, knowledge, stats, clock, unansweredLog, null, null, null, null);
+    }
+
+    /** Full constructor (0.2.0): the AI pieces are all nullable - any gap disables the fallback. */
+    public GuideEngine(GuideConfig cfg, IntentSet intents, KnowledgeBase knowledge,
+                       StatsView stats, LongSupplier clock, UnansweredLog unansweredLog,
+                       AiProvider aiProvider, FactsView aiFacts, AiLog aiLog,
+                       AiExecutor aiExecutor) {
+        this(cfg, intents, knowledge, stats, clock, unansweredLog, aiProvider, aiFacts, aiLog,
+                aiExecutor, null, null);
+    }
+
+    /**
+     * Full constructor (0.2.1): adds the learn-cache (nullable - null
+     * disables caching, AI behavior unchanged) and the promoted
+     * answers (null means none loaded).
+     */
+    public GuideEngine(GuideConfig cfg, IntentSet intents, KnowledgeBase knowledge,
+                       StatsView stats, LongSupplier clock, UnansweredLog unansweredLog,
+                       AiProvider aiProvider, FactsView aiFacts, AiLog aiLog,
+                       AiExecutor aiExecutor, LearnCache aiCache, LearnedAnswers learned) {
+        this(cfg, intents, knowledge, stats, clock, unansweredLog, aiProvider, aiFacts, aiLog,
+                aiExecutor, aiCache, learned, null, null);
+    }
+
+    /**
+     * Full constructor (0.3.0): adds peer learning - the review queue
+     * (nullable: null or the config kill switch disables the whole
+     * feature, restoring 0.2.2 behavior) and the peer event log
+     * (nullable). 0.2.3's AI adjudicator is gone: nothing a player
+     * says is served until Mike approves it, so there is nothing
+     * left for the AI to decide.
+     */
+    public GuideEngine(GuideConfig cfg, IntentSet intents, KnowledgeBase knowledge,
+                       StatsView stats, LongSupplier clock, UnansweredLog unansweredLog,
+                       AiProvider aiProvider, FactsView aiFacts, AiLog aiLog,
+                       AiExecutor aiExecutor, LearnCache aiCache, LearnedAnswers learned,
+                       PeerCandidates peerStore, PeerLog peerLog) {
+        this.cfg = cfg;
+        this.intents = intents;
+        this.knowledge = knowledge;
+        this.stats = stats;
+        this.clock = clock;
+        this.unansweredLog = unansweredLog;
+        this.limiter = new RateLimiter(cfg);
+        this.aiProvider = aiProvider;
+        this.aiFacts = aiFacts;
+        this.aiLog = aiLog;
+        this.aiExecutor = aiExecutor;
+        this.aiCache = aiCache;
+        this.learned = learned == null ? LearnedAnswers.empty() : learned;
+        this.peerStore = peerStore;
+        this.peerLog = peerLog;
+        this.aiGate = new AiGate(cfg.aiPerPlayerCooldownSeconds, cfg.aiDailyBudget,
+                java.time.ZoneId.systemDefault());
+    }
+
+    // ---------- toggles (glue persists via togglesText/loadToggles) ----------
+
+    public synchronized boolean isPlayerOff(UUID player) {
+        return Boolean.TRUE.equals(togglesOff.get(player));
+    }
+
+    public synchronized void setPlayerOff(UUID player, boolean off) {
+        togglesOff.put(player, off);
+        if (off) {
+            clarifyPending.remove(player);
+        }
+    }
+
+    public synchronized String togglesText() {
+        return PlayerToggles.serialize(togglesOff);
+    }
+
+    public synchronized void loadToggles(String text) {
+        togglesOff.clear();
+        togglesOff.putAll(PlayerToggles.parse(text));
+    }
+
+    // ---------- status ----------
+
+    public synchronized long answersServed() {
+        return answersServed;
+    }
+
+    public synchronized long unansweredCount() {
+        return unansweredCount;
+    }
+
+    public RateLimiter limiter() {
+        return limiter;
+    }
+
+    // ---------- AI fallback status (0.2.0) ----------
+
+    /** True when the fallback can engage: provider wired AND config switch on AND a key present. */
+    public synchronized boolean aiActive() {
+        return aiProvider != null && aiExecutor != null && cfg.aiConfigured();
+    }
+
+    /** AI calls engaged today (the daily budget's spent count). */
+    public synchronized long aiCallsToday() {
+        return aiGate.usedToday(clock.getAsLong());
+    }
+
+    /** AI engagements that produced an answer this run. */
+    public synchronized long aiAnsweredCount() {
+        return aiAnswered;
+    }
+
+    // ---------- learn status (0.2.1) ----------
+
+    /** Promoted (learned) answers currently loaded. */
+    public synchronized int learnedCount() {
+        return learned.size();
+    }
+
+    /** Entries currently in the AI learn-cache (0 when caching is off/absent). */
+    public synchronized int aiCacheSize() {
+        return aiCache == null ? 0 : aiCache.size();
+    }
+
+    /** Cache answers served this run. */
+    public synchronized long aiCacheServedCount() {
+        return cacheServed;
+    }
+
+    /** Persist pending cache hit counters (glue: on disable / before a reload swap). */
+    public synchronized void flushCache() {
+        if (aiCache != null) {
+            aiCache.flush();
+        }
+    }
+
+    // ---------- peer-learning status (0.2.3) ----------
+
+    /** True when peer learning can capture, learn, and serve. */
+    public synchronized boolean peerEnabled() {
+        return peerStore != null && cfg.peerEnabled;
+    }
+
+    /** Approved player answers (the only ones ever served). */
+    public synchronized int peerLearnedCount() {
+        return peerStore == null ? 0 : peerStore.count(PeerCandidates.APPROVED);
+    }
+
+    /** Player answers waiting for /guide review (never served). */
+    public synchronized int peerReviewCount() {
+        return peerStore == null ? 0 : peerStore.count(PeerCandidates.REVIEW);
+    }
+
+    /** Peer answers served this run. */
+    public synchronized long peerServedCount() {
+        return peerServed;
+    }
+
+    /** Persist pending peer hit counters (glue: on disable / before a reload swap). */
+    public synchronized void flushPeer() {
+        if (peerStore != null) {
+            peerStore.flush();
+        }
+    }
+
+    /**
+     * Periodic housekeeping (0.2.3; 0.3.0): the glue calls this on a
+     * timer so capture windows close - and the decay sweep runs -
+     * even when chat goes quiet. handle() runs the same close-out
+     * lazily on every message, so a busy chat never waits on the
+     * timer either.
+     */
+    public synchronized void tick() {
+        if (peerEnabled()) {
+            settlePeerWindows(clock.getAsLong());
+        }
+    }
+
+    // ---------- main entry ----------
+
+    /**
+     * Handle one message. {@code onlineNames} are the display names of
+     * everyone online (including the asker). {@code recentlyDamaged} is
+     * true when the asker took damage within the combat-quiet window.
+     * Returns the replies to deliver (usually 0 or 1; long answers wrap
+     * to at most 2 lines, each its own Reply with the same channel).
+     */
+    public synchronized List<Reply> handle(PlayerRef asker, String rawMessage, Door door,
+                                           Collection<String> onlineNames, boolean recentlyDamaged) {
+        return handle(asker, rawMessage, door, onlineNames, recentlyDamaged, null);
+    }
+
+    /**
+     * Handle one message, with an async sink for the AI fallback
+     * (0.2.0). When the fallback engages, this returns immediately -
+     * with the thinking line, when notices are on (0.2.2) - and the
+     * answer - or the standard non-answer, if the AI cannot ground
+     * one - arrives later through {@code sink}.
+     * A null sink disables the fallback (the non-answer is served
+     * synchronously, exactly as before 0.2.0).
+     */
+    public synchronized List<Reply> handle(PlayerRef asker, String rawMessage, Door door,
+                                           Collection<String> onlineNames, boolean recentlyDamaged,
+                                           AsyncSink sink) {
+        if (!cfg.enabled || asker == null || rawMessage == null) {
+            return List.of();
+        }
+        if (door == Door.COMMAND && !cfg.doorCommand) {
+            return List.of();
+        }
+        if (door == Door.SUMMON && !cfg.doorSummon) {
+            return List.of();
+        }
+        if (door == Door.AMBIENT && !cfg.doorAmbient) {
+            return List.of();
+        }
+        String norm = TextNorm.normalize(rawMessage);
+        if (norm.isBlank()) {
+            return List.of();
+        }
+        Set<String> tokens = TextNorm.tokenSet(norm);
+        long now = clock.getAsLong();
+
+        // Peer learning (0.2.3; gates rewritten in 0.3.0): expired
+        // capture windows settle first (a line arriving after the
+        // bell is not evidence), a question on a queued/approved
+        // topic refreshes its decay clock, then this line - plain
+        // public chat only; /ask and summon lines are questions, not
+        // teaching - is offered to the tracker. It never produces a
+        // reply; the tracker enforces who may teach and every gate.
+        if (peerEnabled()) {
+            notePeerSpeaker(asker, onlineNames);
+            settlePeerWindows(now);
+            notePeerAsk(rawMessage, norm, now);
+            if (door == Door.AMBIENT) {
+                feedPeer(asker, rawMessage, norm, tokens, now);
+            }
+        }
+
+        // A pending clarification outranks every ambient guard: the
+        // player is mid-conversation with the Guide, on purpose.
+        Long pendingExpiry = clarifyPending.get(asker.id());
+        if (pendingExpiry != null) {
+            if (now > pendingExpiry) {
+                clarifyPending.remove(asker.id());
+            } else {
+                List<Reply> r = handleClarifyReply(asker, norm, tokens, rawMessage, now);
+                if (r != null) {
+                    return serveOrNotice(asker, door, now, r);
+                }
+                // null = the line is really a new question; fall through.
+            }
+        }
+
+        if (door != Door.COMMAND && isPlayerOff(asker.id())) {
+            return List.of();
+        }
+
+        if (door == Door.AMBIENT) {
+            if (recentlyDamaged) {
+                return List.of();
+            }
+            // Addressed to another player wins (guardrail 2).
+            if (mentionsOtherPlayer(norm, tokens, asker, onlineNames)) {
+                return List.of();
+            }
+        } else {
+            // Asked the Guide directly about somebody else's stats.
+            if (mentionsOtherPlayer(norm, tokens, asker, onlineNames)
+                    && !java.util.Collections.disjoint(tokens, STAT_WORDS)) {
+                return serveOrNotice(asker, door, now, deliver(asker, norm, false, now,
+                        List.of(new Reply(Channel.PRIVATE, OTHER_PLAYER_REFUSAL))));
+            }
+        }
+
+        String skillToken = findSkillToken(norm);
+        IntentSet.Match match = intents.match(norm, tokens, door == Door.AMBIENT, skillToken != null);
+        if (match != null && match.score() >= cfg.intentMinScore) {
+            return serveOrNotice(asker, door, now,
+                    answerIntent(asker, match.intent(), norm, skillToken, door, now));
+        }
+
+        // Promoted answers (0.2.1): human-reviewed AI answers that
+        // graduated into the deterministic tier. Asked doors only -
+        // like the AI answers they came from, never ambient - and
+        // ahead of retrieval, the cache, and the AI itself.
+        if (door != Door.AMBIENT) {
+            String promoted = learned.match(norm);
+            if (promoted != null) {
+                return serveOrNotice(asker, door, now, deliver(asker, norm, false, now,
+                        wrap(Channel.PRIVATE, substitute(promoted, asker))));
+            }
+        }
+
+        // No intent cleared its bar.
+        if (door == Door.AMBIENT) {
+            // Silence - but remember plausible server questions
+            // (question-shaped, some topic overlap) for the growth list.
+            if (TextNorm.questionShaped(rawMessage, norm)) {
+                Retrieval.Result r = Retrieval.search(knowledge, norm, null);
+                if (r.best() != null && r.bestScore() >= 4) {
+                    logUnanswered(asker, rawMessage, "AMBIENT", r);
+                    // Peer learning (0.2.3): an unanswered question
+                    // in open chat opens a capture window too - the
+                    // valley may answer what the Guide could not.
+                    openPeerWindow(asker, rawMessage, norm, door, now);
+                }
+            }
+            return List.of();
+        }
+
+        // Command / summon: try open retrieval, privately.
+        Retrieval.Result r = Retrieval.search(knowledge, norm, null);
+        if (Retrieval.clearsBar(r, cfg.retrievalMinScore, cfg.retrievalMargin)) {
+            List<Reply> replies = wrap(Channel.PRIVATE, r.answerText());
+            List<Reply> out = deliver(asker, norm, false, now, replies);
+            if (out.isEmpty() && limiterVerdictWasGlobal(asker, norm, now)) {
+                logUnanswered(asker, rawMessage, door.name(), r);
+            }
+            return serveOrNotice(asker, door, now, out);
+        }
+        // The learn-cache (0.2.1): an AI answer given before, still
+        // fresh against the current knowledge stamp, serves here -
+        // instantly, with no AI call and no budget spent.
+        List<Reply> cached = serveCache(asker, rawMessage, norm, door, now);
+        if (cached != null) {
+            return serveOrNotice(asker, door, now, cached);
+        }
+        // Player answers (0.2.3; 0.3.0: approved by Mike only, served
+        // as "A player said: ...", never with a name). Ranked below
+        // intents, promoted answers, retrieval, and the AI cache -
+        // peer answers only fill gaps the valley itself cannot.
+        List<Reply> peer = servePeer(asker, norm, now);
+        if (peer != null) {
+            return serveOrNotice(asker, door, now, peer);
+        }
+        // The would-be non-answer path (0.2.0): the AI fallback gets
+        // one fenced attempt before the Guide gives up honestly. Only
+        // the asked doors reach this point - ambient returned above,
+        // and the tryAiFallback door check keeps it that way.
+        if (tryAiFallback(asker, rawMessage, norm, door, r, sink)) {
+            // Engaged (0.2.2): the thinking line returns synchronously
+            // so the seconds before the async answer lands are never
+            // silence. The answer itself still arrives via the sink.
+            return thinkingNotice(asker);
+        }
+        // Turned away by the AI bucket on this player's OWN cooldown
+        // (0.2.2): quote the real wait instead of a don't-know that
+        // is not true yet - after the wait, the same question gets
+        // its AI attempt. The budget and in-flight blocks have no
+        // per-player wait to quote, so they keep the plain
+        // non-answer below. A throttled or disabled notice also
+        // falls through to the non-answer: never silence either way.
+        long aiWait = (sink != null && door != Door.AMBIENT && aiActive())
+                ? aiGate.cooldownRemainingMillis(asker.id(), now) : 0;
+        if (aiWait > 0) {
+            List<Reply> notice = cooldownNotice(asker, door, now, aiWait);
+            if (!notice.isEmpty()) {
+                return notice;
+            }
+        }
+        logUnanswered(asker, rawMessage, door.name(), r);
+        // Peer learning (0.2.3): this question is officially
+        // unanswered - open the capture window and let the valley
+        // try. (The AI-cooldown notice path above deliberately does
+        // NOT open one: that question was gated, not unanswered.)
+        // 0.3.0: public summons only - a private /ask opens nothing.
+        openPeerWindow(asker, rawMessage, norm, door, now);
+        return serveOrNotice(asker, door, now, deliver(asker, norm, false, now,
+                List.of(new Reply(Channel.PRIVATE, NON_ANSWER))));
+    }
+
+    // ---------- learn-cache (0.2.1) ----------
+
+    /**
+     * Serve a cached AI answer for this question, or return null to
+     * let the normal path continue (no entry, caching off, the AI
+     * feature off, or the entry went stale). A stale entry - its
+     * knowledge stamp no longer matches the live knowledge - is
+     * dropped and noted in the AI log, and the question continues to
+     * the AI exactly as if it had never been cached; a fresh answer
+     * re-caches under the new stamp. A fresh hit serves through the
+     * standard private-answer limiter like any deterministic answer:
+     * no AiGate reservation, no budget, no provider call.
+     */
+    private List<Reply> serveCache(PlayerRef asker, String rawMessage, String norm,
+                                   Door door, long now) {
+        if (aiCache == null || !cfg.aiCacheEnabled || !aiActive()) {
+            return null;
+        }
+        LearnCache.Entry entry = aiCache.get(norm);
+        if (entry == null) {
+            return null;
+        }
+        if (!knowledge.version().equals(entry.stamp())) {
+            aiCache.remove(norm);
+            logCacheEvent(asker, rawMessage, door, "stale-dropped");
+            return null;
+        }
+        List<Reply> out = deliver(asker, norm, false, now,
+                wrap(Channel.PRIVATE, entry.answer()));
+        if (!out.isEmpty()) {
+            aiCache.recordHit(norm, now);
+            cacheServed++;
+            logCacheEvent(asker, rawMessage, door, "hit");
+        }
+        return out;
+    }
+
+    private void logCacheEvent(PlayerRef asker, String rawMessage, Door door, String kind) {
+        if (aiLog == null) {
+            return;
+        }
+        try {
+            aiLog.appendCacheEvent(Instant.ofEpochMilli(clock.getAsLong()), asker.name(),
+                    asker.id().toString(), door.name(), kind, rawMessage);
+        } catch (RuntimeException ignored) {
+            // The Guide never breaks chat because a log failed.
+        }
+    }
+
+    // ---------- peer learning (0.3.0: review queue) ----------
+
+    /*
+     * How the valley teaches the Guide (0.3.0). Rewritten after 0.2.3
+     * learned 65 chat lines - most of them chatter ("<name> come
+     * back", "my brain is fried") - with a player's name on each.
+     *
+     * 1. A WINDOW opens only for a PUBLIC question (plain chat, or a
+     *    "Guide, ..." summon - never a private /ask nobody else can
+     *    see) that the Guide could not answer AND that passes the
+     *    question gate (PeerFilter: a real game question, not social
+     *    chat, no player names, no profanity, no seal-fight spoiler).
+     * 2. ANSWERS: for answer-window-seconds (default 120) the next
+     *    plain-chat lines from OTHER players are offered to the
+     *    answer gate (PeerFilter). One line goes to ONE window only -
+     *    the open question it shares the most words with - and each
+     *    player gets one candidate per question. At most two
+     *    candidates per window.
+     * 3. CORROBORATION: until the window closes (capture-window-
+     *    minutes, default 5), a candidate needs EITHER min-agreements
+     *    (default 2) distinct other players backing it - a short
+     *    "yeah thats right", or their own similar answer - OR the
+     *    asker's own thanks / "that worked". The asker's "yeah" no
+     *    longer counts, and any "no / actually / thats wrong" disputes
+     *    the candidate: a disputed candidate is never queued.
+     * 4. REVIEW: a corroborated candidate goes to the review queue
+     *    (peer-review.yml) and is NEVER served from there. Mike
+     *    approves or rejects it with /guide review. auto-approve is
+     *    off by default.
+     * 5. SERVING: approved answers only, on the asked doors, below
+     *    intents, promoted answers, retrieval and the AI cache, as
+     *    "A player said: ...". The spoiler, profanity and name
+     *    screens run again at serve time.
+     * 6. DECAY: a review entry that nobody asks about again within
+     *    candidate-expire-days (default 14) expires.
+     *
+     * No player names or UUIDs are stored in the review file or the
+     * peer log, and none are ever served.
+     */
+
+    /** One candidate answer inside a live window (in memory only). */
+    private static final class PeerCand {
+        final UUID author;
+        final String text;
+        final Set<String> terms;
+        final long at;
+        final Set<UUID> agreers = new java.util.LinkedHashSet<>();
+        boolean askerConfirmed;
+        boolean disputed;
+
+        PeerCand(UUID author, String text, Set<String> terms, long at) {
+            this.author = author;
+            this.text = text;
+            this.terms = terms;
+            this.at = at;
+        }
+    }
+
+    /** One open capture window (0.3.0): in memory only; nothing persists until it settles. */
+    private static final class PeerWindow {
+        final String key;          // PeerFilter.topicKey of the question
+        final String question;     // normalized
+        final Set<String> qTerms;  // meaningful words of the question
+        final UUID asker;
+        final long openedAt;
+        final long answerUntil;
+        final long closesAt;
+        final List<PeerCand> cands = new ArrayList<>();
+
+        PeerWindow(String key, String question, Set<String> qTerms, UUID asker,
+                   long openedAt, long answerUntil, long closesAt) {
+            this.key = key;
+            this.question = question;
+            this.qTerms = qTerms;
+            this.asker = asker;
+            this.openedAt = openedAt;
+            this.answerUntil = answerUntil;
+            this.closesAt = closesAt;
+        }
+
+        PeerCand candBy(UUID who) {
+            for (PeerCand c : cands) {
+                if (c.author.equals(who)) {
+                    return c;
+                }
+            }
+            return null;
+        }
+
+        long lastActivity() {
+            long t = openedAt;
+            for (PeerCand c : cands) {
+                t = Math.max(t, c.at);
+            }
+            return t;
+        }
+    }
+
+    /** Names seen in chat this run (on top of who is online): the name screen's memory. */
+    private final java.util.Set<String> peerSeenNames = new java.util.LinkedHashSet<>();
+    private Collection<String> peerLastOnline = List.of();
+    private java.util.function.Consumer<String> peerNotifier; // glue: tells online ops
+    private PeerFilter peerFilter;
+
+    /** The glue's hook for "a new answer is waiting for review" (may be null). */
+    public synchronized void setPeerNotifier(java.util.function.Consumer<String> notifier) {
+        this.peerNotifier = notifier;
+    }
+
+    private PeerFilter filter() {
+        if (peerFilter == null) {
+            peerFilter = new PeerFilter(PeerFilter.lists(cfg.peerGameTerms, cfg.peerSpoilerTerms,
+                    cfg.peerBlockedWords, cfg.peerBlockedNames, cfg.peerSocialPhrases,
+                    cfg.peerChatterPhrases), cfg.peerMinAnswerChars, cfg.peerMinAnswerWords);
+        }
+        return peerFilter;
+    }
+
+    private Collection<String> knownNames() {
+        List<String> all = new ArrayList<>(peerLastOnline);
+        all.addAll(peerSeenNames);
+        return all;
+    }
+
+    private void notePeerSpeaker(PlayerRef who, Collection<String> onlineNames) {
+        if (who != null && who.name() != null) {
+            peerSeenNames.add(who.name());
+            if (peerSeenNames.size() > 500) {
+                peerSeenNames.remove(peerSeenNames.iterator().next());
+            }
+        }
+        if (onlineNames != null) {
+            peerLastOnline = List.copyOf(onlineNames);
+        }
+    }
+
+    /** A question matching a queued or approved topic refreshes its decay clock. */
+    private void notePeerAsk(String raw, String norm, long now) {
+        if (!TextNorm.questionShaped(raw, norm)) {
+            return;
+        }
+        String key = PeerFilter.topicKey(norm);
+        if (key.isBlank()) {
+            return;
+        }
+        PeerCandidates.Entry e = peerStore.byKey(key);
+        if (e != null) {
+            peerStore.touch(e.asked(now));
+        }
+    }
+
+    /**
+     * Open a capture window for a public question the Guide could not
+     * answer. Private /ask questions (Door.COMMAND) never open one:
+     * nobody else can see them, so any "answer" in chat is about
+     * something else (0.2.3 learned "i found a glitch" that way).
+     */
+    private void openPeerWindow(PlayerRef asker, String raw, String norm, Door door, long now) {
+        if (!peerEnabled() || norm == null || norm.isBlank() || door == Door.COMMAND) {
+            return;
+        }
+        Set<String> tokens = TextNorm.tokenSet(norm);
+        if (LearnPrivacy.isPersonalQuestion(tokens)
+                && !java.util.Collections.disjoint(tokens, STAT_WORDS)) {
+            return;
+        }
+        String reject = filter().questionReject(raw, norm, knownNamesExcept(asker));
+        String key = PeerFilter.topicKey(norm);
+        if (reject == null && key.isBlank()) {
+            reject = "q-too-short";
+        }
+        if (reject != null) {
+            logPeer("skipped", norm, "reason=" + reject);
+            return;
+        }
+        if (peerWindows.containsKey(key) || peerWindows.size() >= MAX_PEER_WINDOWS) {
+            return;
+        }
+        PeerCandidates.Entry onFile = peerStore.byKey(key);
+        if (onFile != null && onFile.isApproved()) {
+            return; // already taught and approved
+        }
+        peerWindows.put(key, new PeerWindow(key, norm, PeerFilter.meaningful(norm), asker.id(), now,
+                now + cfg.peerAnswerWindowSeconds * 1000L,
+                now + cfg.peerCaptureWindowMinutes * 60_000L));
+        logPeer("window", norm);
+    }
+
+    /** Known names minus the speaker's own (the asker naming themself is not naming a player). */
+    private Collection<String> knownNamesExcept(PlayerRef self) {
+        List<String> out = new ArrayList<>();
+        for (String n : knownNames()) {
+            if (self == null || n == null || !n.equalsIgnoreCase(self.name())) {
+                out.add(n);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Offer one plain-chat line to the open windows. In order: the
+     * asker's own signals (thanks / disagreement), a third player's
+     * disagreement or short agreement, and finally a possible answer.
+     * Never produces a reply.
+     */
+    private void feedPeer(PlayerRef speaker, String raw, String norm, Set<String> tokens, long now) {
+        if (peerWindows.isEmpty()) {
+            return;
+        }
+        UUID who = speaker.id();
+        boolean disagree = PeerGuard.isDisagreement(norm, tokens);
+
+        // 1) The asker of an open window: thanks confirms, "no" disputes, "yeah" counts for nothing.
+        PeerWindow asked = latest(w -> w.asker.equals(who) && !w.cands.isEmpty() && now < w.closesAt);
+        if (asked != null) {
+            if (disagree) {
+                disputeLatest(asked, who);
+                return;
+            }
+            if (PeerFilter.isAskerConfirmation(raw, norm)) {
+                List<PeerCand> live = new ArrayList<>();
+                for (PeerCand c : asked.cands) {
+                    if (!c.disputed) {
+                        live.add(c);
+                    }
+                }
+                if (live.size() == 1 && !live.get(0).askerConfirmed) {
+                    live.get(0).askerConfirmed = true;
+                    logPeer("confirmed", asked.question);
+                }
+                return;
+            }
+            if (PeerFilter.isAgreement(raw, norm)) {
+                return; // the asker's "yeah" is not confirmation
+            }
+        }
+
+        // 2) A third player's disagreement or short agreement goes to
+        //    the most recently answered window they did not answer.
+        //    With no answer standing yet, a "nope, you need..." line
+        //    falls through and may itself be the answer.
+        boolean agree = PeerFilter.isAgreement(raw, norm);
+        if (disagree || agree) {
+            PeerWindow w = latest(x -> !x.cands.isEmpty() && now < x.closesAt
+                    && !x.asker.equals(who) && x.candBy(who) == null);
+            if (w != null && disagree) {
+                disputeLatest(w, who);
+                return;
+            }
+            if (w != null && w.cands.size() == 1) { // with two rival answers a bare "yeah" backs nobody
+                PeerCand c = w.cands.get(0);
+                if (!c.disputed && c.agreers.add(who)) {
+                    logPeer("agreed", w.question, "count=" + c.agreers.size());
+                }
+            }
+            if (w != null || agree) {
+                return;
+            }
+            // a disagreement with nothing to dispute: try it as an answer below
+        }
+
+        // 3) A possible answer: pick the ONE best window for it.
+        String cleaned = AiPrompts.sanitize(raw, cfg.peerMaxAnswerChars);
+        Collection<String> names = knownNamesExcept(speaker);
+        PeerWindow best = null;
+        int bestOverlap = -1;
+        String firstReject = null;
+        PeerWindow firstRejectWindow = null;
+        for (PeerWindow w : peerWindows.values()) {
+            if (now > w.answerUntil || w.asker.equals(who) || w.candBy(who) != null) {
+                continue;
+            }
+            String reject = filter().answerReject(raw, cleaned, w.qTerms, cfg.peerMaxAnswerChars,
+                    names, speaker.name());
+            if (reject != null) {
+                if (firstReject == null || w.openedAt > firstRejectWindow.openedAt) {
+                    firstReject = reject;
+                    firstRejectWindow = w;
+                }
+                continue;
+            }
+            int ov = PeerFilter.overlap(PeerFilter.meaningful(TextNorm.normalize(cleaned)), w.qTerms);
+            if (ov > bestOverlap || (ov == bestOverlap && w.openedAt > best.openedAt)) {
+                best = w;
+                bestOverlap = ov;
+            }
+        }
+        if (best == null) {
+            if (firstReject != null && SUBSTANTIVE_REJECTS.contains(firstReject)) {
+                logPeer("rejected", firstRejectWindow.question, "reason=" + firstReject);
+            }
+            return;
+        }
+        Set<String> terms = PeerFilter.meaningful(TextNorm.normalize(cleaned));
+        // An independent answer that says the same thing is agreement, not a rival.
+        for (PeerCand c : best.cands) {
+            if (!c.disputed && similar(c.terms, terms)) {
+                if (c.agreers.add(who)) {
+                    logPeer("agreed", best.question, "count=" + c.agreers.size());
+                }
+                return;
+            }
+        }
+        if (best.cands.size() >= 2) {
+            return;
+        }
+        best.cands.add(new PeerCand(who, cleaned, terms, now));
+        logPeer("candidate", best.question);
+    }
+
+    /** Refusals worth a log line; chatter and off-topic lines are ordinary chat, not news. */
+    private static final Set<String> SUBSTANTIVE_REJECTS = Set.of(
+            "profanity", "names-player", "spoiler", "personal", "stat-content", "other-player",
+            "too-long");
+
+    private static boolean similar(Set<String> a, Set<String> b) {
+        int ov = PeerFilter.overlap(a, b);
+        return ov >= 2 && ov * 2 >= Math.min(a.size(), b.size());
+    }
+
+    private void disputeLatest(PeerWindow w, UUID who) {
+        PeerCand target = null;
+        for (PeerCand c : w.cands) {
+            if (!c.author.equals(who) && (target == null || c.at >= target.at)) {
+                target = c;
+            }
+        }
+        if (target != null && !target.disputed) {
+            target.disputed = true;
+            logPeer("disputed", w.question);
+        }
+    }
+
+    private PeerWindow latest(java.util.function.Predicate<PeerWindow> test) {
+        PeerWindow best = null;
+        for (PeerWindow w : peerWindows.values()) {
+            if (test.test(w) && (best == null || w.lastActivity() > best.lastActivity())) {
+                best = w;
+            }
+        }
+        return best;
+    }
+
+    /** Settle every window whose time is up, then run the decay sweep. */
+    private void settlePeerWindows(long now) {
+        if (peerStore == null) {
+            return;
+        }
+        List<PeerWindow> done = new ArrayList<>();
+        for (PeerWindow w : peerWindows.values()) {
+            if (now >= w.closesAt) {
+                done.add(w);
+            }
+        }
+        for (PeerWindow w : done) {
+            peerWindows.remove(w.key);
+            settlePeerWindow(w, now);
+        }
+        if (now - lastPeerSweep >= 60_000L) {
+            lastPeerSweep = now;
+            for (PeerCandidates.Entry gone : peerStore.expire(now,
+                    cfg.peerCandidateExpireDays * 86_400_000L,
+                    cfg.peerApprovedExpireDays * 86_400_000L)) {
+                logPeer("expired", gone.question(), "id=" + gone.id());
+            }
+        }
+    }
+
+    private long lastPeerSweep = Long.MIN_VALUE / 2;
+
+    private void settlePeerWindow(PeerWindow w, long now) {
+        if (w.cands.isEmpty()) {
+            logPeer("no-answer", w.question);
+            return;
+        }
+        List<PeerCand> backed = new ArrayList<>();
+        boolean anyDisputed = false;
+        for (PeerCand c : w.cands) {
+            anyDisputed |= c.disputed;
+            if (!c.disputed && (c.askerConfirmed || c.agreers.size() >= cfg.peerMinAgreements)) {
+                backed.add(c);
+            }
+        }
+        if (backed.isEmpty()) {
+            logPeer("dropped", w.question, "reason=" + (anyDisputed ? "disputed" : "uncorroborated"));
+            return;
+        }
+        if (backed.size() > 1) {
+            logPeer("dropped", w.question, "reason=contested");
+            return;
+        }
+        PeerCand c = backed.get(0);
+        // Serve-time screens, once more at the door of the queue.
+        String late = filter().serveReject(c.text, knownNames());
+        if (late != null) {
+            logPeer("dropped", w.question, "reason=" + late);
+            return;
+        }
+        PeerCandidates.Entry onFile = peerStore.byKey(w.key);
+        if (onFile != null && onFile.isApproved()) {
+            return;
+        }
+        StringBuilder how = new StringBuilder();
+        if (c.askerConfirmed) {
+            how.append("the asker said it worked");
+        }
+        if (!c.agreers.isEmpty()) {
+            if (how.length() > 0) {
+                how.append(", ");
+            }
+            how.append(c.agreers.size()).append(c.agreers.size() == 1 ? " player agreed" : " players agreed");
+        }
+        if (w.cands.size() > 1) {
+            how.append(" (a different answer was also given)");
+        }
+        PeerCandidates.Entry entry = PeerCandidates.Entry.review(w.question, w.key, c.text,
+                how.toString(), c.agreers.size(), c.askerConfirmed, now);
+        if (onFile != null) { // keep the decay history of a topic already waiting
+            entry = new PeerCandidates.Entry(entry.id(), entry.question(), entry.key(), entry.state(),
+                    entry.answer(), entry.how(), entry.agreements(), entry.askerConfirmed(),
+                    onFile.created(), now, onFile.asks() + 1, 0L, "", 0, 0L);
+        }
+        boolean auto = cfg.peerAutoApprove && c.askerConfirmed
+                && c.agreers.size() >= cfg.peerAutoApproveMinAgreements;
+        if (auto) {
+            entry = entry.approved("auto", now);
+        }
+        peerStore.put(entry);
+        logPeer("queued", w.question, "id=" + entry.id());
+        if (auto) {
+            logPeer("approved", w.question, "id=" + entry.id(), "by=auto");
+        }
+        if (peerNotifier != null && cfg.peerNotifyOps) {
+            try {
+                peerNotifier.accept(auto
+                        ? "Guide auto-approved a player answer (#" + entry.id() + "). /guide review approved"
+                        : "Guide: a player answer is waiting for review (#" + entry.id()
+                                + "). /guide review");
+            } catch (RuntimeException ignored) {
+                // A notice failure never breaks chat.
+            }
+        }
+    }
+
+    /**
+     * Serve an APPROVED player answer, or null to let the normal path
+     * continue. Review entries are never served. The screens run
+     * again here, so a spoiler term added later also blocks an
+     * answer approved earlier.
+     */
+    private List<Reply> servePeer(PlayerRef asker, String norm, long now) {
+        if (!peerEnabled()) {
+            return null;
+        }
+        String key = PeerFilter.topicKey(norm);
+        if (key.isBlank()) {
+            return null;
+        }
+        PeerCandidates.Entry e = peerStore.byKey(key);
+        if (e == null || !e.isApproved()) {
+            return null;
+        }
+        String blocked = filter().serveReject(e.answer(), knownNames());
+        if (blocked != null) {
+            logPeer("serve-blocked", e.question(), "reason=" + blocked, "id=" + e.id());
+            return null;
+        }
+        List<Reply> out = deliver(asker, norm, false, now,
+                wrap(Channel.PRIVATE, cfg.peerServePrefix + e.answer()));
+        if (!out.isEmpty()) {
+            peerStore.touch(e.hit(now));
+            peerServed++;
+            logPeer("served", e.question(), "id=" + e.id());
+        }
+        return out;
+    }
+
+    // ---------- review queue API (0.3.0; the glue's /guide review) ----------
+
+    public synchronized List<PeerCandidates.Entry> peerReviewQueue() {
+        return peerStore == null ? List.of() : peerStore.inState(PeerCandidates.REVIEW);
+    }
+
+    public synchronized List<PeerCandidates.Entry> peerApprovedList() {
+        return peerStore == null ? List.of() : peerStore.inState(PeerCandidates.APPROVED);
+    }
+
+    public synchronized PeerCandidates.Entry peerFind(String id) {
+        return peerStore == null ? null : peerStore.byId(id);
+    }
+
+    /** Approve a review entry. Returns the approved entry, or null when no such review entry. */
+    public synchronized PeerCandidates.Entry peerApprove(String id) {
+        PeerCandidates.Entry e = peerFind(id);
+        if (e == null || e.isApproved()) {
+            return null;
+        }
+        PeerCandidates.Entry ok = e.approved("owner", clock.getAsLong());
+        peerStore.put(ok);
+        logPeer("approved", ok.question(), "id=" + ok.id(), "by=owner");
+        return ok;
+    }
+
+    /** Reject (review) or retire (approved) an entry: it is deleted. Returns it, or null. */
+    public synchronized PeerCandidates.Entry peerReject(String id) {
+        PeerCandidates.Entry e = peerFind(id);
+        if (e == null) {
+            return null;
+        }
+        peerStore.remove(e.key());
+        logPeer("owner-rejected", e.question(), "id=" + e.id());
+        return e;
+    }
+
+    /** True when a stored answer would be blocked at serve time right now (shown in review). */
+    public synchronized String peerServeCheck(PeerCandidates.Entry e) {
+        return e == null ? null : filter().serveReject(e.answer(), knownNames());
+    }
+
+    /** Open capture windows right now (status line). */
+    public synchronized int peerOpenWindows() {
+        return peerWindows.size();
+    }
+
+    private void logPeer(String kind, String question, String... fields) {
+        if (peerLog == null) {
+            return;
+        }
+        try {
+            peerLog.event(Instant.ofEpochMilli(clock.getAsLong()), kind, question, fields);
+        } catch (RuntimeException ignored) {
+            // The Guide never breaks chat because its notebook did.
+        }
+    }
+
+    // ---------- AI fallback (0.2.0) ----------
+
+    /**
+     * Engage the AI fallback for a question the deterministic engine
+     * could not answer. Returns true when a call was engaged: the
+     * gate reservation is taken here, synchronously, so a second
+     * question from the same player (or a spent daily budget) falls
+     * back to the plain non-answer instead of queueing calls. The
+     * prompt is assembled here too - top-K excerpts plus the fact
+     * sheet the PLUGIN fetched for this asker - and only the provider
+     * call itself runs on the executor.
+     */
+    private boolean tryAiFallback(PlayerRef asker, String rawMessage, String norm, Door door,
+                                  Retrieval.Result retrieval, AsyncSink sink) {
+        if (sink == null || door == Door.AMBIENT || !aiActive()) {
+            return false;
+        }
+        if (!aiGate.tryReserve(asker.id(), clock.getAsLong())) {
+            return false;
+        }
+        List<KnowledgeBase.Chunk> excerpts = Retrieval.topK(knowledge, norm, cfg.aiTopChunks);
+        List<String> askerFacts = safeAskerFacts(asker);
+        AiPrompts.Prompt prompt = AiPrompts.build(cfg.personaName, NON_ANSWER, asker.name(),
+                rawMessage, excerpts, askerFacts, safePublicFacts());
+        AiProvider.Request request = new AiProvider.Request(prompt.system(), prompt.user(),
+                cfg.aiModel, Math.max(1000, cfg.aiTimeoutSeconds * 1000));
+        // The learn-cache privacy gate is decided HERE, while the
+        // asker's fact sheet is in hand: a first-person question, or
+        // an answer quoting the asker's own fact numbers, never
+        // enters the cache (LearnPrivacy - both checks tested).
+        boolean personal = LearnPrivacy.isPersonalQuestion(TextNorm.tokenSet(norm));
+        java.util.Set<String> factNumbers = LearnPrivacy.numbersInFacts(askerFacts);
+        aiExecutor.submit(() -> runAiCall(asker, rawMessage, norm, door, retrieval, request, sink,
+                personal, factNumbers));
+        return true;
+    }
+
+    /** The provider call itself, on the executor thread. Never throws. */
+    private void runAiCall(PlayerRef asker, String rawMessage, String norm, Door door,
+                           Retrieval.Result retrieval, AiProvider.Request request,
+                           AsyncSink sink, boolean personalQuestion,
+                           java.util.Set<String> factNumbers) {
+        long started = clock.getAsLong();
+        String answer = null;
+        long latency = 0;
+        try {
+            AiProvider.Completion completion = aiProvider.complete(request);
+            latency = Math.max(0, clock.getAsLong() - started);
+            if (completion != null) {
+                String cleaned = AiPrompts.sanitize(completion.text(), cfg.aiMaxAnswerChars);
+                if (cleaned != null && !AiPrompts.isDontKnow(cleaned, NON_ANSWER)) {
+                    answer = cleaned;
+                }
+            }
+        } catch (Exception e) {
+            // Timeout, 429, 500, network - every failure shape lands
+            // in the same honest fallback; the ai log keeps the count.
+            latency = Math.max(0, clock.getAsLong() - started);
+            answer = null;
+        } finally {
+            aiGate.release();
+        }
+        boolean answered = answer != null;
+        logAi(asker, rawMessage, door, answered, latency);
+        if (!answered) {
+            // The don't-know path lands in the unanswered log exactly
+            // as it did before the AI existed, then the player hears
+            // the standard non-answer - just a few seconds later.
+            // Peer learning (0.2.3): the window opens HERE, when the
+            // don't-know actually lands - an AI answer opens none.
+            synchronized (this) {
+                logUnanswered(asker, rawMessage, door.name(), retrieval);
+                openPeerWindow(asker, rawMessage, norm, door, clock.getAsLong());
+            }
+            sink.accept(List.of(new Reply(Channel.PRIVATE, NON_ANSWER)));
+            return;
+        }
+        List<Reply> replies = wrap(Channel.PRIVATE, answer);
+        synchronized (this) {
+            answersServed += replies.size();
+            aiAnswered++;
+        }
+        // Learn from the answer (0.2.1): cache it against the
+        // normalized question under the CURRENT knowledge stamp -
+        // unless the privacy gate said no at engagement time, or the
+        // answer quotes the asker's own fact numbers after all.
+        // Don't-knows and failures never reach this line.
+        if (aiCache != null && cfg.aiCacheEnabled && !personalQuestion
+                && !LearnPrivacy.answerQuotesAny(answer, factNumbers)) {
+            try {
+                aiCache.put(norm, answer, knowledge.version(), clock.getAsLong());
+            } catch (RuntimeException ignored) {
+                // Caching is a bonus; a cache failure never eats an answer.
+            }
+        }
+        sink.accept(replies);
+    }
+
+    private List<String> safeAskerFacts(PlayerRef asker) {
+        if (aiFacts == null) {
+            return List.of();
+        }
+        try {
+            List<String> facts = aiFacts.askerFacts(asker.id());
+            return facts == null ? List.of() : facts;
+        } catch (RuntimeException e) {
+            return List.of(); // a broken fact source never blocks the answer path
+        }
+    }
+
+    private List<String> safePublicFacts() {
+        if (aiFacts == null) {
+            return List.of();
+        }
+        try {
+            List<String> facts = aiFacts.publicFacts();
+            return facts == null ? List.of() : facts;
+        } catch (RuntimeException e) {
+            return List.of();
+        }
+    }
+
+    private void logAi(PlayerRef asker, String rawMessage, Door door, boolean answered, long latency) {
+        if (aiLog == null) {
+            return;
+        }
+        try {
+            aiLog.append(new AiLog.Entry(
+                    Instant.ofEpochMilli(clock.getAsLong()), asker.name(),
+                    asker.id().toString(), door.name(), answered, latency, rawMessage));
+        } catch (RuntimeException ignored) {
+            // The Guide never breaks chat because a log failed.
+        }
+    }
+
+    // ---------- clarify flow ----------
+
+    /**
+     * Returns the replies for a clarify reply, or null when the line is
+     * not a clarify answer at all (a fresh question - caller continues
+     * normal processing with the pending clarification dropped).
+     */
+    private List<Reply> handleClarifyReply(PlayerRef asker, String norm, Set<String> tokens,
+                                           String rawMessage, long now) {
+        EnumSet<Choice> choices = parseChoices(tokens);
+        if (!choices.isEmpty()) {
+            clarifyPending.remove(asker.id());
+            String text;
+            if (choices.size() == 1) {
+                text = switch (choices.iterator().next()) {
+                    case MCMMO -> orCantSee(stats.mcMMOSummary(asker.id()));
+                    case JOBS -> orCantSee(stats.jobsSummary(asker.id()));
+                    case PLAYTIME -> orCantSee(stats.playtimeSummary(asker.id()));
+                    case MAGIC -> magicAnswer(asker);
+                };
+            } else {
+                text = combinedLevels(asker, choices);
+            }
+            return deliver(asker, norm, true, now, wrap(Channel.PRIVATE, text));
+        }
+        if (TextNorm.questionShaped(rawMessage, norm)) {
+            clarifyPending.remove(asker.id());
+            return null; // a new question - normal processing takes it
+        }
+        // Neither a choice nor a new question: combined fallback, once.
+        clarifyPending.remove(asker.id());
+        return deliver(asker, norm, true, now,
+                wrap(Channel.PRIVATE, combinedLevels(asker, EnumSet.allOf(Choice.class))));
+    }
+
+    private EnumSet<Choice> parseChoices(Set<String> tokens) {
+        EnumSet<Choice> out = EnumSet.noneOf(Choice.class);
+        if (tokens.contains("all") || tokens.contains("everything") || tokens.contains("both")) {
+            return EnumSet.allOf(Choice.class);
+        }
+        if (tokens.contains("mcmmo") || tokens.contains("skills") || tokens.contains("skill")) {
+            out.add(Choice.MCMMO);
+        }
+        if (tokens.contains("job") || tokens.contains("jobs")) {
+            out.add(Choice.JOBS);
+        }
+        if (tokens.contains("time") || tokens.contains("played") || tokens.contains("playtime")
+                || tokens.contains("hours")) {
+            out.add(Choice.PLAYTIME);
+        }
+        if (tokens.contains("magic") || tokens.contains("mage")) {
+            out.add(Choice.MAGIC);
+        }
+        return out;
+    }
+
+    private String combinedLevels(PlayerRef asker, EnumSet<Choice> which) {
+        List<String> parts = new ArrayList<>();
+        if (which.contains(Choice.MCMMO)) {
+            parts.add(orCantSeeShort(stats.mcMMOSummary(asker.id()), "mcMMO: n/a"));
+        }
+        if (which.contains(Choice.JOBS)) {
+            parts.add(orCantSeeShort(stats.jobsSummary(asker.id()), "Jobs: n/a"));
+        }
+        if (which.contains(Choice.PLAYTIME)) {
+            parts.add(orCantSeeShort(stats.playtimeSummary(asker.id()), "Played: n/a"));
+        }
+        if (which.contains(Choice.MAGIC)) {
+            parts.add(magicAnswer(asker));
+        }
+        return String.join(" - ", parts);
+    }
+
+    // ---------- intent answers ----------
+
+    private List<Reply> answerIntent(PlayerRef asker, IntentSet.IntentDef intent,
+                                     String norm, String skillToken, Door door, long now) {
+        Channel channel = intent.isPrivate() ? Channel.PRIVATE : Channel.PUBLIC;
+        String text;
+        switch (intent.type()) {
+            case "wand" -> {
+                text = cfg.wandSelfRestoreEnabled ? intent.textPrimary() : intent.textFallback();
+                channel = Channel.PRIVATE;
+            }
+            case "spells" -> {
+                // Stage-aware like the Magic standing (0.1.1): while
+                // the guild is sealed the lore answer (text-fallback),
+                // from Seal 1 on the real how-to (text-primary).
+                text = stats.sealsBroken() >= 1 ? intent.textPrimary() : intent.textFallback();
+                if (text == null) {
+                    text = intent.text();
+                }
+            }
+            case "seals" -> text = sealsText();
+            case "clarify" -> {
+                clarifyPending.put(asker.id(), now + cfg.clarifyWindowSeconds * 1000L);
+                return deliverKeyed(asker, questionKey(asker, norm, Channel.PRIVATE), false, now,
+                        List.of(new Reply(Channel.PRIVATE, CLARIFY_QUESTION)));
+            }
+            case "stat" -> {
+                text = statAnswer(intent.stat(), asker, skillToken);
+                channel = Channel.PRIVATE;
+            }
+            case "retrieval" -> {
+                text = intent.text();
+                // Ambient door always serves the curated line; the
+                // chunk-scoped retrieval runs only for asked questions.
+                if (door != Door.AMBIENT && intent.text() != null) {
+                    Retrieval.Result r = Retrieval.search(knowledge, norm, intent.hints());
+                    if (Retrieval.clearsBar(r, cfg.retrievalMinScore, cfg.retrievalMargin)) {
+                        text = r.answerText();
+                    }
+                }
+            }
+            default -> text = substitute(intent.text(), asker);
+        }
+        if (text == null || text.isBlank()) {
+            text = CANT_SEE;
+        }
+        List<Reply> replies = wrap(channel, substitute(text, asker));
+        return deliverKeyed(asker, questionKey(asker, norm, channel), false, now, replies);
+    }
+
+    private String statAnswer(String stat, PlayerRef asker, String skillToken) {
+        return switch (stat) {
+            case "mcmmo-skill" -> orCantSee(skillToken == null
+                    ? null : stats.mcMMOSkill(asker.id(), skillToken));
+            case "jobs" -> orCantSee(stats.jobsSummary(asker.id()));
+            case "playtime" -> orCantSee(stats.playtimeSummary(asker.id()));
+            case "money" -> orCantSee(stats.moneySummary(asker.id()));
+            case "claims" -> claimsAnswer(asker);
+            case "magic" -> magicAnswer(asker);
+            default -> CANT_SEE;
+        };
+    }
+
+    /**
+     * The claim-blocks answer (0.2.2, Mike's live-test call): the
+     * asker's OWN live numbers plus the general rule plus the
+     * /claimslist self-check, composed by ClaimText. When GP data is
+     * unavailable the generic claim-amounts intent text is served
+     * instead - the rule and the pointer, never a guessed number and
+     * never a bare error (the one deliberate exception to the stats
+     * layer's can't-see convention: the generic answer fully answers
+     * the question's general half, and the numbers return when GP
+     * does). Served privately like every stat (the caller forces the
+     * PRIVATE channel for type stat).
+     */
+    private String claimsAnswer(PlayerRef asker) {
+        long[] c = stats.claimBlocks(asker.id());
+        if (c != null && c.length >= 4) {
+            return ClaimText.combined(c[0], c[1], c[2], c[3]);
+        }
+        IntentSet.IntentDef generic = intents.byId("claim-amounts");
+        if (generic != null && generic.text() != null && !generic.text().isBlank()) {
+            return generic.text();
+        }
+        return CANT_SEE;
+    }
+
+    /**
+     * The Magic answer, both seal states (SPEC 5 amendment): before
+     * the first seal breaks, the lore line; from Seal 1 on, the
+     * player's real Magic standing from their own stats source.
+     */
+    String magicAnswer(PlayerRef asker) {
+        if (stats.sealsBroken() >= 1) {
+            return orCantSee(stats.magicStanding(asker.id()));
+        }
+        return MAGIC_LORE;
+    }
+
+    private String sealsText() {
+        int broken = stats.sealsBroken();
+        int total = stats.sealsTotal();
+        if (total > 0 && broken >= total) {
+            return "All " + total + " seals are broken - the Adventurers Guild stands open!";
+        }
+        int left = Math.max(0, total - broken);
+        return "Seal progress: " + broken + " of " + total + " seals broken, " + left
+                + " to go. The five seals: the Ender Dragon, the Wither, the Elder Guardian, "
+                + "the Warden, and a village defended in a raid.";
+    }
+
+    private String substitute(String text, PlayerRef asker) {
+        if (text == null) {
+            return null;
+        }
+        return text.replace("%seals_broken%", String.valueOf(stats.sealsBroken()))
+                .replace("%seals_total%", String.valueOf(stats.sealsTotal()))
+                .replace("%seals_left%", String.valueOf(Math.max(0, stats.sealsTotal() - stats.sealsBroken())))
+                .replace("%player%", asker.name());
+    }
+
+    // ---------- helpers ----------
+
+    private List<Reply> deliver(PlayerRef asker, String norm, boolean continuation,
+                                long now, List<Reply> replies) {
+        return deliverKeyed(asker, questionKey(asker, norm, replies.isEmpty()
+                ? Channel.PRIVATE : replies.get(0).channel()), continuation, now, replies);
+    }
+
+    /**
+     * Run the rate limiter for a composed answer; on OK the replies
+     * count as served. On a global-limit refusal the caller may log
+     * the question as unanswered (SPEC 3 guardrail 5: dropped
+     * silently, log still records it).
+     */
+    private List<Reply> deliverKeyed(PlayerRef asker, String questionKey, boolean continuation,
+                                     long now, List<Reply> replies) {
+        lastDropWasGlobal = false;
+        lastBlockVerdict = null;
+        lastBlockRemainingMillis = 0;
+        if (replies.isEmpty()) {
+            return List.of();
+        }
+        RateLimiter.Verdict v = limiter.tryAcquire(asker.id(), questionKey,
+                replies.size(), continuation, now);
+        if (v != RateLimiter.Verdict.OK) {
+            if (v == RateLimiter.Verdict.GLOBAL_LIMIT) {
+                lastDropWasGlobal = true;
+            }
+            // 0.2.2: remember the block and its real remaining wait so
+            // handle() can trade the silence for a cooldown notice on
+            // the direct doors (serveOrNotice consumes these).
+            lastBlockVerdict = v;
+            lastBlockRemainingMillis = limiter.remainingMillis(asker.id(), questionKey,
+                    replies.size(), continuation, now);
+            return List.of();
+        }
+        answersServed += replies.size();
+        return replies;
+    }
+
+    private boolean lastDropWasGlobal;
+    private RateLimiter.Verdict lastBlockVerdict;
+    private long lastBlockRemainingMillis;
+
+    // ---------- answer acknowledgments (0.2.2) ----------
+
+    /**
+     * A composed answer the limiter just dropped becomes, on the
+     * direct doors, a cooldown notice quoting the real remaining
+     * wait (Mike's rule, Oct 18, 2026: a direct question is never
+     * met with silence - "silence is never good with kids"). Any
+     * other outcome passes through untouched: a served answer as-is,
+     * an ambient drop as silence, a non-limiter empty as silence.
+     */
+    private List<Reply> serveOrNotice(PlayerRef asker, Door door, long now, List<Reply> out) {
+        if (!out.isEmpty()) {
+            return out;
+        }
+        RateLimiter.Verdict v = lastBlockVerdict;
+        long remaining = lastBlockRemainingMillis;
+        lastBlockVerdict = null;
+        lastBlockRemainingMillis = 0;
+        if (v == null) {
+            return List.of();
+        }
+        return cooldownNotice(asker, door, now, remaining);
+    }
+
+    /**
+     * The cooldown notice itself: one whispered line to the asker
+     * only, the wait rounded up to a friendly number, computed from
+     * the same clock and limiter state that produced the block.
+     * Self-throttled per player (config, default 30 s) so a blocked
+     * streak earns one notice, not a drumbeat. The notice never goes
+     * through the limiter - a global-limit block must still be able
+     * to send it - and a notice is never itself answered with one.
+     */
+    private List<Reply> cooldownNotice(PlayerRef asker, Door door, long now, long remainingMillis) {
+        if (!cfg.noticesEnabled || door == Door.AMBIENT || remainingMillis <= 0) {
+            return List.of();
+        }
+        Long last = lastNoticeAt.get(asker.id());
+        if (last != null && now - last < cfg.noticeThrottleSeconds * 1000L) {
+            return List.of();
+        }
+        lastNoticeAt.put(asker.id(), now);
+        String line = cfg.noticeCooldownLine.replace("%seconds%",
+                String.valueOf(friendlySeconds(remainingMillis)));
+        return List.of(new Reply(Channel.PRIVATE, substitute(line, asker)));
+    }
+
+    /**
+     * The AI thinking line (0.2.2): returned synchronously the
+     * moment a fallback call engages, so the up-to-8-second wait
+     * for the async answer is not silence either. Once per
+     * engagement by construction (the engagement itself is what
+     * returns it), and the AI bucket's own 60 s per-player cooldown
+     * keeps engagements - and therefore thinking lines - unspammable.
+     */
+    private List<Reply> thinkingNotice(PlayerRef asker) {
+        if (!cfg.noticesEnabled) {
+            return List.of();
+        }
+        return List.of(new Reply(Channel.PRIVATE, substitute(cfg.noticeThinkingLine, asker)));
+    }
+
+    /** Round a wait UP to a friendly number of seconds: whole multiples of 5, minimum 5. */
+    static int friendlySeconds(long remainingMillis) {
+        long secs = (remainingMillis + 999) / 1000;
+        long rounded = ((secs + 4) / 5) * 5;
+        return (int) Math.max(5, rounded);
+    }
+
+    private boolean limiterVerdictWasGlobal(PlayerRef asker, String norm, long now) {
+        boolean g = lastDropWasGlobal;
+        lastDropWasGlobal = false;
+        return g;
+    }
+
+    /** Per-question cooldown key: global for public, asker-scoped for private. */
+    private String questionKey(PlayerRef asker, String norm, Channel channel) {
+        return channel == Channel.PUBLIC ? norm : asker.id() + "|" + norm;
+    }
+
+    private void logUnanswered(PlayerRef asker, String rawMessage, String door, Retrieval.Result r) {
+        unansweredCount++;
+        if (unansweredLog != null && cfg.unansweredEnabled) {
+            try {
+                unansweredLog.append(new UnansweredLog.Entry(
+                        Instant.ofEpochMilli(clock.getAsLong()), asker.name(),
+                        asker.id().toString(), door, rawMessage,
+                        r == null || r.best() == null ? null : r.best().key(),
+                        r == null ? 0 : r.bestScore()));
+            } catch (RuntimeException ignored) {
+                // The Guide never breaks chat because its notebook failed.
+            }
+        }
+    }
+
+    private boolean mentionsOtherPlayer(String norm, Set<String> tokens,
+                                        PlayerRef asker, Collection<String> onlineNames) {
+        if (onlineNames == null) {
+            return false;
+        }
+        for (String name : onlineNames) {
+            if (name == null || name.equalsIgnoreCase(asker.name())) {
+                continue;
+            }
+            String n = TextNorm.normalize(name);
+            if (n.isBlank()) {
+                continue;
+            }
+            if (n.indexOf(' ') < 0) {
+                // Also catch the possessive form ("testkite's" ->
+                // token "testkites" once the apostrophe drops).
+                if (tokens.contains(n) || tokens.contains(n + "s")) {
+                    return true;
+                }
+            } else if ((" " + norm + " ").contains(" " + n + " ")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String findSkillToken(String norm) {
+        for (String t : norm.split(" ")) {
+            if (SKILLS.contains(t)) {
+                return t;
+            }
+            String stem = TextNorm.stem(t);
+            for (String skill : SKILLS) {
+                if (TextNorm.stem(skill).equals(stem)) {
+                    return skill;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String orCantSee(String s) {
+        return s == null || s.isBlank() ? CANT_SEE : s;
+    }
+
+    private static String orCantSeeShort(String s, String fallback) {
+        return s == null || s.isBlank() ? fallback : s;
+    }
+
+    /**
+     * Wrap one answer into at most 2 chat lines of at most 200 visible
+     * characters (SPEC guardrail 7). Overflow past line 2 is cut at a
+     * word boundary and closed with the website pointer.
+     */
+    public static List<Reply> wrap(Channel channel, String text) {
+        List<Reply> out = new ArrayList<>();
+        if (text == null || text.isBlank()) {
+            return out;
+        }
+        String flat = text.replace('\n', ' ').replaceAll("\\s+", " ").trim();
+        if (flat.length() <= 200) {
+            out.add(new Reply(channel, flat));
+            return out;
+        }
+        int split = splitPoint(flat, 200);
+        String line1 = flat.substring(0, split).trim();
+        String rest = flat.substring(split).trim();
+        String line2;
+        if (rest.length() <= 200) {
+            line2 = rest;
+        } else {
+            int cut = splitPoint(rest, 165);
+            line2 = rest.substring(0, cut).trim() + "... More: the website's Ask page.";
+        }
+        out.add(new Reply(channel, line1));
+        out.add(new Reply(channel, line2));
+        return out;
+    }
+
+    /** Best split index at or before limit: sentence end, else word gap. */
+    private static int splitPoint(String s, int limit) {
+        int upto = Math.min(limit, s.length());
+        int sentence = -1;
+        for (int i = 0; i < upto; i++) {
+            char c = s.charAt(i);
+            if ((c == '.' || c == '!' || c == '?') && i + 1 < s.length() && s.charAt(i + 1) == ' ') {
+                sentence = i + 1;
+            }
+        }
+        if (sentence > 40) {
+            return sentence;
+        }
+        int space = s.lastIndexOf(' ', upto);
+        return space > 0 ? space : upto;
+    }
+}

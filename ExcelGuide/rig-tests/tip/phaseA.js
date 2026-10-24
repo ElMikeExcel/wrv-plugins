@@ -1,0 +1,63 @@
+const {sleep,L,cons,join,ok,take,takeRaw,say,done,file,fs,D}=require('./common');
+(async()=>{
+ const boot=fs.readFileSync(D+'/boot.log','utf8');
+ ok(/Valley Guide awake/.test(boot),'0.3.0 enabled');
+ ok(!/not a map/.test(boot),'no "not a map" warning with [] / {} files');
+ ok(!/(WARN|ERROR)\]: \[ExcelGuide\]/.test(boot),'no ExcelGuide WARN/ERROR at boot');
+ await cons('op RigAdmin',800);
+ const admin=await join('RigAdmin'),asker=await join('RigAsker'),ans=await join('RigAnswer'),ag1=await join('RigAgreeOne'),ag2=await join('RigAgreeTwo'),
+   asker2=await join('RigAskSeal'),asker3=await join('RigAskName'),f1=await join('RigFreshOne'),f2=await join('RigFreshTwo');
+ const all=[admin,asker,ans,ag1,ag2,asker2,asker3,f1,f2];
+ await sleep(1500);
+ // fox: a real answer with 2 agreements
+ await say(all,asker,'guide, how do i tame a fox?');
+ await say(all,ans,'crouch near the fox holding sweet berries and it slowly trusts you');
+ await say(all,ag1,'yeah thats right');
+ await say(all,ag2,'yep thats right');
+ // seal spoiler answer with 2 agreements
+ await say(all,asker2,'guide, how do i get ready for the wither?');
+ await say(all,ans,'the wither has two phases and heals when it rises again so bring lots of damage');
+ await say(all,ag1,'yeah thats right');
+ await say(all,ag2,'yep thats right');
+ // player name in the answer with 2 agreements
+ await say(all,asker3,'guide, where do i find diamonds?');
+ await say(all,ag1,'RigAgreeTwo says mine diamonds at level -58 with an iron pickaxe');
+ await say(all,ans,'yeah thats right');
+ await say(all,ag2,'yep thats right');
+ L('waiting for the windows to settle...');
+ await sleep(100000);
+ all.forEach(b=>b.msgs.splice(0));
+ await say(all,admin,'/guide review list',2000);
+ const q=take(admin);L('   review: '+q.replace(/\n/g,' / '));
+ const id=(q.match(/#([0-9a-f]{6})\s+Q: how do i tame a fox/)||[])[1];
+ ok(!!id,'fox answer waiting for review');
+ ok(!/phases|rises again/i.test(q),'seal spoiler answer NOT queued');
+ ok(!/RigAgreeTwo|diamond/i.test(q),'answer naming a player NOT queued');
+ await say(all,f1,'guide, how do i tame a fox?');
+ ok(!/A player said/.test(take(f1)),'not served before approval');
+ await say(all,admin,'/guide review approve '+id,1500);
+ L('   approve: '+take(admin));
+ await sleep(62000);
+ await say(all,f1,'guide, how do i tame a fox?',2500);
+ let t=take(f1),raw=takeRaw(f1);L('   fresh1 #1: '+t.replace(/\n/g,' / '));
+ ok(/A player said: crouch near the fox/.test(t),'served as "A player said"');
+ ok(/Tip: answers that start with "A player said"/.test(t),'first-use tip shown');
+ ok(/run_command|"\/guide ok"/.test(raw)&&/\/guide ok/.test(raw),'Java [OK] runs /guide ok');
+ ok(!/Rig(Answer|AgreeOne|AgreeTwo)/.test(t),'no player names in the served answer');
+ await sleep(62000);
+ await say(all,f1,'guide, how do i tame a fox?',2500);
+ t=take(f1);L('   fresh1 #2: '+t.replace(/\n/g,' / '));
+ ok(/A player said/.test(t)&&/Tip: answers/.test(t),'tip repeats until OK');
+ await say(all,f1,'/guide ok',1500);
+ t=take(f1);L('   ok: '+t);ok(/won't show again/.test(t),'/guide ok confirms');
+ ok(/acknowledged:[\s\S]*-/.test(file('peer-tip.yml')||''),'peer-tip.yml written');
+ ok(!/RigFreshOne/.test(file('peer-tip.yml')||''),'peer-tip.yml has no names');
+ await sleep(62000);
+ await say(all,f1,'guide, how do i tame a fox?',2500);
+ t=take(f1);L('   fresh1 #3: '+t.replace(/\n/g,' / '));
+ ok(/A player said/.test(t)&&!/Tip: answers/.test(t),'no tip after OK');
+ ok((file('peer-answers.yml')||'').trim()==='[]','0.2.3 peer-answers.yml left as []');
+ const log=file('peer.log')||'';L('--- peer.log\n'+log);
+ ok(!/Rig[A-Z]/.test(log),'peer.log has no names');
+ all.forEach(b=>b.quit());await sleep(1000);done();
+})();
