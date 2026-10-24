@@ -1,0 +1,21 @@
+// Restart persistence, phase B (after a full server restart). TEST RIG ONLY.
+const C=require('./common.js');const {H,L,cons,sleep,join,ok,say,Y,P,insp,items,openAt,hold,put,take,close,has,tp,sum}=C;
+const fs=require('fs');const att=(n,t)=>cons(`mmrig attack ${n} ${t}`,300,true);
+(async()=>{L('=== persistence phase B (after restart) '+new Date().toString());
+const before=JSON.parse(fs.readFileSync('/tmp/mm-persist.json','utf8'));
+const yml=fs.readFileSync('/workspace/mm-rig/plugins/ExcelMakersMark/players.yml','utf8');
+const a=await join(P);await sleep(1000);a.msgs=[];
+const s=await insp(P,'hand'),h=await insp(P,'head');L('   sword: '+s.raw);L('   helmet: '+h.raw);
+const strip=x=>x.raw.replace(/^.*?\] /,'').replace(/ hand | head /,' ');
+ok(strip(s)===strip(before.sword).replace(/ hand /,' '),'sword identical after restart (mark, uuid, date, kills, trophy, lore)');
+ok(h.hits===before.helmet.hits&&has(h,/^Hits blocked: 3$/),'helmet still Hits blocked: 3');
+ok(/mark: false/.test(yml),'players.yml kept /mark off');
+await cons('gamemode survival '+P,300,true);await tp(P,0.5,0.5,-90,0);await cons('minecraft:give '+P+' iron_ingot 2',300,true);await cons('minecraft:give '+P+' stick 1',300,true);
+let w=await openAt(a,2,Y,0);await put(a,w,'iron_ingot',2,true);await put(a,w,'iron_ingot',5,true);await put(a,w,'stick',8);await sleep(300);await take(a,w,0);await close(a);await sleep(1200);
+let r=await insp(P,items(a,'iron_sword')[0]);L('   new craft: '+r.raw);ok(r.by==='null'&&r.lore.length===0,'after restart /mark off still applies: new sword unsigned');
+ok(!a.msgs.some(m=>/\[Tip\]/.test(m)),'tip OK survived the restart (no tip on craft)');
+let m=await say(a,'/mark on');ok(/ON/.test(m),'/mark on');
+await hold(a,'diamond_sword');await sum(P,'husk',1.5,0.5,',Health:1f');await att(P,'husk');await sleep(1200);
+r=await insp(P,'hand');L('   '+r.raw);ok(r.mob===3&&has(r,/^Kills: 3$/)&&has(r,/^Crafted by Keeper$/),'counting continues on the restored sword: Kills: 3');
+const pp=await cons(`papi parse ${P} M=%makersmark_mark% S=%makersmark_stats%`,800,true);ok(/M=ON S=ON/.test(pp),'placeholders after restart: ON ON');
+H.summary();a.quit();await sleep(1500);process.exit(0)})().catch(e=>{L('ERROR '+e.stack);H.summary();process.exit(1)});
