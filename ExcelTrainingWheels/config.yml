@@ -78,6 +78,19 @@ doors:
   # pace again).
   copper-target-seconds: 45
 
+  # ALL ZOMBIES BREAK DOORS (0.1.3 — Mike, Oct 23, 2026, 11:14 PM
+  # CDT). Vanilla only lets up to 10% of zombies break doors (rolled
+  # at spawn, scaled by regional difficulty), so most zombies just
+  # stand at a wooden door forever. true = every zombie of the
+  # types below can break doors (new spawns, plus older zombies as
+  # their chunks load). EliteMobs elites are left alone. The door
+  # hold above still wins: a mob hunting a protected player never
+  # breaks any door. A missing key counts as true. false = vanilla.
+  all-zombies-break-doors: true
+  # Types granted (Bukkit entity names). Drowned have no door goal
+  # and are always ignored. ZOMBIFIED_PIGLIN may be added (opt-in).
+  break-door-types: [ZOMBIE, HUSK, ZOMBIE_VILLAGER]
+
 siege:
   # Seconds of accumulated siege (zombie at the door, hunting an
   # unprotected player) before an iron door is destroyed. Wooden

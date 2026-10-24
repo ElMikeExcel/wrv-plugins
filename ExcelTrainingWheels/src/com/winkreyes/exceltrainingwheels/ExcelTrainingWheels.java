@@ -7,6 +7,7 @@ import com.winkreyes.exceltrainingwheels.core.ProtectedRegistry;
 import com.winkreyes.exceltrainingwheels.core.RaidDivision;
 import com.winkreyes.exceltrainingwheels.core.ShieldRule;
 import com.winkreyes.exceltrainingwheels.core.SiegeBook;
+import com.winkreyes.exceltrainingwheels.core.ZombieDoorRule;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -31,7 +32,11 @@ import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityBreakDoorEvent;
+import org.bukkit.event.world.EntitiesLoadEvent;
+import org.bukkit.NamespacedKey;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
@@ -137,6 +142,10 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
     private SiegeBook copperSiegeBook;
     private long tickCounter = 0L;
     private final Map<String, Location> siegeDoors = new HashMap<>();
+    // All zombies break doors (0.1.3).
+    private boolean allZombiesBreakDoors;
+    private java.util.Set<String> breakDoorTypes = new java.util.LinkedHashSet<>(ZombieDoorRule.DEFAULT_TYPES);
+    private static final NamespacedKey EM_ELITE_KEY = new NamespacedKey("elitemobs", "eliteentity");
 
     @Override
     public void onEnable() {
@@ -148,6 +157,9 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
                 + " (" + registry.size() + " protected), door guard ON, iron siege ON (threshold "
                 + siegeThresholdSeconds + "s, cap " + siegeMaxConcurrent + "), door tiers "
                 + (copperTargetSeconds > 0 ? "ON (copper " + copperTargetSeconds + "s)" : "OFF") + ".");
+        int granted = sweepLoadedZombies();
+        getLogger().info("all zombies break doors: " + (allZombiesBreakDoors ? "ON " + breakDoorTypes
+                + " (EliteMobs elites left alone; " + granted + " loaded zombie(s) granted at enable)" : "OFF (vanilla spawn roll)"));
         logCompensationState();
         logRaidCompensationState();
         // Slow seal-count refresh (join events refresh it too); the
@@ -176,6 +188,10 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
         copperSiegeBook = new SiegeBook(siegeMaxConcurrent, copperSteps, siegeGraceSeconds * 20L);
         siegeDoors.clear();
         tickCounter = 0L;
+        // 0.1.3: missing key -> default true (older live configs carry no key).
+        allZombiesBreakDoors = getConfig().getBoolean("doors.all-zombies-break-doors", true);
+        breakDoorTypes = ZombieDoorRule.parseTypes(getConfig().isList("doors.break-door-types")
+                ? getConfig().getStringList("doors.break-door-types") : null);
 
         Map<String, String[]> raw = new LinkedHashMap<>();
         ConfigurationSection section = getConfig().getConfigurationSection("protected.players");
@@ -522,6 +538,54 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
                 + ") — the copper siege owns this door");
     }
 
+    // ---------- 2b. all zombies break doors (0.1.3) ----------
+
+    /** Elite check for the door grant: EliteMobs' PDC tag first (no seam), then the reflective seam. */
+    private boolean isEliteForDoors(Entity entity) {
+        try {
+            if (entity.getPersistentDataContainer().has(EM_ELITE_KEY, PersistentDataType.STRING)) return true;
+        } catch (Throwable ignored) { /* fall through to the seam */ }
+        return isElite(entity);
+    }
+
+    /** Grant door-breaking if the rule says so. Returns true when granted. */
+    private boolean maybeGrant(Entity entity) {
+        if (!(entity instanceof Zombie zombie) || !zombie.isValid()) return false;
+        if (!ZombieDoorRule.shouldGrant(enabledMaster && allZombiesBreakDoors, breakDoorTypes,
+                zombie.getType().name(), false, zombie.canBreakDoors())) return false;
+        if (isEliteForDoors(zombie)) return false;
+        zombie.setCanBreakDoors(true);
+        if (debug) getLogger().info("DOORS: " + zombie.getType() + " at " + fmt(zombie.getLocation())
+                + " granted door breaking");
+        return true;
+    }
+
+    private int sweepLoadedZombies() {
+        int n = 0;
+        for (org.bukkit.World world : Bukkit.getWorlds()) {
+            for (Zombie zombie : world.getEntitiesByClass(Zombie.class)) if (maybeGrant(zombie)) n++;
+        }
+        return n;
+    }
+
+    /**
+     * Fresh spawns: decided 2 ticks later so EliteMobs has finished
+     * tagging any elite conversion first (elites are left alone).
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onZombieSpawn(CreatureSpawnEvent event) {
+        if (!(event.getEntity() instanceof Zombie zombie)) return;
+        if (!enabledMaster || !allZombiesBreakDoors) return;
+        Bukkit.getScheduler().runTaskLater(this, () -> maybeGrant(zombie), 2L);
+    }
+
+    /** Zombies already in the world (pre-0.1.3 spawns) as their chunks load. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onEntitiesLoad(EntitiesLoadEvent event) {
+        if (!enabledMaster || !allZombiesBreakDoors) return;
+        for (Entity e : event.getEntities()) maybeGrant(e);
+    }
+
     /** The bottom half of a door block (a stable per-door identity). */
     private static Block bottomHalf(Block block) {
         if (block.getBlockData() instanceof Door doorData && doorData.getHalf() == Bisected.Half.TOP) {
@@ -767,7 +831,9 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
                 readSettings();
                 sender.sendMessage("Training Wheels reloaded: " + registry.size()
                         + " protected, siege threshold " + siegeThresholdSeconds
-                        + "s, copper tier " + copperTargetSeconds + "s, compensation seal " + cachedSeals
+                        + "s, copper tier " + copperTargetSeconds + "s, all zombies break doors "
+                        + (allZombiesBreakDoors ? "ON (" + sweepLoadedZombies() + " granted)" : "OFF")
+                        + ", compensation seal " + cachedSeals
                         + " (elite factor " + String.format("%.4f", compTable.eliteFactor(defaultFactor, cachedSeals))
                         + ", source " + (sealCountKnown ? "GuildGate" : "assume-seal fallback") + ").");
                 return true;

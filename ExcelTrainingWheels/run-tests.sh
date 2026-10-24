@@ -2,7 +2,7 @@
 # Compile and run the ExcelTrainingWheels plain-JVM suites.
 set -euo pipefail
 cd "$(dirname "$0")"
-JDK=~/workspace/.jdk25
+JDK=${JDK:-~/workspace/.jdk25}
 rm -rf build/test-classes && mkdir -p build/test-classes
 # Only the pure core is unit-tested on the plain JVM; the Bukkit
 # glue is exercised on the scratch rig instead.
