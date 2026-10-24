@@ -90,7 +90,7 @@ public final class TestActions {
                 }
             }
         }
-        Check.eq(26, modals, "26 cosmetics products carry bedrock modals (13 colors + 13 sets/effects/emotes)");
+        Check.eq(34, modals, "34 cosmetics products carry bedrock modals (21 colors + 13 sets/effects/emotes)");
         Check.eq("Rent 1 week - $200", pink.bedrock().leftLabel(), "pink modal rent label");
         Check.eq("Own forever - $15,000", pink.bedrock().rightLabel(), "pink modal own label");
     }

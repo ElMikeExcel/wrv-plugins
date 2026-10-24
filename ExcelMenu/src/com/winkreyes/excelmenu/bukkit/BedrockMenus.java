@@ -92,7 +92,7 @@ final class BedrockMenus {
         for (MenuDef.ItemDef item : items) {
             labels.add(label(player, item));
         }
-        String title = Text.colorize(Placeholders.resolve(player, def.title));
+        String title = Text.colorizeBedrock(Placeholders.resolve(player, def.title));
         return sendSimpleForm(player, title, "", labels, idx -> {
             if (idx < 0 || idx >= items.size()) return;
             MenuDef.ItemDef item = items.get(idx);
@@ -127,12 +127,12 @@ final class BedrockMenus {
         String content = Text.bedrockText(
                 Placeholders.resolve(player, item.name() == null ? item.id() : item.name()),
                 lore);
-        String title = Text.colorize(Placeholders.resolve(player, def.title));
+        String title = Text.colorizeBedrock(Placeholders.resolve(player, def.title));
         MenuDef.BedrockDef bedrock = item.bedrock();
         List<String> buttons = new ArrayList<>();
         for (String label : BedrockDetail.buttonLabels(bedrock)) {
             buttons.add(BedrockDetail.BACK_LABEL.equals(label)
-                    ? label : Text.colorize(label));
+                    ? label : Text.colorizeBedrock(label));
         }
         boolean sent = sendSimpleForm(player, title, content, buttons, idx -> {
             if (BedrockDetail.isBack(bedrock, idx)) { // Back: return to the parent menu

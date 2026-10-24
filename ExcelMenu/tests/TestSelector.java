@@ -40,9 +40,9 @@ public final class TestSelector {
 
         MenuDef colors = MenuFixtures.byId(defs, "spawnshop_cosmetics_colors");
         vis = Selector.visibleItems(colors, new MenuFixtures.FakeContext());
-        Check.eq(16, vis.size(), "cosmetics colors renders all 16 slots");
-        Check.eq("to_sets", vis.get(17).id(), "sets cross-link at slot 17");
-        Check.eq("back", vis.get(26).id(), "back button at slot 26");
+        Check.eq(24, vis.size(), "cosmetics colors renders all 24 slots");
+        Check.eq("to_sets", vis.get(27).id(), "sets cross-link at slot 27");
+        Check.eq("back", vis.get(35).id(), "back button at slot 35");
     }
 }
 

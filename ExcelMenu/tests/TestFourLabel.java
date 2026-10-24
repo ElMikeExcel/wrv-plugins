@@ -101,7 +101,7 @@ public final class TestFourLabel {
                 Selector.clickLines(pink, BedrockDetail.clickKind(pink.bedrock(), 2)),
                 "pink four button dispatches the 4-week console buy, byte-exact");
 
-        // --- fleet sweep: all 26 modal items carry the pair ---
+        // --- fleet sweep: all 34 modal items carry the pair ---
         int modal = 0, four = 0;
         for (MenuDef def : defs) {
             for (MenuDef.ItemDef item : def.items) {
@@ -125,8 +125,8 @@ public final class TestFourLabel {
                 if (hasLabel) four++;
             }
         }
-        Check.eq(26, modal, "26 modal items across the shipped set");
-        Check.eq(26, four, "all 26 modal items carry a four-label");
+        Check.eq(34, modal, "34 modal items across the shipped set (chat colors v2: 21 colors)");
+        Check.eq(34, four, "all 34 modal items carry a four-label");
 
         // --- no four-label: the 0.1.1 shape, exactly ---
         MenuDef plain = load(MODAL_HEAD + bedrockBlock(null));
