@@ -1,0 +1,206 @@
+#
+# Wink Reyes Valley - Magic Phase 1 (HEALER RELEASE) wand templates.
+# WRV-070. Paired with config.yml: load_default_wands: false
+# -> defaults/wands.defaults.yml (200 templates) is NOT loaded.
+#
+# The hidden base templates (base_magic, base_undroppable, base_keep,
+# base_bound, basic_wand, base_wand) are copied VERBATIM from Magic 11.2.5
+# defaults/wands.defaults.yml - they define wand behavior only and hold no
+# spells. The four rank wands keep their shipped properties (icon, colors,
+# mana, level_spells_to_path) but their spells lists are replaced with the
+# cumulative Phase 1 lists. The shipped rank wands embed the full default
+# spell lists (the apprentice wand alone carries lava, grenade, wither,
+# flamethrower, vengeance...) - that is why this file exists.
+#
+# Cumulative spell lists:
+#   beginner  : heal, boon, feed, extinguish, aqualung
+#   student   : + cure, shell, gills, stormshackle
+#   apprentice: + superheal, recall
+#   master    : + blessing, recall_death
+# active_spell on the beginner wand is heal (was cure before the re-tier
+# moved cure to Student; the shipped default was missile).
+#
+
+base_magic:
+  hidden: true
+  effects:
+    open:
+    - sound: magic.wandup
+      sound_broadcast: false
+      sound_volume: 0.4
+    - sound: block_chest_open
+      sound_pitch: 1.5
+      sound_volume: 0.1
+      sound_broadcast: false
+    close:
+    - sound: magic.wanddown
+      sound_broadcast: false
+      sound_volume: 0.4
+    - sound: block_chest_close
+      sound_pitch: 1.5
+      sound_volume: 0.1
+      sound_broadcast: false
+    cycle:
+    - sound: magic.paperturn
+      sound_broadcast: false
+      sound_volume: 0.4
+    - sound: item_book_page_turn
+      sound_pitch: 1.5
+      sound_volume: 0.2
+      sound_broadcast: false
+    cycle_spell:
+    - sound: ui_button_click
+      sound_pitch: 1.9
+      sound_volume: 0.1
+      sound_broadcast: false
+    cycle_hotbar:
+    - sound: magic.paperturn
+      sound_broadcast: false
+      sound_volume: 0.1
+    - sound: item_spyglass_use
+      sound_pitch: 0.3
+      sound_volume: 1.5
+      sound_broadcast: false
+
+base_undroppable:
+  inherit: base_magic
+  hidden: true
+  undroppable: true
+  unstashable: false
+  indestructible: true
+
+base_keep:
+  inherit: base_undroppable
+  hidden: true
+  keep: true
+  invulnerable: true
+
+base_bound:
+  inherit: base_keep
+  hidden: true
+  bound: true
+  immortal: true
+  track: true
+
+basic_wand:
+  inherit: base_magic
+  hidden: true
+  mode: inventory
+  drop: cycle_hotbar
+  left_click: cast
+  right_click: toggle
+  swap: cycle_hotbar
+  quiet: 1
+  effect_bubbles: false
+  item_attributes:
+    GENERIC_ATTACK_SPEED: 10
+  item_attribute_slot: mainhand
+
+base_wand:
+  hidden: true
+  inherit: base_bound
+  # WRV-150 (Oct 23, 2026): chest mode for every rank wand. Right-click
+  # (Bedrock: tap-and-hold / LT) opens a chest spell picker, tap a spell
+  # to make it active. Inventory mode needed hotbar keys 1-9 / scroll and
+  # the F swap key, which Bedrock touch and controller players cannot use
+  # reliably. Drop (Q) also opens the picker as a backup.
+  mode: chest
+  left_click: cast
+  drop: toggle
+  right_click: toggle
+  right_click_sneak: cycle
+  swap: cycle
+  swap_sneak: none
+  quiet: 1
+  effect_bubbles: false
+  item_attributes:
+    GENERIC_ATTACK_SPEED: 10
+  item_attribute_slot: mainhand
+
+beginner:
+  inherit: base_wand
+  # WRV-150: cure moved to Student in the re-tier; heal is the beginner spell.
+  active_spell: heal
+  legacy_icon: wand_icon:1
+  icon: stick{CustomModelData:18001}
+  migrate_icon: wand_icon
+  effect_color: '004400'
+  mana_regeneration: 5
+  mana_max: 50
+  mana: 50
+  earn_multiplier: 0
+  level_spells_to_path: beginner
+  slots: gui,controls,spellmode,swappable
+  tags: tweakable
+  spells:
+  - heal
+  - boon
+  - feed
+  - extinguish
+  - aqualung
+student:
+  inherit: beginner
+  legacy_icon: wand_icon:2
+  icon: stick{CustomModelData:18002}
+  migrate_icon: wand_icon
+  effect_color: 00FF00
+  hotbar_count: 2
+  mana_regeneration: 15
+  mana_max: 100
+  mana: 100
+  level_spells_to_path: student
+  spells:
+  - heal
+  - boon
+  - feed
+  - extinguish
+  - aqualung
+  - cure
+  - shell
+  - gills
+  - stormshackle
+apprentice:
+  inherit: student
+  legacy_icon: wand_icon:3
+  icon: stick{CustomModelData:18003}
+  effect_color: 22FF22
+  mana_regeneration: 25
+  mana_max: 150
+  mana: 150
+  level_spells_to_path: apprentice
+  spells:
+  - heal
+  - boon
+  - feed
+  - extinguish
+  - aqualung
+  - cure
+  - shell
+  - gills
+  - stormshackle
+  - superheal
+  - recall
+master:
+  inherit: apprentice
+  legacy_icon: wand_icon:4
+  icon: stick{CustomModelData:18004}
+  migrate_icon: golden_axe
+  mana_regeneration: 35
+  mana_max: 200
+  mana: 200
+  hotbar_count: 3
+  level_spells_to_path: master
+  spells:
+  - heal
+  - boon
+  - feed
+  - extinguish
+  - aqualung
+  - cure
+  - shell
+  - gills
+  - stormshackle
+  - superheal
+  - recall
+  - blessing
+  - recall_death

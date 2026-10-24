@@ -1,0 +1,51 @@
+--- staged/wands.yml.orig	2026-10-23 19:28:19.896837797 -0500
++++ staged/wands.yml	2026-10-23 19:28:19.920837904 -0500
+@@ -13,12 +13,12 @@
+ # flamethrower, vengeance...) - that is why this file exists.
+ #
+ # Cumulative spell lists:
+-#   beginner  : cure, boon, feed, extinguish, aqualung
+-#   student   : + heal, shell, gills, stormshackle
++#   beginner  : heal, boon, feed, extinguish, aqualung
++#   student   : + cure, shell, gills, stormshackle
+ #   apprentice: + superheal, recall
+ #   master    : + blessing, recall_death
+-# active_spell on the beginner wand is cure (the shipped default was
+-# missile, which does not exist in Phase 1).
++# active_spell on the beginner wand is heal (was cure before the re-tier
++# moved cure to Student; the shipped default was missile).
+ #
+ 
+ base_magic:
+@@ -99,12 +99,18 @@
+ base_wand:
+   hidden: true
+   inherit: base_bound
+-  mode: inventory
++  # WRV-150 (Oct 23, 2026): chest mode for every rank wand. Right-click
++  # (Bedrock: tap-and-hold / LT) opens a chest spell picker, tap a spell
++  # to make it active. Inventory mode needed hotbar keys 1-9 / scroll and
++  # the F swap key, which Bedrock touch and controller players cannot use
++  # reliably. Drop (Q) also opens the picker as a backup.
++  mode: chest
+   left_click: cast
+   drop: toggle
+   right_click: toggle
+-  swap: cycle_hotbar
+-  swap_sneak: cycle_hotbar_reverse
++  right_click_sneak: cycle
++  swap: cycle
++  swap_sneak: none
+   quiet: 1
+   effect_bubbles: false
+   item_attributes:
+@@ -113,7 +119,8 @@
+ 
+ beginner:
+   inherit: base_wand
+-  active_spell: cure
++  # WRV-150: cure moved to Student in the re-tier; heal is the beginner spell.
++  active_spell: heal
+   legacy_icon: wand_icon:1
+   icon: stick{CustomModelData:18001}
+   migrate_icon: wand_icon
