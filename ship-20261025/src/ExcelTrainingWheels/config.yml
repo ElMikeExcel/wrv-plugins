@@ -1,0 +1,128 @@
+# ExcelTrainingWheels — the Training Wheels Protocol.
+# Protection follows the CHILD, invisibly: no messages, titles,
+# particles or sounds are ever shown to a protected player. Admins
+# manage the list with /trainingwheels (alias /tw); edits persist
+# to this file immediately (Bukkit rewrites it, comments included
+# here will be lost on the first command edit — the settings and
+# the list are what matter).
+
+# Master switch. false = shield scales nothing, door guard cancels
+# nothing, no sieges run.
+enabled: true
+
+# Verbose console logging of shield scalings, door guards, siege
+# resets and LIFESTEAL heals. Console only — never anything in game.
+debug: false
+
+shield:
+  # Factor used by "/trainingwheels add <player>" when none is given.
+  default-factor: 0.5
+
+  # SEAL COMPENSATION (0.1.1 — Mike's ABSOLUTE LINE, Oct 19, 2026):
+  # a protected player takes HALF (their base factor) OF A MOB'S
+  # NORMAL, UNSCALED DAMAGE, at every seal state, in every world.
+  # EliteMobs multiplies an ELITE's outgoing damage by the ladder
+  # step below (its MobCombatSettings scaledDamageToPlayerMultiplier),
+  # so against elite damagers the shield divides the player's base
+  # factor by the CURRENT step: factor = base / dealt. Non-elite
+  # mobs are never ladder-scaled and always use the flat base
+  # factor. The seal count is read live from ExcelGuildGate
+  # (cached; refreshed on join and every 30 seconds) — this table
+  # must mirror the mob-scaling ladder whenever the ladder changes.
+  compensation:
+    # Master switch for the division above. false = 0.1.0 behavior
+    # (flat base factor against everything, elites included).
+    enabled: true
+    # Seal count to assume when GuildGate's state cannot be read
+    # (plugin absent or API unreachable). 0 = today's ladder step.
+    # The shield NEVER guesses weaker than this silently: the
+    # fallback is logged at enable and on every transition.
+    assume-seal: 0
+    # Worlds where ladder compensation does NOT apply (the flat
+    # base factor governs elites there): content in these worlds
+    # is not ladder-scaled. For the future EliteMobs GUILD world —
+    # guild prep names it here when the world is created, as part
+    # of its owed verification (see BUILD.md). Empty today: no
+    # guild world exists yet.
+    excluded-worlds: []
+    # Cumulative damage-dealt multiplier by seals broken (ladder
+    # v4: base 1.50, then +0.15 per seal, ending 2.25 at Seal 5).
+    dealt-multipliers:
+      "0": 1.50
+      "1": 1.65
+      "2": 1.80
+      "3": 1.95
+      "4": 2.10
+      "5": 2.25
+
+doors:
+  # Door TIERS (Mike, Oct 19, 2026): the better the door, the
+  # longer it buys you — time to get out and fight. Wooden doors
+  # break at vanilla pace (~14s on Hard) and iron doors fall to
+  # the 60s siege below; COPPER sits between at ~45s and rides
+  # the same siege machinery as iron, at this threshold: while a
+  # mob hunts an unprotected player (or a villager) at a copper
+  # door, cracks and banging build for this many seconds, then
+  # the door is destroyed with no drop. Vanilla NEVER completes
+  # a copper break on its own — the completion is suppressed —
+  # so the tier cannot be rushed. Tiers are a property of the
+  # DOOR, not the mob or its target (zombie family, vindicators,
+  # villager hunts — same tier); the one exception is the door
+  # hold: a mob hunting a protected player never starts a siege
+  # and its vanilla attempts are stopped outright — any door
+  # holds indefinitely for a protected player. (An earlier draft
+  # stretched vanilla by holding each completed break a counted
+  # number of times; the rig proved a cancelled zombie does not
+  # reliably re-attempt, so the deterministic siege won — see
+  # BUILD.md.) 0 disables the tier (copper breaks at vanilla
+  # pace again).
+  copper-target-seconds: 45
+
+  # ALL ZOMBIES BREAK DOORS (0.1.3 — Mike, Oct 23, 2026, 11:14 PM
+  # CDT). Vanilla only lets up to 10% of zombies break doors (rolled
+  # at spawn, scaled by regional difficulty), so most zombies just
+  # stand at a wooden door forever. true = every zombie of the
+  # types below can break doors (new spawns, plus older zombies as
+  # their chunks load). EliteMobs elites are left alone. The door
+  # hold above still wins: a mob hunting a protected player never
+  # breaks any door. A missing key counts as true. false = vanilla.
+  all-zombies-break-doors: true
+  # Types granted (Bukkit entity names). Drowned have no door goal
+  # and are always ignored. ZOMBIFIED_PIGLIN may be added (opt-in).
+  break-door-types: [ZOMBIE, HUSK, ZOMBIE_VILLAGER]
+
+lifesteal:
+  # LIFESTEAL ON KILL (0.1.4 - Mike, Oct 24, 2026, 8:33 AM CDT): a
+  # little passive sustain. A protected player who kills a hostile
+  # mob regains mob-hp; killing an EliteMobs elite regains elite-hp
+  # (2 HP = 1 heart). Capped at max health. Never from killing
+  # players, passive animals, or mobs from a spawner cage (farm
+  # guard). Projectile kills count when the player gets the kill.
+  # Missing keys = the defaults below. Values clamp to 0..20.
+  enabled: true
+  mob-hp: 2.0
+  elite-hp: 4.0
+  # Small green "+1 heart" on the killer's action bar.
+  show-actionbar: true
+
+siege:
+  # Seconds of accumulated siege (zombie at the door, hunting an
+  # unprotected player) before an iron door is destroyed. Wooden
+  # doors break far faster in vanilla — iron is the slow, loud one.
+  threshold-seconds: 60
+  # Seconds a siege may go unobserved (zombie knocked away, target
+  # ducked out) before its progress resets to zero.
+  grace-seconds: 3
+  # Hard cap on doors under siege at once (performance guard).
+  max-concurrent: 8
+  # Siege evaluation cadence in ticks (10 = twice a second).
+  cadence-ticks: 10
+
+protected:
+  # Protected players live here, keyed by UUID. Add them in-game or from
+  # the console with /tw add <player> [factor]; that writes this section.
+  # Example shape:
+  #   "00000000-0000-0000-0000-000000000000":
+  #     factor: 0.5
+  #     name: "ExamplePlayer"
+  players: {}

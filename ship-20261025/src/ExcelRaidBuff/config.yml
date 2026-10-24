@@ -1,0 +1,143 @@
+# ExcelRaidBuff 0.1.0 - the raid-only buff layer of Wink Reyes
+# Valley (Mike's decision, Oct 20, 2026 late: an Excel layer chosen
+# over flipping EliteMobs' global enableHighCompatibilityMode, so
+# raids get meaner without opening the custom-spawn surface -
+# spawners, eggs and portals stay non-elite everywhere else).
+#
+# Every number below is read live from this file (RaidBuffConfig);
+# retunes are config-only, and /raidbuff reload re-reads and
+# rescales live buffs in place. Validation clamps instead of
+# crashing: multipliers can never drop a raider below vanilla
+# (floor 1.0) and a bad value degrades toward vanilla.
+#
+# SCOPE: only mobs the game's own raid object claims as members.
+# Patrols, outpost and mansion illagers, and evoker vexes are never
+# touched. Witches still heal raiders (nothing here touches AI).
+
+# Master switch. Off = no buffs, no conversions, no announce; raids
+# run vanilla and GuildGate credits them as it always has.
+enabled: true
+
+announce:
+  # The ONE player-facing line of this plugin, as the first wave
+  # arrives, when the buff is meaningfully on. Player words,
+  # no numbers.
+  enabled: true
+  min-omen-level: 3
+  line: "&cThese raiders are hardened by the dark omen. Stand together."
+
+scaling:
+  # Raider attribute multipliers by the raid's Bad Omen level.
+  # Omen I is identity on purpose: Hero of the Village runs stay
+  # vanilla. Omen V is the seal raid (GuildGate 0.3.3 requires a
+  # victory at Bad Omen V) and is the wall.
+  health-multiplier:
+    "1": 1.00
+    "2": 1.50
+    "3": 1.90
+    "4": 2.40
+    "5": 3.00
+  # Kept deliberately shallow next to HP (modeled, TUNING in
+  # BUILD.md): spike damage is what one-shot the family's iron
+  # kits in the model, not time-to-kill. This column is ALSO the
+  # Rowan divisor: her TrainingWheels factor is 0.25 of a mob's
+  # NORMAL damage, and the companion TrainingWheels delta
+  # (same-window install gate - this plugin never installs
+  # without it) divides by ExcelRaidBuffAPI.damageMultiplierOf,
+  # which reads exactly this column back off the buffed raider,
+  # so she takes exactly 0.25 x vanilla at every omen (Mike's
+  # settled rule, Oct 21, 2026). Elites are already fully
+  # compensated inside TrainingWheels and are never marked, so
+  # their divisor reads 1.0.
+  damage-multiplier:
+    "1": 1.00
+    "2": 1.15
+    "3": 1.25
+    "4": 1.35
+    "5": 1.45
+  # The wall is the END of the raid: the final waves already carry
+  # the most vindicators, evokers and ravager jockeys in the
+  # vanilla table, so their HP leans a little harder. Only applies
+  # on a raid that is buffed at all (omen HP above 1.0) - an Omen I
+  # raid is identity end to end, final wave included.
+  late-wave-health-ramp: 1.25
+  late-wave-count: 2
+
+elites:
+  # Real EliteMobs elites among the raiders (Mike's addition,
+  # Oct 20, 2026 late: "include elites in there too") - converted
+  # IN PLACE from the wave's own members through EliteMobs' public
+  # API, inside ExcelRaidBuff only. The global
+  # enableHighCompatibilityMode stays OFF and is never touched.
+  enabled: true
+  # Share of each wave that converts, by omen level. The share
+  # ramps across the raid (wave-ramp below), averaging to this.
+  share:
+    "1": 0.00
+    "2": 0.08
+    "3": 0.15
+    "4": 0.22
+    "5": 0.28
+  # Across-the-raid ramp: the first wave converts at
+  # share x wave-ramp-from, the final wave at share x wave-ramp-to,
+  # linear between - the raid-wide average stays the share above.
+  wave-ramp-from: 0.6
+  wave-ramp-to: 1.4
+  # A converted elite's level = EliteMobs' own natural level for
+  # that spot and those players, plus this omen bonus, hard-clamped
+  # to EM's configured natural elite level cap (read live from
+  # EM's config API). Converted raiders are EXCLUDED from the
+  # attribute multipliers above - EliteMobs owns their stats.
+  level-bonus:
+    "1": 0
+    "2": 0
+    "3": 5
+    "4": 10
+    "5": 15
+  # Only used if the live cap read from EliteMobs fails.
+  level-cap-fallback: 150
+
+# How often the janitor sweep runs: strips buffs whose raid ended
+# or whose raider left the raid, repairs lost modifiers, and
+# follows config retunes. 40 ticks = 2 seconds.
+sweep-period-ticks: 40
+
+reveal:
+  # Stuck-wave reveal (0.1.1, Mike's pick Oct 23, 2026): when a
+  # raid makes NO progress for quiet-seconds - no member dies,
+  # takes damage or deals damage, and no new wave begins - the
+  # living members start to GLOW so the family can hunt down
+  # raiders stuck inside the mountain, on top of it, or in the
+  # water (the vanilla bell reveal only reaches ~32 blocks).
+  # The glow clears the moment the fight resumes or the raid
+  # ends. Cosmetic only: it marks, buffs and counts nothing -
+  # GuildGate's credit read never sees it.
+  enabled: true
+  # Seconds of no progress before the reveal fires (30-900).
+  quiet-seconds: 180
+  # One line to the raid's nearby players, the first time the
+  # reveal fires for a raid. Player words, no numbers.
+  announce: true
+  line: "&eThe remaining raiders are revealed — hunt them down."
+
+expiry:
+  # Raid expiry (0.1.2, Mike's order Oct 23, 2026): a raid is a
+  # siege, not a siege forever — after this many hours the raid
+  # DIES DOWN and has to be started over. The clock is a hard
+  # lifetime limit: fighting does NOT reset it (that is the
+  # reveal's quiet clock above, a different thing), and it is
+  # persisted to disk (expiry-starts.yml in this folder), so
+  # the daily 5 AM restart does not reset it either — the
+  # hours the server spends down count like any other hours.
+  # When the cap lands, the remaining members give up and
+  # leave: removed where they stand, no drops, no XP, no
+  # coins, and no Hero of the Village — the raid is neither
+  # won nor lost, it is over. One line to the players near it.
+  # A raid first seen mid-progress (say, one whose chunk was
+  # unloaded at a restart) starts its clock at first sight —
+  # the honest bound of what the plugin can know.
+  enabled: true
+  # Lifetime cap in hours.
+  hours: 6
+  # The one line to players near the raid when it dies down.
+  line: "&eThe raid has died down — the raiders have given up and gone."

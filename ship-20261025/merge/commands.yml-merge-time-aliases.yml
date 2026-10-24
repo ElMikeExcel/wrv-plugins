@@ -1,0 +1,9 @@
+  # Paper 26.3: the Nether and End have no world clock, so EssentialsX /time set and its
+  # /day and /night aliases fail ("Cannot set time in world without world clock").
+  # /time itself goes to vanilla because Essentials/config.yml disabled-commands lists "time";
+  # these two keep /day and /night working through vanilla /minecraft:time (ops only).
+  # Added 2026-10-25 (ship-20261025).
+  day:
+  - minecraft:time set day
+  night:
+  - minecraft:time set night

@@ -1,0 +1,50 @@
+$ time set day
+   [10:59:23] System chat: Set minecraft:overworld to time marker minecraft:day
+   > 
+$ time
+   [10:59:23] System chat: Unknown or incomplete command. See below for error
+   ...craft:time<--[HERE]
+   > 
+$ time query daytime
+   [10:59:24] System chat: Can't find element 'minecraft:daytime' of type 'minecraft:timeline'
+   ...ry daytime<--[HERE]
+   > 
+$ time query gametime
+   [10:59:25] System chat: The game time is 251381 tick(s)
+   > 
+$ day
+   [10:59:26] System chat: Set minecraft:overworld to time marker minecraft:day
+   > 
+$ night
+   [10:59:27] System chat: Set minecraft:overworld to time marker minecraft:night
+   > 
+$ time set 6000
+   [10:59:28] System chat: Set minecraft:overworld to 6000 tick(s)
+   > 
+$ etime
+   [10:59:29] [Essentials] CONSOLE issued server command: /etime 
+   [10:59:29] The current time in em_adventurers_guild is 09:44 or 9:44 AM or 3737 ticks.
+   [10:59:29] The current time in plain_test is 09:44 or 9:44 AM or 3737 ticks.
+   [10:59:29] The current time in rig_end is 09:44 or 9:44 AM or 3737 ticks.
+   [10:59:29] The current time in world is 12:00 or 12:00 PM or 6000 ticks.
+   [10:59:29] The current time in world_nether is 06:00 or 6:00 AM or 0 ticks.
+   [10:59:29] The current time in world_the_end is 13:15 or 1:15 PM or 7264 ticks.
+   > 
+$ ess commands
+   [10:59:30] [Essentials] CONSOLE issued server command: /ess commands
+   [10:59:30] EssentialsX is not relaying any commands to other plugins.
+   > 
+$ op Sh2
+   [10:59:31] System chat: Made Sh2 a server operator
+   > 
+Sh2 /time set night -> Set minecraft:overworld to time marker minecraft:night
+Sh2 /day -> Set minecraft:overworld to time marker minecraft:day
+Sh2 /time -> Unknown or incomplete command. See below for error
+...craft:time<--[HERE]
+Sh2 /etime -> 07:00 or 7:00 AM or 1000 ticks
+$ deop Sh2
+   [10:59:41] System chat: Made Sh2 no longer a server operator
+   > 
+Sh2 (deopped) /day -> 
+Sh2 (deopped) /time set day -> Unknown or incomplete command. See below for error
+time set day<--[HERE]
