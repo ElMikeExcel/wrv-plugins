@@ -43,6 +43,19 @@ public final class ExcelMenuStats extends JavaPlugin implements Listener {
         try { Plugin p = JavaPlugin.getProvidingPlugin(h.getClass()); return p != null && p.getName().equals("ExcelMenu"); }
         catch (Throwable notPlugin) { return false; }
     }
+    /** ExcelMenu 0.1.4 ConfirmHolder: {menuId, itemId + ":confirm"/":cancel"} for slots 11/15, else null. */
+    static String[] confirmTarget(Object holder, int raw) {
+        if (holder == null || !holder.getClass().getSimpleName().equals("ConfirmHolder")) return null;
+        String suffix = raw == 11 ? ":confirm" : raw == 15 ? ":cancel" : null;
+        if (suffix == null) return null;
+        String menu = call(holder, "menuId"), item = call(holder, "itemId");
+        return new String[]{menu == null ? "confirm" : menu, (item == null ? "item" : item) + suffix};
+    }
+    private static String call(Object o, String name) {
+        try { java.lang.reflect.Method m = o.getClass().getDeclaredMethod(name); m.setAccessible(true); Object v = m.invoke(o); return v == null ? null : v.toString(); }
+        catch (Throwable t) { return null; }
+    }
+
     private static String reflectId(Object holder) {
         for (String m : new String[]{"getMenuId", "menuId", "getId", "id", "getName", "name"}) {
             try { java.lang.reflect.Method mm = holder.getClass().getMethod(m); if (mm.getParameterCount() == 0) { Object v = mm.invoke(holder); if (v instanceof String s && !s.isBlank()) return s; } }
@@ -61,6 +74,12 @@ public final class ExcelMenuStats extends JavaPlugin implements Listener {
             ItemStack it = e.getCurrentItem();
             if (it == null || it.getType().isAir()) return;
             boolean ours = isExcelMenu(top);
+            String[] confirm = ours ? confirmTarget(top.getHolder(), raw) : null;
+            if (ours && top.getHolder().getClass().getSimpleName().equals("ConfirmHolder")) {
+                if (confirm == null) return; // preview or filler slot on the confirm screen
+                log.record(new ClickLog.Click(java.time.Instant.now(), p.getName(), p.getUniqueId(), platform(p.getUniqueId()), confirm[0], confirm[1], raw, e.getClick().name()));
+                return;
+            }
             MenuIndex.Menu menu = null;
             if (ours) { String id = reflectId(top.getHolder()); if (id != null) menu = idx.byId(id); }
             @SuppressWarnings("deprecation") String title = e.getView().getTitle();

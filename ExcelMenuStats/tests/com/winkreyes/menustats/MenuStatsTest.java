@@ -62,4 +62,16 @@ class MenuStatsTest {
         assertEquals("Java 3 | Bedrock 2 | Total 5", ClickLog.split(s.java(), s.bedrock()));
         assertEquals(2, s.top().size());
     }
+    @Test void confirmHolderClicksReadable() throws Exception {
+        Object h = new ConfirmHolder();
+        assertArrayEquals(new String[]{"spawnshop_cosmetics_colors", "pink:confirm"}, ExcelMenuStats.confirmTarget(h, 11));
+        assertArrayEquals(new String[]{"spawnshop_cosmetics_colors", "pink:cancel"}, ExcelMenuStats.confirmTarget(h, 15));
+        assertNull(ExcelMenuStats.confirmTarget(h, 13));
+        assertNull(ExcelMenuStats.confirmTarget("not a holder", 11));
+    }
+}
+/** Shape of ExcelMenu 0.1.4's package-private ConfirmHolder accessors. */
+final class ConfirmHolder {
+    String menuId() { return "spawnshop_cosmetics_colors"; }
+    String itemId() { return "pink"; }
 }
