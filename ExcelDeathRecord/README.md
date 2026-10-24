@@ -1,6 +1,6 @@
-# ExcelDeathRecord 0.2.0
+# ExcelDeathRecord 0.3.0
 
-The death ledger + Burn Ledger for Wink Reyes Valley (Paper 26.2,
+The death ledger + Burn Ledger for Wink Reyes Valley (Paper 26.2 and 26.3,
 Java 21 bytecode). Owner's purpose, in his words: *"a plugin that
 logs what people have at the point of death before it hits the
 ground."*
@@ -139,7 +139,30 @@ item as a DESPAWN (anything under 5 s old is skipped).
 ./build.sh                # JDK=/path/jdk25 LIBS=/path/paper-26.x-libs
 ./run-tests.sh            # plain-JVM suites
 ./run-compat.sh <0.1.0-source>
+./run-compat-020.sh <0.2.0-source>   # 0.2.0 reads 0.3.0 SELF marks
 ```
+
+## Lost & Found (0.3.0)
+
+Players bring back their own items from the Burn Ledger with
+`/lostfound` (alias `/recover`, permission `exceldeathrecord.lostfound`,
+default everyone). Java gets a chest menu, Bedrock a form (tap wording).
+
+- $16,000 a recovery (Vault money). The first one is free when the
+  player has less than $10,000 and has never recovered anything.
+- Owner only, losses from the last 7 days, one recovery per 24 hours.
+- Counts: lava, fire, void and logged despawns, in any world, including
+  items dropped by dying that then burned. Items a hopper or another
+  player picked up are not losses and never show.
+- The confirm step re-checks everything (record, window, cooldown,
+  price, a free slot) and is used up by the first click.
+- First-use tip until the player says OK; handed to ExcelTips when it
+  is installed.
+- Ops: `/deathrecord lostfound <player> [reset cooldown|free|tip|all]`.
+
+Details: `CHANGELOG.md`, install `INSTALL-0.3.0.md`, rollback
+`ROLLBACK-0.3.0.md`. Config: the `lost-and-found:` block and
+`despawn-log-types:` in `config.yml`.
 
 ## Lookup commands (permission `exceldeathrecord.admin`, default op)
 
@@ -157,12 +180,14 @@ Restoring is covered above (`/deathrecord restore ...`).
 - `src/com/winkreyes/exceldeathrecord/` — Bukkit adapter (plugin
   main + death listener + command, `BurnWatch`, `ItemCapture`,
   `RecordStore`, 0.2.0: `RestoreService`, `RestoreMenu`,
-  `GeyserForms`, `Names`)
+  `GeyserForms`, `Names`; 0.3.0: `LostFoundService`,
+  `LostFoundMenu`, `Money`/`VaultMoney`, `TipsBridge`, `ConfigUpgrade`)
 - `src/com/winkreyes/exceldeathrecord/core/` — pure logic, no
   Bukkit: record models, file formats, index/summary lines, the
   snapshot builder, burn-cause mapping, attribution resolution,
   the exactly-once guard; 0.2.0: `Selection`, `RestoreArgs`,
-  `SlotPlanner`, `SlotMatch`, `RestoreCsv`, `XpMath`
+  `SlotPlanner`, `SlotMatch`, `RestoreCsv`, `XpMath`; 0.3.0:
+  `LostFoundRules`, `LostFoundState`, `LostFoundCsv`, `TypeGlob`
 - `tests/` — plain-JVM suites (`./run-tests.sh`)
 - `./build.sh [out.jar]` — deterministic build (fixed jar
   timestamps; A/B rebuilds are byte-identical)

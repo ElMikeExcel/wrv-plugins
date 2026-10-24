@@ -50,10 +50,18 @@ import java.util.UUID;
  * 0.2.0 adds /deathrecord restore (typed + tap menu): gives back
  * the byte-exact copies, all-or-nothing, marks each restored item
  * in its record, and logs every restore to restores.csv.
+ *
+ * 0.3.0 adds Lost & Found (/lostfound, LostFoundService +
+ * LostFoundMenu): a player brings back one of their own Burn Ledger
+ * entries from the last 7 days, once every 24 hours, for a price
+ * (the first one free under a balance threshold). The Burn Ledger
+ * stamps owners on the dropped item entity so they survive chunk
+ * unloads and restarts, and logs despawns of a configurable list of
+ * valuable item types even when they are plain.
  */
 public final class ExcelDeathRecord extends JavaPlugin implements Listener {
 
-    static final String VERSION = "0.2.0";
+    static final String VERSION = "0.3.0";
     private static ExcelDeathRecord INSTANCE;
     static ExcelDeathRecord instance() { return INSTANCE; }
 
@@ -61,6 +69,8 @@ public final class ExcelDeathRecord extends JavaPlugin implements Listener {
     private BurnWatch burnWatch;
     private RestoreService restoreService;
     private RestoreMenu menu;
+    private LostFoundService lostFound;
+    private LostFoundMenu lostFoundMenu;
     private java.time.ZoneId displayZone;
 
     @Override
@@ -72,16 +82,53 @@ public final class ExcelDeathRecord extends JavaPlugin implements Listener {
         } catch (Exception e) {
             displayZone = java.time.ZoneId.of("America/Chicago");
         }
+        ConfigUpgrade.addMissingLostFoundBlock(this);
         store = new RecordStore(getDataFolder());
-        burnWatch = new BurnWatch(this, store);
         restoreService = new RestoreService(this, store);
+        lostFound = loadLostFound();
+        com.winkreyes.exceldeathrecord.core.TypeGlob types = lostFound.types;
+        burnWatch = new BurnWatch(this, store, () -> types, rec -> lostFound.onRecorded(rec));
         menu = new RestoreMenu(this, store, restoreService, displayZone);
+        lostFoundMenu = new LostFoundMenu(this, lostFound, displayZone);
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(burnWatch, this);
         getServer().getPluginManager().registerEvents(menu, this);
+        getServer().getPluginManager().registerEvents(lostFoundMenu, this);
+        org.bukkit.command.PluginCommand lf = getCommand("lostfound");
+        if (lf != null) lf.setExecutor(lostFoundMenu);
         burnWatch.startVoidSweep();
+        // Vault's economy provider (Essentials) registers during its own
+        // enable; hook it once everything has loaded.
+        Bukkit.getScheduler().runTask(this, () -> {
+            lostFound.hookMoney();
+            lostFoundMenu.hookTips();
+            getLogger().info("ExcelDeathRecord [Lost & Found]: " + (lostFound.enabled ? "ON" : "OFF")
+                    + ", price " + com.winkreyes.exceldeathrecord.core.LostFoundRules.money(lostFound.settings.price)
+                    + ", first one free under " + com.winkreyes.exceldeathrecord.core.LostFoundRules.money(lostFound.settings.freeThreshold)
+                    + (lostFound.settings.freeEnabled ? "" : " (free recovery OFF)")
+                    + ", window " + com.winkreyes.exceldeathrecord.core.LostFoundRules.daysText(lostFound.settings.windowMillis)
+                    + ", cooldown " + com.winkreyes.exceldeathrecord.core.LostFoundRules.durationText(lostFound.settings.cooldownMillis)
+                    + ", economy=" + lostFound.money().name() + ", despawn-log-types=" + types.size());
+        });
         getLogger().info("ExcelDeathRecord " + VERSION + " enabled — death ledger + Burn Ledger watching; restore ready (menu + typed), bedrock-forms="
                 + GeyserForms.probe() + ", display-zone=" + displayZone.getId() + ", log=restores.csv");
+    }
+
+    private LostFoundService loadLostFound() {
+        org.bukkit.configuration.file.FileConfiguration c = getConfig();
+        com.winkreyes.exceldeathrecord.core.LostFoundRules.Settings s = new com.winkreyes.exceldeathrecord.core.LostFoundRules.Settings();
+        s.price = Math.max(0, c.getDouble("lost-and-found.price", 16000));
+        s.freeEnabled = c.getBoolean("lost-and-found.free-first-recovery", true);
+        s.freeThreshold = c.getDouble("lost-and-found.free-threshold", 10000);
+        s.freeOnlyOnFirst = c.getBoolean("lost-and-found.free-only-if-no-earlier-recovery", true);
+        s.windowMillis = (long) (Math.max(0.0, c.getDouble("lost-and-found.window-days", 7)) * 24 * 3600 * 1000);
+        s.cooldownMillis = (long) (Math.max(0.0, c.getDouble("lost-and-found.cooldown-hours", 24)) * 3600 * 1000);
+        com.winkreyes.exceldeathrecord.core.TypeGlob types = new com.winkreyes.exceldeathrecord.core.TypeGlob(c.getStringList("despawn-log-types"));
+        return new LostFoundService(this, store, restoreService, s, types,
+                c.getBoolean("lost-and-found.enabled", true),
+                c.getBoolean("lost-and-found.tell-owner", true),
+                c.getString("lost-and-found.tell-owner-text",
+                        "Your {item} {how}. Type /lostfound within {days} to get it back."));
     }
 
     /** Async file write with a synchronous fallback when the
@@ -146,6 +193,7 @@ public final class ExcelDeathRecord extends JavaPlugin implements Listener {
                     event.getKeepInventory(),
                     drops, carried);
 
+            if (burnWatch != null) burnWatch.noteDeath(player, dropStacks);
             String text = RecordFormat.write(record);
             writeAsync(() -> {
                 try {
@@ -213,6 +261,8 @@ public final class ExcelDeathRecord extends JavaPlugin implements Listener {
         "/deathrecord <player> page 2 - older deaths",
         "/deathrecord <player> <n> - open death n with item numbers (1 = newest)",
         "/deathrecord burned [player] [page 2] - Burn Ledger (lava, fire, void, despawned valuables)",
+        "/deathrecord lostfound <player> - Lost & Found status (free used, cooldown, price, entries)",
+        "/deathrecord lostfound <player> reset cooldown|free|tip|all - clear a player's Lost & Found state",
         "/deathrecord restore <player> - tap menu: pick death, items, who gets them, confirm",
         "/deathrecord restore <player> <n> <items> [to <player>] [xp] [force]",
         "  <items>: all | 3 | 2,3,7 | 1-5 (numbers from the death view)",
@@ -252,7 +302,42 @@ public final class ExcelDeathRecord extends JavaPlugin implements Listener {
         if (args[0].equalsIgnoreCase("burned")) {
             return burnedCommand(sender, args);
         }
+        if (args[0].equalsIgnoreCase("lostfound")) {
+            return lostFoundAdmin(sender, args);
+        }
         return deathsCommand(sender, args);
+    }
+
+    /** 0.3.0: /deathrecord lostfound <player> [reset cooldown|free|tip|all] (ops). */
+    private boolean lostFoundAdmin(CommandSender sender, String[] args) {
+        if (args.length < 2) { sender.sendMessage("Usage: /deathrecord lostfound <player> [reset cooldown|free|tip|all]"); return true; }
+        List<String> words = new ArrayList<>(java.util.Arrays.asList(args).subList(1, args.length));
+        String what = null;
+        if (words.size() >= 3 && words.get(words.size() - 2).equalsIgnoreCase("reset")) {
+            what = words.get(words.size() - 1).toLowerCase(java.util.Locale.ROOT);
+            words = words.subList(0, words.size() - 2);
+        }
+        String name = String.join(" ", words).trim();
+        Player online = Names.online(name);
+        UUID u = null;
+        String shown = name;
+        if (online != null) { u = online.getUniqueId(); shown = online.getName(); }
+        else {
+            UUID nick = Names.offlineNick(name);
+            if (nick != null) u = nick;
+            else {
+                org.bukkit.OfflinePlayer op = Bukkit.getOfflinePlayerIfCached(name);
+                if (op != null) { u = op.getUniqueId(); if (op.getName() != null) shown = op.getName(); }
+            }
+        }
+        if (u == null) { sender.sendMessage("ExcelDeathRecord: no player " + name + " known."); return true; }
+        if (what != null) {
+            if (!sender.hasPermission(RestoreMenu.PERM)) { sender.sendMessage("ExcelDeathRecord: reset is for ops with restore."); return true; }
+            sender.sendMessage("ExcelDeathRecord: " + shown + ": " + lostFound.reset(u, what));
+            getLogger().info("ExcelDeathRecord [Lost & Found]: " + sender.getName() + " reset " + what + " for " + shown);
+        }
+        for (String line : lostFound.statusLines(shown, u)) sender.sendMessage(line);
+        return true;
     }
 
     /** Trailing "page N": returns N and strips it, or 1. */

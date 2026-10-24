@@ -196,6 +196,60 @@ final class RecordStore {
         }
     }
 
+    // ---- 0.3.0: Lost & Found support ----
+
+    /** One owner folder only (burned/<uuid>/): the Lost & Found list. */
+    List<BurnIndex.Entry> readBurnFolder(String folder) {
+        List<BurnIndex.Entry> out = new ArrayList<>();
+        if (folder == null || folder.isEmpty() || folder.contains("/") || folder.contains("\\") || folder.contains("..")) return out;
+        File dir = new File(burnedRoot, folder);
+        File[] files = dir.listFiles((d, n) -> n.endsWith(".yml"));
+        if (files == null) return out;
+        for (File f : files) {
+            try {
+                DestructionRecord r = BurnFormat.read(Files.readString(f.toPath(), StandardCharsets.UTF_8));
+                BurnIndex.Entry be = new BurnIndex.Entry(f.getName(), r);
+                be.folder = dir.getName();
+                out.add(be);
+            } catch (IOException ignored) { }
+        }
+        return out;
+    }
+
+    String readText(File f) throws IOException {
+        return Files.readString(f.toPath(), StandardCharsets.UTF_8);
+    }
+
+    File lostFoundStateFile(UUID uuid) {
+        return new File(new File(new File(dataFolder(), "lostfound"), "players"), uuid.toString() + ".yml");
+    }
+
+    com.winkreyes.exceldeathrecord.core.LostFoundState readLostFoundState(UUID uuid) throws IOException {
+        File f = lostFoundStateFile(uuid);
+        if (!f.exists()) return new com.winkreyes.exceldeathrecord.core.LostFoundState();
+        return com.winkreyes.exceldeathrecord.core.LostFoundState.read(Files.readString(f.toPath(), StandardCharsets.UTF_8));
+    }
+
+    void writeLostFoundState(UUID uuid, com.winkreyes.exceldeathrecord.core.LostFoundState st) throws IOException {
+        File f = lostFoundStateFile(uuid);
+        Files.createDirectories(f.getParentFile().toPath());
+        rewrite(f, com.winkreyes.exceldeathrecord.core.LostFoundState.write(st));
+    }
+
+    /** Append rows to lostfound.csv (header on first write). */
+    void appendLostFound(List<String> rows) throws IOException {
+        if (rows.isEmpty()) return;
+        synchronized (writeLock) {
+            File csv = new File(dataFolder(), "lostfound.csv");
+            Files.createDirectories(dataFolder().toPath());
+            StringBuilder sb = new StringBuilder();
+            if (!csv.exists() || csv.length() == 0) sb.append(com.winkreyes.exceldeathrecord.core.LostFoundCsv.HEADER).append('\n');
+            for (String r : rows) sb.append(r).append('\n');
+            Files.writeString(csv.toPath(), sb.toString(), StandardCharsets.UTF_8,
+                    java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+        }
+    }
+
     private static boolean nameMatchesDots(String stored, String typedLower) {
         String s = stored.toLowerCase();
         return s.equals("." + typedLower) || ("." + s).equals(typedLower) || s.replaceFirst("^\\.", "").equals(typedLower);

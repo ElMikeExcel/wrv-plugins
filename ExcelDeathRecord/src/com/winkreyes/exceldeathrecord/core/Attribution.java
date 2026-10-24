@@ -50,6 +50,23 @@ public final class Attribution {
         return o;
     }
 
+    /**
+     * 0.3.0 resolution with the two persistent sources added, in
+     * trust order: the entity's owner, then the owner stamp this
+     * plugin writes into the item ENTITY's persistent data when a
+     * player drops it (or dies and it spills) - which survives chunk
+     * unloads and restarts - then the entity's thrower, then the
+     * in-memory drop tracker. Unknown when none knows.
+     */
+    public static Owner resolve(String entityOwnerUuid, String entityOwnerName,
+                                String stampUuid, String stampName,
+                                String throwerUuid, String throwerName, DropInfo tracked) {
+        if (entityOwnerUuid != null && !entityOwnerUuid.isEmpty()) return resolve(entityOwnerUuid, entityOwnerName, null);
+        if (stampUuid != null && !stampUuid.isEmpty()) return resolve(stampUuid, stampName, null);
+        if (throwerUuid != null && !throwerUuid.isEmpty()) return resolve(throwerUuid, throwerName, null);
+        return resolve(null, null, tracked);
+    }
+
     /** World age in seconds at destruction: tracked drops age by
      *  the clock; anything else by the adapter's fallback (lived
      *  ticks / 20), or -1 when neither is known. */
