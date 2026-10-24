@@ -1,0 +1,133 @@
+# ExcelWandBars 0.2.2 (Wink Reyes Valley). Separate plugin; Magic (elmakers)
+# files are not changed. EliteMobs (MagmaGuy) is not touched.
+
+# 0.2.0: wand controls are a per-player choice. Everyone gets the default
+# (classic) until they pick Spell bars with /wandstyle (form on Bedrock,
+# clickable chat on Java, also a button at the bottom of /spellinfo).
+# The choice is saved in styles.yml and put back on the held rank wand on
+# join, when a wand is held or re-issued, on respawn and after every Magic
+# load (seal stage applies). Only keys that differ are written to the wand.
+# 0.2.1: the two styles are now called Classic and Sneak bars. Sneak bars is
+# for Bedrock players only (phone, tablet, console via Geyser/Floodgate).
+# Java players always get Classic and /wandstyle shows them Classic only.
+# Bedrock players pick with /wandstyle (a form) or the "Wand controls"
+# button in the compass menu (ExcelBedrockMenu 1.5.18).
+wand-style:
+  enabled: true
+  # true = Sneak bars only for Bedrock players. A Java player with "bars"
+  # saved from 0.2.0 gets Classic put back on their wand (choice kept in
+  # styles.yml, used again if they join from Bedrock).
+  bars-bedrock-only: true
+  # classic = chest mode: right click next spell, sneak + right click spell
+  # list, Q back one spell. bars = inventory mode + quick cast.
+  default: classic
+  # Only wands whose template inherits this one are touched (the rank wands).
+  rank-wand-inherits: base_wand
+  # Never touched even if they inherit base_wand (the builder wand keeps its own controls).
+  exclude-templates:
+    - masons
+  # Optional per-key overrides of the two control sets. Leave commented to use
+  # the built-in sets (same as the WRV-150 chest set and the action-bar set).
+  #controls:
+  #  classic:
+  #    right_click_sneak: toggle
+  #  bars:
+  #    right_click_sneak: cycle
+
+sneak-flip:
+  # Only for players on the Sneak bars style (Bedrock); classic players never flip.
+  # A sneak PRESS (not the release) while holding a Magic wand whose spell bar
+  # is open flips to the next bar: 1, 2, 3, back to 1. The bar stays where it
+  # is when you stop sneaking, so you never have to keep sneaking.
+  enabled: true
+  # Ignore a second press within this many milliseconds (double events).
+  debounce-ms: 250
+  # Sneak also means "get out of the boat", "swim down", "stop gliding" and
+  # "fly down", so those never flip bars.
+  skip-in-vehicle: true
+  skip-swimming: true
+  skip-gliding: true
+  skip-flying: true
+  # One short action-bar line after a flip, e.g. "Bar 2/3: Boon, Feed".
+  # Sent once (not repeated), so ExcelAttunement's stance line wins on its next update.
+  show-bar-line: true
+
+spell-book:
+  # /spellinfo: Bedrock gets a form (tap a spell for full details), Java gets
+  # chat lines with hover details. Read only. 0.2.1: works without holding
+  # the wand (reads the first usable wand in the inventory), so the compass
+  # menu Spellbook button works while the compass is in hand.
+  enabled: true
+
+wand-tip:
+  # 0.2.1 onboarding tip: on each of a player's first max-uses wand uses
+  # (left or right click with a Magic wand) a short chat tip explains the two
+  # wand styles, until they say OK. Java: click [OK] in chat. Bedrock: tap
+  # OK on a pop-up (at most once per session, never right after a hit) or
+  # type /wandstyle ok. Picking a style also counts as OK. Progress is saved
+  # in tips.yml. Clicks closer than use-gap-ms count as one use.
+  enabled: true
+  max-uses: 15
+  use-gap-ms: 2000
+  bedrock-popup-combat-quiet-ms: 10000
+
+spell-screen:
+  # 0.2.2: Bedrock players on Classic controls (Magic chest mode): crouch and
+  # press and hold (or crouch + LT) opens the Spell Book form instead of
+  # Magic's chest spell list (Geyser showed that chest with a row of barrier
+  # blocks). Tap a spell, then "Use this spell" to make it the wand's spell.
+  # Java players and Sneak bars are never changed. If the form can't be sent,
+  # Magic's chest opens as before.
+  bedrock-form: true
+  # A second open request within this many ms (same press twice) is ignored.
+  debounce-ms: 600
+
+progress-line:
+  # 0.2.2: after a successful cast, one short action-bar line shows the
+  # spell's progress, e.g. "Boon: 12/40 casts to Rank 2". Sent once, never
+  # repeated. The XP bar (mana) is not touched.
+  # Only shown where casting really counts toward the next rank: Magic ranks
+  # a spell up by casts only on a wand with a Magic path. WRV's rank wands
+  # have no path (and Magic's default_wand_path is empty), so with today's
+  # Magic config no line shows and the Spell Book says the next rank comes
+  # with the next wand rank. If the wands ever get a path, the line works
+  # with no change here.
+  enabled: true
+  # At most one line per player this often (a rank-up, or the cast that
+  # fills the count, always shows).
+  min-gap-seconds: 4
+  # While an ExcelAttunement stance countdown is on, no progress line (so the
+  # stance line is never covered). The Spell Book still shows the progress.
+  skip-during-stance: true
+
+spell-tip:
+  # 0.2.2 first-use tip for the Spell Book screen and the progress line.
+  # Repeats until the player says OK: Java [OK] in chat, the OK button inside
+  # the Bedrock Spell Book, or /spellbook ok. At most once per show-gap.
+  # If ExcelTips is running, the tip is handed to it (tip name "spellscreen")
+  # and this plugin does not show its own copy, so nobody sees it twice.
+  enabled: true
+  # 0 = until OK (Mike's rule).
+  max-shows: 0
+  show-gap-seconds: 60
+
+# Belt and braces: never flip in these worlds (Magic is already off there
+# through ExcelAttunement's guild ward, so the wand bar cannot be open).
+skip-worlds:
+  - em_adventurers_guild
+  - GoblinKingdom_vf
+skip-world-prefixes:
+  - em_
+
+debug: false
+
+compass-guard:
+  # While the Magic wand bar is open your real inventory is stored away, so a
+  # menu compass given then cannot see the one you already have, and the two
+  # stack when the bar closes. With this on, a few ticks after the bar can
+  # close (and after join or respawn), extra menu compasses are trimmed to
+  # exactly one. Never gives items; only removes extra copies of the tagged compass.
+  enabled: true
+  keys:
+    - menujoin:menu_compass
+    - excelmenujoin:menu_compass
