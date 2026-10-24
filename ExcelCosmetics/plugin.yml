@@ -1,0 +1,40 @@
+name: ExcelCosmetics
+version: 0.1.2
+main: com.winkreyes.excelcosmetics.ExcelCosmetics
+api-version: '1.13'
+author: WinkReyesValley
+description: Chat colors, name effects, archetype sets and the emote command pack — weekly rentals, a 4-week commitment tier at 3.5x, and flat whale own-it prices, sold through the spawn-shop shelf so the Vault charge and the grant are one atomic step. Server-side chat painting, identical for Java and Bedrock.
+softdepend: [Vault, Geyser-Spigot, floodgate]
+commands:
+  cosmetics:
+    description: Your cosmetics — see what you hold, equip colors, effects and sets.
+    usage: /cosmetics [list|equip <color|effect|set> <id>|off]
+  excelcosmetics:
+    description: Cosmetics admin — grant / buy / revoke / status / setexpiry / reload.
+    usage: /excelcosmetics grant|buy|revoke|status|setexpiry|reload ...
+    permission: excelcosmetics.admin
+  shrug:
+    description: Emote Pack — shrug in chat.
+    usage: /shrug
+  hug:
+    description: Emote Pack — hug a player in chat.
+    usage: /hug [player]
+  tableflip:
+    description: Emote Pack — flip a table in chat.
+    usage: /tableflip
+  unflip:
+    description: Emote Pack — put the table back.
+    usage: /unflip
+  wave:
+    description: Emote Pack — wave in chat.
+    usage: /wave [player]
+  highfive:
+    description: Emote Pack — high-five a player in chat.
+    usage: /highfive [player]
+permissions:
+  excelcosmetics.admin:
+    default: op
+  excelcosmetics.use:
+    default: true
+
+# ExcelCosmetics — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
