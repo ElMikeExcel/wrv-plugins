@@ -1,0 +1,32 @@
+# ExcelMenu definition: teleport_confirm_spawncmd
+# Migrated 2026-10-20 from DeluxeMenus gui_menus/teleport_confirm_spawncmd.yml
+# (source SHA-256 ea1cc44de7e98ba5f6ef901a5778ac3ebc831063a9dc881c12bacdf784d753f4; provenance in ~/workspace/excelmenu/dm-source/PROVENANCE.md)
+format: 1
+title: '&6&lTeleport to Spawn?'
+size: 9
+items:
+  'yes':
+    material: LIME_DYE
+    slot: 3
+    name: '&a&lYes, teleport'
+    lore:
+    - '&7Take me to spawn'
+    clicks:
+      left:
+      - '[player] spawn'
+      - '[close]'
+  info:
+    material: LODESTONE
+    slot: 4
+    name: '&e&lSpawn'
+    lore:
+    - '&7Teleport back to the village spawn'
+  cancel:
+    material: RED_DYE
+    slot: 5
+    name: '&c&lCancel'
+    lore:
+    - '&7Stay where I am'
+    clicks:
+      left:
+      - '[close]'
