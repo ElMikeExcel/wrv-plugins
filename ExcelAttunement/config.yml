@@ -1,0 +1,19 @@
+# ExcelAttunement — Combat Attunement settings.
+# The defaults ARE the design (Mike, Oct 19, 2026); the knobs exist
+# so a balance pass never needs a rebuild.
+
+# Master switch. false = the plugin watches nothing and blocks nothing.
+enabled: true
+
+# Stance window in seconds, refreshed by stance interactions
+# (landing a hit, a qualifying cast, taking hostile damage).
+# 30s by design: Superheal / Chain Lightning cooldowns are 20s.
+window-seconds: 30
+
+# "In combat" for support casts: the caster dealt or took damage
+# within this many seconds. A support cast outside it is the accepted
+# pre-fight opener and never attunes.
+combat-context-seconds: 10
+
+# Verbose logging of blocks, zeroes and stance transitions.
+debug: false
