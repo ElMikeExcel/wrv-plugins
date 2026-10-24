@@ -3,6 +3,46 @@
 Batch staged Sat Oct 24, 2026 (CDT). Built and tested on the box test server only.
 NOT installed, no restart. Magic (elmakers) and EliteMobs (MagmaGuy) files are not changed.
 
+## Compass Spawn fix: ExcelMenu teleport_confirm_spawn.yml 1999a762... -> bc8bb0c5... (added Oct 24, 2:26 PM CDT)
+
+Mike approved this at 2:26 PM CDT on Oct 24, to ship with this batch. It changes one menu file. No jar changes, so
+every jar sha256 in this batch is the same as before.
+
+### What was wrong
+* Marvin set the new spawn today (2:22 PM CDT). `/spawn` (EssentialsX) follows it, but the compass did not.
+* On Java, compass > Spawn > Yes did not use `/spawn` at all. When the menus moved from DeluxeMenus to
+  ExcelMenu (Oct 20), the Yes button kept a fixed teleport to the old village spot:
+  `execute in minecraft:overworld run minecraft:tp <player> -784 80 -336`. So every Java compass trip went
+  to the old spot, whatever spawn was set to.
+* On Bedrock, the compass Spawn button (ExcelBedrockMenu) already ran the real `/spawn` from the console, so
+  it was already right. That code is not changed.
+
+### What changed
+* plugins/ExcelMenu/menus/teleport_confirm_spawn.yml, the `'yes'` item. Old line:
+  `[console] execute in minecraft:overworld run minecraft:tp %player_name% -784 80 -336`.
+  New line: `[console] spawn %player_name%`. `[close]` still runs after it.
+* It now runs the same EssentialsX spawn as `/spawn` and the Bedrock button. It follows any future
+  `/setspawn` with no coordinates in the file. It also works from the Nether and the End.
+* Two comment lines were added at the top of the file. The title, the Yes/Info/Cancel slots (3/4/5), the item
+  names and the lore are unchanged. Cancel still only closes the menu.
+* server_menu.yml (1cdc8c29...) is unchanged. Its Spawn item (slot 10) still opens this confirm.
+* The commands menu `/spawn` entry (teleport_confirm_spawncmd.yml) already ran `[player] spawn`. Unchanged.
+
+### Install notes
+* New pre-check 2b: the live file must be 1999a762... (every box copy since Oct 20 matches). If it differs,
+  make the one-line edit by hand.
+* New pre-check 2c: `/spawn` on live must already go to Marvin's spawn, because the compass now goes to the
+  same place.
+* Backup is `teleport_confirm_spawn.yml.bak-20261024`. ROLLBACK.md step 4 puts it back.
+
+### Known limits
+* ExcelBedrockMenu still has its old emergency fallback. It only runs if the console `/spawn` fails or the
+  player is still in the Adventurers Guild world one tick later. The fallback uses config spawn.x/z (old
+  village -784/-272). Changing it would need a new jar, and another build is changing ExcelBedrockMenu right
+  now, so it is left for later.
+* The new spawn's coordinates are not written anywhere in this change. They are not confirmed from logs. The
+  box logs end at 1:45 PM CDT, before Marvin set the spawn.
+
 ## ExcelWandBars 0.2.0 -> 0.2.1 (jar sha256 d25cf1e8...ecd26)
 
 ### Wand controls: a per-player choice (/wandstyle)

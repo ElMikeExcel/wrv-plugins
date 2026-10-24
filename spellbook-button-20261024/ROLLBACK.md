@@ -7,7 +7,10 @@
    ExcelBedrockMenu-1.5.17.jar.bak-20261024 back to ExcelBedrockMenu-1.5.17.jar.
 3. Copy plugins/ExcelMenu/menus/server_menu.yml.bak-20261024 over server_menu.yml. This
    step alone would also work with `excelmenu reload`.
-4. Restart per the rule.
+4. Copy plugins/ExcelMenu/menus/teleport_confirm_spawn.yml.bak-20261024 over
+   teleport_confirm_spawn.yml (compass Spawn goes back to the old fixed village spot).
+   This step alone also works with `excelmenu reload`.
+5. Restart per the rule.
 
 What players notice after a rollback:
 * The Spellbook, Wand controls and Auto-sort buttons are gone.
