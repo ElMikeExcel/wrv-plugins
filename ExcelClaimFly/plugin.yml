@@ -1,0 +1,24 @@
+name: ExcelClaimFly
+version: 0.1.0
+main: com.winkreyes.excelclaimfly.ExcelClaimFly
+api-version: '1.21'
+author: WinkReyesValley
+depend: [Vault, LuckPerms, GriefPrevention]
+softdepend: [floodgate]
+description: Build Flight pass. A timed LuckPerms pass bought in the Spawn Shop (Travel & Animals) that lets you fly only inside your own claim. Leaving the claim, a fight or the pass ending turns flight off and you land with no fall damage.
+commands:
+  buildfly:
+    description: Build Flight pass. /buildfly shows time left, /buildfly help explains it, /buildfly buy opens the purchase screen.
+    usage: /buildfly [status|help|buy] (admin - give <player> <min> | end <player> | info <player> | confirm <player> | reload)
+    aliases: [claimfly]
+    permission: excelclaimfly.use
+permissions:
+  excelclaimfly.use:
+    description: Use /buildfly (status, help, buy for yourself).
+    default: true
+  excelclaimfly.admin:
+    description: Console/admin tools (buy for a player, give, end, info, reload).
+    default: op
+  excelclaimfly.pass:
+    description: The Build Flight pass itself. Given ONLY as a LuckPerms temporary node by the purchase.
+    default: false

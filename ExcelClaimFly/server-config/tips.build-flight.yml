@@ -1,0 +1,13 @@
+  # Build Flight pass (ExcelClaimFly 0.1.0). Shows 11 s after a player makes a claim (after the Claims tip,
+  # past the 10 s gap between tips) or when they use /buildfly.
+  # Off by itself while ExcelClaimFly is not running.
+  build-flight:
+    title: Build Flight
+    needs-plugin: 'ExcelClaimFly'
+    triggers:
+      - {type: event, class: me.ryanhamshire.GriefPrevention.events.ClaimCreatedEvent, player-path: getCreator, delay-ticks: 220}
+      - {type: command, commands: [buildfly, claimfly]}
+    text:
+      - 'Want to fly while you build? A Build Flight pass lets you fly inside your own claim for 30 minutes ($1,000).'
+      - 'Get it in the Spawn Shop, Travel & Animals. Double-tap jump to fly. /buildfly shows your time left.'
+

@@ -1,0 +1,15 @@
+  - id: 2026-10-25-build-flight
+    date: Oct 25
+    posted: 2026-10-25
+    title: "New: Build Flight pass"
+    new-commands:
+      - cmd: /buildfly
+        what: "Shows how much Build Flight time you have left. /buildfly help explains how it works."
+        bedrock: "tap Build Flight Pass in the Spawn Shop, Travel & Animals."
+        java: "Or click Build Flight Pass in the Spawn Shop, Travel & Animals."
+    changes:
+      - "Buy a Build Flight pass in the Spawn Shop, Travel & Animals: 30 minutes for $1,000."
+      - "You can fly only inside your own claim. Double-tap jump to fly."
+      - "Leave your claim or get in a fight and flight turns off. You land safe, no fall damage."
+      - "Back in your claim and out of the fight? Double-tap jump again."
+      - "Time keeps counting, even if you log off. Buy again to add more time."
