@@ -1,0 +1,13 @@
+305a306,317
+>   # Night Hearing (ExcelTrainingWheels 0.1.7). TrainingWheels calls this tip
+>   # itself, only after the Second Seal and only at night in the overworld,
+>   # at most once per night. Needs TrainingWheels 0.1.7 or newer.
+>   night-hearing:
+>     title: Night hearing
+>     needs-plugin: 'ExcelTrainingWheels>=0.1.7'
+>     max-shows: 3
+>     triggers:
+>       - {type: api}
+>     text:
+>       - 'The dead can hear you at night. Sneak, or sleep.'
+> 

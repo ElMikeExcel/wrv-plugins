@@ -7,6 +7,7 @@ import com.winkreyes.exceltrainingwheels.core.CopperDoors;
 import com.winkreyes.exceltrainingwheels.core.DoorGuardRule;
 import com.winkreyes.exceltrainingwheels.core.LifestealRule;
 import com.winkreyes.exceltrainingwheels.core.LogThrottle;
+import com.winkreyes.exceltrainingwheels.core.NightHearing;
 import com.winkreyes.exceltrainingwheels.core.ProtectedRegistry;
 import com.winkreyes.exceltrainingwheels.core.RaidDivision;
 import com.winkreyes.exceltrainingwheels.core.ShieldRule;
@@ -72,8 +73,8 @@ import java.util.UUID;
  * Spider-Man: Homecoming: limits in place until the wearer is
  * ready, and Mike holds the switch).
  *
- * Three pieces, one principle: PROTECTION FOLLOWS THE CHILD.
- *  1. KID SHIELD — listed players take reduced damage from hostile
+ * Three pieces, one principle: PROTECTION FOLLOWS THE PLAYER.
+ *  1. DAMAGE SHIELD — listed players take reduced damage from hostile
  *     mobs only (melee / mob-shot projectiles / creeper blasts),
  *     scaled at HIGH priority on the victim axis. Invisible: no
  *     messages, titles, particles or sounds, ever.
@@ -197,6 +198,42 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
     private Method floodgateIsPlayerMethod;
     private Object floodgateApi;
     private boolean floodgateSeamDead;
+    // Night Hearing (0.1.7). cachedSealsRaw is the UNCLAMPED GuildGate
+    // count (the compensation cache is clamped to the table size).
+    private volatile int cachedSealsRaw;
+    private boolean nhEnabled;
+    private int nhMinSeals = NightHearing.DEFAULT_MIN_SEALS;
+    private double nhRange = NightHearing.DEFAULT_RANGE;
+    private boolean nhFootsteps;
+    private java.util.Set<String> nhTypes = new java.util.LinkedHashSet<>(NightHearing.DEFAULT_TYPES);
+    private int nhMaxPerNoise = NightHearing.DEFAULT_MAX_PER_NOISE;
+    private int nhMaxPerPlayer = NightHearing.DEFAULT_MAX_PER_PLAYER;
+    private long nhCooldownSeconds = NightHearing.DEFAULT_COOLDOWN_SECONDS;
+    private long nhGiveUpSeconds = NightHearing.DEFAULT_GIVE_UP_SECONDS;
+    private boolean nhBed = true;
+    private java.util.Set<String> nhExcludedWorlds = java.util.Set.of();
+    private List<String> nhExcludedPrefixes = List.of("em_");
+    private boolean nhLogKeys;
+    private NightHearing.Cooldown nhCooldown = new NightHearing.Cooldown(NightHearing.DEFAULT_COOLDOWN_SECONDS * 1000L);
+    private NightHearing.Hunters nhHunters = new NightHearing.Hunters(NightHearing.DEFAULT_GIVE_UP_SECONDS * 1000L);
+    private boolean nhSteerDoors = true;
+    private double nhSteerRadius = NightHearing.DEFAULT_STEER_RADIUS;
+    /** A heard zombie walking to (or standing at) the outside face of a door near the player. */
+    private record Steer(UUID player, Block door, Location spot, NightHearing.DoorKind kind) {}
+    private final Map<UUID, Steer> nhSteer = new HashMap<>();
+    private boolean nhTipEnabled = true;
+    private String nhTipTitle = "Night hearing";
+    private String nhTipText = "The dead can hear you at night. Sneak, or sleep.";
+    private static final String NH_TIP_ID = "night-hearing";
+    private boolean nhTipRegistered;
+    private boolean nhTipSeamLogged;
+    private final Map<UUID, String> nhTipShown = new HashMap<>();
+    private Method veilMethod;
+    private Plugin veilOwner;
+    // Wood doors off Hard (0.1.7 safety net): vanilla breaks wood only on Hard.
+    private boolean woodFallback = true;
+    private int woodFallbackSeconds = 12;
+    private SiegeBook woodSiegeBook;
 
     @Override
     public void onEnable() {
@@ -216,6 +253,8 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
         getLogger().info("lifesteal on kill: " + lifestealState());
         getLogger().info("door log throttle: " + doorLogState());
         getLogger().info("bedrock loading-screen grace: " + graceState());
+        getLogger().info("night hearing: " + hearingState());
+        Bukkit.getScheduler().runTaskTimer(this, this::hearingTick, 20L, 20L);
         // Slow seal-count refresh (join events refresh it too); the
         // cached value is all the damage handler ever reads.
         Bukkit.getScheduler().runTaskTimer(this, this::refreshSealCount, 600L, 600L);
@@ -270,6 +309,41 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
             getLogger().warning("shield.compensation.source '" + source + "' is not live|table - using live");
         }
         lastMismatchKey = "";
+        // 0.1.7 Night Hearing: missing keys -> defaults (feature ON but gated by the seal count).
+        nhEnabled = getConfig().getBoolean("night-hearing.enabled", true);
+        nhMinSeals = Math.max(0, getConfig().getInt("night-hearing.min-seals", NightHearing.DEFAULT_MIN_SEALS));
+        nhRange = NightHearing.sanitizeRange(getConfig().getDouble("night-hearing.range", NightHearing.DEFAULT_RANGE));
+        nhFootsteps = getConfig().getBoolean("night-hearing.hear-footsteps", false);
+        nhTypes = NightHearing.parseTypes(getConfig().isList("night-hearing.types")
+                ? getConfig().getStringList("night-hearing.types") : null);
+        nhMaxPerNoise = NightHearing.sanitizeCount(getConfig().getInt("night-hearing.max-per-noise", NightHearing.DEFAULT_MAX_PER_NOISE), 10);
+        nhMaxPerPlayer = NightHearing.sanitizeCount(getConfig().getInt("night-hearing.max-per-player", NightHearing.DEFAULT_MAX_PER_PLAYER), 20);
+        nhCooldownSeconds = NightHearing.sanitizeSeconds(getConfig().getLong("night-hearing.cooldown-seconds", NightHearing.DEFAULT_COOLDOWN_SECONDS), 600L);
+        nhGiveUpSeconds = Math.max(5L, NightHearing.sanitizeSeconds(getConfig().getLong("night-hearing.give-up-seconds", NightHearing.DEFAULT_GIVE_UP_SECONDS), 600L));
+        nhBed = getConfig().getBoolean("night-hearing.bed-always-works", true);
+        nhExcludedWorlds = new java.util.HashSet<>(getConfig().getStringList("night-hearing.excluded-worlds"));
+        nhExcludedPrefixes = getConfig().isList("night-hearing.excluded-world-prefixes")
+                ? getConfig().getStringList("night-hearing.excluded-world-prefixes") : List.of("em_");
+        nhLogKeys = getConfig().getBoolean("night-hearing.log-event-keys", false);
+        nhSteerDoors = getConfig().getBoolean("night-hearing.steer-to-doors", true);
+        nhSteerRadius = NightHearing.sanitizeSteerRadius(getConfig().getDouble("night-hearing.steer-radius", NightHearing.DEFAULT_STEER_RADIUS));
+        nhCooldown = new NightHearing.Cooldown(nhCooldownSeconds * 1000L);
+        if (nhHunters != null) {
+            for (UUID zid : nhHunters.releaseAll()) {
+                Entity e = Bukkit.getEntity(zid);
+                if (e instanceof Mob m) m.setTarget(null);
+            }
+        }
+        clearSteers();
+        nhHunters = new NightHearing.Hunters(nhGiveUpSeconds * 1000L);
+        nhTipEnabled = getConfig().getBoolean("night-hearing.tip.enabled", true);
+        nhTipTitle = getConfig().getString("night-hearing.tip.title", "Night hearing");
+        nhTipText = getConfig().getString("night-hearing.tip.text", "The dead can hear you at night. Sneak, or sleep.");
+        nhTipRegistered = false;
+        woodFallback = getConfig().getBoolean("doors.wood-fallback-off-hard", true);
+        woodFallbackSeconds = Math.max(1, getConfig().getInt("doors.wood-fallback-seconds", 12));
+        long woodSteps = Math.max(1L, Math.round(woodFallbackSeconds * 20.0 / cadenceTicks));
+        woodSiegeBook = new SiegeBook(siegeMaxConcurrent, woodSteps, siegeGraceSeconds * 20L);
 
         Map<String, String[]> raw = new LinkedHashMap<>();
         ConfigurationSection section = getConfig().getConfigurationSection("protected.players");
@@ -326,6 +400,7 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
     private void refreshSealCount() {
         Integer read = readSealsFromGuildGate();
         if (read != null) {
+            cachedSealsRaw = Math.max(0, read);
             int seals = Math.max(0, Math.min(read, compTable.size() - 1));
             if (!sealCountKnown && sealStateLoggedOnce) {
                 getLogger().info("shield compensation: GuildGate seal count reachable again (seal "
@@ -341,6 +416,7 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
                         + " for base factor " + String.format("%.2f", defaultFactor) + ")");
             }
             cachedSeals = assumeSeal;
+            cachedSealsRaw = 0;
             sealCountKnown = false;
         }
         sealStateLoggedOnce = true;
@@ -544,7 +620,7 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
         saveConfig();
     }
 
-    // ---------- 1. kid shield ----------
+    // ---------- 1. damage shield ----------
 
     private static ShieldRule.Cause mapCause(EntityDamageByEntityEvent event) {
         return switch (event.getCause()) {
@@ -822,7 +898,7 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
 
     /**
      * HIGHEST: the loading-screen hit is cancelled after every other
-     * plugin has had its say (EliteMobs, the kid shield at HIGH).
+     * plugin has had its say (EliteMobs, the damage shield at HIGH).
      * Only cancels, never un-cancels; VOID/KILL/SUICIDE (and LAVA by
      * default) still land so a player can never get stuck.
      */
@@ -1043,6 +1119,20 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
                 if (door == null) continue;
                 observeSiege(siegeBook, false, zombie, target, door, world);
             }
+            // 0.1.7 safety net: vanilla breaks wooden doors only on Hard.
+            // Off Hard, the zombie family hunting an unprotected player
+            // brings a wooden door down on this siege instead (same
+            // machinery, doors.wood-fallback-seconds, no drop).
+            if (woodSiegeBook != null && NightHearing.woodFallbackRuns(woodFallback, world.getDifficulty().name())) {
+                for (Zombie zombie : world.getEntitiesByClass(Zombie.class)) {
+                    if (zombie.isDead() || !zombie.canBreakDoors()) continue;
+                    if (!(zombie.getTarget() instanceof Player target)) continue;
+                    if (registry.isProtected(target.getUniqueId())) continue;
+                    Block door = findDoor(zombie, target, mat -> org.bukkit.Tag.WOODEN_DOORS.isTagged(mat));
+                    if (door == null) continue;
+                    observeSiege(woodSiegeBook, false, zombie, target, door, world, "WOOD SIEGE", "wooden door");
+                }
+            }
             // Copper tier: any mob hunting an unprotected player or a
             // villager — tiers are a property of the door, not the mob.
             if (copperTargetSeconds > 0 && copperSiegeBook != null) {
@@ -1058,8 +1148,10 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
                 }
             }
         }
+        if (!nhSteer.isEmpty()) steerSieges();
         sweepBook(siegeBook, "SIEGE");
         if (copperSiegeBook != null) sweepBook(copperSiegeBook, "COPPER SIEGE");
+        if (woodSiegeBook != null) sweepBook(woodSiegeBook, "WOOD SIEGE");
     }
 
     private void sweepBook(SiegeBook book, String kind) {
@@ -1073,11 +1165,16 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
     /** Feed one observation to a siege book and render its effects. */
     private void observeSiege(SiegeBook book, boolean copper, LivingEntity breaker,
                               LivingEntity target, Block door, org.bukkit.World world) {
+        observeSiege(book, copper, breaker, target, door, world,
+                copper ? "COPPER SIEGE" : "SIEGE", copper ? "copper door" : "iron door");
+    }
+
+    private void observeSiege(SiegeBook book, boolean copper, LivingEntity breaker,
+                              LivingEntity target, Block door, org.bukkit.World world,
+                              String kind, String doorWord) {
         String key = doorKey(door);
         Location doorLoc = door.getLocation();
         int soundEverySteps = Math.max(1, 40 / cadenceTicks); // ~every 2 s of siege
-        String kind = copper ? "COPPER SIEGE" : "SIEGE";
-        String doorWord = copper ? "copper door" : "iron door";
         SiegeBook.Event ev = book.observe(key, breaker.getUniqueId(),
                 target.getUniqueId(), false, tickCounter);
         switch (ev) {
@@ -1201,6 +1298,415 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
         bottomHalf.setType(Material.AIR, false);
     }
 
+    // ---------- 4. night hearing (0.1.7) ----------
+
+    /** Is hearing live in this world right now (seal gate, night, overworld, not an EliteMobs world)? */
+    private boolean hearingActive(org.bukkit.World world) {
+        if (world == null) return false;
+        boolean overworld = world.getEnvironment() == org.bukkit.World.Environment.NORMAL;
+        boolean excluded = NightHearing.excludedWorld(world.getName(), nhExcludedWorlds, nhExcludedPrefixes);
+        return NightHearing.active(nhEnabled, enabledMaster, sealCountKnown, cachedSealsRaw, nhMinSeals,
+                overworld, excluded, world.getTime());
+    }
+
+    private String hearingState() {
+        if (!nhEnabled) return "OFF (config)";
+        return "ON from seal " + nhMinSeals + " (seal now " + (sealCountKnown ? String.valueOf(cachedSealsRaw) : "unknown - stays off")
+                + ", " + (sealCountKnown && cachedSealsRaw >= nhMinSeals ? "ARMED" : "waiting") + "), night "
+                + NightHearing.NIGHT_START + "-" + NightHearing.NIGHT_END + ", overworld, range " + fmt1(nhRange)
+                + " (sneak " + fmt1(NightHearing.range(nhRange, true)) + "), footsteps " + (nhFootsteps ? "ON" : "OFF")
+                + ", types " + nhTypes + ", max " + nhMaxPerNoise + "/noise " + nhMaxPerPlayer + "/player, cooldown "
+                + nhCooldownSeconds + "s, give up " + nhGiveUpSeconds + "s, bed " + (nhBed ? "ALWAYS OPENS" : "vanilla")
+                + ", steer to doors " + (nhSteerDoors ? "ON (" + fmt1(nhSteerRadius) + " blocks)" : "OFF")
+                + ", wood fallback off Hard " + (woodFallback ? "ON (" + woodFallbackSeconds + "s)" : "OFF");
+    }
+
+    private static String fmt1(double v) {
+        return String.format("%.1f", v);
+    }
+
+    /** ExcelMobVeil's public isVeiled(Player), reflective; false on any failure. */
+    private boolean isVeiled(Player player) {
+        try {
+            Plugin veil = Bukkit.getPluginManager().getPlugin("ExcelMobVeil");
+            if (veil == null || !veil.isEnabled()) return false;
+            if (veilMethod == null || veilOwner != veil) {
+                veilMethod = veil.getClass().getMethod("isVeiled", Player.class);
+                veilOwner = veil;
+            }
+            return Boolean.TRUE.equals(veilMethod.invoke(veil, player));
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    private boolean hearable(Player player) {
+        return NightHearing.playerHearable(player.getGameMode().name(),
+                registry.isProtected(player.getUniqueId()), inGrace(player), isVeiled(player),
+                player.isSleeping(), player.isDead());
+    }
+
+    /** Zombie-family mobs (hearing types) currently hunting this player nearby. */
+    private int huntersOf(Player player) {
+        int n = 0;
+        for (Zombie z : player.getWorld().getNearbyEntitiesByType(Zombie.class, player.getLocation(), 64.0)) {
+            if (!z.isDead() && player.equals(z.getTarget()) && nhTypes.contains(z.getType().name())) n++;
+        }
+        for (Steer st : nhSteer.values()) if (st.player().equals(player.getUniqueId())) n++;
+        return n;
+    }
+
+    /** A noise by this player at this spot: pull idle zombies in range. */
+    private void hear(Player player, Location where, String what) {
+        if (where == null || where.getWorld() == null || !where.getWorld().equals(player.getWorld())) return;
+        if (!hearingActive(where.getWorld())) return;
+        if (!hearable(player)) return;
+        long now = System.currentTimeMillis();
+        if (!nhCooldown.ready(player.getUniqueId(), now)) return;
+        double r = NightHearing.range(nhRange, player.isSneaking());
+        java.util.List<Zombie> candidates = new java.util.ArrayList<>();
+        for (Zombie z : where.getWorld().getNearbyEntitiesByType(Zombie.class, where, r)) {
+            if (z.isDead() || !z.isValid() || nhSteer.containsKey(z.getUniqueId())) continue;
+            if (z.getLocation().distanceSquared(where) > r * r) continue;
+            if (!NightHearing.zombieEligible(nhTypes, z.getType().name(), z.getTarget() != null, isEliteForDoors(z))) continue;
+            candidates.add(z);
+        }
+        if (candidates.isEmpty()) {
+            if (debug) getLogger().info("NIGHT HEARING: " + player.getName() + " " + what + " (range " + fmt1(r) + ") - no idle zombie in range");
+            return;
+        }
+        candidates.sort(java.util.Comparator.comparingDouble(z -> z.getLocation().distanceSquared(where)));
+        int want = NightHearing.pullCount(candidates.size(), huntersOf(player), nhMaxPerNoise, nhMaxPerPlayer);
+        int pulled = 0;
+        int steered = 0;
+        java.util.List<Block> doors = null;
+        for (Zombie z : candidates) {
+            if (pulled >= want) break;
+            z.setTarget(player); // fires EntityTargetEvent: grace / MobVeil / other plugins can still say no
+            if (!player.equals(z.getTarget())) continue;
+            nhHunters.pull(z.getUniqueId(), player.getUniqueId(), now);
+            pulled++;
+            if (!nhSteerDoors) continue;
+            if (doors == null) doors = doorsNear(player.getLocation());
+            Steer st = planSteer(z, player, doors);
+            if (st == null) continue; // a walkable way in (or no usable door): vanilla takes it from here
+            nhSteer.put(z.getUniqueId(), st);
+            z.setTarget(null);
+            z.getPathfinder().moveTo(st.spot(), 1.0);
+            steered++;
+            if (debug) getLogger().info("NIGHT HEARING: " + z.getType() + " has no way in to " + player.getName()
+                    + ", steered to the " + st.kind().name().toLowerCase(java.util.Locale.ROOT) + " door at " + fmt(st.door().getLocation()));
+        }
+        if (pulled > 0) nhCooldown.start(player.getUniqueId(), now);
+        if (debug || pulled > 0) {
+            String line = "NIGHT HEARING: " + what + " by " + player.getName() + " at " + fmt(where)
+                    + " (range " + fmt1(r) + (player.isSneaking() ? ", sneaking" : "") + ") pulled " + pulled
+                    + " zombie(s)" + (steered > 0 ? " (" + steered + " sent to a door)" : "");
+            if (debug) getLogger().info(line);
+            else doorInfo("HEAR|" + player.getUniqueId(), line);
+        }
+    }
+
+    /** Closed doors (bottom halves) we can steer to, within the steer radius of the player, nearest first, max 6. */
+    private java.util.List<Block> doorsNear(Location at) {
+        java.util.List<Block> out = new java.util.ArrayList<>();
+        int r = (int) Math.ceil(nhSteerRadius);
+        org.bukkit.World w = at.getWorld();
+        int bx = at.getBlockX(), by = at.getBlockY(), bz = at.getBlockZ();
+        boolean copperOn = copperTargetSeconds > 0 && copperSiegeBook != null;
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dz = -r; dz <= r; dz++) {
+                if (dx * dx + dz * dz > r * r) continue;
+                for (int dy = -3; dy <= 3; dy++) {
+                    int y = by + dy;
+                    if (y < w.getMinHeight() || y >= w.getMaxHeight()) continue;
+                    if (!w.isChunkLoaded((bx + dx) >> 4, (bz + dz) >> 4)) continue;
+                    Block b = w.getBlockAt(bx + dx, y, bz + dz);
+                    if (NightHearing.steerKind(b.getType().name(), copperOn) == null) continue;
+                    if (!(b.getBlockData() instanceof Door d) || d.getHalf() != Bisected.Half.BOTTOM || d.isOpen()) continue;
+                    out.add(b);
+                }
+            }
+        }
+        out.sort(java.util.Comparator.comparingDouble(b -> b.getLocation().add(0.5, 0, 0.5).distanceSquared(at)));
+        return out.size() > 6 ? new java.util.ArrayList<>(out.subList(0, 6)) : out;
+    }
+
+    /**
+     * No walkable way to the player? Pick the door whose outside face the
+     * zombie can walk to, preferring a short walk and a door close to the
+     * player. Null = let vanilla handle it (it can get in, or no usable door).
+     */
+    private Steer planSteer(Zombie z, Player player, java.util.List<Block> doors) {
+        try {
+            com.destroystokyo.paper.entity.Pathfinder pf = z.getPathfinder();
+            com.destroystokyo.paper.entity.Pathfinder.PathResult direct = pf.findPath(player);
+            if (direct != null && direct.canReachFinalPoint()) return null;
+            if (doors.isEmpty()) return null;
+            Location pl = player.getLocation();
+            boolean copperOn = copperTargetSeconds > 0 && copperSiegeBook != null;
+            Steer best = null;
+            double bestScore = Double.MAX_VALUE;
+            for (Block door : doors) {
+                if (!(door.getBlockData() instanceof Door d) || d.isOpen()) continue;
+                NightHearing.DoorKind kind = NightHearing.steerKind(door.getType().name(), copperOn);
+                if (kind == null) continue;
+                for (BlockFace side : new BlockFace[] { d.getFacing(), d.getFacing().getOppositeFace() }) {
+                    Block face = door.getRelative(side);
+                    Block other = door.getRelative(side.getOppositeFace());
+                    if (!face.isPassable() || !face.getRelative(BlockFace.UP).isPassable()) continue;
+                    Location spot = face.getLocation().add(0.5, 0.0, 0.5);
+                    Location inside = other.getLocation().add(0.5, 0.0, 0.5);
+                    if (!NightHearing.outsideFace(spot.distanceSquared(pl), inside.distanceSquared(pl))) continue;
+                    com.destroystokyo.paper.entity.Pathfinder.PathResult walk = pf.findPath(spot);
+                    if (walk == null || !walk.canReachFinalPoint()) continue;
+                    double score = NightHearing.steerScore(walk.getPoints().size(), inside.distance(pl));
+                    if (score < bestScore) {
+                        bestScore = score;
+                        best = new Steer(player.getUniqueId(), door, spot, kind);
+                    }
+                }
+            }
+            return best;
+        } catch (Throwable t) {
+            return null; // pathfinder trouble: plain vanilla hunt
+        }
+    }
+
+    private void dropSteer(UUID zid) {
+        if (nhSteer.remove(zid) == null) return;
+        if (Bukkit.getEntity(zid) instanceof Mob m && m.isValid()) m.getPathfinder().stopPathfinding();
+    }
+
+    private void clearSteers() {
+        for (UUID zid : new java.util.ArrayList<>(nhSteer.keySet())) dropSteer(zid);
+    }
+
+    private int dropSteersOf(UUID player) {
+        int n = 0;
+        for (Map.Entry<UUID, Steer> me : new java.util.ArrayList<>(nhSteer.entrySet())) {
+            if (me.getValue().player().equals(player)) { dropSteer(me.getKey()); n++; }
+        }
+        return n;
+    }
+
+    private static boolean onSpot(Entity e, Location spot, double radius) {
+        Location l = e.getLocation();
+        if (!l.getWorld().equals(spot.getWorld())) return false;
+        double dx = l.getX() - spot.getX(), dz = l.getZ() - spot.getZ();
+        return NightHearing.onSpot(dx * dx + dz * dz, l.getY() - spot.getY(), radius);
+    }
+
+    /** Siege cadence: a steered zombie standing at its door works that door's own siege. */
+    private void steerSieges() {
+        for (Map.Entry<UUID, Steer> me : new java.util.ArrayList<>(nhSteer.entrySet())) {
+            if (!nhHunters.contains(me.getKey())) continue;
+            Steer st = me.getValue();
+            Player p = Bukkit.getPlayer(st.player());
+            if (!(Bukkit.getEntity(me.getKey()) instanceof Zombie z) || z.isDead() || p == null || !p.isOnline()) continue;
+            if (z.getTarget() != null || registry.isProtected(p.getUniqueId())) continue;
+            if (!onSpot(z, st.spot(), 1.5)) continue;
+            Block door = st.door();
+            if (!(door.getBlockData() instanceof Door d) || d.isOpen()) continue;
+            switch (st.kind()) {
+                case IRON -> observeSiege(siegeBook, false, z, p, door, door.getWorld());
+                case COPPER -> { if (copperSiegeBook != null) observeSiege(copperSiegeBook, true, z, p, door, door.getWorld()); }
+                case WOOD -> { if (woodSiegeBook != null) observeSiege(woodSiegeBook, false, z, p, door, door.getWorld(), "WOOD SIEGE", "wooden door"); }
+            }
+        }
+    }
+
+    /** Vanilla vibration events (the same ones sculk sensors hear). */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onNoise(org.bukkit.event.world.GenericGameEvent event) {
+        if (!nhEnabled || event.isAsynchronous()) return;
+        if (!(event.getEntity() instanceof Player player)) return;
+        String key;
+        try {
+            key = event.getEvent().getKey().getKey();
+        } catch (Throwable t) {
+            return;
+        }
+        if (nhLogKeys && hearingActive(event.getWorld())) getLogger().info("NIGHT HEARING key: " + key + " by " + player.getName());
+        if (!NightHearing.isNoise(key, nhFootsteps)) return;
+        hear(player, event.getLocation(), key);
+    }
+
+    /** Hitting with a sword or an own arrow (covers versions where the damage vibration names the victim). */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onNoisyHit(EntityDamageByEntityEvent event) {
+        if (!nhEnabled) return;
+        Entity damager = event.getDamager();
+        Player attacker = null;
+        if (damager instanceof Player p) attacker = p;
+        else if (damager instanceof Projectile pr && pr.getShooter() instanceof Player p) attacker = p;
+        if (attacker == null || attacker == event.getEntity()) return;
+        hear(attacker, attacker.getLocation(), "hit");
+    }
+
+    /** Once a second: pulled zombies give up / reach / keep working; release all at dawn. */
+    private void hearingTick() {
+        for (UUID zid : new java.util.ArrayList<>(nhSteer.keySet())) if (!nhHunters.contains(zid)) dropSteer(zid);
+        if (nhHunters.size() == 0) {
+            tipTick();
+            return;
+        }
+        long now = System.currentTimeMillis();
+        for (UUID zid : nhHunters.zombies()) {
+            NightHearing.Hunters.Entry e = nhHunters.get(zid);
+            if (e == null) continue;
+            Entity ent = Bukkit.getEntity(zid);
+            Player p = Bukkit.getPlayer(e.player());
+            if (!(ent instanceof Zombie z) || z.isDead() || p == null || !p.isOnline()
+                    || !z.getWorld().equals(p.getWorld())) {
+                if (ent instanceof Zombie z2 && p != null && p.equals(z2.getTarget())) z2.setTarget(null);
+                nhHunters.remove(zid);
+                dropSteer(zid);
+                continue;
+            }
+            if (!hearingActive(z.getWorld())) {
+                if (p.equals(z.getTarget())) z.setTarget(null);
+                nhHunters.remove(zid);
+                dropSteer(zid);
+                if (debug) getLogger().info("NIGHT HEARING: released " + z.getType() + " (hearing off: day or seal)");
+                continue;
+            }
+            Steer st = nhSteer.get(zid);
+            if (st != null) {
+                LivingEntity t = z.getTarget();
+                if (t != null && !t.equals(p)) { // found prey of its own: no longer ours
+                    dropSteer(zid);
+                    nhHunters.remove(zid);
+                    continue;
+                }
+                boolean doorClosed = st.door().getBlockData() instanceof Door d && !d.isOpen()
+                        && NightHearing.steerKind(st.door().getType().name(), true) != null;
+                if (t == null && doorClosed) {
+                    boolean there = onSpot(z, st.spot(), 1.0);
+                    if (there) {
+                        z.getPathfinder().stopPathfinding();
+                        z.lookAt(st.door().getLocation().add(0.5, 1.0, 0.5));
+                    } else {
+                        z.getPathfinder().moveTo(st.spot(), 1.0);
+                    }
+                    // Near the door counts as working it (a crowd at one door keeps its hunt).
+                    NightHearing.Hunters.Verdict sv = nhHunters.check(zid, true, false, onSpot(z, st.spot(), 2.5), now);
+                    if (sv == NightHearing.Hunters.Verdict.GIVE_UP) {
+                        dropSteer(zid);
+                        if (debug) getLogger().info("NIGHT HEARING: " + z.getType() + " gave up on " + p.getName()
+                                + " (" + nhGiveUpSeconds + "s without reaching its door)");
+                    }
+                    continue;
+                }
+                // The door is open or gone, or it saw the player: a plain hunt from here.
+                dropSteer(zid);
+                if (t == null) z.setTarget(p);
+                if (debug) getLogger().info("NIGHT HEARING: " + z.getType() + " door " + (doorClosed ? "still shut" : "open or down")
+                        + ", now hunting " + p.getName());
+            }
+            boolean stillHunting = p.equals(z.getTarget());
+            // Reached = within 3 blocks AND in sight. A zombie pressed against the
+            // outside of a wall is close but has not reached anyone; without the
+            // sight check it would drop out of the book and never give up.
+            boolean reached = z.getLocation().distanceSquared(p.getLocation()) <= 9.0 && z.hasLineOfSight(p);
+            boolean atDoor = stillHunting && findDoor(z, p, mat -> mat.name().endsWith("_DOOR")) != null;
+            NightHearing.Hunters.Verdict v = nhHunters.check(zid, stillHunting, reached, atDoor, now);
+            if (v == NightHearing.Hunters.Verdict.GIVE_UP) {
+                z.setTarget(null);
+                if (debug) getLogger().info("NIGHT HEARING: " + z.getType() + " gave up on " + p.getName()
+                        + " (" + nhGiveUpSeconds + "s without reaching or a door)");
+            }
+        }
+        tipTick();
+    }
+
+    /** The public tip: once per night per player in a hearing world (ExcelTips caps the shows). */
+    private void tipTick() {
+        if (!nhEnabled || !nhTipEnabled) return;
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            org.bukkit.World w = p.getWorld();
+            if (!hearingActive(w)) continue;
+            long day = w.getFullTime() / 24000L;
+            String key = w.getName() + "#" + day;
+            if (key.equals(nhTipShown.get(p.getUniqueId()))) continue;
+            nhTipShown.put(p.getUniqueId(), key);
+            fireTip(p);
+        }
+    }
+
+    /** ExcelTipsAPI by reflection; registers our default words once (a tips.yml entry overrides them). */
+    private void fireTip(Player player) {
+        try {
+            Plugin tips = Bukkit.getPluginManager().getPlugin("ExcelTips");
+            if (tips == null || !tips.isEnabled()) return;
+            Class<?> api = Class.forName("com.winkreyes.exceltips.ExcelTipsAPI", true, tips.getClass().getClassLoader());
+            if (!nhTipRegistered) {
+                api.getMethod("register", Plugin.class, String.class, String.class, List.class)
+                        .invoke(null, this, NH_TIP_ID, nhTipTitle, List.of(nhTipText));
+                nhTipRegistered = true;
+            }
+            api.getMethod("tip", Player.class, String.class).invoke(null, player, NH_TIP_ID);
+        } catch (Throwable t) {
+            if (!nhTipSeamLogged) {
+                nhTipSeamLogged = true;
+                getLogger().warning("night hearing: ExcelTips tip unavailable (" + t + ") - feature works, no tip shown");
+            }
+        }
+    }
+
+    /** Bed always works while hearing is live: the "monsters nearby" refusal is overridden. */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBedTry(org.bukkit.event.player.PlayerBedEnterEvent event) {
+        Player p = event.getPlayer();
+        if (NightHearing.forceBed(nhBed && nhEnabled, hearingActive(p.getWorld()), event.getBedEnterResult().name())
+                && event.useBed() != org.bukkit.event.Event.Result.DENY) {
+            event.setUseBed(org.bukkit.event.Event.Result.ALLOW);
+            if (debug) getLogger().info("NIGHT HEARING: bed opened for " + p.getName() + " despite monsters nearby");
+        }
+    }
+
+    /** In bed = silent: zombies hunting the sleeper let go. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBedIn(org.bukkit.event.player.PlayerBedEnterEvent event) {
+        if (!nhEnabled || !nhBed) return;
+        org.bukkit.event.player.PlayerBedEnterEvent.BedEnterResult r = event.getBedEnterResult();
+        boolean entering = event.useBed() == org.bukkit.event.Event.Result.ALLOW
+                || (event.useBed() == org.bukkit.event.Event.Result.DEFAULT && r == org.bukkit.event.player.PlayerBedEnterEvent.BedEnterResult.OK);
+        if (!entering) return;
+        Player p = event.getPlayer();
+        if (!hearingActive(p.getWorld())) return;
+        int cleared = 0;
+        for (Zombie z : p.getWorld().getNearbyEntitiesByType(Zombie.class, p.getLocation(), 64.0)) {
+            if (p.equals(z.getTarget()) && nhTypes.contains(z.getType().name()) && !isEliteForDoors(z)) {
+                z.setTarget(null);
+                cleared++;
+            }
+        }
+        cleared += dropSteersOf(p.getUniqueId());
+        nhHunters.releasePlayer(p.getUniqueId());
+        if (debug || cleared > 0) doorInfo("BED|" + p.getUniqueId(), "NIGHT HEARING: " + p.getName()
+                + " went to bed - " + cleared + " zombie(s) stopped hunting");
+    }
+
+    /** While asleep, the hearing zombie types cannot pick the sleeper as a target. */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onTargetSleeper(EntityTargetLivingEntityEvent event) {
+        if (!nhEnabled || !nhBed) return;
+        if (!(event.getTarget() instanceof Player p) || !p.isSleeping()) return;
+        if (!nhTypes.contains(event.getEntity().getType().name())) return;
+        if (!hearingActive(p.getWorld())) return;
+        if (isEliteForDoors(event.getEntity())) return;
+        event.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onHearingQuit(PlayerQuitEvent event) {
+        UUID id = event.getPlayer().getUniqueId();
+        nhCooldown.forget(id);
+        dropSteersOf(id);
+        nhHunters.releasePlayer(id);
+    }
+
     // ---------- /trainingwheels ----------
 
     @Override
@@ -1286,7 +1792,8 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
                         + ", divisor " + (compUseLive ? "LIVE scaled x" + fmt(liveScaled()) + " / normalized x"
                                 + fmt(liveEmNamed("getNormalizedDamageToPlayerMultiplier")) + " / other x"
                                 + fmt(liveEmNamed("getDamageToPlayerMultiplier")) : "TABLE") + ")"
-                        + ", bedrock grace " + graceState() + ".");
+                        + ", bedrock grace " + graceState()
+                        + ", night hearing " + hearingState() + ".");
                 return true;
             }
             default -> {

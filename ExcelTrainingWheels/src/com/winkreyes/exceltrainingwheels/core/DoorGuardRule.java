@@ -5,7 +5,7 @@ package com.winkreyes.exceltrainingwheels.core;
  * cancelled ONLY when the breaking mob is hunting a protected
  * player. Breaks aimed at anyone else — veterans, villagers, no
  * target at all — proceed exactly as vanilla Hard intends.
- * Protection follows the child; the world's drama is untouched.
+ * Protection follows the listed player; the world is untouched.
  */
 public final class DoorGuardRule {
 
