@@ -4,7 +4,7 @@ main: com.winkreyes.exceltrainingwheels.ExcelTrainingWheels
 api-version: '1.13'
 softdepend: [EliteMobs, ExcelGuildGate, ExcelRaidBuff, floodgate, ExcelTips, ExcelMobVeil]
 author: WinkReyesValley
-description: The Training Wheels Protocol - protection follows the child. Listed players take reduced damage from hostile mobs and doors hold for them; everyone else gets full Hard - every zombie can break wooden doors, copper and iron doors fall to sieges, and from Seal 2 zombies hear loud actions at night.
+description: 'Gentler start for players: door guard, safety tweaks, and Night Hearing after Seal 2. Zombies break wooden doors, copper and iron doors fall to sieges.'
 commands:
   trainingwheels:
     description: Training Wheels admin (list / add / remove / setfactor / reload).

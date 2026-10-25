@@ -12,7 +12,7 @@ package com.winkreyes.exceltrainingwheels.core;
  *                dungeon and instanced bosses):
  *                normalizedDamageToPlayerMultiplier;
  *  - OTHER       any other custom boss: damageToPlayerMultiplier.
- * The kid shield must divide by THAT multiplier so a protected
+ * The damage shield must divide by THAT multiplier so a protected
  * player takes base x the mob's UNSCALED damage on every path.
  *
  * Fallbacks never guess weaker than 0.1.5: an unreadable live value

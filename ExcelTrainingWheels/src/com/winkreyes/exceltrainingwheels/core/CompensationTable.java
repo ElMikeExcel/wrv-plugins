@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Seal compensation for the kid shield (0.1.1 — Mike's ABSOLUTE
+ * Seal compensation for the damage shield (0.1.1 — Mike's ABSOLUTE
  * LINE, Oct 19, 2026): a protected player must take HALF OF A
  * MOB'S NORMAL (UNSCALED) DAMAGE from a hostile mob at every seal
  * state, in every world. "Normal" is the mob's damage BEFORE the

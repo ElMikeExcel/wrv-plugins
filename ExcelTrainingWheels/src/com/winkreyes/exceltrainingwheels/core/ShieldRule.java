@@ -1,7 +1,7 @@
 package com.winkreyes.exceltrainingwheels.core;
 
 /**
- * Pure decision logic for the kid shield (Training Wheels Protocol):
+ * Pure decision logic for the damage shield (Training Wheels Protocol):
  * WHICH damage events are shieldable, and the scaled value.
  *
  * Shieldable sources — hostile mobs only (Mike's rule, Oct 19, 2026):

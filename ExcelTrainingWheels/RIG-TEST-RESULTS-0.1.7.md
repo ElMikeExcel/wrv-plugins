@@ -76,3 +76,21 @@ in rig-logs/ for the record; each failure was a test-harness problem, not the pl
   hit were driven by the test client. Unit tests cover the key list.
 - Dawn release, excluded "em_" worlds, the 3-of-3 ExcelTips cap: unit tests only.
 - Real players, real terrain and live performance: needs the live server after install.
+
+## Addendum: final jar 580f0d19 (Oct 25, 2026, 4:33 PM CDT)
+The behavior cases above ran on build 6e38061e. The final jar
+580f0d19f171d81b418044fa3d03c7d8ab674f7d0cd0e59435a347bcd24df65f only changes the plugin.yml
+description and config.yml header comments; every .class file is byte-identical to 6e38061e
+(unzip + diff -r: only plugin.yml and config.yml differ). Two clean builds byte-identical.
+Unit tests: 497 passed, 0 failed.
+Rig boot with the final jar (same rig, Paper 26.3 build 214), 4:33 PM CDT:
+| Check | Result |
+|---|---|
+| 0 SEVERE / ERROR / Exception lines | PASS (0) |
+| "Enabling ExcelTrainingWheels v0.1.7" | PASS |
+| Config loads (shield, door guard, sieges, lifesteal, Bedrock grace lines) | PASS |
+| "night hearing: ON from seal 2 (seal now 2, ARMED) ... wood fallback off Hard ON (12s)" | PASS |
+| Console "tw list" | PASS (lists the 1 rig test entry) |
+| "version ExcelTrainingWheels" shows the new neutral description | PASS |
+| New WARN lines | Only the known EliteMobs-not-on-rig line |
+Rig stopped after the check. Log: rig-logs/boot-desc-fix-20261025-1633.log.

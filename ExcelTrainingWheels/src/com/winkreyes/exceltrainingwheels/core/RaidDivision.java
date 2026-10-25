@@ -1,8 +1,8 @@
 package com.winkreyes.exceltrainingwheels.core;
 
 /**
- * Raid compensation for the kid shield (0.1.2 — Mike's rule,
- * Oct 21, 2026: "Keep her at exactly a quarter of vanilla —
+ * Raid compensation for the damage shield (0.1.2 — Mike's rule,
+ * Oct 21, 2026: "Keep it at exactly a quarter of vanilla —
  * compensate for the buff"): ExcelRaidBuff raises a raider's
  * damage through its GENERIC_ATTACK_DAMAGE attribute, so a flat
  * shield factor would let a protected player take factor x the

@@ -1,12 +1,26 @@
-# ExcelTrainingWheels 0.1.7: Night Hearing (STAGED, not live)
+# ExcelTrainingWheels 0.1.7: Night Hearing (STAGED, not live; replaces 0.1.6)
 
-First built Sun Oct 25, 2026, about 2:45 PM CDT; final jar rebuilt 3:25 PM CDT (adds door steering, below) on the box. Base: the staged 0.1.6 tree (draft PR #69,
-jar 974d159f...). The box toolchain rebuilds 0.1.6 with every class and resource byte-identical
-to the shipped jar; only the jar MANIFEST "Created-By" line differs (JDK 25.0.4.1 on the box vs
-25.0.5 where 0.1.6 was built). So the 0.1.7 jar sha depends on the JDK patch version.
-Deterministic on the box: two clean builds give the same sha (see SHA256SUMS.txt).
+First built Sun Oct 25, 2026, about 2:45 PM CDT; door steering added 3:25 PM CDT; final jar rebuilt
+4:33 PM CDT with a neutral public description (section 10). Final jar sha256
+580f0d19f171d81b418044fa3d03c7d8ab674f7d0cd0e59435a347bcd24df65f (74,660 bytes). Its .class files
+are byte-identical to the rig-tested build 6e38061e..., which is superseded.
+
+Base: the staged 0.1.6 tree (draft PR #69, jar 974d159f...). The box toolchain rebuilds 0.1.6 with
+every class and resource byte-identical to the shipped jar; only the jar MANIFEST "Created-By" line
+differs (JDK 25.0.4.1 on the box vs 25.0.5 where 0.1.6 was built). So the 0.1.7 jar sha depends on
+the JDK patch version. Deterministic on the box: two clean builds give the same sha (SHA256SUMS.txt).
 
 Approved by Mike Oct 25, 2026, 2:34 PM CDT. The server stays on Hard permanently.
+Replacement approved by Mike Oct 25, 2026, 4:32 PM CDT: 0.1.7 is installed INSTEAD of 0.1.6, straight
+over the live 0.1.5. 0.1.6 (PR #69) will not be installed on its own.
+
+## 0. Everything from 0.1.6 (included; live is 0.1.5)
+- Seal ladder compensation table updated to the new EliteMobs ladder (fallback and sync check).
+- shield.compensation.source: live (default): the shield divides by the LIVE EliteMobs multiplier
+  per elite class (scaled / normalized / other custom bosses), table fallback if unreadable.
+- Bedrock loading-screen no-damage window (bedrock-grace.*: 4 s after join, respawn or world change,
+  Bedrock only via Floodgate; void, /kill and lava still apply; action-bar note).
+- See CHANGELOG-0.1.6.md for the full 0.1.6 list.
 
 ## 1. Night Hearing (new)
 From Seal 2 on, at night, zombies hear loud player actions inside a base and come for the
@@ -140,7 +154,7 @@ At dawn, when the seal count drops, or on /tw reload, every zombie TW pulled is 
   bed listeners, sleeper target guard, quit cleanup, tip seam, MobVeil seam, wood siege book, the
   unclamped seal count (cachedSealsRaw; the compensation cache stays clamped to the table).
   observeSiege gained an overload with the siege label; iron and copper output is unchanged.
-- plugin.yml: version 0.1.7, softdepend adds ExcelTips and ExcelMobVeil (both optional).
+- plugin.yml: version 0.1.7, softdepend adds ExcelTips and ExcelMobVeil (both optional), neutral description (section 10).
 - build.sh: jar name 0.1.7.
 - Unchanged: shield, compensation, door guard, copper and iron sieges, all-zombies-break-doors,
   lifesteal, log throttle, Bedrock grace.
@@ -156,3 +170,20 @@ At dawn, when the seal count drops, or on /tw reload, every zombie TW pulled is 
   port warning staged tips.yml (ef893938...). One entry added after build-flight; nothing else changed.
 - Staged file sha256: see SHA256SUMS.txt (ea1364b6...). Install order: port warning (C), then
   ClaimFly (F), then this.
+
+## 10. Public text cleanup (4:33 PM CDT rebuild, no behavior change)
+- plugin.yml description is now: "Gentler start for players: door guard, safety tweaks, and Night
+  Hearing after Seal 2. Zombies break wooden doors, copper and iron doors fall to sieges." (shown
+  by /version ExcelTrainingWheels).
+- Neutral wording in code comments, the bundled config.yml header and unit-test fixture names
+  ("damage shield", "listed player"). Comment edits kept every line number, so every
+  .class file is byte-identical to the rig-tested build; only plugin.yml and config.yml inside the
+  jar changed. Unit tests: 497 passed, 0 failed. Rig boot on Paper 26.3 with the final jar: 0 SEVERE,
+  enables, config loads, night hearing boot line, tw list works, /version shows the new description.
+
+## 11. Install and rollback
+- INSTALL-0.1.7.md: drift guard on the live 0.1.5 jar (fbe4b1e8...), rename it to
+  .bak-20261025, upload 0.1.7, restart, boot checks for both the 0.1.6 and 0.1.7 lines. Live config
+  untouched. Tip step after the port warning and ClaimFly tips (base f69e7283...), re-composed if
+  the live tips.yml differs.
+- ROLLBACK-0.1.7.md: target is the 0.1.5 jar backup.

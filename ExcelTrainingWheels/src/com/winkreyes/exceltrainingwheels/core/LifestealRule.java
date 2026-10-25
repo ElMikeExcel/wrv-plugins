@@ -15,7 +15,7 @@ import java.util.Locale;
  */
 public final class LifestealRule {
 
-    /** Hard ceiling on any configured heal, so a typo cannot make a kid immortal (10 hearts). */
+    /** Hard ceiling on any configured heal, so a typo cannot make a player immortal (10 hearts). */
     public static final double MAX_CONFIG_HP = 20.0;
     public static final double DEFAULT_MOB_HP = 2.0;
     public static final double DEFAULT_ELITE_HP = 4.0;

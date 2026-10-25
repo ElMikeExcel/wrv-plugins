@@ -73,8 +73,8 @@ import java.util.UUID;
  * Spider-Man: Homecoming: limits in place until the wearer is
  * ready, and Mike holds the switch).
  *
- * Three pieces, one principle: PROTECTION FOLLOWS THE CHILD.
- *  1. KID SHIELD — listed players take reduced damage from hostile
+ * Three pieces, one principle: PROTECTION FOLLOWS THE PLAYER.
+ *  1. DAMAGE SHIELD — listed players take reduced damage from hostile
  *     mobs only (melee / mob-shot projectiles / creeper blasts),
  *     scaled at HIGH priority on the victim axis. Invisible: no
  *     messages, titles, particles or sounds, ever.
@@ -620,7 +620,7 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
         saveConfig();
     }
 
-    // ---------- 1. kid shield ----------
+    // ---------- 1. damage shield ----------
 
     private static ShieldRule.Cause mapCause(EntityDamageByEntityEvent event) {
         return switch (event.getCause()) {
@@ -898,7 +898,7 @@ public final class ExcelTrainingWheels extends JavaPlugin implements Listener {
 
     /**
      * HIGHEST: the loading-screen hit is cancelled after every other
-     * plugin has had its say (EliteMobs, the kid shield at HIGH).
+     * plugin has had its say (EliteMobs, the damage shield at HIGH).
      * Only cancels, never un-cancels; VOID/KILL/SUICIDE (and LAVA by
      * default) still land so a player can never get stuck.
      */
