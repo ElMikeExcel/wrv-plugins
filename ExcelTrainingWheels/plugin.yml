@@ -1,0 +1,16 @@
+name: ExcelTrainingWheels
+version: 0.1.6
+main: com.winkreyes.exceltrainingwheels.ExcelTrainingWheels
+api-version: '1.13'
+softdepend: [EliteMobs, ExcelGuildGate, ExcelRaidBuff, floodgate]
+author: WinkReyesValley
+description: The Training Wheels Protocol - protection follows the child. Listed players take reduced damage from hostile mobs and doors hold for them; everyone else gets full Hard - every zombie can break wooden doors, and copper and iron doors fall to sieges.
+commands:
+  trainingwheels:
+    description: Training Wheels admin (list / add / remove / setfactor / reload).
+    usage: /trainingwheels list | add <player> [factor] | remove <player> | setfactor <player> <factor> | reload
+    permission: exceltrainingwheels.admin
+    aliases: [tw]
+permissions:
+  exceltrainingwheels.admin:
+    default: op
