@@ -1,0 +1,91 @@
+# ExcelVaults 0.1.0 (Wink Reyes Valley). Trial chamber vaults that reopen.
+# Vanilla: each vault gives each player its reward ONCE, forever.
+# ExcelVaults: after you open a vault, it reopens FOR YOU after a real-time
+# cooldown (keeps counting while you are offline and across restarts).
+# You still need a trial key (or an ominous trial key) to open it again.
+# Vaults that were already used before this plugin was installed start
+# their cooldown the first time you click them (nothing is mass-unlocked).
+# /vaults reload re-reads this file (no restart).
+enabled: true
+
+normal:
+  cooldown-hours: 24
+  reopen-now:
+    enabled: true
+    # Price to skip the cooldown. With scale-with-time-left: true the price is
+    # full-price x (time left / cooldown): full when just locked, half at
+    # halfway. It never goes below min-price. false = always full-price.
+    full-price: 750
+    min-price: 50
+    scale-with-time-left: true
+    # Max paid reopens per player per day (server time zone below). 0 = no limit.
+    daily-limit: 0
+
+ominous:
+  cooldown-hours: 72
+  # Ominous vaults behave exactly like vanilla until this many GuildGate
+  # seals are broken (timer reopen AND pay-to-reopen both wait for it).
+  # Seal count unknown (ExcelGuildGate missing) = treated as not reached.
+  min-seals: 2
+  reopen-now:
+    enabled: true
+    full-price: 3000
+    min-price: 200
+    scale-with-time-left: true
+    daily-limit: 2
+
+# Scaled prices are rounded to the nearest multiple of this (5 = clean $5 steps).
+price-step: 5
+# Day boundary for daily-limit.
+timezone: America/Chicago
+# Tell an online player once when one of their vaults is ready again.
+notify-ready: true
+# Seconds between hint messages for the same player.
+hint-cooldown-seconds: 3
+# Seconds between checks that re-allow ready vaults (only in loaded chunks).
+sweep-seconds: 5
+# Delay before a Bedrock form opens after a click (lets the click finish).
+bedrock-form-delay-ticks: 6
+
+# Player-facing text. & color codes. Placeholders: {left} {price} {key}
+# {balance} {where} {limit} {count}
+messages:
+  key-normal: 'trial key'
+  key-ominous: 'ominous trial key'
+  hint: '&6This vault opens again for you in &e{left}&6.'
+  hint-pay: '&7Sneak + right-click it to reopen it now for &e${price}&7.'
+  hint-pay-off: '&7Come back when the time is up.'
+  hint-button: '&a[Reopen now: ${price}]'
+  hint-button-hover: '&7Pay ${price} to reopen this vault now. You still need a {key}.'
+  gated: '&7This ominous vault is used up for now. Ominous vaults start reopening after the second seal falls.'
+  ready: '&aA trial vault is ready for you again at &f{where}&a. Bring a {key}.'
+  reopened: '&aVault reopened for ${price}. Use a {key} on it to open it.'
+  reopened-later: '&aVault reopened for ${price}. It will be ready the next time you are there ({where}).'
+  no-money: '&cYou need ${price} to reopen this vault. You have ${balance}.'
+  limit: '&cYou already reopened {count} {type} vaults with money today. The limit is {limit} a day.'
+  not-locked: '&7That vault is already open for you. Use a {key} on it.'
+  not-available: '&cReopening vaults with money is not available right now. No money was taken.'
+  refunded: '&cSomething went wrong, so your ${price} was given back.'
+  list-header: '&6Your trial vaults waiting to reopen:'
+  list-line: '&f{where} &7({type}) &eopens in {left}'
+  list-line-gated: '&f{where} &7({type}) &8waiting for the second seal'
+  list-empty: '&7You have no trial vaults waiting to reopen.'
+  list-footer: '&7Tap a [Reopen] button, or sneak + right-click a locked vault.'
+  help:
+  - '&6&lTrial vaults'
+  - '&f- Each vault reopens for you after a while: &e{normal-hours}h&f, ominous &e{ominous-hours}h&f.'
+  - '&f- Click a used vault to see how long is left.'
+  - '&f- Sneak + right-click it (or use &e/vaults&f) to pay and reopen it now.'
+  - '&f- You still need a key to open it.'
+  confirm-title: 'Reopen trial vault'
+  confirm-body:
+  - 'This {type} vault opens again for you in {left}.'
+  - 'Reopen it now for ${price}?'
+  - 'You still need a {key} to open it.'
+  # Added under the body while the price is still dropping (scale-with-time-left: true).
+  confirm-scaled: 'The price drops as the timer runs down (lowest ${min}).'
+  confirm-balance: 'Your balance: ${balance}'
+  confirm-buy: 'Reopen for ${price}'
+  confirm-cancel: 'Cancel'
+  type-normal: 'normal'
+  type-ominous: 'ominous'
