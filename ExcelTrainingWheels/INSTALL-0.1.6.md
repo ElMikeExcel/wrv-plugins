@@ -36,6 +36,8 @@ Recommended additions (append, never replace the protected.players section):
       show-actionbar: true
       actionbar-message: "Loading in... protected"
 
+Last recorded live table (Oct 25): 0:1.60, 1:1.75, 2:1.90, 3:2.05, 4:2.20, 5:2.35. Only row 5 differs
+(2.35 -> 2.20). That matters only at Seal 5, and with source: live the shield follows EliteMobs anyway.
 If the live table rows differ from live EliteMobs, the console prints a WARNING once per
 change ("table row seal N = x.. but EliteMobs ... is x.."); the shield already follows live.
 Check live excluded-worlds: with source: live an EliteMobs world does not need to be listed.
