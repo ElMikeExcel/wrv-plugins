@@ -276,7 +276,7 @@ public final class AiFallbackTest {
             // NoticeTest pins the notice behavior end to end.
             t.check("cooldown refusal is the timed notice, not the non-answer",
                     second.size() == 1 && second.get(0).text().equals(
-                            "One moment — I can answer again in about 60 seconds."));
+                            "One moment, I can answer again in about 60 seconds."));
             clock.advanceSeconds(61);
             e.handle(mike, "how do i breed turtles", GuideEngine.Door.COMMAND,
                     TestSupport.ONLINE, false, sink);

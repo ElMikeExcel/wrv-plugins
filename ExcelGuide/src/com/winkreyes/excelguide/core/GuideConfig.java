@@ -55,6 +55,9 @@ public final class GuideConfig {
     public int aiMaxAnswerChars = 380;
     public String aiLogFile = "ai.log";
     public int aiLogMaxEntries = 2000;
+    /** 0.3.1: privately point a plain-chat asker at /ask when the AI could try. Off by default. */
+    public boolean aiAmbientHint = false;
+    public int aiAmbientHintHours = 24;
 
     // Answer acknowledgments (0.2.2, Mike's rule Oct 18, 2026: "a
     // direct question must never be met with silence - silence is
@@ -69,7 +72,7 @@ public final class GuideConfig {
     // answers are never affected. A missing block is not malformed:
     // the defaults apply.
     public boolean noticesEnabled = true;
-    public String noticeCooldownLine = "One moment — I can answer again in about %seconds% seconds.";
+    public String noticeCooldownLine = "One moment, I can answer again in about %seconds% seconds.";
     public String noticeThinkingLine = "Hmm, let me think about that one…";
     public int noticeThrottleSeconds = 30;
 
@@ -209,6 +212,8 @@ public final class GuideConfig {
             c.aiLogFile = String.valueOf(ai.get("log-file"));
         }
         c.aiLogMaxEntries = (int) num(ai.get("log-max-entries"), c.aiLogMaxEntries);
+        c.aiAmbientHint = bool(ai.get("ambient-hint"), c.aiAmbientHint);
+        c.aiAmbientHintHours = Math.max(1, (int) num(ai.get("ambient-hint-hours"), c.aiAmbientHintHours));
         Map<String, Object> cache = sub(ai, "cache");
         c.aiCacheEnabled = bool(cache.get("enabled"), c.aiCacheEnabled);
         if (cache.get("file") != null) {

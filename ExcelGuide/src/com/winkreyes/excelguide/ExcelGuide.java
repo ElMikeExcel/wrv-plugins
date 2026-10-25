@@ -92,6 +92,12 @@ public final class ExcelGuide extends JavaPlugin implements CommandExecutor {
                 + engine.aiCacheSize() + " cached answers, "
                 + engine.peerLearnedCount() + " approved player answers, "
                 + engine.peerReviewCount() + " waiting for /guide review.");
+        // 0.3.1: the AI switch state is on the console at every boot
+        // (status only - never the key).
+        getLogger().info("AI fallback: " + (engine.aiActive() ? "ON" : "off")
+                + " (provider " + config.aiProviderName + ", model " + config.aiModel
+                + ", log " + config.aiLogFile + ", ambient hint "
+                + (config.aiAmbientHint ? "on" : "off") + "). Only /ask and \"Guide,\" questions can reach it.");
     }
 
     @Override
@@ -179,6 +185,8 @@ public final class ExcelGuide extends JavaPlugin implements CommandExecutor {
                 new BukkitFacts(stats), aiLog,
                 task -> Bukkit.getScheduler().runTaskAsynchronously(this, task),
                 learnCache, learnedLoad.answers(), peerStore, peerLog);
+        // 0.3.1: AI failures and ai.log write failures reach the console.
+        fresh.setWarnSink(msg -> getLogger().warning(msg));
         // A new answer waiting for review: tell online ops (chat can
         // arrive on an async thread, so hop to the main thread first).
         fresh.setPeerNotifier(msg -> Bukkit.getScheduler().runTask(this, () -> {
@@ -319,7 +327,8 @@ public final class ExcelGuide extends JavaPlugin implements CommandExecutor {
                 sender.sendMessage(" ai fallback: " + (engine.aiActive() ? "ON" : "off")
                         + " (provider " + config.aiProviderName + ", model " + config.aiModel
                         + ") | ai calls today: " + engine.aiCallsToday()
-                        + " | ai answered this run: " + engine.aiAnsweredCount());
+                        + " | ai answered this run: " + engine.aiAnsweredCount()
+                        + " | ai failed this run: " + engine.aiFailedCount());
                 sender.sendMessage(" learned answers: " + engine.learnedCount()
                         + " | ai cache: " + engine.aiCacheSize() + " entries, "
                         + engine.aiCacheServedCount() + " served this run");

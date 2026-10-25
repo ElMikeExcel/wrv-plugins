@@ -120,6 +120,18 @@ public final class GuideEngine {
     private long answersServed;
     private long unansweredCount;
     private long aiAnswered;
+    // 0.3.1 observability: AI failures and ai.log write failures reach the
+    // console (throttled) instead of vanishing. Never carries the key or prompt.
+    private volatile java.util.function.Consumer<String> warnSink;
+    private long aiFailed;
+    private long lastAiFailWarnAt = Long.MIN_VALUE / 2;
+    private long lastAiLogWarnAt = Long.MIN_VALUE / 2;
+    private static final long WARN_EVERY_MILLIS = 10L * 60L * 1000L;
+    // 0.3.1 ambient hint: last time each player got the /ask pointer.
+    private final Map<UUID, Long> ambientHintAt = new HashMap<>();
+    /** The private pointer sent to a plain-chat asker (ai.ambient-hint). No em dashes. */
+    public static final String AMBIENT_HINT =
+            "I might know that one. Type /ask and your question, and I will look it up for you.";
     private long cacheServed;
     private long peerServed;
 
@@ -236,6 +248,36 @@ public final class GuideEngine {
     /** AI engagements that produced an answer this run. */
     public synchronized long aiAnsweredCount() {
         return aiAnswered;
+    }
+
+    /** AI engagements that failed (timeout, HTTP error, network) this run (0.3.1). */
+    public synchronized long aiFailedCount() {
+        return aiFailed;
+    }
+
+    /** Where console warnings go (0.3.1). Null = silent, as before. */
+    public void setWarnSink(java.util.function.Consumer<String> sink) {
+        this.warnSink = sink;
+    }
+
+    private void warn(String message) {
+        java.util.function.Consumer<String> w = warnSink;
+        if (w == null) {
+            return;
+        }
+        try {
+            w.accept(message);
+        } catch (RuntimeException ignored) {
+            // a broken logger never breaks chat
+        }
+    }
+
+    /** Safe one-line description of a provider failure: kind and HTTP status only. */
+    static String describeAiFailure(Exception e) {
+        if (e instanceof AiProvider.AiException ae) {
+            return ae.kind() + (ae.status() > 0 ? " (HTTP " + ae.status() + ")" : "");
+        }
+        return e.getClass().getSimpleName();
     }
 
     // ---------- learn status (0.2.1) ----------
@@ -432,6 +474,13 @@ public final class GuideEngine {
                     // in open chat opens a capture window too - the
                     // valley may answer what the Guide could not.
                     openPeerWindow(asker, rawMessage, norm, door, now);
+                    // 0.3.1 ambient hint (ai.ambient-hint, off by default):
+                    // plain chat never reaches the AI, so point this asker
+                    // at /ask - privately, at most once per window.
+                    List<Reply> hint = ambientHint(asker, now);
+                    if (hint != null) {
+                        return hint;
+                    }
                 }
             }
             return List.of();
@@ -1141,6 +1190,21 @@ public final class GuideEngine {
             // in the same honest fallback; the ai log keeps the count.
             latency = Math.max(0, clock.getAsLong() - started);
             answer = null;
+            // 0.3.1: say so on the console (kind + status only, throttled).
+            boolean say;
+            long failNow = clock.getAsLong();
+            synchronized (this) {
+                aiFailed++;
+                say = failNow - lastAiFailWarnAt >= WARN_EVERY_MILLIS;
+                if (say) {
+                    lastAiFailWarnAt = failNow;
+                }
+            }
+            if (say) {
+                warn("AI fallback call failed: " + describeAiFailure(e)
+                        + ". The player got the standard non-answer. (failures this run: "
+                        + aiFailedCount() + "; next warning in 10 min at most)");
+            }
         } finally {
             aiGate.release();
         }
@@ -1212,9 +1276,34 @@ public final class GuideEngine {
             aiLog.append(new AiLog.Entry(
                     Instant.ofEpochMilli(clock.getAsLong()), asker.name(),
                     asker.id().toString(), door.name(), answered, latency, rawMessage));
-        } catch (RuntimeException ignored) {
-            // The Guide never breaks chat because a log failed.
+        } catch (RuntimeException e) {
+            // The Guide never breaks chat because a log failed - but
+            // since 0.3.1 it says so on the console (throttled).
+            boolean say;
+            long n = clock.getAsLong();
+            synchronized (this) {
+                say = n - lastAiLogWarnAt >= WARN_EVERY_MILLIS;
+                if (say) {
+                    lastAiLogWarnAt = n;
+                }
+            }
+            if (say) {
+                warn("could not write the AI log (" + cfg.aiLogFile + "): "
+                        + e.getClass().getSimpleName() + ". AI answers still work; only the record is missing.");
+            }
         }
+    }
+
+    private List<Reply> ambientHint(PlayerRef asker, long now) {
+        if (!cfg.aiAmbientHint || !aiActive() || !cfg.doorCommand) {
+            return null;
+        }
+        Long last = ambientHintAt.get(asker.id());
+        if (last != null && now - last < cfg.aiAmbientHintHours * 3_600_000L) {
+            return null;
+        }
+        ambientHintAt.put(asker.id(), now);
+        return List.of(new Reply(Channel.PRIVATE, AMBIENT_HINT));
     }
 
     // ---------- clarify flow ----------

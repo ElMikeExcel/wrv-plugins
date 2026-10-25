@@ -1,5 +1,55 @@
 # ExcelGuide changelog
 
+## 0.3.1 (built Oct 25, 2026, CDT) - say when the AI fails, and help players find /ask
+
+STAGED ON THE BOX TEST SERVER ONLY. Not installed live. Needs Mike's go
+and one restart. Contains everything in 0.3.0 below.
+
+Why: on live 0.2.3, ai.log stopped growing after Oct 20 (158 B) while
+the AI was switched on. Cause: since Oct 20 almost every question was
+asked in plain chat, and plain chat never reaches the AI (only `/ask`
+and "Guide, ..." do). The one `/ask` (Oct 21) left no ai.log line,
+and the reason cannot be read from the logs, because 0.2.3 hides AI
+call failures and ai.log write failures completely. 0.3.1 makes both visible and adds an optional
+pointer to `/ask`.
+
+### Console
+- **AI call failures are now logged** as one WARN line: the failure
+  kind and HTTP status only (for example `HTTP (HTTP 401)`, `TIMEOUT`,
+  `IO`, `RATE_LIMIT`). Never the key, never the question. At most one
+  line per 10 minutes; the rest are counted.
+- **ai.log write failures are now logged** (one WARN per 10 minutes,
+  with the log-file setting). AI answers keep working.
+- **Boot line for the AI switch:** `AI fallback: ON/off (provider,
+  model, log file, ambient hint on/off)`. Never the key.
+- `/guide status` now also shows `ai failed this run` (resets on
+  `/guide reload`, like the other "this run" counters).
+
+### Players
+- **New, OFF by default: `ai.ambient-hint`.** When a plain-chat
+  question gets no answer and the AI is on, the asker gets ONE private
+  line: "I might know that one. Type /ask and your question, and I
+  will look it up for you." At most once per player per
+  `ai.ambient-hint-hours` (default 24). It does not call the AI and
+  spends no budget. Turn it on by adding `ambient-hint: true` under
+  `ai:` in the live config and running `/guide reload`.
+- The bundled default cooldown line no longer has an em dash ("One
+  moment, I can answer again in about N seconds."). The live config
+  keeps its own text until edited by hand.
+
+### Bundled files
+- Bundled knowledge.yml is the Oct 25 wrv.duckdns.org build (sha256
+  0b48d6c5..., 155 chunks). This only matters if the data-folder copy
+  is missing; a jar swap never replaces the live data folder files.
+- Bundled config.yml: same as 0.3.0 (no player names) plus the two
+  ambient-hint keys (off).
+
+### Tests
+- New harness AiObservabilityTest (33 checks): failure WARN content
+  (no key, no question), throttling, ai.log failure WARN, a throwing
+  logger never breaks chat, success stays quiet, ambient hint once per
+  window, per player, only with AI on, off by default.
+
 ## 0.3.0 (built Oct 24, 2026, CDT) - smarter player-taught answers
 
 STAGED ON THE BOX TEST SERVER ONLY. Not installed live. Needs Mike's go

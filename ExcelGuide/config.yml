@@ -55,7 +55,7 @@ unanswered-log:
 # turns notices off - fail-soft, answers are never affected.
 notices:
   enabled: true
-  cooldown-line: "One moment — I can answer again in about %seconds% seconds."
+  cooldown-line: "One moment, I can answer again in about %seconds% seconds."
   thinking-line: "Hmm, let me think about that one…"
   throttle-seconds: 30     # at most one cooldown notice per player per this many seconds
 
@@ -85,6 +85,12 @@ ai:
   max-answer-chars: 380
   log-file: ai.log
   log-max-entries: 2000
+  # Ambient hint (0.3.1): plain chat never reaches the AI - only /ask
+  # and "Guide," do. With this on, a plain-chat question the Guide
+  # could not answer gets ONE private pointer to /ask per player per
+  # window. Off by default; only works while the AI fallback is on.
+  ambient-hint: false
+  ambient-hint-hours: 24
   # Learn-cache (0.2.1): a successful AI answer is cached against
   # its normalized question and re-served later with no AI call and
   # no budget spent - until the knowledge stamp changes, which makes

@@ -61,7 +61,7 @@ public final class NoticeTest {
     }
 
     private static String notice(long seconds) {
-        return "One moment — I can answer again in about " + seconds + " seconds.";
+        return "One moment, I can answer again in about " + seconds + " seconds.";
     }
 
     private static boolean isNotice(List<GuideEngine.Reply> out, long seconds) {
