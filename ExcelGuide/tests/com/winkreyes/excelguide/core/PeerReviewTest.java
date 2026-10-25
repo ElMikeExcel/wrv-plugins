@@ -38,7 +38,23 @@ public final class PeerReviewTest {
     }
 
     static GuideConfig config(String... replacements) {
+        return configFrom(true, replacements);
+    }
+
+    /**
+     * reviewFirst = true pins peer-learning.auto-approve-thanked: false, the
+     * 0.3.0/0.3.1 review-queue flow this harness was written for. 0.3.2's
+     * default (true, Mike Oct 25 2026) is checked in section 12 with false.
+     */
+    static GuideConfig configFrom(boolean reviewFirst, String... replacements) {
         String yaml = TestSupport.readProj("config.yml");
+        if (reviewFirst) {
+            String from = "auto-approve-thanked: true ";
+            if (!yaml.contains(from)) {
+                throw new IllegalStateException("config replacement not found: " + from);
+            }
+            yaml = yaml.replace(from, "auto-approve-thanked: false");
+        }
         for (String r : replacements) {
             int eq = r.indexOf('=');
             String from = r.substring(0, eq);
@@ -404,6 +420,30 @@ public final class PeerReviewTest {
             say(r, AG2, "yep");
             close(r);
             t.eq("auto-approve on but no thanks: waits", 1, r.store().count(PeerCandidates.REVIEW));
+        }
+
+        {
+            // 0.3.2 default (Mike, Oct 25 5:18 PM CDT): the asker's thanks approves at once.
+            Rig r = rig(configFrom(false));
+            summon(r, ASKER, FOX_Q);
+            say(r, ANS, FOX_A);
+            say(r, ASKER, "thanks that worked");
+            close(r);
+            t.eq("0.3.2 default: asker thanks approves right away", 1, r.store().count(PeerCandidates.APPROVED));
+            t.eq("0.3.2 default: nothing waits for review", 0, r.store().count(PeerCandidates.REVIEW));
+            r.clock().advanceSeconds(120);
+            String served = text(ask(r, AG3, "how do i tame a fox"));
+            t.check("0.3.2 default: reused on /ask", served.contains("A player said"));
+            t.check("0.3.2 default: reused with no names", !served.contains("Pebble") && !served.contains("TestAsker"));
+        }
+        {
+            Rig r = rig(configFrom(false));
+            summon(r, ASKER, FOX_Q);
+            say(r, ANS, FOX_A);
+            say(r, AG1, "no thats wrong");
+            say(r, ASKER, "thanks");
+            close(r);
+            t.eq("0.3.2 default: a dispute still blocks auto-approve", 0, r.store().count(PeerCandidates.APPROVED));
         }
 
         // ---------- 13. config: min-agreements floor, defaults, kill switch ----------

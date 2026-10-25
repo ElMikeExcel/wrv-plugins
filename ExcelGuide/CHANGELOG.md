@@ -5,6 +5,20 @@
 STAGED ON THE BOX TEST SERVER ONLY. Not installed live. Needs Mike's go
 and one restart. Contains everything in 0.3.1 and 0.3.0 below.
 
+Rebuilt Oct 25, 2026 ~5:35 PM CDT with Mike's 5:18 PM CDT decisions
+(jar sha256 b3137266..., replaces the first 0.3.2 build 3851f1ce...,
+which was never installed):
+1. `peer-learning.auto-approve-thanked` defaults to **true**: "Since
+   it's a thanked answer it's probably right." A player answer the asker
+   thanked is approved and reused right away, still only when every
+   filter passed and nobody disputed it.
+2. `delayed-answers.reply-channel` defaults to **public**: the Guide's
+   delayed plain-chat answers go to everyone in chat.
+3. Public replies never carry the asker's private details (see
+   "Privacy in public replies" below). Website knowledge, banked player
+   answers and general AI answers all still answer in public; only the
+   asker's own details are stripped.
+
 Why: Mike's design (Oct 25): "a player asks a question in chat. It
 reads it, does the research and then watches to see if another player
 answers. If another player answers and someone follows up with thanks
@@ -23,9 +37,16 @@ AI cache, approved player answers and the AI.
   - If another player answers in that time (or the asker says thanks
     to someone), the Guide stays out of it. Peer learning watches that
     answer as before.
-  - If nobody answers, the asker gets the Guide's answer privately
-    (only they see it). Nothing found: the usual "I don't know that
-    one yet" line, and the question is written down.
+  - If nobody answers, the Guide posts its answer **in public chat**
+    (everyone sees it; `reply-channel: private` = only the asker).
+    Every source answers in public: the website knowledge, the Guide's
+    learned and curated answers, the AI cache, approved player answers
+    ("A player said: ...", never a name) and the AI. Nothing found: the
+    usual "I don't know that one yet" line, to the asker only, and the
+    question is written down.
+  - If the same question was just answered in public (the 60 s public
+    question cooldown), the next asker gets the same answer privately
+    instead of a repeat line for everyone (`delayed-repeat-private`).
   - "nvm" / "never mind" / "found it" from the asker cancels it. So
     does asking the same thing with `/ask` or "Guide, ..." (that door
     answers at once), leaving, or `/guide off`.
@@ -40,11 +61,46 @@ AI cache, approved player answers and the AI.
     the 0.3.1 WARN line (kind and status only, never the key).
 - **A third player's "thanks" now counts as one agreement** for a
   player answer (`peer-learning.others-thanks-count`, on).
-- **New, OFF by default: `peer-learning.auto-approve-thanked`.** On =
-  the asker's thanks alone approves a player answer (no `/guide
-  review`), when every filter passed and nobody disputed it. Approved
-  player answers are now also reused for the next plain-chat asker
-  ("A player said: ...", privately, after the delay).
+- **New, ON by default: `peer-learning.auto-approve-thanked`** (Mike,
+  Oct 25 5:18 PM CDT). The asker's thanks alone approves a player
+  answer (no `/guide review`), when every filter passed (question and
+  answer gates, spoiler, profanity and name filters) and nobody
+  disputed it ("no thats wrong" blocks it). Mike still sees each one:
+  online ops get "Guide auto-approved a player answer (#id)" and
+  `/guide review approved` lists them; reject retires one. Filters run
+  again every time it is served. `false` = every answer waits for
+  `/guide review` (the first 0.3.2 build's default). Approved player
+  answers are reused for the next asker on `/ask`, "Guide, ..." and
+  plain chat ("A player said: ...", after the delay, in public).
+
+### Privacy in public replies (new in this rebuild)
+- **The AI never gets the asker's details for a public reply.** In
+  public mode the delayed AI call uses a new prompt
+  (`AiPrompts.buildPublic`): the website knowledge excerpts, the public
+  facts (seal progress, board leaders) and the question. No fact sheet
+  about the asker (balance, claim blocks, mcMMO and Jobs levels, seal
+  standing), no name, no UUID, no location. The system prompt says the
+  answer is shown to everyone, never to guess anyone's numbers, name or
+  location, and to point to `/ask` for the asker's own numbers.
+- **A last check before posting (`publicSafe`).** Any delayed answer,
+  from any source, that names the asker (whole word, any case, also
+  without the Bedrock dot) or contains their UUID goes to the asker
+  privately instead. An AI answer that quotes a number from the
+  asker's own fact sheet (read locally for the check, never sent; 1-
+  digit numbers ignored) also goes private. Logged as
+  `delayed-kept-private | reason=asker-detail` (no text, no name);
+  `/guide status` counts them. Website knowledge, curated and player
+  answers skip the number check: they are fixed text that never saw
+  the asker's facts.
+- Personal stat questions ("what's my balance") still never reach the
+  delayed layer; the private stat answers handle them. Intents marked
+  private stay private. The don't-know line stays private.
+- `reply-channel: private` keeps the first 0.3.2 behavior: the AI gets
+  the asker's own facts and every answer goes to the asker only.
+- An unknown `reply-channel` value (a typo) now falls back to
+  **private**, the safer side.
+- `/ask` and "Guide, ..." are unchanged (their AI answers stay private
+  with the asker's own facts).
 - If the Guide already answered a question, the asker's later "thanks"
   is not counted for a player answer (it may be for the Guide).
 - The ambient hint (0.3.1, off) is not sent while a delayed answer is
@@ -54,9 +110,10 @@ AI cache, approved player answers and the AI.
 - Boot line: `Delayed chat answers: ON/off (delay, AI timing, reply
   channel, how player answers are approved)`.
 - `/guide status` adds a `delayed chat answers` line (waiting now;
-  seen / answered / left to players / cancelled this run).
+  seen / answered / left to players / cancelled / kept private this
+  run, and the reply channel).
 - peer.log gets `delayed-*` events (scheduled, reply-seen, held,
-  posted, cancelled, dropped, skipped). Question text and reason only,
+  posted, cancelled, dropped, skipped, kept-private, repeat-private). Question text and reason only,
   never names or ids. `thanks-ambiguous` when a thanks follows a Guide
   answer.
 - The peer-learning timer now runs every second (was every 30 s) so a
@@ -70,13 +127,13 @@ delayed-answers:
   delay-seconds: 45           # 15 to 300
   ai-timing: late             # late | early
   say-dont-know: true
-  reply-channel: private      # private | public (knowledge answers only)
+  reply-channel: public       # public | private (typo = private)
   per-player-cooldown-seconds: 90
   max-pending: 4
   hold-on-any-reply: true
   cancel-phrases: []
 peer-learning:
-  auto-approve-thanked: false
+  auto-approve-thanked: true
   others-thanks-count: true
 ```
 `delayed-answers.enabled: false` + `/guide reload` = 0.3.1 behavior.
@@ -87,7 +144,7 @@ peer-learning:
   A jar swap never replaces the live data-folder files.
 
 ### Tests
-- New harness DelayedAnswerTest (122 checks): timing (not before 45 s,
+- New harness DelayedAnswerTest (168 checks; 122 in the first build): timing (not before 45 s,
   once), knowledge / curated / AI / cache / approved player answer
   sources, hold on a player answer or the asker's thanks, banking with
   review (default) and auto-approve-thanked, reuse for the next asker,
@@ -95,7 +152,19 @@ peer-learning:
   key, written down), budget, say-dont-know off, never-scheduled lines,
   limits, cancel paths, kill switch, disputes, ambiguous thanks,
   third-party thanks, two questions waiting, no names in peer.log.
-- Every 0.3.1 harness unchanged and passing as before.
+  Rebuild adds: new defaults (public, auto-approve-thanked on, typo =
+  private), public delivery of knowledge, curated, cache, player and AI
+  answers, the public AI prompt carries no asker name, UUID or facts
+  but keeps the knowledge excerpts, public facts and question, private
+  mode still sends the asker's facts, AI answers that name the asker
+  (also without the Bedrock dot) or quote their numbers go private,
+  general numbers stay public, don't-know stays private, repeat inside
+  the public cooldown goes private, cache reuse public after it,
+  `publicSafe` edge cases.
+- PeerReviewTest (114 checks, was 109): pins `auto-approve-thanked:
+  false` for its review-queue cases and adds the 0.3.2 default (thanks
+  approves at once, reused with no names, a dispute still blocks it).
+- Every other 0.3.1 harness unchanged and passing as before.
 
 ## 0.3.1 (built Oct 25, 2026, CDT) - say when the AI fails, and help players find /ask
 

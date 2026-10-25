@@ -145,14 +145,19 @@ public final class GuideConfig {
     // answers; the AI last), then the Guide waits delay-seconds. If
     // another player replies in that window it holds off and lets the
     // peer-learning layer bank the player's answer; if nobody does,
-    // the asker gets the Guide's answer privately. Every key is
+    // the Guide answers. Every key is
     // optional: the live config is never replaced by a jar swap, so
     // the defaults below must be safe on their own.
     public boolean delayedEnabled = true;
     public int delayedDelaySeconds = 45;            // 15..300
     public String delayedAiTiming = "late";         // late = AI only if nobody answered; early = AI at once
     public boolean delayedSayDontKnow = true;       // nothing found -> the standard non-answer, privately
-    public String delayedReplyChannel = "private";  // private | public (public: knowledge answers only)
+    // 0.3.2 (Mike, Oct 25, 2026 5:18 PM CDT): replies are PUBLIC by
+    // default. Public replies never carry the asker's private details:
+    // the AI is asked with no asker facts and no asker name, and any
+    // answer that names the asker or quotes one of their own numbers
+    // goes to the asker privately instead. See GuideEngine step 6.
+    public String delayedReplyChannel = "public";   // public | private (typo -> private)
     public int delayedPerPlayerCooldownSeconds = 90; // between delayed answers to the same player
     public int delayedMaxPending = 4;               // questions waiting at once, server-wide
     public boolean delayedHoldOnAnyReply = true;    // any on-topic reply from another player holds the Guide
@@ -160,7 +165,10 @@ public final class GuideConfig {
 
     // Peer-learning 0.3.2 additions.
     public boolean peerOthersThanksCount = true;    // a third player's "thanks" counts as one agreement
-    public boolean peerAutoApproveThanked = false;  // true = the asker's thanks alone approves (no review)
+    // 0.3.2 (Mike, Oct 25, 2026 5:18 PM CDT): ON by default - "since it's
+    // a thanked answer it's probably right". Every filter and the dispute
+    // block still apply; false = Mike reviews each one in /guide review.
+    public boolean peerAutoApproveThanked = true;   // the asker's thanks alone approves (no review)
 
     /** True when the AI fallback may engage: switch on AND a key present. */
     public boolean aiConfigured() {
@@ -308,9 +316,9 @@ public final class GuideConfig {
             c.delayedAiTiming = at.toLowerCase(java.util.Locale.ROOT);
         }
         c.delayedSayDontKnow = bool(da.get("say-dont-know"), c.delayedSayDontKnow);
-        if (da.get("reply-channel") instanceof String rc
-                && (rc.equalsIgnoreCase("private") || rc.equalsIgnoreCase("public"))) {
-            c.delayedReplyChannel = rc.toLowerCase(java.util.Locale.ROOT);
+        if (da.get("reply-channel") instanceof String rc) {
+            // A typo falls back to private, the safer side.
+            c.delayedReplyChannel = rc.equalsIgnoreCase("public") ? "public" : "private";
         }
         c.delayedPerPlayerCooldownSeconds = clamp((int) num(da.get("per-player-cooldown-seconds"),
                 c.delayedPerPlayerCooldownSeconds), 0, 3600);

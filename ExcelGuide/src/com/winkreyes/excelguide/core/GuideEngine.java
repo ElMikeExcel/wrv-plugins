@@ -1387,11 +1387,26 @@ public final class GuideEngine {
      * 5. REUSE: an approved player answer is part of step 2, so the
      *    next plain-chat asker of that topic gets "A player said: ..."
      *    after the delay if nobody answers them first.
-     * 6. ANSWER: privately to the asker (reply-channel: public posts
-     *    knowledge answers to everyone; AI, cache, learned and player
-     *    answers are always private). Through the normal rate limiter;
-     *    one short retry if it is the only thing in the way. Nothing
-     *    found and no AI = the standard non-answer (say-dont-know).
+     * 6. ANSWER: in public chat by default (reply-channel: public,
+     *    Mike Oct 25, 2026 5:18 PM CDT; private = the asker only).
+     *    Every source still answers in public: website knowledge,
+     *    learned and curated answers, the AI cache, approved player
+     *    answers ("A player said: ...", no names) and the AI.
+     *    PRIVACY (public mode): the asker's private details never
+     *    reach a public line.
+     *      a. The AI is asked with AiPrompts.buildPublic: knowledge
+     *         excerpts + public facts + the question, and NO asker
+     *         fact sheet, name or UUID. It cannot leak what it never
+     *         received.
+     *      b. publicSafe(): any answer (any source) that names the
+     *         asker, or quotes a number from the asker's own fact
+     *         sheet (fetched locally for the check, never sent), is
+     *         delivered to the asker privately instead.
+     *      c. Intents marked private, and the don't-know line, stay
+     *         private. Personal stat questions never reach this layer.
+     *    Through the normal rate limiter; one short retry if it is the
+     *    only thing in the way. Nothing found and no AI = the standard
+     *    non-answer, privately (say-dont-know).
      */
 
     /** One question waiting for its delayed answer (in memory only). */
@@ -1534,7 +1549,8 @@ public final class GuideEngine {
     private void prepareDelayed(Pending p, long now) {
         String promoted = learned.match(p.norm);
         if (promoted != null) {
-            p.prepared = wrap(Channel.PRIVATE, substitute(promoted, p.asker));
+            String text = substitute(promoted, p.asker);
+            p.prepared = wrap(delayedChannel(p, text, null), text);
             p.source = "learned";
             return;
         }
@@ -1546,15 +1562,15 @@ public final class GuideEngine {
         if (m != null && m.score() >= cfg.intentMinScore) {
             String text = delayedIntentText(m.intent(), p.norm, p.asker);
             if (text != null) {
-                boolean pub = "public".equals(cfg.delayedReplyChannel) && !m.intent().isPrivate();
-                p.prepared = wrap(pub ? Channel.PUBLIC : Channel.PRIVATE, text);
+                Channel ch = m.intent().isPrivate() ? Channel.PRIVATE : delayedChannel(p, text, null);
+                p.prepared = wrap(ch, text);
                 p.source = "intent";
                 return;
             }
         }
         if (Retrieval.clearsBar(p.retrieval, cfg.retrievalMinScore, cfg.retrievalMargin)) {
-            Channel ch = "public".equals(cfg.delayedReplyChannel) ? Channel.PUBLIC : Channel.PRIVATE;
-            p.prepared = wrap(ch, p.retrieval.answerText());
+            String text = p.retrieval.answerText();
+            p.prepared = wrap(delayedChannel(p, text, null), text);
             p.source = "knowledge";
             return;
         }
@@ -1562,7 +1578,7 @@ public final class GuideEngine {
             LearnCache.Entry entry = aiCache.get(p.norm);
             if (entry != null) {
                 if (knowledge.version().equals(entry.stamp())) {
-                    p.prepared = wrap(Channel.PRIVATE, entry.answer());
+                    p.prepared = wrap(delayedChannel(p, entry.answer(), null), entry.answer());
                     p.source = "cache";
                     return;
                 }
@@ -1621,7 +1637,8 @@ public final class GuideEngine {
         if (e == null || !e.isApproved() || filter().serveReject(e.answer(), knownNames()) != null) {
             return false;
         }
-        p.prepared = wrap(Channel.PRIVATE, cfg.peerServePrefix + e.answer());
+        String text = cfg.peerServePrefix + e.answer();
+        p.prepared = wrap(delayedChannel(p, text, null), text);
         p.source = "peer";
         p.peerEntry = e;
         return true;
@@ -1635,9 +1652,13 @@ public final class GuideEngine {
             return false;
         }
         List<KnowledgeBase.Chunk> excerpts = Retrieval.topK(knowledge, p.norm, cfg.aiTopChunks);
+        // The asker's facts are read either way: private mode sends them,
+        // public mode only uses their numbers for the publicSafe() check.
         List<String> askerFacts = safeAskerFacts(p.asker);
-        AiPrompts.Prompt prompt = AiPrompts.build(cfg.personaName, NON_ANSWER, p.asker.name(),
-                p.raw, excerpts, askerFacts, safePublicFacts());
+        AiPrompts.Prompt prompt = delayedPublic()
+                ? AiPrompts.buildPublic(cfg.personaName, NON_ANSWER, p.raw, excerpts, safePublicFacts())
+                : AiPrompts.build(cfg.personaName, NON_ANSWER, p.asker.name(),
+                        p.raw, excerpts, askerFacts, safePublicFacts());
         AiProvider.Request request = new AiProvider.Request(prompt.system(), prompt.user(),
                 cfg.aiModel, Math.max(1000, cfg.aiTimeoutSeconds * 1000));
         boolean personal = LearnPrivacy.isPersonalQuestion(TextNorm.tokenSet(p.norm));
@@ -1680,7 +1701,7 @@ public final class GuideEngine {
             p.aiInFlight = false;
             if (answer != null) {
                 aiAnswered++;
-                p.prepared = wrap(Channel.PRIVATE, answer);
+                p.prepared = wrap(delayedChannel(p, answer, factNumbers), answer);
                 p.source = "ai";
                 if (aiCache != null && cfg.aiCacheEnabled && !personal
                         && !LearnPrivacy.answerQuotesAny(answer, factNumbers)) {
@@ -1865,6 +1886,20 @@ public final class GuideEngine {
             return;
         }
         List<Reply> served = deliver(p.asker, p.norm, false, now, out);
+        if (served.isEmpty() && lastBlockVerdict == RateLimiter.Verdict.QUESTION_COOLDOWN
+                && !out.isEmpty() && out.get(0).channel() == Channel.PUBLIC) {
+            // The same answer went to public chat moments ago (the public
+            // question cooldown): this asker still gets it, privately,
+            // instead of a repeat line for everyone.
+            List<Reply> mine = new ArrayList<>();
+            for (Reply x : out) {
+                mine.add(new Reply(Channel.PRIVATE, x.text()));
+            }
+            served = deliver(p.asker, p.norm, false, now, mine);
+            if (!served.isEmpty()) {
+                logPeer("delayed-repeat-private", p.norm);
+            }
+        }
         long wait = lastBlockRemainingMillis;
         lastBlockVerdict = null;
         lastBlockRemainingMillis = 0;
@@ -1905,6 +1940,79 @@ public final class GuideEngine {
                 // A delivery failure never breaks chat.
             }
         }
+    }
+
+    /** True when delayed replies go to public chat (the 0.3.2 default). */
+    private boolean delayedPublic() {
+        return "public".equals(cfg.delayedReplyChannel);
+    }
+
+    /**
+     * The channel for one delayed answer: PUBLIC in public mode unless
+     * publicSafe() says the text may carry the asker's private details,
+     * then PRIVATE (logged as delayed-kept-private, no text, no name).
+     */
+    private Channel delayedChannel(Pending p, String text, Set<String> askerNumbers) {
+        if (!delayedPublic()) {
+            return Channel.PRIVATE;
+        }
+        if (publicSafe(text, p.asker, askerNumbers)) {
+            return Channel.PUBLIC;
+        }
+        delayedKeptPrivate++;
+        logPeer("delayed-kept-private", p.norm, "reason=asker-detail");
+        return Channel.PRIVATE;
+    }
+
+    /**
+     * Privacy gate for a public delayed answer: false when the text
+     * names the asker (whole word, any case) or quotes a number from
+     * the asker's OWN fact sheet (balance, claim blocks, levels...).
+     * The fact sheet is read here locally and never leaves the engine.
+     * The number check runs on AI answers only ({@code askerNumbers},
+     * read once when the AI call was set up; null = no number check):
+     * website knowledge, curated, learned, cached and player answers
+     * are fixed text that never saw this asker's facts, so a shared
+     * number there is a coincidence, not a leak (and checking them
+     * would push most knowledge answers private). Single-digit
+     * integers are ignored (levels like 3 are everywhere in answers
+     * and identify nobody); balances, claim blocks, coords and big
+     * levels are checked. Public facts (seal progress, board leaders)
+     * are not checked: those numbers are on the public boards already.
+     * A false positive only costs a public line (the asker still gets
+     * the answer privately).
+     */
+    boolean publicSafe(String text, PlayerRef asker, Set<String> askerNumbers) {
+        if (text == null) {
+            return true;
+        }
+        String name = asker.name();
+        if (name != null && !name.isBlank()) {
+            String bare = name.startsWith(".") ? name.substring(1) : name; // Floodgate prefix
+            String low = text.toLowerCase(java.util.Locale.ROOT);
+            for (String n : List.of(name, bare)) {
+                if (n.length() >= 2 && java.util.regex.Pattern.compile(
+                        "(?<![a-z0-9_])" + java.util.regex.Pattern.quote(n.toLowerCase(java.util.Locale.ROOT))
+                                + "(?![a-z0-9_])").matcher(low).find()) {
+                    return false;
+                }
+            }
+        }
+        if (text.contains(asker.id().toString())) {
+            return false;
+        }
+        if (askerNumbers == null || askerNumbers.isEmpty()) {
+            return true;
+        }
+        Set<String> mine = new java.util.HashSet<>(askerNumbers);
+        mine.removeIf(x -> x.matches("\\d"));
+        return !LearnPrivacy.answerQuotesAny(text, mine);
+    }
+
+    private long delayedKeptPrivate;
+
+    public synchronized long delayedKeptPrivateCount() {
+        return delayedKeptPrivate;
     }
 
     private void endPending(Pending p) {

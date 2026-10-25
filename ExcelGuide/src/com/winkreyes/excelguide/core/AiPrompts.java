@@ -79,6 +79,55 @@ public final class AiPrompts {
         return new Prompt(systemPrompt(personaName, dontKnowLine), user.toString());
     }
 
+    /**
+     * The PUBLIC-reply prompt (0.3.2): for a delayed plain-chat answer
+     * that everyone in chat will see. Same persona, rules, knowledge
+     * excerpts and public facts as {@link #build}, but NOTHING about
+     * the asker: no fact sheet (balance, claim blocks, levels, seal
+     * standing), no name, no UUID, no location. The model cannot leak
+     * what it never received. Questions that need the asker's own
+     * numbers get the general answer plus the /ask pointer.
+     */
+    public static Prompt buildPublic(String personaName, String dontKnowLine, String question,
+                                     List<KnowledgeBase.Chunk> excerpts, List<String> publicFacts) {
+        StringBuilder user = new StringBuilder();
+        user.append("SERVER KNOWLEDGE EXCERPTS:\n");
+        if (excerpts == null || excerpts.isEmpty()) {
+            user.append("(no excerpts matched this question)\n");
+        } else {
+            int n = 1;
+            for (KnowledgeBase.Chunk c : excerpts) {
+                String text = c.text() == null ? "" : c.text().replace('\n', ' ').trim();
+                if (text.length() > EXCERPT_CAP) {
+                    text = text.substring(0, EXCERPT_CAP).trim();
+                }
+                user.append('[').append(n++).append("] ").append(c.title()).append(": ")
+                        .append(text).append('\n');
+            }
+        }
+        user.append("\nPUBLIC FACTS:\n");
+        appendFacts(user, publicFacts, "(none)");
+        user.append("\nQUESTION FROM A PLAYER: ").append(question);
+        return new Prompt(publicSystemPrompt(personaName, dontKnowLine), user.toString());
+    }
+
+    /** The grounding rules for a public reply: no asker facts exist in this conversation. */
+    public static String publicSystemPrompt(String personaName, String dontKnowLine) {
+        return systemPrompt(personaName, dontKnowLine)
+                .replace("the SERVER KNOWLEDGE excerpts and the FACTS sections.",
+                        "the SERVER KNOWLEDGE excerpts and the PUBLIC FACTS.")
+                .replace("2. The FACTS ABOUT THE PERSON ASKING are that player's own live numbers, "
+                        + "fetched by the server. You may do simple arithmetic with them (for example, "
+                        + "comparing a base's area to their remaining claim blocks). Never state another "
+                        + "player's personal numbers: the PUBLIC FACTS are the only other-player numbers "
+                        + "you may use.",
+                        "2. Your answer is shown to EVERYONE in public chat. You know nothing about the "
+                        + "person asking: never guess or state anyone's balance, claim blocks, levels, "
+                        + "location, coordinates or name. If the question needs the asker's own numbers, "
+                        + "give the general answer and add that they can type /ask for their own numbers. "
+                        + "The PUBLIC FACTS are the only player numbers you may use.");
+    }
+
     private static void appendFacts(StringBuilder user, List<String> facts, String emptyLine) {
         if (facts == null || facts.isEmpty()) {
             user.append(emptyLine).append('\n');

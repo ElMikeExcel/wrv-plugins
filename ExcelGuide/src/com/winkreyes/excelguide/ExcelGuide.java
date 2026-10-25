@@ -355,7 +355,9 @@ public final class ExcelGuide extends JavaPlugin implements CommandExecutor {
                         + " | this run: " + engine.delayedScheduledCount() + " seen, "
                         + engine.delayedPostedCount() + " answered, "
                         + engine.delayedHeldCount() + " left to players, "
-                        + engine.delayedCancelledCount() + " cancelled");
+                        + engine.delayedCancelledCount() + " cancelled, "
+                        + engine.delayedKeptPrivateCount() + " kept private"
+                        + " | reply " + config.delayedReplyChannel);
                 sender.sendMessage(" learned answers: " + engine.learnedCount()
                         + " | ai cache: " + engine.aiCacheSize() + " entries, "
                         + engine.aiCacheServedCount() + " served this run");

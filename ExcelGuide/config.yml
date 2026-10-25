@@ -143,7 +143,9 @@ learned:
 #   thats wrong" kills it. A lone "yeah" is not enough any more.
 # - A backed answer goes to the review queue (review-file). Mike
 #   approves or rejects it: /guide review (Bedrock: a pop-up).
-#   auto-approve is OFF by default.
+#   auto-approve is OFF by default. auto-approve-thanked (0.3.2) is ON:
+#   an answer the asker thanked, that passed every filter and that
+#   nobody disputed, is approved and reused right away.
 # - Approved answers are served on /ask and "Guide, ..." as
 #   "A player said: ..." (serve-prefix) - never with a player name.
 #   They are re-checked against the spoiler, profanity and name
@@ -177,8 +179,8 @@ peer-learning:
   approved-expire-days: 0     # approved answers nobody asks again expire (0 = never)
   auto-approve: false         # true = approve without review when the asker said thanks AND
   auto-approve-min-agreements: 2  # ...at least this many players agreed
-  auto-approve-thanked: false # 0.3.2: true = the asker's thanks ALONE approves (no /guide review).
-                              # Still needs every filter above and no dispute. Off = Mike reviews.
+  auto-approve-thanked: true  # 0.3.2: the asker's thanks ALONE approves (no /guide review).
+                              # Still needs every filter above and no dispute. false = Mike reviews.
   others-thanks-count: true   # 0.3.2: a third player's "thanks" counts as one agreement
   notify-ops: true            # tell online ops when an answer is waiting for review
   serve-prefix: "A player said: "
@@ -198,15 +200,24 @@ peer-learning:
 # (its own answers, the knowledge, the AI cache, approved player
 # answers, then the AI) and WAITS delay-seconds. If another player
 # answers in that time, the Guide stays out of it and peer learning
-# (above) can bank that player's answer. If nobody answers, the asker
-# gets the Guide's answer privately. Same filters as peer learning:
+# (above) can bank that player's answer. If nobody answers, the Guide
+# answers in public chat (reply-channel). Same filters as peer learning:
 # never social chat, player names, profanity or seal-fight spoilers.
 # - ai-timing: late = the AI is asked only when nobody answered (saves
 #   the daily budget); early = asked at once, so the answer is ready.
 # - say-dont-know: nothing found -> the usual "I don't know that one
 #   yet" line, privately. false = stay silent instead.
-# - reply-channel: private (only the asker sees it) or public (knowledge
-#   answers go to everyone; AI and player answers stay private).
+# - reply-channel: public (default: everyone sees the answer) or private
+#   (only the asker sees it). Public answers come from the website
+#   knowledge, the Guide's own answers, the AI cache, approved player
+#   answers ("A player said: ...", never a name) and the AI. They never
+#   carry the asker's private details: in public mode the AI is asked
+#   with NO facts about the asker (no balance, claim blocks, levels,
+#   coords, UUID or name), only the knowledge and the public facts.
+#   Any answer that still names the asker or quotes one of their own
+#   numbers goes to the asker privately instead, and so does "I don't
+#   know that one yet". Personal stat questions ("what's my balance")
+#   are never delayed; the private stat answers handle them.
 # - hold-on-any-reply: any on-topic line from another player holds the
 #   Guide, not only a full answer. "nvm" / "found it" from the asker
 #   cancels; so does asking the same thing with /ask or "Guide,".
@@ -217,7 +228,7 @@ delayed-answers:
   delay-seconds: 45           # 15 to 300
   ai-timing: late             # late | early
   say-dont-know: true
-  reply-channel: private      # private | public
+  reply-channel: public       # public | private
   per-player-cooldown-seconds: 90
   max-pending: 4              # questions waiting at once, server-wide
   hold-on-any-reply: true

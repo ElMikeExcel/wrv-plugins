@@ -129,21 +129,26 @@ public final class DelayedAnswerTest {
             t.check("default: on", d.delayedEnabled);
             t.eq("default delay 45s", 45, d.delayedDelaySeconds);
             t.eq("default ai timing late", "late", d.delayedAiTiming);
-            t.eq("default reply private", "private", d.delayedReplyChannel);
+            t.eq("default reply PUBLIC (Mike, Oct 25 5:18 PM)", "public", d.delayedReplyChannel);
             t.check("default say-dont-know", d.delayedSayDontKnow);
             t.eq("default cooldown 90", 90, d.delayedPerPlayerCooldownSeconds);
             t.eq("default max pending 4", 4, d.delayedMaxPending);
-            t.check("default auto-approve-thanked OFF", !d.peerAutoApproveThanked);
+            t.check("default auto-approve-thanked ON (Mike, Oct 25 5:18 PM)", d.peerAutoApproveThanked);
             t.check("default others-thanks-count on", d.peerOthersThanksCount);
             GuideConfig real = TestSupport.realConfig();
             t.eq("bundled config delay", 45, real.delayedDelaySeconds);
-            t.check("bundled config auto-approve-thanked off", !real.peerAutoApproveThanked);
+            t.check("bundled config auto-approve-thanked on", real.peerAutoApproveThanked);
+            t.eq("bundled config reply public", "public", real.delayedReplyChannel);
+            t.eq("explicit private parsed", "private",
+                    GuideConfig.fromYaml("delayed-answers:\n  reply-channel: PRIVATE\n").delayedReplyChannel);
+            t.check("explicit auto-approve-thanked false parsed",
+                    !GuideConfig.fromYaml("peer-learning:\n  auto-approve-thanked: false\n").peerAutoApproveThanked);
             GuideConfig c = GuideConfig.fromYaml("delayed-answers:\n  delay-seconds: 2\n  max-pending: 99\n"
                     + "  ai-timing: sideways\n  reply-channel: shout\n  per-player-cooldown-seconds: -5\n");
             t.eq("delay clamped up to 15", 15, c.delayedDelaySeconds);
             t.eq("max pending clamped to 20", 20, c.delayedMaxPending);
             t.eq("bad ai timing -> late", "late", c.delayedAiTiming);
-            t.eq("bad channel -> private", "private", c.delayedReplyChannel);
+            t.eq("bad channel (typo) -> private, the safer side", "private", c.delayedReplyChannel);
             t.eq("negative cooldown -> 0", 0, c.delayedPerPlayerCooldownSeconds);
             GuideConfig big = GuideConfig.fromYaml("delayed-answers:\n  delay-seconds: 9999\n");
             t.eq("delay clamped down to 300", 300, big.delayedDelaySeconds);
@@ -163,7 +168,7 @@ public final class DelayedAnswerTest {
             t.eq("posted at 45s", 1, r.got().deliveries());
             t.eq("to the asker", ASKER.id(), r.got().to.get(0));
             t.check("the knowledge answer", r.got().text().contains("nether wart"));
-            t.check("privately", r.got().replies.get(0).channel() == GuideEngine.Channel.PRIVATE);
+            t.check("in public chat (default)", r.got().replies.get(0).channel() == GuideEngine.Channel.PUBLIC);
             wait(r, 120);
             t.eq("only once", 1, r.got().deliveries());
             t.eq("nothing waiting after", 0, r.engine().delayedPendingCount());
@@ -173,11 +178,11 @@ public final class DelayedAnswerTest {
             t.eq("AI never called for a knowledge answer", 0, r.ai().invocations);
         }
         {
-            Rig r = rig(config(false, "  reply-channel: private=  reply-channel: public"));
+            Rig r = rig(config(false, "  reply-channel: public=  reply-channel: private"));
             say(r, ASKER, KNOW_Q);
             wait(r, 45);
-            t.check("reply-channel public: knowledge goes public",
-                    r.got().replies.size() > 0 && r.got().replies.get(0).channel() == GuideEngine.Channel.PUBLIC);
+            t.check("reply-channel private: knowledge goes to the asker only",
+                    r.got().replies.size() > 0 && r.got().replies.get(0).channel() == GuideEngine.Channel.PRIVATE);
         }
         {
             Rig r = rig(config(false));
@@ -188,7 +193,7 @@ public final class DelayedAnswerTest {
 
         // ---------- 3. a player answers: the Guide holds, thanks banks it ----------
         {
-            Rig r = rig(config(true));
+            Rig r = rig(config(true, "auto-approve-thanked: true=auto-approve-thanked: false"));
             say(r, ASKER, FOX_Q);
             wait(r, 10);
             say(r, ANS, FOX_A);
@@ -200,20 +205,21 @@ public final class DelayedAnswerTest {
             t.eq("counter: held", 1L, r.engine().delayedHeldCount());
             t.check("log: held", log(r).contains("delayed-held"));
             wait(r, 300);
-            t.eq("banked for review (default)", 1, r.store().count(PeerCandidates.REVIEW));
-            t.eq("not approved by default", 0, r.store().count(PeerCandidates.APPROVED));
+            t.eq("auto-approve-thanked false: banked for review", 1, r.store().count(PeerCandidates.REVIEW));
+            t.eq("auto-approve-thanked false: not approved", 0, r.store().count(PeerCandidates.APPROVED));
             // next asker: review queue is never served
             say(r, NEXT, "how do you tame a fox?");
             wait(r, 45);
             t.check("unapproved answer not served", !r.got().text().contains("A player said"));
         }
         {
-            Rig r = rig(config(false, "auto-approve-thanked: false=auto-approve-thanked: true"));
+            Rig r = rig(config(false));
             say(r, ASKER, FOX_Q);
             say(r, ANS, FOX_A);
             say(r, ASKER, "thanks");
             wait(r, 400);
-            t.eq("auto-approve-thanked: approved", 1, r.store().count(PeerCandidates.APPROVED));
+            t.eq("default: thanked answer approved right away", 1, r.store().count(PeerCandidates.APPROVED));
+            t.eq("default: nothing left for review", 0, r.store().count(PeerCandidates.REVIEW));
             t.eq("auto-approve-thanked: Guide held", 0, r.got().deliveries());
             say(r, NEXT, "how do you tame a fox?");
             wait(r, 44);
@@ -221,12 +227,13 @@ public final class DelayedAnswerTest {
             wait(r, 1);
             t.check("reuse: next plain-chat asker gets it", r.got().text().contains("A player said: " + FOX_A));
             t.eq("reuse: to the new asker", NEXT.id(), r.got().to.get(0));
-            t.check("reuse: private", r.got().replies.get(0).channel() == GuideEngine.Channel.PRIVATE);
-            t.check("reuse: no player name", !r.got().text().contains("Pebble") && !r.got().text().contains("TestAsker"));
+            t.check("reuse: in public chat", r.got().replies.get(0).channel() == GuideEngine.Channel.PUBLIC);
+            t.check("reuse: no player name", !r.got().text().contains("Pebble") && !r.got().text().contains("TestAsker")
+                    && !r.got().text().contains("BirchKite"));
             t.check("log: served", log(r).contains("peer=served"));
         }
         {
-            Rig r = rig(config(false, "auto-approve-thanked: false=auto-approve-thanked: true"));
+            Rig r = rig(config(false));
             say(r, ASKER, FOX_Q);
             say(r, ANS, FOX_A);
             say(r, AG1, "no thats wrong");
@@ -244,7 +251,7 @@ public final class DelayedAnswerTest {
             wait(r, 1);
             t.eq("AI late: called once at 45s", 1, r.ai().invocations);
             t.check("AI answer posted", r.got().text().contains(AI_FOX));
-            t.check("AI answer private", r.got().replies.get(0).channel() == GuideEngine.Channel.PRIVATE);
+            t.check("AI answer in public chat", r.got().replies.get(0).channel() == GuideEngine.Channel.PUBLIC);
             wait(r, 60);
             t.eq("AI late: still one call", 1, r.ai().invocations);
             t.eq("AI late: one delivery", 1, r.got().deliveries());
@@ -499,7 +506,7 @@ public final class DelayedAnswerTest {
 
         // ---------- 11. thanks after the Guide posted; third-party thanks ----------
         {
-            Rig r = rig(config(false, "auto-approve-thanked: false=auto-approve-thanked: true"));
+            Rig r = rig(config(false));
             say(r, ASKER, FOX_Q);
             wait(r, 45);
             t.eq("Guide posted", 1, r.got().deliveries());
@@ -543,6 +550,143 @@ public final class DelayedAnswerTest {
             t.check("peer.log has no uuid", !l.contains(ASKER.id().toString()) && !l.contains(NEXT.id().toString()));
             t.check("peer.log has no key", !l.contains("test-key-not-real"));
             t.check("ai.log has no key", !file(r.dir().resolve("ai.log")).contains("test-key-not-real"));
+        }
+
+        // ---------- 13. public replies never carry the asker's private details ----------
+        // (Mike, Oct 25 5:18 PM CDT: public by default; website knowledge,
+        // banked answers and general AI answers keep working; only the
+        // asker's personal details are stripped.)
+        {
+            Rig r = rig(config(true));
+            say(r, ASKER, FOX_Q);
+            wait(r, 45);
+            String sys = r.ai().lastSystem == null ? "" : r.ai().lastSystem;
+            String user = r.ai().lastUser == null ? "" : r.ai().lastUser;
+            String prompt = sys + "\n" + user;
+            t.eq("public AI: called once", 1, r.ai().invocations);
+            t.check("public AI: general answer still served", r.got().text().contains(AI_FOX));
+            t.check("public AI: posted publicly", r.got().replies.get(0).channel() == GuideEngine.Channel.PUBLIC);
+            t.check("public AI prompt: no asker name", !prompt.contains("TestAsker"));
+            t.check("public AI prompt: no asker uuid", !prompt.contains(ASKER.id().toString()));
+            t.check("public AI prompt: no asker fact sheet", !prompt.contains("FACTS ABOUT THE PERSON ASKING"));
+            for (String secret : List.of("3492", "2393", "1,234.56", "Balance", "Claim blocks", "mcMMO overall 861")) {
+                t.check("public AI prompt: no asker fact '" + secret + "'", !prompt.contains(secret));
+            }
+            t.check("public AI prompt: website knowledge excerpts kept", user.contains("SERVER KNOWLEDGE EXCERPTS:")
+                    && !user.contains("(no excerpts matched"));
+            t.check("public AI prompt: public facts kept", user.contains("Guild seals broken: 0 of 5"));
+            t.check("public AI prompt: the question kept", user.contains("tame a fox"));
+            t.check("public AI prompt: told the answer is public", sys.contains("shown to EVERYONE"));
+            t.check("public AI prompt: /ask pointer for own numbers", sys.contains("/ask for their own numbers"));
+        }
+        {
+            // Private mode keeps the 0.3.1 prompt (the asker's own facts, privately).
+            Rig r = rig(config(true, "  reply-channel: public=  reply-channel: private"));
+            say(r, ASKER, FOX_Q);
+            wait(r, 45);
+            String user = r.ai().lastUser == null ? "" : r.ai().lastUser;
+            t.check("private AI prompt: asker facts present", user.contains("FACTS ABOUT THE PERSON ASKING (TestAsker)")
+                    && user.contains("2393"));
+            t.check("private AI answer: private", r.got().replies.get(0).channel() == GuideEngine.Channel.PRIVATE);
+        }
+        {
+            // The AI answer quotes one of the asker's own numbers (by coincidence):
+            // the asker still gets it, but privately.
+            Rig r = rig(config(true));
+            r.ai().behavior = q -> "Use sweet berries; you have 2393 blocks left to claim, too.";
+            say(r, ASKER, FOX_Q);
+            wait(r, 60);
+            t.check("AI quotes asker number: still answered", r.got().text().contains("2393"));
+            t.check("AI quotes asker number: kept private",
+                    r.got().replies.size() > 0 && r.got().replies.get(0).channel() == GuideEngine.Channel.PRIVATE);
+            t.eq("kept-private counted", 1L, r.engine().delayedKeptPrivateCount());
+            t.check("log: kept-private, no text", log(r).contains("delayed-kept-private | reason=asker-detail")
+                    && !log(r).contains("2393"));
+        }
+        {
+            // The AI answer names the asker: private.
+            Rig r = rig(config(true));
+            r.ai().behavior = q -> "Sure TestAsker, crouch near a fox holding sweet berries.";
+            say(r, ASKER, FOX_Q);
+            wait(r, 45);
+            t.check("AI names asker: kept private",
+                    r.got().replies.size() > 0 && r.got().replies.get(0).channel() == GuideEngine.Channel.PRIVATE);
+        }
+        {
+            // A Floodgate asker named without the dot: private too.
+            Rig r = rig(config(true));
+            r.ai().behavior = q -> "BirchKite, crouch near a fox holding sweet berries.";
+            say(r, NEXT, FOX_Q);
+            wait(r, 45);
+            t.check("AI names Floodgate asker (no dot): kept private",
+                    r.got().replies.size() > 0 && r.got().replies.get(0).channel() == GuideEngine.Channel.PRIVATE);
+        }
+        {
+            // A single-digit number shared with nothing private stays public; so does
+            // a general answer with a number the asker does not have.
+            Rig r = rig(config(true));
+            r.ai().behavior = q -> "Give a fox 3 sweet berries while crouching; it takes about 400 ticks.";
+            say(r, ASKER, FOX_Q);
+            wait(r, 45);
+            t.check("AI general numbers: public",
+                    r.got().replies.size() > 0 && r.got().replies.get(0).channel() == GuideEngine.Channel.PUBLIC);
+        }
+        {
+            // Website knowledge with numbers is never pushed private by number coincidence.
+            Rig r = rig(config(false));
+            say(r, ASKER, KNOW_Q);
+            wait(r, 45);
+            t.check("knowledge answer: public", r.got().replies.get(0).channel() == GuideEngine.Channel.PUBLIC);
+            t.check("knowledge answer: website text", r.got().text().contains("nether wart"));
+            t.check("knowledge answer: no asker name", !r.got().text().contains("TestAsker"));
+            t.eq("knowledge answer: nothing kept private", 0L, r.engine().delayedKeptPrivateCount());
+        }
+        {
+            // Same question again inside the 60s public question cooldown: the
+            // second asker still gets it (from the cache), privately, no repeat line.
+            Rig r = rig(config(true));
+            say(r, ASKER, "how do you tame a fox?");
+            wait(r, 45);
+            say(r, NEXT, "how do you tame a fox?");
+            wait(r, 45);
+            t.eq("repeat in cooldown: both answered", 2, r.got().deliveries());
+            t.check("repeat in cooldown: second one private", r.got().replies.size() >= 2
+                    && r.got().replies.get(r.got().replies.size() - 1).channel() == GuideEngine.Channel.PRIVATE);
+            t.check("log: repeat-private", log(r).contains("delayed-repeat-private"));
+        }
+        {
+            // Cached AI answer reused publicly for the next asker after the cooldown.
+            Rig r = rig(config(true));
+            say(r, ASKER, "how do you tame a fox?");
+            wait(r, 45);
+            wait(r, 120);
+            say(r, NEXT, "how do you tame a fox?");
+            wait(r, 45);
+            t.eq("cache reuse: no second AI call", 1, r.ai().invocations);
+            t.check("cache reuse: public", r.got().replies.size() >= 2
+                    && r.got().replies.get(r.got().replies.size() - 1).channel() == GuideEngine.Channel.PUBLIC);
+        }
+        {
+            // The don't-know line stays private (it is not an answer anyone else needs).
+            Rig r = rig(config(false));
+            say(r, ASKER, FOX_Q);
+            wait(r, 45);
+            t.check("don't-know: private", r.got().replies.size() > 0
+                    && r.got().replies.get(0).channel() == GuideEngine.Channel.PRIVATE);
+        }
+        {
+            // publicSafe() edge cases: whole-word name match only, uuid, null numbers.
+            Rig r = rig(config(false));
+            GuideEngine e = r.engine();
+            t.check("publicSafe: plain text", e.publicSafe("Use a brewing stand.", ASKER, null));
+            t.check("publicSafe: name inside a longer word is a different word",
+                    e.publicSafe("TestAskers are fun", ASKER, null));
+            t.check("publicSafe: name, any case", !e.publicSafe("hi testasker", ASKER, null));
+            t.check("publicSafe: uuid", !e.publicSafe("id " + ASKER.id(), ASKER, null));
+            t.check("publicSafe: asker number", !e.publicSafe("you have 1234.56", ASKER,
+                    LearnPrivacy.numbersInFacts(new AiFallbackTest.FakeFacts().asker)));
+            t.check("publicSafe: digit only ignored", e.publicSafe("wait 0 seconds", ASKER,
+                    LearnPrivacy.numbersInFacts(new AiFallbackTest.FakeFacts().asker)));
         }
 
         t.finish("DelayedAnswerTest");
