@@ -1,0 +1,19 @@
+  buildflight:
+    material: FEATHER
+    slot: 5
+    amount: 1
+    name: '&b&lBuild Flight Pass'
+    lore:
+    - '&730 minutes of flight'
+    - '&7only inside your own claim.'
+    - '&7Double-tap jump to fly.'
+    - '&7Leave your claim or get in a fight'
+    - '&7and you land safe. No fall damage.'
+    - '&7Time keeps counting when you log off.'
+    - '&ePrice: &f$1,000'
+    - '&8Tap to review. No charge yet.'
+    clicks:
+      left:
+      - '[console] buildfly buy %player_name%'
+      right:
+      - '[console] buildfly buy %player_name%'

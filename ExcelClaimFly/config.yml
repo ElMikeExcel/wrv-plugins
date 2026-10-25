@@ -1,0 +1,94 @@
+# ExcelClaimFly 0.1.0 (Wink Reyes Valley). Build Flight pass.
+# A pass = a LuckPerms TEMPORARY permission node (pass-node below).
+# LuckPerms keeps the clock: real time, keeps counting while offline,
+# survives restarts. Re-buying adds time (stacks) up to max-total-minutes.
+# Flight works only inside the buyer's own GriefPrevention claim.
+# /buildfly reload re-reads this file (no restart).
+enabled: true
+price: 1000
+pass-minutes: 30
+# Re-buy while active ADDS pass-minutes, but never past this total left.
+max-total-minutes: 120
+pass-node: excelclaimfly.pass
+# false = only the claim OWNER can fly there (Mike: "your own claim").
+# true  = players with /trust (build) in a claim can fly there too.
+trusted-builders-can-fly: false
+# No flight in these worlds even inside a claim.
+blocked-worlds:
+- world_the_end
+combat:
+  # Mike's rule (Oct 25 2026): a hit from a mob, any projectile or a player
+  # pauses flight and lands you safe. Attacking something also pauses it.
+  # false = fights never touch flight (easy flip, then /buildfly reload).
+  pause-flight: true
+  # Seconds after the last hit (taken or given) before flight comes back.
+  tag-seconds: 10
+# After flight is turned off for you: no fall damage until you land,
+# for at most this many seconds.
+safe-landing-max-seconds: 30
+# Warnings before the pass ends (minutes left).
+warn-minutes: [5, 1]
+# Time left on the action bar while you fly (and while flight is paused
+# in your claim by a fight). /buildfly shows it any time.
+actionbar: true
+# "Double-tap jump to fly" hint when you walk back into your claim,
+# at most once per this many seconds.
+reentry-hint-cooldown-seconds: 60
+# Shop review screen opened by /buildfly buy (the Spawn Shop button runs
+# "buildfly buy <player>" from console).
+bedrock-form-delay-ticks: 10
+
+# Player-facing text. & color codes. Placeholders: {price} {minutes}
+# {left} (plain words, e.g. 23 min) {clock} (23:41) {cap} {balance}
+messages:
+  bought-title: '&bBuild Flight on'
+  bought-subtitle: '&fDouble-tap jump in your claim'
+  bought-chat:
+  - '&b&lBuild Flight pass: {minutes} minutes'
+  - '&f- You can fly only inside your own claim.'
+  - '&f- Double-tap jump to fly. Double-tap again to stop.'
+  - '&f- Leave your claim or get in a fight and flight turns off. You land safe, no fall damage.'
+  - '&f- Back in your claim and out of the fight? Double-tap jump again.'
+  - '&f- Time keeps counting, even if you log off.'
+  - '&f- Time left: type &e/buildfly&f, or tap the pass in the shop again.'
+  extended-title: '&bBuild Flight +{minutes} min'
+  extended-subtitle: '&f{left} left'
+  extended-chat:
+  - '&bAdded {minutes} minutes to your Build Flight pass. You now have {left} left.'
+  - '&7Fly only inside your own claim. Double-tap jump to fly.'
+  status-active: '&bBuild Flight: &f{left} left &7({clock}). {where}'
+  status-where-on: '&aYou are in your claim, so you can fly.'
+  status-where-outside: '&7Flight works only inside your own claim.'
+  status-where-combat: '&7Paused for a fight. It comes back in a few seconds.'
+  status-where-world: '&7Flight is off in this world.'
+  status-where-mode: '&7Flight is not needed in this game mode.'
+  status-none: '&7You have no Build Flight pass. Get one in the Spawn Shop, Travel & Animals, for ${price}.'
+  actionbar: '&bBuild Flight &f{clock} left'
+  actionbar-paused: '&eFlight paused (fight) &7| &f{clock} left'
+  hit-paused: '&eFlight paused, you got hit. Land safe.'
+  attack-paused: '&eFlight paused while you fight. Land safe.'
+  combat-resumed: '&aFlight is back. Double-tap jump to fly.'
+  left-claim: '&eYou left your claim, so flight is off. Land safe.'
+  reentered-claim: '&aYou are in your claim. Double-tap jump to fly.'
+  world-blocked: '&eFlight is off in this world. Land safe.'
+  expired-title: '&eBuild Flight ended'
+  expired-subtitle: '&fLand safe, no fall damage'
+  expired-chat: '&eYour Build Flight pass ran out. Land safe. Get another in the Spawn Shop.'
+  warn-title: '&eBuild Flight: {left} left'
+  warn-subtitle: '&fFind a spot to land'
+  warn-chat: '&eBuild Flight: {left} left. Find a spot to land.'
+  confirm-title: 'Build Flight Pass'
+  confirm-body:
+  - 'Fly for {minutes} minutes, only inside your own claim.'
+  - 'Double-tap jump to fly.'
+  - 'Flight turns off if you leave your claim or get in a fight. You land safe.'
+  - 'Time keeps counting, even if you log off.'
+  confirm-body-active: 'You have {left} left. Buying adds {minutes} minutes.'
+  confirm-balance: 'Your balance: ${balance}'
+  confirm-buy: 'Buy {minutes} min for ${price}'
+  confirm-cancel: 'Cancel'
+  no-money: '&cYou need ${price} for a Build Flight pass. You have ${balance}.'
+  no-claim: '&cBuild Flight works only inside your own claim, and you do not have one yet. Make a claim first (use a golden shovel), then come back.'
+  at-cap: '&cYou already have {left} left. The most you can hold is {cap}. Try again later.'
+  not-available: '&cBuild Flight passes are not available right now. No money was taken.'
+  refunded: '&cSomething went wrong, so your ${price} was given back.'
