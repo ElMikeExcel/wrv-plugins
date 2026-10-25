@@ -1,0 +1,33 @@
+# ExcelGuide - promoted ("learned") answers (0.2.1)
+#
+# An entry here is an AI answer a HUMAN reviewed (from the weekly
+# Guide report) and promoted into a permanent deterministic answer.
+# Promoted answers outrank the AI cache and the AI itself, and they
+# never stale-expire. They serve privately, on the /ask and "Guide,"
+# doors only, like the AI answers they graduated from.
+#
+# Format - a top-level "learned" list; each entry:
+#
+#   learned:
+#     - id: tame-a-fox              # optional label (logs only)
+#       phrases:                    # natural wordings of the question
+#         - "how do i tame a fox"
+#         - "how to tame a fox"
+#       answer: "Crouch near a fox holding sweet berries and stay
+#                still until it creeps over - then feed it the
+#                berries to tame it."
+#
+# Matching: a question matches when its words (stemmed, sorted)
+# equal a phrase's words - same words, any order, plural-tolerant.
+# Exact-set matching only, never fuzzy: an entry fires only for the
+# question it was reviewed for and its listed variants. The first
+# entry wins on a duplicate phrase. %player% in an answer is
+# replaced with the asker's name, as in intents.yml.
+#
+# Entries with no usable phrases or a blank answer are skipped with
+# a console warning; a syntax-broken file is ignored the same way.
+# /guide reload re-reads this file - edits land with no restart.
+#
+# (No entries yet - this file starts empty on purpose.)
+
+learned: []
