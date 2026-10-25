@@ -1,0 +1,20 @@
+name: ExcelVaults
+version: 0.1.0
+main: com.winkreyes.excelvaults.ExcelVaults
+api-version: '1.21'
+author: WinkReyesValley
+softdepend: [Vault, floodgate, ExcelGuildGate, ExcelAuditLog]
+description: Trial chamber vaults reopen for each player after a real-time cooldown (24h normal, 72h ominous; ominous only after Seal 2). Sneak + right-click a locked vault, or /vaults, to pay and reopen it early. A trial key is still needed to open it.
+commands:
+  vaults:
+    description: Trial vaults. /vaults lists your vaults waiting to reopen, with time left and the price to reopen now.
+    usage: /vaults [list|help|reopen <world> <x> <y> <z>] (admin - status [player] | reset <player> [here] | age <player> <minutes> | reload)
+    aliases: [trialvaults]
+    permission: excelvaults.use
+permissions:
+  excelvaults.use:
+    description: Use /vaults and pay to reopen your own vaults.
+    default: true
+  excelvaults.admin:
+    description: status, reset, age, reload.
+    default: op
