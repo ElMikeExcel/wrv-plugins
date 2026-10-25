@@ -28,7 +28,7 @@ echo "== compile: $(wc -l < "$WORK/sources.txt") sources (src + tests)"
 $JAVAC --release 21 -proc:none -nowarn -cp "$CP" -d "$WORK/classes" @"$WORK/sources.txt"
 # The harnesses load the real intents.yml / knowledge.yml / config.yml
 # from the project folder, passed as a system property.
-for t in TextNormTest IntentMatchTest RetrievalTest RateLimiterTest ClarifyFlowTest PrivacyTest ToggleLogTest ConfigKnowledgeTest AiFallbackTest LearnCacheTest ClaimBlocksTest NoticeTest PeerReviewTest PeerTipTest; do
+for t in TextNormTest IntentMatchTest RetrievalTest RateLimiterTest ClarifyFlowTest PrivacyTest ToggleLogTest ConfigKnowledgeTest AiFallbackTest LearnCacheTest ClaimBlocksTest NoticeTest PeerReviewTest PeerTipTest AiObservabilityTest DelayedAnswerTest; do
   echo "== run: $t"
   $JAVA -Dexcelguide.proj="$PROJ" -cp "$WORK/classes:$LIBS/snakeyaml-2.2.jar" com.winkreyes.excelguide.core.$t
 done

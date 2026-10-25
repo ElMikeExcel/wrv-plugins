@@ -60,6 +60,17 @@ public final class GuideEngine {
      * checks the asker is still online.
      */
     @FunctionalInterface
+    /**
+     * Delivery hook for delayed plain-chat answers (0.3.2): the reply
+     * lands seconds after the chat line, so it is addressed by the
+     * asker's id; the glue looks the player up and delivers on the
+     * main thread (or drops it when they left). Null = the delayed
+     * answer layer is off (exactly 0.3.1 behavior).
+     */
+    public interface DelayedSink {
+        void deliver(UUID asker, List<Reply> replies);
+    }
+
     public interface AsyncSink {
         void accept(List<Reply> replies);
     }
@@ -341,6 +352,7 @@ public final class GuideEngine {
      * timer either.
      */
     public synchronized void tick() {
+        processDueDelayed(clock.getAsLong());
         if (peerEnabled()) {
             settlePeerWindows(clock.getAsLong());
         }
@@ -407,6 +419,16 @@ public final class GuideEngine {
             }
         }
 
+        // Delayed answers (0.3.2): this line may hold the Guide (another
+        // player replied), cancel a waiting question ("nvm", or the asker
+        // asked it directly), or record the asker's thanks. Then anything
+        // that came due is settled. Neither step produces a reply here;
+        // delayed answers go out through the DelayedSink.
+        if (!pendingAnswers.isEmpty()) {
+            noteDelayedChat(asker, rawMessage, norm, tokens, door, now);
+            processDueDelayed(now);
+        }
+
         // A pending clarification outranks every ambient guard: the
         // player is mid-conversation with the Guide, on purpose.
         Long pendingExpiry = clarifyPending.get(asker.id());
@@ -468,6 +490,13 @@ public final class GuideEngine {
             // (question-shaped, some topic overlap) for the growth list.
             if (TextNorm.questionShaped(rawMessage, norm)) {
                 Retrieval.Result r = Retrieval.search(knowledge, norm, null);
+                // 0.3.2 delayed answers: a real game question is
+                // researched now, answered after the delay unless
+                // another player answers first. Silent right now.
+                if (scheduleDelayed(asker, rawMessage, norm, r, now)) {
+                    openPeerWindow(asker, rawMessage, norm, door, now);
+                    return List.of();
+                }
                 if (r.best() != null && r.bestScore() >= 4) {
                     logUnanswered(asker, rawMessage, "AMBIENT", r);
                     // Peer learning (0.2.3): an unanswered question
@@ -664,6 +693,7 @@ public final class GuideEngine {
         final long answerUntil;
         final long closesAt;
         final List<PeerCand> cands = new ArrayList<>();
+        boolean guideAnswered;     // 0.3.2: the Guide posted its own answer to this question
 
         PeerWindow(String key, String question, Set<String> qTerms, UUID asker,
                    long openedAt, long answerUntil, long closesAt) {
@@ -816,6 +846,12 @@ public final class GuideEngine {
                 return;
             }
             if (PeerFilter.isAskerConfirmation(raw, norm)) {
+                if (asked.guideAnswered) {
+                    // 0.3.2: the Guide already answered this asker, so a
+                    // "thanks" now may be for the Guide, not the player.
+                    logPeer("thanks-ambiguous", asked.question);
+                    return;
+                }
                 List<PeerCand> live = new ArrayList<>();
                 for (PeerCand c : asked.cands) {
                     if (!c.disputed) {
@@ -837,7 +873,10 @@ public final class GuideEngine {
         //    the most recently answered window they did not answer.
         //    With no answer standing yet, a "nope, you need..." line
         //    falls through and may itself be the answer.
-        boolean agree = PeerFilter.isAgreement(raw, norm);
+        boolean agree = PeerFilter.isAgreement(raw, norm)
+                // 0.3.2: a third player's "thanks" backs the answer too
+                // (one agreement; min-agreements still applies).
+                || (cfg.peerOthersThanksCount && !disagree && PeerFilter.isAskerConfirmation(raw, norm));
         if (disagree || agree) {
             PeerWindow w = latest(x -> !x.cands.isEmpty() && now < x.closesAt
                     && !x.asker.equals(who) && x.candBy(who) == null);
@@ -1018,8 +1057,12 @@ public final class GuideEngine {
                     entry.answer(), entry.how(), entry.agreements(), entry.askerConfirmed(),
                     onFile.created(), now, onFile.asks() + 1, 0L, "", 0, 0L);
         }
-        boolean auto = cfg.peerAutoApprove && c.askerConfirmed
-                && c.agreers.size() >= cfg.peerAutoApproveMinAgreements;
+        boolean auto = (cfg.peerAutoApprove && c.askerConfirmed
+                && c.agreers.size() >= cfg.peerAutoApproveMinAgreements)
+                // 0.3.2: Mike's "bank it for next time" - the asker's
+                // thanks alone approves, when this switch is on. Every
+                // filter above already ran; nobody disputed it.
+                || (cfg.peerAutoApproveThanked && c.askerConfirmed && !anyDisputed);
         if (auto) {
             entry = entry.approved("auto", now);
         }
@@ -1190,21 +1233,7 @@ public final class GuideEngine {
             // in the same honest fallback; the ai log keeps the count.
             latency = Math.max(0, clock.getAsLong() - started);
             answer = null;
-            // 0.3.1: say so on the console (kind + status only, throttled).
-            boolean say;
-            long failNow = clock.getAsLong();
-            synchronized (this) {
-                aiFailed++;
-                say = failNow - lastAiFailWarnAt >= WARN_EVERY_MILLIS;
-                if (say) {
-                    lastAiFailWarnAt = failNow;
-                }
-            }
-            if (say) {
-                warn("AI fallback call failed: " + describeAiFailure(e)
-                        + ". The player got the standard non-answer. (failures this run: "
-                        + aiFailedCount() + "; next warning in 10 min at most)");
-            }
+            noteAiFailure(e);
         } finally {
             aiGate.release();
         }
@@ -1242,6 +1271,24 @@ public final class GuideEngine {
             }
         }
         sink.accept(replies);
+    }
+
+    /** 0.3.1 console line for a failed AI call (kind + status only, throttled). Never the key or question. */
+    private void noteAiFailure(Exception e) {
+        boolean say;
+        long failNow = clock.getAsLong();
+        synchronized (this) {
+            aiFailed++;
+            say = failNow - lastAiFailWarnAt >= WARN_EVERY_MILLIS;
+            if (say) {
+                lastAiFailWarnAt = failNow;
+            }
+        }
+        if (say) {
+            warn("AI fallback call failed: " + describeAiFailure(e)
+                    + ". The player got the standard non-answer. (failures this run: "
+                    + aiFailedCount() + "; next warning in 10 min at most)");
+        }
     }
 
     private List<String> safeAskerFacts(PlayerRef asker) {
@@ -1305,6 +1352,566 @@ public final class GuideEngine {
         ambientHintAt.put(asker.id(), now);
         return List.of(new Reply(Channel.PRIVATE, AMBIENT_HINT));
     }
+
+    // ---------- delayed plain-chat answers (0.3.2) ----------
+
+    /*
+     * Mike's design (Oct 25, 2026): "a player asks a question in chat.
+     * It reads it, does the research and then watches to see if
+     * another player answers. If another player answers and someone
+     * follows up with thanks or something of that sort it'll bank
+     * that answer for next time that question is asked."
+     *
+     * Layers, in order:
+     * 1. DETECT: plain chat, question-shaped, no intent answered it,
+     *    and the peer question gate passes (a real game question, not
+     *    social chat, names no player, no profanity, no seal-fight
+     *    spoiler). Personal stat questions are left to the stat
+     *    intents. Combat-quiet, /guide off and "addressed to a player"
+     *    already returned earlier in handle().
+     * 2. RESEARCH (silent): promoted answers, the curated /ask answers
+     *    (non-stat intents), knowledge retrieval, the AI cache, approved
+     *    player answers. If none has it, the AI is
+     *    the last resort: called at once (ai-timing: early) or only
+     *    when the delay runs out with nobody answering (late, the
+     *    default, so a question the valley answers costs no budget).
+     * 3. WATCH: for delay-seconds another player's on-topic reply, a
+     *    captured peer candidate, or the asker's own thanks holds the
+     *    Guide. "nvm" / "found it" or asking the same thing by /ask
+     *    or "Guide," cancels. A held answer whose player candidate is
+     *    disputed ("no thats wrong") before the delay ends is posted.
+     * 4. BANK: unchanged peer learning (windows, agreements, thanks,
+     *    review queue). 0.3.2 adds: a third player's thanks counts as
+     *    an agreement, and peer-learning.auto-approve-thanked lets the
+     *    asker's thanks alone approve.
+     * 5. REUSE: an approved player answer is part of step 2, so the
+     *    next plain-chat asker of that topic gets "A player said: ..."
+     *    after the delay if nobody answers them first.
+     * 6. ANSWER: privately to the asker (reply-channel: public posts
+     *    knowledge answers to everyone; AI, cache, learned and player
+     *    answers are always private). Through the normal rate limiter;
+     *    one short retry if it is the only thing in the way. Nothing
+     *    found and no AI = the standard non-answer (say-dont-know).
+     */
+
+    /** One question waiting for its delayed answer (in memory only). */
+    private static final class Pending {
+        final String key;
+        final PlayerRef asker;
+        final String raw;
+        final String norm;
+        final Set<String> qTerms;
+        final Retrieval.Result retrieval;
+        final long askedAt;
+        long dueAt;
+        List<Reply> prepared;      // the researched answer, null while none
+        String source;             // learned | intent | knowledge | cache | peer | ai
+        PeerCandidates.Entry peerEntry;
+        boolean needsAi;           // the AI is still to be asked (late timing)
+        boolean aiInFlight;
+        boolean askerThanked;
+        boolean looseHeld;
+        boolean retried;
+        boolean done;
+
+        Pending(String key, PlayerRef asker, String raw, String norm, Set<String> qTerms,
+                Retrieval.Result retrieval, long askedAt, long dueAt) {
+            this.key = key;
+            this.asker = asker;
+            this.raw = raw;
+            this.norm = norm;
+            this.qTerms = qTerms;
+            this.retrieval = retrieval;
+            this.askedAt = askedAt;
+            this.dueAt = dueAt;
+        }
+    }
+
+    /** Built-in "never mind" lines from the asker (delayed-answers.cancel-phrases adds more). */
+    static final List<String> DEFAULT_CANCEL_PHRASES = List.of(
+            "nvm", "never mind", "nevermind", "nm", "found it", "figured it out", "i figured it out",
+            "i got it", "got it now", "dont worry", "no worries");
+
+    private final Map<String, Pending> pendingAnswers = new java.util.LinkedHashMap<>(); // by topic key
+    private final Map<UUID, Long> delayedLastAt = new HashMap<>();
+    private volatile DelayedSink delayedSink;
+    private long delayedScheduled;
+    private long delayedPosted;
+    private long delayedHeld;
+    private long delayedCancelled;
+
+    /** The glue's delivery hook for delayed answers. Null turns the layer off. */
+    public synchronized void setDelayedSink(DelayedSink sink) {
+        this.delayedSink = sink;
+    }
+
+    /** True when plain-chat questions get a delayed answer. */
+    public synchronized boolean delayedActive() {
+        return cfg.delayedEnabled && cfg.doorAmbient && delayedSink != null;
+    }
+
+    public synchronized int delayedPendingCount() {
+        return pendingAnswers.size();
+    }
+
+    public synchronized long delayedScheduledCount() {
+        return delayedScheduled;
+    }
+
+    public synchronized long delayedPostedCount() {
+        return delayedPosted;
+    }
+
+    public synchronized long delayedHeldCount() {
+        return delayedHeld;
+    }
+
+    public synchronized long delayedCancelledCount() {
+        return delayedCancelled;
+    }
+
+    /** The asker left: their waiting question is dropped (glue: on quit). */
+    public synchronized void forgetPlayer(UUID player) {
+        for (Pending p : new ArrayList<>(pendingAnswers.values())) {
+            if (p.asker.id().equals(player)) {
+                endPending(p);
+                delayedCancelled++;
+                logPeer("delayed-cancelled", p.norm, "reason=left");
+            }
+        }
+    }
+
+    private boolean scheduleDelayed(PlayerRef asker, String raw, String norm,
+                                    Retrieval.Result r, long now) {
+        if (!delayedActive()) {
+            return false;
+        }
+        Set<String> tokens = TextNorm.tokenSet(norm);
+        if (LearnPrivacy.isPersonalQuestion(tokens)
+                && !java.util.Collections.disjoint(tokens, STAT_WORDS)) {
+            return false; // "what's my balance" belongs to the stat intents, privately
+        }
+        String reject = filter().questionReject(raw, norm, knownNamesExcept(asker));
+        String key = PeerFilter.topicKey(norm);
+        if (reject == null && key.isBlank()) {
+            reject = "q-too-short";
+        }
+        if (reject != null) {
+            logPeer("delayed-skipped", norm, "reason=" + reject);
+            return false;
+        }
+        if (pendingAnswers.containsKey(key)) {
+            return true; // the same question is already waiting: one answer, no echo
+        }
+        for (Pending p : pendingAnswers.values()) {
+            if (p.asker.id().equals(asker.id())) {
+                logPeer("delayed-skipped", norm, "reason=one-at-a-time");
+                return false;
+            }
+        }
+        if (pendingAnswers.size() >= cfg.delayedMaxPending) {
+            logPeer("delayed-skipped", norm, "reason=busy");
+            return false;
+        }
+        Long last = delayedLastAt.get(asker.id());
+        if (last != null && now - last < cfg.delayedPerPlayerCooldownSeconds * 1000L) {
+            logPeer("delayed-skipped", norm, "reason=cooldown");
+            return false;
+        }
+        Pending p = new Pending(key, asker, raw, norm, PeerFilter.meaningful(norm), r, now,
+                now + cfg.delayedDelaySeconds * 1000L);
+        pendingAnswers.put(key, p);
+        delayedLastAt.put(asker.id(), now);
+        delayedScheduled++;
+        prepareDelayed(p, now);
+        logPeer("delayed-scheduled", norm, "source=" + (p.source != null ? p.source
+                : p.aiInFlight ? "ai-early" : p.needsAi ? "ai-late" : "none"),
+                "delay=" + cfg.delayedDelaySeconds);
+        return true;
+    }
+
+    /** Step 2, research: the Guide's own sources in their usual order, the AI last. */
+    private void prepareDelayed(Pending p, long now) {
+        String promoted = learned.match(p.norm);
+        if (promoted != null) {
+            p.prepared = wrap(Channel.PRIVATE, substitute(promoted, p.asker));
+            p.source = "learned";
+            return;
+        }
+        // The curated answers /ask would give (intents not marked for
+        // plain chat). Stat and clarify intents are skipped: personal
+        // numbers and a follow-up question do not belong in a delayed reply.
+        IntentSet.Match m = intents.match(p.norm, TextNorm.tokenSet(p.norm), false,
+                findSkillToken(p.norm) != null);
+        if (m != null && m.score() >= cfg.intentMinScore) {
+            String text = delayedIntentText(m.intent(), p.norm, p.asker);
+            if (text != null) {
+                boolean pub = "public".equals(cfg.delayedReplyChannel) && !m.intent().isPrivate();
+                p.prepared = wrap(pub ? Channel.PUBLIC : Channel.PRIVATE, text);
+                p.source = "intent";
+                return;
+            }
+        }
+        if (Retrieval.clearsBar(p.retrieval, cfg.retrievalMinScore, cfg.retrievalMargin)) {
+            Channel ch = "public".equals(cfg.delayedReplyChannel) ? Channel.PUBLIC : Channel.PRIVATE;
+            p.prepared = wrap(ch, p.retrieval.answerText());
+            p.source = "knowledge";
+            return;
+        }
+        if (aiCache != null && cfg.aiCacheEnabled && aiActive()) {
+            LearnCache.Entry entry = aiCache.get(p.norm);
+            if (entry != null) {
+                if (knowledge.version().equals(entry.stamp())) {
+                    p.prepared = wrap(Channel.PRIVATE, entry.answer());
+                    p.source = "cache";
+                    return;
+                }
+                aiCache.remove(p.norm);
+                logCacheEvent(p.asker, p.raw, Door.AMBIENT, "stale-dropped");
+            }
+        }
+        if (preparePeer(p)) {
+            return;
+        }
+        if (aiActive()) {
+            p.needsAi = true;
+            if ("early".equals(cfg.delayedAiTiming)) {
+                startDelayedAi(p, now);
+            }
+        }
+    }
+
+    /** answerIntent's text for a delayed reply, or null for stat / clarify intents. */
+    private String delayedIntentText(IntentSet.IntentDef intent, String norm, PlayerRef asker) {
+        String text;
+        switch (intent.type()) {
+            case "stat", "clarify" -> {
+                return null;
+            }
+            case "wand" -> text = cfg.wandSelfRestoreEnabled ? intent.textPrimary() : intent.textFallback();
+            case "spells" -> {
+                text = stats.sealsBroken() >= 1 ? intent.textPrimary() : intent.textFallback();
+                if (text == null) {
+                    text = intent.text();
+                }
+            }
+            case "seals" -> text = sealsText();
+            case "retrieval" -> {
+                text = intent.text();
+                if (text != null) {
+                    Retrieval.Result r = Retrieval.search(knowledge, norm, intent.hints());
+                    if (Retrieval.clearsBar(r, cfg.retrievalMinScore, cfg.retrievalMargin)) {
+                        text = r.answerText();
+                    }
+                }
+            }
+            default -> text = intent.text();
+        }
+        if (text == null || text.isBlank()) {
+            return null;
+        }
+        return substitute(text, asker);
+    }
+
+    private boolean preparePeer(Pending p) {
+        if (!peerEnabled()) {
+            return false;
+        }
+        PeerCandidates.Entry e = peerStore.byKey(p.key);
+        if (e == null || !e.isApproved() || filter().serveReject(e.answer(), knownNames()) != null) {
+            return false;
+        }
+        p.prepared = wrap(Channel.PRIVATE, cfg.peerServePrefix + e.answer());
+        p.source = "peer";
+        p.peerEntry = e;
+        return true;
+    }
+
+    /** Reserve and submit one AI call for a waiting question. False when the AI bucket said no. */
+    private boolean startDelayedAi(Pending p, long now) {
+        p.needsAi = false;
+        if (aiExecutor == null || !aiActive() || !aiGate.tryReserve(p.asker.id(), now)) {
+            logPeer("delayed-ai-refused", p.norm);
+            return false;
+        }
+        List<KnowledgeBase.Chunk> excerpts = Retrieval.topK(knowledge, p.norm, cfg.aiTopChunks);
+        List<String> askerFacts = safeAskerFacts(p.asker);
+        AiPrompts.Prompt prompt = AiPrompts.build(cfg.personaName, NON_ANSWER, p.asker.name(),
+                p.raw, excerpts, askerFacts, safePublicFacts());
+        AiProvider.Request request = new AiProvider.Request(prompt.system(), prompt.user(),
+                cfg.aiModel, Math.max(1000, cfg.aiTimeoutSeconds * 1000));
+        boolean personal = LearnPrivacy.isPersonalQuestion(TextNorm.tokenSet(p.norm));
+        Set<String> factNumbers = LearnPrivacy.numbersInFacts(askerFacts);
+        p.aiInFlight = true;
+        try {
+            aiExecutor.submit(() -> runDelayedAi(p, request, personal, factNumbers));
+        } catch (RuntimeException e) {
+            p.aiInFlight = false;
+            aiGate.release();
+            return false;
+        }
+        return true;
+    }
+
+    /** The delayed AI call, on the executor thread. Never throws. */
+    private void runDelayedAi(Pending p, AiProvider.Request request, boolean personal,
+                              Set<String> factNumbers) {
+        long started = clock.getAsLong();
+        String answer = null;
+        long latency = 0;
+        try {
+            AiProvider.Completion completion = aiProvider.complete(request);
+            latency = Math.max(0, clock.getAsLong() - started);
+            if (completion != null) {
+                String cleaned = AiPrompts.sanitize(completion.text(), cfg.aiMaxAnswerChars);
+                if (cleaned != null && !AiPrompts.isDontKnow(cleaned, NON_ANSWER)) {
+                    answer = cleaned;
+                }
+            }
+        } catch (Exception e) {
+            latency = Math.max(0, clock.getAsLong() - started);
+            answer = null;
+            noteAiFailure(e);
+        } finally {
+            aiGate.release();
+        }
+        logAi(p.asker, p.raw, Door.AMBIENT, answer != null, latency);
+        synchronized (this) {
+            p.aiInFlight = false;
+            if (answer != null) {
+                aiAnswered++;
+                p.prepared = wrap(Channel.PRIVATE, answer);
+                p.source = "ai";
+                if (aiCache != null && cfg.aiCacheEnabled && !personal
+                        && !LearnPrivacy.answerQuotesAny(answer, factNumbers)) {
+                    try {
+                        aiCache.put(p.norm, answer, knowledge.version(), clock.getAsLong());
+                    } catch (RuntimeException ignored) {
+                        // Caching is a bonus.
+                    }
+                }
+            }
+            long n = clock.getAsLong();
+            if (!p.done && n >= p.dueAt) {
+                finishDelayed(p, n);
+            }
+        }
+    }
+
+    /** Step 3, watch: one chat line checked against every waiting question. */
+    private void noteDelayedChat(PlayerRef speaker, String raw, String norm, Set<String> tokens,
+                                 Door door, long now) {
+        for (Pending p : new ArrayList<>(pendingAnswers.values())) {
+            if (p.done) {
+                continue;
+            }
+            if (speaker.id().equals(p.asker.id())) {
+                if (door != Door.AMBIENT) {
+                    // Asked the Guide directly: that door answers now.
+                    if (p.key.equals(PeerFilter.topicKey(norm))
+                            || PeerFilter.overlap(PeerFilter.meaningful(norm), p.qTerms) * 2 >= Math.max(1, p.qTerms.size())) {
+                        endPending(p);
+                        delayedCancelled++;
+                        logPeer("delayed-cancelled", p.norm, "reason=asked-directly");
+                    }
+                } else if (isCancelPhrase(norm)) {
+                    endPending(p);
+                    delayedCancelled++;
+                    logPeer("delayed-cancelled", p.norm, "reason=asker-never-mind");
+                } else if (now <= p.dueAt && PeerFilter.isAskerConfirmation(raw, norm)) {
+                    p.askerThanked = true; // somebody helped them already
+                }
+                continue;
+            }
+            if (door != Door.AMBIENT || now > p.dueAt || p.looseHeld) {
+                continue;
+            }
+            if (cfg.delayedHoldOnAnyReply && looksLikeReply(raw, norm, tokens, p)) {
+                p.looseHeld = true;
+                logPeer("delayed-reply-seen", p.norm);
+            }
+        }
+    }
+
+    /**
+     * Loose "another player is answering" test (hold-on-any-reply):
+     * not a question, not a bare "yeah", at least two words, and on
+     * topic - it shares a word with the question, talks to the asker
+     * by name, or (only when one question is waiting) names a game word. Deliberately looser than the
+     * peer answer gate: holding costs one Guide line, talking over a
+     * player who is helping costs more.
+     */
+    private boolean looksLikeReply(String raw, String norm, Set<String> tokens, Pending p) {
+        if (TextNorm.questionShaped(raw, norm) || tokens.size() < 2 || PeerFilter.isAgreement(raw, norm)) {
+            return false;
+        }
+        if (PeerFilter.overlap(PeerFilter.meaningful(norm), p.qTerms) >= 1) {
+            return true;
+        }
+        // A game word with no shared word only counts when this is the
+        // one question waiting: with several waiting, it cannot tell
+        // which one it answers (rig run Oct 25: a fox answer held a
+        // potion question).
+        if (pendingAnswers.size() == 1 && filter().namesGameTerm(tokens)) {
+            return true;
+        }
+        return p.asker.name() != null
+                && filter().namesPlayer(tokens, List.of(p.asker.name()));
+    }
+
+    private boolean isCancelPhrase(String norm) {
+        String padded = " " + norm + " ";
+        Set<String> tokens = TextNorm.tokenSet(norm);
+        if (tokens.size() > 8) {
+            return false;
+        }
+        List<String> all = new ArrayList<>(DEFAULT_CANCEL_PHRASES);
+        for (String extra : cfg.delayedCancelPhrases) {
+            all.add(TextNorm.normalize(extra));
+        }
+        for (String ph : all) {
+            if (!ph.isBlank() && padded.contains(" " + ph + " ")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Is the Guide holding off for this question right now? Returns the reason, or null. */
+    private String holdReason(Pending p) {
+        if (p.askerThanked) {
+            return "asker-thanked";
+        }
+        PeerWindow w = peerWindows.get(p.key);
+        if (w != null) {
+            for (PeerCand c : w.cands) {
+                if (!c.disputed) {
+                    return "player-answered";
+                }
+            }
+        }
+        if (p.looseHeld) {
+            // A captured candidate that was then disputed lets the Guide answer after all.
+            if (w != null && !w.cands.isEmpty()) {
+                return null;
+            }
+            return "player-replied";
+        }
+        return null;
+    }
+
+    /** Settle every waiting question whose delay ran out. */
+    private void processDueDelayed(long now) {
+        if (pendingAnswers.isEmpty()) {
+            return;
+        }
+        for (Pending p : new ArrayList<>(pendingAnswers.values())) {
+            if (!p.done && now >= p.dueAt) {
+                finishDelayed(p, now);
+            }
+        }
+    }
+
+    /** Step 6: hold, ask the AI, or post. Runs under the engine lock. */
+    private void finishDelayed(Pending p, long now) {
+        if (p.done) {
+            return;
+        }
+        String hold = holdReason(p);
+        if (hold != null) {
+            endPending(p);
+            delayedHeld++;
+            logPeer("delayed-held", p.norm, "reason=" + hold);
+            return;
+        }
+        if (p.aiInFlight) {
+            if (now < p.dueAt + Math.max(1000, cfg.aiTimeoutSeconds * 1000L) + 5000L) {
+                return; // the call lands in seconds; runDelayedAi finishes it
+            }
+            p.aiInFlight = false; // overdue: answer without it
+        }
+        if (isPlayerOff(p.asker.id())) {
+            endPending(p);
+            logPeer("delayed-dropped", p.norm, "reason=guide-off");
+            return;
+        }
+        if ("peer".equals(p.source) && p.peerEntry != null
+                && filter().serveReject(p.peerEntry.answer(), knownNames()) != null) {
+            p.prepared = null; // a filter added since research blocks it now
+            p.source = null;
+            p.peerEntry = null;
+            p.needsAi = aiActive();
+        }
+        if (p.prepared == null && p.needsAi) {
+            if (startDelayedAi(p, now) && p.aiInFlight) {
+                return; // async: runDelayedAi posts when it lands
+            }
+            if (p.done) {
+                return; // an inline executor already finished it
+            }
+        }
+        List<Reply> out;
+        String source;
+        if (p.prepared != null) {
+            out = p.prepared;
+            source = p.source;
+        } else if (cfg.delayedSayDontKnow) {
+            out = List.of(new Reply(Channel.PRIVATE, NON_ANSWER));
+            source = "dont-know";
+        } else {
+            endPending(p);
+            logUnanswered(p.asker, p.raw, "AMBIENT", p.retrieval);
+            logPeer("delayed-dropped", p.norm, "reason=no-answer");
+            return;
+        }
+        List<Reply> served = deliver(p.asker, p.norm, false, now, out);
+        long wait = lastBlockRemainingMillis;
+        lastBlockVerdict = null;
+        lastBlockRemainingMillis = 0;
+        lastDropWasGlobal = false;
+        if (served.isEmpty()) {
+            if (!p.retried && wait > 0 && wait <= 30_000L) {
+                p.retried = true;
+                p.dueAt = now + wait;
+                return;
+            }
+            endPending(p);
+            logPeer("delayed-dropped", p.norm, "reason=rate-limit");
+            return;
+        }
+        endPending(p);
+        delayedPosted++;
+        if ("dont-know".equals(source)) {
+            logUnanswered(p.asker, p.raw, "AMBIENT", p.retrieval);
+        } else if ("peer".equals(source) && p.peerEntry != null) {
+            peerStore.touch(p.peerEntry.hit(now));
+            peerServed++;
+            logPeer("served", p.peerEntry.question(), "id=" + p.peerEntry.id());
+        } else if ("cache".equals(source) && aiCache != null) {
+            aiCache.recordHit(p.norm, now);
+            cacheServed++;
+            logCacheEvent(p.asker, p.raw, Door.AMBIENT, "hit");
+        }
+        PeerWindow w = peerWindows.get(p.key);
+        if (w != null) {
+            w.guideAnswered = true;
+        }
+        logPeer("delayed-posted", p.norm, "source=" + source);
+        DelayedSink sink = delayedSink;
+        if (sink != null) {
+            try {
+                sink.deliver(p.asker.id(), served);
+            } catch (RuntimeException ignored) {
+                // A delivery failure never breaks chat.
+            }
+        }
+    }
+
+    private void endPending(Pending p) {
+        p.done = true;
+        pendingAnswers.remove(p.key, p);
+    }
+
 
     // ---------- clarify flow ----------
 

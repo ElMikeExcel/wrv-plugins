@@ -1,10 +1,12 @@
-# ExcelGuide 0.3.0 (source record)
+# ExcelGuide 0.3.2 (source record)
 
 Wink Reyes Valley's in-game Guide for Paper 26.3 (Java and Bedrock via
-Geyser/Floodgate). This folder records the 0.3.0 source: peer learning
-rebuilt with an owner review queue (`/guide review`), strict filters,
-"A player said: ..." serving with no names, and a first-use tip that
-repeats until the player taps OK.
+Geyser/Floodgate). This folder records the 0.3.2 source: delayed
+plain-chat answers (research quietly, wait, let players answer first,
+bank a thanked player answer, answer privately if nobody did), on top
+of 0.3.1 (AI failure logging, optional /ask hint) and 0.3.0 (peer
+learning with an owner review queue, strict filters, "A player said:
+..." serving with no names, a first-use tip).
 
 - CHANGELOG.md - full change list, replay results and tests
 - INSTALL.md - backups, jar swap, verify steps
@@ -12,7 +14,8 @@ repeats until the player taps OK.
 - SOURCE.md - build inputs and history
 - run-tests.sh / build.sh - plain javac build and test harnesses
 - rig-tests/ - Mineflayer scripts used on a local test server
-  (tip, restart persistence, rollback to 0.2.3, forward again)
+  (tip, restart persistence, rollback to 0.2.3, forward again;
+  0.3.2: delayed-answers.js)
 
 Not in this repo: jars, `knowledge.yml` and `intents.yml` (see
 SOURCE.md), live data files, and any player names or UUIDs. The UUIDs

@@ -68,6 +68,10 @@ public final class ExcelGuide extends JavaPlugin implements CommandExecutor {
                 if (t != null) {
                     t.endSession(e.getPlayer().getUniqueId());
                 }
+                GuideEngine g = engine;
+                if (g != null) {
+                    g.forgetPlayer(e.getPlayer().getUniqueId()); // 0.3.2: drop their waiting question
+                }
             }
         }, this);
         if (getCommand("guide") != null) {
@@ -78,13 +82,14 @@ public final class ExcelGuide extends JavaPlugin implements CommandExecutor {
         }
         // 0.2.3: peer-learning windows close on a timer too, so a
         // capture settles even when chat goes quiet (handle() also
-        // closes them lazily on every message).
+        // closes them lazily on every message). 0.3.2: every second,
+        // so a delayed plain-chat answer lands on time.
         getServer().getScheduler().runTaskTimer(this, () -> {
             GuideEngine e = engine;
             if (e != null) {
                 e.tick();
             }
-        }, 600L, 600L);
+        }, 20L, 20L);
         getLogger().info("Valley Guide awake: knowledge " + knowledge.version()
                 + " (" + knowledge.size() + " chunks), "
                 + intentCount + " intents, "
@@ -97,7 +102,13 @@ public final class ExcelGuide extends JavaPlugin implements CommandExecutor {
         getLogger().info("AI fallback: " + (engine.aiActive() ? "ON" : "off")
                 + " (provider " + config.aiProviderName + ", model " + config.aiModel
                 + ", log " + config.aiLogFile + ", ambient hint "
-                + (config.aiAmbientHint ? "on" : "off") + "). Only /ask and \"Guide,\" questions can reach it.");
+                + (config.aiAmbientHint ? "on" : "off") + ").");
+        // 0.3.2: the delayed plain-chat answer layer.
+        getLogger().info("Delayed chat answers: " + (engine.delayedActive() ? "ON" : "off")
+                + " (delay " + config.delayedDelaySeconds + "s, AI " + config.delayedAiTiming
+                + (engine.aiActive() ? "" : " but AI off") + ", reply " + config.delayedReplyChannel
+                + ", player answers " + (config.peerAutoApproveThanked ? "auto-approve on thanks" : "need /guide review")
+                + ").");
     }
 
     @Override
@@ -187,6 +198,15 @@ public final class ExcelGuide extends JavaPlugin implements CommandExecutor {
                 learnCache, learnedLoad.answers(), peerStore, peerLog);
         // 0.3.1: AI failures and ai.log write failures reach the console.
         fresh.setWarnSink(msg -> getLogger().warning(msg));
+        // 0.3.2: delayed plain-chat answers arrive later, by player id,
+        // from the timer or the AI thread: hop to the main thread and
+        // deliver only if the asker is still online.
+        fresh.setDelayedSink((id, replies) -> Bukkit.getScheduler().runTask(this, () -> {
+            Player p = Bukkit.getPlayer(id);
+            if (p != null && p.isOnline() && !replies.isEmpty()) {
+                deliver(p, replies);
+            }
+        }));
         // A new answer waiting for review: tell online ops (chat can
         // arrive on an async thread, so hop to the main thread first).
         fresh.setPeerNotifier(msg -> Bukkit.getScheduler().runTask(this, () -> {
@@ -329,6 +349,13 @@ public final class ExcelGuide extends JavaPlugin implements CommandExecutor {
                         + ") | ai calls today: " + engine.aiCallsToday()
                         + " | ai answered this run: " + engine.aiAnsweredCount()
                         + " | ai failed this run: " + engine.aiFailedCount());
+                sender.sendMessage(" delayed chat answers: " + (engine.delayedActive() ? "ON" : "off")
+                        + " (" + config.delayedDelaySeconds + "s, AI " + config.delayedAiTiming + ")"
+                        + " | waiting now: " + engine.delayedPendingCount()
+                        + " | this run: " + engine.delayedScheduledCount() + " seen, "
+                        + engine.delayedPostedCount() + " answered, "
+                        + engine.delayedHeldCount() + " left to players, "
+                        + engine.delayedCancelledCount() + " cancelled");
                 sender.sendMessage(" learned answers: " + engine.learnedCount()
                         + " | ai cache: " + engine.aiCacheSize() + " entries, "
                         + engine.aiCacheServedCount() + " served this run");

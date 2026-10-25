@@ -1,5 +1,102 @@
 # ExcelGuide changelog
 
+## 0.3.2 (built Oct 25, 2026, CDT) - delayed answers in plain chat
+
+STAGED ON THE BOX TEST SERVER ONLY. Not installed live. Needs Mike's go
+and one restart. Contains everything in 0.3.1 and 0.3.0 below.
+
+Why: Mike's design (Oct 25): "a player asks a question in chat. It
+reads it, does the research and then watches to see if another player
+answers. If another player answers and someone follows up with thanks
+or something of that sort it'll bank that answer for next time that
+question is asked." Before 0.3.2, plain chat never got a researched
+answer: only `/ask` and "Guide, ..." reached the knowledge search, the
+AI cache, approved player answers and the AI.
+
+### Players
+- **Delayed plain-chat answers (new, ON by default).** When a player
+  asks a real game question in plain chat and no quick answer fits,
+  the Guide stays quiet and researches it: its own learned answers,
+  the curated `/ask` answers (not personal stats), the knowledge,
+  the AI cache, approved player answers, and the AI last. Then it
+  waits 45 seconds.
+  - If another player answers in that time (or the asker says thanks
+    to someone), the Guide stays out of it. Peer learning watches that
+    answer as before.
+  - If nobody answers, the asker gets the Guide's answer privately
+    (only they see it). Nothing found: the usual "I don't know that
+    one yet" line, and the question is written down.
+  - "nvm" / "never mind" / "found it" from the asker cancels it. So
+    does asking the same thing with `/ask` or "Guide, ..." (that door
+    answers at once), leaving, or `/guide off`.
+  - Never for: statements, social chat, lines that name a player,
+    profanity, seal-fight spoilers, or personal stat questions (the
+    stat answers keep handling those).
+  - Limits: one waiting question per player, 4 server-wide, 90 s per
+    player between delayed questions, plus the normal chat cooldowns.
+    The AI is asked only when nobody answered (`ai-timing: late`), and
+    it counts against the same AI cooldown and daily budget. If the AI
+    fails, the asker gets the standard non-answer and the console gets
+    the 0.3.1 WARN line (kind and status only, never the key).
+- **A third player's "thanks" now counts as one agreement** for a
+  player answer (`peer-learning.others-thanks-count`, on).
+- **New, OFF by default: `peer-learning.auto-approve-thanked`.** On =
+  the asker's thanks alone approves a player answer (no `/guide
+  review`), when every filter passed and nobody disputed it. Approved
+  player answers are now also reused for the next plain-chat asker
+  ("A player said: ...", privately, after the delay).
+- If the Guide already answered a question, the asker's later "thanks"
+  is not counted for a player answer (it may be for the Guide).
+- The ambient hint (0.3.1, off) is not sent while a delayed answer is
+  coming.
+
+### Console and status
+- Boot line: `Delayed chat answers: ON/off (delay, AI timing, reply
+  channel, how player answers are approved)`.
+- `/guide status` adds a `delayed chat answers` line (waiting now;
+  seen / answered / left to players / cancelled this run).
+- peer.log gets `delayed-*` events (scheduled, reply-seen, held,
+  posted, cancelled, dropped, skipped). Question text and reason only,
+  never names or ids. `thanks-ambiguous` when a thanks follows a Guide
+  answer.
+- The peer-learning timer now runs every second (was every 30 s) so a
+  delayed answer lands on time. It is cheap: it returns at once when
+  nothing is waiting.
+
+### Config (all optional; a missing block uses these defaults)
+```
+delayed-answers:
+  enabled: true
+  delay-seconds: 45           # 15 to 300
+  ai-timing: late             # late | early
+  say-dont-know: true
+  reply-channel: private      # private | public (knowledge answers only)
+  per-player-cooldown-seconds: 90
+  max-pending: 4
+  hold-on-any-reply: true
+  cancel-phrases: []
+peer-learning:
+  auto-approve-thanked: false
+  others-thanks-count: true
+```
+`delayed-answers.enabled: false` + `/guide reload` = 0.3.1 behavior.
+
+### Bundled files
+- Bundled config.yml: 0.3.1 plus the blocks above (no player names, no
+  key). Bundled knowledge.yml unchanged from 0.3.1 (0b48d6c5...).
+  A jar swap never replaces the live data-folder files.
+
+### Tests
+- New harness DelayedAnswerTest (122 checks): timing (not before 45 s,
+  once), knowledge / curated / AI / cache / approved player answer
+  sources, hold on a player answer or the asker's thanks, banking with
+  review (default) and auto-approve-thanked, reuse for the next asker,
+  AI late vs early, async AI, AI failure (non-answer, WARN without the
+  key, written down), budget, say-dont-know off, never-scheduled lines,
+  limits, cancel paths, kill switch, disputes, ambiguous thanks,
+  third-party thanks, two questions waiting, no names in peer.log.
+- Every 0.3.1 harness unchanged and passing as before.
+
 ## 0.3.1 (built Oct 25, 2026, CDT) - say when the AI fails, and help players find /ask
 
 STAGED ON THE BOX TEST SERVER ONLY. Not installed live. Needs Mike's go

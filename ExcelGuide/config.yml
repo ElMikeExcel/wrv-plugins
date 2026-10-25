@@ -63,7 +63,8 @@ notices:
 # honest non-answer, the Guide may ask an AI model - fenced to the
 # same knowledge excerpts plus the asker's own live facts - before
 # giving up. The deterministic answers always go first; personal
-# stats never route here; plain chat watching (ambient) never does.
+# stats never route here. Plain chat reaches it only through the
+# delayed-answers layer (0.3.2, bottom of this file).
 # Ships OFF twice over: enabled must be true AND an api-key present.
 #
 # *** The api-key belongs ONLY in the live copy of this file on the
@@ -176,6 +177,9 @@ peer-learning:
   approved-expire-days: 0     # approved answers nobody asks again expire (0 = never)
   auto-approve: false         # true = approve without review when the asker said thanks AND
   auto-approve-min-agreements: 2  # ...at least this many players agreed
+  auto-approve-thanked: false # 0.3.2: true = the asker's thanks ALONE approves (no /guide review).
+                              # Still needs every filter above and no dispute. Off = Mike reviews.
+  others-thanks-count: true   # 0.3.2: a third player's "thanks" counts as one agreement
   notify-ops: true            # tell online ops when an answer is waiting for review
   serve-prefix: "A player said: "
   first-use-tip: true         # explain "A player said" answers each time until the player taps OK
@@ -187,3 +191,34 @@ peer-learning:
   blocked-names: []
   social-phrases: []
   chatter-phrases: []
+
+# Delayed plain-chat answers (0.3.2, Mike's design Oct 25, 2026): when
+# a player asks a real game question in plain chat (no /ask, no
+# "Guide,") and no quick answer fits, the Guide researches it quietly
+# (its own answers, the knowledge, the AI cache, approved player
+# answers, then the AI) and WAITS delay-seconds. If another player
+# answers in that time, the Guide stays out of it and peer learning
+# (above) can bank that player's answer. If nobody answers, the asker
+# gets the Guide's answer privately. Same filters as peer learning:
+# never social chat, player names, profanity or seal-fight spoilers.
+# - ai-timing: late = the AI is asked only when nobody answered (saves
+#   the daily budget); early = asked at once, so the answer is ready.
+# - say-dont-know: nothing found -> the usual "I don't know that one
+#   yet" line, privately. false = stay silent instead.
+# - reply-channel: private (only the asker sees it) or public (knowledge
+#   answers go to everyone; AI and player answers stay private).
+# - hold-on-any-reply: any on-topic line from another player holds the
+#   Guide, not only a full answer. "nvm" / "found it" from the asker
+#   cancels; so does asking the same thing with /ask or "Guide,".
+# - The normal cooldowns and the AI budget still apply on top.
+# enabled: false turns this off (0.3.1 behavior).
+delayed-answers:
+  enabled: true
+  delay-seconds: 45           # 15 to 300
+  ai-timing: late             # late | early
+  say-dont-know: true
+  reply-channel: private      # private | public
+  per-player-cooldown-seconds: 90
+  max-pending: 4              # questions waiting at once, server-wide
+  hold-on-any-reply: true
+  cancel-phrases: []          # ADDED to the built-in "nvm", "never mind", "found it"...

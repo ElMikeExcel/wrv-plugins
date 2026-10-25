@@ -137,6 +137,31 @@ public final class GuideConfig {
     public List<String> peerSocialPhrases = List.of();   // ADDED: social questions that open no window
     public List<String> peerChatterPhrases = List.of();  // ADDED: chatter that is never an answer
 
+    // Delayed plain-chat answers (0.3.2, Mike's design Oct 25, 2026:
+    // "a player asks a question in chat. It reads it, does the research
+    // and then watches to see if another player answers"). A real game
+    // question in plain chat that no intent answered is researched
+    // silently (learned answers, knowledge, AI cache, approved player
+    // answers; the AI last), then the Guide waits delay-seconds. If
+    // another player replies in that window it holds off and lets the
+    // peer-learning layer bank the player's answer; if nobody does,
+    // the asker gets the Guide's answer privately. Every key is
+    // optional: the live config is never replaced by a jar swap, so
+    // the defaults below must be safe on their own.
+    public boolean delayedEnabled = true;
+    public int delayedDelaySeconds = 45;            // 15..300
+    public String delayedAiTiming = "late";         // late = AI only if nobody answered; early = AI at once
+    public boolean delayedSayDontKnow = true;       // nothing found -> the standard non-answer, privately
+    public String delayedReplyChannel = "private";  // private | public (public: knowledge answers only)
+    public int delayedPerPlayerCooldownSeconds = 90; // between delayed answers to the same player
+    public int delayedMaxPending = 4;               // questions waiting at once, server-wide
+    public boolean delayedHoldOnAnyReply = true;    // any on-topic reply from another player holds the Guide
+    public List<String> delayedCancelPhrases = List.of(); // ADDED to the built-in "nvm", "found it"...
+
+    // Peer-learning 0.3.2 additions.
+    public boolean peerOthersThanksCount = true;    // a third player's "thanks" counts as one agreement
+    public boolean peerAutoApproveThanked = false;  // true = the asker's thanks alone approves (no review)
+
     /** True when the AI fallback may engage: switch on AND a key present. */
     public boolean aiConfigured() {
         return aiEnabled && aiApiKey != null && !aiApiKey.isBlank()
@@ -273,6 +298,25 @@ public final class GuideConfig {
         c.peerBlockedNames = strList(peer.get("blocked-names"));
         c.peerSocialPhrases = strList(peer.get("social-phrases"));
         c.peerChatterPhrases = strList(peer.get("chatter-phrases"));
+        c.peerOthersThanksCount = bool(peer.get("others-thanks-count"), c.peerOthersThanksCount);
+        c.peerAutoApproveThanked = bool(peer.get("auto-approve-thanked"), c.peerAutoApproveThanked);
+        Map<String, Object> da = sub(m, "delayed-answers");
+        c.delayedEnabled = bool(da.get("enabled"), c.delayedEnabled);
+        c.delayedDelaySeconds = clamp((int) num(da.get("delay-seconds"), c.delayedDelaySeconds), 15, 300);
+        if (da.get("ai-timing") instanceof String at
+                && (at.equalsIgnoreCase("early") || at.equalsIgnoreCase("late"))) {
+            c.delayedAiTiming = at.toLowerCase(java.util.Locale.ROOT);
+        }
+        c.delayedSayDontKnow = bool(da.get("say-dont-know"), c.delayedSayDontKnow);
+        if (da.get("reply-channel") instanceof String rc
+                && (rc.equalsIgnoreCase("private") || rc.equalsIgnoreCase("public"))) {
+            c.delayedReplyChannel = rc.toLowerCase(java.util.Locale.ROOT);
+        }
+        c.delayedPerPlayerCooldownSeconds = clamp((int) num(da.get("per-player-cooldown-seconds"),
+                c.delayedPerPlayerCooldownSeconds), 0, 3600);
+        c.delayedMaxPending = clamp((int) num(da.get("max-pending"), c.delayedMaxPending), 1, 20);
+        c.delayedHoldOnAnyReply = bool(da.get("hold-on-any-reply"), c.delayedHoldOnAnyReply);
+        c.delayedCancelPhrases = strList(da.get("cancel-phrases"));
         // Notices (0.2.2): parsed strictly - any present-but-mistyped
         // value marks the block malformed and notices go OFF
         // (fail-soft; see the field comment). Absent keys keep their
