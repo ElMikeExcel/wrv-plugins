@@ -12,6 +12,7 @@ public class TestMain {
         LogThrottleTest.run();
         CombatDivisorTest.run();
         BedrockGraceTest.run();
+        NightHearingTest.run();
         System.out.println("TOTAL: " + Check.passed + " passed, " + Check.failed + " failed");
         if (Check.failed > 0) System.exit(1);
     }

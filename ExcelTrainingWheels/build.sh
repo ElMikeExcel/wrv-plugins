@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build ExcelTrainingWheels-0.1.6.jar (deterministic: two builds byte-identical).
+# Build ExcelTrainingWheels-0.1.7.jar (deterministic: two builds byte-identical).
 # Manual javac route, same as the other Excel plugins: house build-libs
 # Paper API jar + kyori 4.20 set. No runtime dependencies beyond Paper.
 set -euo pipefail
@@ -13,9 +13,9 @@ CP="$CP:$RT/org/joml/joml/1.10.8/joml-1.10.8.jar:$RT/com/googlecode/json-simple/
 rm -rf build/classes && mkdir -p build/classes
 "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP" -d build/classes $(find src -name '*.java')
 cp plugin.yml config.yml build/classes/
-OUT=../../ExcelTrainingWheels-0.1.6.jar
+OUT=../../ExcelTrainingWheels-0.1.7.jar
 rm -f "$OUT"
 "$JDK/bin/jar" --create --file "$OUT" --date=2026-10-25T00:00:00-05:00 -C build/classes .
 cd ../..
-sha256sum ExcelTrainingWheels-0.1.6.jar
-ls -l ExcelTrainingWheels-0.1.6.jar
+sha256sum ExcelTrainingWheels-0.1.7.jar
+ls -l ExcelTrainingWheels-0.1.7.jar

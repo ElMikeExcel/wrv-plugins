@@ -103,6 +103,18 @@ doors:
   # and are always ignored. ZOMBIFIED_PIGLIN may be added (opt-in).
   break-door-types: [ZOMBIE, HUSK, ZOMBIE_VILLAGER]
 
+  # WOOD-DOOR SAFETY NET (0.1.7, Oct 25, 2026). Vanilla zombies only
+  # break wooden doors on Hard (the server's permanent setting), so
+  # this normally does nothing. If the world is ever on Easy or
+  # Normal, a zombie of the family above hunting an unprotected
+  # player at a wooden door brings it down after this many seconds
+  # (same siege machinery as copper and iron, no drop). The door
+  # hold still wins. Missing keys = true / 12. The seconds also
+  # time a wooden door worked by a zombie that Night Hearing sent to
+  # it (night-hearing.steer-to-doors), on any difficulty.
+  wood-fallback-off-hard: true
+  wood-fallback-seconds: 12
+
 lifesteal:
   # LIFESTEAL ON KILL (0.1.4 - Mike, Oct 24, 2026, 8:33 AM CDT): a
   # little passive sustain. A protected player who kills a hostile
@@ -145,6 +157,71 @@ bedrock-grace:
   # Small grey action-bar line when the window starts.
   show-actionbar: true
   actionbar-message: "Loading in... protected"
+
+night-hearing:
+  # NIGHT HEARING (0.1.7, Mike, Oct 25, 2026, 2:34 PM CDT). From
+  # Seal 2 on, at night (world time 13000-23000), in the overworld,
+  # zombies HEAR loud player actions and come for the player who
+  # made them: doors, trapdoors and fence gates; breaking and
+  # placing blocks; hitting and shooting; opening containers; note
+  # blocks and jukeboxes. Walking and sprinting are silent (see
+  # hear-footsteps). Only an idle zombie (no target) of the types
+  # below hears, within range blocks of the noise (half while
+  # sneaking). It never spawns mobs and never breaks anything by
+  # itself: the door rules above do the rest (every zombie breaks
+  # wood; copper 45s; iron 60s; any door holds for a protected
+  # player). Protected players are never heard. Nor are creative,
+  # spectator, the Bedrock loading grace, MobVeil, or sleepers.
+  # EliteMobs elites never hear. Missing keys = the defaults below.
+  enabled: true
+  # Seals broken (ExcelGuildGate) before hearing starts. If the
+  # seal count cannot be read, hearing stays OFF.
+  min-seals: 2
+  # Blocks a noise carries (clamps 1..48). Sneaking halves it.
+  range: 16
+  # true = footsteps and sprinting also count (very harsh).
+  hear-footsteps: false
+  types: [ZOMBIE, HUSK, ZOMBIE_VILLAGER]
+  # At most this many zombies answer one noise, and at most this
+  # many hunt one player at once.
+  max-per-noise: 3
+  max-per-player: 6
+  # After a noise pulls a zombie, that player's next noise is not
+  # heard for this many seconds.
+  cooldown-seconds: 20
+  # A pulled zombie gives up after this many seconds without
+  # reaching the player AND without working on a door toward them
+  # (a zombie busy at a door keeps its hunt, so the 45s copper and
+  # 60s iron sieges finish).
+  give-up-seconds: 60
+  # Vanilla zombies do not walk through a closed door to reach you:
+  # with no open way in, a zombie goes to the outside spot closest
+  # to you (usually a bare wall) and stands there. With this on, a
+  # heard zombie that has no way in is sent to the outside face of
+  # a door within steer-radius blocks of you instead, and works
+  # that door on its own siege: wooden doors wood-fallback-seconds
+  # (doors section, default 12, about vanilla Hard), copper 45s,
+  # iron 60s. When the door is down it comes in after you.
+  steer-to-doors: true
+  steer-radius: 12
+  # While hearing is live, the bed always works, even with monsters
+  # nearby. Getting into bed makes you silent and the zombies
+  # hunting you lose interest.
+  bed-always-works: true
+  # Worlds never affected (the overworld only is affected anyway).
+  excluded-worlds: []
+  # Any world whose name starts with one of these is excluded
+  # (EliteMobs dungeon and instanced worlds).
+  excluded-world-prefixes: ["em_"]
+  # Debug aid: log every vibration key heard while live (noisy).
+  log-event-keys: false
+  # One public tip through ExcelTips, at most once per night
+  # (ExcelTips caps total shows). An ExcelTips tips.yml entry named
+  # night-hearing overrides these words.
+  tip:
+    enabled: true
+    title: "Night hearing"
+    text: "The dead can hear you at night. Sneak, or sleep."
 
 siege:
   # Seconds of accumulated siege (zombie at the door, hunting an
