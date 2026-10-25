@@ -1,0 +1,15 @@
+name: ExcelEliteLadder
+version: 0.1.0
+main: com.winkreyes.exceleliteladder.ExcelEliteLadder
+api-version: '1.13'
+softdepend: [EliteMobs, ExcelGuildGate]
+author: WinkReyesValley
+description: Elite Seal Ladder - when a GuildGate seal breaks, steps EliteMobs MobCombatSettings.yml up to the approved ladder values at the next empty-server moment (dated backup, verify, restore on failure, em reload). Up only.
+commands:
+  eliteladder:
+    description: Elite Seal Ladder admin (status / check / retry).
+    usage: /eliteladder status | check | retry
+    permission: exceleliteladder.admin
+permissions:
+  exceleliteladder.admin:
+    default: op

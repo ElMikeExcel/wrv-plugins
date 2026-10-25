@@ -1,0 +1,21 @@
+# ExcelEliteLadder 0.1.0
+# The ladder table itself is built into the jar (approved Oct 25, 2026) and is not editable here.
+# S1 0.07/1.75/0.55, S2 0.08/1.90/0.50, S3 0.09/2.05/0.50, S4 0.10/2.20/0.45, S5 0.11/2.20/0.45,
+# cap 120 on every step, dungeon (normalized) toElite/toPlayer 0.5/2.0 on every step.
+
+# Master switch. false = watch nothing, change nothing.
+enabled: true
+
+# How often to look at the GuildGate seal count (seconds, min 5). A player quitting also triggers a look.
+poll-seconds: 30
+
+# false (default) = a pending step waits until 0 players are online, then applies and runs em reload.
+# true = apply and run em reload right away, even with players on (em reload removes live elites
+# and ends running EliteMobs fights and events, but kicks nobody).
+allow-reload-with-players-online: false
+
+# Console command run after a successful write.
+reload-command: "em reload"
+
+# Seconds after the reload before the file is re-read and checked.
+post-reload-check-seconds: 20
