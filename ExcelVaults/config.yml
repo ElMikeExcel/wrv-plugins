@@ -1,4 +1,4 @@
-# ExcelVaults 0.1.0 (Wink Reyes Valley). Trial chamber vaults that reopen.
+# ExcelVaults 0.1.1 (Wink Reyes Valley). Trial chamber vaults that reopen.
 # Vanilla: each vault gives each player its reward ONCE, forever.
 # ExcelVaults: after you open a vault, it reopens FOR YOU after a real-time
 # cooldown (keeps counting while you are offline and across restarts).
@@ -46,6 +46,12 @@ hint-cooldown-seconds: 3
 sweep-seconds: 5
 # Delay before a Bedrock form opens after a click (lets the click finish).
 bedrock-form-delay-ticks: 6
+# 0.1.1: Bedrock players cannot click chat buttons. With this on, a plain tap on a
+# locked vault also opens the reopen window (Reopen for $X / Cancel). Nothing is
+# charged until they tap Reopen. Sneak + tap still opens it every time.
+bedrock-tap-opens-form: true
+# Seconds before tapping the SAME vault opens that window again for the same player.
+bedrock-tap-form-cooldown-seconds: 30
 
 # Player-facing text. & color codes. Placeholders: {left} {price} {key}
 # {balance} {where} {limit} {count}
@@ -70,12 +76,23 @@ messages:
   list-line: '&f{where} &7({type}) &eopens in {left}'
   list-line-gated: '&f{where} &7({type}) &8waiting for the second seal'
   list-empty: '&7You have no trial vaults waiting to reopen.'
-  list-footer: '&7Tap a [Reopen] button, or sneak + right-click a locked vault.'
+  list-footer: '&7Click a [Reopen] button, or sneak + right-click a locked vault.'
   help:
   - '&6&lTrial vaults'
   - '&f- Each vault reopens for you after a while: &e{normal-hours}h&f, ominous &e{ominous-hours}h&f.'
   - '&f- Click a used vault to see how long is left.'
   - '&f- Sneak + right-click it (or use &e/vaults&f) to pay and reopen it now.'
+  - '&f- You still need a key to open it.'
+  # 0.1.1: Bedrock versions (phones, tablets, consoles). Leave them out to use the
+  # built-in text, which is the same as below.
+  hint-pay-bedrock: '&7Sneak + tap it, or type &e/vaults&7, to reopen it now for &e${price}&7.'
+  list-footer-bedrock: '&7Tap a vault below to reopen it now. Or sneak + tap a locked vault.'
+  bedrock-form-note: '&7A window opened: tap &aReopen&7 to pay, or &cCancel&7. Nothing is charged until you tap Reopen.'
+  help-bedrock:
+  - '&6&lTrial vaults'
+  - '&f- Each vault reopens for you after a while: &e{normal-hours}h&f, ominous &e{ominous-hours}h&f.'
+  - '&f- Tap a used vault to see how long is left.'
+  - '&f- Sneak + tap it (or type &e/vaults&f) to pay and reopen it now. On a controller: sneak, then press LT.'
   - '&f- You still need a key to open it.'
   confirm-title: 'Reopen trial vault'
   confirm-body:

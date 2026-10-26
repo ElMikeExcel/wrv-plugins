@@ -156,10 +156,50 @@ public final class TestMain {
         boolean noDash = true;
         for (String key : cfg.getKeys(true)) { Object v = cfg.get(key); if (v != null && v.toString().contains("\u2014")) noDash = false; }
         check(noDash, "config: no em dashes in player text");
-        check("ExcelVaults".equals(py.getString("name")) && "0.1.0".equals(py.getString("version")), "plugin.yml name/version");
+        check("ExcelVaults".equals(py.getString("name")) && "0.1.1".equals(py.getString("version")), "plugin.yml name/version");
         check("op".equals(py.getString("permissions.excelvaults.admin.default")) && py.getBoolean("permissions.excelvaults.use.default"), "plugin.yml perms");
         check(py.getStringList("softdepend").containsAll(List.of("Vault", "floodgate", "ExcelGuildGate", "ExcelAuditLog")), "plugin.yml softdepends");
 
+        // ---- 0.1.1 platform text (Bedrock cannot click chat buttons or right-click)
+        {
+            Map<String, String> none = new HashMap<>();
+            java.util.function.Function<String, String> live010 = key -> Map.of(
+                    "hint-pay", "&7Sneak + right-click it to reopen it now for &e${price}&7.",
+                    "list-footer", "&7Tap a [Reopen] button, or sneak + right-click a locked vault.").get(key);
+            String bp = com.winkreyes.excelvaults.core.Texts.pick("hint-pay", true, live010);
+            check(bp.contains("Sneak + tap") && bp.contains("/vaults") && !bp.toLowerCase().contains("right-click") && !bp.toLowerCase().contains("click"), "Bedrock hint-pay: sneak + tap or /vaults, no clicking words (live 0.1.0 config, no -bedrock key)");
+            check(com.winkreyes.excelvaults.core.Texts.pick("hint-pay", false, live010).contains("Sneak + right-click"), "Java hint-pay unchanged: Sneak + right-click");
+            String bf = com.winkreyes.excelvaults.core.Texts.pick("list-footer", true, live010);
+            check(bf.startsWith("&7Tap a vault") && !bf.contains("[Reopen]") && !bf.toLowerCase().contains("right-click"), "Bedrock list footer: tap a vault below (form buttons), no [Reopen] chat button");
+            check(com.winkreyes.excelvaults.core.Texts.pick("list-footer", false, live010).equals("&7Click a [Reopen] button, or sneak + right-click a locked vault."), "Java list footer: untouched 0.1.0 default 'Tap a [Reopen]' upgrades to 'Click a [Reopen]'");
+            check(com.winkreyes.excelvaults.core.Texts.pick("list-footer", false, key -> key.equals("list-footer") ? "&7Custom footer" : null).equals("&7Custom footer"), "Java list footer: a customised line is kept");
+            check(com.winkreyes.excelvaults.core.Texts.pick("hint-pay", true, key -> key.equals("hint-pay-bedrock") ? "&7Owner text" : null).equals("&7Owner text"), "Bedrock override messages.hint-pay-bedrock wins");
+            check(com.winkreyes.excelvaults.core.Texts.pick("hint", true, key -> key.equals("hint") ? "&6Opens in {left}" : null).equals("&6Opens in {left}"), "neutral keys are the same on both platforms");
+            check(com.winkreyes.excelvaults.core.Texts.pick("nope", false, key -> null).equals("nope"), "missing key falls back to the key name (as 0.1.0)");
+            List<String> bh = com.winkreyes.excelvaults.core.Texts.pickLines("help", true, key -> List.of());
+            check(bh.size() == 5 && String.join(" ", bh).contains("Sneak + tap") && String.join(" ", bh).contains("LT") && !String.join(" ", bh).toLowerCase().contains("click"), "Bedrock /vaults help: tap, sneak + tap, controller LT, no click words");
+            List<String> jh = com.winkreyes.excelvaults.core.Texts.pickLines("help", false, key -> key.equals("help") ? List.of("&fJava help") : List.of());
+            check(jh.equals(List.of("&fJava help")), "Java help comes from config as before");
+            boolean asciiB = true;
+            for (String t : com.winkreyes.excelvaults.core.Texts.BEDROCK.values()) if (!t.chars().allMatch(ch -> ch < 128)) asciiB = false;
+            for (String t : com.winkreyes.excelvaults.core.Texts.BEDROCK_HELP) if (!t.chars().allMatch(ch -> ch < 128)) asciiB = false;
+            if (!com.winkreyes.excelvaults.core.Texts.BEDROCK_FORM_NOTE.chars().allMatch(ch -> ch < 128)) asciiB = false;
+            check(asciiB, "Bedrock text is plain ASCII (no em dashes)");
+            com.winkreyes.excelvaults.core.Texts.TapGate g = new com.winkreyes.excelvaults.core.Texts.TapGate();
+            check(g.allow("u1|v1", 1000, 30_000), "tap window: first tap opens it");
+            check(!g.allow("u1|v1", 20_000, 30_000), "tap window: same vault 19s later does not reopen it");
+            check(g.allow("u1|v2", 20_000, 30_000), "tap window: a different vault opens");
+            check(g.allow("u2|v1", 20_000, 30_000), "tap window: another player is not blocked");
+            check(g.allow("u1|v1", 31_000, 30_000), "tap window: after 30s it opens again");
+            g.forgetPlayer("u1|"); check(g.size() == 1, "tap window: quit forgets only that player");
+            check(cfg.getBoolean("bedrock-tap-opens-form") && cfg.getInt("bedrock-tap-form-cooldown-seconds") == 30, "config: bedrock-tap-opens-form true, 30s");
+            check(cfg.getString("messages.hint-pay-bedrock").equals(com.winkreyes.excelvaults.core.Texts.BEDROCK.get("hint-pay"))
+                    && cfg.getString("messages.list-footer-bedrock").equals(com.winkreyes.excelvaults.core.Texts.BEDROCK.get("list-footer"))
+                    && cfg.getString("messages.bedrock-form-note").equals(com.winkreyes.excelvaults.core.Texts.BEDROCK_FORM_NOTE)
+                    && cfg.getStringList("messages.help-bedrock").equals(com.winkreyes.excelvaults.core.Texts.BEDROCK_HELP), "shipped config Bedrock lines = the built-in defaults (live config needs no edit)");
+            check(cfg.getString("messages.list-footer").startsWith("&7Click a [Reopen]") && cfg.getString("messages.hint-pay").contains("Sneak + right-click"), "shipped config Java lines say click / right-click");
+            check(py.getString("version").equals("0.1.1"), "plugin.yml 0.1.1");
+        }
         System.out.println("ExcelVaults unit tests: " + pass + " pass, " + fail + " fail");
         if (fail > 0) System.exit(1);
     }

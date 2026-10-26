@@ -1,10 +1,10 @@
-// Bedrock path for ExcelVaults 0.1.0: bedrock-protocol 3.59.0 (lf-tests copy, offline) through Geyser + floodgate
+// Bedrock path for ExcelVaults 0.1.1: bedrock-protocol 3.59.0 (lf-tests copy, offline) through Geyser + floodgate
 // on the box rig /workspace/excelvaults-rig (Bedrock port 19761). Console via RCON.
 // Checks: vault opens from a Bedrock click, hint text, sneak + tap -> Floodgate modal confirm with the current price,
 // Cancel = no charge, /vaults reopen form -> pay, /vaults -> SimpleForm list -> tap -> confirm at the scaled price.
 // Also records what Geyser sends the client for the vault block (update_block / block_entity_data).
 const bp=require('/workspace/lf-tests/node_modules/bedrock-protocol');const fs=require('fs');const net=require('net');
-const D='/workspace/excelvaults-rig',S='/workspace/batch-next/excelvaults-20261025';
+const D='/workspace/excelvaults-rig',S='/workspace/batch-next/parity-fixes-20261026/vaults';
 const OUT=S+'/tests/bedrock-test.log';fs.writeFileSync(OUT,'');
 const L=(...a)=>{const s=a.join(' ');console.log(s);fs.appendFileSync(OUT,s+'\n')};const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let rc,rbuf=Buffer.alloc(0),rid=10,waiters={};
@@ -50,9 +50,20 @@ const isRew=async()=>{const r=await cons('data get block '+V+' server_data.rewar
  ok(await isRew(),'Bedrock tap with a trial key opens the vault (vanilla rewards the player)');
  let st=await cons('vaults status '+N,300);ok(/21 -60 5/.test(st),'open recorded (24h cooldown)');
  L('Geyser -> client for the vault after the open: update_block x'+blk.length+' '+JSON.stringify(blk.slice(-4))+', block_entity_data x'+bent.length);for(const b of bent.slice(-2))L('   '+b);
- // 2 hint
- await cons('minecraft:item replace entity '+N+' weapon.mainhand with minecraft:air',400);await sleep(3200);texts.length=0;await click();
+ // 2 hint (0.1.1: Bedrock wording + plain tap opens the reopen window)
+ await cons('minecraft:item replace entity '+N+' weapon.mainhand with minecraft:air',400);await sleep(3200);texts.length=0;forms.length=0;const b00=await bal();await click();await sleep(1200);
  L('texts: '+texts.join(' | '));ok(texts.some(t=>/opens again for you in 2[34]h \d+m/.test(t))&&texts.some(t=>/\$750/.test(t)),'Bedrock hint: time left and $750');
+ ok(texts.some(t=>/Sneak \+ tap it, or type \/vaults, to reopen it now for \$750\./.test(t))&&!texts.some(t=>/right-click|\[Reopen now/i.test(t)),'0.1.1 Bedrock hint: "Sneak + tap it, or type /vaults", no right-click, no chat button');
+ ok(texts.some(t=>/A window opened: tap Reopen to pay, or Cancel\. Nothing is charged until you tap Reopen\./.test(t)),'0.1.1 Bedrock: note that the window opened');
+ const ft=forms[0]?JSON.parse(forms[0].data):null;
+ ok(ft&&ft.type==='modal'&&/Reopen for \$750/.test(ft.button1)&&/Cancel/.test(ft.button2),'0.1.1 plain tap on a locked vault opens the reopen window (Reopen for $750 / Cancel), the tappable [Reopen]');
+ ok(await bal()===b00,'tap window shown: no charge');
+ if(forms[0])c.queue('modal_form_response',{form_id:forms[0].form_id,has_response_data:true,data:'false',has_cancel_reason:false});await sleep(1200);
+ ok(await bal()===b00&&await isRew(),'tap window Cancel: no charge, still locked');
+ await sleep(3200);texts.length=0;forms.length=0;await click();await sleep(1500);
+ ok(texts.some(t=>/opens again for you in/.test(t))&&forms.length===0,'second plain tap within 30 s: hint again, window not reopened (cooldown)');
+ texts.length=0;await cmd('/vaults help');await sleep(800);L('help: '+texts.join(' | '));
+ ok(texts.some(t=>/Sneak \+ tap it \(or type \/vaults\) to pay and reopen it now\. On a controller: sneak, then press LT\./.test(t))&&texts.some(t=>/Tap a used vault/.test(t))&&!texts.some(t=>/click/i.test(t)),'0.1.1 Bedrock /vaults help: tap wording, controller line, no click words');
  // 3 sneak + tap -> modal
  await sleep(3200);forms.length=0;const b0=await bal();await click(true);await sleep(1500);
  const f1=forms[0]?JSON.parse(forms[0].data):null;
@@ -75,6 +86,7 @@ const isRew=async()=>{const r=await cons('data get block '+V+' server_data.rewar
  await cons('vaults age '+N+' 720',300);await cons('minecraft:item replace entity '+N+' weapon.mainhand with minecraft:air',300);
  forms.length=0;await cmd('/vaults');await sleep(800);const f3=forms[0]?JSON.parse(forms[0].data):null;
  ok(f3&&f3.type==='form'&&f3.buttons&&f3.buttons.some(b=>/world 21 -60 5/.test(strip(b.text))&&/12h 0m \| \$375/.test(strip(b.text))),'/vaults on Bedrock: SimpleForm list, button shows 12h 0m | $375');
+ ok(f3&&/Tap a vault below to reopen it now\. Or sneak \+ tap a locked vault\./.test(strip(f3.content))&&!/\[Reopen\]|right-click/.test(f3.content),'0.1.1 Bedrock list form text: tap a vault below, no [Reopen] or right-click');
  if(forms[0]){const fid=forms[0].form_id;const idx=f3.buttons.findIndex(b=>/world 21 -60 5/.test(strip(b.text)));forms.length=0;c.queue('modal_form_response',{form_id:fid,has_response_data:true,data:String(Math.max(0,idx)),has_cancel_reason:false});await sleep(2000);
   const f4=forms[0]?JSON.parse(forms[0].data):null;ok(f4&&f4.type==='modal'&&/Reopen for \$375/.test(f4.button1),'tap list entry: confirm at $375 (half the cooldown left)');
   if(forms[0])c.queue('modal_form_response',{form_id:forms[0].form_id,has_response_data:true,data:'false',has_cancel_reason:false});await sleep(1000)}

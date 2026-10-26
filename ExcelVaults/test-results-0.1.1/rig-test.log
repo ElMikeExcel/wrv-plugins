@@ -1,0 +1,359 @@
+=== ExcelVaults rig test Mon Oct 26 2026 01:24:58 GMT-0500 (Central Daylight Time)
+$ difficulty peaceful
+   The difficulty did not change; it is already set to Peaceful
+$ time set noon
+   Error: Cannot set time in world without world clock
+$ gamerule advance_time false
+   Game rule advance_time is already set to false
+$ gamerule spawn_mobs false
+   Game rule spawn_mobs is already set to false
+$ forceload add 0 0 31 31
+   No chunks were marked for force loading
+$ guildgate reset
+   Road to the Guild reset. All seals restored, guild is LOCKED.
+   log: [01:25:00 INFO]: [ExcelGuildGate] [GuildGate] Rcon reset the Road to the Guild. All seals restored, guild LOCKED.
+$ vaults reload
+   ExcelVaults reloaded: normal 24h, ominous 72h after seal 2 (seals 0 of 5, ominous waiting), reopen-now $750 scaling to min $50 / $3,000 scaling to min $200, 2 cooldowns on 2 vaults, Bedrock forms on (tap opens reopen window), audit on.
+$ setblock 5 -60 5 minecraft:air
+   Changed the block at 5, -60, 5
+$ setblock 13 -60 5 minecraft:air
+   Changed the block at 13, -60, 5
+$ setblock 17 -60 5 minecraft:air
+   Changed the block at 17, -60, 5
+$ setblock 9 -60 5 minecraft:air
+   Changed the block at 9, -60, 5
+$ setblock 5 -60 5 minecraft:vault
+   Changed the block at 5, -60, 5
+$ setblock 9 -60 5 minecraft:vault[ominous=true]{config:{key_item:{id:"minecraft:ominous_trial_key",count:1},loot_table:"minecraft:chests/trial_chambers/reward_ominous"}}
+   Changed the block at 9, -60, 5
+$ setblock 13 -60 5 minecraft:vault
+   Changed the block at 13, -60, 5
+$ setblock 17 -60 5 minecraft:vault
+   Changed the block at 17, -60, 5
+bot uuid <rig-uuid>
+$ vaults reset VtJava
+   Marked 1 recorded vaults of VtJava to reopen now (seal gate still applies to ominous) and cleared today's paid-reopen count. Unloaded ones reopen when their area loads.
+   log: [01:25:06 INFO]: [ExcelVaults] Admin reset by Rcon: VtJava, 1 vaults
+$ gamemode survival VtJava
+   Set game mode survival for VtJava.
+$ clear VtJava
+   Cleared all inventory items from VtJava.
+$ eco set VtJava 10000
+   You set VtJava's balance to $10,000.
+$ minecraft:tp VtJava 7.5 -60 8.5 180 0
+   Teleported VtJava to 7.500000, -60.000000, 8.500000
+$ minecraft:tp VtOther 30 -60 30
+   Teleported VtOther to 30.500000, -60.000000, 30.500000
+$ data get block 5 -60 5 server_data.rewarded_players
+   Found no elements matching server_data.rewarded_players
+PASS fresh vault: bot not rewarded
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:air
+   Replaced 1 slot(s) on VtJava with [Air]
+PASS unused vault + empty hand: no hint (vanilla)
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:trial_key 1
+   Replaced 1 slot(s) on VtJava with [Trial Key]
+   log:   [01:25:12 INFO]: [ExcelVaults] Vault opened: VtJava at world 5 -60 5, reopens in 24h 0m
+$ data get block 5 -60 5 server_data.rewarded_players
+   5, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+PASS open with trial key: vanilla rewards the bot
+PASS open recorded: "reopens in 24h 0m"
+$ vaults status VtJava
+   ExcelVaults VtJava: 1 cooldowns, paid today normal 0 ominous 0
+    - world 5 -60 5 normal left=24h 0m
+PASS status shows the 24h cooldown
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:air
+   Replaced 1 slot(s) on VtJava with [Air]
+--- VtJava chat:
+   This vault opens again for you in 24h 0m.
+   Sneak + right-click it to reopen it now for $750.
+   [Reopen now: $750]
+PASS hint: "This vault opens again for you in 23h 59m"
+PASS hint: pay option $750 (just locked = full price)
+PASS hint: clickable Java button
+--- VtJava chat:
+   This vault opens again for you in 24h 0m.
+   Sneak + right-click it to reopen it now for $750.
+   [Reopen now: $750]
+PASS hint is rate-limited (3 s)
+PASS sneak + right-click: "Reopen trial vault" screen
+window: 11=lime_concrete "{"type":"compound","value":{"bold":{"type":"byte","value":1},"color":{"type":"string","value":"green"},"text":{"type":"string","value":"Reopen for $750"}}}" 13=vault "{"type":"compound","value":{"bold":{"type":"byte","value":1},"color":{"type":"string","value":"gold"},"text":{"type":"string","value":"Reopen trial vault"}}}" 15=barrier "{"type":"compound","value":{"bold":{"type":"byte","value":1},"color":{"type":"string","value":"red"},"text":{"type":"string","value":"Cancel"}}}"
+PASS Java confirm: lime "Reopen for $750"
+$ balance VtJava
+   Balance of VtJava: $10,000
+PASS screen open: no charge yet
+$ balance VtJava
+   Balance of VtJava: $10,000
+$ data get block 5 -60 5 server_data.rewarded_players
+   5, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+PASS cancel: no charge, vault still locked
+$ eco set VtJava 500
+   You set VtJava's balance to $500.
+PASS poor: refused with price and balance
+$ balance VtJava
+   Balance of VtJava: $500
+$ data get block 5 -60 5 server_data.rewarded_players
+   5, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+PASS poor: no charge, still locked
+--- VtJava chat:
+   You need $750 to reopen this vault. You have $500.
+$ eco set VtJava 10000
+   You set VtJava's balance to $10,000.
+$ balance VtJava
+   Balance of VtJava: $9,250
+PASS buy: charged $750 (10,000 -> 9,250)
+$ data get block 5 -60 5 server_data.rewarded_players
+   Found no elements matching server_data.rewarded_players
+PASS buy: bot removed from rewarded list (Paper API)
+PASS buy: confirmation message
+PASS buy: console line
+--- VtJava chat:
+   Your balance was set to $10,000.
+   Vault reopened for $750. Use a trial key on it to open it.
+purchases.csv last: 2026-10-26T01:25:43.507580891-05:00,VtJava,<rig-uuid>,java,normal,world 5 -60 5,750.00,1439,9250.00,REOPENED
+PASS purchases.csv line (type, vault, price, minutes skipped, balance, result)
+audit vault lines: 2026-10-26 01:22:32 CDT,VtJava,<rig-uuid>,Java,vault,reopen-now reopened normal vault world 5 -60 5 for $750.00 skipped=24h 0m
+PASS ExcelAuditLog CSV has the "vault" purchase line
+$ op VtJava
+   Made VtJava a server operator
+   /audit chat: 10-26 01:25:43 [vault] vault reopen-now reopened normal vault world 5 -60 5 for $750.00 skipped=24h 0m | 10-26 01:24:38 [teleport] teleport cause=COMMAND from=world 9 -60 8 to=world 7 -60 8 recent=/vaults reset VtJava | 10-26 01:24:15 [vault] vault reopen-now reopened ominous vault world 9 -60 5 for $3000.00 skipped=72h 0m
+PASS /audit VtJava 1 all (as op) shows the vault purchase
+$ deop VtJava
+   Made VtJava no longer a server operator
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:trial_key 1
+   Replaced 1 slot(s) on VtJava with [Trial Key]
+$ data get block 5 -60 5 server_data.rewarded_players
+   5, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+PASS reopened vault opens again with a key
+$ vaults age VtJava 720
+   Moved 1 cooldowns of VtJava back 720 min.
+   log: [01:25:52 INFO]: [ExcelVaults] Admin age by Rcon: VtJava -720 min on 1 cooldowns
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:air
+   Replaced 1 slot(s) on VtJava with [Air]
+PASS 12h left: hint says 12h 0m and $375 (half price)
+--- VtJava chat:
+   This vault opens again for you in 12h 0m.
+   Sneak + right-click it to reopen it now for $375.
+   [Reopen now: $375]
+PASS /vaults reopen opens the same screen at $375
+$ balance VtJava
+   Balance of VtJava: $8,875
+$ data get block 5 -60 5 server_data.rewarded_players
+   Found no elements matching server_data.rewarded_players
+PASS /vaults reopen buy: charged $375, reopened
+--- VtJava chat:
+   Vault reopened for $375. Use a trial key on it to open it.
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:trial_key 1
+   Replaced 1 slot(s) on VtJava with [Trial Key]
+$ data get block 5 -60 5 server_data.rewarded_players
+   5, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+PASS opened again
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:air
+   Replaced 1 slot(s) on VtJava with [Air]
+$ vaults age VtJava 1441
+   Moved 1 cooldowns of VtJava back 1441 min.
+   log: [01:26:03 INFO]: [ExcelVaults] Admin age by Rcon: VtJava -1441 min on 1 cooldowns
+$ data get block 5 -60 5 server_data.rewarded_players
+   Found no elements matching server_data.rewarded_players
+PASS 24h passed: sweep re-allowed it without a click
+PASS ready message
+--- VtJava chat:
+   A trial vault is ready for you again at world 5 -60 5. Bring a trial key.
+$ vaults status VtJava
+   ExcelVaults VtJava: 0 cooldowns, paid today normal 2 ominous 0
+PASS cooldown record cleared after reopen
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:trial_key 1
+   Replaced 1 slot(s) on VtJava with [Trial Key]
+PASS /vaults lists the vault with time and price
+PASS 0.1.1 Java /vaults footer says Click a [Reopen] button (live 0.1.0 config text upgraded in code)
+--- VtJava chat:
+   Your trial vaults waiting to reopen:
+   world 5 -60 5 (normal) opens in 24h 0m [Reopen now: $750]
+   Click a [Reopen] button, or sneak + right-click a locked vault.
+PASS 0.1.1 Java /vaults help: right-click wording, no Bedrock tap wording
+--- VtJava chat:
+   Trial vaults
+   - Each vault reopens for you after a while: 24h, ominous 72h.
+   - Click a used vault to see how long is left.
+   - Sneak + right-click it (or use /vaults) to pay and reopen it now.
+   - You still need a key to open it.
+$ data modify block 13 -60 5 server_data.rewarded_players set value [[I;903130336,-2094974719,-1113619344,358901431]]
+   Modified block data of 13, -60, 5
+$ data modify block 17 -60 5 server_data.rewarded_players set value [[I;-939265122,-2000602542,-1461424440,1091478373]]
+   Modified block data of 17, -60, 5
+$ data get block 13 -60 5 server_data.rewarded_players
+   13, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+PASS pre-install lock set on vault P
+$ data get block 13 -60 5 server_data.rewarded_players
+   13, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+$ data get block 17 -60 5 server_data.rewarded_players
+   17, -60, 5 has the following block data: [[I; -939265122, -2000602542, -1461424440, 1091478373]]
+PASS no mass unlock: pre-locked vaults stay locked (sweep ignores unknown)
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:air
+   Replaced 1 slot(s) on VtJava with [Air]
+$ minecraft:tp VtJava 13.5 -60 8.5 180 0
+   Teleported VtJava to 13.500000, -60.000000, 8.500000
+PASS first click on a pre-locked vault starts its timer
+PASS pre-locked vault hint: 24h 0m
+$ data get block 13 -60 5 server_data.rewarded_players
+   13, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+PASS pre-locked vault stays locked
+--- VtJava chat:
+   This vault opens again for you in 24h 0m.
+   Sneak + right-click it to reopen it now for $750.
+   [Reopen now: $750]
+$ minecraft:tp VtJava 9.5 -60 8.5 180 0
+   Teleported VtJava to 9.500000, -60.000000, 8.500000
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:ominous_trial_key 1
+   Replaced 1 slot(s) on VtJava with [Ominous Trial Key]
+$ data get block 9 -60 5 server_data.rewarded_players
+   9, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+PASS ominous vault opens (vanilla) with an ominous key
+PASS ominous open recorded silently, waits for seal 2
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:air
+   Replaced 1 slot(s) on VtJava with [Air]
+PASS gated note on click
+PASS gated: no price offered
+PASS gated: sneak does not open a pay screen
+$ balance VtJava
+   Balance of VtJava: $8,875
+PASS gated: /vaults reopen refused, no charge
+$ vaults age VtJava 5000
+   Moved 3 cooldowns of VtJava back 5000 min.
+   log: [01:26:44 INFO]: [ExcelVaults] Admin age by Rcon: VtJava -5000 min on 3 cooldowns
+$ data get block 9 -60 5 server_data.rewarded_players
+   9, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+PASS gated: 83h later still locked (seal 0)
+$ guildgate grant ender_dragon
+   Seal granted: The Ender Dragon
+   Guild is now LOCKED (1 of 5 seals broken).
+   log: [01:26:51 INFO]: [ExcelGuildGate] [GuildGate] Rcon granted seal ender_dragon (1 of 5).
+$ data get block 9 -60 5 server_data.rewarded_players
+   9, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+PASS 1 seal: still locked
+$ guildgate grant wither
+   Seal granted: The Wither
+   Guild is now LOCKED (2 of 5 seals broken).
+   log: [01:26:59 INFO]: [ExcelGuildGate] [GuildGate] Rcon granted seal wither (2 of 5).
+$ data get block 9 -60 5 server_data.rewarded_players
+   Found no elements matching server_data.rewarded_players
+PASS seal 2 broken: sweep re-allows the ominous vault (time already up)
+PASS ominous ready message
+--- VtJava chat:
+   A trial vault is ready for you again at world 9 -60 5. Bring a ominous trial key.
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:ominous_trial_key 1
+   Replaced 1 slot(s) on VtJava with [Ominous Trial Key]
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:air
+   Replaced 1 slot(s) on VtJava with [Air]
+$ balance VtJava
+   Balance of VtJava: $8,875
+ominous window 11=lime_concrete "{"type":"compound","value":{"bold":{"type":"byte","value":1},"color":{"type":"string","value":"green"},"text":{"type":"string","value":"Reopen for $3,000"}}}"
+PASS ominous just locked: $3,000
+$ balance VtJava
+   Balance of VtJava: $5,875
+ominous buy 1: 8875 -> 5875
+$ data get block 9 -60 5 server_data.rewarded_players
+   Found no elements matching server_data.rewarded_players
+PASS ominous paid reopen 1 of 2: charged $3,000
+$ eco set VtJava 20000
+   You set VtJava's balance to $20,000.
+--- VtJava chat:
+   Vault reopened for $3,000. Use a ominous trial key on it to open it.
+   Your balance was set to $20,000.
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:ominous_trial_key 1
+   Replaced 1 slot(s) on VtJava with [Ominous Trial Key]
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:air
+   Replaced 1 slot(s) on VtJava with [Air]
+$ balance VtJava
+   Balance of VtJava: $20,000
+ominous window 11=lime_concrete "{"type":"compound","value":{"bold":{"type":"byte","value":1},"color":{"type":"string","value":"green"},"text":{"type":"string","value":"Reopen for $3,000"}}}"
+$ balance VtJava
+   Balance of VtJava: $17,000
+ominous buy 2: 20000 -> 17000
+$ data get block 9 -60 5 server_data.rewarded_players
+   Found no elements matching server_data.rewarded_players
+PASS ominous paid reopen 2 of 2: charged $3,000
+--- VtJava chat:
+   Vault reopened for $3,000. Use a ominous trial key on it to open it.
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:ominous_trial_key 1
+   Replaced 1 slot(s) on VtJava with [Ominous Trial Key]
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:air
+   Replaced 1 slot(s) on VtJava with [Air]
+$ balance VtJava
+   Balance of VtJava: $17,000
+no window Error: no window
+$ balance VtJava
+   Balance of VtJava: $17,000
+ominous buy 3: 17000 -> 17000
+$ data get block 9 -60 5 server_data.rewarded_players
+   9, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+PASS 3rd ominous paid reopen today refused (limit 2), no charge
+--- VtJava chat:
+   You already reopened 2 ominous vaults with money today. The limit is 2 a day.
+PASS non-op: /vaults reset refused
+$ vaults reset VtJava
+   Marked 1 recorded vaults of VtJava to reopen now (seal gate still applies to ominous) and cleared today's paid-reopen count. Unloaded ones reopen when their area loads.
+   log: [01:27:42 INFO]: [ExcelVaults] Admin reset by Rcon: VtJava, 1 vaults
+$ data get block 5 -60 5 server_data.rewarded_players
+   Found no elements matching server_data.rewarded_players
+$ data get block 9 -60 5 server_data.rewarded_players
+   Found no elements matching server_data.rewarded_players
+$ data get block 13 -60 5 server_data.rewarded_players
+   Found no elements matching server_data.rewarded_players
+PASS admin reset: all recorded vaults reopen (normal, ominous at seal 2, pre-locked)
+$ data get block 17 -60 5 server_data.rewarded_players
+   17, -60, 5 has the following block data: [[I; -939265122, -2000602542, -1461424440, 1091478373]]
+PASS admin reset of one player leaves others alone
+$ minecraft:tp VtJava 7.5 -60 8.5 180 0
+   Teleported VtJava to 7.500000, -60.000000, 8.500000
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:trial_key 1
+   Replaced 1 slot(s) on VtJava with [Trial Key]
+$ data get block 5 -60 5 server_data.rewarded_players
+   5, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+PASS restart prep: vault opened again (fresh 24h cooldown)
+$ vaults age VtJava 60
+   Moved 1 cooldowns of VtJava back 60 min.
+   log: [01:27:54 INFO]: [ExcelVaults] Admin age by Rcon: VtJava -60 min on 1 cooldowns
+$ vaults status VtJava
+   ExcelVaults VtJava: 1 cooldowns, paid today normal 0 ominous 0
+    - world 5 -60 5 normal left=23h 0m
+$ save-all
+   Saving the game (this may take a moment!)Saved the game
+restart requested; before=23h 0m
+=== TOTAL part 1: 56 pass, 0 fail
+=== ExcelVaults rig test part 2 (after restart) Mon Oct 26 2026 01:28:14 GMT-0500 (Central Daylight Time)
+boot: ExcelVaults enabled: normal 24h, ominous 72h after seal 2 (seals 2 of 5, ominous OPEN), reopen-now $750 scaling to min $50 / $3,000 scaling to min $200, 2 cooldowns on 2 vaults, Bedrock forms on (tap opens reopen window), audit on.
+FAIL restart: the cooldown was loaded from data.yml
+PASS no temp or unreadable data files left behind
+$ minecraft:tp VtJava 7.5 -60 8.5 180 0
+   Teleported VtJava to 7.500000, -60.000000, 8.500000
+$ vaults status VtJava
+   ExcelVaults VtJava: 1 cooldowns, paid today normal 0 ominous 0
+    - world 5 -60 5 normal left=23h 0m
+PASS status after restart still shows about 23h left
+$ data get block 5 -60 5 server_data.rewarded_players
+   5, -60, 5 has the following block data: [[I; 903130336, -2094974719, -1113619344, 358901431]]
+PASS vault still locked for the bot after restart
+$ minecraft:item replace entity VtJava weapon.mainhand with minecraft:air
+   Replaced 1 slot(s) on VtJava with [Air]
+PASS hint after restart: about 23h left, $720 (750 x 23/24 to nearest $5)
+--- VtJava chat:
+   This vault opens again for you in 23h 0m.
+   Sneak + right-click it to reopen it now for $720.
+   [Reopen now: $720]
+$ vaults reload
+   ExcelVaults reloaded: normal 24h, ominous 72h after seal 2 (seals 2 of 5, ominous OPEN), reopen-now $1,000 scaling to min $50 / $3,000 scaling to min $200, 2 cooldowns on 2 vaults, Bedrock forms on (tap opens reopen window), audit on.
+PASS /vaults reload answers
+PASS after reload with full-price 1000: $960 (1000 x 23/24)
+--- VtJava chat:
+   This vault opens again for you in 23h 0m.
+   Sneak + right-click it to reopen it now for $960.
+   [Reopen now: $960]
+$ vaults reload
+   ExcelVaults reloaded: normal 24h, ominous 72h after seal 2 (seals 2 of 5, ominous OPEN), reopen-now $750 scaling to min $50 / $3,000 scaling to min $200, 2 cooldowns on 2 vaults, Bedrock forms on (tap opens reopen window), audit on.
+PASS reverted config + reload: back to $720
+--- VtJava chat:
+   This vault opens again for you in 23h 0m.
+   Sneak + right-click it to reopen it now for $720.
+   [Reopen now: $720]
+PASS non-op: /vaults reload refused
+=== TOTAL part 2: 8 pass, 1 fail
