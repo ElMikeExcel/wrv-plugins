@@ -1,0 +1,72 @@
+# ---- added for ExcelWandBars 0.2.8 (rank-up by casting), Oct 26, 2026 ----
+rank-up-casting:
+  # Rank-up by casting (2026-10-26). Successful casts with a rank wand
+  # (Beginner, Student, Apprentice, Master) earn SP, Magic's own spell points.
+  # Each spell pays its own "earns" from Magic's spells.yml. When you have
+  # enough SP your wand moves up a rank in place (same wand, keeps every
+  # spell, learns the new rank's spells). The rank wands stay pathless with
+  # earn_multiplier 0 in Magic, so Magic never pays twice for a cast.
+  # All of this section changes with /wandbars reload (no restart).
+  # 0.2.8 ships ON (Mike, Oct 26, 2026). Off switch: enabled: false + /wandbars reload.
+  enabled: true
+  # SP to step UP into each rank. SP is spent on the step (it restarts at 0).
+  sp-to-reach:
+    student: 800
+    apprentice: 1600
+    master: 1800
+  # Same throttle Magic uses for path earning: a spell pays its full earns
+  # once per this many seconds; cast again sooner and it pays the part that
+  # has recharged (rounded down, often 0). Stops spam (Mend has no cooldown).
+  earn-cooldown-seconds: 60
+  earn-cooldown-by-spell: {}
+  #   mend: 90
+  # These spells only pay when Magic really healed someone during the cast
+  # (no SP for healing yourself or a friend at full health).
+  heal-only-when-it-heals: [heal, mend, flashheal, greaterheal]
+  # Daily soft cap (America/Chicago day). Full rate up to full-rate-sp, then
+  # slow-rate until max-sp, then nothing until tomorrow. 0 = off.
+  daily:
+    full-rate-sp: 800
+    max-sp: 1600
+    slow-rate: 0.25
+  # The server's own XP bonuses also boost SP (one source of truth: the
+  # plugins that already run them). weekend = mcMMO's /xprate event, which
+  # ExcelWeekendXP turns on Fri-Sun (1.2x); an admin /xprate event counts too.
+  # group = ExcelTogether's party bonus (its multiplier and radius) when a
+  # party member is near. Multiplied together, then capped.
+  bonus:
+    weekend: true
+    group: true
+    cap: 1.5
+    # Only if mcMMO is not running: Fri-Sun Chicago time pays this.
+    weekend-if-no-mcmmo: 1.2
+  # Off on purpose (Mike, Oct 26, 2026): seals decide which spells exist, never which
+  # rank a wand may reach. Only if that ever changes: lowest ExcelMagicGate stage per rank,
+  # e.g. "apprentice: 2"; the Spell Book then says "<rank> rank is not open yet."
+  max-rank-by-stage: {}
+  # After a cast that pays SP: "+2 SP (x1.2 weekend) | Beginner 340/800".
+  action-bar: true
+  # ExcelTogether's party lines share the action bar. If one went up less than this many ms
+  # ago, the SP line waits until it has been readable (at most 3 waits, then it is skipped).
+  party-bar-wait-ms: 2500
+  announce:
+    title: true
+    chat: true
+    sound: true
+    # Tell everyone else online in chat, by nickname (Mike, Oct 26, 2026: rank-ups are
+    # celebrated by the whole server). The player gets the title, sound and own chat line.
+    broadcast: true
+  text:
+    title: "{rank} rank!"
+    subtitle: "Your wand learned {spells} new spells"
+    chat: "Your wand is now {rank} rank. It learned {spells} new spells. Open /spellbook to read them."
+    broadcast: "{player} reached {rank} rank!"   # {player} = nickname if set
+    how: "Cast spells to earn SP."
+
+# 0.2.8: rank names players see (Spell Book, spell info, titles, chat). Magic's own
+# template and path keys never change. Missing section = master shows as "Master".
+rank-names:
+  beginner: Beginner
+  student: Student
+  apprentice: Apprentice
+  master: Master

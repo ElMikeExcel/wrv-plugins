@@ -1,0 +1,20 @@
+--- base-cb50a815.yml	2026-10-26 11:52:25.510260633 -0500
++++ changelog.yml	2026-10-26 11:52:25.522260686 -0500
+@@ -14,6 +14,17 @@
+ # Add a new entry at the TOP; everyone who has not seen it gets it once on their next join.
+ 
+ entries:
++  - id: 2026-10-26-wand-ranks-by-casting
++    date: Oct 26
++    posted: 2026-10-26
++    title: "Your wand ranks up when you cast"
++    changes:
++      - "Casting spells earns SP. Enough SP and your wand moves up a rank by itself."
++      - "Same wand, every spell kept, plus the new rank's spells. The whole server cheers."
++      - "Beginner to Student 800 SP, then Apprentice 1,600, then Master 1,800. About two days of play each."
++      - "Your SP is at the top of your Spell Book. A short line above your hotbar shows each gain."
++      - "Weekends give SP x1.2. Casting near your party gives x1.25. Together x1.5."
++      - "Each spell pays fully about once a minute. Healing pays when it really heals someone."
+   - id: 2026-10-26-wand-last-slot
+     date: Oct 26
+     posted: 2026-10-26
