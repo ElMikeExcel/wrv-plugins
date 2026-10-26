@@ -127,7 +127,7 @@ public class WardTest {
         Check.ok(cfg.contains("notice: \"The guild's halls are warded. Magic falls silent inside.\""), "notice text");
         Check.ok(cfg.contains("window-seconds: 30") && cfg.contains("combat-context-seconds: 10"), "attunement design knobs unchanged");
         String yml = Files.readString(Path.of("plugin.yml"));
-        Check.ok(yml.contains("version: 0.1.6"), "plugin.yml 0.1.6");
+        Check.ok(yml.contains("version: 0.1.7"), "plugin.yml 0.1.7");
         Check.ok(yml.contains("excelattunement.ward.bypass:") && yml.contains("default: false"), "bypass permission, not default for ops");
         Check.ok(yml.contains("softdepend: [Magic, EliteMobs]"), "soft-depends Magic and EliteMobs only (arena locks need no ExcelGuildGate)");
     }

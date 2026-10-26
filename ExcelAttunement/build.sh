@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build ExcelAttunement-0.1.6.jar (deterministic: two builds byte-identical).
+# Build ExcelAttunement-0.1.7.jar (deterministic: two builds byte-identical).
 # Manual javac route, same as the other Excel plugins: house build-libs
 # Paper API jar + kyori 4.20 set. Magic 11.2.5's jar is a COMPILE-ONLY
 # dependency (its API events); no Magic classes are packaged — the
@@ -18,9 +18,9 @@ CP="$CP:$MAGIC"
 rm -rf build/classes && mkdir -p build/classes
 "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP" -d build/classes $(find src -name '*.java')
 cp plugin.yml config.yml spell-classes.txt build/classes/
-OUT=../../ExcelAttunement-0.1.6.jar
+OUT=$(realpath -m "${OUT:-../../ExcelAttunement-0.1.7.jar}")
 rm -f "$OUT"
-"$JDK/bin/jar" --create --file "$OUT" --date=2026-10-24T00:00:00-05:00 -C build/classes .
+"$JDK/bin/jar" --create --file "$OUT" --date=2026-10-26T00:00:00-05:00 -C build/classes .
 cd ../..
-sha256sum ExcelAttunement-0.1.6.jar
-ls -l ExcelAttunement-0.1.6.jar
+sha256sum "$OUT"
+ls -l "$OUT"

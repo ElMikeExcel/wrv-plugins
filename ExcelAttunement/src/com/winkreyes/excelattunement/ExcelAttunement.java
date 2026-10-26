@@ -78,6 +78,10 @@ import java.util.function.Predicate;
  *    main island zone while an Ender Dragon is alive there (first fight,
  *    re-fights and re-summons alike); Lift also cannot target a player
  *    inside that zone. Config rules. See ArenaLocks.
+ *  - 0.1.7 scroll fix (Mike, Oct 26, 2026): the stance lock never walls
+ *    off a hotbar slot. A one-slot scroll onto a locked item hops over
+ *    it to the next unlocked slot; number keys and taps onto it are
+ *    still refused. See HotbarSkip.
  * State is in-memory only: a restart clears every stance, by design.
  * This class contains NO Magic imports — the Magic surface lives in
  * MagicBridge, registered only when Magic is enabled.
@@ -426,16 +430,42 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
         return true;
     }
 
-    /** Hotbar switch (scroll, number key, Bedrock tap). Cancel = server resends the old slot. */
+    /**
+     * Hotbar switch (scroll, number key, Bedrock tap). Cancel = server resends the old slot.
+     * 0.1.7: a one-slot scroll onto a locked item hops OVER it to the next unlocked slot in
+     * the same direction, so the lock never walls off the slots behind it (player report, Oct 26:
+     * Java scroll stopped at the wand in Fighter stance and he could not reach his potions).
+     * A direct jump (number key, touch tap) onto a locked slot is still refused.
+     */
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onHeld(PlayerItemHeldEvent event) {
         Player player = event.getPlayer();
         ItemStack target = player.getInventory().getItem(event.getNewSlot());
-        if (blocked(player, target, "hotbar switch")) {
-            event.setCancelled(true);
-            lockFeedback(player, lockFor(player, target), true);
+        if (!blocked(player, target, "hotbar switch")) return;
+        event.setCancelled(true);
+        LockRule.Block block = lockFor(player, target);
+        final int from = event.getPreviousSlot();
+        final int hop = com.winkreyes.excelattunement.core.HotbarSkip.target(from, event.getNewSlot(),
+                s -> lockFor(player, player.getInventory().getItem(s)) != LockRule.Block.NONE);
+        if (hop == com.winkreyes.excelattunement.core.HotbarSkip.REFUSE) {
+            lockFeedback(player, block, true);
+            return;
         }
+        hops++;
+        // Next tick: the cancelled packet has been answered with the old slot by then.
+        Bukkit.getScheduler().runTask(this, () -> {
+            if (!player.isOnline()) return;
+            if (player.getInventory().getHeldItemSlot() != from) return; // the player moved on already
+            if (lockFor(player, player.getInventory().getItem(hop)) != LockRule.Block.NONE) return; // changed meanwhile
+            player.getInventory().setHeldItemSlot(hop);
+            if (debug) getLogger().info("HOP hotbar " + (from + 1) + " -> " + (hop + 1) + " over a locked item for " + player.getName());
+        });
+        // Quiet feedback (action bar only): a scroll past the wand is not a mistake worth a title.
+        lockFeedback(player, block, false);
     }
+
+    /** 0.1.7: scrolls that hopped over a locked slot (status line). */
+    private long hops;
 
     /** F / offhand swap. Magic owns F while a wand is in the main hand (it cancels first). */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -550,7 +580,7 @@ public final class ExcelAttunement extends JavaPlugin implements Listener {
             long now = now();
             StringBuilder out = new StringBuilder("Attunement: "
                     + (enabledMaster ? "ON" : "OFF") + ", window " + windowSeconds + "s, weapon-lock "
-                    + onOff(weaponLock) + ", wand-lock " + onOff(wandLock) + ". Stanced players:");
+                    + onOff(weaponLock) + ", wand-lock " + onOff(wandLock) + ", scroll hops " + hops + ". Stanced players:");
             boolean any = false;
             for (Player p : Bukkit.getOnlinePlayers()) {
                 AttunementState s = states.get(p.getUniqueId());
