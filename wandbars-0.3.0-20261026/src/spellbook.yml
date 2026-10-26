@@ -1,0 +1,136 @@
+# ExcelWandBars 0.3.0: Spell Book groups (Wink Reyes Valley).
+# Each spell (Magic spell key, lower case) sits in one group. Order of groups = order in the Spell Book.
+# A spell in no group shows under "Other" (last) and the server log lists it once at start and on
+# /wandbars reload. A spell in two groups stays in the first one.
+# Edit, then /wandbars reload (no restart). Group keys "other" and "all" are reserved.
+# Not listed on purpose: disposal (taken off the wands, Oct 26, 2026).
+categories:
+  healing:
+    name: Healing
+    spells:
+      - heal
+      - feed
+      - cure
+      - superheal
+      - healing
+      - holylight
+      - mend
+      - flashheal
+      - greaterheal
+      - layonhands
+  defense:
+    name: Defense
+    spells:
+      - boon
+      - shell
+      - blessing
+      - bubble
+      - cloak
+      - reflect
+      - invincible
+      - ward
+  damage:
+    name: Damage
+    spells:
+      - stormshackle
+      - missile
+      - frost
+      - arrow
+      - flare
+      - stun
+      - push
+      - pull
+      - stream
+      - arrow_ice
+      - arrow_light
+      - arrow_shock
+      - arrow_regular
+      - wave
+      - smite
+      - lightning
+      - chainlightning
+      - boomerang
+      - throwsword
+      - whip
+      - critical
+      - counterspell
+      - arrowrain
+      - sweep
+      - powerstone
+      - force
+      - fury
+      - tendril
+      - shrink
+      - masterattack
+  movement:
+    name: Movement
+    spells:
+      - recall
+      - recall_death
+      - backflip
+      - fling
+      - dash
+      - evade
+      - hulkleap
+      - piggyback
+      - glide
+      - lift
+      - blink
+      - gather
+      - skating
+      - wearskates
+  summon:
+    name: Summon
+    spells:
+      - familiar
+      - wolf
+      - cat
+      - tame
+      - tamepet
+  building:
+    name: Building
+    spells:
+      - earth
+      - platform
+      - walls
+      - sponge
+      - tent
+      - tiny_house
+      - giant_house
+      - harden
+      - rubberize
+  world:
+    name: World
+    spells:
+      - day
+      - night
+      - weather
+      - time
+      - localrain
+      - restorelocalweather
+  utility:
+    name: Utility
+    spells:
+      - extinguish
+      - aqualung
+      - gills
+      - torch
+      - peek
+      - workbench
+      - gasp
+      - magictorch
+      - throwmagictorch
+      - repairitem
+      - repairequipment
+      - stash
+      - sparkle
+      - grow
+      - growth
+      - hat
+      - pollinate
+      - eat_food
+      - rolldice
+      - admission
+      - anvil
+      - music
+other-name: Other
