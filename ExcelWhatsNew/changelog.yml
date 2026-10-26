@@ -1,0 +1,49 @@
+# ExcelWhatsNew news entries. NEWEST FIRST. After editing: /whatsnew reload (no restart).
+#
+# Each entry:
+#   id:      unique, never reuse or rename (players' OK is saved by this id)
+#   date:    short label for the title, e.g. "Oct 24"  -> "What's New (Oct 24)"
+#   posted:  YYYY-MM-DD (for the join age limit in config.yml)
+#   title:   one short line
+#   new-commands:     list of {cmd, what, bedrock (optional), java (optional)}
+#                     what = one plain line, kid-friendly. bedrock/java = the no-typing way
+#                     (a compass button or a pop-up), shown only to that kind of player.
+#   better-commands:  same shape, for commands that changed
+#   changes:          short plain lines for everything else
+# House style: plain words, short lines, no em dashes, no player names.
+# Add a new entry at the TOP; everyone who has not seen it gets it once on their next join.
+
+entries:
+  - id: 2026-10-24-evening
+    date: Oct 24
+    posted: 2026-10-24
+    title: "Lost & Found, Maker's mark, a better trash bin, and more"
+    new-commands:
+      - cmd: /lostfound
+        what: "Get back your own stuff lost to lava, fire, the void or a despawn in the last 7 days. Also /recover."
+      - cmd: /mark off or /mark on
+        what: "Choose if things you craft get a \"Crafted by\" line with your name. /mark stats off hides the counters."
+      - cmd: /tips ok
+        what: "Hides the last tip. /tips shows all your tips."
+        bedrock: "tap OK on the tip pop-up."
+      - cmd: /autosort
+        what: "Turns chest sorting on or off, just for you. It starts off. Also /sort."
+        bedrock: "tap Auto-sort my chests on the compass."
+      - cmd: /wandstyle
+        what: "On a phone or console, pick how your wand controls work."
+        bedrock: "tap Wand controls on the compass."
+      - cmd: /whatsnew
+        what: "Shows this news again any time. Also /news."
+        bedrock: "tap What's New on the compass."
+        java: "Or click What's New in the compass menu."
+    better-commands:
+      - cmd: /trash
+        what: "Put items on the red side and press OK to throw them away. Close it without OK and you get them back. /trash undo still works for 5 minutes."
+        java: "Or click Trash Bin in the compass menu."
+    changes:
+      - "Lost & Found costs $16,000. Your first one is free if you have less than $10,000. One a day."
+      - "Maker's mark: gear you craft shows who made it. Weapons count kills, and armor counts hits blocked."
+      - "Tips: the first few times you use something new, a short tip explains it until you press OK."
+      - "The compass Spawn button now takes you to the real spawn, the same place as /spawn."
+      - "Wand controls: computers always use Classic. Phones and consoles can pick Sneak bars."
+      - "The menu compass now opens when you tap the air, not just a block."

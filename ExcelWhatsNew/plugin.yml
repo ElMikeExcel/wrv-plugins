@@ -1,0 +1,18 @@
+name: ExcelWhatsNew
+version: 0.1.1
+main: com.winkreyes.excelwhatsnew.ExcelWhatsNew
+api-version: '1.13'
+author: WinkReyesValley
+softdepend: [floodgate, Geyser-Spigot]
+description: Server news on join, once per update, until you say OK (an OK pop-up on Bedrock, a clickable [OK] on Java). /whatsnew reads the latest news any time.
+commands:
+  whatsnew:
+    description: The latest server news and new commands. /whatsnew ok hides it on join, /whatsnew 2 reads the one before, /whatsnew 1 goes back to the newest.
+    usage: /whatsnew [ok | list | <number>] (admin - reload | check | status <player> | reset <player> | push <player>)
+    aliases: [news]
+    permission: excelwhatsnew.use
+permissions:
+  excelwhatsnew.use:
+    default: true
+  excelwhatsnew.admin:
+    default: op

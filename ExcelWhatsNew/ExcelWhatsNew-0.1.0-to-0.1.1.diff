@@ -1,0 +1,350 @@
+diff -ruN -x build src-0.1.0/build.sh src/build.sh
+--- src-0.1.0/build.sh	2026-10-24 20:33:45.192263117 -0500
++++ src/build.sh	2026-10-26 09:18:46.330988443 -0500
+@@ -1,5 +1,5 @@
+ #!/bin/bash
+-# Build ExcelWhatsNew-0.1.0.jar (deterministic: fixed jar date, sorted inputs) and run the unit checks.
++# Build ExcelWhatsNew-0.1.1.jar (deterministic: fixed jar date, sorted inputs) and run the unit checks.
+ # Manual javac route like the other Excel plugins. No Floodgate or Geyser classes needed (reflection).
+ set -euo pipefail
+ cd "$(dirname "$0")"
+@@ -12,8 +12,8 @@
+ rm -rf build && mkdir -p build/classes build/tests
+ "$JDK/bin/javac" --release 21 -proc:none -Xlint:-deprecation -cp "$CP" -d build/classes $(find src -name '*.java' | sort)
+ cp plugin.yml config.yml changelog.yml build/classes/
+-OUT=$(realpath -m "${OUT:-../ExcelWhatsNew-0.1.0.jar}"); rm -f "$OUT"
+-(cd build/classes && TZ=UTC "$JDK/bin/jar" --create --file "$OUT" --date=2026-10-24T00:00:00Z $(find com -name '*.class' | sort) changelog.yml config.yml plugin.yml)
++OUT=$(realpath -m "${OUT:-../ExcelWhatsNew-0.1.1.jar}"); rm -f "$OUT"
++(cd build/classes && TZ=UTC "$JDK/bin/jar" --create --file "$OUT" --date=2026-10-26T00:00:00Z $(find com -name '*.class' | sort) changelog.yml config.yml plugin.yml)
+ sha256sum "$OUT"
+ "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP:build/classes" -d build/tests $(find tests -name '*.java')
+ "$JDK/bin/java" -cp "$CP:build/classes:build/tests" com.winkreyes.excelwhatsnew.TestMain
+diff -ruN -x build src-0.1.0/config.yml src/config.yml
+--- src-0.1.0/config.yml	2026-10-24 20:33:32.952208825 -0500
++++ src/config.yml	2026-10-26 09:18:46.330988443 -0500
+@@ -1,4 +1,4 @@
+-# ExcelWhatsNew 0.1.0 (Wink Reyes Valley). Settings. The news itself is in changelog.yml.
++# ExcelWhatsNew 0.1.1 (Wink Reyes Valley). Settings. The news itself is in changelog.yml.
+ # After editing either file: /whatsnew reload (no restart needed).
+ 
+ join:
+@@ -24,6 +24,8 @@
+ text:
+   ok-button: 'OK'
+   older-button: 'Older news'
++  # 0.1.1: pages back toward the newest entry. Missing key = 'Newer news'.
++  newer-button: 'Newer news'
+   close-button: 'Close'
+   footer-java: "Read it again any time: /whatsnew, or What's New in the compass menu."
+   footer-bedrock: "Read it again any time: tap What's New on the compass, or type /whatsnew."
+diff -ruN -x build src-0.1.0/plugin.yml src/plugin.yml
+--- src-0.1.0/plugin.yml	2026-10-24 20:33:32.948208808 -0500
++++ src/plugin.yml	2026-10-26 09:18:46.330988443 -0500
+@@ -1,5 +1,5 @@
+ name: ExcelWhatsNew
+-version: 0.1.0
++version: 0.1.1
+ main: com.winkreyes.excelwhatsnew.ExcelWhatsNew
+ api-version: '1.13'
+ author: WinkReyesValley
+@@ -7,7 +7,7 @@
+ description: Server news on join, once per update, until you say OK (an OK pop-up on Bedrock, a clickable [OK] on Java). /whatsnew reads the latest news any time.
+ commands:
+   whatsnew:
+-    description: The latest server news and new commands. /whatsnew ok hides it on join, /whatsnew 2 reads the one before.
++    description: The latest server news and new commands. /whatsnew ok hides it on join, /whatsnew 2 reads the one before, /whatsnew 1 goes back to the newest.
+     usage: /whatsnew [ok | list | <number>] (admin - reload | check | status <player> | reset <player> | push <player>)
+     aliases: [news]
+     permission: excelwhatsnew.use
+diff -ruN -x build src-0.1.0/src/com/winkreyes/excelwhatsnew/ExcelWhatsNew.java src/src/com/winkreyes/excelwhatsnew/ExcelWhatsNew.java
+--- src-0.1.0/src/com/winkreyes/excelwhatsnew/ExcelWhatsNew.java	2026-10-24 21:14:30.200482003 -0500
++++ src/src/com/winkreyes/excelwhatsnew/ExcelWhatsNew.java	2026-10-26 09:18:17.466860420 -0500
+@@ -2,6 +2,7 @@
+ 
+ import com.winkreyes.excelwhatsnew.core.Changelog;
+ import com.winkreyes.excelwhatsnew.core.Entry;
++import com.winkreyes.excelwhatsnew.core.Nav;
+ import com.winkreyes.excelwhatsnew.core.Render;
+ import com.winkreyes.excelwhatsnew.core.Seen;
+ import net.kyori.adventure.text.Component;
+@@ -44,10 +45,11 @@
+ import java.util.UUID;
+ 
+ /**
+- * ExcelWhatsNew 0.1.0 (Wink Reyes Valley): server news on join, once per entry, until OK.
++ * ExcelWhatsNew 0.1.1 (Wink Reyes Valley): server news on join, once per entry, until OK.
+  * Entries live in changelog.yml (newest first). Bedrock gets a Floodgate form with an OK
+  * button; Java gets a chat box with a clickable [OK]. Closing without OK means it shows
+  * again on the next join. /whatsnew (alias /news) reads the latest entries any time.
++ * 0.1.1: Newer news button (Java and Bedrock) to page back toward the newest entry.
+  */
+ public final class ExcelWhatsNew extends JavaPlugin implements Listener {
+     private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacyAmpersand();
+@@ -74,7 +76,7 @@
+     private boolean joinOn, requireMove, debug;
+     private long delayMs, maxWaitMs, moveWindowMs, combatQuietMs;
+     private int maxAgeDays, showCount;
+-    private String footerJava, footerBedrock, okButton, olderButton, closeButton;
++    private String footerJava, footerBedrock, okButton, olderButton, newerButton, closeButton;
+     private ZoneId zone;
+ 
+     @Override public void onEnable() {
+@@ -108,6 +110,7 @@
+         footerBedrock = c.getString("text.footer-bedrock", "Read it again any time: /whatsnew");
+         okButton = c.getString("text.ok-button", "OK");
+         olderButton = c.getString("text.older-button", "Older news");
++        newerButton = c.getString("text.newer-button", "Newer news");
+         closeButton = c.getString("text.close-button", "Close");
+         debug = c.getBoolean("debug", false);
+         String z = c.getString("time-zone", "America/Chicago");
+@@ -227,9 +230,8 @@
+         if (log.entries.isEmpty()) { p.sendMessage(legacy("&7No news yet.")); return; }
+         if (idx < 0 || idx >= shown()) idx = 0;
+         Entry e = log.entries.get(idx);
+-        boolean more = idx + 1 < shown();
+-        if (Bedrock.isBedrock(p) && openForm(p, idx, e, more, fromJoin)) return;
+-        chat(p, idx, e, more);
++        if (Bedrock.isBedrock(p) && openForm(p, idx, e, fromJoin)) return;
++        chat(p, idx, e);
+     }
+ 
+     private boolean pendingFor(UUID id, Entry e) {
+@@ -237,41 +239,59 @@
+         return pe != null && pe.id.equals(e.id);
+     }
+ 
+-    private void chat(Player p, int idx, Entry e, boolean more) {
++    private void chat(Player p, int idx, Entry e) {
+         boolean br = Bedrock.isBedrock(p);
++        boolean pend = pendingFor(p.getUniqueId(), e);
+         p.sendMessage(legacy(RULE));
+         for (String l : Render.java(e)) p.sendMessage(legacy(l));
+         if (br) {
+-            // Form could not open: Bedrock cannot click chat, so tell them what to type.
+-            boolean pend = pendingFor(p.getUniqueId(), e);
+-            p.sendMessage(legacy("&7" + (pend ? "Type &e/whatsnew ok &7to hide this. " : "") + (more ? "Older news: &e/whatsnew " + (idx + 2) : "")));
++            // Form could not open: Bedrock cannot click chat, so tell them what to type (both directions).
++            String hint = Nav.typedHint(pend, idx, shown());
++            if (!hint.isEmpty()) p.sendMessage(legacy(hint));
+         } else {
+             Component row = Component.empty();
+             boolean any = false;
+-            if (pendingFor(p.getUniqueId(), e)) { row = row.append(button("OK", NamedTextColor.GREEN, "/whatsnew ok " + e.id, "Got it, don't show this again")); any = true; }
+-            if (more) { row = row.append(Component.text(any ? "  " : "")).append(button(olderButton, NamedTextColor.AQUA, "/whatsnew " + (idx + 2), "Read the news before this")); any = true; }
++            for (Nav.Act act : Nav.javaButtons(pend, idx, shown())) {
++                Component b = switch (act) {
++                    case OK -> button(okButton, NamedTextColor.GREEN, "/whatsnew ok " + e.id, "Got it, don't show this again");
++                    case NEWER -> button(newerButton, NamedTextColor.AQUA, "/whatsnew " + Nav.newerNumber(idx), "Read the news after this");
++                    case OLDER -> button(olderButton, NamedTextColor.AQUA, "/whatsnew " + Nav.olderNumber(idx), "Read the news before this");
++                    default -> null;
++                };
++                if (b == null) continue;
++                row = row.append(Component.text(any ? "  " : "")).append(b);
++                any = true;
++            }
+             if (any) p.sendMessage(row);
+             if (footerJava != null && !footerJava.isEmpty()) p.sendMessage(legacy("&7" + footerJava));
+         }
+         p.sendMessage(legacy(RULE));
+     }
+ 
+-    private boolean openForm(Player p, int idx, Entry e, boolean more, boolean fromJoin) {
++    private boolean openForm(Player p, int idx, Entry e, boolean fromJoin) {
+         UUID id = p.getUniqueId();
+         boolean pend = pendingFor(id, e);
++        // Buttons are conditional, so the clicked id is mapped through the same list that built the form.
++        final List<Nav.Act> acts = Nav.formButtons(pend, idx, shown());
+         List<String> buttons = new ArrayList<>();
+-        buttons.add(pend ? okButton : closeButton);
+-        if (more) buttons.add(olderButton);
++        for (Nav.Act act : acts) buttons.add(switch (act) {
++            case OK -> okButton;
++            case NEWER -> newerButton;
++            case OLDER -> olderButton;
++            case CLOSE -> closeButton;
++        });
+         final int fi = idx; final String eid = e.id;
+         String via = bedrock.send(p, Render.formTitle(e), Render.bedrock(e, footerBedrock), buttons, clicked ->
+                 Bukkit.getScheduler().runTask(this, () -> {
+                     formOpen.remove(id);
+                     Player q = Bukkit.getPlayer(id);
+-                    if (debug) getLogger().info("news form " + eid + " answer " + clicked + " from " + (q == null ? id : q.getName()));
++                    Nav.Act act = Nav.clicked(acts, clicked);
++                    if (debug) getLogger().info("news form " + eid + " answer " + clicked + " (" + act + ") from " + (q == null ? id : q.getName()));
+                     if (q == null) return;
+-                    if (clicked == 0) { if (pend) ack(q, eid, true); }
+-                    else if (clicked == 1 && more) open(q, fi + 1, false);
+-                    else if (clicked < 0 && pend && fromJoin) q.sendMessage(legacy("&7Closed. The news shows again next time you join. Type &e/whatsnew &7to read it."));
++                    if (act == Nav.Act.OK) ack(q, eid, true);
++                    else if (act == Nav.Act.NEWER) open(q, fi - 1, false);
++                    else if (act == Nav.Act.OLDER) open(q, fi + 1, false);
++                    else if (act == null && pend && fromJoin) q.sendMessage(legacy("&7Closed. The news shows again next time you join. Type &e/whatsnew &7to read it."));
+                 }));
+         if (via == null) return false;
+         formOpen.put(id, 1);
+@@ -428,7 +448,7 @@
+                 line = line.append(Component.text(" ")).append(button("Read", NamedTextColor.AQUA, "/whatsnew " + (i + 1), "Open this news"));
+             s.sendMessage(line);
+         }
+-        if (s instanceof Player p && Bedrock.isBedrock(p)) say(s, "&7Type &e/whatsnew 2 &7(or 3) to read an older one.");
++        if (s instanceof Player p && Bedrock.isBedrock(p)) { String h = Nav.listHint(shown()); if (!h.isEmpty()) say(s, h); }
+     }
+ 
+     @Override public List<String> onTabComplete(CommandSender s, Command cmd, String alias, String[] a) {
+diff -ruN -x build src-0.1.0/src/com/winkreyes/excelwhatsnew/core/Nav.java src/src/com/winkreyes/excelwhatsnew/core/Nav.java
+--- src-0.1.0/src/com/winkreyes/excelwhatsnew/core/Nav.java	1969-12-31 18:00:00.000000000 -0600
++++ src/src/com/winkreyes/excelwhatsnew/core/Nav.java	2026-10-26 09:18:17.394860101 -0500
+@@ -0,0 +1,76 @@
++package com.winkreyes.excelwhatsnew.core;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * Paging between news entries (0.1.1). Entry index 0 is the newest; the player types
++ * /whatsnew N where N = index + 1. Pure logic so the tests can check the button
++ * order and the callback mapping without a server.
++ */
++public final class Nav {
++    private Nav() { }
++
++    /** What a button does. */
++    public enum Act { OK, NEWER, OLDER, CLOSE }
++
++    /** There is a newer entry to page back to. */
++    public static boolean hasNewer(int idx) { return idx > 0; }
++
++    /** There is an older entry inside the shown range. */
++    public static boolean hasOlder(int idx, int shown) { return idx + 1 < shown; }
++
++    /** The /whatsnew number of the next newer entry (entry idx - 1 is number idx). */
++    public static int newerNumber(int idx) { return idx; }
++
++    /** The /whatsnew number of the next older entry. */
++    public static int olderNumber(int idx) { return idx + 2; }
++
++    /**
++     * Bedrock form buttons, top to bottom: OK (only when this entry is the one waiting
++     * for OK), Newer news, Older news, Close (only when there is no OK button, same as
++     * 0.1.0 where the first button was OK or Close). The clicked button id is the index
++     * into this list.
++     */
++    public static List<Act> formButtons(boolean pending, int idx, int shown) {
++        List<Act> l = new ArrayList<>();
++        if (pending) l.add(Act.OK);
++        if (hasNewer(idx)) l.add(Act.NEWER);
++        if (hasOlder(idx, shown)) l.add(Act.OLDER);
++        if (!pending) l.add(Act.CLOSE);
++        return l;
++    }
++
++    /** Java clickable chat row, left to right: [OK] [Newer news] [Older news]. Chat needs no Close. */
++    public static List<Act> javaButtons(boolean pending, int idx, int shown) {
++        List<Act> l = new ArrayList<>();
++        if (pending) l.add(Act.OK);
++        if (hasNewer(idx)) l.add(Act.NEWER);
++        if (hasOlder(idx, shown)) l.add(Act.OLDER);
++        return l;
++    }
++
++    /** Clicked form button id to its action, or null when closed (-1) or out of range. */
++    public static Act clicked(List<Act> buttons, int clicked) {
++        return clicked >= 0 && clicked < buttons.size() ? buttons.get(clicked) : null;
++    }
++
++    /**
++     * Typed fallback line ('&' colors) for players who cannot click (Bedrock when the form
++     * could not open). Mentions both directions when both exist. Empty string = no line.
++     */
++    public static String typedHint(boolean pending, int idx, int shown) {
++        List<String> parts = new ArrayList<>();
++        if (pending) parts.add("Type &e/whatsnew ok &7to hide this.");
++        if (hasNewer(idx)) parts.add("Newer news: &e/whatsnew " + newerNumber(idx) + "&7.");
++        if (hasOlder(idx, shown)) parts.add("Older news: &e/whatsnew " + olderNumber(idx) + "&7.");
++        return parts.isEmpty() ? "" : "&7" + String.join(" ", parts);
++    }
++
++    /** Bedrock hint under /whatsnew list ('&' colors), from the real number of entries shown. Empty = no line. */
++    public static String listHint(int shown) {
++        if (shown <= 1) return "";
++        if (shown == 2) return "&7Type &e/whatsnew 2 &7to read the older one.";
++        return "&7Type &e/whatsnew 2 &7to &e/whatsnew " + shown + " &7to read an older one.";
++    }
++}
+diff -ruN -x build src-0.1.0/tests/com/winkreyes/excelwhatsnew/TestMain.java src/tests/com/winkreyes/excelwhatsnew/TestMain.java
+--- src-0.1.0/tests/com/winkreyes/excelwhatsnew/TestMain.java	2026-10-24 20:34:16.828403438 -0500
++++ src/tests/com/winkreyes/excelwhatsnew/TestMain.java	2026-10-26 09:18:46.330988443 -0500
+@@ -2,6 +2,8 @@
+ 
+ import com.winkreyes.excelwhatsnew.core.Changelog;
+ import com.winkreyes.excelwhatsnew.core.Entry;
++import com.winkreyes.excelwhatsnew.core.Nav;
++import com.winkreyes.excelwhatsnew.core.Nav.Act;
+ import com.winkreyes.excelwhatsnew.core.Render;
+ import com.winkreyes.excelwhatsnew.core.Seen;
+ import org.yaml.snakeyaml.Yaml;
+@@ -105,6 +107,64 @@
+         ok(order.warnings.stream().anyMatch(w -> w.contains("newest at the top")), "wrong order warned");
+         ok(Changelog.parse(null).warnings.size() == 1, "missing entries list warned");
+ 
++        // 0.1.1 Newer news paging
++        ok(!Nav.hasNewer(0) && Nav.hasNewer(1) && Nav.hasNewer(9), "Newer news only when idx > 0");
++        ok(Nav.newerNumber(1) == 1 && Nav.newerNumber(4) == 4, "Newer news opens /whatsnew idx (the next newer one)");
++        ok(Nav.olderNumber(0) == 2 && Nav.olderNumber(3) == 5, "Older news opens /whatsnew idx+2 (unchanged)");
++        ok(Nav.hasOlder(0, 10) && !Nav.hasOlder(9, 10) && !Nav.hasOlder(0, 1), "Older news stops at the last shown entry");
++        // Bedrock form: order OK, Newer, Older, Close; OK and Close never together (same as 0.1.0)
++        ok(Nav.formButtons(true, 0, 10).equals(List.of(Act.OK, Act.OLDER)), "form newest + pending: OK, Older");
++        ok(Nav.formButtons(false, 0, 10).equals(List.of(Act.OLDER, Act.CLOSE)), "form newest, already OK: Older, Close");
++        ok(Nav.formButtons(false, 3, 10).equals(List.of(Act.NEWER, Act.OLDER, Act.CLOSE)), "form middle: Newer, Older, Close");
++        ok(Nav.formButtons(false, 9, 10).equals(List.of(Act.NEWER, Act.CLOSE)), "form oldest shown: Newer, Close");
++        ok(Nav.formButtons(true, 2, 10).equals(List.of(Act.OK, Act.NEWER, Act.OLDER)), "form pending middle: OK, Newer, Older");
++        ok(Nav.formButtons(false, 0, 1).equals(List.of(Act.CLOSE)) && Nav.formButtons(true, 0, 1).equals(List.of(Act.OK)), "form single entry: one button");
++        // Callback mapping through the same list
++        List<Act> mid = Nav.formButtons(false, 3, 10);
++        ok(Nav.clicked(mid, 0) == Act.NEWER && Nav.clicked(mid, 1) == Act.OLDER && Nav.clicked(mid, 2) == Act.CLOSE, "middle form: id 0 Newer, 1 Older, 2 Close");
++        List<Act> pend = Nav.formButtons(true, 0, 10);
++        ok(Nav.clicked(pend, 0) == Act.OK && Nav.clicked(pend, 1) == Act.OLDER, "pending newest: id 0 OK, id 1 Older (same ids as 0.1.0)");
++        List<Act> last = Nav.formButtons(false, 9, 10);
++        ok(Nav.clicked(last, 0) == Act.NEWER && Nav.clicked(last, 1) == Act.CLOSE, "oldest form: id 0 Newer, id 1 Close (never Older)");
++        ok(Nav.clicked(mid, -1) == null && Nav.clicked(mid, 3) == null && Nav.clicked(mid, 99) == null, "closed or out-of-range id does nothing");
++        // Java row: same order, no Close
++        ok(Nav.javaButtons(true, 0, 10).equals(List.of(Act.OK, Act.OLDER)), "java newest pending: [OK] [Older news]");
++        ok(Nav.javaButtons(false, 3, 10).equals(List.of(Act.NEWER, Act.OLDER)), "java middle: [Newer news] [Older news]");
++        ok(Nav.javaButtons(false, 9, 10).equals(List.of(Act.NEWER)), "java oldest: [Newer news]");
++        ok(Nav.javaButtons(false, 0, 1).isEmpty(), "java single entry, already OK: no row");
++        for (int sh = 1; sh <= 10; sh++) for (int i = 0; i < sh; i++) for (boolean pd : new boolean[]{true, false}) {
++            List<Act> f = Nav.formButtons(pd, i, sh), jv = Nav.javaButtons(pd, i, sh);
++            List<Act> fNoClose = new ArrayList<>(f); fNoClose.remove(Act.CLOSE);
++            if (!fNoClose.equals(jv)) ok(false, "parity java vs bedrock at idx " + i + " of " + sh + " pending " + pd);
++            if (f.isEmpty()) ok(false, "form never empty at idx " + i + " of " + sh);
++        }
++        ok(true, "Java/Bedrock parity: same buttons in the same order for every idx/shown/pending (Close is Bedrock only)");
++        // Typed fallback mentions both directions
++        String th = Nav.typedHint(false, 3, 10);
++        ok(th.contains("Newer news: &e/whatsnew 3") && th.contains("Older news: &e/whatsnew 5"), "typed hint has both directions: " + th);
++        ok(Nav.typedHint(true, 0, 10).contains("/whatsnew ok") && !Nav.typedHint(true, 0, 10).contains("Newer"), "typed hint newest: OK + Older, no Newer");
++        ok(Nav.typedHint(false, 9, 10).contains("Newer news: &e/whatsnew 9") && !Nav.typedHint(false, 9, 10).contains("Older"), "typed hint oldest: Newer only");
++        ok(Nav.typedHint(false, 0, 1).isEmpty(), "typed hint nothing to say: no line");
++        // Bedrock /whatsnew list hint follows the real count (was hardcoded '(or 3)')
++        ok(Nav.listHint(1).isEmpty(), "list hint 1 entry: none");
++        ok(Nav.listHint(2).equals("&7Type &e/whatsnew 2 &7to read the older one."), "list hint 2 entries");
++        ok(Nav.listHint(10).equals("&7Type &e/whatsnew 2 &7to &e/whatsnew 10 &7to read an older one."), "list hint 10 entries: /whatsnew 2 to /whatsnew 10");
++        ok(!Nav.listHint(10).contains("or 3"), "list hint no longer hardcodes (or 3)");
++        for (String t : List.of(Nav.listHint(10), Nav.typedHint(true, 3, 10))) ok(!t.contains("\u2014") && !t.contains("\u2013"), "no em or en dashes in new text");
++        // Config: shipped default has the key; a config without it (live 62b95a5e) falls back
++        String cfg = Files.readString(Path.of("config.yml"));
++        ok(cfg.contains("newer-button: 'Newer news'"), "default config.yml has text.newer-button");
++        Path live = Path.of("/workspace/batch-next/fixes-20261026-am/readback/ExcelWhatsNew_config.yml");
++        if (Files.exists(live)) {
++            Map<String, Object> lm = new Yaml().load(Files.readString(live));
++            Map<?, ?> tx = (Map<?, ?>) lm.get("text");
++            ok(tx != null && !tx.containsKey("newer-button"), "live config 62b95a5e has no newer-button (code default 'Newer news' applies)");
++            ok(Integer.valueOf(10).equals(lm.get("show-count")), "live config show-count is 10");
++        }
++        String src = Files.readString(Path.of("src/com/winkreyes/excelwhatsnew/ExcelWhatsNew.java"));
++        ok(src.contains("c.getString(\"text.newer-button\", \"Newer news\")"), "code reads text.newer-button with default 'Newer news'");
++        ok(!src.contains("(or 3)"), "hardcoded (or 3) gone from source");
++
+         System.out.println("RESULT " + pass + " passed, " + fail + " failed");
+         if (fail > 0) System.exit(1);
+     }

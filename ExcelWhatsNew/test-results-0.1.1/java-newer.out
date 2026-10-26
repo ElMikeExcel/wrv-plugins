@@ -1,0 +1,20 @@
+=== javanewer Mon Oct 26 2026 09:20:14 GMT-0500 (Central Daylight Time)
+$ whatsnew reset WNNewerJ
+   [09:20:14] No player WNNewerJ on file.
+   > 
+newest buttons [{"text":"[OK]","cmd":"/whatsnew ok 2026-10-26-mend-mana"},{"text":"[Older news]","cmd":"/whatsnew 2"}]
+PASS newest, not OK yet: [OK] still there
+PASS newest: [Older news] runs /whatsnew 2
+PASS newest: no [Newer news]
+entry 3 buttons [{"text":"[Newer news]","cmd":"/whatsnew 2"},{"text":"[Older news]","cmd":"/whatsnew 4"}]
+PASS entry 3: [Newer news] runs /whatsnew 2 (default label from code, key not in live config)
+PASS entry 3: [Older news] runs /whatsnew 4
+PASS entry 3 order: Newer then Older
+PASS clicking Newer twice from entry 3 reaches the newest (2 steps)
+PASS newest entry text is back on screen (Mend news)
+entry 8 buttons [{"text":"[Newer news]","cmd":"/whatsnew 7"}]
+PASS last entry (8): Newer only, no Older
+PASS /whatsnew 99 clamps to entry 8 with Newer news
+PASS Java list: 8 Read buttons, no Bedrock hint
+PASS after OK: entry 2 has Newer, no OK
+RESULT javanewer 12 passed 0 failed
