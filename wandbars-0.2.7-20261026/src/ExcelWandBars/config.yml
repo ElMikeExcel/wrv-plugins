@@ -1,0 +1,255 @@
+# ExcelWandBars 0.2.7 (Wink Reyes Valley). Separate plugin; Magic (elmakers)
+# files are not changed. EliteMobs (MagmaGuy) is not touched.
+
+# 0.2.0: wand controls are a per-player choice. Everyone gets the default
+# (classic) until they pick Spell bars with /wandstyle (form on Bedrock,
+# clickable chat on Java, also a button at the bottom of /spellinfo).
+# The choice is saved in styles.yml and put back on the held rank wand on
+# join, when a wand is held or re-issued, on respawn and after every Magic
+# load (seal stage applies). Only keys that differ are written to the wand.
+# 0.2.1: the two styles are now called Classic and Sneak bars. Sneak bars is
+# for Bedrock players only (phone, tablet, console via Geyser/Floodgate).
+# Java players always get Classic and /wandstyle shows them Classic only.
+# Bedrock players pick with /wandstyle (a form) or the "Wand controls"
+# button in the compass menu (ExcelBedrockMenu 1.5.18).
+wand-style:
+  enabled: true
+  # true = Sneak bars only for Bedrock players. A Java player with "bars"
+  # saved from 0.2.0 gets Classic put back on their wand (choice kept in
+  # styles.yml, used again if they join from Bedrock).
+  bars-bedrock-only: true
+  # 0.2.5 (Java/Bedrock parity): Sneak bars is offered to Java players too.
+  # A new key, so a config.yml from 0.2.4 or older (bars-bedrock-only: true)
+  # still gets it. Set false to keep Sneak bars Bedrock only again.
+  sneak-bars-java: true
+  # classic = chest mode: right click next spell, sneak + right click spell
+  # list, Q back one spell. bars = inventory mode + quick cast.
+  # 0.2.3: cycle = chest mode, just cycling: right click next spell, sneak +
+  # right click / Q / sneak + Q back one spell, no spell list from the wand
+  # (/spellbook still works). For Java and Bedrock. Picked with /wandstyle cycle
+  # or the third button in the Wand controls form.
+  # 0.2.4: original = the first wand setup (Oct 17 2026 Phase 1 wands.yml):
+  # inventory mode, picking a hotbar spell icon makes it the active spell,
+  # left click (phone: press and hold) casts. 0.2.6: original uses Magic's
+  # quick_cast "manual" (a tap only picks, for every spell) and right_click
+  # "none" (ExcelWandBars handles it: Java opens / puts items back, phone press
+  # and hold casts the picked spell once). tapbar = Tap bar, best on a
+  # phone: inventory mode + quick cast, picking a hotbar spell icon casts it
+  # at once. Both are for Java and Bedrock (see tap-bar below).
+  # 0.2.3 and older do not know these two keys and use Classic for them.
+  default: classic
+  # 0.2.5: every unlocked spell on the hotbar (Sneak bars, Tap to pick (original),
+  # Tap bar). The wand's spells are packed in their current order, with enough
+  # pages for all of them; crouch flips the page ("Page 1/2" on the action bar).
+  # Tap bar / original: 7 spells per page, the 8th slot stays empty so a phone
+  # player can always tap it to get their items back. Sneak bars: 8 per page.
+  # Chest styles (Classic, Cycle) are not touched.
+  pages:
+    enabled: true
+    tap-bar-per-page: 7
+    sneak-bars-per-page: 8
+  # Only wands whose template inherits this one are touched (the rank wands).
+  rank-wand-inherits: base_wand
+  # Never touched even if they inherit base_wand (the builder wand keeps its own controls).
+  exclude-templates:
+    - masons
+  # Optional per-key overrides of the two control sets. Leave commented to use
+  # the built-in sets (same as the WRV-150 chest set and the action-bar set).
+  #controls:
+  #  classic:
+  #    right_click_sneak: toggle
+  #  bars:
+  #    right_click_sneak: cycle
+  #  cycle:
+  #    drop_sneak: toggle
+  #  original:
+  #    live_hotbar_mana: false
+  #  tapbar:
+  #    left_click: none   (0.2.5 default: press and hold / left click never casts)
+  #    drop: none         (0.2.5 default: ExcelWandBars reads Q / a held slot)
+  #    right_click: none  (0.2.5 default: ExcelWandBars handles it. Bedrock press
+  #                        and hold reads, Java right click opens / items back)
+
+# 0.2.4: Tap bar and Tap to cycle (original). Magic (elmakers) keeps your real
+# hotbar stored while the spell icons are up and puts it back on close, death,
+# quit and world change; this section only decides WHEN the bar opens/closes.
+# Closing always uses Magic's own close (items restored), nothing is deleted.
+tap-bar:
+  # Picking the wand in the hotbar opens the spell bar (Bedrock touch sends
+  # nothing for a tap on air, so Magic's right click opener can't fire there).
+  open-on-hold: true
+  # While the bar is up, tapping an empty slot puts your items back and
+  # selects that slot.
+  empty-slot-closes: true
+  # The bar puts your items back by itself after this many seconds with no
+  # spell or slot tap. 0 = never (then: press and hold the wand, or Q / right click).
+  close-after-idle-seconds: 15
+  # Put the items back before a chest, furnace, villager or other inventory opens.
+  close-before-other-inventory: true
+  # Tap bar only: press and hold (a phone sends it as a swing, a right click
+  # (item use), or a drop when the finger is on a hotbar slot; 0.2.5 reads all three)
+  # never casts. Bar down: it opens the bar. Bar up: it shows the Spell Book
+  # page for the last spell icon you tapped (what it does, cost, cooldown,
+  # range, rank, Next rank: N of M casts), or the whole Spell Book if none.
+  hold-shows-info: true
+  # Swings closer together than this are one hold (a held finger repeats).
+  hold-gap-ms: 700
+  # How long the last tapped icon counts as "the spell you are holding".
+  info-remembers-tap-seconds: 30
+  # Tap bar only, the spell icons' name and lore:
+  #   spellbook = the same lines as the press and hold page and /spellinfo
+  #   magic     = keep Magic's own icon text, add the "Next rank" line
+  #   off       = Magic's own icon text only
+  # Refreshed when the bar opens and after each cast.
+  icon-lore: spellbook
+  # 0.2.5: a press and hold (or Q / a phone's press and hold on a hotbar slot)
+  # within this many ms after tapping a spell icon reads THAT spell. Later, a
+  # press and hold on the screen shows all your spells (tap one for its page).
+  hold-reads-tap-ms: 1500
+  # 0.2.5: Tap bar stays up while you hold the wand (close-after-idle-seconds
+  # is only for Tap to pick (original)). Items back: tap the empty slot at the
+  # end of the bar, Q / press and hold the wand slot, or switch away.
+  tap-bar-stays-open: true
+  # 0.2.7: Tap bar, tapping the wand itself (the slot already selected).
+  #   toggle = bar up: your items come back; bar down: the bar opens
+  #   close  = only puts your items back
+  #   off    = nothing (items back: the empty slot next to the wand, or press and hold the wand slot)
+  # Bedrock only: Geyser does not pass this tap on to the server, so ExcelWandBars reads it
+  # inside Geyser. A Java client sends nothing when you press the key of the slot you are on
+  # (Java: Q or right click puts your items back). Not in this file = toggle.
+  tap-wand: toggle
+  # A phone may re-send the selected slot right after the server changes the hotbar (bar
+  # opened, wand moved, spell cast, page flipped). Anything this soon after is not a tap.
+  tap-wand-guard-ms: 700
+
+# 0.2.7: the rank wand lives in the last hotbar slot. Moving it is ONE swap: the wand goes to
+# the slot, and whatever was there (an item, a stack or nothing) goes to the wand's old slot.
+# Nothing is dropped, deleted or copied. Never while the spell bar is up, a chest or other
+# screen is open, an item is on the cursor, within quiet-after-click-ms of an inventory click,
+# when dead, in spectator or creative, or in a skip world. If you hold the item in the last
+# slot, it waits until you pick something else (your hand never changes under you).
+# Picking the wand in another slot moves it and selects the last slot. Hotbar only: a wand
+# in the main inventory stays where it is. Not in this file = these defaults.
+wand-slot:
+  enabled: true
+  # 1-9, like the hotbar keys.
+  slot: 9
+  # The styles that keep the wand in that slot (classic, bars, cycle, original, tapbar).
+  styles:
+    - tapbar
+    - original
+  quiet-after-click-ms: 3000
+  sweep-ticks: 20
+
+sneak-flip:
+  # Only for players on the Sneak bars style (Bedrock); classic players never flip.
+  # A sneak PRESS (not the release) while holding a Magic wand whose spell bar
+  # is open flips to the next bar: 1, 2, 3, back to 1. The bar stays where it
+  # is when you stop sneaking, so you never have to keep sneaking.
+  enabled: true
+  # Ignore a second press within this many milliseconds (double events).
+  debounce-ms: 250
+  # Sneak also means "get out of the boat", "swim down", "stop gliding" and
+  # "fly down", so those never flip bars.
+  skip-in-vehicle: true
+  skip-swimming: true
+  skip-gliding: true
+  skip-flying: true
+  # One short action-bar line after a flip, e.g. "Bar 2/3: Boon, Feed".
+  # Sent once (not repeated), so ExcelAttunement's stance line wins on its next update.
+  show-bar-line: true
+
+spell-book:
+  # /spellinfo: Bedrock gets a form (tap a spell for full details), Java gets
+  # chat lines with hover details. Read only. 0.2.1: works without holding
+  # the wand (reads the first usable wand in the inventory), so the compass
+  # menu Spellbook button works while the compass is in hand.
+  enabled: true
+
+wand-tip:
+  # 0.2.1 onboarding tip: on each of a player's first max-uses wand uses
+  # (left or right click with a Magic wand) a short chat tip explains the two
+  # wand styles, until they say OK. Java: click [OK] in chat. Bedrock: tap
+  # OK on a pop-up (at most once per session, never right after a hit) or
+  # type /wandstyle ok. Picking a style also counts as OK. Progress is saved
+  # in tips.yml. Clicks closer than use-gap-ms count as one use.
+  enabled: true
+  max-uses: 15
+  use-gap-ms: 2000
+  bedrock-popup-combat-quiet-ms: 10000
+
+spell-screen:
+  # 0.2.2: Bedrock players on Classic controls (Magic chest mode): crouch and
+  # press and hold (or crouch + LT) opens the Spell Book form instead of
+  # Magic's chest spell list (Geyser showed that chest with a row of barrier
+  # blocks). Tap a spell, then "Use this spell" to make it the wand's spell.
+  # Java players and Sneak bars are never changed. If the form can't be sent,
+  # Magic's chest opens as before.
+  bedrock-form: true
+  # A second open request within this many ms (same press twice) is ignored.
+  debounce-ms: 600
+
+spell-info:
+  # Spell info 2026-10-26. The Spell Book / press and hold screen now shows what
+  # each spell really does (hearts, effects, who, radius), worked out from
+  # Magic's spells.yml, plus what the next rank changes. These lines are the
+  # only typed text: how a player reaches each wand rank. Shown as
+  # "How to reach Student rank:" on every spell and in the Spell Book header.
+  # {rank} = the rank name. Empty text ('') hides the line. Keep it short
+  # (phones), no em dashes, and never mention seals.
+  # Change with /wandbars reload (no restart).
+  rank-up:
+    default: "{rank} rank is not open yet. Watch What's New."
+    # student: "Ask the Old Quartermaster."
+    # apprentice: "..."
+    # master: "..."
+
+progress-line:
+  # 0.2.2: after a successful cast, one short action-bar line shows the
+  # spell's progress, e.g. "Boon: 12/40 casts to Rank 2". Sent once, never
+  # repeated. The XP bar (mana) is not touched.
+  # Only shown where casting really counts toward the next rank: Magic ranks
+  # a spell up by casts only on a wand with a Magic path. WRV's rank wands
+  # have no path (and Magic's default_wand_path is empty), so with today's
+  # Magic config no line shows and the Spell Book says the next rank comes
+  # with the next wand rank. If the wands ever get a path, the line works
+  # with no change here.
+  enabled: true
+  # At most one line per player this often (a rank-up, or the cast that
+  # fills the count, always shows).
+  min-gap-seconds: 4
+  # While an ExcelAttunement stance countdown is on, no progress line (so the
+  # stance line is never covered). The Spell Book still shows the progress.
+  skip-during-stance: true
+
+spell-tip:
+  # 0.2.2 first-use tip for the Spell Book screen and the progress line.
+  # Repeats until the player says OK: Java [OK] in chat, the OK button inside
+  # the Bedrock Spell Book, or /spellbook ok. At most once per show-gap.
+  # If ExcelTips is running, the tip is handed to it (tip name "spellscreen")
+  # and this plugin does not show its own copy, so nobody sees it twice.
+  enabled: true
+  # 0 = until OK (Mike's rule).
+  max-shows: 0
+  show-gap-seconds: 60
+
+# Belt and braces: never flip in these worlds (Magic is already off there
+# through ExcelAttunement's guild ward, so the wand bar cannot be open).
+skip-worlds:
+  - em_adventurers_guild
+  - GoblinKingdom_vf
+skip-world-prefixes:
+  - em_
+
+debug: false
+
+compass-guard:
+  # While the Magic wand bar is open your real inventory is stored away, so a
+  # menu compass given then cannot see the one you already have, and the two
+  # stack when the bar closes. With this on, a few ticks after the bar can
+  # close (and after join or respawn), extra menu compasses are trimmed to
+  # exactly one. Never gives items; only removes extra copies of the tagged compass.
+  enabled: true
+  keys:
+    - menujoin:menu_compass
+    - excelmenujoin:menu_compass

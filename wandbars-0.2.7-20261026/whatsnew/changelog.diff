@@ -1,0 +1,18 @@
+--- base-4f9bdbaf.yml	2026-10-26 11:08:32.006579863 -0500
++++ changelog.yml	2026-10-26 11:08:39.506613128 -0500
+@@ -14,6 +14,15 @@
+ # Add a new entry at the TOP; everyone who has not seen it gets it once on their next join.
+ 
+ entries:
++  - id: 2026-10-26-wand-last-slot
++    date: Oct 26
++    posted: 2026-10-26
++    title: "Tap bar: your wand lives in slot 9"
++    changes:
++      - "Tap bar and Tap to pick: your wand moves to the last hotbar slot. Whatever was there swaps into its old slot."
++      - "Phones and tablets, Tap bar: tap the wand again to get your items back."
++      - "Computer, Tap bar: Q or right click puts your items back, same as before."
++      - "Spell info now shows what each spell really does and what the next rank changes."
+   - id: 2026-10-26-tap-to-pick-fix
+     date: Oct 26
+     posted: 2026-10-26
