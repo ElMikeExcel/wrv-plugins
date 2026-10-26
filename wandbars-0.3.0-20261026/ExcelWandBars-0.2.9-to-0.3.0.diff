@@ -1,0 +1,1694 @@
+diff -ruN '--exclude=build' src-0.2.9/build.sh src/build.sh
+--- src-0.2.9/build.sh	2026-10-26 13:16:53.000000000 -0500
++++ src/build.sh	2026-10-26 14:22:07.782723398 -0500
+@@ -1,5 +1,5 @@
+ #!/bin/bash
+-# Build ExcelWandBars-0.2.9.jar (deterministic: fixed jar date, sorted inputs).
++# Build ExcelWandBars-0.3.0.jar (deterministic: fixed jar date, sorted inputs).
+ # Manual javac route, same as the other Excel plugins. Magic 11.2.5's jar is
+ # COMPILE-ONLY (soft-depend at runtime); nothing from Magic or Geyser is packaged.
+ # 0.2.7: Geyser-Spigot's jar is compile-only too (GeyserTapHook, loaded by name only when Geyser runs).
+@@ -16,8 +16,8 @@
+ CP="$CP:$MAGIC:$GEYSER"
+ rm -rf build/classes && mkdir -p build/classes
+ "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP" -d build/classes $(find src -name '*.java' | sort)
+-cp plugin.yml config.yml build/classes/
+-OUT=${OUT:-../files/plugins/ExcelWandBars-0.2.9.jar}
++cp plugin.yml config.yml spellbook.yml build/classes/
++OUT=${OUT:-../files/plugins/ExcelWandBars-0.3.0.jar}
+ rm -f "$OUT"
+ "$JDK/bin/jar" --create --file "$OUT" --date=2026-10-26T00:00:00-05:00 -C build/classes .
+ sha256sum "$OUT"
+diff -ruN '--exclude=build' src-0.2.9/config.yml src/config.yml
+--- src-0.2.9/config.yml	2026-10-26 14:04:05.000000000 -0500
++++ src/config.yml	2026-10-26 14:22:12.562744599 -0500
+@@ -165,6 +165,15 @@
+   # the wand (reads the first usable wand in the inventory), so the compass
+   # menu Spellbook button works while the compass is in hand.
+   enabled: true
++  # 0.3.0: organized Spell Book. Home screen with a button per group (from
++  # spellbook.yml), All A to Z, and Put spells on my bar. Group pages: Java
++  # chat 10 per page, Bedrock forms 12 per page. false = the 0.2.9 flat list.
++  # Missing = true. /wandbars reload, no restart.
++  groups: true
++  # 0.3.0: also show spells a higher wand rank gets (grey, "unlocks at
++  # Apprentice"). Only spells already on the rank wands, so only seals that
++  # are broken (no spoilers). Missing = true.
++  show-locked: true
+ 
+ wand-tip:
+   # 0.2.1 onboarding tip: on each of a player's first max-uses wand uses
+diff -ruN '--exclude=build' src-0.2.9/plugin.yml src/plugin.yml
+--- src-0.2.9/plugin.yml	2026-10-26 14:04:05.000000000 -0500
++++ src/plugin.yml	2026-10-26 14:19:52.246122241 -0500
+@@ -1,5 +1,5 @@
+ name: ExcelWandBars
+-version: 0.2.9
++version: 0.3.0
+ main: com.winkreyes.excelwandbars.ExcelWandBars
+ api-version: '1.13'
+ author: WinkReyesValley
+diff -ruN '--exclude=build' src-0.2.9/spellbook.yml src/spellbook.yml
+--- src-0.2.9/spellbook.yml	1969-12-31 18:00:00.000000000 -0600
++++ src/spellbook.yml	2026-10-26 14:22:04.622709381 -0500
+@@ -0,0 +1,136 @@
++# ExcelWandBars 0.3.0: Spell Book groups (Wink Reyes Valley).
++# Each spell (Magic spell key, lower case) sits in one group. Order of groups = order in the Spell Book.
++# A spell in no group shows under "Other" (last) and the server log lists it once at start and on
++# /wandbars reload. A spell in two groups stays in the first one.
++# Edit, then /wandbars reload (no restart). Group keys "other" and "all" are reserved.
++# Not listed on purpose: disposal (taken off the wands, Oct 26, 2026).
++categories:
++  healing:
++    name: Healing
++    spells:
++      - heal
++      - feed
++      - cure
++      - superheal
++      - healing
++      - holylight
++      - mend
++      - flashheal
++      - greaterheal
++      - layonhands
++  defense:
++    name: Defense
++    spells:
++      - boon
++      - shell
++      - blessing
++      - bubble
++      - cloak
++      - reflect
++      - invincible
++      - ward
++  damage:
++    name: Damage
++    spells:
++      - stormshackle
++      - missile
++      - frost
++      - arrow
++      - flare
++      - stun
++      - push
++      - pull
++      - stream
++      - arrow_ice
++      - arrow_light
++      - arrow_shock
++      - arrow_regular
++      - wave
++      - smite
++      - lightning
++      - chainlightning
++      - boomerang
++      - throwsword
++      - whip
++      - critical
++      - counterspell
++      - arrowrain
++      - sweep
++      - powerstone
++      - force
++      - fury
++      - tendril
++      - shrink
++      - masterattack
++  movement:
++    name: Movement
++    spells:
++      - recall
++      - recall_death
++      - backflip
++      - fling
++      - dash
++      - evade
++      - hulkleap
++      - piggyback
++      - glide
++      - lift
++      - blink
++      - gather
++      - skating
++      - wearskates
++  summon:
++    name: Summon
++    spells:
++      - familiar
++      - wolf
++      - cat
++      - tame
++      - tamepet
++  building:
++    name: Building
++    spells:
++      - earth
++      - platform
++      - walls
++      - sponge
++      - tent
++      - tiny_house
++      - giant_house
++      - harden
++      - rubberize
++  world:
++    name: World
++    spells:
++      - day
++      - night
++      - weather
++      - time
++      - localrain
++      - restorelocalweather
++  utility:
++    name: Utility
++    spells:
++      - extinguish
++      - aqualung
++      - gills
++      - torch
++      - peek
++      - workbench
++      - gasp
++      - magictorch
++      - throwmagictorch
++      - repairitem
++      - repairequipment
++      - stash
++      - sparkle
++      - grow
++      - growth
++      - hat
++      - pollinate
++      - eat_food
++      - rolldice
++      - admission
++      - anvil
++      - music
++other-name: Other
+diff -ruN '--exclude=build' src-0.2.9/src/com/winkreyes/excelwandbars/ExcelWandBars.java src/src/com/winkreyes/excelwandbars/ExcelWandBars.java
+--- src-0.2.9/src/com/winkreyes/excelwandbars/ExcelWandBars.java	2026-10-26 13:14:55.000000000 -0500
++++ src/src/com/winkreyes/excelwandbars/ExcelWandBars.java	2026-10-26 14:24:17.535298899 -0500
+@@ -173,6 +173,8 @@
+                 }
+             }, 40L);
+         }
++        // 0.3.0: after Magic has loaded its wands (5 s): Spell Book group check.
++        Bukkit.getScheduler().runTaskLater(this, this::checkGroups, 100L);
+     }
+ 
+     @Override
+@@ -211,6 +213,9 @@
+         flipOptions.skipFlying = c.getBoolean("sneak-flip.skip-flying", true);
+         showBarLine = c.getBoolean("sneak-flip.show-bar-line", true);
+         spellBookEnabled = c.getBoolean("spell-book.enabled", true);
++        spellBookGroups = c.getBoolean("spell-book.groups", true);
++        showLocked = c.getBoolean("spell-book.show-locked", true);
++        loadGroups();
+         debug = c.getBoolean("debug", false);
+         skipWorlds.clear();
+         for (String w : c.getStringList("skip-worlds")) skipWorlds.add(w.toLowerCase(Locale.ROOT));
+@@ -242,6 +247,63 @@
+     boolean showBarLine() { return showBarLine; }
+     boolean debug() { return debug; }
+     boolean spellBookEnabled() { return spellBookEnabled; }
++
++    // ------------------------------------------------------------------ 0.3.0 Spell Book groups
++    private boolean spellBookGroups = true, showLocked = true;
++    private com.winkreyes.excelwandbars.core.SpellbookGroups groups = new com.winkreyes.excelwandbars.core.SpellbookGroups();
++    private String groupsSource = "none";
++    boolean spellBookGroups() { return spellBookGroups; }
++    boolean showLocked() { return showLocked; }
++    com.winkreyes.excelwandbars.core.SpellbookGroups spellbookGroups() { return groups; }
++
++    /** spellbook.yml in the plugin folder (written from the jar when missing). Broken or empty: the jar copy, with a warning. */
++    private void loadGroups() {
++        com.winkreyes.excelwandbars.core.SpellbookGroups g = null;
++        try {
++            java.io.File f = new java.io.File(getDataFolder(), "spellbook.yml");
++            if (!f.exists()) saveResource("spellbook.yml", false);
++            org.bukkit.configuration.file.YamlConfiguration y = new org.bukkit.configuration.file.YamlConfiguration();
++            y.load(f);
++            g = com.winkreyes.excelwandbars.core.SpellbookGroups.parse(asMap(y));
++            for (String w : g.problems()) getLogger().warning("spellbook.yml: " + w);
++            if (g.groups().isEmpty()) { getLogger().warning("spellbook.yml has no groups, using the groups built into the jar."); g = null; }
++            else groupsSource = "spellbook.yml";
++        } catch (Throwable t) {
++            getLogger().warning("spellbook.yml could not be read (" + t.getClass().getSimpleName() + ": " + t.getMessage() + "), using the groups built into the jar.");
++            g = null;
++        }
++        if (g == null) {
++            try (java.io.InputStream in = getResource("spellbook.yml")) {
++                org.bukkit.configuration.file.YamlConfiguration y = new org.bukkit.configuration.file.YamlConfiguration();
++                if (in != null) y.load(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8));
++                g = com.winkreyes.excelwandbars.core.SpellbookGroups.parse(asMap(y));
++                groupsSource = "jar";
++            } catch (Throwable t) {
++                g = new com.winkreyes.excelwandbars.core.SpellbookGroups();
++                groupsSource = "none";
++            }
++        }
++        groups = g;
++        for (String d : g.duplicates()) getLogger().warning("spellbook.yml: " + d);
++    }
++
++    @SuppressWarnings("unchecked")
++    private static java.util.Map<String, Object> asMap(org.bukkit.configuration.ConfigurationSection y) {
++        Object o = MagicHook.plain(y);
++        return o instanceof java.util.Map ? (java.util.Map<String, Object>) o : new java.util.HashMap<>();
++    }
++
++    /** Boot (5 s after start) and /wandbars reload: rank-wand spells that are in no group go to "Other". */
++    void checkGroups() {
++        if (hook == null) return;
++        List<String> spells = hook.ladderSpells();
++        List<String> loose = groups.unlisted(spells);
++        getLogger().info("Spell Book groups " + (spellBookGroups ? "ON" : "OFF") + " (" + groupsSource + ", " + groups.groups().size()
++                + " groups, " + groups.spellCount() + " spells listed, " + spells.size() + " on the rank wands now), locked spells "
++                + (showLocked ? "shown" : "hidden") + ".");
++        if (!loose.isEmpty()) getLogger().warning("Spell Book: " + loose.size() + " spell(s) on the rank wands are in no group, shown under \""
++                + groups.otherName() + "\": " + String.join(", ", loose) + ". Add them to spellbook.yml, then /wandbars reload.");
++    }
+     /** Bars style for this player? True when the style switch is missing (0.1.0 behaviour). */
+     boolean barsStyle(Player p) {
+         StyleHook s = style;
+@@ -326,6 +388,12 @@
+         return false;
+     }
+ 
++    /** 1-based page word to a 0-based page (bad or missing = first page). */
++    static int pageArg(String[] args, int i) {
++        if (args.length <= i) return 0;
++        try { return Math.max(0, Integer.parseInt(args[i].trim()) - 1); } catch (NumberFormatException e) { return 0; }
++    }
++
+     @Override
+     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+         String name = command.getName().toLowerCase(Locale.ROOT);
+@@ -342,6 +410,16 @@
+                 if (spellTip != null) spellTip.ack(p, true);
+                 return true;
+             }
++            // 0.3.0: /spellbook group <name> [page], /spellbook all [page], /spellbook locked <spell>.
++            // ("group", "all" and "locked" are not Magic spell keys; a group named like a spell, e.g.
++            // Healing and the healing spell, needs the word "group".)
++            if (spellBookGroups && args.length > 0) {
++                String a0 = args[0].toLowerCase(Locale.ROOT);
++                if (a0.equals("group") && args.length > 1) { hook.openGroup(p, args[1], pageArg(args, 2)); return true; }
++                if (a0.equals("all")) { hook.openGroup(p, com.winkreyes.excelwandbars.core.SpellbookText.ALL, pageArg(args, 1)); return true; }
++                if (a0.equals("locked") && args.length > 1) { hook.openLocked(p, args[1]); return true; }
++                if (a0.equals("group")) { hook.openSpellBook(p, null); return true; }
++            }
+             hook.openSpellBook(p, args.length > 0 ? args[0] : null);
+             return true;
+         }
+@@ -389,11 +467,25 @@
+                 if (screen != null) screen.loadSettings(getConfig().getConfigurationSection("spell-screen"), getConfig().getConfigurationSection("progress-line"));
+                 if (rankUp != null) { rankUp.save(); rankUp.loadSettings(getConfig().getConfigurationSection("rank-up-casting")); }
+                 if (loadouts != null) { loadouts.loadSettings(getConfig().getConfigurationSection("bar-loadout")); loadouts.save(); }
++                checkGroups();
+                 sender.sendMessage("ExcelWandBars settings reloaded." + (rankUp != null ? " Rank-up by casting: " + (rankUp.enabled ? "ON" : "off") + "." : "")
+-                        + (loadouts != null ? " Own spell bar: " + loadouts.summary() + "." : ""));
++                        + (loadouts != null ? " Own spell bar: " + loadouts.summary() + "." : "")
++                        + " Spell Book groups: " + (spellBookGroups ? groups.groups().size() + " (" + groupsSource + ")" : "off") + ".");
+                 if (style != null) for (Player op : Bukkit.getOnlinePlayers()) Bukkit.getScheduler().runTaskLater(this, () -> { if (op.isOnline() && style != null) style.applyNow(op, "reload"); }, 2L);
+                 return true;
+             }
++            if (args.length > 0 && args[0].equalsIgnoreCase("groups")) {
++                // 0.3.0 admin/rig: /wandbars groups [player] = group check, plus that player's Spell Book counts.
++                checkGroups();
++                sender.sendMessage("Spell Book groups " + (spellBookGroups ? "ON" : "OFF") + " from " + groupsSource + ": " + groups.groups().size()
++                        + " groups, " + groups.spellCount() + " spells. Locked spells " + (showLocked ? "shown" : "hidden") + ".");
++                if (args.length > 1 && hook != null) {
++                    Player t = Bukkit.getPlayerExact(args[1]);
++                    if (t == null) { sender.sendMessage("Not online: " + args[1]); return true; }
++                    for (String line : hook.describeGroups(t)) sender.sendMessage(line);
++                }
++                return true;
++            }
+             if (args.length > 1 && args[0].equalsIgnoreCase("loadout")) {
+                 // 0.2.9 admin/rig: /wandbars loadout <player> [show | reseed | do <spellbar args...>]
+                 if (loadouts == null) { sender.sendMessage("Own spell bar is not loaded."); return true; }
+diff -ruN '--exclude=build' src-0.2.9/src/com/winkreyes/excelwandbars/LoadoutHook.java src/src/com/winkreyes/excelwandbars/LoadoutHook.java
+--- src-0.2.9/src/com/winkreyes/excelwandbars/LoadoutHook.java	2026-10-26 14:04:05.000000000 -0500
++++ src/src/com/winkreyes/excelwandbars/LoadoutHook.java	2026-10-26 14:26:22.955855186 -0500
+@@ -7,6 +7,7 @@
+ import com.elmakers.mine.bukkit.api.wand.WandTemplate;
+ import com.winkreyes.excelwandbars.core.BarLoadout;
+ import com.winkreyes.excelwandbars.core.LoadoutText;
++import com.winkreyes.excelwandbars.core.SpellbookText;
+ import com.winkreyes.excelwandbars.core.PageLayout;
+ import com.winkreyes.excelwandbars.core.SpellInfoText;
+ import com.winkreyes.excelwandbars.core.WandStyle;
+@@ -322,6 +323,8 @@
+     }
+ 
+     void openPickSpell(Player p, int slot) {
++        MagicHook mh = plugin.magicHook();
++        if (plugin.spellBookGroups() && mh != null) { openPickGroups(p, slot); return; }
+         Wand w = menuWand(p);
+         if (w == null) { p.sendMessage(Component.text(LoadoutText.NO_WAND, NamedTextColor.GRAY)); return; }
+         BarLoadout l = ensure(p, w);
+@@ -336,6 +339,60 @@
+         menu(p, LoadoutText.slotTitle(slot, l.get(slot) == null ? null : spellName(l.get(slot))), LoadoutText.pickSpellContent(slot), items);
+     }
+ 
++    // ------------------------------------------------------------------ 0.3.0 picker by Spell Book group
++
++    /** The wand's spells (all but the one already in this slot) as Spell Book entries with bar marks. */
++    private List<SpellbookText.Entry> pickEntries(Wand w, BarLoadout l, int slot) {
++        List<String> keys = new ArrayList<>();
++        for (String k : currentOrder(w)) if (!k.equals(l.get(slot))) keys.add(k);
++        List<SpellbookText.Entry> out = plugin.magicHook().plainEntries(keys, this::spellName);
++        for (SpellbookText.Entry e : out) e.barSlot = l.indexOf(e.key);
++        return out;
++    }
++
++    /** Pick a spell for a slot, step 1: the groups (spells the wand knows only), then All A to Z. */
++    void openPickGroups(Player p, int slot) {
++        Wand w = menuWand(p);
++        if (w == null) { p.sendMessage(Component.text(LoadoutText.NO_WAND, NamedTextColor.GRAY)); return; }
++        BarLoadout l = ensure(p, w);
++        if (slot < 0 || slot >= l.size()) { openBar(p); return; }
++        List<SpellbookText.Entry> es = pickEntries(w, l, slot);
++        List<Item> items = new ArrayList<>();
++        for (SpellbookText.GroupCount c : SpellbookText.counts(plugin.spellbookGroups(), es, false))
++            items.add(new Item(SpellbookText.pickGroupButton(c), "pick " + (slot + 1) + " " + c.key));
++        items.add(new Item(SpellbookText.ALL_BUTTON, "pick " + (slot + 1) + " " + SpellbookText.ALL));
++        items.add(new Item(LoadoutText.BACK_BAR, ""));
++        items.add(new Item(LoadoutText.CLOSE, null));
++        menu(p, LoadoutText.slotTitle(slot, l.get(slot) == null ? null : spellName(l.get(slot))), SpellbookText.pickGroupContent(slot), items);
++    }
++
++    /** Step 2: one group's spells, paged (Bedrock 12, Java 10), with the 0.2.9 bar marks. */
++    void openPickList(Player p, int slot, String typed, int page) {
++        Wand w = menuWand(p);
++        if (w == null) { p.sendMessage(Component.text(LoadoutText.NO_WAND, NamedTextColor.GRAY)); return; }
++        BarLoadout l = ensure(p, w);
++        if (slot < 0 || slot >= l.size()) { openBar(p); return; }
++        com.winkreyes.excelwandbars.core.SpellbookGroups g = plugin.spellbookGroups();
++        boolean all = SpellbookText.ALL.equalsIgnoreCase(typed);
++        String gk = all ? SpellbookText.ALL : g.find(typed);
++        if (gk == null) { openPickGroups(p, slot); return; }
++        List<SpellbookText.Entry> list = SpellbookText.list(g, pickEntries(w, l, slot), gk, false);
++        int per = plugin.isBedrock(p) ? SpellbookText.BEDROCK_PER_PAGE : SpellbookText.JAVA_PER_PAGE;
++        int pg = SpellbookText.clampPage(page, list.size(), per);
++        int pages = SpellbookText.pages(list.size(), per);
++        List<Item> items = new ArrayList<>();
++        for (SpellbookText.Entry e : SpellbookText.page(list, pg, per))
++            items.add(new Item(LoadoutText.pickSpellButton(e.name, e.barSlot), "put " + e.key + " " + (slot + 1)));
++        String base = "pick " + (slot + 1) + " " + gk + " ";
++        if (pg + 1 < pages) items.add(new Item(SpellbookText.NEXT, base + (pg + 2)));
++        if (pg > 0) items.add(new Item(SpellbookText.PREV, base + pg));
++        items.add(new Item(SpellbookText.GROUPS, "pick " + (slot + 1)));
++        items.add(new Item(LoadoutText.BACK_BAR, ""));
++        items.add(new Item(LoadoutText.CLOSE, null));
++        String name = all ? SpellbookText.allName() : g.nameOf(gk);
++        menu(p, SpellbookText.pickListTitle(slot, name, pg, pages), LoadoutText.pickSpellContent(slot), items);
++    }
++
+     void openPickSlot(Player p, String key) {
+         String why = blocked(p);
+         if (why != null) { p.sendMessage(Component.text(why, NamedTextColor.GRAY)); return; }
+@@ -356,6 +413,20 @@
+         menu(p, LoadoutText.pickTitle(name), LoadoutText.pickSlotContent(name), items);
+     }
+ 
++    /** 0.3.0: the bar's spell keys by slot (null = empty slot), or null when there is no own bar here. Never stores. */
++    List<String> barKeys(Player p) {
++        if (!usable(p)) return null;
++        BarLoadout l = map.get(p.getUniqueId());
++        if (l == null) {
++            Wand w = menuWand(p);
++            if (w == null) return null;
++            l = BarLoadout.seed(currentOrder(w), size);
++        }
++        List<String> out = new ArrayList<>();
++        for (int i = 0; i < l.size(); i++) out.add(l.get(i));
++        return out;
++    }
++
+     /** Detail page buttons: on the bar now? (-1 = no; -2 = loadout not usable here). */
+     int slotOf(Player p, String key) {
+         if (!usable(p)) return -2;
+@@ -398,7 +469,10 @@
+         switch (sub) {
+             case "": openBar(p); return "bar";
+             case "slot": if (a.length > 1) { openSlot(p, num(a[1])); return "slot"; } break;
+-            case "pick": if (a.length > 1) { openPickSpell(p, num(a[1])); return "pick"; } break;
++            case "pick":
++                // 0.3.0: pick <slot> <group|all> [page] = one group's spells for that slot.
++                if (a.length > 2 && plugin.spellBookGroups() && plugin.magicHook() != null) { openPickList(p, num(a[1]), a[2], a.length > 3 ? Math.max(0, num(a[3])) : 0); return "pick-group"; }
++                if (a.length > 1) { openPickSpell(p, num(a[1])); return "pick"; } break;
+             case "put":
+                 if (a.length == 2) { openPickSlot(p, a[1]); return "pick-slot"; }
+                 if (a.length > 2) {
+diff -ruN '--exclude=build' src-0.2.9/src/com/winkreyes/excelwandbars/MagicHook.java src/src/com/winkreyes/excelwandbars/MagicHook.java
+--- src-0.2.9/src/com/winkreyes/excelwandbars/MagicHook.java	2026-10-26 13:15:44.000000000 -0500
++++ src/src/com/winkreyes/excelwandbars/MagicHook.java	2026-10-26 14:35:30.710284706 -0500
+@@ -77,6 +77,7 @@
+     public void onQuit(PlayerQuitEvent event) {
+         gate.forget(event.getPlayer().getUniqueId());
+         lastForms.remove(event.getPlayer().getUniqueId());
++        lastView.remove(event.getPlayer().getUniqueId());
+     }
+ 
+     FlipGate.Result handleSneak(Player player, boolean sneakStart) {
+@@ -514,6 +515,17 @@
+         }
+         // 0.2.2: plugin.isBedrock also counts the admin test list (simbedrock); a simulated
+         // player has no Geyser connection, so the form fails and the chat book below shows.
++        // 0.3.0: organized Spell Book (spell-book.groups: false = the 0.2.9 flat list below).
++        if (pick == null && plugin.spellBookGroups()) {
++            if (only != null) {
++                // A locked spell typed by key: its "unlocks at" page.
++                Ctx lc = ctx(p, true);
++                if (lc != null) for (com.winkreyes.excelwandbars.core.SpellbookText.Entry e : lc.entries)
++                    if (e.locked && (e.key.equalsIgnoreCase(only) || e.name.equalsIgnoreCase(only))) { openLocked(p, e.key); return true; }
++            }
++            Ctx c = ctx(p, true);
++            if (c != null) return openHome(p, c, fromWand);
++        }
+         boolean bedrock = plugin.isBedrock(p);
+         Wand bw = bookWand(p, api.getMage(p));
+         List<String> header = bw == null ? new ArrayList<>() : rankHeader(bw, book);
+@@ -526,6 +538,8 @@
+         if (pick != null) {
+             for (String line : SpellInfoText.lines(pick)) p.sendMessage(Component.text(line, NamedTextColor.YELLOW));
+             barChatButtons(p, pick);
++            View v = viewFor(p, pick.key);
++            if (v != null) backChat(p, v.group, v.page);
+             return true;
+         }
+         p.sendMessage(Component.text(com.winkreyes.excelwandbars.core.ControlsText.bookTitle(bedrock), NamedTextColor.GOLD));
+@@ -640,7 +654,12 @@
+                 acts.add(() -> { if (plugin.loadouts() != null) plugin.loadouts().handle(p, new String[]{"remove", String.valueOf(slot + 1)}); });
+             }
+         }
+-        buttons.add("Back to Spell Book"); acts.add(() -> openSpellBook(p, null));
++        // 0.3.0: Back goes to the group page the spell was opened from.
++        View v = viewFor(p, f.key);
++        if (v != null) {
++            String gname = com.winkreyes.excelwandbars.core.SpellbookText.ALL.equals(v.group) ? com.winkreyes.excelwandbars.core.SpellbookText.allName() : plugin.spellbookGroups().nameOf(v.group);
++            buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.backTo(gname)); acts.add(() -> openGroup(p, v.group, v.page));
++        } else { buttons.add("Back to Spell Book"); acts.add(() -> openSpellBook(p, null)); }
+         buttons.add("Close"); acts.add(null);
+         boolean sent = sendForm(p, f.name + " (" + SpellInfoText.rankText(f) + ")", content, buttons, id -> {
+             if (id < 0 || id >= acts.size() || acts.get(id) == null) return;
+@@ -651,6 +670,352 @@
+         return sent;
+     }
+ 
++    // ------------------------------------------------------------------ 0.3.0 organized Spell Book
++
++    /** Last group page a player looked at (memory only), so a spell's Back goes to it. */
++    static final class View { final String group; final int page; View(String g, int p) { group = g; page = p; } }
++    private final Map<java.util.UUID, View> lastView = new java.util.HashMap<>();
++    void forgetView(Player p) { lastView.remove(p.getUniqueId()); }
++    /** The remembered group page, only when this spell is on it (A to Z holds every spell). */
++    private View viewFor(Player p, String key) {
++        if (!plugin.spellBookGroups()) return null;
++        View v = lastView.get(p.getUniqueId());
++        if (v == null) return null;
++        if (com.winkreyes.excelwandbars.core.SpellbookText.ALL.equals(v.group)) return v;
++        return plugin.spellbookGroups().groupOf(key).equals(v.group) ? v : null;
++    }
++
++    private List<String> ladderOrder() {
++        RankUpHook ru = plugin.rankUp();
++        if (ru != null) return ru.ladderOrder();
++        return new ArrayList<>(com.winkreyes.excelwandbars.core.RankLadder.wrvDefault().order());
++    }
++
++    /** Spell keys on one wand template (and the templates it inherits), as Magic has them loaded now. */
++    List<String> templateSpells(String templateKey) {
++        List<String> out = new ArrayList<>();
++        try {
++            com.elmakers.mine.bukkit.api.wand.WandTemplate t = api.getController().getWandTemplate(templateKey);
++            for (int d = 0; t != null && d < 16; d++) {
++                ConfigurationSection c = t.getConfiguration();
++                if (c != null) for (String s : c.getStringList("spells")) {
++                    String k = com.winkreyes.excelwandbars.core.BarLoadout.norm(s);
++                    if (k != null && !k.isEmpty() && !out.contains(k)) out.add(k);
++                }
++                t = t.getParent();
++            }
++        } catch (Throwable ignored) { }
++        return out;
++    }
++
++    /** Every spell on the rank wands now (the seals broken so far), lowest rank first. */
++    List<String> ladderSpells() {
++        List<String> out = new ArrayList<>();
++        for (String r : ladderOrder()) for (String k : templateSpells(r)) if (!out.contains(k)) out.add(k);
++        return out;
++    }
++
++    private String bandName(List<String> order, int i) {
++        if (i < 0 || i >= order.size()) return "";
++        String key = order.get(i);
++        RankUpHook ru = plugin.rankUp();
++        if (ru != null) return ru.rankName(key);
++        return plugin.rankDisplay(key, Character.toUpperCase(key.charAt(0)) + key.substring(1));
++    }
++
++    private String spellTemplateName(String key) {
++        try {
++            SpellTemplate t = api.getController().getSpellTemplate(key);
++            if (t != null && t.getName() != null) { String n = SpellInfoText.strip(t.getName()).trim(); if (!n.isEmpty()) return n; }
++        } catch (Throwable ignored) { }
++        return key.isEmpty() ? key : Character.toUpperCase(key.charAt(0)) + key.substring(1).replace('_', ' ');
++    }
++
++    private String spellTemplateDescription(String key) {
++        try {
++            SpellTemplate t = api.getController().getSpellTemplate(key);
++            if (t != null && t.getDescription() != null) return SpellInfoText.strip(t.getDescription()).trim();
++        } catch (Throwable ignored) { }
++        return "";
++    }
++
++    /** The book as entries: the wand's spells, then (ladder wands, show-locked on) the higher ranks' spells it lacks. */
++    private List<com.winkreyes.excelwandbars.core.SpellbookText.Entry> entries(Player p, Wand bw, List<SpellFacts> book, Map<String, SpellFacts> facts) {
++        List<com.winkreyes.excelwandbars.core.SpellbookText.Entry> out = new ArrayList<>();
++        List<String> order = ladderOrder();
++        Map<String, Integer> band = new LinkedHashMap<>();
++        Map<Integer, List<String>> byRank = new LinkedHashMap<>();
++        for (int i = 0; i < order.size(); i++) {
++            List<String> ks = templateSpells(order.get(i));
++            byRank.put(i, ks);
++            for (String k : ks) band.putIfAbsent(k, i);
++        }
++        LoadoutHook lo = plugin.loadouts();
++        List<String> bar = lo == null ? null : lo.barKeys(p);
++        boolean bars = plugin.barsStyle(p);
++        java.util.Set<String> known = new java.util.HashSet<>();
++        for (SpellFacts f : book) {
++            String k = com.winkreyes.excelwandbars.core.BarLoadout.norm(f.key);
++            known.add(k);
++            facts.put(k, f);
++            int b = band.getOrDefault(k, com.winkreyes.excelwandbars.core.SpellbookText.NO_BAND);
++            com.winkreyes.excelwandbars.core.SpellbookText.Entry e = new com.winkreyes.excelwandbars.core.SpellbookText.Entry(k, f.name, b, bandName(order, b), false)
++                    .rank(SpellInfoText.rankText(f));
++            if (bar != null) e.barSlot = bar.indexOf(k);
++            else if (bars && f.bar > 0) e.page = f.bar;
++            e.active = f.active;
++            out.add(e);
++        }
++        if (plugin.showLocked() && bw != null) {
++            int cur = order.indexOf(RankUpHook.rankOf(bw));
++            if (cur >= 0) for (int i = cur + 1; i < order.size(); i++) for (String k : byRank.get(i)) {
++                if (known.contains(k)) continue;
++                known.add(k);
++                out.add(new com.winkreyes.excelwandbars.core.SpellbookText.Entry(k, spellTemplateName(k), band.getOrDefault(k, i), bandName(order, band.getOrDefault(k, i)), true));
++            }
++        }
++        return out;
++    }
++
++    /** 0.3.0 bar picker: plain entries (known spells) with rank bands, for grouping and sorting. */
++    List<com.winkreyes.excelwandbars.core.SpellbookText.Entry> plainEntries(Collection<String> keys, java.util.function.Function<String, String> name) {
++        List<String> order = ladderOrder();
++        Map<String, Integer> band = new LinkedHashMap<>();
++        for (int i = 0; i < order.size(); i++) for (String k : templateSpells(order.get(i))) band.putIfAbsent(k, i);
++        List<com.winkreyes.excelwandbars.core.SpellbookText.Entry> out = new ArrayList<>();
++        for (String k : keys) {
++            int b = band.getOrDefault(k, com.winkreyes.excelwandbars.core.SpellbookText.NO_BAND);
++            out.add(new com.winkreyes.excelwandbars.core.SpellbookText.Entry(k, name.apply(k), b, bandName(order, b), false));
++        }
++        return out;
++    }
++
++    /** Book + wand for the grouped views; null after telling the player why there is none. */
++    private final class Ctx {
++        Wand wand; List<SpellFacts> book; Map<String, SpellFacts> facts = new java.util.HashMap<>();
++        List<com.winkreyes.excelwandbars.core.SpellbookText.Entry> entries;
++    }
++    private Ctx ctx(Player p, boolean quiet) {
++        List<SpellFacts> book = book(p);
++        if (book == null) {
++            if (!quiet) p.sendMessage(Component.text("No Magic wand found. Keep your wand in your inventory (take it out of your Utility Pouch if it's in there), then try /spellbook again.", NamedTextColor.GRAY));
++            return null;
++        }
++        if (book.isEmpty()) { if (!quiet) p.sendMessage(Component.text("This wand has no spells yet.", NamedTextColor.GRAY)); return null; }
++        Ctx c = new Ctx();
++        c.book = book;
++        c.wand = bookWand(p, api.getMage(p));
++        c.entries = entries(p, c.wand, book, c.facts);
++        return c;
++    }
++
++    private void later(Player p, Runnable r) { Bukkit.getScheduler().runTask(plugin, () -> { if (p.isOnline()) r.run(); }); }
++
++    /** Home: wand line, bar line, a button per group, All A to Z, Put spells on my bar. */
++    private boolean openHome(Player p, Ctx c, boolean fromWand) {
++        com.winkreyes.excelwandbars.core.SpellbookGroups g = plugin.spellbookGroups();
++        List<com.winkreyes.excelwandbars.core.SpellbookText.GroupCount> gc = com.winkreyes.excelwandbars.core.SpellbookText.counts(g, c.entries, plugin.showLocked());
++        int known = com.winkreyes.excelwandbars.core.SpellbookText.known(c.entries);
++        int locked = plugin.showLocked() ? com.winkreyes.excelwandbars.core.SpellbookText.locked(c.entries) : 0;
++        int onBar = com.winkreyes.excelwandbars.core.SpellbookText.onBar(c.entries);
++        boolean barButton = loadoutUsable(p);
++        String wandName = c.wand == null ? "" : SpellInfoText.strip(c.wand.getName());
++        String wandLine = com.winkreyes.excelwandbars.core.SpellbookText.wandLine(wandName, known);
++        String barLine = barButton ? com.winkreyes.excelwandbars.core.SpellbookText.barLine(onBar, known) : null;
++        String lockedLine = com.winkreyes.excelwandbars.core.SpellbookText.lockedLine(locked);
++        List<String> header = c.wand == null ? new ArrayList<>() : rankHeader(c.wand, c.book);
++        boolean bedrock = plugin.isBedrock(p);
++        boolean styleButton = plugin.styleHook() != null && plugin.styleHook().enabled();
++        SpellTipHook st = plugin.spellTip();
++        lastView.remove(p.getUniqueId());
++        if (bedrock) {
++            StringBuilder content = new StringBuilder(wandLine).append("\n");
++            if (barLine != null) content.append(barLine).append("\n");
++            if (lockedLine != null) content.append(lockedLine).append("\n");
++            for (String h : header) content.append(h).append("\n");
++            boolean tipButton = st != null && st.pendingInBook(p);
++            if (tipButton) content.append("\nTip: ").append(String.join(" ", com.winkreyes.excelwandbars.core.SpellTip.body(true))).append("\n");
++            content.append("\n").append(com.winkreyes.excelwandbars.core.SpellbookText.HOME_HINT_BEDROCK);
++            List<String> buttons = new ArrayList<>();
++            List<Runnable> acts = new ArrayList<>();
++            for (com.winkreyes.excelwandbars.core.SpellbookText.GroupCount x : gc) {
++                buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.groupButton(x));
++                final String gk = x.key;
++                acts.add(() -> openGroup(p, gk, 0));
++            }
++            buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.ALL_BUTTON);
++            acts.add(() -> openGroup(p, com.winkreyes.excelwandbars.core.SpellbookText.ALL, 0));
++            if (barButton) { buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.BAR_BUTTON); acts.add(() -> { if (plugin.loadouts() != null) plugin.loadouts().openBar(p); }); }
++            if (styleButton) { buttons.add("Wand controls: " + styleLabel(p) + " (change)"); acts.add(() -> { if (plugin.styleHook() != null) plugin.styleHook().openChooser(p); }); }
++            if (tipButton) { buttons.add(com.winkreyes.excelwandbars.core.SpellTip.OK_BUTTON); acts.add(() -> { if (plugin.spellTip() != null) plugin.spellTip().ack(p, true); }); }
++            buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.CLOSE); acts.add(null);
++            boolean sent = sendForm(p, com.winkreyes.excelwandbars.core.SpellbookText.HOME_TITLE, content.toString(), buttons, id -> {
++                if (id < 0 || id >= acts.size() || acts.get(id) == null) return;
++                later(p, acts.get(id));
++            });
++            if (sent) { if (st != null) st.onBookOpened(p, true); return true; }
++            if (fromWand && !plugin.simulatedBedrock(p)) return false;
++        }
++        p.sendMessage(Component.text(com.winkreyes.excelwandbars.core.SpellbookText.HOME_TITLE + ": " + wandLine, NamedTextColor.GOLD));
++        if (barLine != null) p.sendMessage(Component.text(" " + barLine, NamedTextColor.GRAY));
++        if (lockedLine != null) p.sendMessage(Component.text(" " + lockedLine, NamedTextColor.GRAY));
++        for (String h : header) p.sendMessage(Component.text(" " + h, NamedTextColor.GREEN));
++        p.sendMessage(Component.text(bedrock ? com.winkreyes.excelwandbars.core.SpellbookText.HOME_HINT_BEDROCK : com.winkreyes.excelwandbars.core.SpellbookText.HOME_HINT_JAVA, NamedTextColor.GRAY));
++        Component line = Component.empty();
++        int n = 0;
++        for (com.winkreyes.excelwandbars.core.SpellbookText.GroupCount x : gc) {
++            if (n > 0 && n % 3 == 0) { p.sendMessage(line); line = Component.empty(); }
++            if (n % 3 != 0) line = line.append(Component.text(" "));
++            line = line.append(Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.groupJava(x) + "]", NamedTextColor.AQUA)
++                    .hoverEvent(HoverEvent.showText(Component.text(com.winkreyes.excelwandbars.core.SpellbookText.groupHover(x))))
++                    .clickEvent(ClickEvent.runCommand("/spellbook group " + x.key)));
++            n++;
++        }
++        if (n > 0) p.sendMessage(line);
++        Component tail = Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.ALL_JAVA + "]", NamedTextColor.GOLD)
++                .clickEvent(ClickEvent.runCommand("/spellbook all"));
++        if (barButton) tail = tail.append(Component.text(" ")).append(Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.BAR_BUTTON + "]", NamedTextColor.GOLD)
++                .clickEvent(ClickEvent.runCommand("/spellbar")));
++        p.sendMessage(tail);
++        if (styleButton) {
++            p.sendMessage(Component.text(com.winkreyes.excelwandbars.core.ControlsText.controlsButton(styleLabel(p), bedrock), NamedTextColor.GOLD)
++                    .clickEvent(ClickEvent.runCommand("/wandstyle")));
++        }
++        if (st != null) st.onBookOpened(p, false);
++        return true;
++    }
++
++    /** One group (or ALL = A to Z), one page. Java: chat 10 per page. Bedrock: form 12 per page. */
++    boolean openGroup(Player p, String typed, int page) {
++        com.winkreyes.excelwandbars.core.SpellbookGroups g = plugin.spellbookGroups();
++        boolean all = com.winkreyes.excelwandbars.core.SpellbookText.ALL.equalsIgnoreCase(typed);
++        String gk = all ? com.winkreyes.excelwandbars.core.SpellbookText.ALL : g.find(typed);
++        if (gk == null) {
++            p.sendMessage(Component.text("No group called " + typed + ". Open /spellbook to see the groups.", NamedTextColor.GRAY));
++            return true;
++        }
++        Ctx c = ctx(p, false);
++        if (c == null) return true;
++        List<com.winkreyes.excelwandbars.core.SpellbookText.Entry> list = com.winkreyes.excelwandbars.core.SpellbookText.list(g, c.entries, gk, plugin.showLocked());
++        String name = all ? com.winkreyes.excelwandbars.core.SpellbookText.allName() : g.nameOf(gk);
++        boolean bedrock = plugin.isBedrock(p);
++        boolean anyLocked = false;
++        for (com.winkreyes.excelwandbars.core.SpellbookText.Entry e : list) if (e.locked) { anyLocked = true; break; }
++        if (bedrock) {
++            int per = com.winkreyes.excelwandbars.core.SpellbookText.BEDROCK_PER_PAGE;
++            int pg = com.winkreyes.excelwandbars.core.SpellbookText.clampPage(page, list.size(), per);
++            int pages = com.winkreyes.excelwandbars.core.SpellbookText.pages(list.size(), per);
++            lastView.put(p.getUniqueId(), new View(gk, pg));
++            List<String> buttons = new ArrayList<>();
++            List<Runnable> acts = new ArrayList<>();
++            for (com.winkreyes.excelwandbars.core.SpellbookText.Entry e : com.winkreyes.excelwandbars.core.SpellbookText.page(list, pg, per)) {
++                buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.bedrockButton(e));
++                if (e.locked) acts.add(() -> sendLocked(p, e, gk, pg));
++                else { SpellFacts f = c.facts.get(e.key); acts.add(() -> { if (f != null) sendDetailForm(p, f); }); }
++            }
++            if (pg + 1 < pages) { buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.NEXT); acts.add(() -> openGroup(p, gk, pg + 1)); }
++            if (pg > 0) { buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.PREV); acts.add(() -> openGroup(p, gk, pg - 1)); }
++            buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.GROUPS); acts.add(() -> openSpellBook(p, null));
++            buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.CLOSE); acts.add(null);
++            boolean sent = sendForm(p, com.winkreyes.excelwandbars.core.SpellbookText.groupTitle(name, list.size(), pg, pages),
++                    com.winkreyes.excelwandbars.core.SpellbookText.groupContent(true, anyLocked), buttons, id -> {
++                        if (id < 0 || id >= acts.size() || acts.get(id) == null) return;
++                        later(p, acts.get(id));
++                    });
++            if (sent) return true;
++        }
++        int per = com.winkreyes.excelwandbars.core.SpellbookText.JAVA_PER_PAGE;
++        int pg = com.winkreyes.excelwandbars.core.SpellbookText.clampPage(page, list.size(), per);
++        int pages = com.winkreyes.excelwandbars.core.SpellbookText.pages(list.size(), per);
++        lastView.put(p.getUniqueId(), new View(gk, pg));
++        p.sendMessage(Component.text(com.winkreyes.excelwandbars.core.SpellbookText.groupHeading(name, list.size(), pg, pages), NamedTextColor.GOLD));
++        for (String l : com.winkreyes.excelwandbars.core.SpellbookText.groupContent(bedrock, anyLocked).split("\n")) p.sendMessage(Component.text(l, NamedTextColor.GRAY));
++        for (com.winkreyes.excelwandbars.core.SpellbookText.Entry e : com.winkreyes.excelwandbars.core.SpellbookText.page(list, pg, per)) {
++            if (e.locked) {
++                p.sendMessage(Component.text(" " + com.winkreyes.excelwandbars.core.SpellbookText.javaLine(e), NamedTextColor.DARK_GRAY)
++                        .hoverEvent(HoverEvent.showText(Component.text(String.join("\n", com.winkreyes.excelwandbars.core.SpellbookText.lockedLines(e, spellTemplateDescription(e.key))))))
++                        .clickEvent(ClickEvent.runCommand("/spellbook locked " + e.key)));
++            } else {
++                SpellFacts f = c.facts.get(e.key);
++                Component t = Component.text(" " + com.winkreyes.excelwandbars.core.SpellbookText.javaLine(e), NamedTextColor.AQUA)
++                        .clickEvent(ClickEvent.runCommand("/spellinfo " + e.key));
++                if (f != null) t = t.hoverEvent(HoverEvent.showText(Component.text(String.join("\n", SpellInfoText.lines(f)))));
++                p.sendMessage(t);
++            }
++        }
++        String cmd = all ? "/spellbook all " : "/spellbook group " + gk + " ";
++        Component nav = Component.empty();
++        if (pg > 0) nav = nav.append(Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.JAVA_PREV + "]", NamedTextColor.GOLD)
++                .clickEvent(ClickEvent.runCommand(cmd + pg))).append(Component.text(" "));
++        nav = nav.append(Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.JAVA_GROUPS + "]", NamedTextColor.GOLD)
++                .clickEvent(ClickEvent.runCommand("/spellbook")));
++        if (pg + 1 < pages) nav = nav.append(Component.text(" ")).append(Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.JAVA_NEXT + "]", NamedTextColor.GOLD)
++                .clickEvent(ClickEvent.runCommand(cmd + (pg + 2))));
++        p.sendMessage(nav);
++        return true;
++    }
++
++    /** /spellbook locked <spell>: what a higher rank brings (read only). */
++    boolean openLocked(Player p, String key) {
++        Ctx c = ctx(p, false);
++        if (c == null) return true;
++        String k = com.winkreyes.excelwandbars.core.BarLoadout.norm(key);
++        for (com.winkreyes.excelwandbars.core.SpellbookText.Entry e : c.entries) {
++            if (!e.key.equals(k)) continue;
++            if (!e.locked) { openSpellBook(p, e.key); return true; }
++            View v = lastView.get(p.getUniqueId());
++            String gk = v != null ? v.group : plugin.spellbookGroups().groupOf(e.key);
++            sendLocked(p, e, gk, v != null ? v.page : 0);
++            return true;
++        }
++        p.sendMessage(Component.text("That spell is not in your Spell Book.", NamedTextColor.GRAY));
++        return true;
++    }
++
++    private void sendLocked(Player p, com.winkreyes.excelwandbars.core.SpellbookText.Entry e, String gk, int pg) {
++        List<String> lines = com.winkreyes.excelwandbars.core.SpellbookText.lockedLines(e, spellTemplateDescription(e.key));
++        String gname = com.winkreyes.excelwandbars.core.SpellbookText.ALL.equals(gk) ? com.winkreyes.excelwandbars.core.SpellbookText.allName() : plugin.spellbookGroups().nameOf(gk);
++        if (plugin.isBedrock(p)) {
++            List<String> buttons = new ArrayList<>();
++            buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.backTo(gname));
++            buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.CLOSE);
++            boolean sent = sendForm(p, com.winkreyes.excelwandbars.core.SpellbookText.lockedTitle(e), String.join("\n\n", lines.subList(1, lines.size())), buttons, id -> {
++                if (id == 0) later(p, () -> openGroup(p, gk, pg));
++            });
++            if (sent) return;
++        }
++        p.sendMessage(Component.text(lines.get(0) + " (locked)", NamedTextColor.GRAY));
++        for (String l : lines.subList(1, lines.size())) p.sendMessage(Component.text(" " + l, NamedTextColor.GRAY));
++        backChat(p, gk, pg);
++    }
++
++    /** Java: [Back to Healing] under a spell opened from a group page. */
++    private void backChat(Player p, String gk, int pg) {
++        if (gk == null) return;
++        boolean all = com.winkreyes.excelwandbars.core.SpellbookText.ALL.equals(gk);
++        String gname = all ? com.winkreyes.excelwandbars.core.SpellbookText.allName() : plugin.spellbookGroups().nameOf(gk);
++        String cmd = all ? "/spellbook all " + (pg + 1) : "/spellbook group " + gk + " " + (pg + 1);
++        p.sendMessage(Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.backTo(gname) + "]", NamedTextColor.GOLD).clickEvent(ClickEvent.runCommand(cmd)));
++    }
++
++    /** Console (admin /wandbars groups <player>): this player's group counts. */
++    List<String> describeGroups(Player p) {
++        List<String> out = new ArrayList<>();
++        Ctx c = ctx(p, true);
++        if (c == null) { out.add(p.getName() + ": no wand with spells"); return out; }
++        com.winkreyes.excelwandbars.core.SpellbookGroups g = plugin.spellbookGroups();
++        out.add(p.getName() + ": wand " + (c.wand == null ? "?" : SpellInfoText.strip(c.wand.getName())) + " rank " + (c.wand == null ? "?" : RankUpHook.rankOf(c.wand))
++                + ", known " + com.winkreyes.excelwandbars.core.SpellbookText.known(c.entries) + ", locked " + com.winkreyes.excelwandbars.core.SpellbookText.locked(c.entries)
++                + ", on bar " + com.winkreyes.excelwandbars.core.SpellbookText.onBar(c.entries));
++        for (com.winkreyes.excelwandbars.core.SpellbookText.GroupCount x : com.winkreyes.excelwandbars.core.SpellbookText.counts(g, c.entries, plugin.showLocked())) {
++            StringBuilder sb = new StringBuilder("  " + x.name + " " + x.known + (x.locked > 0 ? " +" + x.locked + " locked" : "") + ":");
++            for (com.winkreyes.excelwandbars.core.SpellbookText.Entry e : com.winkreyes.excelwandbars.core.SpellbookText.list(g, c.entries, x.key, plugin.showLocked()))
++                sb.append(" ").append(e.key).append(e.locked ? "(L:" + e.bandName + ")" : "").append(e.barSlot >= 0 ? "#" + (e.barSlot + 1) : "");
++            out.add(sb.toString());
++        }
++        return out;
++    }
++
+     // ------------------------------------------------------------------ 0.2.9 own spell bar
+ 
+     private boolean loadoutUsable(Player p) {
+diff -ruN '--exclude=build' src-0.2.9/src/com/winkreyes/excelwandbars/RankUpHook.java src/src/com/winkreyes/excelwandbars/RankUpHook.java
+--- src-0.2.9/src/com/winkreyes/excelwandbars/RankUpHook.java	2026-10-26 13:15:09.000000000 -0500
++++ src/src/com/winkreyes/excelwandbars/RankUpHook.java	2026-10-26 14:23:11.479005914 -0500
+@@ -145,6 +145,8 @@
+     }
+ 
+     boolean isLadderWand(Wand w) { return w != null && ladder.has(rankOf(w)); }
++    /** 0.3.0: rank keys in ladder order (beginner, student, apprentice, master). */
++    List<String> ladderOrder() { return new java.util.ArrayList<>(ladder.order()); }
+ 
+     /** The rank's player-facing name: config rank-names first (0.2.8: master shows as "Master"), else Magic's path name. */
+     String rankName(String key) {
+diff -ruN '--exclude=build' src-0.2.9/src/com/winkreyes/excelwandbars/core/SpellbookGroups.java src/src/com/winkreyes/excelwandbars/core/SpellbookGroups.java
+--- src-0.2.9/src/com/winkreyes/excelwandbars/core/SpellbookGroups.java	1969-12-31 18:00:00.000000000 -0600
++++ src/src/com/winkreyes/excelwandbars/core/SpellbookGroups.java	2026-10-26 14:26:46.419959259 -0500
+@@ -0,0 +1,132 @@
++package com.winkreyes.excelwandbars.core;
++
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.Collections;
++import java.util.LinkedHashMap;
++import java.util.List;
++import java.util.Locale;
++import java.util.Map;
++
++/**
++ * 0.3.0: the Spell Book groups (Healing, Defense, ...), read from plugins/ExcelWandBars/spellbook.yml.
++ * Pure (no Bukkit): the plugin hands in the parsed YAML as plain maps and lists.
++ * A spell in no group lands in "Other" (shown last) and is listed once in a boot warning.
++ * A spell listed in two groups stays in the first one (also warned).
++ */
++public final class SpellbookGroups {
++    public static final String OTHER_KEY = "other";
++    public static final String DEFAULT_OTHER_NAME = "Other";
++
++    public static final class Group {
++        public final String key, name;
++        public final List<String> spells;
++        Group(String key, String name, List<String> spells) { this.key = key; this.name = name; this.spells = Collections.unmodifiableList(spells); }
++    }
++
++    private final List<Group> groups = new ArrayList<>();
++    private final Map<String, String> spellToGroup = new LinkedHashMap<>();
++    private final List<String> duplicates = new ArrayList<>();
++    private final List<String> problems = new ArrayList<>();
++    private String otherName = DEFAULT_OTHER_NAME;
++
++    public List<Group> groups() { return Collections.unmodifiableList(groups); }
++    public String otherName() { return otherName; }
++    /** Spells listed in more than one group ("key (group, ignored in other)"). */
++    public List<String> duplicates() { return Collections.unmodifiableList(duplicates); }
++    /** File problems (bad group, empty file). Empty when fine. */
++    public List<String> problems() { return Collections.unmodifiableList(problems); }
++    public int spellCount() { return spellToGroup.size(); }
++
++    static String norm(String s) {
++        if (s == null) return null;
++        String k = s.trim().toLowerCase(Locale.ROOT);
++        int bar = k.indexOf('|');
++        if (bar >= 0) k = k.substring(0, bar);
++        return k.isEmpty() ? null : k;
++    }
++
++    /** The group key of a spell (base key, any "|level" dropped), or OTHER_KEY. */
++    public String groupOf(String spell) {
++        String k = norm(spell);
++        String g = k == null ? null : spellToGroup.get(k);
++        return g == null ? OTHER_KEY : g;
++    }
++
++    /** Display name of a group key ("Other" for OTHER_KEY or an unknown key). */
++    public String nameOf(String groupKey) {
++        if (groupKey != null) for (Group g : groups) if (g.key.equalsIgnoreCase(groupKey)) return g.name;
++        return otherName;
++    }
++
++    /** A group key from what a player typed ("healing", "Healing", "other"); null when none matches. */
++    public String find(String typed) {
++        if (typed == null) return null;
++        String t = typed.trim();
++        for (Group g : groups) if (g.key.equalsIgnoreCase(t) || g.name.equalsIgnoreCase(t)) return g.key;
++        if (t.equalsIgnoreCase(OTHER_KEY) || t.equalsIgnoreCase(otherName)) return OTHER_KEY;
++        return null;
++    }
++
++    /** Group keys in display order, Other last. */
++    public List<String> order() {
++        List<String> out = new ArrayList<>();
++        for (Group g : groups) out.add(g.key);
++        out.add(OTHER_KEY);
++        return out;
++    }
++
++    /** Spells (base keys) that are not in any group, in the order given, no repeats. */
++    public List<String> unlisted(Collection<String> spells) {
++        List<String> out = new ArrayList<>();
++        if (spells == null) return out;
++        for (String s : spells) {
++            String k = norm(s);
++            if (k != null && !spellToGroup.containsKey(k) && !out.contains(k)) out.add(k);
++        }
++        return out;
++    }
++
++    /**
++     * Parse spellbook.yml (as plain maps). Shape:
++     * <pre>
++     * categories:
++     *   healing: { name: Healing, spells: [heal, mend] }
++     * other-name: Other
++     * </pre>
++     * Never throws; a broken file gives no groups (every spell in Other) plus a line in problems().
++     */
++    @SuppressWarnings("unchecked")
++    public static SpellbookGroups parse(Map<String, Object> root) {
++        SpellbookGroups g = new SpellbookGroups();
++        if (root == null) { g.problems.add("spellbook.yml is empty"); return g; }
++        Object on = root.get("other-name");
++        if (on instanceof String s && !s.isBlank()) g.otherName = s.trim();
++        Object cats = root.get("categories");
++        if (!(cats instanceof Map<?, ?> cm)) { g.problems.add("spellbook.yml has no categories section"); return g; }
++        for (Map.Entry<?, ?> e : cm.entrySet()) {
++            String key = String.valueOf(e.getKey()).trim().toLowerCase(Locale.ROOT);
++            if (key.isEmpty() || key.equals(OTHER_KEY) || key.equals("all") || key.equals("group") || key.equals("locked")) { g.problems.add("group key '" + key + "' is not allowed"); continue; }
++            String name = key.substring(0, 1).toUpperCase(Locale.ROOT) + key.substring(1);
++            List<String> spells = new ArrayList<>();
++            Object v = e.getValue();
++            if (v instanceof Map<?, ?> vm) {
++                Object n = vm.get("name");
++                if (n instanceof String s && !s.isBlank()) name = s.trim();
++                Object sl = vm.get("spells");
++                if (sl instanceof List<?> l) for (Object o : l) { String k = norm(o == null ? null : String.valueOf(o)); if (k != null) spells.add(k); }
++                else if (sl != null) g.problems.add("group '" + key + "': spells is not a list");
++            } else { g.problems.add("group '" + key + "' is not a section"); continue; }
++            List<String> kept = new ArrayList<>();
++            for (String k : spells) {
++                String had = g.spellToGroup.get(k);
++                if (had != null) { if (!had.equals(key) || kept.contains(k)) g.duplicates.add(k + " (" + had + ", ignored in " + key + ")"); continue; }
++                g.spellToGroup.put(k, key);
++                kept.add(k);
++            }
++            g.groups.add(new Group(key, name, kept));
++        }
++        if (g.groups.isEmpty()) g.problems.add("spellbook.yml has no groups");
++        return g;
++    }
++}
+diff -ruN '--exclude=build' src-0.2.9/src/com/winkreyes/excelwandbars/core/SpellbookText.java src/src/com/winkreyes/excelwandbars/core/SpellbookText.java
+--- src-0.2.9/src/com/winkreyes/excelwandbars/core/SpellbookText.java	1969-12-31 18:00:00.000000000 -0600
++++ src/src/com/winkreyes/excelwandbars/core/SpellbookText.java	2026-10-26 14:35:30.710284706 -0500
+@@ -0,0 +1,277 @@
++package com.winkreyes.excelwandbars.core;
++
++import java.util.ArrayList;
++import java.util.Comparator;
++import java.util.List;
++import java.util.Locale;
++
++/**
++ * 0.3.0: the organized Spell Book. Pure model and every player-facing line (no Bukkit), so the
++ * grouping, sorting, paging and text limits are unit tested. Plain text, no em dashes. Bedrock
++ * form titles and buttons stay at or under {@link #MAX} visible characters, and Bedrock text never
++ * says "click". Java chat pages hold {@link #JAVA_PER_PAGE} spells, Bedrock forms {@link #BEDROCK_PER_PAGE}.
++ */
++public final class SpellbookText {
++    private SpellbookText() {}
++
++    public static final int MAX = 38;
++    public static final int JAVA_PER_PAGE = 10;
++    public static final int BEDROCK_PER_PAGE = 12;
++    /** Band of a spell that is on no rank wand (sorts after every rank). */
++    public static final int NO_BAND = 99;
++    /** Pseudo group key for the A to Z list. */
++    public static final String ALL = "all";
++    /** Bedrock form grey (locked spells). Not counted in the 38 characters. */
++    public static final String GREY = "\u00a77";
++
++    /** One spell line in the book. */
++    public static final class Entry {
++        public String key = "", name = "";
++        /** "Rank 2 of 3" (empty for a locked spell). */
++        public String rankText = "";
++        /** Rank band index (0 = Beginner) of the lowest rank wand that has it; NO_BAND if none. */
++        public int band = NO_BAND;
++        public String bandName = "";
++        /** On a higher rank's wand (this seal), not on the player's wand yet. */
++        public boolean locked = false;
++        /** 0-based slot on the player's own bar, -1 = not on it (or no own bar). */
++        public int barSlot = -1;
++        /** 1-based Magic hotbar page when the own bar is off (0.2.8 paging), 0 = none. */
++        public int page = 0;
++        public boolean active = false;
++
++        public Entry() {}
++        public Entry(String key, String name, int band, String bandName, boolean locked) {
++            this.key = key; this.name = name; this.band = band; this.bandName = bandName; this.locked = locked;
++        }
++        public Entry bar(int slot) { this.barSlot = slot; return this; }
++        public Entry rank(String r) { this.rankText = r == null ? "" : r; return this; }
++    }
++
++    /** A group button: known spells plus locked ones. */
++    public static final class GroupCount {
++        public final String key, name;
++        public final int known, locked;
++        GroupCount(String key, String name, int known, int locked) { this.key = key; this.name = name; this.known = known; this.locked = locked; }
++        public int total() { return known + locked; }
++    }
++
++    // ---------------------------------------------------------------- model
++
++    public static final Comparator<Entry> BY_RANK_THEN_NAME = Comparator
++            .comparingInt((Entry e) -> e.band)
++            .thenComparing(e -> e.name.toLowerCase(Locale.ROOT))
++            .thenComparing(e -> e.key);
++
++    public static final Comparator<Entry> BY_NAME = Comparator
++            .comparing((Entry e) -> e.name.toLowerCase(Locale.ROOT))
++            .thenComparing(e -> e.key);
++
++    /** Group buttons in display order (file order, Other last). Empty groups are left out. */
++    public static List<GroupCount> counts(SpellbookGroups g, List<Entry> entries, boolean withLocked) {
++        List<GroupCount> out = new ArrayList<>();
++        for (String gk : g.order()) {
++            int k = 0, l = 0;
++            for (Entry e : entries) {
++                if (!g.groupOf(e.key).equals(gk)) continue;
++                if (e.locked) { if (withLocked) l++; } else k++;
++            }
++            if (k + l > 0) out.add(new GroupCount(gk, g.nameOf(gk), k, l));
++        }
++        return out;
++    }
++
++    /** One group's spells, sorted by rank band then name (locked ones by the same rule). ALL = every spell A to Z. */
++    public static List<Entry> list(SpellbookGroups g, List<Entry> entries, String groupKey, boolean withLocked) {
++        List<Entry> out = new ArrayList<>();
++        boolean all = ALL.equals(groupKey);
++        for (Entry e : entries) {
++            if (e.locked && !withLocked) continue;
++            if (all || g.groupOf(e.key).equals(groupKey)) out.add(e);
++        }
++        out.sort(all ? BY_NAME : BY_RANK_THEN_NAME);
++        return out;
++    }
++
++    public static int known(List<Entry> entries) { int n = 0; for (Entry e : entries) if (!e.locked) n++; return n; }
++    public static int locked(List<Entry> entries) { int n = 0; for (Entry e : entries) if (e.locked) n++; return n; }
++    public static int onBar(List<Entry> entries) { int n = 0; for (Entry e : entries) if (!e.locked && e.barSlot >= 0) n++; return n; }
++
++    public static int pages(int count, int perPage) { int pp = Math.max(1, perPage); return Math.max(1, (count + pp - 1) / pp); }
++
++    /** 0-based page, clamped to the pages there are. */
++    public static int clampPage(int page, int count, int perPage) { return Math.max(0, Math.min(page, pages(count, perPage) - 1)); }
++
++    public static <T> List<T> page(List<T> all, int page, int perPage) {
++        int pp = Math.max(1, perPage);
++        int p = clampPage(page, all.size(), pp);
++        int from = p * pp, to = Math.min(all.size(), from + pp);
++        return from >= to ? new ArrayList<>() : new ArrayList<>(all.subList(from, to));
++    }
++
++    // ---------------------------------------------------------------- text helpers
++
++    /** Visible length (formatting codes do not count). */
++    public static int visible(String s) { return s == null ? 0 : s.replaceAll("\u00a7.", "").length(); }
++
++    public static String fit(String s) { return LoadoutText.fit(s); }
++
++    static String plural(int n, String one, String many) { return n + " " + (n == 1 ? one : many); }
++
++    // ---------------------------------------------------------------- home
++
++    public static final String HOME_TITLE = "Spell Book";
++    public static final String ALL_BUTTON = "All spells A to Z";
++    public static final String ALL_JAVA = "All A to Z";
++    public static final String BAR_BUTTON = "Put spells on my bar";
++    public static final String CLOSE = "Close";
++    public static final String NEXT = "Next page";
++    public static final String PREV = "Previous page";
++    public static final String GROUPS = "Back to groups";
++    public static final String JAVA_PREV = "< Prev";
++    public static final String JAVA_NEXT = "Next >";
++    public static final String JAVA_GROUPS = "Groups";
++
++    /** "Master Wand: 17 spells" (fits a form line). */
++    public static String wandLine(String wandName, int known) {
++        String tail = ": " + plural(known, "spell", "spells");
++        String w = wandName == null || wandName.isBlank() ? "Your wand" : wandName.trim();
++        if (w.length() + tail.length() > MAX) w = w.substring(0, Math.max(1, MAX - tail.length() - 3)).trim() + "...";
++        return w + tail;
++    }
++
++    /** "17 on your bar, 0 in the book." */
++    public static String barLine(int onBar, int known) {
++        return onBar + " on your bar, " + Math.max(0, known - onBar) + " in the book.";
++    }
++
++    /** "3 more unlock at a higher rank." (null when none). */
++    public static String lockedLine(int locked) {
++        if (locked <= 0) return null;
++        return locked == 1 ? "1 more unlocks at a higher rank." : locked + " more unlock at a higher rank.";
++    }
++
++    public static final String HOME_HINT_BEDROCK = "Tap a group to see its spells.";
++    public static final String HOME_HINT_JAVA = "Click a group to see its spells.";
++
++    /** Bedrock group button: "Healing (7)" or "Healing (4, +3 locked)". */
++    public static String groupButton(GroupCount c) {
++        String s = c.locked <= 0 ? c.name + " (" + c.known + ")"
++                : c.known == 0 ? c.name + " (" + c.locked + " locked)"
++                : c.name + " (" + c.known + ", +" + c.locked + " locked)";
++        if (s.length() > MAX) s = c.name + " (" + c.total() + ")";
++        return fit(s);
++    }
++
++    /** Java group button text (inside [ ]): "Healing 7" or "Healing 4 +3". */
++    public static String groupJava(GroupCount c) {
++        if (c.locked <= 0) return c.name + " " + c.known;
++        return c.known == 0 ? c.name + " +" + c.locked : c.name + " " + c.known + " +" + c.locked;
++    }
++
++    /** Java hover on a group button. */
++    public static String groupHover(GroupCount c) {
++        String s = plural(c.known, "spell", "spells") + " on your wand.";
++        if (c.locked > 0) s += "\n" + c.locked + " more unlock" + (c.locked == 1 ? "s" : "") + " at a higher rank.";
++        return s;
++    }
++
++    // ---------------------------------------------------------------- group pages
++
++    /** Bedrock title "Healing (7) page 1/2" (page part only when there is more than one). */
++    public static String groupTitle(String name, int count, int page, int pages) {
++        String base = name + " (" + count + ")";
++        String s = pages > 1 ? base + " page " + (page + 1) + "/" + pages : base;
++        if (s.length() <= MAX) return s;
++        String pg = pages > 1 ? " " + (page + 1) + "/" + pages : "";
++        int room = MAX - pg.length();
++        String n = name.length() <= room ? name : name.substring(0, Math.max(1, room - 3)).trim() + "...";
++        return n + pg;
++    }
++
++    /** Java heading "Healing (7), page 1 of 2". */
++    public static String groupHeading(String name, int count, int page, int pages) {
++        return name + " (" + count + ")" + (pages > 1 ? ", page " + (page + 1) + " of " + pages : "");
++    }
++
++    public static String allName() { return "All spells A to Z"; }
++
++    public static final String LOCKED_HINT = "Gray spells unlock at a higher rank.";
++
++    public static String groupContent(boolean bedrock, boolean anyLocked) {
++        String s = bedrock ? "Tap a spell to read it. Reading never casts." : "Hover to read a spell, click for the full page.";
++        if (anyLocked) s += "\n" + LOCKED_HINT;
++        return s;
++    }
++
++    /** " bar 4" / " page 2" / "" */
++    static String mark(Entry e) {
++        if (e.barSlot >= 0) return " bar " + (e.barSlot + 1);
++        if (e.page > 0) return " page " + e.page;
++        return "";
++    }
++
++    /** Java line text (no limit): "Storm Shackle (Rank 2 of 3) bar 4", locked "Tame: unlocks at Master". */
++    public static String javaLine(Entry e) {
++        if (e.locked) return e.name + ": unlocks at " + e.bandName;
++        String r = e.rankText.isEmpty() ? "" : " (" + e.rankText + ")";
++        return e.name + r + mark(e) + (e.active ? " (in use)" : "");
++    }
++
++    /**
++     * Bedrock button (38 visible characters at most): "Storm Shackle (Rank 2 of 3) - bar 4".
++     * Too long: the rank part goes first, then the name is shortened; the bar number always stays.
++     * Locked: grey "Tame - unlocks at Master", or "Name (Master)" when that is too long.
++     */
++    public static String bedrockButton(Entry e) {
++        if (e.locked) {
++            String s = e.name + " - unlocks at " + e.bandName;
++            if (s.length() > MAX) s = e.name + " (" + e.bandName + ")";
++            return GREY + fit(s);
++        }
++        String m = e.barSlot >= 0 ? " - bar " + (e.barSlot + 1) : e.page > 0 ? " - page " + e.page : "";
++        String use = e.active ? " (in use)" : "";
++        String r = e.rankText.isEmpty() ? "" : " (" + e.rankText + ")";
++        String s = e.name + r + m + use;
++        if (s.length() <= MAX) return s;
++        s = e.name + m + use;
++        if (s.length() <= MAX) return s;
++        String tail = m + use;
++        int room = Math.max(4, MAX - tail.length());
++        String n = e.name.length() <= room ? e.name : e.name.substring(0, room - 3).trim() + "...";
++        return n + tail;
++    }
++
++    /** Hover / form text for a locked spell. */
++    public static List<String> lockedLines(Entry e, String description) {
++        List<String> out = new ArrayList<>();
++        out.add(e.name);
++        if (description != null && !description.isBlank()) out.add(description.trim());
++        out.add("Unlocks at " + e.bandName + " rank.");
++        out.add("Cast spells to earn SP and rank up your wand.");
++        return out;
++    }
++
++    public static String lockedTitle(Entry e) { return fit(e.name + " (locked)"); }
++
++    /** "Back to Healing" (form button, fits). */
++    public static String backTo(String groupName) { return fit("Back to " + groupName); }
++
++    // ---------------------------------------------------------------- bar picker (0.2.9 flow, by group)
++
++    public static String pickGroupContent(int slot) {
++        return "Pick the spell for slot " + (slot + 1) + ". Choose a group first.";
++    }
++
++    /** Picker list title: "Slot 4: Healing 1/2". */
++    public static String pickListTitle(int slot, String groupName, int page, int pages) {
++        String pg = pages > 1 ? " " + (page + 1) + "/" + pages : "";
++        String head = "Slot " + (slot + 1) + ": ";
++        int room = MAX - head.length() - pg.length();
++        String n = groupName.length() <= room ? groupName : groupName.substring(0, Math.max(1, room - 3)).trim() + "...";
++        return head + n + pg;
++    }
++
++    /** Picker group button: only spells the wand knows. */
++    public static String pickGroupButton(GroupCount c) { return fit(c.name + " (" + c.known + ")"); }
++}
+diff -ruN '--exclude=build' src-0.2.9/tests/SpellbookTest.java src/tests/SpellbookTest.java
+--- src-0.2.9/tests/SpellbookTest.java	1969-12-31 18:00:00.000000000 -0600
++++ src/tests/SpellbookTest.java	2026-10-26 14:35:30.722284759 -0500
+@@ -0,0 +1,288 @@
++import com.winkreyes.excelwandbars.core.LoadoutText;
++import com.winkreyes.excelwandbars.core.SpellbookGroups;
++import com.winkreyes.excelwandbars.core.SpellbookText;
++import com.winkreyes.excelwandbars.core.SpellbookText.Entry;
++import com.winkreyes.excelwandbars.core.SpellbookText.GroupCount;
++
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.util.*;
++
++/** 0.3.0 organized Spell Book: groups file, counts per seal, sorting, paging, text limits. */
++public final class SpellbookTest {
++    static final String[] RANKS = {"beginner", "student", "apprentice", "master"};
++    static final String[] BANDS = {"Beginner", "Student", "Apprentice", "Master"};
++
++    record Row(String key, String name, int band, String cat, int seal) {}
++
++    @SuppressWarnings("unchecked")
++    static SpellbookGroups load(String path) throws Exception {
++        Object o = new org.yaml.snakeyaml.Yaml().load(Files.readString(Path.of(path)));
++        return SpellbookGroups.parse((Map<String, Object>) o);
++    }
++
++    @SuppressWarnings("unchecked")
++    static SpellbookGroups parseText(String yml) {
++        return SpellbookGroups.parse((Map<String, Object>) new org.yaml.snakeyaml.Yaml().load(yml));
++    }
++
++    static List<Row> rows(String csv) throws Exception {
++        List<Row> out = new ArrayList<>();
++        List<String> lines = Files.readAllLines(Path.of(csv));
++        for (String l : lines.subList(1, lines.size())) {
++            if (l.isBlank()) continue;
++            String[] c = l.split(",", -1);
++            out.add(new Row(c[0], c[1], Arrays.asList(RANKS).indexOf(c[2]), c[6], Integer.parseInt(c[3])));
++        }
++        return out;
++    }
++
++    /** A wand at rank r knowing `known`; locked = spells of higher bands in `pool`. */
++    static List<Entry> book(List<Row> pool, int rank, boolean withLocked) {
++        List<Entry> out = new ArrayList<>();
++        int slot = 0;
++        for (Row r : pool) {
++            if (r.band <= rank) {
++                Entry e = new Entry(r.key, r.name, r.band, BANDS[r.band], false).rank("Rank 1 of 3");
++                if (slot < 21) e.barSlot = slot++;
++                out.add(e);
++            } else if (withLocked) out.add(new Entry(r.key, r.name, r.band, BANDS[r.band], true));
++        }
++        return out;
++    }
++
++    static Map<String, Integer> countMap(List<GroupCount> gc, boolean total) {
++        Map<String, Integer> m = new LinkedHashMap<>();
++        for (GroupCount c : gc) m.put(c.key, total ? c.total() : c.known);
++        return m;
++    }
++
++    static final List<String> bedrockStrings = new ArrayList<>();
++    static void br(String s) { bedrockStrings.add(s); }
++
++    public static void run(String ymlPath, String csvPath) throws Exception {
++        System.out.println("SpellbookTest (0.3.0 organized Spell Book)");
++        if (ymlPath.isEmpty()) ymlPath = "spellbook.yml";
++        if (csvPath.isEmpty()) csvPath = "tests/data/spells-by-seal.csv";
++
++        // ---- shipped spellbook.yml
++        SpellbookGroups g = load(ymlPath);
++        List<String> keys = new ArrayList<>(), names = new ArrayList<>();
++        for (SpellbookGroups.Group x : g.groups()) { keys.add(x.key); names.add(x.name); }
++        Check.eq(List.of("healing", "defense", "damage", "movement", "summon", "building", "world", "utility"), keys, "yml: 8 groups in order");
++        Check.eq(List.of("Healing", "Defense", "Damage", "Movement", "Summon", "Building", "World", "Utility"), names, "yml: group names");
++        Check.eq(104, g.spellCount(), "yml: 104 spells listed");
++        Check.eq(0, g.duplicates().size(), "yml: no duplicates");
++        Check.eq(0, g.problems().size(), "yml: no problems");
++        Check.eq("other", g.groupOf("disposal"), "yml: disposal is not listed (taken off the wands)");
++        Check.eq("Other", g.otherName(), "yml: other-name");
++        Check.eq("other", g.order().get(g.order().size() - 1), "order: Other last");
++        Check.eq("healing", g.groupOf("heal"), "groupOf heal");
++        Check.eq("healing", g.groupOf("Heal|2"), "groupOf strips level and case");
++        Check.eq("healing", g.groupOf("healing"), "spell 'healing' is in group healing");
++        Check.eq("damage", g.groupOf("stormshackle"), "groupOf stormshackle");
++        Check.eq("summon", g.groupOf("tame"), "groupOf tame");
++        Check.eq("world", g.find("World"), "find by name");
++        Check.eq("movement", g.find("MOVEMENT"), "find any case");
++        Check.eq(null, g.find("nope"), "find unknown = null");
++
++        // ---- every CSV spell (except disposal) is in the right group
++        List<Row> all = rows(csvPath);
++        List<Row> pool = new ArrayList<>();
++        int wrong = 0;
++        for (Row r : all) {
++            if (r.key.equals("disposal")) continue;
++            pool.add(r);
++            if (!g.groupOf(r.key).equals(r.cat.toLowerCase(Locale.ROOT))) { wrong++; System.out.println("    group mismatch " + r.key); }
++        }
++        Check.eq(104, pool.size(), "inventory: 104 spells without disposal");
++        Check.eq(0, wrong, "inventory: every spell in its planned group");
++        List<String> poolKeys = new ArrayList<>();
++        for (Row r : pool) poolKeys.add(r.key);
++        Check.eq(0, g.unlisted(poolKeys).size(), "inventory: nothing unlisted");
++
++        // ---- Seal 1 (17 spells), Master wand
++        List<Row> seal1 = new ArrayList<>();
++        for (Row r : pool) if (r.seal == 1) seal1.add(r);
++        Check.eq(17, seal1.size(), "seal 1: 17 spells");
++        List<Entry> s1 = book(seal1, 3, true);
++        List<GroupCount> gc1 = SpellbookText.counts(g, s1, true);
++        Check.eq(Map.of("healing", 7, "defense", 4, "damage", 1, "movement", 2, "utility", 3), new HashMap<>(countMap(gc1, false)), "seal 1 master: 7/4/1/2/3");
++        Check.eq(List.of("healing", "defense", "damage", "movement", "utility"), new ArrayList<>(countMap(gc1, false).keySet()), "seal 1: empty groups hidden, file order");
++        Check.eq(0, SpellbookText.locked(s1), "seal 1 master: nothing locked");
++        Check.eq("Master Wand: 17 spells", SpellbookText.wandLine("Master Wand", 17), "wandLine");
++        Check.eq("17 on your bar, 0 in the book.", SpellbookText.barLine(17, 17), "barLine");
++        Check.eq(null, SpellbookText.lockedLine(0), "lockedLine none");
++
++        // Seal 1, Beginner wand: locked = the higher-rank seal 1 spells only (no spoilers)
++        List<Entry> s1b = book(seal1, 0, true);
++        int b0 = 0; for (Row r : seal1) if (r.band == 0) b0++;
++        Check.eq(b0, SpellbookText.known(s1b), "seal 1 beginner: known = beginner band");
++        Check.eq(17 - b0, SpellbookText.locked(s1b), "seal 1 beginner: locked = rest of seal 1");
++        boolean spoiler = false;
++        for (Entry e : s1b) if (!poolKeysSeal(seal1).contains(e.key)) spoiler = true;
++        Check.ok(!spoiler, "seal 1 beginner: no later-seal spell shown");
++        List<GroupCount> gc1b = SpellbookText.counts(g, s1b, true);
++        Check.eq(countMap(gc1, false), countMap(gc1b, true), "seal 1 beginner: known+locked per group = master counts");
++        List<GroupCount> gc1bNo = SpellbookText.counts(g, s1b, false);
++        int sumNo = 0; for (GroupCount c : gc1bNo) { sumNo += c.total(); }
++        Check.eq(b0, sumNo, "show-locked off: only known spells counted");
++        Check.eq((17 - b0) + " more unlock at a higher rank.", SpellbookText.lockedLine(17 - b0), "lockedLine");
++        Check.eq("1 more unlocks at a higher rank.", SpellbookText.lockedLine(1), "lockedLine one");
++
++        // ---- Simulated Seal 4 full set (104), Master wand
++        List<Entry> s4 = book(pool, 3, true);
++        List<GroupCount> gc4 = SpellbookText.counts(g, s4, true);
++        Map<String, Integer> want4 = new LinkedHashMap<>();
++        want4.put("healing", 10); want4.put("defense", 8); want4.put("damage", 30); want4.put("movement", 14);
++        want4.put("summon", 5); want4.put("building", 9); want4.put("world", 6); want4.put("utility", 22);
++        Check.eq(want4, countMap(gc4, false), "seal 4 master: 10/8/30/14/5/9/6/22 in order");
++        Check.eq(21, SpellbookText.onBar(s4), "seal 4 master: 21 on the bar");
++        Check.eq("83 in the book.", SpellbookText.barLine(21, 104).substring(SpellbookText.barLine(21, 104).indexOf("83")), "barLine 21/104");
++
++        // Seal 4, Student wand
++        List<Entry> s4s = book(pool, 1, true);
++        Check.eq(104, s4s.size(), "seal 4 student: known + locked = 104");
++        Check.eq(want4, countMap(SpellbookText.counts(g, s4s, true), true), "seal 4 student: totals per group unchanged");
++
++        // ---- sorting
++        List<Entry> heal = SpellbookText.list(g, s4s, "healing", true);
++        boolean sorted = true;
++        for (int i = 1; i < heal.size(); i++) if (SpellbookText.BY_RANK_THEN_NAME.compare(heal.get(i - 1), heal.get(i)) > 0) sorted = false;
++        Check.ok(sorted, "group list sorted by rank then name");
++        Check.ok(heal.get(0).band == 0, "group list: beginner spells first");
++        Check.ok(heal.get(heal.size() - 1).band >= heal.get(0).band, "group list: higher ranks last");
++        List<Entry> az = SpellbookText.list(g, s4, SpellbookText.ALL, true);
++        Check.eq(104, az.size(), "A to Z: every spell");
++        boolean azSorted = true;
++        for (int i = 1; i < az.size(); i++) if (az.get(i - 1).name.compareToIgnoreCase(az.get(i).name) > 0) azSorted = false;
++        Check.ok(azSorted, "A to Z sorted by name");
++        Check.eq(SpellbookText.known(s4s), SpellbookText.list(g, s4s, SpellbookText.ALL, false).size(), "A to Z without locked = known");
++        // Mixed: a Beginner locked spell never sorts before a known Beginner spell with a later name? (rank first, then name)
++        Entry a = new Entry("a", "Zed", 0, "Beginner", false), b = new Entry("b", "Abe", 1, "Student", true);
++        Check.ok(SpellbookText.BY_RANK_THEN_NAME.compare(a, b) < 0, "rank before name");
++
++        // ---- paging
++        List<Entry> dmg = SpellbookText.list(g, s4, "damage", true);
++        Check.eq(30, dmg.size(), "damage 30");
++        Check.eq(3, SpellbookText.pages(30, SpellbookText.JAVA_PER_PAGE), "java pages 30/10 = 3");
++        Check.eq(3, SpellbookText.pages(30, SpellbookText.BEDROCK_PER_PAGE), "bedrock pages 30/12 = 3");
++        Check.eq(12, SpellbookText.page(dmg, 0, 12).size(), "bedrock page 1 = 12");
++        Check.eq(6, SpellbookText.page(dmg, 2, 12).size(), "bedrock page 3 = 6");
++        Check.eq(10, SpellbookText.page(dmg, 2, 10).size(), "java page 3 = 10");
++        Check.eq(6, SpellbookText.page(dmg, 99, 12).size(), "page past end clamps to last");
++        Check.eq(0, SpellbookText.clampPage(-4, 30, 10), "negative page clamps to first");
++        Check.eq(1, SpellbookText.pages(0, 10), "empty list = 1 page");
++        Check.eq(9, SpellbookText.pages(104, 12), "A to Z bedrock 9 pages");
++        Check.eq(11, SpellbookText.pages(104, 10), "A to Z java 11 pages");
++        Set<String> seen = new HashSet<>();
++        for (int pg = 0; pg < 3; pg++) for (Entry e : SpellbookText.page(dmg, pg, 12)) seen.add(e.key);
++        Check.eq(30, seen.size(), "pages cover every spell once");
++
++        // ---- unlisted / Other / broken files
++        List<Entry> extra = new ArrayList<>(s1);
++        extra.add(new Entry("newthing", "New Thing", 3, "Master", false));
++        List<GroupCount> gcx = SpellbookText.counts(g, extra, true);
++        Check.eq("other", gcx.get(gcx.size() - 1).key, "unlisted spell: Other group, last");
++        Check.eq("Other (1)", SpellbookText.groupButton(gcx.get(gcx.size() - 1)), "Other button");
++        Check.eq(List.of("newthing"), g.unlisted(List.of("heal", "newthing", "mend|3")), "unlisted() for the boot warning");
++        SpellbookGroups dup = parseText("categories:\n  a: {name: A, spells: [heal, mend]}\n  b: {name: B, spells: [heal, x]}\n");
++        Check.eq("a", dup.groupOf("heal"), "duplicate: first group wins");
++        Check.eq(1, dup.duplicates().size(), "duplicate reported");
++        SpellbookGroups bad = parseText("categories:\n  other: {spells: [heal]}\n  all: {spells: [mend]}\n  ok: {spells: [cure]}\n");
++        Check.eq(1, bad.groups().size(), "reserved keys other/all rejected");
++        Check.eq("Ok", bad.nameOf("ok"), "name defaults to key");
++        Check.eq(2, bad.problems().size(), "reserved keys reported");
++        SpellbookGroups none = parseText("foo: bar\n");
++        Check.eq(0, none.groups().size(), "no categories: no groups");
++        Check.ok(!none.problems().isEmpty(), "no categories: problem reported");
++        Check.eq("other", none.groupOf("heal"), "no groups: everything in Other");
++        Check.eq(0, SpellbookGroups.parse(null).groups().size(), "null root never throws");
++
++        // ---- text
++        Entry ss = new Entry("stormshackle", "Storm Shackle", 1, "Student", false).rank("Rank 2 of 3").bar(3);
++        Check.eq("Storm Shackle (Rank 2 of 3) bar 4", SpellbookText.javaLine(ss), "javaLine bar mark");
++        Check.eq("Storm Shackle (Rank 2 of 3) - bar 4", SpellbookText.bedrockButton(ss), "bedrock button bar mark");
++        Entry tame = new Entry("tame", "Tame", 3, "Master", true);
++        Check.eq("Tame: unlocks at Master", SpellbookText.javaLine(tame), "javaLine locked");
++        Check.eq(SpellbookText.GREY + "Tame - unlocks at Master", SpellbookText.bedrockButton(tame), "bedrock locked: gray, unlocks at");
++        Entry pg = new Entry("frost", "Frost", 1, "Student", false).rank("Rank 1 of 2");
++        pg.page = 2;
++        Check.eq("Frost (Rank 1 of 2) page 2", SpellbookText.javaLine(pg), "no own bar: page mark");
++        Entry longName = new Entry("recall_death", "Recall to Last Death", 3, "Master", false).rank("Rank 3 of 3").bar(20);
++        longName.active = true;
++        String lb = SpellbookText.bedrockButton(longName);
++        Check.ok(lb.endsWith(" - bar 21 (in use)") && lb.length() <= 38, "long name: bar mark kept, fits (" + lb + ")");
++        Check.eq("Healing (7)", SpellbookText.groupButton(gc1.get(0)), "group button");
++        GroupCount hb = SpellbookText.counts(g, s1b, true).get(0);
++        Check.ok(SpellbookText.groupButton(hb).contains("locked"), "group button shows locked count");
++        GroupCount dmg1 = null; for (GroupCount c : SpellbookText.counts(g, s1b, true)) if (c.key.equals("damage")) dmg1 = c;
++        Check.eq("Damage (1 locked)", SpellbookText.groupButton(dmg1), "group button: none known yet");
++        Check.eq("Damage +1", SpellbookText.groupJava(dmg1), "java group: none known yet");
++        Check.eq("Healing (3, +4 locked)", SpellbookText.groupButton(hb), "group button known + locked");
++        Check.eq("Healing (10) page 1/2", SpellbookText.groupTitle("Healing", 10, 0, 2), "group title paged");
++        Check.eq("Healing (7)", SpellbookText.groupTitle("Healing", 7, 0, 1), "group title one page");
++        Check.eq("Healing (10), page 2 of 2", SpellbookText.groupHeading("Healing", 10, 1, 2), "java heading");
++        Check.eq("Back to Healing", SpellbookText.backTo("Healing"), "back label");
++        Check.eq("Slot 4: Damage 2/3", SpellbookText.pickListTitle(3, "Damage", 1, 3), "picker title");
++        List<String> ll = SpellbookText.lockedLines(tame, "Tame an animal.");
++        Check.eq("Unlocks at Master rank.", ll.get(2), "locked detail: unlocks at");
++
++        // ---- every Bedrock string: <= 38 visible, no em dash, no "click"
++        for (List<Entry> set : List.of(s1, s1b, s4, s4s)) {
++            for (GroupCount c : SpellbookText.counts(g, set, true)) {
++                br(SpellbookText.groupButton(c));
++                br(SpellbookText.pickGroupButton(c));
++                br(SpellbookText.backTo(c.name));
++                List<Entry> l = SpellbookText.list(g, set, c.key, true);
++                int pages = SpellbookText.pages(l.size(), 12);
++                for (int p = 0; p < pages; p++) {
++                    br(SpellbookText.groupTitle(c.name, l.size(), p, pages));
++                    br(SpellbookText.pickListTitle(20, c.name, p, pages));
++                }
++            }
++            for (Entry e : set) {
++                br(SpellbookText.bedrockButton(e));
++                Entry act = new Entry(e.key, e.name, e.band, e.bandName, e.locked).rank("Rank 10 of 10").bar(20);
++                act.active = true;
++                br(SpellbookText.bedrockButton(act));
++                br(SpellbookText.lockedTitle(e));
++                br(LoadoutText.pickSpellButton(e.name, 20));
++            }
++        }
++        br(SpellbookText.groupTitle("A very long group name for testing", 104, 8, 9));
++        br(SpellbookText.wandLine("An Extremely Long Wand Name Of Many Words", 104));
++        br(SpellbookText.wandLine("Master Wand", 104));
++        br(SpellbookText.barLine(21, 104));
++        br(SpellbookText.lockedLine(87));
++        for (String s : List.of(SpellbookText.HOME_TITLE, SpellbookText.ALL_BUTTON, SpellbookText.BAR_BUTTON, SpellbookText.CLOSE,
++                SpellbookText.NEXT, SpellbookText.PREV, SpellbookText.GROUPS, SpellbookText.allName(), SpellbookText.HOME_HINT_BEDROCK,
++                SpellbookText.backTo(SpellbookText.allName()))) br(s);
++        int over = 0, dash = 0, click = 0;
++        for (String s : bedrockStrings) {
++            if (SpellbookText.visible(s) > 38) { over++; System.out.println("    too long: " + s); }
++            if (s.contains("\u2014") || s.contains("\u2013")) dash++;
++            if (s.toLowerCase(Locale.ROOT).contains("click")) click++;
++        }
++        Check.ok(bedrockStrings.size() > 1000, "bedrock strings checked: " + bedrockStrings.size());
++        Check.eq(0, over, "bedrock: every title and button <= 38 visible characters");
++        Check.eq(0, dash, "bedrock: no em or en dashes");
++        Check.eq(0, click, "bedrock: no 'click'");
++        // Bedrock body text (no length limit, but no click / dashes)
++        List<String> bodies = new ArrayList<>(List.of(SpellbookText.groupContent(true, true), SpellbookText.groupContent(true, false),
++                SpellbookText.pickGroupContent(20), LoadoutText.pickSpellContent(20)));
++        bodies.addAll(SpellbookText.lockedLines(tame, "x"));
++        int bodyBad = 0;
++        for (String s : bodies) if (s.toLowerCase(Locale.ROOT).contains("click") || s.contains("\u2014")) { bodyBad++; System.out.println("    bad body: " + s); }
++        Check.eq(0, bodyBad, "bedrock bodies: no 'click', no em dash");
++        // Java text: no em dashes either
++        List<String> java = new ArrayList<>(List.of(SpellbookText.groupContent(false, true), SpellbookText.HOME_HINT_JAVA, SpellbookText.ALL_JAVA,
++                SpellbookText.JAVA_PREV, SpellbookText.JAVA_NEXT, SpellbookText.JAVA_GROUPS));
++        for (Entry e : s4s) java.add(SpellbookText.javaLine(e));
++        for (GroupCount c : SpellbookText.counts(g, s4s, true)) { java.add(SpellbookText.groupJava(c)); java.add(SpellbookText.groupHover(c)); }
++        int jd = 0; for (String s : java) if (s.contains("\u2014")) jd++;
++        Check.eq(0, jd, "java text: no em dashes");
++    }
++
++    static Set<String> poolKeysSeal(List<Row> rows) { Set<String> s = new HashSet<>(); for (Row r : rows) s.add(r.key); return s; }
++}
+diff -ruN '--exclude=build' src-0.2.9/tests/TestMain.java src/tests/TestMain.java
+--- src-0.2.9/tests/TestMain.java	2026-10-26 13:16:53.000000000 -0500
++++ src/tests/TestMain.java	2026-10-26 14:28:03.540301316 -0500
+@@ -14,6 +14,7 @@
+         ProgressTest.run();
+         RankUpTest.run();
+         LoadoutTest.run();
++        SpellbookTest.run(System.getProperty("spellbook", ""), System.getProperty("spellbookCsv", ""));
+         SpellInfoTest.run(System.getProperty("spells", ""));
+         CumulusFormTest.run(System.getProperty("floodgate", ""));
+         System.out.println("TOTAL: " + Check.passed + " passed, " + Check.failed + " failed");
+diff -ruN '--exclude=build' src-0.2.9/tests/data/spells-by-seal.csv src/tests/data/spells-by-seal.csv
+--- src-0.2.9/tests/data/spells-by-seal.csv	1969-12-31 18:00:00.000000000 -0600
++++ src/tests/data/spells-by-seal.csv	2026-10-26 14:26:58.264011792 -0500
+@@ -0,0 +1,106 @@
++spell_key,name,rank_band,current_seal,proposed_seal,moved,category,builder_gated_now
++heal,Heal,beginner,1,1,,Healing,
++boon,Boon,beginner,1,1,,Defense,
++feed,Feed,beginner,1,1,,Healing,
++extinguish,Extinguish,beginner,1,1,,Utility,
++aqualung,Aqualung,beginner,1,1,,Utility,
++cure,Cure,student,1,1,,Healing,
++shell,Shell,student,1,1,,Defense,
++gills,Diving Helmet,student,1,1,,Utility,
++stormshackle,Storm Shackle,student,1,1,,Damage,
++superheal,SuperHeal,apprentice,1,1,,Healing,
++recall,Recall,apprentice,1,1,,Movement,
++blessing,Blessing,master,1,1,,Defense,
++recall_death,Recall to Last Death,master,1,1,,Movement,
++torch,Torch,beginner,2,2,,Utility,
++peek,Peek,beginner,2,2,,Utility,
++workbench,Workbench,beginner,2,2,,Utility,
++bubble,Bubble,beginner,2,2,,Defense,
++backflip,Backflip,beginner,2,2,,Movement,
++gasp,Gasp,beginner,2,2,,Utility,
++magictorch,Magic Torch,student,2,2,,Utility,
++throwmagictorch,Throw Magic Torch,student,2,2,,Utility,
++fling,Fling,student,2,2,,Movement,
++dash,Dash,student,2,2,,Movement,
++evade,Evade,student,2,2,,Movement,
++hulkleap,Hulk Leap,student,2,2,,Movement,
++piggyback,Piggyback,student,2,2,,Movement,
++repairitem,Repair Item,student,2,2,,Utility,
++repairequipment,Repair Equipment,student,2,2,,Utility,
++glide,Glide,apprentice,2,2,,Movement,
++lift,Lift,apprentice,2,2,,Movement,
++stash,Stash,apprentice,2,2,,Utility,
++disposal,Disposal,apprentice,2,2,,Utility,
++blink,Blink,master,2,2,,Movement,
++missile,Magic Missile,beginner,3,3,,Damage,
++frost,Frost,beginner,3,3,,Damage,
++arrow,Arrow,beginner,3,3,,Damage,
++flare,Flare,beginner,3,3,,Damage,
++stun,Stun,beginner,3,3,,Damage,
++push,Push,beginner,3,3,,Damage,
++pull,Pull,beginner,3,3,,Damage,
++sparkle,Sparkle,student,3,3,,Utility,
++stream,Stream,student,3,3,,Damage,
++grow,Grow,student,3,3,,Utility,
++familiar,Familiar,student,3,3,,Summon,
++arrow_ice,Ice Arrow,student,3,3,,Damage,
++arrow_light,Light Arrow,student,3,3,,Damage,
++arrow_shock,Shock Arrow,student,3,3,,Damage,
++arrow_regular,Normal Arrow,student,3,3,,Damage,
++wolf,Wolf,student,3,3,,Summon,
++cat,Cat,student,3,3,,Summon,
++wave,Wave,apprentice,3,3,,Damage,
++smite,Smite,apprentice,3,3,,Damage,
++growth,Growth,apprentice,3,3,,Utility,
++hat,Hat,apprentice,3,3,,Utility,
++gather,Gather,apprentice,3,3,,Movement,
++lightning,Lightning,master,3,3,,Damage,
++chainlightning,Chain Lightning,master,3,3,,Damage,
++pollinate,Pollinate,master,3,3,,Utility,
++tame,Tame,master,3,3,,Summon,
++eat_food,Eat Food,beginner,5,2,yes,Utility,
++rolldice,Roll Dice,beginner,5,2,yes,Utility,
++cloak,Cloak,beginner,5,4,yes,Defense,
++reflect,Reflect,beginner,5,3,yes,Defense,
++boomerang,Boomerang,student,5,3,yes,Damage,
++throwsword,Throw Sword,student,5,3,yes,Damage,
++skating,Skating,student,5,2,yes,Movement,
++wearskates,Wear Skates,student,5,2,yes,Movement,
++admission,Admission,student,5,2,yes,Utility,
++earth,Earth,student,5,4,yes,Building,
++whip,Whip,student,5,3,yes,Damage,
++tamepet,Tame Pet,apprentice,5,2,yes,Summon,
++anvil,Anvil,apprentice,5,2,yes,Utility,
++healing,Healing,apprentice,5,2,yes,Healing,
++critical,Critical,apprentice,5,4,yes,Damage,
++counterspell,Counterspell,apprentice,5,4,yes,Damage,
++music,Music,apprentice,5,2,yes,Utility,
++arrowrain,Arrow Rain,apprentice,5,4,yes,Damage,
++sweep,Sweep,apprentice,5,4,yes,Damage,
++powerstone,Power Stone,apprentice,5,4,yes,Damage,
++force,Force,master,5,4,yes,Damage,
++fury,Fury,master,5,4,yes,Damage,
++invincible,Invincible,master,5,4,yes,Defense,
++tendril,Tendril,master,5,4,yes,Damage,
++shrink,Shrink,master,5,4,yes,Damage,
++holylight,Holy Light,master,5,3,yes,Healing,
++masterattack,Master Blast,master,5,4,yes,Damage,
++day,Sunny Day,master,5,4,yes,World,
++night,A Dark and Stormy Night,master,5,4,yes,World,
++weather,Weather,master,5,4,yes,World,
++time,Time,master,5,4,yes,World,
++localrain,Local Rain,master,5,4,yes,World,
++restorelocalweather,Restore Local Weather,master,5,4,yes,World,
++platform,Platform,master,5,4,yes,Building,yes (Seal 4 builder group)
++walls,Walls,master,5,4,yes,Building,yes (Seal 4 builder group)
++sponge,Sponge,master,5,4,yes,Building,yes (Seal 4 builder group)
++tent,Tent,master,5,4,yes,Building,yes (Seal 4 builder group)
++tiny_house,Tiny House,master,5,4,yes,Building,yes (Seal 4 builder group)
++giant_house,Giant House,master,5,4,yes,Building,yes (Seal 4 builder group)
++harden,Harden,master,5,4,yes,Building,yes (Seal 4 builder group)
++rubberize,Rubberize,master,5,4,yes,Building,yes (Seal 4 builder group)
++mend,Mend,beginner,1,1,,Healing,
++flashheal,Flash Heal,student,1,1,,Healing,
++ward,Ward,student,1,1,,Defense,
++greaterheal,Greater Heal,apprentice,1,1,,Healing,
++layonhands,Lay on Hands,master,5,4,yes,Healing,

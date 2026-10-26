@@ -1,0 +1,23 @@
+--- base-0.2.9-staged.yml	2026-10-26 14:43:12.580333273 -0500
++++ changelog.yml	2026-10-26 14:43:22.512377325 -0500
+@@ -14,6 +14,20 @@
+ # Add a new entry at the TOP; everyone who has not seen it gets it once on their next join.
+ 
+ entries:
++  - id: 2026-10-26-spell-book-groups
++    date: Oct 26
++    posted: 2026-10-26
++    title: "Your Spell Book is organized"
++    better-commands:
++      - cmd: /spellbook
++        what: "Spells sorted into groups like Healing, Defense and Damage."
++        bedrock: "crouch and press and hold with your wand, then tap a group."
++        java: "Or type /spellbook and click a group."
++    changes:
++      - "Each group shows how many spells it has. Spells on your bar say which slot."
++      - "All spells A to Z is there too, a page at a time."
++      - "Gray spells are ones your wand gets at a higher rank."
++      - "Picking a spell for your bar starts with the groups too."
+   - id: 2026-10-26-my-spell-bar
+     date: Oct 26
+     posted: 2026-10-26
