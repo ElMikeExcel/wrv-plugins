@@ -1,0 +1,31 @@
+--- replaced-base/stage3/grants.txt
++++ live-stages/stage3/grants.txt
+@@ -43,7 +43,7 @@
+ lp group default permission set magic.cast.glide true
+ lp group default permission set magic.cast.lift true
+ lp group default permission set magic.cast.stash true
+-lp group default permission set magic.cast.disposal true
++# (removed Oct 26 2026 (Mike, 2:13-2:17 PM CDT): magic.cast.disposal, Disposal spell taken off all wands)
+ lp group default permission set magic.cast.blink true
+ lp group default permission set magic.cast.missile true
+ lp group default permission set magic.cast.frost true
+@@ -80,3 +80,19 @@
+ # Verify afterwards:
+ #   lp group default permission check magic.cast.heal   -> true
+ #   lp group default permission check magic.cast.lava   -> undefined
++
++# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): default-group cast nodes for spells that now open at this seal
++lp group default permission set magic.cast.eat_food true
++lp group default permission set magic.cast.rolldice true
++lp group default permission set magic.cast.reflect true
++lp group default permission set magic.cast.boomerang true
++lp group default permission set magic.cast.throwsword true
++lp group default permission set magic.cast.skating true
++lp group default permission set magic.cast.wearskates true
++lp group default permission set magic.cast.admission true
++lp group default permission set magic.cast.whip true
++lp group default permission set magic.cast.tamepet true
++lp group default permission set magic.cast.anvil true
++lp group default permission set magic.cast.healing true
++lp group default permission set magic.cast.music true
++lp group default permission set magic.cast.holylight true

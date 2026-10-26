@@ -1,0 +1,29 @@
+--- replaced-base/stage4/config.yml
++++ live-stages/stage4/config.yml
+@@ -1,5 +1,5 @@
+ #
+-# Wink Reyes Valley - Magic SEAL 4 — THE MASONS main config overrides (CUMULATIVE packet).
++# Wink Reyes Valley - Magic SEAL 5 — THE GUILD OPENS, THE SCHOOLS OPEN main config overrides (CUMULATIVE packet).
+ # WRV-070. Drop into plugins/Magic/ BEFORE the first boot with the Magic jar
+ # (see INSTALL-RUNBOOK.md). Only the options below are overridden; everything
+ # else keeps Magic 11.2.5 shipped defaults.
+@@ -68,6 +68,19 @@
+ #   nothing in the packet grants the items that activate them.
+ #
+ 
++#
++# AUTOMATA / ENGINEERING — OFF BY CONSTRUCTION (ROADMAP Seal 5 gate):
++# Magic 11.2.5 has NO config switch that enables or disables automata.
++# An Automaton is a "magic block" (see magic_block_update_frequency in the
++# defaults), and magic blocks are defined ONLY by the add-on "automata"
++# example config, fetched on demand with /mconfig. This packet does not
++# fetch it, no file in this packet defines a magic block, and no spell in
++# this packet creates one (the engineering spells that could interact
++# with blocks/machines — mine, toss, volley, projector, emp — are all
++# excluded from spells.yml). The tick setting is therefore inert here.
++# Do NOT run /mconfig example add automata on this server.
++#
++
+ # WRV quartermaster fix (Oct 18, 2026, scratch-proven — see
+ # village-quartermaster/BIND-TEST-EVIDENCE.md): bind wands to the named
+ # player at /mgive time. Without this, a beginner wand given to a player

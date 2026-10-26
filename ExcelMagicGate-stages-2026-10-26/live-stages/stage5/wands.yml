@@ -1,0 +1,470 @@
+#
+# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): spells re-spread so everything opens by Seal 4; Disposal removed.
+# Wink Reyes Valley - Magic Phase 1 (HEALER RELEASE) wand templates.
+# WRV-070. Paired with config.yml: load_default_wands: false
+# -> defaults/wands.defaults.yml (200 templates) is NOT loaded.
+#
+# The hidden base templates (base_magic, base_undroppable, base_keep,
+# base_bound, basic_wand, base_wand) are copied VERBATIM from Magic 11.2.5
+# defaults/wands.defaults.yml - they define wand behavior only and hold no
+# spells. The four rank wands keep their shipped properties (icon, colors,
+# mana, level_spells_to_path) but their spells lists are replaced with the
+# cumulative Phase 1 lists. The shipped rank wands embed the full default
+# spell lists (the apprentice wand alone carries lava, grenade, wither,
+# flamethrower, vengeance...) - that is why this file exists.
+#
+# Cumulative spell lists:
+#   beginner  : heal, boon, feed, extinguish, aqualung
+#   student   : + cure, shell, gills, stormshackle
+#   apprentice: + superheal, recall
+#   master    : + blessing, recall_death
+# active_spell on the beginner wand is heal (was cure before the re-tier
+# moved cure to Student; the shipped default was missile).
+#
+
+base_magic:
+  hidden: true
+  effects:
+    open:
+    - sound: magic.wandup
+      sound_broadcast: false
+      sound_volume: 0.4
+    - sound: block_chest_open
+      sound_pitch: 1.5
+      sound_volume: 0.1
+      sound_broadcast: false
+    close:
+    - sound: magic.wanddown
+      sound_broadcast: false
+      sound_volume: 0.4
+    - sound: block_chest_close
+      sound_pitch: 1.5
+      sound_volume: 0.1
+      sound_broadcast: false
+    cycle:
+    - sound: magic.paperturn
+      sound_broadcast: false
+      sound_volume: 0.4
+    - sound: item_book_page_turn
+      sound_pitch: 1.5
+      sound_volume: 0.2
+      sound_broadcast: false
+    cycle_spell:
+    - sound: ui_button_click
+      sound_pitch: 1.9
+      sound_volume: 0.1
+      sound_broadcast: false
+    cycle_hotbar:
+    - sound: magic.paperturn
+      sound_broadcast: false
+      sound_volume: 0.1
+    - sound: item_spyglass_use
+      sound_pitch: 0.3
+      sound_volume: 1.5
+      sound_broadcast: false
+
+base_undroppable:
+  inherit: base_magic
+  hidden: true
+  undroppable: true
+  unstashable: false
+  indestructible: true
+
+base_keep:
+  inherit: base_undroppable
+  hidden: true
+  keep: true
+  invulnerable: true
+
+base_bound:
+  inherit: base_keep
+  hidden: true
+  bound: true
+  immortal: true
+  track: true
+
+basic_wand:
+  inherit: base_magic
+  hidden: true
+  mode: inventory
+  drop: cycle_hotbar
+  left_click: cast
+  right_click: toggle
+  swap: cycle_hotbar
+  quiet: 1
+  effect_bubbles: false
+  item_attributes:
+    GENERIC_ATTACK_SPEED: 10
+  item_attribute_slot: mainhand
+
+base_wand:
+  hidden: true
+  inherit: base_bound
+  # WRV-150 (Oct 23, 2026), v2 7:40 PM CDT: combat-speed controls.
+  # Right-click (Bedrock: LT, or press-and-hold on touch) jumps straight
+  # to the next spell, no GUI. Sneak + right-click opens the chest spell
+  # list. Drop (Q) goes back one spell; sneak + drop also opens the list.
+  # Chest mode is kept so the spell list has a picker.
+  mode: chest
+  # WRV spell screen (ExcelWandBars 0.2.2, Oct 24 2026): 6 rows (54 slots)
+  # instead of Magic's default 5 (45). Bedrock (Geyser) has no 45-slot chest,
+  # so it showed a double chest with a row of 9 barrier blocks. 54 slots is a
+  # real Bedrock double chest: no barrier row. Spell slots 0 to 44 keep their
+  # places. Bedrock players on Classic get the Spell Book form instead anyway.
+  inventory_rows: 6
+  left_click: cast
+  right_click: cycle
+  right_click_sneak: toggle
+  drop: cycle_reverse
+  drop_sneak: toggle
+  swap: cycle
+  swap_sneak: cycle_reverse
+  # Show the active spell on every cycle: wand item name = spell name,
+  # plus the spell name on the action bar. The very long interval means
+  # the bar is only sent when the spell changes or the wand comes out,
+  # so it does not fight ExcelAttunement's stance line.
+  use_active_name: true
+  action_bar:
+    message: "$spell"
+    interval: 3600000
+  # WRV mana number (staged Oct 26 2026, option B1): a thin bar at the top of the screen,
+  # "Mana 42" (the bar fill shows how full you are), shown only while the wand is held. Same on Java and Bedrock (Geyser shows
+  # Java boss bars). It does not use the action bar, so it never fights the stance, range,
+  # page or spell lines. Reload with: magic load (no restart).
+  boss_bar:
+    mode: mana
+    bar_title: "Mana @mana"
+    bar_color: blue
+    bar_style: solid
+  quiet: 1
+  effect_bubbles: false
+  item_attributes:
+    GENERIC_ATTACK_SPEED: 10
+  item_attribute_slot: mainhand
+
+  cooldown_reduction: 0.2
+beginner:
+  inherit: base_wand
+  # WRV-150: cure moved to Student in the re-tier; heal is the beginner spell.
+  active_spell: heal
+  legacy_icon: wand_icon:1
+  icon: stick{CustomModelData:18001}
+  migrate_icon: wand_icon
+  effect_color: '004400'
+  mana_regeneration: 5
+  mana_max: 60
+  mana: 60
+  earn_multiplier: 0
+  level_spells_to_path: beginner
+  slots: gui,controls,spellmode,swappable
+  tags: tweakable
+  spells:
+  - heal
+  - boon
+  - feed
+  - extinguish
+  - aqualung
+  - torch
+  - peek
+  - workbench
+  - bubble
+  - backflip
+  - gasp
+  - missile
+  - frost
+  - arrow
+  - flare
+  - stun
+  - push
+  - pull
+  - eat_food
+  - rolldice
+  - cloak
+  - reflect
+  - mend
+student:
+  inherit: beginner
+  legacy_icon: wand_icon:2
+  icon: stick{CustomModelData:18002}
+  migrate_icon: wand_icon
+  effect_color: 00FF00
+  hotbar_count: 2
+  mana_regeneration: 15
+  mana_max: 100
+  mana: 100
+  level_spells_to_path: student
+  spells:
+  - heal
+  - boon
+  - feed
+  - extinguish
+  - aqualung
+  - cure
+  - shell
+  - gills
+  - stormshackle
+  - torch
+  - peek
+  - workbench
+  - bubble
+  - backflip
+  - gasp
+  - magictorch
+  - throwmagictorch
+  - fling
+  - dash
+  - evade
+  - hulkleap
+  - piggyback
+  - repairitem
+  - repairequipment
+  - missile
+  - frost
+  - arrow
+  - flare
+  - stun
+  - push
+  - pull
+  - sparkle
+  - stream
+  - grow
+  - familiar
+  - arrow_ice
+  - arrow_light
+  - arrow_shock
+  - arrow_regular
+  - wolf
+  - cat
+  - eat_food
+  - rolldice
+  - cloak
+  - reflect
+  - boomerang
+  - throwsword
+  - skating
+  - wearskates
+  - admission
+  - earth
+  - whip
+  - mend
+  - flashheal
+  - ward
+apprentice:
+  inherit: student
+  legacy_icon: wand_icon:3
+  icon: stick{CustomModelData:18003}
+  effect_color: 22FF22
+  mana_regeneration: 25
+  mana_max: 150
+  mana: 150
+  level_spells_to_path: apprentice
+  spells:
+  - heal
+  - boon
+  - feed
+  - extinguish
+  - aqualung
+  - cure
+  - shell
+  - gills
+  - stormshackle
+  - superheal
+  - recall
+  - torch
+  - peek
+  - workbench
+  - bubble
+  - backflip
+  - gasp
+  - magictorch
+  - throwmagictorch
+  - fling
+  - dash
+  - evade
+  - hulkleap
+  - piggyback
+  - repairitem
+  - repairequipment
+  - glide
+  - lift
+  - stash
+  - missile
+  - frost
+  - arrow
+  - flare
+  - stun
+  - push
+  - pull
+  - sparkle
+  - stream
+  - grow
+  - familiar
+  - arrow_ice
+  - arrow_light
+  - arrow_shock
+  - arrow_regular
+  - wolf
+  - cat
+  - wave
+  - smite
+  - growth
+  - hat
+  - gather
+  - eat_food
+  - rolldice
+  - cloak
+  - reflect
+  - boomerang
+  - throwsword
+  - skating
+  - wearskates
+  - admission
+  - earth
+  - whip
+  - tamepet
+  - anvil
+  - healing
+  - critical
+  - counterspell
+  - music
+  - arrowrain
+  - sweep
+  - powerstone
+  - mend
+  - flashheal
+  - ward
+  - greaterheal
+master:
+  inherit: apprentice
+  legacy_icon: wand_icon:4
+  icon: stick{CustomModelData:18004}
+  migrate_icon: golden_axe
+  mana_regeneration: 35
+  mana_max: 200
+  mana: 200
+  hotbar_count: 3
+  level_spells_to_path: master
+  spells:
+  - heal
+  - boon
+  - feed
+  - extinguish
+  - aqualung
+  - cure
+  - shell
+  - gills
+  - stormshackle
+  - superheal
+  - recall
+  - blessing
+  - recall_death
+  - torch
+  - peek
+  - workbench
+  - bubble
+  - backflip
+  - gasp
+  - magictorch
+  - throwmagictorch
+  - fling
+  - dash
+  - evade
+  - hulkleap
+  - piggyback
+  - repairitem
+  - repairequipment
+  - glide
+  - lift
+  - stash
+  - blink
+  - missile
+  - frost
+  - arrow
+  - flare
+  - stun
+  - push
+  - pull
+  - sparkle
+  - stream
+  - grow
+  - familiar
+  - arrow_ice
+  - arrow_light
+  - arrow_shock
+  - arrow_regular
+  - wolf
+  - cat
+  - wave
+  - smite
+  - growth
+  - hat
+  - gather
+  - lightning
+  - chainlightning
+  - pollinate
+  - tame
+  - eat_food
+  - rolldice
+  - cloak
+  - reflect
+  - boomerang
+  - throwsword
+  - skating
+  - wearskates
+  - admission
+  - earth
+  - whip
+  - tamepet
+  - anvil
+  - healing
+  - critical
+  - counterspell
+  - music
+  - arrowrain
+  - sweep
+  - powerstone
+  - force
+  - fury
+  - invincible
+  - tendril
+  - shrink
+  - holylight
+  - masterattack
+  - day
+  - night
+  - weather
+  - time
+  - localrain
+  - restorelocalweather
+  - platform
+  - walls
+  - sponge
+  - tent
+  - tiny_house
+  - giant_house
+  - harden
+  - rubberize
+  - mend
+  - flashheal
+  - ward
+  - greaterheal
+  - layonhands
+masons:
+  inherit: base_wand
+  hidden: true
+  active_spell: platform
+  icon: stick{CustomModelData:18005}
+  migrate_icon: wand_icon
+  effect_color: '888888'
+  mana_regeneration: 25
+  mana_max: 150
+  mana: 150
+  spells:
+  - platform
+  - walls
+  - sponge
+  - tent
+  - tiny_house
+  - giant_house
+  - harden
+  - rubberize

@@ -1,0 +1,649 @@
+--- replaced-base/stage2/spells.yml
++++ live-stages/stage2/spells.yml
+@@ -2307,34 +2307,10 @@
+     type: ender_chest
+     cooldown: 2000
+ 
++# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): Disposal spell removed (destroys items, no undo).
++# enabled: false makes Magic 11.2.5 skip this key at load (ConfigurationUtils.isEnabled).
+ disposal:
+-  icon: disposal
+-  category: utility
+-  worth: 1060
+-  earns: 1
+-  show_undoable: false
+-  quick_cast: true
+-  actions:
+-    cast:
+-    - class: Inventory
+-  effects:
+-    cast:
+-    - class: EffectSingle
+-      sound: entity_enderman_hurt
+-      effectlib:
+-        class: WarpEffect
+-        particle: block_crack
+-        material: obsidian
+-        duration: 1000
+-        particle_count: 10
+-        particle_offset_x: 1
+-        particle_offset_z: 1
+-        particle_offset_y: 1
+-  parameters:
+-    target: self
+-    type: disposal
+-    cooldown: 2000
+-    title: Disposal
++  enabled: false
+ 
+ repairitem:
+   icon: anvil
+@@ -2412,6 +2388,10 @@
+ mend|2:
+   upgrade_required_path: student
+   upgrade_required_casts: 40
++  costs:
++    mana: 6  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++  parameters:
++    amount: 1.75  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+ mend|3:
+   upgrade_required_path: apprentice
+   upgrade_required_casts: 40
+@@ -2483,6 +2463,10 @@
+ flashheal|2:
+   upgrade_required_path: apprentice
+   upgrade_required_casts: 40
++  costs:
++    mana: 19  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++  parameters:
++    amount: 5.5  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+ flashheal|3:
+   upgrade_required_path: master
+   upgrade_required_casts: 40
+@@ -2616,6 +2600,10 @@
+ greaterheal|2:
+   upgrade_required_path: master
+   upgrade_required_casts: 40
++  costs:
++    mana: 9  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++  parameters:
++    amount: 7  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+ greaterheal|3:
+   parameters:
+     amount: 8
+@@ -2623,3 +2611,575 @@
+     mana: 10
+   upgrade_required_path: master
+   upgrade_required_casts: 40
++
++# ===== WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): spells moved here from Seal 5 (copied verbatim from stage5/spells.yml) =====
++stormshackle|2:
++  upgrade_required_path: apprentice
++  upgrade_required_casts: 40
++  costs:
++    mana: 16  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++  parameters:
++    cooldown: 7000  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++
++stormshackle|3:
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: CustomProjectile
++      actions:
++      - class: Damage
++      - class: PotionEffect
++        duration: 4000
++        effect_slow: 1
++      - class: Delay
++      - class: AreaOfEffect
++        actions:
++        - class: Asynchronous
++          actions:
++          - class: CustomProjectile
++            velocity: 150
++            actions:
++            - class: Damage
++            - class: PotionEffect
++              duration: 4000
++              effect_slow: 1
++            - class: Delay
++            - class: AreaOfEffect
++              target_count: 1
++              actions:
++              - class: CustomProjectile
++                actions:
++                - class: Damage
++                - class: PotionEffect
++                  duration: 4000
++                  effect_slow: 1
++            - class: Repeat
++              actions:
++              - class: Damage
++                player_damage: 0.5
++                entity_damage: 0.5
++              - class: PotionEffect
++                duration: 4000
++                effect_slow: 1
++              - class: Delay
++      - class: Repeat
++        actions:
++        - class: Damage
++        - class: PotionEffect
++          duration: 4000
++          effect_slow: 1
++        - class: Delay
++  costs:
++    mana: 18
++  upgrade_required_path: master
++  upgrade_required_casts: 40
++
++stormshackle|4:
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: CustomProjectile
++      actions:
++      - class: Damage
++      - class: PotionEffect
++        duration: 1000
++        effect_slow: 6
++      - class: PotionEffect
++        duration: 4000
++        effect_slow: 1
++      - class: Delay
++      - class: AreaOfEffect
++        actions:
++        - class: Asynchronous
++          actions:
++          - class: CustomProjectile
++            velocity: 150
++            actions:
++            - class: Damage
++            - class: PotionEffect
++              duration: 4000
++              effect_slow: 1
++            - class: Delay
++            - class: AreaOfEffect
++              target_count: 1
++              actions:
++              - class: CustomProjectile
++                actions:
++                - class: Damage
++                - class: PotionEffect
++                  duration: 4000
++                  effect_slow: 1
++            - class: Repeat
++              actions:
++              - class: Damage
++                player_damage: 0.5
++                entity_damage: 0.5
++              - class: PotionEffect
++                duration: 4000
++                effect_slow: 1
++              - class: Delay
++      - class: Repeat
++        actions:
++        - class: Damage
++        - class: PotionEffect
++          duration: 4000
++          effect_slow: 1
++        - class: Delay
++  costs:
++    mana: 20
++  upgrade_required_path: master
++  upgrade_required_casts: 40
++
++admission:
++  icon: admission
++  category: utility
++  worth: 100
++  earns: 10
++  upgrade_required_path: apprentice
++  upgrade_required_casts: 20
++  actions:
++    cast:
++    - class: Door
++  effects:
++    cast:
++    - sound: block_beacon_activate
++      sound_volume: 0.8
++      sound_pitch: 1.6
++    - sound: block_wooden_door_open
++      sound_volume: 1.5
++      sound_pitch: 0.4
++      location: target
++    - sound: magic.shimmer
++    - class: EffectTrail
++      particle: redstone
++      color: false
++      particle_data: 2
++      particle_count: 15
++      particle_offset_x: 0.15
++      particle_offset_y: 0.15
++      particle_offset_z: 0.15
++    - class: EffectTrail
++      particle: redstone
++      particle_count: 20
++      particle_offset_x: 0.25
++      particle_offset_y: 0.25
++      particle_offset_z: 0.25
++    - class: EffectSingle
++      location: target
++      sound: magic.bonk
++      sound_volume: 0.5
++    - class: EffectSingle
++      location: target
++      use_block_location: true
++      color_override: color
++      effectlib:
++        class: Modified
++        iterations: 30
++        parameters:
++          padding: (t / i) * 5
++        effect:
++          class: CuboidEffect
++          particle: redstone
++          offset: 0.5,0,0.5
++          x_length: 1
++          y_length: 2
++          z_length: 1
++    no_target:
++    - sound: block_beacon_activate
++      sound_volume: 0.8
++      sound_pitch: 1.6
++    - sound: magic.shimmer
++    - class: EffectTrail
++      particle: redstone
++      color: false
++      particle_data: 2
++      particle_count: 10
++      particle_offset_x: 0.2
++      particle_offset_y: 0.2
++      particle_offset_z: 0.2
++  parameters:
++    range: 16
++    radius: 3
++    allow_max_range: true
++    destructible: unlocked_doors
++    transparent: transparent_to_construction
++    undo: 8000
++    cooldown: 10000
++  costs:
++    mana: 50
++
++admission|2:
++  parameters:
++    range: 32
++    destructible: doors
++
++anvil:
++  icon: anvil
++  category: utility
++  actions:
++    cast:
++    - class: ChangeContext
++      target_offset: 0,8,0
++      actions:
++      - class: SpawnEntity
++        set_target: true
++        set_source: true
++        actions:
++        - class: PlayEffects
++          effects: land
++        - class: AreaOfEffect
++          actions:
++          - class: Damage
++  worth: 110
++  effects:
++    cast:
++    - sound: entity_illusioner_cast_spell
++      sound_pitch: 1.9
++      sound_volume: 0.3
++    - sound: block.anvil.use
++      sound_pitch: 1.5
++      sound_volume: 0.3
++    - class: EffectSingle
++      particle: block_crack
++      location: target
++      particle_count: 30
++      particle_offset_x: 0.1
++      particle_offset_y: 0.1
++      particle_offset_z: 0.1
++      material: anvil
++      sound: item.trident.throw
++      sound_pitch: 0.4
++      sound_volume: 2
++    land:
++    - sound: block_stone_step
++      sound_pitch: 0.7
++    - sound: block_anvil_land
++      sound_pitch: 0.6
++      sound_volume: 2
++    - class: EffectRing
++      particle: block_crack
++      period: 4
++      particle_count: 30
++      radius: 2
++      particle_offset_x: 0.9
++      particle_offset_z: 0.9
++      particle_offset_y: 0.1
++      material: anvil
++  parameters:
++    target: other
++    target_type: LivingEntity
++    allow_max_range: true
++    range: 16
++    undo: 30000
++    cooldown: 20000
++    type: falling_block
++    material: anvil
++    radius: 2
++    damage: 5
++  costs:
++    mana: 100
++
++eat_food:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  # Repurposed as an Innervate-style mana tool. It was a free, no-cooldown
++  # full hunger refill, which made food pointless if it ever reached a wand.
++  name: Innervate
++  category: master
++  actions:
++    cast:
++    - class: ModifyMana
++      mana: 75
++  parameters:
++    target: self
++    cooldown: 120000
++
++    bypass_mage_cooldown: true
++
++healing:
++  icon: healing
++  category: light
++  hidden: true
++  passive: true
++  worth: 160
++  actions:
++    cast:
++    - class: AreaOfEffect
++      actions:
++      - class: Heal
++  effects:
++    cast:
++    - class: EffectSingle
++      location: targets
++      effectlib:
++        class: LoveEffect
++        iterations: 5
++        period: 2
++  parameters:
++    target_type: Player
++    target: self
++    target_self: false
++    radius: 5
++    heal_max_distance: 10
++    amount: 1
++    bypass_pvp: true
++    bypass_friendly_fire: true
++    only_friendly: true
++    bypass_undo: true
++
++music:
++  icon: music
++  category: music
++  worth: 30
++  earns: 1
++  show_undoable: false
++  actions:
++    cast:
++    - class: PlayRecord
++  effects:
++    cast:
++    - class: EffectTrail
++      particle: note
++      particle_offset_x: 0.1
++      particle_offset_y: 0.1
++      particle_offset_z: 0.1
++      particle_count: 10
++    - class: EffectRing
++      size: 4
++      radius: 5
++      location: target
++      effectlib:
++        class: Modified
++        duration: 8000
++        period: 2
++        parameters:
++          y_factor: (t/i)*0.5
++          size: (t/i)*2 + 0.5
++        effect:
++          class: AnimatedBall
++          particle: note
++          particles: 100
++          particlesPerIteration: 20
++          offset: 0,3,0
++          updateLocations: false
++  parameters:
++    target_type: Player
++    target: any
++    allow_max_range: true
++    range: 16
++    cooldown: 120000
++  costs:
++    mana: 20
++
++rolldice:
++  icon: skull_dice_1
++  icon_url: http://textures.minecraft.net/texture/6e22c298e7c6336af17909ac1f1ee6834b58b1a3cc99aba255ca7eaeb476173
++  actions:
++    cast:
++    - class: StashWand
++    - class: Random
++      actions:
++      - class: ThrowItem
++        item: skull_dice_1
++        actions:
++        - class: Message
++          message_key: rolled_1
++      - class: ThrowItem
++        item: skull_dice_2
++        actions:
++        - class: Message
++          message_key: rolled_2
++      - class: ThrowItem
++        item: skull_dice_3
++        actions:
++        - class: Message
++          message_key: rolled_3
++      - class: ThrowItem
++        item: skull_dice_4
++        actions:
++        - class: Message
++          message_key: rolled_4
++      - class: ThrowItem
++        item: skull_dice_5
++        actions:
++        - class: Message
++          message_key: rolled_5
++      - class: ThrowItem
++        item: skull_dice_6
++        actions:
++        - class: Message
++          message_key: rolled_6
++  parameters:
++    target_self: true
++    message_target: false
++    return_on_finish: true
++    age_items: 5940
++
++skating:
++  hidden: true
++  name: Skating
++  actions:
++    cast:
++    - class: CheckBlock
++      direction: down
++      source_location: feet
++      actions:
++      - class: PlayEffects
++        effects: start
++      - class: Interval
++        actions:
++        - class: PlayEffects
++          effects: skate
++        - class: ChangeContext
++          source_pitch: 0
++          actions:
++          - class: Velocity
++        - class: Delay
++  effects:
++    start:
++    - sound: entity_wither_shoot
++      sound_pitch: 0.15
++      sound_volume: 0.3
++    skate:
++    - particle: snowball
++      source_location: feet
++      particle_count: 16
++      particle_offset_x: 1
++      particle_offset_z: 1
++      particle_offset_y: 0.1
++  alternate_sneak_parameters:
++    speed: 1.5
++  parameters:
++    target: self
++    speed: 0.7
++    delay: 50
++    duration: 500
++    allowed: ice,blue_ice,frosted_ice,packed_ice
++
++tamepet:
++  actions:
++    cast:
++    - class: CheckEntity
++      owned: true
++      actions:
++      - class: CheckEntity
++        owner: true
++        actions:
++        - class: CheckInventory
++          target_caster: true
++          slot: main_hand
++          ignore_result: true
++          actions:
++          - class: CheckHealth
++            full_health: true
++            invert: true
++            actions:
++            - class: TakeCosts
++              item_cost: true
++            - class: Heal
++            - class: PlayEffects
++              effects: healed
++          fail:
++          - class: CheckEntity
++            stay: true
++            actions:
++            - class: ModifyEntity
++              stay: false
++              sitting: false
++              item: ''
++            - class: PlayEffects
++              effects: go
++            fail:
++            - class: ModifyEntity
++              stay: true
++              sitting: true
++              item: ''
++            - class: PlayEffects
++              effects: stay
++      fail:
++      - class: CheckInventory
++        target_caster: true
++        slot: main_hand
++        ignore_result: true
++        actions:
++        - class: TakeCosts
++          item_cost: true
++        - class: Probability
++          actions:
++          - class: Tame
++          - class: PlayEffects
++            effects: tamed
++          fail:
++          - class: PlayEffects
++            effects: tamefail
++  effects:
++    tamed:
++    - location: target
++      sound: entity_cat_purr
++      sound_pitch: 1.4
++      sound_volume: 2
++      effectlib:
++        class: LoveEffect
++        duration: 3 seconds
++    tamefail:
++    - location: target
++      sound: entity_creeper_primed
++      sound_pitch: 1.5
++      sound_volume: 0.75
++      particle: smoke_normal
++      particle_count: 8
++      particle_offset: 0.2
++    healed:
++    - location: target
++      sound: entity_cat_purreow
++      sound_pitch: 1.2
++      sound_volume: 2
++      effectlib:
++        class: LoveEffect
++        duration: 2 seconds
++    stay:
++    - location: target
++      sound: entity_fox_screech
++      sound_pitch: 0.8
++      sound_volume: 0.8
++      particle: water_splash
++      particle_count: 8
++      particle_offset: 0.2
++    go:
++    - location: target
++      sound: entity_cat_beg_for_food
++      sound_pitch: 1.2
++      sound_volume: 2
++      effectlib:
++        class: LoveEffect
++        duration: 1 seconds
++    no_target: []
++    no_action: no_target
++  parameters:
++    target: none
++    item: wheat
++    probability: 0.2
++    amount: 2
++
++wearskates:
++  name: Wear Ice Skates
++  hidden: true
++  actions:
++    cast:
++    - class: Wear
++    - class: Message
++      message: You put on some ice skates- now go skating!
++  parameters:
++    target: self
++    item: iceskates
++    slot: boots
++

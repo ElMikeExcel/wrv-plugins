@@ -1,0 +1,64 @@
+--- replaced-base/stage2/wands.yml
++++ live-stages/stage2/wands.yml
+@@ -1,4 +1,5 @@
+ #
++# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): spells re-spread so everything opens by Seal 4; Disposal removed.
+ # Wink Reyes Valley - Magic Phase 1 (HEALER RELEASE) wand templates.
+ # WRV-070. Paired with config.yml: load_default_wands: false
+ # -> defaults/wands.defaults.yml (200 templates) is NOT loaded.
+@@ -169,6 +170,8 @@
+   - bubble
+   - backflip
+   - gasp
++  - eat_food
++  - rolldice
+   - mend
+ student:
+   inherit: beginner
+@@ -206,6 +209,11 @@
+   - piggyback
+   - repairitem
+   - repairequipment
++  - eat_food
++  - rolldice
++  - skating
++  - wearskates
++  - admission
+   - mend
+   - flashheal
+   - ward
+@@ -248,7 +256,15 @@
+   - glide
+   - lift
+   - stash
+-  - disposal
++  - eat_food
++  - rolldice
++  - skating
++  - wearskates
++  - admission
++  - tamepet
++  - anvil
++  - healing
++  - music
+   - mend
+   - flashheal
+   - ward
+@@ -295,8 +311,16 @@
+   - glide
+   - lift
+   - stash
+-  - disposal
+   - blink
++  - eat_food
++  - rolldice
++  - skating
++  - wearskates
++  - admission
++  - tamepet
++  - anvil
++  - healing
++  - music
+   - mend
+   - flashheal
+   - ward

@@ -1,0 +1,45 @@
+#
+# Wink Reyes Valley - Magic Phase 1 (HEALER RELEASE) message overrides.
+# WRV-070. This file carries ONLY the strings for our one custom spell.
+# Default messages stay loaded (load_default_messages is untouched), so
+# every other spell keeps the author's shipped name/description; this
+# override adds the entry the defaults cannot have: stormshackle.
+#
+# Format matches Magic 11.2.5 defaults/messages.defaults.yml
+# (spells.<key>.name / description / cast).
+#
+spells:
+  # WRV Oct 26 2026: names for spells that showed raw keys
+  throwmagictorch:
+    name: Throw Magic Torch
+    description: Toss a magic light at a far spot
+  hulkleap:
+    name: Hulk Leap
+    description: Leap high and far, with a safe landing
+  tamepet:
+    name: Tame Pet
+    description: Tame animals and care for your pets
+  stormshackle:
+    name: Storm Shackle
+    description: A crackling bolt that arcs between enemies, barely hurting them but slowing every one it touches
+    cast: You loose a shackle of storm-lightning
+  mend:
+    name: Mend
+    description: A quick, cheap touch of healing. No cooldown, so you always have something to cast
+    cast: You mend their wounds
+  flashheal:
+    name: Flash Heal
+    description: A big instant heal that costs a lot of mana. Save it for emergencies
+    cast: A flash of healing light
+  ward:
+    name: Ward
+    description: Shield one player with 4 absorption health for 15 s. The same player can be warded again after 12 s
+    cast: You ward them
+  greaterheal:
+    name: Greater Heal
+    description: A 2 second cast that heals the most for its mana. Taking a big hit interrupts it
+    cast: You channel a Greater Heal
+# WRV Oct 26 2026: Master rank wand display name (Mike approved)
+wands:
+  master:
+    name: Master Wand

@@ -1,0 +1,177 @@
+#
+# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): path lists re-spread (all spells open by Seal 4); Disposal removed.
+# Wink Reyes Valley - Magic SEAL 3 — THE WONDER progression paths (CUMULATIVE).
+# WRV-070. Paired with config.yml: load_default_paths: false
+# -> defaults/paths.defaults.yml is NOT loaded. Only the path below exists.
+#
+# Design (per ROADMAP.md Phase 1): ONE curated progression path, collapsed
+# from Magic's Beginner -> Student -> Apprentice -> Master chain. The four
+# rank keys, icons, upgrade items and mana properties are the author's
+# shipped values from Magic 11.2.5 defaults/paths.defaults.yml; only the
+# spell lists are ours, and they contain ONLY Phase 1 spells.
+#
+# Side paths from the defaults (battle, squire, soldier, knight, archer,
+# broom, staff) are absent by construction - the knight path is siege
+# weapons and does not ship in any phase.
+#
+# Rank spell placement (RE-TIERED Oct 17, 2026 per Mike's ladder design -
+# see LADDER.md in this packet):
+#   beginner  : heal, boon, feed, extinguish (+ aqualung as extra_spell,
+#               exactly where the defaults keep it). The core heal is the
+#               FIRST spell of the ladder - a healer can heal from minute one.
+#   student   : cure, shell, gills, stormshackle   (cure sits one rank up
+#               from its default home, as the ladder's second step;
+#               stormshackle is our custom spell - Mike's Oct 17 design -
+#               and stays at student with the other active-support spells)
+#   apprentice: superheal, recall    (recall sits one rank later than the
+#               defaults: on this server recall is an earned exception to
+#               the no-/back feel, so it is not a rank-1 handout)
+#   master    : blessing, recall_death (blessing keeps its default home)
+#
+# The "default" block is the hidden base path every rank inherits from;
+# it is copied verbatim from the defaults and contains no spells.
+#
+
+default:
+  hidden: true
+  upgrade_broadcast: '&6$name &3has advanced to &b$path&3!'
+  effects:
+    enchant:
+    - class: EffectSingle
+      sound: entity_player_levelup
+      effectlib:
+        class: SphereEffect
+        iterations: 5
+        period: 2
+        particle: enchantment_table
+        radius: 3
+    upgrade:
+    - class: EffectSingle
+      sound: entity_player_levelup
+    - class: EffectRing
+      firework_power: 1
+      radius: 5
+      size: 3
+beginner:
+  icon: stick{CustomModelData:18001}
+  legacy_icon: wooden_hoe:1
+  legacy_migrate_icon: wooden_hoe
+  upgrade: student
+  upgrade_item: student_upgrade
+  inherit: default
+  override_properties:
+    mana_max: 60
+    mana_regeneration: 5
+    hotbar_count: 1
+  spell_count: 1
+  extra_spells:
+  - aqualung
+  spells:
+  - heal
+  - boon
+  - feed
+  - extinguish
+  - torch
+  - peek
+  - workbench
+  - bubble
+  - backflip
+  - gasp
+  - missile
+  - frost
+  - arrow
+  - flare
+  - stun
+  - push
+  - pull
+  - eat_food
+  - rolldice
+  - reflect
+  - mend
+student:
+  icon: stick{CustomModelData:18002}
+  legacy_icon: wooden_hoe:2
+  legacy_migrate_icon: wooden_hoe
+  upgrade: apprentice
+  upgrade_item: apprentice_upgrade
+  inherit: beginner
+  override_properties:
+    mana_regeneration: 15
+    mana_max: 100
+    hotbar_count: 2
+  spells:
+  - cure
+  - shell
+  - gills
+  - stormshackle
+  - magictorch
+  - throwmagictorch
+  - fling
+  - dash
+  - evade
+  - hulkleap
+  - piggyback
+  - repairitem
+  - repairequipment
+  - sparkle
+  - stream
+  - grow
+  - familiar
+  - arrow_ice
+  - arrow_light
+  - arrow_shock
+  - arrow_regular
+  - wolf
+  - cat
+  - boomerang
+  - throwsword
+  - skating
+  - wearskates
+  - admission
+  - whip
+  - flashheal
+  - ward
+apprentice:
+  icon: stick{CustomModelData:18003}
+  legacy_icon: wooden_hoe:3
+  legacy_migrate_icon: wooden_hoe
+  upgrade: master
+  upgrade_item: master_upgrade
+  inherit: student
+  override_properties:
+    mana_regeneration: 25
+    mana_max: 150
+  spells:
+  - superheal
+  - recall
+  - glide
+  - lift
+  - stash
+  - wave
+  - smite
+  - growth
+  - hat
+  - gather
+  - tamepet
+  - anvil
+  - healing
+  - music
+  - greaterheal
+master:
+  icon: stick{CustomModelData:18004}
+  legacy_icon: wooden_hoe:4
+  legacy_migrate_icon: golden_axe
+  inherit: apprentice
+  override_properties:
+    mana_regeneration: 35
+    mana_max: 200
+    hotbar_count: 3
+  spells:
+  - blessing
+  - recall_death
+  - blink
+  - lightning
+  - chainlightning
+  - pollinate
+  - tame
+  - holylight

@@ -1,0 +1,36 @@
+--- replaced-base/stage4/messages.yml
++++ live-stages/stage4/messages.yml
+@@ -9,6 +9,22 @@
+ # (spells.<key>.name / description / cast).
+ #
+ spells:
++  # WRV Oct 26 2026: names for spells that showed raw keys
++  throwmagictorch:
++    name: Throw Magic Torch
++    description: Toss a magic light at a far spot
++  hulkleap:
++    name: Hulk Leap
++    description: Leap high and far, with a safe landing
++  tamepet:
++    name: Tame Pet
++    description: Tame animals and care for your pets
++  localrain:
++    name: Local Rain
++    description: Rain that only you can see
++  restorelocalweather:
++    name: Restore Local Weather
++    description: Bring back the real weather for you
+   stormshackle:
+     name: Storm Shackle
+     description: A crackling bolt that arcs between enemies, barely hurting them but slowing every one it touches
+@@ -29,6 +45,10 @@
+     name: Greater Heal
+     description: A 2 second cast that heals the most for its mana. Taking a big hit interrupts it
+     cast: You channel a Greater Heal
++  layonhands:
++    name: Lay on Hands
++    description: Fully heal a player. Once every 5 minutes, no mana
++    cast: You lay on hands
+ # WRV Oct 26 2026: Master rank wand display name (Mike approved)
+ wands:
+   master:

@@ -1,0 +1,43 @@
+--- live/ExcelGuildGate/config.yml
++++ new
+@@ -44,9 +44,9 @@
+     - name: "The Wonder"
+       line: "&aThe Third Seal fell &7- &aThe Wonder &7returns: lightning answers the call again, and the wild elements stir."
+     - name: "The Masons"
+-      line: "&aThe Fourth Seal fell &7- &aThe Masons' &7magic returns: spells that place, move, and shape stone and timber."
++      line: "&aThe Fourth Seal fell &7- &aThe Masons' &7magic returns, and with it the last schools of magic: every spell is now open."
+     - name: "The Guild Opens"
+-      line: "&6The Fifth Seal fell &7- &6the Adventurers Guild is OPEN&7, and the last schools of magic return with it. Type &f/ag &7to visit!"
++      line: "&6The Fifth Seal fell &7- &6the Adventurers Guild is OPEN&7. Every school of magic is already yours. Type &f/ag &7to visit!"
+ 
+ # Narration (v0.3.0). When a seal falls in play, the narrator speaks:
+ # a recorded voice line per stage (custom sounds wrv:guildgate.seal1..5
+@@ -57,6 +57,9 @@
+ # stage once, alongside their join catch-up.
+ # This section is optional: without it (for example the 0.1.0 config),
+ # narration runs on built-in defaults identical to the values below.
++# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): Seal 4 and 5 lines reworded - all magic opens by Seal 4,
++# Masons go to everyone at Seal 4, Seal 5 opens the Guild with no new magic. ExcelGuildGate 0.3.3
++# reads this file at startup (no reload command): takes effect on the next restart.
+ narration:
+   enabled: true
+   # Replay the narrator line on the catch-up join (highest missed stage,
+@@ -122,14 +125,14 @@
+     - lines:
+         - "&6— What fell open: &fThe Masons &6—"
+         - "&7Building magic wakes: spells that place, move, and shape stone and timber."
+-        - "&7The Masons do not sit on the wand ladder yet — their craft comes by the &fbuilder's handout &7(the masons wand and the builder group). Ask Mike."
+-        - "&7When the last seal falls, the Masons take their place at Master rank like everyone else."
++        - "&7The Masons take their place at Master rank for every mage, and the last schools return with them: weather and time, and the great Master spells."
++        - "&7Every spell in the valley is now open. Keep casting to climb your ladder."
+         - "&7The full ladder lives on the &fSkill Trees &7page of the server website."
+     - lines:
+         - "&6— What fell open: &fThe Guild Opens &6—"
+         - "&6The Adventurers Guild is OPEN. &7Type &f/ag &7and walk in: Hermes and Casus are waiting."
+-        - "&7The last schools of magic return with it, and the top rank of every ladder stands open."
+-        - "&7The Masons join the Master rank; every seal's spells now exist in the valley."
++        - "&7Your magic is already complete: every school opened with the Fourth Seal."
++        - "&7Now the Guild calls. Take your wand and your friends through its doors."
+         - "&7The full ladders live on the &fSkill Trees &7page of the server website."
+ 
+ seals:

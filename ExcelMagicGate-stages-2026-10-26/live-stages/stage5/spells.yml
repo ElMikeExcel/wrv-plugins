@@ -1,0 +1,7503 @@
+#
+# Wink Reyes Valley — Magic SEAL 5 — THE GUILD OPENS, THE SCHOOLS OPEN curated spells (CUMULATIVE packet).
+# WRV-070. This file is the COMPLETE spell set for SEAL 5 — THE GUILD OPENS, THE SCHOOLS OPEN: every spell
+# from the earlier seals plus this seal's additions. Deploy = replace the whole
+# Magic config set with this packet (see INSTALL-RUNBOOK.md).
+#
+# Paired with config.yml: load_default_spells: false
+# -> defaults/spells.defaults.yml is NOT loaded. Only the spells below exist.
+#
+# Every block is copied from Magic 11.2.5 defaults/spells.defaults.yml
+# (the exact build scratch-tested Oct 17, 2026), except stormshackle, which is
+# OURS (custom, from the Phase 1 packet). Two documented deviations, both about
+# pacing only: (1) `worth` (the SP learn price) is re-scaled per rank band so
+# each rank takes ~2 days of casual play - the math is in this packet's
+# LADDER.md; (2) powerstone's gag price (worth 9999) was normalized first.
+# Every other value in every block is the author's, untouched.
+#
+# Loaded total: 188 spell entries (incl. level variants and the hidden
+# base_passive template, which is not castable).
+#
+
+heal:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: heal
+  category: light
+  tags: noduel
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  worth: 1200
+  earns: 2
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CheckModifiers
+      blocked: wrv_renewed
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_renewed
+        duration: 10000
+      - class: Repeat
+        actions:
+        - class: Delay
+        - class: Heal
+      fail:
+      - class: Message
+        message_type: action_bar
+        message: '&eYour Heal is already on them'
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 0.1
+      sound_volume: 0.4
+    - sound: block_beacon_activate
+      sound_pitch: 0.1
+      sound_volume: 1.4
+    - sound: entity_generic_drink
+      sound_pitch: 0.3
+      sound_volume: 0.2
+      location: target
+    - class: EffectSingle
+      sound: magic.shimmer
+      effectlib:
+        class: ConeEffect
+        iterations: 5
+        lengthGrow: 0.12
+        particle: heart
+    - class: EffectSingle
+      sound: magic.shimmer
+      location: target
+      effectlib:
+        class: Modified
+        period: 16
+        duration: $total_duration
+        parameters:
+          radius: (t/i) * 1.5 + 1.5
+          rings: (1 - (t/i)) * 3 + 1
+        effect:
+          class: WarpEffect
+          particle: heart
+          particles: 8
+          grow: 0.5
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: Modified
+        period: 2
+        duration: $total_duration
+        parameters:
+          radius: (t/i) * 0.5 + 1
+          rings: (1 - (t/i)) * 11 + 1
+        effect:
+          class: WarpEffect
+          particle: end_rod
+          particles: 7
+    - class: EffectSingle
+      effectlib:
+        class: LineEffect
+        particle: end_rod
+        duration: 500
+        particles: 10
+        particle_count: 4
+        particle_offset_x: 0.1
+        particle_offset_y: 0.1
+        particle_offset_z: 0.1
+    - class: EffectSingle
+      effectlib:
+        class: LineEffect
+        particle: heart
+        duration: 1000
+        particles: 4
+        particle_count: 2
+        particle_offset_x: 0.1
+        particle_offset_y: 0.1
+        particle_offset_z: 0.1
+        period: 4
+    cast_self:
+    - sound: entity_generic_drink
+      sound_pitch: 0.1
+      sound_volume: 0.4
+    - sound: block_beacon_activate
+      sound_pitch: 0.1
+      sound_volume: 1.4
+    - class: EffectSingle
+      sound: magic.shimmer
+      location: target
+      effectlib:
+        class: Modified
+        period: 16
+        duration: $total_duration
+        parameters:
+          radius: (t/i) * 1.5 + 1.5
+          rings: (1 - (t/i)) * 3 + 1
+        effect:
+          class: WarpEffect
+          particle: heart
+          particles: 8
+          grow: 0.5
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: Modified
+        period: 2
+        duration: $total_duration
+        parameters:
+          radius: (t/i) * 0.5 + 1
+          rings: (1 - (t/i)) * 11 + 1
+        effect:
+          class: WarpEffect
+          particle: end_rod
+          particles: 7
+    cast_finish:
+    - sound: block_beacon_activate
+      sound_pitch: 1.2
+      sound_volume: 0.5
+      location: both
+    - class: EffectSingle
+      custom_sound: magic.shimmer_quiet
+      sound_pitch: 5
+      location: origin
+      effectlib:
+        class: AnimatedBall
+        duration: 200
+        particle: heart
+        size: 3
+  parameters:
+    # Renew-style heal over time: 1 HP every 1 s for 10 s. Taking damage or
+    # casting another spell no longer cancels it.
+    cancel_on_damage: 0
+    cancel_on_cast_other: false
+    delay: 1000
+    repeat: 10
+    total_duration: 10000
+    target_type: LivingEntity
+    target: any_entity
+    allow_max_range: false
+    range: 8
+    cooldown: 8000
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    hitbox: true
+    amount: 1
+    cooldown_mage: 1000
+  costs:
+    mana: 12
+
+heal|2:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  parameters:
+    range: 32
+    cooldown: 7000
+
+heal|3:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  # Riptide-style: instant 2 HP up front, then the 10 s heal over time.
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CheckModifiers
+      blocked: wrv_renewed
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_renewed
+        duration: 10000
+      - class: Heal
+        amount: 2
+      - class: Repeat
+        actions:
+        - class: Delay
+        - class: Heal
+      fail:
+      - class: Message
+        message_type: action_bar
+        message: '&eYour Heal is already on them'
+  parameters:
+    cooldown: 6000
+  costs:
+    mana: 15
+
+cure:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: cure
+  upgrade_required_path: student
+  upgrade_required_casts: 20
+  category: light
+  worth: 550
+  earns: 20
+  quick_cast: true
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: AreaOfEffect
+      actions:
+      - class: PotionEffect
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 0.1
+      sound_volume: 0.4
+    - sound: block_beacon_activate
+      sound_pitch: 0.1
+      sound_volume: 1.4
+    - sound: entity_generic_drink
+      sound_pitch: 0.3
+      sound_volume: 0.2
+      location: targets
+      source_location: body
+      effectlib:
+        class: Warp
+        radius: 1
+        rings: 8
+        grow: 0.1
+        particle: end_rod
+    - class: EffectSingle
+      sound: magic.shimmer
+      source_location: body
+      location: source
+      effectlib:
+        class: Modified
+        iterations: 40
+        period: 2
+        parameters:
+          radius: (t/i) * 5 + 0.5
+          radius_nucleus: (t/i) * 8 + 2
+        effect:
+          class: AtomEffect
+          particle_nucleus: heart
+          particle_orbital: crit
+          particles_nucleus: 4
+          particles_orbital: 30
+  parameters:
+    target: self
+    target_type: LivingEntity
+    radius: 5
+    bypass_confusion: true
+    cooldown: 12000
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    target_self: true
+    remove_effects:
+    - confusion
+    - poison
+    - slow
+    - slow_digging
+    cooldown_mage: 1000
+  costs:
+    mana: 20
+
+cure|2:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 30
+  parameters:
+    cooldown: 10000
+    remove_effects:
+    - confusion
+    - weakness
+    - poison
+    - slow
+    - slow_digging
+    - wither
+
+cure|3:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: master
+  upgrade_required_casts: 30
+  # Stock cure|3 dropped the area (self only). Keep it a group cleanse.
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: AreaOfEffect
+      actions:
+      - class: PotionEffect
+  parameters:
+    radius: 8
+    remove_effects:
+    - confusion
+    - weakness
+    - poison
+    - slow
+    - slow_digging
+    - wither
+    - blindness
+    - hunger
+
+cure|4:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  # Group cleanse plus a small snack (2 drumsticks), not a full meal, so food matters.
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: AreaOfEffect
+      actions:
+      - class: PotionEffect
+      - class: Repeat
+        actions:
+        - class: Delay
+        - class: Feed
+  parameters:
+    feed: 1
+    saturation: 1
+    exhaustion: false
+    delay: 500
+    repeat: 4
+    cooldown: 8000
+
+cure|5:
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: AreaOfEffect
+      actions:
+      - class: CheckEntity
+        allowed_entities: zombie_villager
+        actions:
+        - class: RemoveEntity
+        - class: ChangeContext
+          target_entity: true
+          target_offset: 0,-0.3,0
+          actions:
+          - class: SpawnEntity
+            type: villager
+            set_target: true
+        - class: PlayEffects
+          effects: cured
+      - class: PotionEffect
+      - class: Repeat
+        actions:
+        - class: Delay
+        - class: Feed
+  effects:
+    cured:
+    - class: EffectSingle
+      sound: entity_zombie_villager_cure
+      location: target
+      source_location: body
+      effectlib:
+        class: Modified
+        iterations: 40
+        period: 2
+        parameters:
+          radius: (t/i) * 3 + 0.75
+          radius_nucleus: (t/i) * 0.5 + 0.6
+        effect:
+          class: AtomEffect
+          particle_nucleus: villager_happy
+          particle_orbital: crit
+          particles_nucleus: 10
+          particles_orbital: 30
+  parameters:
+    friendly_types: zombie_villager
+
+blessing:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: blessing
+  category: master
+  worth: 2600
+  earns: 8
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CustomProjectile
+      actions:
+      - class: AreaOfEffect
+        actions:
+        - class: PotionEffect
+  effects:
+    cast:
+    - sound: block_beacon_activate
+      sound_pitch: 1.2
+      sound_volume: 1.2
+      location: both
+    tick:
+    - location: target
+      particle: end_rod
+      particle_count: 20
+      particle_offset_x: 0.1
+      particle_offset_y: 0.1
+      particle_offset_z: 0.1
+    hit:
+    - sound: block_beacon_deactivate
+      sound_pitch: 1.8
+      sound_volume: 1.2
+      location: both
+    - location: target
+      effectlib:
+        class: HelixEffect
+        particle: end_rod
+        iterations: 1
+        particles: 40
+        particle_count: 4
+        particle_offset_x: 0.2
+        particle_offset_y: 0.01
+        particle_offset_z: 0.2
+        offset: 0,0.1,0
+        radius: $radius
+    cast_finish:
+    - location: targets
+      sound: block_beacon_deactivate
+      sound_pitch: 0.8
+      sound_volume: 0.8
+      effectlib:
+        class: Love
+        iterations: 20
+  parameters:
+    target_type: Player
+    projectile: Snowball
+    effect_heal: 2
+    effect_damage_resistance: 1
+    effect_fire_resistance: 1
+    effect_absorption: 1
+    duration: 10000
+    radius: 8
+    target_self_timeout: 100
+    cooldown: 90000
+    bypass_friendly_fire: true
+    only_friendly: true
+    gravity: 0.05
+    velocity: 15
+    range: 8
+    cooldown_mage: 1000
+  costs:
+    mana: 150
+
+boon:
+  icon: boon
+  alias: perk
+  category: utility
+  worth: 880
+  earns: 6
+  upgrade_required_path: beginner
+  upgrade_required_casts: 40
+  quick_cast: true
+  toggle: cancel
+  disable_mana_regeneration: true
+  boss_bar: true
+  # WRV boonfix v2 (Oct 23, 2026): Boon is a toggle. Casting turns it ON;
+  # casting again, or running out of mana, turns it OFF. The wand's quiet: 1
+  # hides Magic's "on" text and the built-in "off" text read "Boon
+  # Interrupted", so we add a clear ON line and reword the OFF line.
+  # Speed is now applied for 1.5 s and refreshed every 1 s while Boon is on
+  # (was 30 s), so it ends within ~0.5-1.5 s of Boon turning off instead of
+  # lingering up to 30 s. No forced removal: vanilla effect merging keeps a
+  # longer or stronger Speed from a potion/beacon/other plugin.
+  messages:
+    cancel: "a:&eBoon is off"
+  actions:
+    cast:
+    - class: Message
+      message_type: action_bar
+      message: "&aBoon on: Speed II while your mana lasts. Cast again to stop."
+    - class: Repeat
+      actions:
+      - class: PotionEffect
+        duration: 1500
+      - class: Delay
+        delay: 1000
+  effects:
+    cast:
+    - sound: entity_experience_orb_pickup
+      sound_pitch: 0.2
+      sound_volume: 0.8
+    - sound: entity_generic_drink
+      sound_pitch: 1.75
+      sound_volume: 0.6
+    - sound: entity_generic_drink
+      sound_pitch: 1.75
+      sound_volume: 0.6
+    - sound: block_beacon_activate
+      sound_pitch: 1.5
+      sound_volume: 0.75
+    - location: origin
+      source_location: body
+      color_override: color
+      effectlib:
+        class: EquationEffect
+        x_equation: 0
+        y_equation: 0.4 * (cos(t/57.2958)  * (2.71828^(cos(t/57.2958)) - 2 * cos(4t/57.2958) - (sin(t/(12 * 57.2958)))^5))
+        z_equation: 0.4 * (sin(t/57.2958)  * (2.71828^(cos(t/57.2958)) - 2 * cos(4t/57.2958) - (sin(t/(12 * 57.2958)))^5))
+        particles: 50
+        duration: 3600000
+        relative_offset: -0.5,0,0
+        disappear_with_origin_entity: true
+  parameters:
+    target: self
+    effect_speed: 1
+    cooldown: 6000
+    cancel_on_death: true
+    repeat: infinite
+    bypass_mage_cooldown: true
+  costs:
+    mana: 20
+  active_costs:
+    mana: 1
+
+boon|2:
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  parameters:
+    effect_jump: 2
+
+boon|3:
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  parameters:
+    effect_speed: 2
+
+boon|4:
+  parameters:
+    effect_night_vision: 5
+
+superheal:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: wrv_superheal
+  upgrade_required_path: student
+  upgrade_required_casts: 20
+  category: light
+  worth: 880
+  earns: 20
+  quick_cast: true
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: AreaOfEffect
+      actions:
+      - class: PotionEffect
+      - class: Feed
+      - class: Heal
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 0.1
+      sound_volume: 0.4
+    - sound: block_beacon_activate
+      sound_pitch: 0.1
+      sound_volume: 1.4
+    - sound: entity_generic_drink
+      sound_pitch: 0.3
+      sound_volume: 0.2
+      location: targets
+      source_location: body
+      effectlib:
+        class: Warp
+        radius: 1
+        rings: 8
+        grow: 0.1
+        particle: end_rod
+    - class: EffectSingle
+      sound: magic.shimmer
+      source_location: body
+      location: source
+      effectlib:
+        class: Modified
+        iterations: 40
+        period: 2
+        parameters:
+          radius: (t/i) * 5 + 0.5
+          radius_nucleus: (t/i) * 8 + 2
+        effect:
+          class: AtomEffect
+          particle_nucleus: heart
+          particle_orbital: crit
+          particles_nucleus: 4
+          particles_orbital: 30
+  parameters:
+    target: self
+    target_type: LivingEntity
+    radius: 12
+    bypass_confusion: true
+    cooldown: 45000
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    target_self: true
+    # Group heal: 8 HP now plus Regeneration I for 5 s. Was a FULL heal and FULL
+    # hunger+saturation for everyone in 16 blocks. Food now tops up a little only.
+    amount: 8
+    effect_regeneration: 0
+    duration: 5000
+    feed: 4
+    saturation: 1
+    exhaustion: false
+    remove_effects:
+    - confusion
+    - weakness
+    - poison
+    - slow
+    - slow_digging
+    - wither
+    cooldown_mage: 1000
+  costs:
+    mana: 110
+
+feed:
+  icon: wrv_feed
+  category: staff
+  quick_cast: true
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: Feed
+    - class: Heal
+    - class: PotionEffect
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 0.1
+      sound_volume: 0.4
+    - sound: block_beacon_activate
+      sound_pitch: 0.1
+      sound_volume: 1.4
+    - sound: entity_generic_drink
+      sound_pitch: 0.3
+      sound_volume: 0.2
+      location: target
+      effectlib:
+        class: Warp
+        radius: 1
+        rings: 8
+        grow: 0.1
+        particle: end_rod
+    - class: EffectSingle
+      sound: magic.shimmer
+      source_location: body
+      location: target
+      effectlib:
+        class: Modified
+        iterations: 40
+        period: 2
+        parameters:
+          radius: (t/i) * 5 + 0.5
+          radius_nucleus: (t/i) * 8 + 2
+        effect:
+          class: AtomEffect
+          particle_nucleus: heart
+          particle_orbital: crit
+          particles_nucleus: 4
+          particles_orbital: 30
+  parameters:
+    # WRV Oct 23 2026: no picker menu (Bedrock showed identical heads), no bread,
+    # partial hunger only so food still matters. Aim at a player within 8 blocks,
+    # or at nothing to feed yourself.
+    target_type: Player
+    target: any_entity
+    allow_max_range: false
+    range: 8
+    hitbox: true
+    feed: 6
+    saturation: 2
+    exhaustion: false
+    amount: 4
+    cooldown: 60000
+    bypass_confusion: true
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    remove_effects:
+    - poison
+    - wither
+    cooldown_mage: 1000
+  costs:
+    mana: 30
+
+extinguish:
+  icon: wrv_extinguish
+  category: utility
+  worth: 400
+  earns: 4
+  actions:
+    cast:
+    - class: Sphere
+      actions:
+      - class: ModifyBlock
+    - class: AreaOfEffect
+      actions:
+      - class: Ignite
+        duration: 0
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: block_fire_extinguish
+      effectlib:
+        class: ConeEffect
+        iterations: 20
+        particle: smoke_normal
+        lengthGrow: 0.03
+        radiusGrow: 0.008
+  parameters:
+    allow_max_range: false
+    range: 32
+    check_destructible: true
+    destructible: fire
+    brush: erase
+    radius: 10
+    transparent: transparent_to_construction
+    cooldown: 8000
+    target_self: true
+    bypass_mage_cooldown: true
+  costs:
+    mana: 30
+
+aqualung:
+  icon: gasp
+  inherit: base_passive
+  legacy_icon: spell_icon:76
+  legacy_icon_disabled: spell_icon_disabled:76
+  worth: 120
+  triggers:
+  - trigger: damage
+    damage_type: drowning
+  actions:
+    cast:
+    - class: AirSupply
+  effects:
+    cast:
+    - sound: magic.shimmer
+      sound_volume: 0.2
+      particle: bubble_column_up
+      particle_count: 16
+      particle_offset_x: 0.5
+      particle_offset_y: 0.5
+      particle_offset_z: 0.5
+    - sound: entity_player_breath
+      sound_pitch: 1.3
+      sound_volume: 1.5
+      location: origin
+      effectlib:
+        class: Modified
+        duration: 3000
+        parameters:
+          radius: (t/i) * 3 + 0.3
+        effect:
+          class: Sphere
+          particle_count: 4
+          particles: 16
+          particle_offset_x: 0.2
+          particle_offset_y: 0.2
+          particle_offset_z: 0.2
+          particle: water_bubble
+          radius: 1
+  parameters:
+    air: max
+    cooldown: 60000
+
+    bypass_mage_cooldown: true
+gills:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: wrv_gills
+  category: light
+  worth: 320
+  actions:
+    cast:
+    - class: PotionEffect
+    - class: Hat
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: block_water_ambient
+      location: origin
+      source_location: eyes
+      effectlib:
+        class: SphereEffect
+        iterations: 10
+        period: 4
+        particle: drip_water
+        radius: 0.5
+  parameters:
+    target_type: LivingEntity
+    target: self
+    cooldown: 30000
+    duration: 30000
+    undo: 30000
+    effect_water_breathing: 1
+    enchantments:
+      oxygen: 3
+      water_worker: 1
+    brush: cyan_stained_glass
+    brushcolor: true
+    bypass_mage_cooldown: true
+  costs:
+    mana: 15
+
+shell:
+  icon: shell
+  alias: dome
+  category: combat
+  worth: 470
+  earns: 2
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Sphere
+        actions:
+        - class: ModifyBlock
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.shield
+    - sound: block_stone_place
+      sound_pitch: 1.2
+      sound_volume: 1.7
+    - sound: entity_ender_dragon_hurt
+      sound_pitch: 1.9
+      sound_volume: 0.8
+    tick:
+    - location: target
+      particle: block_crack
+      particle_count: 10
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    hit:
+    - sound: block_stone_place
+      sound_pitch: 0.1
+      sound_volume: 1.7
+      location: target
+    - location: target
+      sound: entity_ender_dragon_hurt
+      sound_pitch: 1.2
+      sound_volume: 0.8
+      effectlib:
+        class: SphereEffect
+        particle: block_crack
+        particle_count: 10
+        particles: 5
+        particle_offset_x: 0.3
+        particle_offset_y: 0.3
+        particle_offset_z: 0.3
+        radius: $radius
+        duration: 2000
+  parameters:
+    target: other
+    allow_max_range: false
+    velocity: 50
+    target_type: LivingEntity
+    range: 32
+    thickness: 1
+    radius: 3
+    type: sphere
+    transparent: transparent_to_construction
+    destructible: destructible_replace
+    check_destructible: true
+    undo: 4000
+    brush: white_stained_glass
+    brushcolor: true
+    cooldown: 5000
+    breakable: 4
+    reflect_chance: 0.25
+    miss_effects: hit
+    miss: actions
+    bypass_mage_cooldown: true
+  costs:
+    mana: 75
+
+shell|2:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  parameters:
+    reflect_chance: 0.5
+    undo: 5000
+    breakable: 3
+
+shell|3:
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  parameters:
+    reflect_chance: 0.75
+    breakable: 2
+
+shell|4:
+  parameters:
+    reflect_chance: 0.9
+    breakable: 1
+
+recall:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: recall
+  category: utility
+  tags: noduel,nojail
+  worth: 100
+  earns: 5
+  cast_on_no_target: false
+  upgrade_required_path: beginner
+  upgrade_required_casts: 25
+  world_border_restricted: false
+  quick_cast: true
+  show_undoable: false
+  actions:
+    cast:
+    - class: Recall
+  effects:
+    no_action: []
+    no_target: []
+    wait:
+    - source_location: eyes
+      color_override: color
+      sound: block_note_block_bit
+      sound_pitch: 0.2
+      sound_volume: 0.3
+      effectlib:
+        class: WarpEffect
+        duration: $warmup
+        period: 1
+        particle: redstone
+        particle_offset_x: 0.9
+        particle_offset_y: 0.1
+        particle_offset_z: 0.9
+        radius: 1
+        offset: 0,-1,0
+    - class: EffectSingle
+      source_location: eyes
+      effectlib:
+        class: WarpEffect
+        duration: 1000
+        period: 2
+        particle: portal
+        particle_count: 10
+        particle_offset_x: 0.9
+        particle_offset_y: 0.1
+        particle_offset_z: 0.9
+        radius: 1
+        offset: 0,-1,0
+    cast:
+    - sound: block_beacon_activate
+      sound_pitch: 0.75
+      sound_volume: 0.8
+    - sound: entity_enderman_teleport
+      sound_pitch: 0.25
+      sound_volume: 0.5
+    - class: EffectSingle
+      sound: magic.teleport
+      sound_volume: 0.8
+      sound_pitch: 0.3
+      source_location: eyes
+      color_override: color
+      effectlib:
+        class: WarpEffect
+        duration: 1000
+        period: 1
+        particle: redstone
+        particle_offset_x: 0.9
+        particle_offset_y: 0.1
+        particle_offset_z: 0.9
+        radius: 1
+        offset: 0,-1,0
+    menu:
+    - sound: entity_enderman_teleport
+      sound_pitch: 1.5
+      sound_volume: 0.75
+    teleporting:
+    - sound: entity_enderman_teleport
+      sound_pitch: 0.75
+      sound_volume: 0.75
+      location: both
+    - class: EffectSingle
+      location: both
+      source_location: eyes
+      color_override: color
+      effectlib:
+        class: WarpEffect
+        particle: redstone
+        particle_offset_x: 0.9
+        particle_offset_y: 0.1
+        particle_offset_z: 0.9
+        offset: 0,-1,0
+        period: 2
+        update_locations: false
+    - class: EffectSingle
+      sound: magic.teleport
+      sound_pitch: 1.2
+      location: both
+      source_location: eyes
+      effectlib:
+        class: WarpEffect
+        period: 1
+        particle: portal
+        particle_count: 10
+        particle_offset_x: 0.9
+        particle_offset_y: 0.1
+        particle_offset_z: 0.9
+        offset: 0,-1,0
+        update_locations: false
+  parameters:
+    options:
+    - type: home
+    - type: death
+    - type: town
+      show_unavailable: false
+    - type: spawn
+      show_unavailable: false
+    - type: placeholder
+    - type: placeholder
+    - type: marker
+      show_unavailable: false
+      marker: 3
+    - type: marker
+      show_unavailable: false
+      marker: 2
+    - type: marker
+      show_unavailable: false
+      marker: 1
+    warmup: 5000
+    cancel_on_damage: 1
+    cancel_on_cast_other: true
+    allow_spawn: false
+    allow_marker: false
+    allow_death: false
+    allow_souls: false
+    allow_wand: true
+    allow_home: true
+    allow_cross_world: true
+    allow_town: true
+    allow_fields: true
+    allow_friends: false
+    icon_death: skull_item
+    icon_soul: skeleton_skull
+    icon_field: wood_door
+    icon_wand: stick{CustomModelData:18001}
+    icon_spawn: wood_door
+    icon_home: red_bed
+    icon_town: iron_door
+    icon_marker: redstone_block
+    icon_move_marker: redstone_block
+    show_unavailable: true
+    unavailable_icon: gray_dye
+    loud: true
+    cooldown: 15000
+    protection_duration: 5000
+    target: none
+
+    bypass_mage_cooldown: true
+recall|2:
+  upgrade_required_path: student
+  upgrade_required_casts: 30
+  parameters:
+    allow_death: true
+    allow_souls: true
+
+recall|3:
+  upgrade_required_path: apprentice
+  actions:
+    alternate_sneak:
+    - class: Recall
+      type: place
+  parameters:
+    allow_marker: true
+
+recall|4:
+  upgrade_required_path: master
+  parameters:
+    marker_count: 2
+
+recall|5:
+  parameters:
+    marker_count: 3
+
+recall_death:
+  inherit: recall
+  icon: superkill
+  parameters:
+    type: death
+    warmup: 0
+
+    bypass_mage_cooldown: true
+base_passive:
+  passive: true
+  cast_on_no_target: false
+  effects: {}
+  parameters:
+    quiet: true
+    target: self
+
+#
+# =====================================================================
+# CUSTOM SPELL - Storm Shackle (stormshackle) - WRV-070, Oct 17, 2026
+# =====================================================================
+# Mike's design: "a chain lightning that does VERY LOW damage but SLOWS
+# the enemies it arcs to." Built from Magic 11.2.5's chainlightning
+# block (copied structure and effects), with these deliberate changes:
+#
+#   DAMAGE: every Damage action uses player_damage 0.5 / entity_damage
+#     0.5 (chainlightning ships 1.5 / 2, plus a 0.5 / 1 repeat tick).
+#     0.5 is the smallest damage value the shipped defaults themselves
+#     use for a damage tick = a quarter-heart per strike. The `repeat`
+#     parameter drops 4 -> 2, halving the repeat ticks. Worst case per
+#     enemy is ~2 HP (one heart) if it eats every branch; a typical
+#     single arc hit is 0.5-1 HP. This is a control spell, not a weapon.
+#   SLOW: a PotionEffect action rides next to EVERY Damage action, so
+#     each struck enemy is slowed. Format is Magic's own (verified
+#     against the shipped defaults - frost and curse use the same
+#     mechanism, and against the 11.2.5 bytecode): a bare PotionEffect
+#     action reads `effect_<name>` + `duration` from its parameters.
+#     Here, action-local parameters set:
+#       effect_slow: 0   -> Slowness amplifier 0 = Slowness I
+#       duration: 4000   -> 4000 ms = 4 seconds
+#   COST: mana 50 (heal-tier; chainlightning ships 75), cooldown
+#     10000 ms (half of chainlightning's 20000; in family with the
+#     Phase 1 support spells). Not free, not spammable.
+#   No upgrade variants (|2/|3) and no upgrade_required_*: Phase 1
+#     ships exactly this one level, target_count stays 3 (the raw
+#     spell's apprentice/master variants raise it to 5/8 - Phase 2
+#     territory, not ours).
+#   category: utility (control/support, not combat). icon reuses the
+#     chainlightning icon, which still resolves from default icons.
+#   Display name/description live in this packet's messages.yml.
+#
+
+stormshackle:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: chainlightning
+  category: utility
+  worth: 1260
+  earns: 6
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+      - class: PotionEffect
+        duration: 4000
+        effect_slow: 0
+      - class: Delay
+      - class: AreaOfEffect
+        actions:
+        - class: Asynchronous
+          actions:
+          - class: CustomProjectile
+            velocity: 150
+            actions:
+            - class: Damage
+            - class: PotionEffect
+              duration: 4000
+              effect_slow: 0
+            - class: Delay
+            - class: AreaOfEffect
+              target_count: 1
+              actions:
+              - class: CustomProjectile
+                actions:
+                - class: Damage
+                - class: PotionEffect
+                  duration: 4000
+                  effect_slow: 0
+            - class: Repeat
+              actions:
+              - class: Damage
+                player_damage: 0.5
+                entity_damage: 0.5
+              - class: PotionEffect
+                duration: 4000
+                effect_slow: 0
+              - class: Delay
+      - class: Repeat
+        actions:
+        - class: Damage
+        - class: PotionEffect
+          duration: 4000
+          effect_slow: 0
+        - class: Delay
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.zap
+      location: origin
+    - sound: block_conduit_activate
+      sound_pitch: 1.75
+    projectile:
+    - class: EffectSingle
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 50
+        particle: redstone
+        color: FFF000
+        duration: 2000
+    - location: source
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 20
+        particle: fireworks_spark
+        particle_count: 4
+        particle_offset_x: 0.1
+        particle_offset_y: 0.1
+        particle_offset_z: 0.1
+        duration: 2000
+    tick:
+    - particle: fireworks_spark
+      particle_count: 2
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+      location: target
+    hit:
+    - sound: entity_guardian_attack
+      sound_pitch: 2
+      sound_volume: 0.5
+      location: target
+    - class: EffectSingle
+      sound: magic.zap_crack
+      sound_volume: 0.5
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 1
+      particle_offset_y: 1
+      particle_offset_z: 1
+    - sound: block_conduit_activate
+      sound_pitch: 1.8
+      location: target
+  parameters:
+    tick_size: 5
+    target: other
+    target_self: false
+    target_source: false
+    range: 48
+    velocity: 100
+    radius: 8
+    target_count: 3
+    target_type: Damageable
+    player_damage: 0.5
+    entity_damage: 0.5
+    delay: 250
+    repeat: 2
+    target_breakables: 1
+    cooldown: 8000
+    ignore_modified: true
+    cooldown_mage: 941
+  costs:
+    mana: 15
+
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 40
+stormshackle|2:
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 40
+  costs:
+    mana: 16  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+  parameters:
+    cooldown: 7000  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+stormshackle|3:
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+      - class: PotionEffect
+        duration: 4000
+        effect_slow: 1
+      - class: Delay
+      - class: AreaOfEffect
+        actions:
+        - class: Asynchronous
+          actions:
+          - class: CustomProjectile
+            velocity: 150
+            actions:
+            - class: Damage
+            - class: PotionEffect
+              duration: 4000
+              effect_slow: 1
+            - class: Delay
+            - class: AreaOfEffect
+              target_count: 1
+              actions:
+              - class: CustomProjectile
+                actions:
+                - class: Damage
+                - class: PotionEffect
+                  duration: 4000
+                  effect_slow: 1
+            - class: Repeat
+              actions:
+              - class: Damage
+                player_damage: 0.5
+                entity_damage: 0.5
+              - class: PotionEffect
+                duration: 4000
+                effect_slow: 1
+              - class: Delay
+      - class: Repeat
+        actions:
+        - class: Damage
+        - class: PotionEffect
+          duration: 4000
+          effect_slow: 1
+        - class: Delay
+  costs:
+    mana: 18
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+stormshackle|4:
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+      - class: PotionEffect
+        duration: 1000
+        effect_slow: 6
+      - class: PotionEffect
+        duration: 4000
+        effect_slow: 1
+      - class: Delay
+      - class: AreaOfEffect
+        actions:
+        - class: Asynchronous
+          actions:
+          - class: CustomProjectile
+            velocity: 150
+            actions:
+            - class: Damage
+            - class: PotionEffect
+              duration: 4000
+              effect_slow: 1
+            - class: Delay
+            - class: AreaOfEffect
+              target_count: 1
+              actions:
+              - class: CustomProjectile
+                actions:
+                - class: Damage
+                - class: PotionEffect
+                  duration: 4000
+                  effect_slow: 1
+            - class: Repeat
+              actions:
+              - class: Damage
+                player_damage: 0.5
+                entity_damage: 0.5
+              - class: PotionEffect
+                duration: 4000
+                effect_slow: 1
+              - class: Delay
+      - class: Repeat
+        actions:
+        - class: Damage
+        - class: PotionEffect
+          duration: 4000
+          effect_slow: 1
+        - class: Delay
+  costs:
+    mana: 20
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+blink:
+  icon: blink
+  alias: tesseract
+  category: utility
+  tags: nojail
+  worth: 2500
+  earns: 2
+  upgrade_required_path: student
+  upgrade_required_casts: 40
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      ignore_result: true
+      actions:
+      - class: FallProtectionAction
+    - class: Teleport
+  effects:
+    teleport:
+    - sound: entity_enderman_teleport
+      sound_pitch: 1.2
+      location: origin
+    - class: EffectSingle
+      sound: magic.teleport
+      location: target
+      particle_override: particle_nucleus
+      color_override: colorOrbital
+      source_location: eyes
+      effectlib:
+        class: AtomEffect
+        particle_nucleus: fireworks_spark
+        particle_orbital: redstone
+        iterations: 16
+        offset: 0,-1,0
+        particles_nucleus: 8
+        particles_orbital: 5
+        orient: true
+        rotation: 45
+        angular_velocity: 0.2
+    - class: EffectSingle
+      location: target
+      source_location: body
+      color_override: colorNucleus
+      effectlib:
+        class: AtomEffect
+        particle_nucleus: redstone
+        particle_orbital: fireworks_spark
+        iterations: 8
+        particles_nucleus: 8
+        particles_orbital: 5
+        orient: true
+        rotation: 45
+        angular_velocity: 0.2
+    precast:
+    - sound: entity_enderman_teleport
+      sound_pitch: 1.3
+      location: origin
+    - class: EffectSingle
+      sound: magic.teleport
+      location: origin
+      particle_override: particle_nucleus
+      color_override: colorOrbital
+      source_location: body
+      effectlib:
+        class: AtomEffect
+        updateLocations: false
+        particle_nucleus: fireworks_spark
+        particle_orbital: redstone
+        iterations: 16
+        particles_nucleus: 8
+        particles_orbital: 5
+        orient: true
+        rotation: 45
+    - class: EffectSingle
+      location: origin
+      source_location: body
+      color_override: colorNucleus
+      effectlib:
+        class: AtomEffect
+        updateLocations: false
+        particle_nucleus: redstone
+        particle_orbital: fireworks_spark
+        iterations: 8
+        particles_nucleus: 8
+        particles_orbital: 5
+        orient: true
+        rotation: 45
+    - class: EffectSingle
+      color_override: color
+      effectlib:
+        class: LineEffect
+        particle: redstone
+        updateLocations: false
+        particles: 200
+    - class: EffectSingle
+      effectlib:
+        class: LineEffect
+        particle: fireworks_spark
+        particles: 30
+        particle_count: 5
+        particle_offset_x: 0.5
+        particle_offset_y: 0.5
+        particle_offset_z: 0.5
+        updateLocations: false
+  parameters:
+    target: block
+    allow_max_range: true
+    range: 12
+    cooldown: 10000
+    prevent_passthrough: nopassthrough
+    bypass_confusion: true
+    vertical_range: 8
+    ledge_range: 4
+  costs:
+    mana: 50
+
+blink|2:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  parameters:
+    range: 16
+  costs:
+    mana: 50
+
+blink|3:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  actions:
+    alternate_up:
+    - class: Ascend
+      vertical_range: 255
+  parameters:
+    range: 24
+    cooldown: 7000
+  costs:
+    mana: 50
+
+blink|4:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 75
+  actions:
+    alternate_down:
+    - class: Descend
+      vertical_range: 255
+  parameters:
+    range: 32
+    cooldown: 5000
+  costs:
+    mana: 50
+
+blink|5:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: master
+  upgrade_required_casts: 100
+  parameters:
+    allow_passthrough: true
+    passthrough_range: 8
+    range: 48
+  costs:
+    mana: 50
+
+blink|6:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  parameters:
+    safe: false
+    cooldown: 2000
+  costs:
+    mana: 50
+
+torch:
+  icon: torch
+  category: utility
+  tags: noduel
+  worth: 430
+  earns: 2
+  upgrade_required_path: beginner
+  upgrade_required_casts: 30
+  actions:
+    cast:
+    - class: Torch
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: item_firecharge_use
+    - class: EffectTrail
+      particle: block_crack
+      material: glowstone
+      particle_count: 4
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+  parameters:
+    allow_max_range: false
+    range: 32
+    allow_glowstone: true
+    allow_sea_lantern: true
+    undo: 30000
+    cooldown: 10000
+    destructible: destructible_replace
+  costs:
+    mana: 50
+
+torch|2:
+  upgrade_required_path: student
+  upgrade_required_casts: 30
+  parameters:
+    cooldown: 8000
+
+torch|3:
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  parameters:
+    cooldown: 5000
+
+torch|4:
+  parameters:
+    cooldown: 2000
+
+magictorch:
+  icon: spell_icon:62
+  icon_disabled: spell_icon_disabled:62
+  icon_url: http://textures.minecraft.net/texture/08f4793551132fad5bdb5d185269881a8de6fa4b86c6bde92c2bf467e097
+  category: specialty
+  actions:
+    cast:
+    - class: ChangeContext
+      target_offset: 0,2,0
+      actions:
+      - class: ModifyBlock
+  effects:
+    cast:
+    - class: EffectSingle
+      particle: smoke_normal
+      particle_count: 10
+  parameters:
+    destructible: all_air,light
+    target: self
+    undo: 500
+    brush: light
+    replace_same: true
+
+throwmagictorch:
+  icon: spell_icon:62
+  icon_disabled: spell_icon_disabled:62
+  icon_url: http://textures.minecraft.net/texture/08f4793551132fad5bdb5d185269881a8de6fa4b86c6bde92c2bf467e097
+  category: specialty
+  actions:
+    cast:
+    - class: ThrowItem
+      tick:
+      - class: ModifyBlock
+  effects:
+    cast:
+    - class: EffectSingle
+      particle: smoke_normal
+      particle_count: 10
+  parameters:
+    destructible: all_air,light
+    target: none
+    undo: 20
+    cooldown: 1000
+    throw_wand: true
+    temporary: false
+    age_items: 0
+    lifetime: 3600000
+    brush: light
+    replace_same: true
+
+peek:
+  icon: peek
+  category: mining
+  worth: 650
+  earns: 8
+  upgrade_required_path: beginner
+  upgrade_required_casts: 10
+  actions:
+    cast:
+    - class: Sphere
+      actions:
+      - class: FakeBlock
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: block_fire_extinguish
+      sound_volume: 0.4
+      sound_pitch: 1.2
+    - sound: block_glass_break
+      sound_pitch: 0.3
+      sound_volume: 0.8
+    - class: EffectTrail
+      particle: block_crack
+      particle_count: 20
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    - location: target
+      particle: block_crack
+      particle_count: 100
+      particle_offset_x: 0.75
+      particle_offset_y: 0.75
+      particle_offset_z: 0.75
+  parameters:
+    target: block
+    allow_max_range: false
+    check_destructible: true
+    destructible: destructible_mining
+    range: 32
+    transparent: transparent
+    undo: 2000
+    brush: glass
+    radius: 0
+    cooldown: 5000
+    undo_speed: 2
+  costs:
+    mana: 30
+
+peek|2:
+  upgrade_required_path: student
+  upgrade_required_casts: 40
+  parameters:
+    radius: 1
+
+peek|3:
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  parameters:
+    radius: 1.5
+
+peek|4:
+  parameters:
+    radius: 2
+
+workbench:
+  icon: workbench
+  category: utility
+  tags: noduel
+  quick_cast: true
+  worth: 170
+  show_undoable: false
+  upgrade_required_casts: 50
+  upgrade_required_path: apprentice
+  actions:
+    cast:
+    - class: Inventory
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: block_piston_extend
+      effectlib:
+        class: WarpEffect
+        particle: block_crack
+        material: crafting_table
+        duration: 1000
+        particle_count: 10
+        particle_offset_x: 1
+        particle_offset_z: 1
+        particle_offset_y: 1
+  parameters:
+    target: none
+    cooldown: 20000
+    type: workbench
+  costs:
+    mana: 50
+
+workbench|2:
+  upgrade_required_casts: 50
+  upgrade_required_path: student
+  parameters:
+    cooldown: 10000
+  costs:
+    mana: 30
+
+workbench|3:
+  upgrade_required_casts: 50
+  upgrade_required_path: student
+  parameters:
+    cooldown: 5000
+  costs:
+    mana: 10
+
+workbench|4:
+  upgrade_required_casts: 100
+  upgrade_required_path: master
+  parameters:
+    cooldown: 0
+  costs:
+    mana: 0
+
+glide:
+  icon: glide
+  category: utility
+  worth: 400
+  cancel_effects: true
+  actions:
+    cast:
+    - class: FallProtection
+    - class: Velocity
+    - class: Delay
+    - class: Glide
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: entity_parrot_fly
+      sound_pitch: 0.3
+      sound_volume: 2
+      location: origin
+      source_location: eyes
+      effectlib:
+        class: IconEffect
+        duration: 30000
+        particle: end_rod
+        particle_offset_x: 1
+        particle_offset_y: 1
+        particle_offset_z: 1
+        particle_count: 40
+        y_offset: 0
+  parameters:
+    target: self
+    duration: 50000
+    cooldown: 60000
+    direction: 0,1,0
+    speed: 2
+    delay: 750
+  costs:
+    mana: 100
+
+fling:
+  icon: fling
+  alias: leap
+  category: utility
+  tags: nojail
+  worth: 1730
+  earns: 2
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  glide_restricted: true
+  actions:
+    cast:
+    - class: Velocity
+    - class: FallProtection
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: entity_ender_dragon_flap
+      sound_volume: 1
+      effectlib:
+        class: Trace
+        iterations: 30
+        particle_offset_x: 1
+        particle_offset_y: 1
+        particle_offset_z: 1
+        particle_count: 2
+        speed: 2
+        particle: spell
+    land:
+    - sound: block_stone_step
+      sound_pitch: 0.7
+    - class: EffectRing
+      particle: block_crack
+      source_location: feet
+      period: 4
+      iterations: 3
+      particle_count: 80
+      radius: 4
+      particle_offset_x: 0.9
+      particle_offset_z: 0.9
+      particle_offset_y: 0.1
+  parameters:
+    duration: 20000
+    target: self
+    min_speed: 1.5
+    max_speed: 2.0
+    bypass_confusion: true
+    cooldown: 5000
+  costs:
+    mana: 50
+
+fling|2:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 100
+  alternate_sneak_parameters:
+    min_speed: 2.0
+    max_speed: 2.0
+  parameters:
+    min_speed: 2
+    max_speed: 3
+    cooldown: 2000
+  costs:
+    mana: 50
+
+fling|3:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: master
+  upgrade_required_casts: 150
+  parameters:
+    min_speed: 3
+    max_speed: 4
+    cooldown: 1000
+  costs:
+    mana: 50
+
+fling|4:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  parameters:
+    min_speed: 3
+    max_speed: 5
+    cooldown: 200
+  costs:
+    mana: 50
+
+lift:
+  icon: lift
+  category: utility
+  worth: 80
+  earns: 5
+  actions:
+    cast:
+    - class: Velocity
+      requires_entity_target: true
+      item_speed: 0.05
+      living_entity_speed: 0.75
+    - class: PotionEffect
+    - class: Repeat
+      repeat: 5
+      actions:
+      - class: MoveBlock
+        set_target: true
+      - class: PlayEffects
+        effects: float
+        ignore_result: true
+      - class: Delay
+        delay: 100
+      - class: Skip
+        skip: 3
+        actions:
+        - class: PlayEffects
+          effects: floating
+          ignore_result: true
+  effects:
+    floating:
+    - class: EffectSingle
+      target_offset: 0.5,0.5,0.5
+      location: target
+      use_block_location: true
+      effectlib:
+        class: SphereEffect
+        iterations: 48
+        period: 2
+        particle: spell
+        radius: 0.8
+    float:
+    - class: EffectSingle
+      target_offset: 0.5,0.5,0.5
+      location: target
+      use_block_location: true
+      effectlib:
+        class: SphereEffect
+        iterations: 4
+        period: 2
+        particle: spell
+        radius: 0.8
+    cast:
+    - sound: block_fire_extinguish
+      sound_volume: 1
+      sound_pitch: 0.1
+      location: both
+    - class: EffectSingle
+      location: origin
+      sound: magic.zap_up
+      sound_pitch: 2
+      effectlib:
+        class: ConeEffect
+        iterations: 8
+        particles: 2
+        particle: spell
+        lengthGrow: 0.4
+    - class: EffectSingle
+      location: target
+      effectlib:
+        yaw: 0
+        pitch: -90
+        class: ConeEffect
+        iterations: 8
+        particle: spell
+        autoOrient: false
+    no_target:
+    - class: EffectSingle
+      location: origin
+      sound: entity_ender_dragon_flap
+      sound_pitch: 2
+      effectlib:
+        class: ConeEffect
+        iterations: 8
+        particles: 2
+        particle: spell
+        lengthGrow: 0.4
+  parameters:
+    hitbox: true
+    target: other
+    target_type: LivingEntity
+    allow_max_range: false
+    range: 15
+    check_destructible: true
+    undo: 5000
+    target_breakables: 1
+    bypass_backfire: false
+    offset: 0,1,0
+    delay: 100
+    direction: 0,1,0
+    living_entity_speed: 0.1
+    item_speed: 0.05
+    repeat: 50
+    instant_block_effects: true
+    cooldown: 2000
+    cancel_on_damage: 0.5
+    effect_levitation: 1
+    duration: 5000
+  costs:
+    mana: 40
+
+dash:
+  icon: spell_icon:178
+  icon_disabled: spell_icon_disabled:178
+  icon_url: http://textures.minecraft.net/texture/df4396a2bc47bc4dd545fc787a3ad8a0a75b8783cb5d81482c2016fab9cd2a
+  category: combat
+  worth: 430
+  earns: 8
+  actions:
+    cast:
+    - class: Repeat
+      actions:
+      - class: Retarget
+        range: 1
+        actions:
+        - class: CheckBlock
+          allowed: solid
+          actions:
+          - class: ChangeContext
+            target_caster: true
+            actions:
+            - class: Damage
+      - class: ConeOfEffect
+        actions:
+        - class: Damage
+      - class: ChangeContext
+        target_caster: true
+        actions:
+        - class: Velocity
+      - class: Delay
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.shimmer_crack
+      sound_volume: 1
+      particle: sweep_attack
+  parameters:
+    target: none
+    target_type: Damageable
+    range: 3
+    hitbox: false
+    fov: 0.4
+    velocity: 0.2
+    source_pitch_min: 0
+    source_pitch_max: 0
+    damage: 2
+    target_breakables: 1
+    cooldown: 5000
+    magic_damage: false
+    instant_block_effects: true
+    repeat: 10
+    delay: 100
+  costs:
+    mana: 40
+
+evade:
+  icon: randomtp
+  hidden: true
+  category: specialty
+  actions:
+    cast:
+    - class: Repeat
+      actions:
+      - class: ChangeContext
+        actions:
+        - class: Teleport
+  parameters:
+    target: self
+    target_offset: rand(-5,5) 0 rand(-5,5)
+    vertical_range: 5
+    stop_on_success: true
+    repeat: 10
+    unsafe: water,lava
+    passthrough: transparent_no_water
+    prevent_passthrough: '!transparent_no_water'
+    require_build: true
+    cooldown: 2000
+  costs:
+    mana: 10
+
+backflip:
+  icon: spell_icon:134
+  icon_disabled: spell_icon_disabled:134
+  icon_url: http://textures.minecraft.net/texture/a35cfb663dbde27598eebe76b0fdac2593f1d696b3e6b9e044edeb8d48c2e2
+  alias: tesseract
+  category: utility
+  tags: nojail
+  worth: 1080
+  earns: 2
+  upgrade_required_path: student
+  upgrade_required_casts: 40
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      ignore_result: true
+      actions:
+      - class: FallProtectionAction
+    - class: ChangeContext
+      source_yaw_offset: 180
+      actions:
+      - class: Retarget
+        actions:
+        - class: Teleport
+  effects:
+    teleport:
+    - class: EffectSingle
+      sound: magic.teleport
+      location: target
+      particle_override: particle_nucleus
+      color_override: colorOrbital
+      source_location: eyes
+      effectlib:
+        class: AtomEffect
+        particle_nucleus: dragon_breath
+        particle_orbital: redstone
+        iterations: 8
+        offset: 0,-1,0
+    precast:
+    - class: EffectSingle
+      sound: magic.teleport
+      location: origin
+      particle_override: particle_nucleus
+      color_override: colorOrbital
+      source_location: eyes
+      effectlib:
+        class: AtomEffect
+        updateLocations: false
+        particle_nucleus: dragon_breath
+        particle_orbital: redstone
+        iterations: 8
+        offset: 0,-1,0
+    - class: EffectSingle
+      color_override: color
+      effectlib:
+        class: LineEffect
+        particle: redstone
+        updateLocations: false
+  parameters:
+    target: block
+    allow_max_range: true
+    range: 12
+    cooldown: 10000
+    prevent_passthrough: nopassthrough
+    bypass_confusion: true
+    vertical_range: 8
+  costs:
+    mana: 20
+
+hulkleap:
+  hidden: true
+  icon: fling
+  category: utility
+  tags: nojail
+  actions:
+    cast:
+    - class: Velocity
+    - class: FallProtection
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: entity_ender_dragon_flap
+      sound_volume: 1
+      effectlib:
+        class: Trace
+        iterations: 30
+        particle_offset_x: 1
+        particle_offset_y: 1
+        particle_offset_z: 1
+        particle_count: 2
+        speed: 2
+        particle: spell
+    land:
+    - sound: block_stone_step
+      sound_pitch: 0.7
+    - class: EffectRing
+      particle: block_crack
+      source_location: feet
+      period: 4
+      particle_count: 80
+      radius: 4
+      particle_offset_x: 0.9
+      particle_offset_z: 0.9
+      particle_offset_y: 0.1
+  parameters:
+    duration: 20000
+    target: self
+    min_speed: 1.5
+    max_speed: 2.0
+    bypass_confusion: true
+    cooldown: 5000
+  costs:
+    mana: 50
+
+piggyback:
+  icon: spell_icon:90
+  icon_disabled: spell_icon_disabled:90
+  icon_url: http://textures.minecraft.net/texture/505b8ba793c372d9fb45db20df80c1606b19b7421a9bbcc258ae2a65d65ea7
+  category: utility
+  actions:
+    cast:
+    - class: SpawnEntity
+      set_source: true
+      wait_for_death: false
+      type: skeleton
+      actions:
+      - class: SpawnEntity
+        set_target: true
+        type: pig
+      - class: Mount
+  worth: 430
+  effects:
+    cast:
+    - class: EffectSingle
+      particle: block_crack
+      location: target
+      particle_count: 30
+      particle_offset_x: 0.1
+      particle_offset_y: 0.1
+      particle_offset_z: 0.1
+      material: anvil
+  parameters:
+    target: other
+    allow_max_range: true
+    range: 16
+    undo: 30000
+    cooldown: 20000
+  costs:
+    mana: 100
+
+bubble:
+  icon: bubble
+  alias: cushion
+  category: utility
+  worth: 220
+  earns: 5
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: DisablePhysics
+      - class: Volume
+        actions:
+        - class: ModifyBlock
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: entity_generic_splash
+      location: both
+    tick:
+    - location: target
+      particle: water_splash
+      particle_count: 8
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    hit:
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: Shield
+        iterations: 10
+        particle: water_splash
+        radius: 1.8
+        particles: 30
+        particle_count: 20
+        particle_offset_x: 0.2
+        particle_offset_y: 0.2
+        particle_offset_z: 0.2
+  parameters:
+    velocity: 250
+    target_type: LivingEntity
+    allow_max_range: true
+    radius: 1
+    range: 25
+    cooldown: 2000
+    undo: 1000
+    duration: 3000
+    destructible: destructible_replace
+    brush: water
+    hitbox: true
+  costs:
+    mana: 10
+
+bubble|2:
+  parameters:
+    radius: 2
+    range: 40
+    undo: 2000
+
+gasp:
+  icon: gasp
+  category: utility
+  worth: 40
+  earns: 2
+  actions:
+    cast:
+    - class: AirSupply
+  effects:
+    cast:
+    - sound: magic.shimmer
+    - sound: entity_generic_drink
+      sound_pitch: 0.8
+    - location: origin
+      effectlib:
+        class: Sphere
+        particle_count: 2
+        particles: 10
+        particle_offset_x: 0.5
+        particle_offset_y: 0.5
+        particle_offset_z: 0.5
+        particle: cloud
+        radius: 1
+        duration: 1000
+  parameters:
+    target: self
+    air: 300
+    cooldown: 30000
+  costs:
+    mana: 10
+
+stash:
+  icon: stash
+  category: utility
+  worth: 1060
+  earns: 1
+  show_undoable: false
+  quick_cast: true
+  actions:
+    cast:
+    - class: Inventory
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: entity_enderman_hurt
+      effectlib:
+        class: WarpEffect
+        particle: block_crack
+        material: obsidian
+        duration: 1000
+        particle_count: 10
+        particle_offset_x: 1
+        particle_offset_z: 1
+        particle_offset_y: 1
+  parameters:
+    target: self
+    type: ender_chest
+    cooldown: 2000
+
+# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): Disposal spell removed (destroys items, no undo).
+# enabled: false makes Magic 11.2.5 skip this key at load (ConfigurationUtils.isEnabled).
+disposal:
+  enabled: false
+
+repairitem:
+  icon: anvil
+  category: npc
+  hidden: true
+  actions:
+    cast:
+    - class: RepairItem
+  parameters:
+    target_type: Item
+    range: 8
+    cooldown: 10000
+  costs:
+    mana: 200
+
+repairequipment:
+  icon: anvil
+  category: npc
+  hidden: true
+  actions:
+    cast:
+    - class: RepairItem
+  parameters:
+    target_type: LivingEntity
+    armor: true
+    held_item: true
+
+lightning:
+  # WRV Oct 24 2026 (staged only): visual-only strike + caster-credited Damage 10 per bolt (was 2 x 5 vanilla bolt hits, uncredited) so BossTrial counts it
+  icon: lightning
+  alias: storm
+  require_build: true
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  category: elemental
+  pvp_restricted: true
+  worth: 300
+  earns: 2
+  actions:
+    cast:
+    - class: Spread
+      actions:
+      - class: Lightning
+        effect_only: true
+      - class: AreaOfEffect
+        radius: 3
+        y_radius: 3
+        actions:
+        - class: Damage
+          damage: 10
+  effects:
+    cast:
+    - sound: block_conduit_activate
+      sound_pitch: 1.8
+      sound_volume: 1.9
+    - class: EffectSingle
+      sound: entity_firework_large_blast
+      location: target
+    - class: EffectTrail
+      particle: smoke_normal
+      particle_count: 30
+      particle_offset_x: 0.3
+      particle_offset_y: 0.3
+      particle_offset_z: 0.3
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: HelixEffect
+        particle: smoke_large
+        iterations: 1
+        particles: 30
+        particle_count: 10
+        particle_offset_x: 1
+        particle_offset_y: 0.1
+        particle_offset_z: 1
+  parameters:
+    target_type: LivingEntity
+    allow_max_range: true
+    range: 32
+    radius: 8
+    cooldown: 45000
+    undo: 8000
+  costs:
+    mana: 80
+
+lightning|2:
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  parameters:
+    cooldown: 40000  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+    radius: 6
+
+lightning|3:
+  actions:
+    cast:
+    - class: Repeat
+      actions:
+      - class: Spread
+        actions:
+        - class: Lightning
+          effect_only: true
+        - class: AreaOfEffect
+          radius: 3
+          y_radius: 3
+          actions:
+          - class: Damage
+            damage: 10
+  parameters:
+    repeat: 2
+
+chainlightning:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: chainlightning
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  category: combat
+  worth: 600
+  earns: 8
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+      - class: Delay
+      - class: AreaOfEffect
+        actions:
+        - class: Asynchronous
+          actions:
+          - class: CustomProjectile
+            velocity: 150
+            actions:
+            - class: Damage
+            - class: Delay
+            - class: AreaOfEffect
+              target_count: 1
+              actions:
+              - class: CustomProjectile
+                actions:
+                - class: Damage
+            - class: Repeat
+              actions:
+              - class: Damage
+                player_damage: 0.5
+                entity_damage: 1
+              - class: Delay
+      - class: Repeat
+        actions:
+        - class: Damage
+        - class: Delay
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.zap
+      location: origin
+    - sound: block_conduit_activate
+      sound_pitch: 1.75
+    projectile:
+    - class: EffectSingle
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 50
+        particle: redstone
+        color: FFF000
+        duration: 2000
+    - location: source
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 20
+        particle: fireworks_spark
+        particle_count: 4
+        particle_offset_x: 0.1
+        particle_offset_y: 0.1
+        particle_offset_z: 0.1
+        duration: 2000
+    tick:
+    - particle: fireworks_spark
+      particle_count: 2
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+      location: target
+    hit:
+    - sound: entity_guardian_attack
+      sound_pitch: 2
+      sound_volume: 0.5
+      location: target
+    - class: EffectSingle
+      sound: magic.zap_crack
+      sound_volume: 0.5
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 1
+      particle_offset_y: 1
+      particle_offset_z: 1
+    - sound: block_conduit_activate
+      sound_pitch: 1.8
+      location: target
+  parameters:
+    tick_size: 5
+    target: other
+    target_self: false
+    target_source: false
+    range: 48
+    velocity: 100
+    radius: 8
+    target_count: 3
+    target_type: Damageable
+    player_damage: 1.5
+    entity_damage: 2
+    delay: 250
+    repeat: 4
+    target_breakables: 1
+    cooldown: 20000
+    ignore_modified: true
+  costs:
+    mana: 75
+
+chainlightning|2:
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  parameters:
+    target_count: 5
+
+chainlightning|3:
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  parameters:
+    target_count: 8
+
+missile:
+  icon: missile
+  upgrade_required_path: beginner
+  upgrade_required_casts: 30
+  category: combat
+  worth: 660
+  earns: 20
+  earns_cooldown_scale: 0.05
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+      - class: BreakBlock
+        ignore_result: true
+  effects:
+    cast:
+    - sound: block_beacon_power_select
+      sound_pitch: 1.8
+      sound_volume: 0.9
+    - sound: entity_arrow_shoot
+      sound_pitch: 2
+      sound_volume: 0.2
+    - sound: entity_guardian_attack
+      sound_pitch: 1.5
+      sound_volume: 0.2
+    - sound: magic.zap_crack
+      sound_volume: 0.75
+      location: origin
+      color_override: color
+      effectlib:
+        class: ConeEffect
+        iterations: 10
+        particle: dust_color_transition
+        to_color: '#222222'
+        lengthGrow: 0.1
+        radiusGrow: 0.003
+        updateLocations: false
+        updateDirections: false
+        particle_count: 8
+        particle_offset_y: 0.1
+        particle_offset_x: 0.1
+        particle_offset_z: 0.1
+    tick:
+    - particle: dust_color_transition
+      color: '#FFFFFF'
+      location: target
+      particle_count: 4
+      particle_offset_y: 0.2
+      particle_offset_x: 0.2
+      particle_offset_z: 0.2
+      particle_size: 1
+    break:
+    - class: EffectSingle
+      location: target
+      particle: block_crack
+      particle_count: 100
+      particle_offset_x: 0.6
+      particle_offset_y: 0.6
+      particle_offset_z: 0.6
+    hit_block:
+    - class: EffectSingle
+      location: target
+      particle: block_crack
+      particle_count: 30
+      particle_offset_x: 0.2
+      particle_offset_y: 1
+      particle_offset_z: 0.2
+    hit_entity:
+    - class: EffectSingle
+      location: target
+      particle: redstone
+      particle_count: 30
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    hit:
+    - sound: entity_player_attack_knockback
+      sound_pitch: 2
+      location: target
+    - class: EffectSingle
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 0.3
+      particle_offset_y: 0.3
+      particle_offset_z: 0.3
+      sound: magic.zap
+      sound_volume: 0.3
+      particle_data: 0.1
+    headshot:
+    - sound: entity_player_attack_knockback
+      sound_pitch: 2
+      location: target
+    - class: EffectSingle
+      location: target
+      particle: fireworks_spark
+      particle_count: 20
+      particle_offset_y: 0.2
+      particle_offset_x: 0.2
+      particle_offset_z: 0.2
+      particle_data: 0.1
+      sound: magic.zap
+      sound_volume: 0.3
+    - sound: entity_player_attack_crit
+      sound_pitch: 0.8
+      location: target
+      particle: crit_magic
+      particle_count: 30
+      particle_offset_y: 1
+      particle_offset_x: 1
+      particle_offset_z: 1
+      particle_data: 0.5
+  headshot_parameters:
+    damage_multiplier: 1.5
+  parameters:
+    allow_max_range: true
+    velocity: 200
+    range: 24
+    hitbox: true
+    target_type: Damageable
+    player_damage: 2
+    entity_damage: 4
+    target_breakables: 1
+    cooldown: 1000
+    reorient: false
+    destructible: solid
+    destructible_durability: 50
+    break_durability: 2
+    undo: 10000
+  costs:
+    mana: 15
+
+missile|2:
+  upgrade_required_casts: 50
+  earns_cooldown_scale: 0.1
+  earns: 15
+  parameters:
+    range: 32
+    player_damage: 2.5
+    entity_damage: 5
+    target_breakables: 1
+    break_durability: 3
+  costs:
+    mana: 15
+
+missile|3:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  earns_cooldown_scale: 1
+  earns: 10
+  parameters:
+    range: 48
+    player_damage: 3
+    entity_damage: 5  # WRV Oct 24 2026: 6 -> 5 so missile damage never drops by rank (4/5/5/6/6)
+    target_breakables: 2
+    break_durability: 4
+  costs:
+    mana: 15
+
+missile|4:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  earns: 7
+  parameters:
+    range: 64
+    player_damage: 4
+    entity_damage: 6  # WRV Oct 24 2026: 8 -> 5 -> 6 so missile damage never drops by rank (4/5/5/6/6), top stays 6
+    target_breakables: 3
+    break_durability: 5
+  costs:
+    mana: 15
+
+missile|5:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  parameters:
+    cooldown: 850  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+    range: 72  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT) (was 64)
+    player_damage: 4
+    entity_damage: 6
+    target_breakables: 3
+    break_durability: 5
+  costs:
+    mana: 15
+
+frost:
+  icon: frost
+  category: combat
+  worth: 880
+  earns: 8
+  upgrade_required_path: beginner
+  upgrade_required_casts: 50
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+      - class: AreaOfEffect
+        actions:
+        - class: PotionEffect
+        - class: Damage
+        - class: Ignite
+          duration: 0
+      - class: Sphere
+        ignore_result: true
+        actions:
+        - class: Freeze
+        - class: ModifyBreakable
+  effects:
+    cast:
+    - sound: entity_player_breath
+      sound_pitch: 2
+      sound_volume: 0.5
+    - class: EffectSingle
+      sound: magic.zap
+    tick:
+    - location: target
+      particle: snowball
+      particle_count: 4
+      particle_offset_x: 0.01
+      particle_offset_y: 0.01
+      particle_offset_z: 0.01
+    hit:
+    - location: target
+      sound: block_snow_fall
+      sound_pitch: 0.75
+      sound_volume: 2
+      effectlib:
+        class: Modified
+        duration: 500
+        parameters:
+          size: (t/i) * 2
+        effect:
+          class: AnimatedBall
+          particles: 20
+          particle_count: 10
+          particle_offset_x: 1
+          particle_offset_y: 1
+          particle_offset_z: 1
+          particle: snowball
+          size: 1
+          y_factor: 0.3
+    - class: EffectSingle
+      location: target
+      target_offset: 0,0.2,0
+      effectlib:
+        class: Shield
+        duration: $undo
+        period: 4
+        particle: snowball
+        radius: $radius
+  parameters:
+    target_type: Damageable
+    velocity: 50
+    target: other
+    allow_max_range: false
+    range: 48
+    hitbox: true
+    radius: 1
+    transparent: freeze_transparent
+    destructible: freezeable
+    damage: 1
+    duration: 1000
+    effect_slow: 1
+    undo: 4000
+    cooldown: 10000
+    entity_undo: false
+    freeze_lava: false
+    breakable: 4
+    ice: frosted_ice
+  costs:
+    mana: 40
+
+frost|2:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  parameters:
+    radius: 2
+    player_damage: 2
+    entity_damage: 6
+    duration: 2000
+    cooldown: 9000
+    effect_slow: 1
+    undo: 5000
+  costs:
+    mana: 40
+
+frost|3:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  parameters:
+    radius: 2
+    player_damage: 2
+    entity_damage: 6
+    duration: 3000
+    effect_slow: 1
+    undo: 8000
+    cooldown: 8000
+  costs:
+    mana: 40
+
+frost|4:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  parameters:
+    radius: 3
+    player_damage: 2.5
+    entity_damage: 8
+    duration: 3500
+    effect_slow: 1
+    undo: 10000
+    cooldown: 7000
+    freeze_lava: true
+  costs:
+    mana: 40
+
+arrow:
+  icon: arrow
+  category: combat
+  worth: 310
+  earns: 8
+  upgrade_required_path: beginner
+  upgrade_required_casts: 40
+  actions:
+    cast:
+    - class: Projectile
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: entity_arrow_shoot
+      sound_pitch: 0.2
+      sound_volume: 0.3
+      location: origin
+    - class: EffectSingle
+      location: origin
+      effectlib:
+        class: ConeEffect
+        iterations: 8
+        lengthGrow: 1
+        particle: smoke_normal
+    hit:
+    - sound: entity_player_attack_strong
+      sound_pitch: 1.75
+      location: target
+    - class: EffectSingle
+      location: origin
+      color: CC9933
+      firework: ball
+      sound: magic.hit
+  parameters:
+    target: none
+    projectile: TippedArrow
+    arrow_damage: 0.75
+    speed: 2
+    spread: 6
+    fire: false
+    tick_increase: 1180
+    entity_undo: false
+    undo: 5000
+    range: 50
+    cooldown: 2000
+  costs:
+    mana: 20
+
+arrow|2:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: beginner
+  upgrade_required_casts: 30
+  parameters:
+    arrow_damage: 0.8
+    speed: 2.5
+    spread: 5
+  costs:
+    mana: 20
+
+arrow|3:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  parameters:
+    arrow_damage: 0.85
+    speed: 3
+    spread: 4
+  costs:
+    mana: 20
+
+arrow|4:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  parameters:
+    arrow_damage: 0.9
+    speed: 3.5
+    spread: 3
+  costs:
+    mana: 20
+
+arrow|5:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  parameters:
+    arrow_damage: 0.95
+    speed: 4
+    spread: 1
+  costs:
+    mana: 20
+
+arrow|6:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  parameters:
+    arrow_damage: 1
+    speed: 5
+    spread: 0
+  costs:
+    mana: 20
+
+arrow_ice:
+  icon: arrow_ice
+  category: combat
+  worth: 240
+  earns: 8
+  actions:
+    cast:
+    - class: Projectile
+      actions:
+      - class: AreaOfEffect
+        actions:
+        - class: PotionEffect
+        - class: Damage
+          damage: 1
+        - class: Ignite
+          duration: 0
+      - class: Sphere
+        ignore_result: true
+        actions:
+        - class: Freeze
+        - class: ModifyBreakable
+  effects:
+    cast:
+    - sound: entity_arrow_shoot
+      sound_pitch: 0.8
+      sound_volume: 0.8
+    - class: EffectSingle
+      sound: magic.zap_crack
+      sound_pitch: 1.5
+      location: origin
+    projectile:
+    - location: origin
+      effectlib:
+        class: Sphere
+        iterations: 10
+        period: 2
+        particles: 5
+        particle_count: 10
+        particle_offset_x: 0.2
+        particle_offset_y: 0.2
+        particle_offset_z: 0.2
+        particle: snowball
+        disappear_with_origin_entity: true
+    hit:
+    - location: target
+      sound: block_snow_fall
+      sound_pitch: 0.75
+      sound_volume: 2
+    - class: EffectSingle
+      location: target
+      target_offset: 0,0.2,0
+      effectlib:
+        class: Shield
+        duration: $undo
+        period: 4
+        particle: snowball
+        radius: 4
+  parameters:
+    target: none
+    projectile: TippedArrow
+    tick_increase: 500
+    entity_undo: false
+    undo: 10000
+    speed: bowpull * 3
+    spread: 1 - bowpull
+    arrow_damage: bowpull
+    radius: 1 + 3 * bowpull
+    transparent: freeze_transparent
+    destructible: freezeable
+    duration: 2000
+    effect_slow: 1
+    breakable: 4
+    ice: frosted_ice
+  costs:
+    arrow: 1
+
+arrow_light:
+  icon: arrow_light
+  category: combat
+  worth: 1690
+  earns: 8
+  brush_effects: false
+  require_break: false
+  require_build: false
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: ModifyBlock
+        ignore_result: true
+      - class: PotionEffect
+        duration: 4000
+      - class: Delay
+        delay: 200
+      - class: Asynchronous
+        requires_entity_target: true
+        actions:
+        - class: Repeat
+          repeat: bowpull * 5
+          actions:
+          - class: Damage
+          - class: Delay
+            delay: 300
+  effects:
+    cast:
+    - sound: block_conduit_activate
+      sound_pitch: 1.2
+    - sound: entity_arrow_shoot
+      sound_pitch: 2
+    - class: EffectSingle
+      sound: magic.zap_crack
+      sound_pitch: 1.5
+      location: origin
+      effectlib:
+        class: VortexEffect
+        iterations: 3
+        particle: end_rod
+        radius: 0.2
+        grow: 0.4
+        updateLocations: false
+        updateDirections: false
+    tick:
+    - particle: fireworks_spark
+      location: target
+    - particle: end_rod
+      location: target
+    hit_entity:
+    - class: EffectSingle
+      location: target
+      target_location: body
+      particle: end_rod
+      particle_count: 40
+      particle_offset_x: 0.4
+      particle_offset_y: 1
+      particle_offset_z: 0.4
+      effectlib:
+        class: AnimatedBall
+        particle: end_rod
+        duration: 3000
+        y_factor: 1.5
+        particles: 50
+        particle_count: 4
+        particle_offset_x: 0.02
+        particle_offset_y: 0.01
+        particle_offset_z: 0.02
+        offset: 0,-0.2,0
+        size: 0.6
+        disappear_with_origin_entity: true
+    hit:
+    - class: EffectSingle
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+      particle_data: 0.4
+      sound: magic.zap
+      sound_pitch: 1.2
+      sound_volume: 0.5
+    - location: target
+      particle: end_rod
+      particle_count: 10
+      particle_offset_x: 0.1
+      particle_offset_y: 0.1
+      particle_offset_z: 0.1
+    hit_block:
+    - effect: step_sound
+      location: target
+    - location: target
+      particle: block_crack
+      particle_count: 50
+      particle_offset_x: 0.8
+      particle_offset_y: 1
+      particle_offset_z: 0.8
+    headshot:
+    - class: EffectSingle
+      location: target
+      particle: fireworks_spark
+      particle_count: 20
+      particle_offset_y: 0.5
+      particle_offset_x: 0.5
+      particle_offset_z: 0.5
+      sound: magic.zap
+      sound_volume: 0.3
+      particle_data: 0.4
+    - sound: entity_player_attack_crit
+      sound_pitch: 0.8
+      location: target
+      particle: crit_magic
+      particle_count: 30
+      particle_offset_y: 1
+      particle_offset_x: 1
+      particle_offset_z: 1
+      particle_data: 0.5
+  headshot_parameters:
+    damage_multiplier: 2
+  parameters:
+    allow_max_range: true
+    velocity: 100
+    gravity: (1 - bowpull) * 0.5
+    range: 80
+    hitbox: true
+    block_hit_count: 4
+    entity_hit_count: 5
+    target_type: Damageable
+    player_damage: 3
+    entity_damage: 5
+    target_breakables: 1
+    reorient: false
+    potion_effects:
+      slow: 10
+    undo: 5000
+    brush: air
+    transparent: all_air,water,stationary_water
+  costs:
+    arrow: 1
+
+arrow_shock:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: arrow_shock
+  category: combat
+  worth: 410
+  earns: 8
+  actions:
+    cast:
+    - class: Projectile
+      actions:
+      - class: Disarm
+      - class: PotionEffect
+        duration: 4000
+      - class: Repeat
+        requires_entity_target: true
+        actions:
+        - class: Damage
+        - class: Delay
+          delay: 300
+        - class: PlayEffects
+          effects: zap
+  effects:
+    cast:
+    - sound: entity_arrow_shoot
+      sound_pitch: 0.9
+      sound_volume: 0.8
+    - class: EffectSingle
+      sound: magic.zap_crack
+      sound_pitch: 1.5
+      location: origin
+    - sound: block_conduit_activate
+      sound_pitch: 2
+    projectile:
+    - location: origin
+      effectlib:
+        class: Sphere
+        iterations: 10
+        period: 2
+        particles: 40
+        particle: redstone
+        color: FFF000
+        disappear_with_origin_entity: true
+    - location: origin
+      effectlib:
+        class: Sphere
+        iterations: 10
+        period: 2
+        particles: 5
+        particle_count: 10
+        particle_offset_x: 0.2
+        particle_offset_y: 0.2
+        particle_offset_z: 0.2
+        particle: fireworks_spark
+        disappear_with_origin_entity: true
+    hit:
+    - sound: block_conduit_activate
+      sound_pitch: 1.4
+    - class: EffectSingle
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+      particle_data: 0.4
+      sound: magic.zap
+      sound_pitch: 1.2
+      sound_volume: 0.5
+    - location: target
+      requires_entity_target: true
+      target_location: body
+      particle: fireworks_spark
+      particle_count: 40
+      particle_offset_x: 0.4
+      particle_offset_y: 1
+      particle_offset_z: 0.4
+      effectlib:
+        class: AnimatedBall
+        particle: redstone
+        color: FFF000
+        duration: 3000
+        y_factor: 1.5
+        offset: 0,-0.2,0
+        size: 0.6
+        disappear_with_origin_entity: true
+    - location: target
+      requires_entity_target: true
+      target_location: body
+      particle: fireworks_spark
+      particle_count: 40
+      particle_offset_x: 0.4
+      particle_offset_y: 1
+      particle_offset_z: 0.4
+      effectlib:
+        class: AnimatedBall
+        particle: fireworks_spark
+        particles: 20
+        particle_count: 4
+        particle_offset_x: 0.05
+        particle_offset_y: 0.05
+        particle_offset_z: 0.05
+        duration: 3000
+        y_factor: 1.5
+        offset: 0,-0.2,0
+        size: 0.4
+        disappear_with_origin_entity: true
+  parameters:
+    target: none
+    projectile: TippedArrow
+    tick_increase: 500
+    speed: bowpull * 3
+    spread: 1 - bowpull
+    arrow_damage: bowpull
+    repeat: bowpull * 5 + 10
+    effect_slow: 10
+    keep_in_inventory: true
+    undo: 4000
+  costs:
+    arrow: 1
+
+arrow_regular:
+  icon: arrow_regular
+  legacy_icon: arrow_regular
+  category: combat
+  worth: 30
+  earns: 2
+  actions:
+    cast:
+    - class: Projectile
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: entity_arrow_shoot
+      location: origin
+  parameters:
+    target: none
+    projectile: TippedArrow
+    speed: bowpull * 3
+    spread: 1 - bowpull
+    arrow_damage: 2 * bowpull
+    tick_increase: 0
+    pickup: disallowed
+  costs:
+    arrow: 1
+
+sparkle:
+  creator: TheBugWhisperer
+  icon: sparkle
+  worth: 20
+  actions:
+    cast:
+    - class: Random
+      actions:
+      - class: PotionEffect
+        add_effects: absorption
+      - class: PotionEffect
+        add_effects: blindness
+      - class: PotionEffect
+        add_effects: conduit_power
+      - class: PotionEffect
+        add_effects: confusion
+      - class: PotionEffect
+        add_effects: damage_resistance
+      - class: PotionEffect
+        add_effects: dolphins_grace
+      - class: PotionEffect
+        add_effects: fast_digging
+      - class: PotionEffect
+        add_effects: fire_resistance
+      - class: PotionEffect
+        add_effects: harm
+      - class: PotionEffect
+        add_effects: heal
+      - class: PotionEffect
+        add_effects: health_boost
+      - class: PotionEffect
+        add_effects: increase_damage
+      - class: PotionEffect
+        add_effects: invisibility
+      - class: PotionEffect
+        add_effects: jump
+      - class: PotionEffect
+        add_effects: levitation
+      - class: PotionEffect
+        add_effects: luck
+      - class: PotionEffect
+        add_effects: night_vision
+      - class: PotionEffect
+        add_effects: poison
+      - class: PotionEffect
+        add_effects: regeneration
+      - class: PotionEffect
+        add_effects: saturation
+      - class: PotionEffect
+        add_effects: slow
+      - class: PotionEffect
+        add_effects: slow_digging
+      - class: PotionEffect
+        add_effects: slow_falling
+      - class: PotionEffect
+        add_effects: speed
+      - class: PotionEffect
+        add_effects: unluck
+      - class: PotionEffect
+        add_effects: water_breathing
+      - class: PotionEffect
+        add_effects: weakness
+  effects:
+    cast:
+    - location: target
+      effectlib:
+        class: Sphere
+        particle: end_rod
+        radius: 5
+        duration: 5000
+    - location: target
+      effectlib:
+        class: Sphere
+        particle: crit_magic
+        radius: 4
+        duration: 5000
+    - sound: magic.zap
+  parameters:
+    target: self
+    duration: 20000
+    cooldown: 30000
+
+flare:
+  icon: flare
+  category: light
+  worth: 90
+  earns: 1
+  show_undoable: false
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Firework
+  effects:
+    cast:
+    - sound: entity_firework_rocket_launch
+    tick:
+    - location: target
+      particle: fireworks_spark
+      particle_count: 8
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    - location: target
+      particle: redstone
+  parameters:
+    target_type: LivingEntity
+    allow_max_range: true
+    range: 16
+    ticks_flown: 2
+    expected_lifespan: 1
+    cooldown: 2000
+    hit_on_miss: true
+  costs:
+    mana: 10
+
+flare|2:
+  upgrade_required_path: apprentice
+  effects:
+    hit:
+    - class: EffectRing
+      location: target
+      firework: star
+      radius: 8
+      target_offset: 0,4,0
+      size: 3
+  parameters:
+    cooldown: 1500  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+    range: 24  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+
+flare|3:
+  effects:
+    hit:
+    - class: EffectRing
+      location: target
+      firework: star
+      radius: 8
+      target_offset: 0,4,0
+      size: 3
+    - class: EffectRing
+      location: target
+      firework_power: 1
+      radius: 16
+      target_offset: 0,12,0
+      size: 4
+      color: false
+  parameters:
+    cooldown: 1000  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+    range: 32  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+
+stun:
+  icon: stun
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  category: combat
+  worth: 350
+  earns: 10
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: ConeOfEffect
+      actions:
+      - class: Damage
+      - class: PotionEffect
+      - class: Velocity
+        speed: 0.8
+        y_offset: 0.3
+      - class: Deactivate
+  effects:
+    cast:
+    - sound: magic.shimmer_quiet
+      sound_pitch: 0.1
+      sound_volume: 0.5
+      location: origin
+      color_override: color
+      effectlib:
+        class: Cone
+        iterations: 16
+        particle: redstone
+  parameters:
+    target_type: Damageable
+    radius: 4
+    damage: 1
+    target_breakables: 0
+    bypass_backfire: false
+    effect_slow: 1
+    duration: 3000
+    cooldown: 8000
+    cooldown_mage: 1000
+  costs:
+    mana: 15
+
+stun|2:
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  parameters:
+    damage: 1.5
+    duration: 3500
+    target_breakables: 1
+
+stun|3:
+  parameters:
+    damage: 2
+    duration: 4000
+    target_breakables: 2
+
+wave:
+  icon: wave
+  category: elemental
+  pvp_restricted: true
+  worth: 650
+  earns: 8
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  actions:
+    cast:
+    - class: Line
+      actions:
+      - class: PlayEffects
+        ignore_result: true
+        effects: iterate
+      - class: Volume
+        ignore_result: true
+        actions:
+        - class: Cover
+          actions:
+          - class: ModifyBlock
+      - class: AreaOfEffect
+        actions:
+        - class: Velocity
+          ignore_result: true
+        - class: Damage
+      - class: Delay
+  effects:
+    cast:
+    - sound: block_conduit_deactivate
+      sound_pitch: 0.3
+      sound_volume: 0.5
+    - sound: entity_generic_splash
+      sound_pitch: 0.15
+    - class: EffectSingle
+      sound: magic.shimmer_quiet
+      sound_volume: 1
+      sound_pitch: 0.2
+      location: origin
+      material: stone
+      effectlib:
+        class: EquationEffect
+        xEquation: t/8
+        yEquation: sin(t/8)
+        zEquation: '0'
+        x2Equation: '0'
+        y2Equation: '0'
+        z2Equation: t2/8 * 4 - 4
+        iterations: 8
+        particles: 10
+        particles2: 16
+        particle: block_crack
+        orient: true
+        orientPitch: false
+        period: 6
+    iterate:
+    - class: EffectSingle
+      location: target
+      sound: magic.shimmer_quiet
+      particle_count: 4
+      particle_offset_x: 1
+      particle_offset_y: 0.2
+      particle_offset_z: 1
+      particle: smoke_large
+  parameters:
+    target: block
+    target_type: Entity
+    start_at_target: true
+    x_size: 2
+    y_size: 0
+    z_size: 2
+    size: 8
+    range: 3
+    allow_max_range: true
+    orient: true
+    target_count: 16
+    item_speed: 0.2
+    living_entity_speed: 0.3
+    direction: 0,1,0
+    speed: 0.4
+    cooldown: 30000
+    delay: 250
+    brush: air
+    falling: true
+    undo: 15000
+    damage: 2
+    undo_speed: 0.5
+  costs:
+    mana: 150
+
+wave|2:
+  parameters:
+    x_size: 3
+    z_size: 3
+    item_speed: 0.4
+    living_entity_speed: 0.6
+    speed: 0.8
+
+push:
+  icon: push
+  category: elemental
+  worth: 220
+  earns: 3
+  upgrade_required_path: beginner
+  upgrade_required_casts: 40
+  actions:
+    cast:
+    - class: VelocityAction
+      y_offset: 1
+    - class: Repeat
+      actions:
+      - class: Delay
+      - class: PlayEffects
+        effects: iterate
+        ignore_result: true
+      - class: ConeOfEffectAction
+        actions:
+        - class: VelocityAction
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: block_fire_extinguish
+      sound_volume: 1
+      sound_pitch: -0.1
+      location: origin
+      effectlib:
+        class: Modified
+        iterations: 20
+        parameters:
+          radius: (t/i) * 4 + 0.2
+        effect:
+          class: DnaEffect
+          particles_base: 0
+          particles_helix: 7
+          particle_helix: spell
+          particle_base1: spell
+          particle_base2: spell
+    iterate:
+    - class: EffectSingle
+      location: origin
+      effectlib:
+        class: Modified
+        iterations: 10
+        parameters:
+          radius: (t/i) * 4 + 0.2
+        effect:
+          class: DnaEffect
+          particles_base: 0
+          particles_helix: 7
+          particle_helix: spell
+          particle_base1: spell
+          particle_base2: spell
+  parameters:
+    target_type: Entity
+    range: 8
+    fov: 1
+    target_count: 2
+    item_speed: 0.1
+    living_entity_speed: 0.5
+    repeat: 3
+    delay: 250
+    y_offset: 0.75
+    cooldown: 5000
+  costs:
+    mana: 20
+
+push|2:
+  upgrade_required_path: student
+  upgrade_required_casts: 40
+  parameters:
+    range: 10
+    target_count: 4
+    living_entity_speed: 0.6
+
+push|3:
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  parameters:
+    range: 12
+    target_count: 6
+    living_entity_speed: 0.7
+
+push|4:
+  actions:
+    alternate_down:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: AreaOfEffect
+        radius: 8
+        actions:
+        - class: Velocity
+          direction: 0,1,0
+          living_entity_speed: 0.2
+      - class: Delay
+        delay: 100
+      - class: Repeat
+        repeat: 2
+        actions:
+        - class: AreaOfEffect
+          radius: 12
+          actions:
+          - class: Velocity
+            push: 1
+            living_entity_speed: 1
+          - class: Delay
+            delay: 200
+  effects:
+    alternate_down:
+    - class: EffectSingle
+      sound: block_fire_extinguish
+      sound_volume: 1
+      sound_pitch: -0.1
+      location: origin
+      effectlib:
+        class: HelixEffect
+        iterations: 1
+        particle: spell
+        offset: 0, -1.6, 0
+  parameters:
+    living_entity_speed: 0.75
+    range: 16
+    target_count: 8
+    repeat: 4
+
+pull:
+  icon: pull
+  category: elemental
+  worth: 90
+  earns: 4
+  actions:
+    cast:
+    - class: Velocity
+    - class: FallProtection
+    alternate_down:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Repeat
+        repeat: 2
+        actions:
+        - class: AreaOfEffect
+          radius: 12
+          actions:
+          - class: Velocity
+            push: -1
+            living_entity_speed: 1
+          - class: FallProtection
+          - class: Delay
+            delay: 200
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: block_fire_extinguish
+    - class: EffectTrail
+      particle: spell
+      reverse: true
+      length: 16
+      particle_count: 20
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    - location: target
+      effectlib:
+        class: Sphere
+        particle: spell
+        particles: 2
+        period: 2
+        duration: 500
+        particle_count: 4
+        particle_offset_x: 0.5
+        particle_offset_y: 0.5
+        particle_offset_z: 0.5
+        radius: 1.5
+    alternate_down:
+    - class: EffectSingle
+      sound: block_fire_extinguish
+      effectlib:
+        class: HelixEffect
+        particle: spell
+        iterations: 2
+        offset: 0, -1.6, 0
+  parameters:
+    target_type: Entity
+    range: 48
+    item_speed: 2
+    living_entity_speed: 1
+    push: -1
+    duration: 10000
+    cooldown: 2000
+  costs:
+    mana: 10
+
+smite:
+  icon: smite
+  category: elemental
+  worth: 810
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  actions:
+    cast:
+    - class: Lightning
+      ignore_result: true
+    - class: AreaOfEffect
+      actions:
+      - class: Damage
+      - class: Ignite
+    - class: Sphere
+      ignore_result: true
+      actions:
+      - class: BreakBlock
+  effects:
+    cast:
+    - sound: block_conduit_activate
+      sound_pitch: 2
+      sound_volume: 2
+    - class: EffectSingle
+      sound: entity_firework_large_blast
+      location: target
+    - class: EffectTrail
+      particle: end_rod
+      particle_count: 30
+      particle_offset_x: 0.3
+      particle_offset_y: 0.3
+      particle_offset_z: 0.3
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: HelixEffect
+        particle: smoke_large
+        iterations: 1
+        particles: 10
+        particle_count: 4
+        particle_offset_x: 1
+        particle_offset_y: 0.1
+        particle_offset_z: 1
+        offset: 0,2,0
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: HelixEffect
+        particle: end_rod
+        iterations: 1
+        particles: 30
+        particle_count: 10
+        particle_offset_x: 1
+        particle_offset_y: 0.1
+        particle_offset_z: 1
+        offset: 0,2,0
+  parameters:
+    target_type: Damageable
+    allow_max_range: true
+    range: 32
+    radius: 1.5
+    damage_max_distance: 4
+    cooldown: 20000
+    effect_only: true
+    damage: 3
+    duration: 5000
+    speed: 0.9
+    falling: true
+    undo: 10000
+    oty: -2
+    undo_speed: 0.5
+    durability_max_distance: 4
+    destructible: solid
+    destructible_override: true
+    destructible_durability: 200
+    break_durability: 50
+  costs:
+    mana: 100
+
+smite|2:
+  upgrade_required_path: master
+  parameters:
+    destructible_durability: 500
+    break_durability: 100
+    radius: 2.5
+    damage: 4
+
+smite|3:
+  parameters:
+    break_durability: 1000
+    destructible_durability: 5000
+    radius: 3.5
+    damage: 5
+
+stream:
+  icon: stream
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 30
+  category: combat
+  pvp_restricted: true
+  worth: 50
+  earns: 4
+  actions:
+    cast:
+    - class: DisablePhysics
+      ignore_result: true
+    - class: CustomProjectile
+      tick:
+      - class: ModifyBlock
+        ignore_result: true
+      - class: Undo
+        ignore_result: true
+      - class: AreaOfEffect
+        actions:
+        - class: Damage
+        - class: Velocity
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: block_water_ambient
+      sound_volume: 2
+    - class: EffectSingle
+      sound: entity_generic_splash
+      sound_pitch: 0.2
+      sound_volume: 0.8
+    tick:
+    - sound: entity_generic_splash
+      sound_pitch: 1.8
+      sound_volume: 0.5
+    projectile:
+    - location: origin
+      effectlib:
+        class: Sphere
+        particle: water_splash
+        radius: 1
+        particles: 10
+  parameters:
+    target: none
+    target_type: Damageable
+    radius: 2
+    velocity: 10
+    track_range: 8
+    lifetime: 5000
+    range: 32
+    duration: 10000
+    brush: water
+    increment_data: true
+    player_damage: 0.25
+    entity_damage: 0.5
+    cooldown: 5000
+    destructible: destructible_replace
+    undo: 50
+    undo_to: 3
+    tick_size: 5
+    ignore_hit_entities: false
+  costs:
+    mana: 30
+
+stream|2:
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 30
+  parameters:
+    player_damage: 0.5
+    entity_damage: 0.75
+    undo_to: 4
+
+stream|3:
+  parameters:
+    player_damage: 0.75
+    entity_damage: 1
+    undo_to: 5
+
+growth:
+  icon: growth
+  category: engineering
+  worth: 980
+  earns: 8
+  upgrade_required_casts: 50
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Disc
+        actions:
+        - class: Cover
+          actions:
+          - class: Bonemeal
+  effects:
+    cast:
+    - sound: magic.shimmer
+      location: source
+    - sound: entity_evoker_prepare_attack
+      sound_pitch: 0.1
+      sound_volume: 0.7
+    hit:
+    - sound: entity_generic_splash
+      sound_volume: 0.8
+      sound_pitch: 0.3
+      location: target
+      effectlib:
+        class: AtomEffect
+        particle_nucleus: water_drop
+        particle_orbital: drip_water
+        colorNucleus: 0000FF
+        iterations: 16
+        radius: $radius
+    tick:
+    - location: target
+      particle: water_drop
+      particle_count: 20
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+  parameters:
+    target: block
+    velocity: 80
+    allow_max_range: false
+    range: 32
+    radius: 2
+    vertical_range: 4
+    cooldown: 3000
+    transparent: all_air
+    destructible: plants
+    bypass_undo: true
+    ignore_region_overrides: true
+  costs:
+    mana: 100
+
+growth|2:
+  parameters:
+    radius: 3
+
+growth|3:
+  parameters:
+    radius: 4
+
+growth|4:
+  parameters:
+    radius: 5
+
+grow:
+  icon: grow
+  category: combat
+  worth: 30
+  earns: 8
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: GrowEntity
+  effects:
+    cast:
+    - sound: entity_enderman_teleport
+      sound_pitch: 1.9
+      sound_volume: 0.5
+      location: origin
+      effectlib:
+        class: ConeEffect
+        iterations: 11
+        particle: spell_instant
+        lengthGrow: 0.32
+        particle_count: 10
+        particle_offset_x: 0.2
+        particle_offset_y: 0.2
+        particle_offset_z: 0.2
+    hit:
+    - sound: block_beacon_activate
+      sound_pitch: 0.3
+      sound_volume: 0.9
+      location: both
+    - class: EffectSingle
+      location: target
+      sound: entity_enderman_teleport
+      sound_pitch: 1.4
+      sound_volume: 0.8
+      effectlib:
+        class: Modified
+        iterations: 30
+        parameters:
+          radius: max(1, (t / i) * 5 - 2)
+        effect:
+          class: Sphere
+          particle: redstone
+          color: C0F0C0
+  parameters:
+    velocity: 400
+    target_type: LivingEntity
+    target: other_entity
+    allow_max_range: false
+    range: 16
+    target_breakables: 1
+    cooldown: 30000
+  costs:
+    mana: 75
+
+pollinate:
+  icon: pollinate
+  category: engineering
+  tags: noduel
+  worth: 1200
+  earns: 3
+  actions:
+    cast:
+    - class: Parallel
+      actions:
+      - class: Brush
+        actions:
+        - class: ThrowItem
+          hit_effects: splash
+          actions:
+          - class: Disc
+            actions:
+            - class: Cover
+              actions:
+              - class: Flower
+      - class: Multiply
+        multiply: 8
+        ignore_result: true
+        actions:
+        - class: Brush
+          actions:
+          - class: Spread
+            actions:
+            - class: ThrowItem
+  effects:
+    cast:
+    - sound: entity_witch_throw
+      sound_pitch: 1.4
+      sound_volume: 2
+    - sound: magic.shimmer
+    splash:
+    - class: EffectSingle
+      sound: entity_generic_splash
+      sound_volume: 0.9
+      sound_pitch: 1.2
+      location: source
+      effectlib:
+        class: AtomEffect
+        particle_nucleus: redstone
+        particle_orbital: drip_water
+        colorNucleus: 0000FF
+        iterations: 16
+        radius: 4
+    projectile:
+    - location: origin
+      effectlib:
+        class: Sphere
+        particle: item_crack
+        particles: 10
+        iterations: 60
+  parameters:
+    target: none
+    radius: 3
+    center_probability: 0.9
+    outer_probability: 0.5
+    vertical_range: 8
+    cooldown: 20000
+    age_items: 5940
+    item_speed_min: 0.75
+    item_speed_max: 1.1
+    yaw_max: 30
+    pitch_max: 4
+    uses_brush: false
+    ignore_region_overrides: true
+    brushes:
+    - dandelion
+    - poppy
+    - oxeye_daisy
+    - blue_orchid
+    - dandelion
+    - orange_tulip
+    - pink_tulip
+    - poppy
+    - red_tulip
+    - white_tulip
+    - allium
+    - azure_bluet
+    - cornflower
+    - lily_of_the_valley
+    - wither_rose
+    - sunflower
+    - peony
+    - rose_bush
+    - lilac
+    flowers:
+    - dandelion
+    - poppy
+    - oxeye_daisy
+    - blue_orchid
+    - dandelion
+    - orange_tulip
+    - pink_tulip
+    - poppy
+    - red_tulip
+    - white_tulip
+    - allium
+    - azure_bluet
+    - cornflower
+    - lily_of_the_valley
+    - wither_rose
+    tall_flowers:
+    - sunflower
+    - peony
+    - rose_bush
+    - lilac
+  costs:
+    mana: 100
+
+hat:
+  icon: hat
+  category: utility
+  worth: 130
+  earns: 1
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 40
+  actions:
+    cast:
+    - class: Wear
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 1.8
+      sound_volume: 0.2
+    - sound: item_armor_equip_leather
+      sound_volume: 1.2
+      sound_pitch: 1.1
+    - class: EffectTrail
+      particle: block_crack
+      particle_count: 20
+      particle_offset_x: 0.05
+      particle_offset_y: 0.05
+      particle_offset_z: 0.05
+      reverse: true
+    - location: origin
+      source_location: eyes
+      effectlib:
+        class: Sphere
+        duration: 1000
+        particle: block_crack
+        particles: 10
+        delay: 10
+  parameters:
+    target_self: true
+    target: block
+    allow_max_range: false
+    range: 32
+    cooldown: 10000
+    undo: 30000
+    transparent: transparent_to_construction
+  costs:
+    mana: 30
+
+hat|2:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+  parameters:
+    undo: 60000
+
+hat|3:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  parameters:
+    undo: 120000
+
+gather:
+  icon: gather
+  category: master
+  tags: noduel,nojail
+  worth: 30
+  show_undoable: false
+  quick_cast: true
+  actions:
+    cast:
+    - class: PlayerSelect
+      title_key: send_request_title
+      actions:
+      - class: CheckRequirements
+        timeout: 0
+        use_target: true
+        requirements:
+        - client_platform: java
+        actions:
+        - class: CheckChatClick
+          message_key: request_tp
+          actions:
+          - class: Teleport
+          - class: Message
+            message_target: true
+            message_key: cast_target
+          - class: Message
+            message_target: false
+            message_key: cast_friend
+        fail:
+        - class: CheckBedrockForm
+          message_key: request_form
+          title_key: request_title
+          actions:
+          - class: Teleport
+          - class: Message
+            message_target: true
+            message_key: cast_target
+          - class: Message
+            message_target: false
+            message_key: cast_friend
+  effects:
+    no_action: []
+    no_target: []
+    cast:
+    - sound: block_beacon_activate
+      sound_pitch: 0.75
+      sound_volume: 0.8
+    - sound: entity_enderman_teleport
+      sound_pitch: 0.25
+      sound_volume: 0.5
+    - class: EffectSingle
+      sound: magic.teleport
+      sound_volume: 0.8
+      sound_pitch: 0.3
+      source_location: eyes
+      color_override: color
+      effectlib:
+        class: WarpEffect
+        duration: 1000
+        period: 1
+        particle: redstone
+        particle_offset_x: 0.9
+        particle_offset_y: 0.1
+        particle_offset_z: 0.9
+        radius: 1
+        offset: 0,-1,0
+    menu:
+    - sound: entity_enderman_teleport
+      sound_pitch: 1.5
+      sound_volume: 0.75
+    teleporting:
+    - sound: entity_enderman_teleport
+      sound_pitch: 0.75
+      sound_volume: 0.75
+      location: both
+    - class: EffectSingle
+      location: both
+      source_location: eyes
+      color_override: color
+      effectlib:
+        class: WarpEffect
+        particle: redstone
+        particle_offset_x: 0.9
+        particle_offset_y: 0.1
+        particle_offset_z: 0.9
+        offset: 0,-1,0
+        period: 2
+        update_locations: false
+    - class: EffectSingle
+      sound: magic.teleport
+      sound_pitch: 1.2
+      location: both
+      source_location: eyes
+      effectlib:
+        class: WarpEffect
+        period: 1
+        particle: portal
+        particle_count: 10
+        particle_offset_x: 0.9
+        particle_offset_y: 0.1
+        particle_offset_z: 0.9
+        offset: 0,-1,0
+        update_locations: false
+    player_selected:
+    - class: EffectSingle
+      sound: entity_enderman_ambient
+    - class: EffectTrail
+      particle: portal
+      particle_count: 4
+    - class: EffectSingle
+      location: both
+      effectlib:
+        class: WarpEffect
+        particle: portal
+  parameters:
+    target: none
+    target_self: false
+    target_invisible: false
+    cooldown: 15 seconds
+    timeout: 15 seconds
+    bypass_friendly_fire: true
+    bypass_pvp: true
+    use_target_location: true
+    auto_close: true
+    same_block: true
+  costs:
+    mana: 50
+
+familiar:
+  icon: familiar
+  category: elemental
+  worth: 30
+  actions:
+    cast:
+    - class: SpawnEntity
+  effects:
+    cast:
+    - sound: block_beacon_power_select
+      sound_pitch: 0.3
+      sound_volume: 0.3
+    - class: EffectSingle
+      sound: entity_villager_yes
+      sound_pitch: 0.8
+      sound_volume: 0.5
+      effectlib:
+        class: Modified
+        iterations: 40
+        parameters:
+          radius: (t / i) * 3 + 0.1
+        effect:
+          class: DnaEffect
+          grow: 0.1
+          particles_helix: 5
+          length: 50
+          particle_helix: end_rod
+          particle_base1: drip_water
+          particle_base2: drip_water
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: Modified
+        iterations: 32
+        parameters:
+          radius: (t / i) * 4 + 1
+        effect:
+          class: AtomEffect
+          particle_nucleus: end_rod
+          particle_orbital: drip_water
+    undo_entity:
+    - location: target
+      sound: block_fire_extinguish
+      sound_volume: 1.7
+      sound_pitch: 0.2
+      effectlib:
+        class: Smoke
+        duration: 1000
+        particle_count: 20
+        particle_offset_x: 0.5
+        particle_offset_y: 0.5
+        particle_offset_z: 0.5
+  parameters:
+    entity_types:
+      chicken: 30
+      cow: 100
+      pig: 100
+      mushroom_cow: 15
+      bat: 15
+      horse: 5
+      snowman: 5
+      iron_golem: 2
+    entity_parameters:
+      brain:
+        goals:
+        - type: follow_owner
+          priority: 2
+        - type: look_at_player
+          priority: 3
+    target_type: LivingEntity
+    allow_max_range: false
+    cooldown: 30000
+    range: 32
+    undo: 20000
+    loot: false
+  costs:
+    mana: 20
+
+tame:
+  icon: tame
+  category: utility
+  worth: 500
+  earns: 2
+  show_undoable: false
+  actions:
+    cast:
+    - class: Tame
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: entity_cat_ambient
+      sound_pitch: 0.2
+      sound_volume: 0.8
+      effectlib:
+        class: ConeEffect
+        iterations: 20
+        particle: heart
+    - class: EffectSingle
+      sound: entity_cat_ambient
+      sound_pitch: 0.2
+      sound_volume: 0.8
+      location: target
+      effectlib:
+        class: SphereEffect
+        iterations: 20
+        particle: heart
+    no_target:
+    - class: EffectSingle
+      sound: block_note_block_bass
+      sound_pitch: 1.5
+      sound_volume: 0.75
+      effectlib:
+        class: ConeEffect
+        iterations: 20
+        particle: slime
+  parameters:
+    target_type: LivingEntity
+    allow_max_range: false
+    range: 8
+    cooldown: 30000
+  costs:
+    mana: 100
+
+wolf:
+  icon: wolf
+  category: elemental
+  class: WolfSpell
+  pvp_restricted: true
+  worth: 50
+  earns: 2
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: entity_wolf_howl
+      effectlib:
+        class: DnaEffect
+        particle_helix: drip_lava
+        iterations: 24
+        particle_base1: drip_water
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: AtomEffect
+        iterations: 32
+        particle_nucleus: drip_water
+  parameters:
+    target_type: LivingEntity
+    max_wolves: 5
+    allow_max_range: false
+    cooldown: 5000
+    range: 32
+  costs:
+    mana: 50
+
+cat:
+  icon: cat
+  category: elemental
+  worth: 50
+  earns: 2
+  actions:
+    cast:
+    - class: SpawnEntity
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: entity_cat_purreow
+      effectlib:
+        class: DnaEffect
+        particle_helix: drip_lava
+        iterations: 24
+        particle_base1: drip_water
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: AtomEffect
+        iterations: 32
+        particle_nucleus: drip_water
+  parameters:
+    target_type: LivingEntity
+    allow_max_range: false
+    range: 32
+    cooldown: 60000
+    type: cat
+    tamed: true
+  costs:
+    mana: 30
+
+platform:
+  icon: platform
+  alias: disc
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  category: utility
+  worth: 30
+  earns: 2
+  actions:
+    cast:
+    - class: Disc
+      actions:
+      - class: ModifyBlock
+      - class: PlayEffects
+        effects: build
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.shield
+    - class: EffectTrail
+      sound: block_stone_place
+      sound_pitch: 0.2
+      sound_volume: 1.7
+      particle: block_crack
+      particle_count: 20
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    build:
+    - location: target
+      particle: block_crack
+      particle_count: 10
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+  parameters:
+    allow_max_range: true
+    range: 8
+    radius: 1
+    transparent: transparent_to_construction
+    destructible: destructible_replace
+    undo: 20000
+    breakable: 2
+    brush: white_stained_glass
+    brushcolor: true
+    cooldown: 5000
+  costs:
+    mana: 60
+
+platform|2:
+  alias: ''
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  parameters:
+    radius: 1.5
+
+platform|3:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  parameters:
+    radius: 2
+
+platform|4:
+  parameters:
+    radius: 2.5  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+    brush: ''
+
+walls:
+  icon: walls
+  category: combat
+  worth: 60
+  earns: 5
+  actions:
+    cast:
+    - class: Cylinder
+      actions:
+      - class: ModifyBlock
+      - class: PlayEffects
+        effects: column
+      - class: Skip
+        skip: 4
+        actions:
+        - class: Delay
+          delay: 10
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.shield
+    - sound: block_stone_place
+      sound_pitch: 1.2
+      sound_volume: 1.7
+    - sound: entity_ender_dragon_hurt
+      sound_pitch: 1.9
+      sound_volume: 0.8
+    - class: EffectTrail
+      particle: block_crack
+      particle_count: 20
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    column:
+    - location: target
+      particle: block_crack
+      particle_count: 20
+      particle_offset_x: 0.2
+      particle_offset_y: 5
+      particle_offset_z: 0.2
+      offset: 0,-2,0
+      sound: block_stone_place
+      sound_pitch: 0.2
+      sound_volume: 1.2
+  parameters:
+    target_type: LivingEntity
+    allow_max_range: true
+    range: 32
+    radius: 5
+    thickness: 1
+    transparent: transparent_to_construction
+    undo: 6000
+    cooldown: 10000
+    brush: white_terracotta
+    brushcolor: true
+    breakable: 3
+    destructible: destructible_replace
+    volume_type: xzy
+    center_y: false
+    oty: -2
+  costs:
+    mana: 75
+
+sponge:
+  icon: sponge
+  example_thumbnail: https://thumbs.gfycat.com/EcstaticVictoriousBunny-size_restricted.gif
+  example_link: https://thumbs.gfycat.com/EcstaticVictoriousBunny
+  category: utility
+  worth: 20
+  earns: 4
+  actions:
+    cast:
+    - class: Sphere
+      actions:
+      - class: CheckBlock
+        actions:
+        - class: ModifyBlock
+        - class: PlayEffects
+          effects: sponge
+          ignore_result: true
+        - class: Delay
+          delay: 10
+  effects:
+    sponge:
+    - location: target
+      effectlib:
+        class: Cube
+        edge_length: 0.5
+        particle_count: 2
+        particles: 4
+        particle_offset_x: 0.5
+        particle_offset_y: 0.5
+        particle_offset_z: 0.5
+        particle: drip_water
+        enable_rotation: false
+        iterations: 4
+        period: 3
+    cast:
+    - sound: magic.shimmer
+    - sound: entity_generic_drink
+      sound_pitch: 0.4
+    - class: EffectTrail
+      reverse: true
+      particle: block_crack
+      material: water
+      particle_count: 8
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    - location: source
+      material: water
+      effectlib:
+        class: Line
+        particle: block_crack
+        duration: 1000
+        particles: 4
+        period: 2
+        particle_count: 3
+        particle_offset_x: 0.01
+        particle_offset_y: 0.01
+        particle_offset_z: 0.01
+        delay: 10
+  parameters:
+    allow_max_range: false
+    range: 32
+    check_destructible: true
+    destructible: all_water
+    brush: erase
+    radius: 3
+    transparent: transparent_to_construction
+    undo: 10000
+    cooldown: 8000
+    select_self: false
+  costs:
+    mana: 65
+
+tent:
+  icon: tent
+  category: master
+  class: ConstructSpell
+  worth: 150
+  earns: 10
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: block_anvil_use
+    - class: EffectTrail
+      particle: block_crack
+  parameters:
+    target_type: LivingEntity
+    target: any
+    allow_max_range: false
+    range: 16
+    radius: 8
+    type: sphere
+    cooldown: 120000
+    undo: 60000
+    brush: schematic|tent
+    transparent: transparent_to_construction
+    destructible: destructible_replace,destructible
+  costs:
+    mana: 150
+
+tiny_house:
+  name: Tiny House
+  description: Build a tiny house, just for fun
+  icon: oak_log
+  category: utility
+  worth: 40
+  earns: 5
+  actions:
+    cast:
+    - class: Volume
+      actions:
+      - class: Skip
+        actions:
+        - class: Delay
+      - class: ModifyBlock
+      - class: CheckBlock
+        allowed: '!all_air'
+        actions:
+        - class: PlayEffects
+          effects: build
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.shield
+    - sound: entity_ender_dragon_hurt
+      sound_pitch: 1.6
+      sound_volume: 0.8
+    - sound: block_beacon_activate
+      sound_pitch: 1.8
+      sound_volume: 0.8
+    - class: EffectTrail
+      particle: drip_water
+    build:
+    - sound: block_slime_block_place
+      sound_pitch: 0.1
+      sound_volume: 0.8
+      location: target
+      particle: block_crack
+      particle_count: 4
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    - location: target
+      particle: drip_lava
+      particle_count: 5
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+      sound: block_stone_place
+      sound_pitch: 0.2
+      sound_volume: 1.2
+  parameters:
+    target: block
+    allow_max_range: true
+    range: 30
+    use_brush_size: true
+    undo: 10000
+    cooldown: 20000
+    brush: schematic|small_house
+    destructible: destructible_replace
+    skip: 16
+    delay: 50
+    volume_type: yxz
+    center_z: false
+    reorient: false
+    display: true
+    display_scale: 0.1
+  costs:
+    mana: 100
+
+giant_house:
+  name: Giant House
+  description: Build a giant house, just for fun
+  icon: oak_log
+  category: utility
+  worth: 40
+  earns: 5
+  actions:
+    cast:
+    - class: Volume
+      actions:
+      - class: Skip
+        actions:
+        - class: Delay
+      - class: ModifyBlock
+      - class: CheckBlock
+        allowed: '!all_air'
+        actions:
+        - class: PlayEffects
+          effects: build
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.shield
+    - sound: entity_ender_dragon_hurt
+      sound_pitch: 1.6
+      sound_volume: 0.8
+    - sound: block_beacon_activate
+      sound_pitch: 1.8
+      sound_volume: 0.8
+    - class: EffectTrail
+      particle: drip_water
+    build:
+    - sound: block_slime_block_place
+      sound_pitch: 0.1
+      sound_volume: 0.8
+      location: target
+      particle: block_crack
+      particle_count: 4
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    - location: target
+      particle: drip_lava
+      particle_count: 5
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+      sound: block_stone_place
+      sound_pitch: 0.2
+      sound_volume: 1.2
+  parameters:
+    target: block
+    allow_max_range: true
+    range: 30
+    use_brush_size: true
+    undo: 10000
+    cooldown: 20000
+    brush: schematic|small_house
+    destructible: destructible_replace
+    skip: 16
+    delay: 50
+    volume_type: yxz
+    center_z: false
+    reorient: false
+    display: true
+    display_scale: 10
+  costs:
+    mana: 100
+
+harden:
+  icon: harden
+  category: utility
+  worth: 30
+  earns: 4
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  actions:
+    cast:
+    - class: Recurse
+      actions:
+      - class: ModifyBlock
+  effects:
+    cast:
+    - sound: block_beacon_deactivate
+      sound_pitch: 1.9
+      sound_volume: 0.2
+    - sound: entity_evoker_cast_spell
+      sound_pitch: 1.75
+      sound_volume: 0.8
+    - sound: block_smithing_table_use
+      sound_pitch: 1.7
+      sound_volume: 0.3
+    - sound: magic.shimmer
+    - class: EffectTrail
+      particle: block_crack
+      particle_count: 20
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    - location: target
+      effectlib:
+        class: Helix
+        particle: block_crack
+        particle_count: 8
+        particle_offset_x: 0.2
+        particle_offset_y: 0.5
+        particle_offset_z: 0.2
+        iterations: 1
+        radius: $size
+        strands: 4
+        particles: 20
+  parameters:
+    allow_max_range: false
+    range: 16
+    size: 2
+    destructible_override: true
+    destructible: destructible,hardenable
+    brush: stone
+    transparent: transparent_to_construction
+    undo: 4000
+    cooldown: 1500
+    bypass_backfire: true
+    select_self: false
+    replace: true
+  costs:
+    mana: 30
+
+harden|2:
+  parameters:
+    undo: 5000
+    brush: stone_bricks
+
+harden|3:
+  parameters:
+    undo: 6000
+    brush: smooth_stone
+
+harden|4:
+  parameters:
+    size: 3
+    undo: 7000
+    brush: polished_blackstone
+
+harden|5:
+  parameters:
+    undo: 8000
+    brush: obsidian
+
+rubberize:
+  icon: rubberize
+  category: utility
+  worth: 30
+  earns: 2
+  actions:
+    cast:
+    - class: Recurse
+      actions:
+      - class: ModifyBlock
+  effects:
+    cast:
+    - sound: block_slime_block_step
+      sound_pitch: 0.3
+    - sound: magic.shimmer
+    - class: EffectTrail
+      particle: block_crack
+      particle_count: 20
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    - location: target
+      effectlib:
+        class: Helix
+        particle: block_crack
+        particle_count: 8
+        particle_offset_x: 0.2
+        particle_offset_y: 0.5
+        particle_offset_z: 0.2
+        iterations: 1
+        radius: $size
+  parameters:
+    allow_max_range: false
+    range: 16
+    size: 3
+    brush: slime_block
+    transparent: transparent_to_construction
+    undo: 4000
+    cooldown: 2000
+    bypass_backfire: true
+    select_self: false
+    replace: true
+  costs:
+    mana: 50
+
+admission:
+  icon: admission
+  category: utility
+  worth: 100
+  earns: 10
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 20
+  actions:
+    cast:
+    - class: Door
+  effects:
+    cast:
+    - sound: block_beacon_activate
+      sound_volume: 0.8
+      sound_pitch: 1.6
+    - sound: block_wooden_door_open
+      sound_volume: 1.5
+      sound_pitch: 0.4
+      location: target
+    - sound: magic.shimmer
+    - class: EffectTrail
+      particle: redstone
+      color: false
+      particle_data: 2
+      particle_count: 15
+      particle_offset_x: 0.15
+      particle_offset_y: 0.15
+      particle_offset_z: 0.15
+    - class: EffectTrail
+      particle: redstone
+      particle_count: 20
+      particle_offset_x: 0.25
+      particle_offset_y: 0.25
+      particle_offset_z: 0.25
+    - class: EffectSingle
+      location: target
+      sound: magic.bonk
+      sound_volume: 0.5
+    - class: EffectSingle
+      location: target
+      use_block_location: true
+      color_override: color
+      effectlib:
+        class: Modified
+        iterations: 30
+        parameters:
+          padding: (t / i) * 5
+        effect:
+          class: CuboidEffect
+          particle: redstone
+          offset: 0.5,0,0.5
+          x_length: 1
+          y_length: 2
+          z_length: 1
+    no_target:
+    - sound: block_beacon_activate
+      sound_volume: 0.8
+      sound_pitch: 1.6
+    - sound: magic.shimmer
+    - class: EffectTrail
+      particle: redstone
+      color: false
+      particle_data: 2
+      particle_count: 10
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+  parameters:
+    range: 16
+    radius: 3
+    allow_max_range: true
+    destructible: unlocked_doors
+    transparent: transparent_to_construction
+    undo: 8000
+    cooldown: 10000
+  costs:
+    mana: 50
+
+admission|2:
+  parameters:
+    range: 32
+    destructible: doors
+
+anvil:
+  icon: anvil
+  category: utility
+  actions:
+    cast:
+    - class: ChangeContext
+      target_offset: 0,8,0
+      actions:
+      - class: SpawnEntity
+        set_target: true
+        set_source: true
+        actions:
+        - class: PlayEffects
+          effects: land
+        - class: AreaOfEffect
+          actions:
+          - class: Damage
+  worth: 110
+  effects:
+    cast:
+    - sound: entity_illusioner_cast_spell
+      sound_pitch: 1.9
+      sound_volume: 0.3
+    - sound: block.anvil.use
+      sound_pitch: 1.5
+      sound_volume: 0.3
+    - class: EffectSingle
+      particle: block_crack
+      location: target
+      particle_count: 30
+      particle_offset_x: 0.1
+      particle_offset_y: 0.1
+      particle_offset_z: 0.1
+      material: anvil
+      sound: item.trident.throw
+      sound_pitch: 0.4
+      sound_volume: 2
+    land:
+    - sound: block_stone_step
+      sound_pitch: 0.7
+    - sound: block_anvil_land
+      sound_pitch: 0.6
+      sound_volume: 2
+    - class: EffectRing
+      particle: block_crack
+      period: 4
+      particle_count: 30
+      radius: 2
+      particle_offset_x: 0.9
+      particle_offset_z: 0.9
+      particle_offset_y: 0.1
+      material: anvil
+  parameters:
+    target: other
+    target_type: LivingEntity
+    allow_max_range: true
+    range: 16
+    undo: 30000
+    cooldown: 20000
+    type: falling_block
+    material: anvil
+    radius: 2
+    damage: 5
+  costs:
+    mana: 100
+
+arrowrain:
+  icon: arrowrain
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  example_thumbnail: https://thumbs.gfycat.com/SpeedyPlainIaerismetalmark-size_restricted.gif
+  example_link: https://thumbs.gfycat.com/SpeedyPlainIaerismetalmark
+  category: combat
+  worth: 110
+  earns: 5
+  actions:
+    cast:
+    - class: Projectile
+  effects:
+    cast:
+    - sound: entity_generic_splash
+      sound_pitch: 0.8
+      sound_volume: 0.8
+    - class: EffectSingle
+      sound: entity_arrow_shoot
+      sound_pitch: 0.8
+    - class: EffectSingle
+      sound: entity_arrow_shoot
+      sound_pitch: 0.5
+    - class: EffectSingle
+      sound: entity_arrow_shoot
+      sound_pitch: 1.2
+    hit:
+    - location: target
+      sound: entity_generic_splash
+      sound_pitch: 1.8
+      sound_volume: 0.8
+      effectlib:
+        class: Modified
+        period: 2
+        iterations: 10
+        parameters:
+          radius: (t / i) * 3
+          particle_offset_y: (t / i) * 2
+        effect:
+          class: Shield
+          particles: 4
+          particle_count: 5
+          particle_offset_x: 0.5
+          particle_offset_z: 0.5
+          particle: water_drop
+    projectile:
+    - location: origin
+      effectlib:
+        class: Sphere
+        iterations: 10
+        period: 3
+        particles: 4
+        particle_count: 5
+        particle_offset_x: 0.2
+        particle_offset_y: 0.2
+        particle_offset_z: 0.2
+        particle: water_drop
+  parameters:
+    target: none
+    projectile: TippedArrow
+    count: 4
+    fire: false
+    speed: 1
+    spread: 12
+    py: ~4
+    pdy: ~-0.2
+    undo: 15000
+    cooldown: 10000
+    arrow_damage: 0.8
+  costs:
+    mana: 30
+
+arrowrain|2:
+  parameters:
+    count: 8
+    fire: true
+
+boomerang:
+  icon: golden_sword
+  worth: 500
+  actions:
+    cast:
+    - class: ArmorStandProjectile
+      velocity_transform:
+        x:
+          class: dSin
+          a: 10
+          b: 0.31416
+          c: 0
+        y: 0
+        z:
+          class: dSin
+          a: 5
+          b: 0.62832
+          c: 0
+      actions:
+      - class: Damage
+  effects:
+    projectile:
+    - class: EffectSingle
+      effectlib:
+        class: SphereEffect
+        particle: flame
+        particles: 4
+        radius: 0.2
+        duration: 30000
+    tick:
+    - particle: redstone
+      color: FF0000
+      location: target
+  parameters:
+    target_type: LivingEntity
+    range: 100
+    armor_stand_invisible: true
+    lifetime: 10000
+    hitbox_size: 0.2
+    damage: 1
+    entity_damage: 2
+    cooldown: 0
+    right_arm_item: diamond_sword
+    location_offset: 0,-1,0
+    teleport: true
+    orient: false
+    apply_velocity: false
+    armor_stand_gravity: false
+    right_arm_transform:
+      x: 6.28*sin(0.2*t)
+      y: 0
+      z: 0
+  costs:
+    mana: 30
+
+cloak:
+  icon: cloak
+  category: master
+  tags: noduel
+  worth: 500
+  earns: 5
+  toggle: undo
+  disable_mana_regeneration: true
+  quick_cast: true
+  boss_bar:
+    bar_title: '&7$spell'
+    bar_color: white
+    bar_style: segmented_20
+  actions:
+    cast:
+    - class: Vanish
+    - class: PotionEffect
+    - class: AreaOfEffect
+      actions:
+      - class: Aggro
+        clear_target: true
+    - class: Modifier
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.vanish
+    - sound: entity.enderman.teleport
+      sound_pitch: 0.3
+      effectlib:
+        class: Modified
+        duration: 500
+        parameters:
+          radius: (t/i) * 1.5
+        effect:
+          class: Shield
+          particles: 15
+          particle_count: 10
+          particle_offset_x: 0.75
+          particle_offset_y: 0.75
+          particle_offset_z: 0.75
+          particle: smoke_large
+    deactivate:
+    - class: EffectSingle
+      sound: magic.vanish
+    - sound: entity.enderman.teleport
+      sound_pitch: 0.3
+      effectlib:
+        class: Modified
+        duration: 500
+        parameters:
+          radius: 1.5 - ((t/i) * 1.5)
+        effect:
+          class: Shield
+          particles: 15
+          particle_count: 10
+          particle_offset_x: 0.5
+          particle_offset_y: 0.5
+          particle_offset_z: 0.5
+          particle: smoke_large
+  parameters:
+    target: self
+    duration: 3600000
+    cooldown: 30000
+    effect_invisibility: 5
+    radius: 32
+    add_modifiers: hidden
+    cancel_on_cast_other: true
+    cancel_on_damage: 0.5
+    total_duration: 0
+  costs:
+    mana: 10
+  active_costs:
+    mana: 5
+
+counterspell:
+  icon: counterspell
+  category: combat
+  worth: 660
+  earns: 20
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  actions:
+    cast:
+    - class: Undo
+  effects:
+    cast:
+    - sound: block_conduit_deactivate
+      sound_pitch: 1.3
+      sound_volume: 1.5
+      location: both
+    - sound: magic.shimmer
+      sound_volume: 1
+      location: both
+    - location: source
+      use_target_location: false
+      effectlib:
+        class: Equation
+        iterations: 30
+        xEquation: t
+        yEquation: sin(t)
+        zEquation: cos(t)
+        particle: enchantment_table
+        particle_count: 20
+        speed: 1
+        particle_offset_x: 0.2
+        particle_offset_y: 0.2
+        particle_offset_z: 0.2
+        updateDirections: false
+    - location: source
+      use_target_location: false
+      effectlib:
+        class: Equation
+        iterations: 10
+        xEquation: t/10
+        yEquation: sin(t) * (t/50)
+        zEquation: cos(t) * (t/50) + 1
+        particle: crit
+        particle_count: 10
+        particle_offset_x: 0.1
+        particle_offset_y: 0.1
+        particle_offset_z: 0.1
+        updateDirections: false
+        particles: 20
+    - location: target
+      firework: star
+    no_target:
+    - sound: block_conduit_attack_target
+      sound_pitch: 1.3
+      sound_volume: 1.5
+      location: both
+    - sound: magic.shimmer
+      sound_volume: 1
+      location: source
+    - location: source
+      use_target_location: false
+      effectlib:
+        class: Equation
+        iterations: 10
+        xEquation: t/10
+        yEquation: sin(t) * (t/50)
+        zEquation: cos(t) * (t/50) + 1
+        particle: crit
+        particle_count: 10
+        particle_offset_x: 0.1
+        particle_offset_y: 0.1
+        particle_offset_z: 0.1
+        updateDirections: false
+        particles: 20
+  parameters:
+    hitbox: false
+    transparent: all_air
+    allow_max_range: true
+    target: other
+    target_type: LivingEntity
+    target_blocks: true
+    target_other_blocks: true
+    target_timeout: 4000
+    target_block_timeout: 10000
+    target_breakables: 3
+    cancel: false
+    range: 50
+    fov: 1
+    bypass_protection: true
+    bypass_confusion: true
+    bypass_backfire: true
+    cooldown: 5000
+    fizzle_chance: 0.3
+    loud: true
+  costs:
+    mana: 70
+
+counterspell|2:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  parameters:
+    fizzle_chance: 0
+
+critical:
+  icon: critical
+  inherit: base_passive
+  worth: 550
+  upgrade_required_casts: 50
+  triggers:
+  - trigger: damage_dealt
+    damage_type: magic
+  actions:
+    cast:
+    - class: Probability
+      actions:
+      - class: Delay
+      - class: Message
+        equation: 1 + damage_dealt * 0.5
+        message_type: action_bar
+        message: '&cCritical Hit! &f(&7+&4@equation&f)'
+      - class: Damage
+      - class: PlayEffects
+        effects: hit
+  effects:
+    hit:
+    - class: EffectSingle
+      location: target
+      particle: fireworks_spark
+      particle_count: 8
+      particle_offset_y: 0.5
+      particle_offset_x: 0.5
+      particle_offset_z: 0.5
+      particle_data: 0.1
+      sound: magic.zap
+      sound_volume: 0.1
+    - sound: block_conduit_activate
+      sound_pitch: 2
+      sound_volume: 0.2
+    - sound: entity_player_attack_crit
+      sound_pitch: 1.8
+      location: target
+      particle: crit_magic
+      particle_count: 32
+      particle_offset_y: 0.25
+      particle_offset_x: 0.25
+      particle_offset_z: 0.25
+      particle_data: 0.5
+    - location: target
+      material: redstone_block
+      requires_entity_target: true
+      effectlib:
+        class: Equation
+        iterations: 30
+        particles: 15
+        particle: block_crack
+        xEquation: '1.2'
+        yEquation: -t/75 + 0.2
+        zEquation: -t/75 + 0.2
+        updateLocations: false
+        updateDirections: false
+  parameters:
+    cooldown: 500
+    delay: 100
+    target: damage_target
+    probability: 0.2
+    damage: 1 + damage_dealt * 0.5
+
+critical|2:
+  upgrade_required_casts: 100
+  upgrade_required_path: master
+  parameters:
+    probability: 0.4
+
+critical|3:
+  parameters:
+    probability: 0.6
+
+day:
+  icon: day
+  example_thumbnail: https://thumbs.gfycat.com/DirtyScrawnyErin-size_restricted.gif
+  example_link: https://thumbs.gfycat.com/DirtyScrawnyErin
+  category: master
+  worth: 220
+  earns: 5
+  quick_cast: true
+  actions:
+    cast:
+    - class: Delay
+    - class: Time
+    - class: Weather
+    - class: PlayEffects
+      effects: done
+  effects:
+    done:
+    - sound: block_beacon_activate
+      sound_pitch: 0.1
+      sound_volume: 1.3
+    cast:
+    - sound: block_beacon_activate
+      sound_pitch: 1.5
+      sound_volume: 1.8
+    - sound: block_beacon_activate
+      sound_pitch: 0.4
+      sound_volume: 1.3
+    - class: EffectSingle
+      sound: magic.shimmer
+      location: source
+      effectlib:
+        class: Modified
+        duration: $delay
+        updateLocations: false
+        yEquation: select(t-50,0,0,((t-50)/i) * 40)
+        relativeOffset: 5,1,0
+        orient: false
+        parameters:
+          radius: select((t/i)-0.9, min(3, t/60), 0, ((t/i)-0.9) * 300 + 3)
+        effect:
+          class: Sphere
+          radius: 3
+          particle: end_rod
+          particles: 20
+          particle_count: 20
+          particle_offset_x: 0.2
+          particle_offset_y: 0.2
+          particle_offset_z: 0.2
+          updateLocations: false
+          updateDirections: false
+  parameters:
+    target: none
+    cooldown: 1800000
+    delay: 10000
+    time: day
+    weather: clear
+  costs:
+    mana: 50
+
+earth:
+  icon: earth
+  category: combat
+  pvp_restricted: true
+  worth: 750
+  actions:
+    cast:
+    - class: Line
+      actions:
+      - class: ModifyBlock
+    - class: Damage
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: block_grass_step
+    iterate:
+    - class: EffectSingle
+      particle: block_crack
+      location: target
+  parameters:
+    target_type: Damageable
+    transparent: transparent_to_construction
+    allow_max_range: true
+    range: 16
+    size: 16
+    increment_data: false
+    undo: 2000
+    brush: dirt
+    player_damage: 4
+    entity_damage: 6
+    destructible: destructible_replace
+  costs:
+    mana: 20
+
+eat_food:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  # Repurposed as an Innervate-style mana tool. It was a free, no-cooldown
+  # full hunger refill, which made food pointless if it ever reached a wand.
+  name: Innervate
+  category: master
+  actions:
+    cast:
+    - class: ModifyMana
+      mana: 75
+  parameters:
+    target: self
+    cooldown: 120000
+
+    bypass_mage_cooldown: true
+force:
+  icon: force
+  category: master
+  tags: noduel
+  worth: 550
+  toggle: cancel
+  disable_mana_regeneration: true
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: CheckEntity
+        actions:
+        - class: PlayEffects
+          effects: selected
+        - class: Interval
+          actions:
+          - class: Retarget
+            range: 6
+            allow_max_range: true
+            target: block
+            actions:
+            - class: PlayEffects
+              effects: targeting
+            - class: ChangeContext
+              swap_source_and_target: true
+              actions:
+              - class: ChangeContext
+                use_parent_target_entity: true
+                target_entity: true
+                actions:
+                - class: Velocity
+                  push: -1
+  effects:
+    cast:
+    - sound: magic.zap_big
+      sound_pitch: 2
+    targeting:
+    - location: target
+      particle: redstone
+      particle_offset: 0
+    projectile:
+    - effectlib:
+        class: Sphere
+        particles: 20
+        radius: 0.2
+        particle: spell_mob
+        duration: 2000
+    selected:
+    - location: target
+      effectlib:
+        class: AnimatedBall
+        y_rotation: 10 degrees
+        duration: $duration
+        disappear_with_origin_entity: true
+        particle: spell_mob
+  parameters:
+    velocity: 10
+    range: 16
+    target_breakables: 2
+    living_entity_speed: 0.3
+    item_speed: 0.05
+    cancel_on_damage: 0.5
+    cooldown: 45000
+    duration: 15000
+    exemption_duration: 5000
+  costs:
+    mana: 100
+  active_costs:
+    mana: 10
+
+fury:
+  icon: fury
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  category: combat
+  worth: 440
+  earns: 8
+  actions:
+    cast:
+    - class: AreaOfEffect
+      actions:
+      - class: Asynchronous
+        actions:
+        - class: CustomProjectile
+          target: other
+          actions:
+          - class: Damage
+  effects:
+    cast:
+    - sound: entity_firework_rocket_launch
+      sound_pitch: 0.1
+    - sound: block_conduit_activate
+      sound_pitch: 1.8
+      sound_volume: 0.5
+    - class: EffectSingle
+      sound: magic.zap_crack
+      location: origin
+      color_override: color
+      effectlib:
+        class: SphereEffect
+        duration: 100
+        particle: smoke_normal
+        radius: 0.5
+        offset: 0,0.5,0
+    tick:
+    - particle: smoke_normal
+      particle_count: 5
+      particle_offset_x: 0.05
+      particle_offset_y: 0.05
+      particle_offset_z: 0.05
+      location: target
+    hit:
+    - sound: block_conduit_attack_target
+      sound_pitch: 1.8
+      sound_volume: 1.5
+      location: target
+    - class: EffectSingle
+      sound: magic.zap
+      sound_volume: 0.3
+      location: target
+      color2: FF0000
+      firework: burst
+    target:
+    - class: EffectSingle
+      sound: entity_firework_rocket_launch
+      sound_volume: 0.5
+      location: source
+      particle: fireworks_spark
+      particle_count: 30
+      particle_offset_x: 2
+      particle_offset_y: 2
+      particle_offset_z: 2
+      effectlib:
+        class: LineEffect
+        length: 3
+        duration: 5000
+        particle: fireworks_spark
+        particles: 5
+        particle_count: 5
+        particle_offset_x: 0.5
+        particle_offset_y: 0.5
+        particle_offset_z: 0.5
+  parameters:
+    target: self
+    target_self: false
+    range: 64
+    velocity: 8
+    radius: 24
+    tick_size: 0.2
+    target_count: 3
+    target_type: Damageable
+    player_damage: 4
+    entity_damage: 8
+    target_breakables: 1
+    cooldown: 30000
+    lifetime: 10000
+    target_self_timeout: 2000
+    track_speed: 10
+    use_target_location: false
+    velocity_transform:
+      orient: false
+      x: rand(-3,3) * cos(t)
+      y: rand(3,10)
+      z: rand(-3,3) * sin(t)
+    plan:
+    - time: 2000
+      track_target: true
+      velocity_transform: ''
+      velocity: 30
+      effects: target
+    - time: 3000
+      track_speed: 0.1
+  costs:
+    mana: 100
+
+fury|2:
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  parameters:
+    target_count: 6
+
+fury|3:
+  parameters:
+    target_count: 8
+
+healing:
+  icon: healing
+  category: light
+  hidden: true
+  passive: true
+  worth: 160
+  actions:
+    cast:
+    - class: AreaOfEffect
+      actions:
+      - class: Heal
+  effects:
+    cast:
+    - class: EffectSingle
+      location: targets
+      effectlib:
+        class: LoveEffect
+        iterations: 5
+        period: 2
+  parameters:
+    target_type: Player
+    target: self
+    target_self: false
+    radius: 5
+    heal_max_distance: 10
+    amount: 1
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    bypass_undo: true
+
+holylight:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: blessing
+  category: master
+  worth: 150
+  earns: 8
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: AreaOfEffect
+      actions:
+      - class: CheckEntity
+        allowed_entities: player
+        actions:
+        - class: Heal
+        - class: PlayEffects
+          effects: heal
+          ignore_result: true
+      - class: CheckEntity
+        allowed_entity_classes:
+        - Enemy
+        actions:
+        - class: Damage
+        - class: PlayEffects
+          effects: hurt
+          ignore_result: true
+  effects:
+    heal:
+    - class: EffectSingle
+      sound: entity_villager_yes
+      location: origin
+      effectlib:
+        class: HelixEffect
+        particle: heart
+        iterations: 10
+        radius: 2
+    hurt:
+    - class: EffectSingle
+      sound: entity_bat_hurt
+      location: origin
+      effectlib:
+        class: HelixEffect
+        particle: smoke_normal
+        iterations: 10
+        radius: 2
+  parameters:
+    target: self
+    target_caster: true
+    target_type: LivingEntity
+    amount: 10
+    damage: 10
+    radius: 16
+    cooldown: 30000
+    bypass_friendly_fire: true
+    cooldown_mage: 1000
+  costs:
+    mana: 150
+
+invincible:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: invincible
+  category: master
+  tags: noduel
+  worth: 110
+  actions:
+    cast:
+    - class: PotionEffect
+  effects:
+    cast:
+    - sound: item.trident.return
+      sound_pitch: 0.3
+      sound_volume: 2
+    - sound: item.trident.riptide_1
+      sound_pitch: 0.4
+      sound_volume: 2
+    - sound: block_fire_extinguish
+      sound_volume: 0.2
+      location: target
+      effectlib:
+        class: Modified
+        duration: $duration
+        parameters:
+          size: sin(t/20) + 0.2
+        effect:
+          class: AnimatedBall
+          iterations: 70
+          particle: redstone
+          color: FFD700
+          particles: 60
+          y_offset: -0.5
+          y_factor: 1
+    - location: target
+      effectlib:
+        class: Modified
+        duration: $duration
+        parameters:
+          size: cos(t/20) + 0.2
+        effect:
+          class: AnimatedBall
+          iterations: 70
+          particle: redstone
+          color: C0C0C0
+          particles: 60
+          y_offset: -0.5
+          y_factor: 1
+  parameters:
+    target: self
+    duration: 5000
+    cooldown: 600000  # WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): long cooldown (was 180000)
+    cooldown_mage: 6000
+    transparent: transparent_to_construction
+    effect_damage_resistance: 2
+    effect_slow: 1
+  costs:
+    mana: 60
+
+localrain:
+  hidden: true
+  actions:
+    cast:
+    - class: Weather
+  parameters:
+    target: self
+    player_weather: true
+    weather: rain
+
+masterattack:
+  icon: spell_icon:160
+  icon_disabled: spell_icon_disabled:160
+  icon_url: http://textures.minecraft.net/texture/2ba95570c7b712713632d4c0d2fc66906613d3850a596a0267c6d763fe741ac
+  category: combat
+  require_health_percentage: 100
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+  effects:
+    cast:
+    - sound: entity_guardian_attack
+      sound_pitch: 2
+      sound_volume: 0.5
+    - class: EffectSingle
+      sound: magic.zap_crack
+      location: origin
+      color_override: color
+    tick:
+    - particle: sweep_attack
+      location: target
+      particle_count: 5
+      particle_offset_x: 0.2
+      particle_offset_y: 0
+      particle_offset_z: 0.2
+    hit_block:
+    - class: EffectSingle
+      location: target
+      particle: block_crack
+      particle_count: 50
+      particle_offset_x: 0.2
+      particle_offset_y: 1
+      particle_offset_z: 0.2
+    hit_entity:
+    - class: EffectSingle
+      location: target
+      particle: redstone
+      particle_count: 30
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    hit:
+    - sound: entity_player_attack_knockback
+      sound_pitch: 2
+      location: target
+      sound_volume: 0.6
+    - sound: block_beacon_deactivate
+      sound_pitch: 1.8
+      sound_volume: 0.9
+      location: target
+    - class: EffectSingle
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 0.3
+      particle_offset_y: 0.3
+      particle_offset_z: 0.3
+      sound: magic.zap
+      sound_volume: 0.3
+      particle_data: 0.1
+  parameters:
+    allow_max_range: true
+    velocity: 100
+    range: 24
+    hitbox: true
+    hitbox_size: 2
+    target_type: Damageable
+    player_damage: 2
+    entity_damage: 4
+    target_breakables: 1
+    cooldown: 2000
+    color: 00FFAA
+
+  costs:
+    mana: 8
+music:
+  icon: music
+  category: music
+  worth: 30
+  earns: 1
+  show_undoable: false
+  actions:
+    cast:
+    - class: PlayRecord
+  effects:
+    cast:
+    - class: EffectTrail
+      particle: note
+      particle_offset_x: 0.1
+      particle_offset_y: 0.1
+      particle_offset_z: 0.1
+      particle_count: 10
+    - class: EffectRing
+      size: 4
+      radius: 5
+      location: target
+      effectlib:
+        class: Modified
+        duration: 8000
+        period: 2
+        parameters:
+          y_factor: (t/i)*0.5
+          size: (t/i)*2 + 0.5
+        effect:
+          class: AnimatedBall
+          particle: note
+          particles: 100
+          particlesPerIteration: 20
+          offset: 0,3,0
+          updateLocations: false
+  parameters:
+    target_type: Player
+    target: any
+    allow_max_range: true
+    range: 16
+    cooldown: 120000
+  costs:
+    mana: 20
+
+night:
+  icon: night
+  example_thumbnail: https://thumbs.gfycat.com/VillainousInfantileEmeraldtreeskink-size_restricted.gif
+  example_link: https://thumbs.gfycat.com/VillainousInfantileEmeraldtreeskink
+  category: elemental
+  quick_cast: true
+  worth: 180
+  earns: 5
+  actions:
+    cast:
+    - class: Delay
+    - class: Time
+    - class: Weather
+    - class: PlayEffects
+      effects: done
+  effects:
+    done:
+    - sound: block_beacon_deactivate
+      sound_pitch: 0.1
+      sound_volume: 1.3
+    cast:
+    - sound: block_beacon_deactivate
+      sound_pitch: 1.5
+      sound_volume: 1.8
+    - sound: block_beacon_deactivate
+      sound_pitch: 0.4
+      sound_volume: 1.3
+    - sound: magic.shimmer
+      location: source
+      effectlib:
+        class: Modified
+        duration: $delay
+        updateLocations: false
+        yEquation: select(t-50,0,0,((t-50)/i) * 40)
+        relativeOffset: 5,1,0
+        orient: false
+        parameters:
+          radius: select((t/i)-0.9, min(3, t/60), 0, ((t/i)-0.9) * 300 + 3)
+        effect:
+          class: Sphere
+          radius: 3
+          particle: smoke_large
+          particle_count: 10
+          particles: 10
+          particle_offset_x: 0.2
+          particle_offset_y: 0.2
+          particle_offset_z: 0.2
+          updateLocations: false
+          updateDirections: false
+    - location: source
+      effectlib:
+        class: Modified
+        duration: $delay
+        updateLocations: false
+        yEquation: select(t-50,0,0,((t-50)/i) * 40)
+        relativeOffset: 5,1,0
+        orient: false
+        parameters:
+          radius: select((t/i)-0.9, min(3, t/60), 0, ((t/i)-0.9) * 300 + 3)
+        effect:
+          class: Sphere
+          radius: 3
+          particle: water_drop
+          particle_count: 10
+          particles: 5
+          particle_offset_x: 0.2
+          particle_offset_y: 0.2
+          particle_offset_z: 0.2
+          updateLocations: false
+          updateDirections: false
+  parameters:
+    target: none
+    cooldown: 1800000
+    delay: 10000
+    time: night
+    cycle_moon_phase: true
+    weather: storm
+  costs:
+    mana: 150
+
+powerstone:
+  icon: ghast_tear
+  icon_url: http://textures.minecraft.net/texture/2ba95570c7b712713632d4c0d2fc66906613d3850a596a0267c6d763fe741ac
+  category: combat
+  worth: 550
+  hidden: true
+  actions:
+    cast:
+    - class: ArmorStandProjectile
+      actions:
+      - class: Damage
+        damage_max_distance: 0
+        player_damage: 8
+        entity_damage: 10
+      - class: AreaOfEffect
+        actions:
+        - class: Damage
+        - class: Velocity
+          speed: 1.5
+      - class: Sphere
+        actions:
+        - class: ModifyBlock
+          ignore_result: true
+  effects:
+    cooldown: []
+    cast:
+    - class: EffectSingle
+      sound: war.rocketlauncher
+      sound_pitch: 1.2
+      location: origin
+    tick:
+    - location: target
+      particle: smoke_large
+      particle_count: 4
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    hit_entity_armor_stand:
+    - class: EffectSingle
+      location: target
+      sound: war.ricochet
+      particle: block_crack
+      material: iron_block
+      particle_count: 20
+      particle_offset_x: 0.3
+      particle_offset_y: 0.3
+      particle_offset_z: 0.3
+    hit_entity:
+    - class: EffectSingle
+      sound: entity_slime_attack
+      sound_pitch: 0.8
+      location: target
+      effectlib:
+        class: AnimatedBallEffect
+        particles: 50
+        particlesPerIteration: 8
+        iterations: 15
+        particle: block_crack
+        particle_count: 30
+        material: redstone_block
+        size: 1
+        y_offset: 0
+    hit:
+    - class: EffectSingle
+      location: target
+      sound: entity_generic_explode
+      sound_volume: 3
+      particle: explosion_huge
+      particle_count: 4
+      particle_offset_x: 2
+      particle_offset_y: 2
+      particle_offset_z: 2
+      particle_data: 0.2
+  parameters:
+    velocity: 10
+    range: 60
+    hitbox: true
+    radius: 12
+    target_type: LivingEntity
+    damage_max_distance: 5
+    player_damage: 15
+    entity_damage: 8
+    target_breakables: 1
+    bypass_backfire: true
+    destructible: solid
+    destructible_durability: 40
+    undo: 30000
+    brush: erase
+    cooldown: 20000
+    speed: 1.1
+    direction: 0,0.8,0
+    falling: true
+    undo_speed: 6
+    target_self_timeout: 2000
+    y_offset: 0.75
+    push: 1
+    velocity_max_distance: 5
+    magic_damage: false
+    unbreakable_items: true
+    helmet_item: ender_eye
+    orient_head: true
+    armor_stand_small: true
+    armor_stand_gravity: false
+    target_armor_stand: true
+    spread_movement_max: 0.1
+    spread_movement: 5
+
+  costs:
+    mana: 60
+reflect:
+  icon: reflect
+  category: light
+  worth: 500
+  earns: 5
+  upgrade_required_path: beginner
+  upgrade_required_casts: 25
+  actions:
+    cast:
+    - class: Disc
+      actions:
+      - class: ModifyBlock
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.shield_boom
+      sound_volume: 0.5
+      location: origin
+    - sound: block_beacon_activate
+      sound_pitch: 2
+      sound_volume: 0.8
+    - location: source
+      source_location: eyes
+      sound: block_glass_break
+      sound_pitch: 2
+      sound_volume: 0.3
+      relative_offset: 2.2,0,0
+      effectlib:
+        class: Modified
+        duration: 400
+        period: 1
+        variable_a: $radius
+        parameters:
+          radius: (t/i)*a*1.2 + 0.2
+        effect:
+          class: Circle
+          particle: nautilus
+          orient: true
+          whole_circle: true
+          update_directions: false
+          update_locations: false
+          angular_velocity_x: 1
+          angular_velocity_z: 0
+          angular_velocity_y: 0
+          z_rotation: 1.57
+          particle_offset: 0.1,0.1,0.1
+          particles: 10
+          particle_count: 2
+  parameters:
+    allow_max_range: true
+    range: 3
+    radius: 0
+    axis: z
+    brush: white_stained_glass
+    orient: true
+    orient_snap: 45
+    transparent: transparent_to_construction
+    destructible: destructible_replace
+    check_destructible: true
+    brushcolor: true
+    undo: 800
+    cooldown: 3000
+    breakable: 3
+    reflect_chance: 0.25
+    bypass_confusion: true
+    bypass_backfire: true
+  costs:
+    mana: 10
+
+reflect|2:
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  parameters:
+    radius: 1
+    undo: 900
+    reflect_chance: 0.5
+    breakable: 2
+
+reflect|3:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  parameters:
+    radius: 1.5
+    undo: 1000
+    reflect_chance: 0.75
+    breakable: 1
+  costs:
+    mana: 10
+
+reflect|4:
+  upgrade_required_path: master
+  parameters:
+    radius: 2
+    undo: 1100
+    reflect_chance: 1
+    breakable: 1
+
+reflect|5:
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+    - class: Disc
+      actions:
+      - class: ModifyBlock
+  parameters:
+    add_modifiers: reflective
+    duration: 1000
+
+restorelocalweather:
+  hidden: true
+  actions:
+    cast:
+    - class: Weather
+  parameters:
+    target: self
+    player_weather: true
+    weather: world
+
+rolldice:
+  icon: skull_dice_1
+  icon_url: http://textures.minecraft.net/texture/6e22c298e7c6336af17909ac1f1ee6834b58b1a3cc99aba255ca7eaeb476173
+  actions:
+    cast:
+    - class: StashWand
+    - class: Random
+      actions:
+      - class: ThrowItem
+        item: skull_dice_1
+        actions:
+        - class: Message
+          message_key: rolled_1
+      - class: ThrowItem
+        item: skull_dice_2
+        actions:
+        - class: Message
+          message_key: rolled_2
+      - class: ThrowItem
+        item: skull_dice_3
+        actions:
+        - class: Message
+          message_key: rolled_3
+      - class: ThrowItem
+        item: skull_dice_4
+        actions:
+        - class: Message
+          message_key: rolled_4
+      - class: ThrowItem
+        item: skull_dice_5
+        actions:
+        - class: Message
+          message_key: rolled_5
+      - class: ThrowItem
+        item: skull_dice_6
+        actions:
+        - class: Message
+          message_key: rolled_6
+  parameters:
+    target_self: true
+    message_target: false
+    return_on_finish: true
+    age_items: 5940
+
+shrink:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: shrink
+  category: combat
+  worth: 170
+  earns: 8
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: ShrinkEntity
+  effects:
+    cast:
+    - sound: entity_enderman_teleport
+      sound_pitch: 0.1
+      sound_volume: 0.5
+      location: origin
+      effectlib:
+        class: ConeEffect
+        iterations: 11
+        particle: spell_instant
+        lengthGrow: 0.4
+        particle_count: 10
+        particle_offset_x: 0.2
+        particle_offset_y: 0.2
+        particle_offset_z: 0.2
+    hit:
+    - sound: block_beacon_deactivate
+      sound_pitch: 1.9
+      sound_volume: 0.9
+      location: both
+    - class: EffectSingle
+      location: target
+      sound: entity_enderman_teleport
+      sound_pitch: 0.2
+      sound_volume: 0.8
+      effectlib:
+        class: Modified
+        iterations: 30
+        parameters:
+          radius: max(1, (1 - (t / i)) * 5 - 2)
+        effect:
+          class: Sphere
+          particle: redstone
+          color: F0C0F0
+  parameters:
+    drop_skull: false
+    velocity: 500
+    hitbox: true
+    target_type: LivingEntity
+    target: other_entity
+    allow_max_range: false
+    range: 16
+    player_damage: 1
+    entity_damage: 4
+    target_breakables: 1
+    cooldown: 15000
+  costs:
+    mana: 75
+
+skating:
+  hidden: true
+  name: Skating
+  actions:
+    cast:
+    - class: CheckBlock
+      direction: down
+      source_location: feet
+      actions:
+      - class: PlayEffects
+        effects: start
+      - class: Interval
+        actions:
+        - class: PlayEffects
+          effects: skate
+        - class: ChangeContext
+          source_pitch: 0
+          actions:
+          - class: Velocity
+        - class: Delay
+  effects:
+    start:
+    - sound: entity_wither_shoot
+      sound_pitch: 0.15
+      sound_volume: 0.3
+    skate:
+    - particle: snowball
+      source_location: feet
+      particle_count: 16
+      particle_offset_x: 1
+      particle_offset_z: 1
+      particle_offset_y: 0.1
+  alternate_sneak_parameters:
+    speed: 1.5
+  parameters:
+    target: self
+    speed: 0.7
+    delay: 50
+    duration: 500
+    allowed: ice,blue_ice,frosted_ice,packed_ice
+
+sweep:
+  icon: sweep
+  category: combat
+  worth: 110
+  earns: 8
+  actions:
+    cast:
+    - class: Repeat
+      actions:
+      - class: ConeOfEffect
+        actions:
+        - class: Damage
+      - class: ChangeContext
+        target_caster: true
+        actions:
+        - class: Orient
+      - class: Delay
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.shimmer_crack
+      sound_volume: 1
+      particle: sweep_attack
+  parameters:
+    allow_max_range: true
+    target: none
+    target_type: Damageable
+    range: 3
+    fov: 0.4
+    damage: 2
+    target_breakables: 1
+    cooldown: 5000
+    magic_damage: false
+    instant_block_effects: true
+    yaw_offset: 20
+    repeat: 9
+    delay: 5
+  costs:
+    mana: 50
+
+tamepet:
+  actions:
+    cast:
+    - class: CheckEntity
+      owned: true
+      actions:
+      - class: CheckEntity
+        owner: true
+        actions:
+        - class: CheckInventory
+          target_caster: true
+          slot: main_hand
+          ignore_result: true
+          actions:
+          - class: CheckHealth
+            full_health: true
+            invert: true
+            actions:
+            - class: TakeCosts
+              item_cost: true
+            - class: Heal
+            - class: PlayEffects
+              effects: healed
+          fail:
+          - class: CheckEntity
+            stay: true
+            actions:
+            - class: ModifyEntity
+              stay: false
+              sitting: false
+              item: ''
+            - class: PlayEffects
+              effects: go
+            fail:
+            - class: ModifyEntity
+              stay: true
+              sitting: true
+              item: ''
+            - class: PlayEffects
+              effects: stay
+      fail:
+      - class: CheckInventory
+        target_caster: true
+        slot: main_hand
+        ignore_result: true
+        actions:
+        - class: TakeCosts
+          item_cost: true
+        - class: Probability
+          actions:
+          - class: Tame
+          - class: PlayEffects
+            effects: tamed
+          fail:
+          - class: PlayEffects
+            effects: tamefail
+  effects:
+    tamed:
+    - location: target
+      sound: entity_cat_purr
+      sound_pitch: 1.4
+      sound_volume: 2
+      effectlib:
+        class: LoveEffect
+        duration: 3 seconds
+    tamefail:
+    - location: target
+      sound: entity_creeper_primed
+      sound_pitch: 1.5
+      sound_volume: 0.75
+      particle: smoke_normal
+      particle_count: 8
+      particle_offset: 0.2
+    healed:
+    - location: target
+      sound: entity_cat_purreow
+      sound_pitch: 1.2
+      sound_volume: 2
+      effectlib:
+        class: LoveEffect
+        duration: 2 seconds
+    stay:
+    - location: target
+      sound: entity_fox_screech
+      sound_pitch: 0.8
+      sound_volume: 0.8
+      particle: water_splash
+      particle_count: 8
+      particle_offset: 0.2
+    go:
+    - location: target
+      sound: entity_cat_beg_for_food
+      sound_pitch: 1.2
+      sound_volume: 2
+      effectlib:
+        class: LoveEffect
+        duration: 1 seconds
+    no_target: []
+    no_action: no_target
+  parameters:
+    target: none
+    item: wheat
+    probability: 0.2
+    amount: 2
+
+tendril:
+  icon: tendril
+  category: combat
+  worth: 90
+  earns: 5
+  pvp_restricted: true
+  actions:
+    cast:
+    - class: Volume
+      actions:
+      - class: Skip
+        actions:
+        - class: Delay
+      - class: ModifyBlock
+      - class: CheckBlock
+        allowed: '!all_air'
+        actions:
+        - class: PlayEffects
+          effects: build
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.shield
+    - sound: entity_ender_dragon_hurt
+      sound_pitch: 1.6
+      sound_volume: 0.8
+    - sound: block_beacon_activate
+      sound_pitch: 1.8
+      sound_volume: 0.8
+    - class: EffectTrail
+      particle: drip_lava
+    build:
+    - sound: block_slime_block_place
+      sound_pitch: 0.1
+      sound_volume: 0.8
+      location: target
+      particle: block_crack
+      particle_count: 4
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    - location: target
+      particle: drip_lava
+      particle_count: 5
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+      sound: block_stone_place
+      sound_pitch: 0.2
+      sound_volume: 1.2
+  parameters:
+    target: block
+    allow_max_range: true
+    range: 2
+    use_brush_size: true
+    undo: 5000
+    cooldown: 20000
+    brush: schematic|tendril
+    breakable: 3
+    destructible: destructible_replace
+    orient: true
+    skip: 16
+    delay: 50
+    volume_type: yxz
+    center_z: false
+    reorient: false
+  costs:
+    mana: 100
+
+throwsword:
+  icon: diamond_sword
+  actions:
+    cast:
+    - class: ArmorStandProjectile
+      actions:
+      - class: Damage
+  effects:
+    projectile:
+    - class: EffectSingle
+      effectlib:
+        class: SphereEffect
+        particle: flame
+        particles: 4
+        radius: 0.2
+        duration: 30000
+  parameters:
+    velocity: 10
+    right_arm_item: golden_sword:1
+    location_offset: 0,4,0
+    armor_stand_invisible: true
+    armor_stand_marker: true
+    orient_right_arm: true
+    attach_duration: 5000
+    gravity: 0.05
+    cooldown: 10000
+    damage: 10
+  costs:
+    mana: 30
+
+time:
+  icon: time
+  hidden: true
+  category: master
+  worth: 90
+  quick_cast: true
+  actions:
+    cast:
+    - class: Time
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.shimmer
+      location: origin
+      effectlib:
+        offset: 0,4,0
+        class: HelixEffect
+        iterations: 2
+        particle: enchantment_table
+  parameters:
+    target: none
+    allow_max_range: false
+    allow_night: true
+    allow_day: true
+    allow_glowstone: false
+    cooldown: 1200000  # WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): long cooldown (was 10000)
+    time: toggle
+  costs:
+    mana: 40
+
+wearskates:
+  name: Wear Ice Skates
+  hidden: true
+  actions:
+    cast:
+    - class: Wear
+    - class: Message
+      message: You put on some ice skates- now go skating!
+  parameters:
+    target: self
+    item: iceskates
+    slot: boots
+
+weather:
+  icon: weather
+  category: elemental
+  worth: 110
+  earns: 5
+  quick_cast: true
+  show_undoable: false
+  actions:
+    cast:
+    - class: Weather
+  effects:
+    cast:
+    - sound: weather_rain
+      sound_pitch: 0.4
+    - sound: block_conduit_activate
+      sound_pitch: 1.3
+      sound_volume: 1.8
+    - class: EffectRing
+      size: 4
+      radius: 6
+      effectlib:
+        offset: 0,10,0
+        class: HelixEffect
+        iterations: 1
+        particle: drip_water
+        radius: 4
+    alternate:
+    - sound: block_conduit_deactivate
+      sound_pitch: 1.3
+      sound_volume: 1.8
+    - class: EffectRing
+      size: 4
+      radius: 6
+      effectlib:
+        offset: 0,10,0
+        class: HelixEffect
+        iterations: 1
+        particle: end_rod
+        radius: 4
+  parameters:
+    target: none
+    cooldown: 1200000  # WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): long cooldown (was 900000)
+    weather: cycle
+  costs:
+    mana: 150
+
+whip:
+  icon: whip
+  category: combat
+  worth: 500
+  earns: 6
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+      - class: Velocity
+  effects:
+    cast:
+    - sound: entity_guardian_attack
+      sound_pitch: 1.5
+      sound_volume: 0.75
+    - sound: entity_witch_throw
+      sound_pitch: 0.75
+    - class: EffectSingle
+      sound: magic.zap
+      location: origin
+    tick:
+    - location: target
+      particle: cloud
+      particle_count: 4
+      particle_offset_x: 0.05
+      particle_offset_y: 0.05
+      particle_offset_z: 0.05
+    hit:
+    - sound: block_ender_chest_open
+      sound_pitch: 1.5
+      location: target
+    - class: EffectSingle
+      sound: magic.zap_crack
+      sound_volume: 0.3
+      location: target
+      particle: explosion_large
+  parameters:
+    target: other
+    hitbox: true
+    allow_max_range: true
+    reorient: false
+    range: 48
+    target_type: Damageable
+    player_damage: 3
+    entity_damage: 6
+    target_breakables: 1
+    cooldown: 5000
+    target_self_timeout: 2000
+    velocity: 10
+    track_speed: 0.75
+    track_range: 5
+  costs:
+    mana: 25
+
+mend:
+  icon: wrv_mend
+  category: light
+  worth: 200
+  earns: 2
+  upgrade_required_path: student
+  upgrade_required_casts: 40
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: Heal
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 1.4
+      sound_volume: 0.4
+    - sound: block_amethyst_block_chime
+      sound_pitch: 1.6
+      sound_volume: 0.9
+      location: both
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: HelixEffect
+        particle: heart
+        iterations: 1
+        particles: 12
+        radius: 0.6
+  parameters:
+    target_type: LivingEntity
+    target: any_entity
+    allow_max_range: false
+    range: 16
+    hitbox: true
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    bypass_confusion: true
+    amount: 1.5
+    cooldown_mage: 941
+  costs:
+    mana: 4
+mend|2:
+  upgrade_required_path: student
+  upgrade_required_casts: 40
+  costs:
+    mana: 6  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+  parameters:
+    amount: 1.75  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+mend|3:
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 40
+  parameters:
+    amount: 2
+  costs:
+    mana: 8
+mend|4:
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+  parameters:
+    amount: 2.5
+  costs:
+    mana: 12
+mend|5:
+  parameters:
+    amount: 3
+  costs:
+    mana: 17
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+flashheal:
+  icon: wrv_flashheal
+  category: light
+  worth: 500
+  earns: 3
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 40
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: Heal
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 1.4
+      sound_volume: 0.4
+    - sound: block_amethyst_block_chime
+      sound_pitch: 1.6
+      sound_volume: 0.9
+      location: both
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: HelixEffect
+        particle: heart
+        iterations: 1
+        particles: 12
+        radius: 0.6
+  parameters:
+    target_type: LivingEntity
+    target: any_entity
+    allow_max_range: false
+    range: 16
+    hitbox: true
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    bypass_confusion: true
+    amount: 5
+    cooldown_mage: 941
+  costs:
+    mana: 15
+flashheal|2:
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 40
+  costs:
+    mana: 19  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+  parameters:
+    amount: 5.5  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+flashheal|3:
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+  parameters:
+    amount: 6
+  costs:
+    mana: 24
+flashheal|4:
+  parameters:
+    amount: 7
+  costs:
+    mana: 35
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+ward:
+  icon: wrv_ward
+  category: light
+  worth: 470
+  earns: 3
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CheckModifiers
+      blocked: wrv_warded
+      actions:
+      - class: PotionEffect
+      - class: Modifier
+        add_modifiers: wrv_warded
+        duration: 12000
+      fail:
+      - class: Message
+        message_type: action_bar
+        message: '&eThat player is still Warded'
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 1.4
+      sound_volume: 0.4
+    - sound: block_amethyst_block_chime
+      sound_pitch: 1.6
+      sound_volume: 0.9
+      location: both
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: HelixEffect
+        particle: heart
+        iterations: 1
+        particles: 12
+        radius: 0.6
+  parameters:
+    target_type: Player
+    target: any_entity
+    allow_max_range: false
+    range: 16
+    hitbox: true
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    bypass_confusion: true
+    effect_absorption: 0
+    duration: 15000
+    cooldown: 6000
+    cooldown_mage: 1000
+  costs:
+    mana: 15
+greaterheal:
+  icon: wrv_greaterheal
+  category: light
+  worth: 600
+  earns: 4
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+  boss_bar: true
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: PotionEffect
+        effect_slow: 1
+        duration: 2000
+    - class: Delay
+    - class: Heal
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 1.4
+      sound_volume: 0.4
+    - sound: block_amethyst_block_chime
+      sound_pitch: 1.6
+      sound_volume: 0.9
+      location: both
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: HelixEffect
+        particle: heart
+        iterations: 1
+        particles: 12
+        radius: 0.6
+  parameters:
+    target_type: LivingEntity
+    target: any_entity
+    allow_max_range: false
+    range: 16
+    hitbox: true
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    bypass_confusion: true
+    amount: 6
+    delay: 2000
+    cooldown_mage: 2000
+    cancel_on_damage: 4
+    cancel_on_cast_other: true
+    cancel_on_death: true
+  costs:
+    mana: 8
+greaterheal|2:
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+  costs:
+    mana: 9  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+  parameters:
+    amount: 7  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+greaterheal|3:
+  parameters:
+    amount: 8
+  costs:
+    mana: 10
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+layonhands:
+  icon: wrv_layonhands
+  category: master
+  worth: 1100
+  earns: 2
+  actions:
+    cast:
+    - class: Heal
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 1.4
+      sound_volume: 0.4
+    - sound: block_amethyst_block_chime
+      sound_pitch: 1.6
+      sound_volume: 0.9
+      location: both
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: HelixEffect
+        particle: heart
+        iterations: 1
+        particles: 12
+        radius: 0.6
+  parameters:
+    target_type: LivingEntity
+    target: any_entity
+    allow_max_range: false
+    range: 16
+    hitbox: true
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    bypass_confusion: true
+    cooldown: 300000
+    bypass_mage_cooldown: true
+    percentage: 0.5

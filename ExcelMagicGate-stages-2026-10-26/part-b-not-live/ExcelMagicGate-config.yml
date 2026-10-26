@@ -1,0 +1,68 @@
+# ExcelMagicGate (WRV-070) - bridge settings.
+#
+# Master switch. When false the seal watch never applies anything
+# automatically; /magicgate status still answers and an operator can
+# still run /magicgate apply by hand.
+enabled: true
+
+# How often the seal watch checks ExcelGuildGate's seal count, in
+# seconds. A player joining also triggers one check.
+poll-seconds: 60
+
+# The unlock announcement (fired once, when a stage applies).
+announce:
+  # Sound played to every online player, as a Minecraft sound key.
+  sound: ui.toast.challenge_complete
+  volume: 1.0
+  pitch: 1.0
+
+# Per-stage announcement text. The built-in defaults (from the WRV-070
+# roadmap) are used for anything not set here; uncomment and edit to
+# override a field. Placeholders: {stage}, {name}, {unlocks}.
+# Color codes use '&'.
+#messages:
+#  stages:
+#    1:
+#      name: The Healer
+#      title: "&6&lThe Healer"
+#      subtitle: "&eMagic returns to the valley"
+#      unlocks: "Heal, Cure, Blessing, Boon and Storm Shackle"
+#      broadcast:
+#        - "&6— Magic returns: &fThe Healer &6—"
+#        - "&eStage {stage} of 5 is open. New magic: &f{unlocks}&e."
+#    2:
+#      name: The Pathfinder
+#    3:
+#      name: The Wonder
+#    4:
+#      name: The Masons
+#    5:
+#      name: "The Guild Opens, the Schools Open"
+
+# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): all magic opens by Seal 4; Seal 5 adds no
+# new magic (it opens the Adventurers Guild). Only the fields below are overridden;
+# everything else keeps the built-in defaults shown in the comment block above.
+# ExcelMagicGate 0.1.0 reads this file at startup only (no reload command), so this
+# takes effect on the next server restart. Seal 2 and 3 text is still true; only
+# their unlock lists get the new headline spells.
+messages:
+  stages:
+    2:
+      unlocks: "Blink, Glide, Lift, Skating, Tame Pet, Healing, and light and vision spells"
+    3:
+      unlocks: "Lightning and Chain Lightning at full strength, Reflect, Boomerang and Holy Light"
+    4:
+      subtitle: "&eEvery school of magic is open"
+      unlocks: "the last schools: building magic for everyone, weather and time, and the Master spells"
+      broadcast:
+        - "&6— Magic complete: &fThe Masons &6—"
+        - "&eStage {stage} of 5 is open. New magic: &f{unlocks}&e."
+        - "&7Every spell in the valley is now open. See the full ladders on the website's Skill Trees page."
+    5:
+      title: "&6&lThe Guild Opens"
+      subtitle: "&eEvery seal is broken"
+      unlocks: "no new spells. Your magic is already complete; the Adventurers Guild is open"
+      broadcast:
+        - "&6— The Guild opens: &fThe Fifth Seal &6—"
+        - "&eStage {stage} of 5 is open. Every school of magic is already yours."
+        - "&7Type &f/ag &7to visit the Adventurers Guild."

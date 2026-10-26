@@ -1,0 +1,133 @@
+--- replaced-base/stage4/wands.yml
++++ live-stages/stage4/wands.yml
+@@ -1,4 +1,5 @@
+ #
++# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): spells re-spread so everything opens by Seal 4; Disposal removed.
+ # Wink Reyes Valley - Magic Phase 1 (HEALER RELEASE) wand templates.
+ # WRV-070. Paired with config.yml: load_default_wands: false
+ # -> defaults/wands.defaults.yml (200 templates) is NOT loaded.
+@@ -176,6 +177,10 @@
+   - stun
+   - push
+   - pull
++  - eat_food
++  - rolldice
++  - cloak
++  - reflect
+   - mend
+ student:
+   inherit: beginner
+@@ -230,6 +235,17 @@
+   - arrow_regular
+   - wolf
+   - cat
++  - eat_food
++  - rolldice
++  - cloak
++  - reflect
++  - boomerang
++  - throwsword
++  - skating
++  - wearskates
++  - admission
++  - earth
++  - whip
+   - mend
+   - flashheal
+   - ward
+@@ -272,7 +288,6 @@
+   - glide
+   - lift
+   - stash
+-  - disposal
+   - missile
+   - frost
+   - arrow
+@@ -295,6 +310,26 @@
+   - growth
+   - hat
+   - gather
++  - eat_food
++  - rolldice
++  - cloak
++  - reflect
++  - boomerang
++  - throwsword
++  - skating
++  - wearskates
++  - admission
++  - earth
++  - whip
++  - tamepet
++  - anvil
++  - healing
++  - critical
++  - counterspell
++  - music
++  - arrowrain
++  - sweep
++  - powerstone
+   - mend
+   - flashheal
+   - ward
+@@ -341,7 +376,6 @@
+   - glide
+   - lift
+   - stash
+-  - disposal
+   - blink
+   - missile
+   - frost
+@@ -369,10 +403,52 @@
+   - chainlightning
+   - pollinate
+   - tame
++  - eat_food
++  - rolldice
++  - cloak
++  - reflect
++  - boomerang
++  - throwsword
++  - skating
++  - wearskates
++  - admission
++  - earth
++  - whip
++  - tamepet
++  - anvil
++  - healing
++  - critical
++  - counterspell
++  - music
++  - arrowrain
++  - sweep
++  - powerstone
++  - force
++  - fury
++  - invincible
++  - tendril
++  - shrink
++  - holylight
++  - masterattack
++  - day
++  - night
++  - weather
++  - time
++  - localrain
++  - restorelocalweather
++  - platform
++  - walls
++  - sponge
++  - tent
++  - tiny_house
++  - giant_house
++  - harden
++  - rubberize
+   - mend
+   - flashheal
+   - ward
+   - greaterheal
++  - layonhands
+ masons:
+   inherit: base_wand
+   hidden: true

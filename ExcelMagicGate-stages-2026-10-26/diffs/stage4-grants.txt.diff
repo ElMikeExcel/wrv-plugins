@@ -1,0 +1,83 @@
+--- replaced-base/stage4/grants.txt
++++ live-stages/stage4/grants.txt
+@@ -44,7 +44,7 @@
+ lp group default permission set magic.cast.glide true
+ lp group default permission set magic.cast.lift true
+ lp group default permission set magic.cast.stash true
+-lp group default permission set magic.cast.disposal true
++# (removed Oct 26 2026 (Mike, 2:13-2:17 PM CDT): magic.cast.disposal, Disposal spell taken off all wands)
+ lp group default permission set magic.cast.blink true
+ lp group default permission set magic.cast.missile true
+ lp group default permission set magic.cast.frost true
+@@ -82,16 +82,62 @@
+ # main path and NOT in the rank wands; they live on the hidden 'masons'
+ # wand template in wands.yml. Distribution is Mike's call: hand out a
+ # masons wand (or rename this group) — the cast nodes wait here.
+-# Create the group first if it does not exist: lp creategroup builder
+-lp group builder permission set magic.cast.platform true
+-lp group builder permission set magic.cast.walls true
+-lp group builder permission set magic.cast.sponge true
+-lp group builder permission set magic.cast.tent true
+-lp group builder permission set magic.cast.tiny_house true
+-lp group builder permission set magic.cast.giant_house true
+-lp group builder permission set magic.cast.harden true
+-lp group builder permission set magic.cast.rubberize true
++# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): Mike decided the Masons spells go to EVERYONE at Seal 4.
++# No builder group is created any more (ExcelMagicGate only runs lp creategroup builder
++# when a line starts with "lp group builder"; none remain).
++# (moved to default group below: platform)
++# (moved to default group below: walls)
++# (moved to default group below: sponge)
++# (moved to default group below: tent)
++# (moved to default group below: tiny_house)
++# (moved to default group below: giant_house)
++# (moved to default group below: harden)
++# (moved to default group below: rubberize)
+ 
+ # Verify afterwards:
+ #   lp group default permission check magic.cast.heal   -> true
+ #   lp group default permission check magic.cast.lava   -> undefined
++
++# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): default-group cast nodes for spells that now open at this seal
++lp group default permission set magic.cast.eat_food true
++lp group default permission set magic.cast.rolldice true
++lp group default permission set magic.cast.cloak true
++lp group default permission set magic.cast.reflect true
++lp group default permission set magic.cast.boomerang true
++lp group default permission set magic.cast.throwsword true
++lp group default permission set magic.cast.skating true
++lp group default permission set magic.cast.wearskates true
++lp group default permission set magic.cast.admission true
++lp group default permission set magic.cast.earth true
++lp group default permission set magic.cast.whip true
++lp group default permission set magic.cast.tamepet true
++lp group default permission set magic.cast.anvil true
++lp group default permission set magic.cast.healing true
++lp group default permission set magic.cast.critical true
++lp group default permission set magic.cast.counterspell true
++lp group default permission set magic.cast.music true
++lp group default permission set magic.cast.arrowrain true
++lp group default permission set magic.cast.sweep true
++lp group default permission set magic.cast.powerstone true
++lp group default permission set magic.cast.force true
++lp group default permission set magic.cast.fury true
++lp group default permission set magic.cast.invincible true
++lp group default permission set magic.cast.tendril true
++lp group default permission set magic.cast.shrink true
++lp group default permission set magic.cast.holylight true
++lp group default permission set magic.cast.masterattack true
++lp group default permission set magic.cast.day true
++lp group default permission set magic.cast.night true
++lp group default permission set magic.cast.weather true
++lp group default permission set magic.cast.time true
++lp group default permission set magic.cast.localrain true
++lp group default permission set magic.cast.restorelocalweather true
++lp group default permission set magic.cast.platform true
++lp group default permission set magic.cast.walls true
++lp group default permission set magic.cast.sponge true
++lp group default permission set magic.cast.tent true
++lp group default permission set magic.cast.tiny_house true
++lp group default permission set magic.cast.giant_house true
++lp group default permission set magic.cast.harden true
++lp group default permission set magic.cast.rubberize true
++lp group default permission set magic.cast.layonhands true

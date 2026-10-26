@@ -1,0 +1,19 @@
+--- replaced-base/stage2/messages.yml
++++ live-stages/stage2/messages.yml
+@@ -9,6 +9,16 @@
+ # (spells.<key>.name / description / cast).
+ #
+ spells:
++  # WRV Oct 26 2026: names for spells that showed raw keys
++  throwmagictorch:
++    name: Throw Magic Torch
++    description: Toss a magic light at a far spot
++  hulkleap:
++    name: Hulk Leap
++    description: Leap high and far, with a safe landing
++  tamepet:
++    name: Tame Pet
++    description: Tame animals and care for your pets
+   stormshackle:
+     name: Storm Shackle
+     description: A crackling bolt that arcs between enemies, barely hurting them but slowing every one it touches
