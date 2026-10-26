@@ -1,0 +1,358 @@
+diff -ruN base/ebm-1.5.19-src/build.sh src/ExcelBedrockMenu/build.sh
+--- base/ebm-1.5.19-src/build.sh	2026-10-25 18:26:13.923120401 -0500
++++ src/ExcelBedrockMenu/build.sh	2026-10-25 18:43:44.575780447 -0500
+@@ -1,7 +1,7 @@
+ #!/bin/bash
+-# Build ExcelBedrockMenu-1.5.19-whatsnew.jar from this tree (batch 1.5.18 source + What's New button).
++# Build ExcelBedrockMenu-1.5.21.jar from this tree (live 1.5.19-whatsnew source + Lost & Found and Trash Bin buttons + group text colors).
+ # Same recipe that reproduces the live 1.5.18 jar ee3d00f0 byte for byte from the 1.5.18 source:
+-# javac --release 21 with JDK 25.0.5, then `jar --date=2026-10-24T00:00:00Z` with an explicit sorted file list.
++# javac --release 21 with JDK 25.0.5, then `jar --date=2026-10-25T00:00:00Z` with an explicit sorted file list.
+ set -euo pipefail
+ cd "$(dirname "$0")"
+ JDK=${JDK:-/home/box/tools/jdk-25.0.5+8}
+@@ -13,11 +13,11 @@
+ rm -rf build && mkdir -p build/classes build/tests
+ "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP" -d build/classes $(find src -name '*.java' | sort) 2>&1 | grep -v '^Note:' || true
+ cp plugin.yml config.yml build/classes/
+-OUT=${OUT:-../ExcelBedrockMenu-1.5.19-whatsnew.jar}
++OUT=${OUT:-../../staged/ExcelBedrockMenu-1.5.21.jar}
+ OUT=$(realpath -m "$OUT"); rm -f "$OUT"
+-(cd build/classes && TZ=UTC "$JDK/bin/jar" --create --file "$OUT" --date=2026-10-24T00:00:00Z $(find com -name '*.class' | sort) config.yml plugin.yml)
++(cd build/classes && TZ=UTC "$JDK/bin/jar" --create --file "$OUT" --date=2026-10-25T00:00:00Z $(find com -name '*.class' | sort) config.yml plugin.yml)
+ sha256sum "$OUT"
+ # Unit checks (MenuLogicTest reads the source tree, so run from here)
+ "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP:build/classes" -d build/tests $(find test -name '*.java')
+-"$JDK/bin/java" -cp "$CP:build/classes:build/tests" com.winkreyes.excelbedrockmenu.MenuLogicTest > ../tests/MenuLogicTest-1.5.19-whatsnew.out || { tail -5 ../tests/MenuLogicTest-1.5.19-whatsnew.out; exit 1; }
+-grep -c '^ok' ../tests/MenuLogicTest-1.5.19-whatsnew.out; tail -1 ../tests/MenuLogicTest-1.5.19-whatsnew.out
++"$JDK/bin/java" -cp "$CP:build/classes:build/tests" com.winkreyes.excelbedrockmenu.MenuLogicTest > ../../tests/MenuLogicTest-1.5.21.out || { tail -5 ../../tests/MenuLogicTest-1.5.21.out; exit 1; }
++grep -c '^ok' ../../tests/MenuLogicTest-1.5.21.out; tail -1 ../../tests/MenuLogicTest-1.5.21.out
+diff -ruN base/ebm-1.5.19-src/plugin.yml src/ExcelBedrockMenu/plugin.yml
+--- base/ebm-1.5.19-src/plugin.yml	2026-10-25 18:26:13.923120401 -0500
++++ src/ExcelBedrockMenu/plugin.yml	2026-10-25 18:43:44.575780447 -0500
+@@ -1,5 +1,5 @@
+ name: ExcelBedrockMenu
+-version: 1.5.19-whatsnew
++version: 1.5.21
+ author: Argus
+ main: com.winkreyes.excelbedrockmenu.ExcelBedrockMenu
+ api-version: "1.13"
+diff -ruN base/ebm-1.5.19-src/src/com/winkreyes/excelbedrockmenu/ClickStats.java src/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/ClickStats.java
+--- base/ebm-1.5.19-src/src/com/winkreyes/excelbedrockmenu/ClickStats.java	2026-10-25 18:26:13.915120365 -0500
++++ src/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/ClickStats.java	2026-10-25 18:43:44.575780447 -0500
+@@ -19,7 +19,8 @@
+             Plugin stats = Bukkit.getPluginManager().getPlugin("ExcelMenuStats");
+             if (stats == null || !stats.isEnabled()) return;
+             Method m = stats.getClass().getMethod("recordTap", Player.class, String.class, String.class, int.class, String.class);
+-            m.invoke(stats, player, formTitle, button, index, "bedrock");
++            // v1.5.21: labels carry group color codes on the form; log the plain label.
++            m.invoke(stats, player, formTitle, ExcelBedrockMenu.stripCodes(button), index, "bedrock");
+         } catch (Throwable t) {
+             if (!warned) { warned = true; Bukkit.getLogger().warning("[ExcelBedrockMenu] ExcelMenuStats hook unavailable: " + t); }
+         }
+diff -ruN base/ebm-1.5.19-src/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java src/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java
+--- base/ebm-1.5.19-src/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java	2026-10-25 18:26:13.915120365 -0500
++++ src/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java	2026-10-25 18:43:57.503837788 -0500
+@@ -161,18 +161,42 @@
+  * the Server Commands list gains a runnable /whatsnew row. Every other
+  * button keeps its 1.5.18 relative order. Built on the batch 1.5.18 source
+  * (ee3d00f0), NOT on the EliteMobs-fallback follow-up 1.5.19 (cb8bf9ec).
++ *
++ * v1.5.20 (Oct 25, 2026, Mike: match the Java compass): two new buttons
++ * right after "Leaderboard", the end of the Bedrock "Me" cluster (Jobs &
++ * Money, mcMMO Stats, Skills & Perks, Leaderboard), in the Java "Me" row
++ * order: "Lost & Found" (runs /lostfound as the player, ExcelDeathRecord
++ * 0.3.0, which shows the price before paying) then "Trash Bin" (runs /trash
++ * as the player, ExcelTrash 0.2.0). Same labels and the same commands as
++ * the Java server_menu.yml. Neither is a teleport, so no confirm step. A
++ * missing plugin gives a message instead of an unknown command, and a
++ * player without the command's own permission (exceldeathrecord.lostfound,
++ * exceltrash.use, both default true) gets a plain message. This form has
++ * no button images, so there are no icons. Built on the live
++ * 1.5.19-whatsnew source (178b03b7). Every other button keeps its
++ * 1.5.19-whatsnew relative order and behavior.
++ *
++ * v1.5.21 (Oct 25, 2026, Mike: "Yes color the text"): the Server Menu
++ * button TEXT is colored by group, matching the Java compass rows and the
++ * map legend. Travel dark blue (\u00a71), Me dark purple (\u00a75), Shops
++ * dark green (\u00a72), Help copper orange (\u00a7n, a Bedrock-only material
++ * color; Java gold \u00a76 is unreadable on the light gray button), Settings
++ * dark gray (\u00a78). The code is added only when the form is sent
++ * (groupColor / coloredLabel); BUTTONS and COMMANDS keep the plain labels,
++ * routing is by button index as before, and ClickStats logs the label with
++ * the codes stripped so menu stats history lines up.
+  */
+ public class ExcelBedrockMenu extends JavaPlugin implements CommandExecutor {
+ 
+     private static final String[] BUTTONS = {
+         "Spawn", "Teleport to a player", "Party", "Utility Pouch", "Spellbook", "Excel Shop", "Adventurers Guild",
+-        "Jobs & Money", "mcMMO Stats", "Skills & Perks", "Leaderboard", "Server Info",
++        "Jobs & Money", "mcMMO Stats", "Skills & Perks", "Leaderboard", "Lost & Found", "Trash Bin", "Server Info",
+         "Server Commands", "Server Website", "What's New", "Wand controls: Classic or Sneak bars",
+         "Auto-sort my chests: on/off", "Auto-open on join"
+     };
+     private static final String[] COMMANDS = {
+         "spawn", "tpmenu", "excelparty", "pouch", "spellinfo", "shop", "ag", "jobs browse",
+-        "mcstats", "skillsperks", "leaderboard", "motd", "servercommands", "serverwebsite", "whatsnew", "wandstyle", "autosort", "menujoin"
++        "mcstats", "skillsperks", "leaderboard", "lostfound", "trash", "motd", "servercommands", "serverwebsite", "whatsnew", "wandstyle", "autosort", "menujoin"
+     };
+     // Village spawn coordinates (fallback if Essentials spawn lookup fails)
+     private static final double SPAWN_X = -784;
+@@ -563,16 +587,56 @@
+         return true;
+     }
+ 
+-    private void openMenu(Player player) {
++    // v1.5.21: group text colors for the Server Menu form (Bedrock codes).
++    static final String COLOR_TRAVEL = "\u00a71";   // dark blue
++    static final String COLOR_ME = "\u00a75";       // dark purple
++    static final String COLOR_SHOPS = "\u00a72";    // dark green
++    static final String COLOR_HELP = "\u00a7n";     // material copper (Bedrock); orange-brown
++    static final String COLOR_SETTINGS = "\u00a78"; // dark gray
++
++    /** Group color code for a main-menu command; never null. */
++    static String groupColor(String command) {
++        // Lookup table, not a switch: the action switch in runAction stays the
++        // only place a command gets special handling.
++        String[][] groups = {
++            {COLOR_TRAVEL, "spawn", "tpmenu", "excelparty", "ag"},
++            {COLOR_ME, "pouch", "spellinfo", "jobs browse", "mcstats", "skillsperks", "leaderboard", "lostfound", "trash"},
++            {COLOR_SHOPS, "shop"},
++            {COLOR_HELP, "motd", "servercommands", "serverwebsite", "whatsnew"},
++            {COLOR_SETTINGS, "wandstyle", "autosort", "menujoin"},
++        };
++        for (String[] g : groups) {
++            for (int i = 1; i < g.length; i++) {
++                if (g[i].equals(command)) return g[0];
++            }
++        }
++        return "";
++    }
++
++    /** The label as sent on the form: group color + the unchanged label text. */
++    static String coloredLabel(String command, String label) {
++        return groupColor(command) + label;
++    }
++
++    /** Remove every section-sign code (Java and Bedrock-only ones). */
++    static String stripCodes(String s) {
++        return s == null ? null : s.replaceAll("\u00a7.", "");
++    }
++
++    /** Main-menu labels for one send: lock text (unchanged), then group colors. */
++    static String[] menuLabels(boolean guildLocked) {
+         String[] labels = BUTTONS.clone();
+-        if (isGuildLocked()) {
+-            for (int i = 0; i < labels.length; i++) {
+-                if (COMMANDS[i].equals("ag")) {
+-                    labels[i] = lockedLabel(labels[i]);
+-                    break;
+-                }
++        for (int i = 0; i < labels.length; i++) {
++            if (guildLocked && COMMANDS[i].equals("ag")) {
++                labels[i] = lockedLabel(labels[i]);
+             }
++            labels[i] = coloredLabel(COMMANDS[i], labels[i]);
+         }
++        return labels;
++    }
++
++    private void openMenu(Player player) {
++        String[] labels = menuLabels(isGuildLocked());
+         boolean sent = GeyserForms.sendSimpleForm(player, "Server Menu",
+                 "What would you like to do?", labels,
+                 id -> {
+@@ -879,6 +943,18 @@
+                     player.performCommand("whatsnew");
+                 }
+                 break;
++            case "lostfound":
++                // v1.5.20: ExcelDeathRecord 0.3.0 owns /lostfound (alias /recover).
++                runGuarded(player, "lostfound",
++                        "\u00a7eLost & Found isn't available right now. Ask an adult to check the server.",
++                        "\u00a7eYou can't use Lost & Found right now. Ask an adult to check the server.");
++                break;
++            case "trash":
++                // v1.5.20: ExcelTrash 0.2.0 owns /trash (alias /bin).
++                runGuarded(player, "trash",
++                        "\u00a7eThe Trash Bin isn't available right now. Ask an adult to check the server.",
++                        "\u00a7eYou can't use the Trash Bin right now. Ask an adult to check the server.");
++                break;
+             case "excelparty":
+                 // v1.5.7: ExcelTogether 0.2.0 owns this command. Not /party: mcMMO has that one.
+                 if (Bukkit.getPluginCommand("excelparty") == null) {
+@@ -893,6 +969,34 @@
+         }
+     }
+ 
++    /**
++     * v1.5.20: run a command owned by another plugin as the player. Missing
++     * command: the "missing" message. Player lacks the command's own
++     * permission node: the "denied" message. Otherwise performCommand, the
++     * same path the Java menu's [player] click line uses.
++     */
++    private void runGuarded(Player player, String label, String missing, String denied) {
++        org.bukkit.command.PluginCommand cmd = Bukkit.getPluginCommand(label);
++        switch (guardOutcome(cmd != null, cmd == null || cmd.testPermissionSilent(player))) {
++            case 0:
++                player.sendMessage(missing);
++                break;
++            case 1:
++                player.sendMessage(denied);
++                break;
++            default:
++                player.performCommand(label);
++                break;
++        }
++    }
++
++    /** 0 = command missing, 1 = no permission, 2 = run it. */
++    static int guardOutcome(boolean commandExists, boolean hasPermission) {
++        if (!commandExists) return 0;
++        if (!hasPermission) return 1;
++        return 2;
++    }
++
+     /** True when the console /spawn did not work and the village fallback must run. */
+     static boolean needsSpawnFallback(boolean commandDispatched, String worldNameAfter) {
+         return !commandDispatched || "em_adventurers_guild".equals(worldNameAfter);
+diff -ruN base/ebm-1.5.19-src/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java src/ExcelBedrockMenu/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java
+--- base/ebm-1.5.19-src/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java	2026-10-25 18:26:13.919120383 -0500
++++ src/ExcelBedrockMenu/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java	2026-10-25 18:43:44.575780447 -0500
+@@ -71,7 +71,7 @@
+             check(src2.contains("runCatalogEntry(player, run)"),"catalogue routing calls the confirm gate");
+             check(src2.contains("if (requiresConfirm(command, isGuildLocked()))"),"action routing is gated by the confirm decision");
+             String yml2=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("plugin.yml")));
+-            check(yml2.contains("version: 1.5.19-whatsnew"),"plugin.yml is 1.5.19-whatsnew");
++            check(yml2.contains("version: 1.5.21"),"plugin.yml is 1.5.21");
+             check(src2.contains("websiteFormContent()")&&src2.contains("websiteChatLines()"),"showWebsite uses the pinned form/chat helpers");
+             check(src2.contains("WEBSITE_SHORT_URL"),"Java website answer carries the short link too");
+         }catch(Exception e){check(false,"1.5.10 source checks "+e);}
+@@ -98,11 +98,11 @@
+             String src3=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java")));
+             String[] buttons=parseStringArray(src3,"BUTTONS");
+             String[] commands=parseStringArray(src3,"COMMANDS");
+-            check(buttons.length==18,"menu now has 18 buttons (1.5.11's 13 + Skills & Perks + Spellbook, Wand controls and Auto-sort in 1.5.18 + What's New in 1.5.19)");
+-            check(commands.length==18,"command array has 18 entries, matching the buttons");
+-            String[] wantButtons={"Spawn","Teleport to a player","Party","Utility Pouch","Spellbook","Excel Shop","Adventurers Guild","Jobs & Money","mcMMO Stats","Skills & Perks","Leaderboard","Server Info","Server Commands","Server Website","What's New","Wand controls: Classic or Sneak bars","Auto-sort my chests: on/off","Auto-open on join"};
++            check(buttons.length==20,"menu now has 20 buttons (1.5.11's 13 + Skills & Perks + Spellbook, Wand controls and Auto-sort in 1.5.18 + What's New in 1.5.19 + Lost & Found and Trash Bin in 1.5.20)");
++            check(commands.length==20,"command array has 20 entries, matching the buttons");
++            String[] wantButtons={"Spawn","Teleport to a player","Party","Utility Pouch","Spellbook","Excel Shop","Adventurers Guild","Jobs & Money","mcMMO Stats","Skills & Perks","Leaderboard","Lost & Found","Trash Bin","Server Info","Server Commands","Server Website","What's New","Wand controls: Classic or Sneak bars","Auto-sort my chests: on/off","Auto-open on join"};
+             check(java.util.Arrays.equals(buttons,wantButtons),"full button set is the 1.5.11 set + Skills & Perks, in the 1.5.14 order (Pouch moved up), Spellbook after the Pouch (1.5.18), Auto-sort before Auto-open (1.5.18)");
+-            String[] wantCommands={"spawn","tpmenu","excelparty","pouch","spellinfo","shop","ag","jobs browse","mcstats","skillsperks","leaderboard","motd","servercommands","serverwebsite","whatsnew","wandstyle","autosort","menujoin"};
++            String[] wantCommands={"spawn","tpmenu","excelparty","pouch","spellinfo","shop","ag","jobs browse","mcstats","skillsperks","leaderboard","lostfound","trash","motd","servercommands","serverwebsite","whatsnew","wandstyle","autosort","menujoin"};
+             check(java.util.Arrays.equals(commands,wantCommands),"full command set is the 1.5.11 set + skillsperks, in the 1.5.14 order (pouch moved up), spellinfo after pouch (1.5.18)");
+             check(idxOf(buttons,"Utility Pouch")==3,"Utility Pouch sits at index 3 (moved up in 1.5.14; was 12 through 1.5.13)");
+             check(idxOf(commands,"pouch")==idxOf(buttons,"Utility Pouch"),"pouch command at the same index as the Utility Pouch button");
+@@ -181,15 +181,15 @@
+             String src6=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java")));
+             String[] buttons6=parseStringArray(src6,"BUTTONS");
+             String[] commands6=parseStringArray(src6,"COMMANDS");
+-            check(buttons6.length==18&&commands6.length==18,"1.5.14 move kept 14 buttons / 14 commands; 1.5.18 adds Spellbook, Wand controls and Auto-sort (17)");
++            check(buttons6.length==20&&commands6.length==20,"1.5.14 move kept 14 buttons / 14 commands; 1.5.18 adds Spellbook, Wand controls and Auto-sort (17); What's New (18); 1.5.20 Lost & Found and Trash Bin (20)");
+             check(idxOf(buttons6,"Utility Pouch")==3,"Utility Pouch now sits at index 3 (4th, top daily-driver cluster)");
+             check(idxOf(commands6,"pouch")==3,"pouch command at index 3, matching the button");
+             check(buttons6[0].equals("Spawn")&&buttons6[1].equals("Teleport to a player")&&buttons6[2].equals("Party"),"top of the menu above the Pouch is unchanged: Spawn / Teleport to a player / Party");
+             String[] wantRestB={"Spawn","Teleport to a player","Party","Excel Shop","Adventurers Guild","Jobs & Money","mcMMO Stats","Skills & Perks","Leaderboard","Server Info","Server Commands","Server Website","Auto-open on join"};
+             String[] wantRestC={"spawn","tpmenu","excelparty","shop","ag","jobs browse","mcstats","skillsperks","leaderboard","motd","servercommands","serverwebsite","menujoin"};
+             java.util.List<String> restB=new java.util.ArrayList<>(), restC=new java.util.ArrayList<>();
+-            for(String s:buttons6) if(!s.equals("Utility Pouch")&&!s.equals("Spellbook")&&!s.startsWith("Auto-sort")&&!s.startsWith("Wand controls")&&!s.equals("What's New")) restB.add(s);
+-            for(String s:commands6) if(!s.equals("pouch")&&!s.equals("spellinfo")&&!s.equals("autosort")&&!s.equals("wandstyle")&&!s.equals("whatsnew")) restC.add(s);
++            for(String s:buttons6) if(!s.equals("Utility Pouch")&&!s.equals("Spellbook")&&!s.startsWith("Auto-sort")&&!s.startsWith("Wand controls")&&!s.equals("What's New")&&!s.equals("Lost & Found")&&!s.equals("Trash Bin")) restB.add(s);
++            for(String s:commands6) if(!s.equals("pouch")&&!s.equals("spellinfo")&&!s.equals("autosort")&&!s.equals("wandstyle")&&!s.equals("whatsnew")&&!s.equals("lostfound")&&!s.equals("trash")) restC.add(s);
+             check(restB.size()==13&&java.util.Arrays.equals(restB.toArray(new String[0]),wantRestB),"removing the Pouch leaves the 1.5.13 button order of the other 13 untouched");
+             check(restC.size()==13&&java.util.Arrays.equals(restC.toArray(new String[0]),wantRestC),"removing pouch leaves the 1.5.13 command order of the other 13 untouched");
+         }catch(Exception e){check(false,"1.5.14 pouch move checks "+e);}
+@@ -236,7 +236,7 @@
+             check(!ChildproofMenu.resultLine(true,"Bob","none").contains("Done"),"childproof that ended with no access is not called done");
+             try{
+                 String py=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("plugin.yml")));
+-                check(py.contains("version: 1.5.19-whatsnew")&&py.contains("  childproofmenu:"),"plugin.yml 1.5.18 registers /childproofmenu");
++                check(py.contains("version: 1.5.21")&&py.contains("  childproofmenu:"),"plugin.yml 1.5.18 registers /childproofmenu");
+             }catch(Exception e){check(false,"plugin.yml read "+e);}
+         }
+         // v1.5.18: Spellbook button (Mike, Oct 24, 2026). Runs ExcelWandBars' /spellinfo.
+@@ -245,9 +245,9 @@
+             String[] b8=parseStringArray(s8,"BUTTONS"); String[] c8=parseStringArray(s8,"COMMANDS");
+             check(idxOf(b8,"Spellbook")==4&&idxOf(c8,"spellinfo")==4,"Spellbook button and spellinfo command both at index 4");
+             check(b8[3].equals("Utility Pouch")&&b8[5].equals("Excel Shop"),"Spellbook sits right after Utility Pouch, before Excel Shop");
+-            java.util.List<String> rb=new java.util.ArrayList<>(java.util.Arrays.asList(b8)); rb.remove("Spellbook"); rb.remove("Auto-sort my chests: on/off"); rb.remove("Wand controls: Classic or Sneak bars"); rb.remove("What's New");
++            java.util.List<String> rb=new java.util.ArrayList<>(java.util.Arrays.asList(b8)); rb.remove("Spellbook"); rb.remove("Auto-sort my chests: on/off"); rb.remove("Wand controls: Classic or Sneak bars"); rb.remove("What's New"); rb.remove("Lost & Found"); rb.remove("Trash Bin");
+             check(java.util.Arrays.equals(rb.toArray(new String[0]),new String[]{"Spawn","Teleport to a player","Party","Utility Pouch","Excel Shop","Adventurers Guild","Jobs & Money","mcMMO Stats","Skills & Perks","Leaderboard","Server Info","Server Commands","Server Website","Auto-open on join"}),"removing Spellbook and Auto-sort leaves the exact 1.5.17 button order");
+-            java.util.List<String> rc=new java.util.ArrayList<>(java.util.Arrays.asList(c8)); rc.remove("spellinfo"); rc.remove("autosort"); rc.remove("wandstyle"); rc.remove("whatsnew");
++            java.util.List<String> rc=new java.util.ArrayList<>(java.util.Arrays.asList(c8)); rc.remove("spellinfo"); rc.remove("autosort"); rc.remove("wandstyle"); rc.remove("whatsnew"); rc.remove("lostfound"); rc.remove("trash");
+             check(java.util.Arrays.equals(rc.toArray(new String[0]),new String[]{"spawn","tpmenu","excelparty","pouch","shop","ag","jobs browse","mcstats","skillsperks","leaderboard","motd","servercommands","serverwebsite","menujoin"}),"removing spellinfo and autosort leaves the exact 1.5.17 command order");
+             check(!ExcelBedrockMenu.requiresConfirm("spellinfo",false)&&!ExcelBedrockMenu.requiresConfirm("spellinfo",true),"Spellbook never opens the teleport confirm");
+             check(s8.contains("case \"spellinfo\":")&&s8.contains("Bukkit.getPluginCommand(\"spellinfo\") == null"),"spellinfo is guarded: missing ExcelWandBars gives a message, not an unknown command");
+@@ -277,8 +277,70 @@
+             int g=ExcelBedrockMenu.catalogGroupIndexFor("server info"); int found=-1;
+             for(int i=0;i<ExcelBedrockMenu.catalogEntryCount(g);i++) if("whatsnew".equals(ExcelBedrockMenu.catalogRun(g,i))) found=i;
+             check(found==ExcelBedrockMenu.catalogEntryCount(g)-1,"/whatsnew is the last runnable row of Server Info");
+-            check(b9.length==18&&c9.length==18,"18 buttons, 18 commands");
++            check(b9.length==20&&c9.length==20,"20 buttons, 20 commands (1.5.20 adds two)");
+         }catch(Exception e){check(false,"1.5.19 whatsnew checks "+e);}
++        // v1.5.20: Lost & Found and Trash Bin buttons (Mike, Oct 25, 2026: match the Java compass)
++        try{
++            String s10=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java")));
++            String[] b10=parseStringArray(s10,"BUTTONS"); String[] c10=parseStringArray(s10,"COMMANDS");
++            int lf=idxOf(b10,"Lost & Found"), tb=idxOf(b10,"Trash Bin");
++            check(lf==11&&tb==12,"Lost & Found at index 11, Trash Bin at index 12");
++            check(lf==idxOf(c10,"lostfound")&&tb==idxOf(c10,"trash"),"Lost & Found lines up with lostfound, Trash Bin with trash");
++            check(tb==lf+1,"the two new buttons sit next to each other, Lost & Found first (Java Me row order: slot 14 then 16)");
++            check(b10[lf-1].equals("Leaderboard")&&b10[lf-2].equals("Skills & Perks"),"they close the Me cluster right after Leaderboard");
++            check(b10[tb+1].equals("Server Info"),"Server Info follows Trash Bin (help cluster unchanged)");
++            check(java.util.Collections.frequency(java.util.Arrays.asList(b10),"Lost & Found")==1&&java.util.Collections.frequency(java.util.Arrays.asList(b10),"Trash Bin")==1,"each new label appears once");
++            check(java.util.Collections.frequency(java.util.Arrays.asList(c10),"lostfound")==1&&java.util.Collections.frequency(java.util.Arrays.asList(c10),"trash")==1,"each new command appears once");
++            java.util.List<String> rb=new java.util.ArrayList<>(java.util.Arrays.asList(b10)); rb.remove("Lost & Found"); rb.remove("Trash Bin");
++            check(java.util.Arrays.equals(rb.toArray(new String[0]),new String[]{"Spawn","Teleport to a player","Party","Utility Pouch","Spellbook","Excel Shop","Adventurers Guild","Jobs & Money","mcMMO Stats","Skills & Perks","Leaderboard","Server Info","Server Commands","Server Website","What's New","Wand controls: Classic or Sneak bars","Auto-sort my chests: on/off","Auto-open on join"}),"removing the two new buttons leaves the exact live 1.5.19-whatsnew button order");
++            java.util.List<String> rc=new java.util.ArrayList<>(java.util.Arrays.asList(c10)); rc.remove("lostfound"); rc.remove("trash");
++            check(java.util.Arrays.equals(rc.toArray(new String[0]),new String[]{"spawn","tpmenu","excelparty","pouch","spellinfo","shop","ag","jobs browse","mcstats","skillsperks","leaderboard","motd","servercommands","serverwebsite","whatsnew","wandstyle","autosort","menujoin"}),"removing the two new commands leaves the exact live 1.5.19-whatsnew command order");
++            check(!java.util.Arrays.asList(c10).contains("recover")&&!java.util.Arrays.asList(c10).contains("bin"),"menu runs /lostfound and /trash, not the /recover or /bin aliases");
++            check(!java.util.Arrays.asList(c10).contains("trash chest")&&!java.util.Arrays.asList(c10).contains("trash undo"),"Trash Bin opens the plain bin (same as Java [player] trash)");
++            check(!ExcelBedrockMenu.requiresConfirm("lostfound",false)&&!ExcelBedrockMenu.requiresConfirm("lostfound",true),"Lost & Found never opens the teleport confirm");
++            check(!ExcelBedrockMenu.requiresConfirm("trash",false)&&!ExcelBedrockMenu.requiresConfirm("trash",true),"Trash Bin never opens the teleport confirm");
++            check(ExcelBedrockMenu.teleportConfirmTitle("lostfound",false)==null&&ExcelBedrockMenu.teleportConfirmTitle("trash",false)==null,"no confirm title for either");
++            check(s10.contains("case \"lostfound\":")&&s10.contains("runGuarded(player, \"lostfound\","),"lostfound is guarded (missing plugin or permission gives a message)");
++            check(s10.contains("case \"trash\":")&&s10.contains("runGuarded(player, \"trash\","),"trash is guarded (missing plugin or permission gives a message)");
++            check(s10.contains("cmd.testPermissionSilent(player)"),"guard uses the command's own permission node (exceldeathrecord.lostfound / exceltrash.use)");
++            check(ExcelBedrockMenu.guardOutcome(false,false)==0&&ExcelBedrockMenu.guardOutcome(false,true)==0,"missing command -> missing message, never runs");
++            check(ExcelBedrockMenu.guardOutcome(true,false)==1,"no permission -> denied message, never runs");
++            check(ExcelBedrockMenu.guardOutcome(true,true)==2,"command present + permission -> runs as the player");
++            check(s10.contains("Lost & Found isn't available right now")&&s10.contains("The Trash Bin isn't available right now"),"missing-plugin messages name the feature");
++            check("Lost & Found".chars().allMatch(c->c<128)&&"Trash Bin".chars().allMatch(c->c<128),"new labels are plain ASCII");
++            int g=ExcelBedrockMenu.catalogGroupIndexFor("server info");
++            check(ExcelBedrockMenu.catalogEntryCount(g)==10&&ExcelBedrockMenu.catalogTotalEntries()==45,"Server Commands catalogue unchanged (45 entries)");
++        }catch(Exception e){check(false,"1.5.20 lost & found / trash checks "+e);}
++        // v1.5.21: group text colors (Mike, Oct 25, 2026: "Yes color the text")
++        try{
++            String s11=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java")));
++            String[] b11=parseStringArray(s11,"BUTTONS"); String[] c11=parseStringArray(s11,"COMMANDS");
++            check(java.util.Arrays.stream(b11).noneMatch(x->x.contains("\u00a7")),"BUTTONS keep plain labels (no codes in the array)");
++            java.util.Map<String,String> want=new java.util.HashMap<>();
++            for(String x:new String[]{"spawn","tpmenu","excelparty","ag"}) want.put(x,"\u00a71");
++            for(String x:new String[]{"pouch","spellinfo","jobs browse","mcstats","skillsperks","leaderboard","lostfound","trash"}) want.put(x,"\u00a75");
++            want.put("shop","\u00a72");
++            for(String x:new String[]{"motd","servercommands","serverwebsite","whatsnew"}) want.put(x,"\u00a7n");
++            for(String x:new String[]{"wandstyle","autosort","menujoin"}) want.put(x,"\u00a78");
++            check(want.size()==c11.length,"every one of the 20 commands has a group");
++            boolean all=true; for(String x:c11) if(!want.get(x).equals(ExcelBedrockMenu.groupColor(x))) {all=false;System.out.println("  wrong color for "+x);}
++            check(all,"group colors: Travel 1, Me 5, Shops 2, Help n (copper), Settings 8");
++            check(ExcelBedrockMenu.groupColor("nosuch").equals(""),"unknown command gets no color");
++            String[] m0=ExcelBedrockMenu.menuLabels(false), m1=ExcelBedrockMenu.menuLabels(true);
++            check(m0.length==b11.length&&m1.length==b11.length,"menuLabels keeps 20 labels, locked or not");
++            boolean same=true; for(int i=0;i<b11.length;i++){ if(!ExcelBedrockMenu.stripCodes(m0[i]).equals(b11[i])) same=false; if(!m0[i].startsWith(ExcelBedrockMenu.groupColor(c11[i]))) same=false; }
++            check(same,"each sent label = its group color + the exact plain label");
++            int ag=idxOf(c11,"ag");
++            check(ExcelBedrockMenu.stripCodes(m1[ag]).equals(ExcelBedrockMenu.lockedLabel("Adventurers Guild"))&&m1[ag].startsWith("\u00a71"),"locked Guild label still plain text underneath, blue");
++            check(ExcelBedrockMenu.stripCodes(m0[idxOf(c11,"autosort")]).equals("Auto-sort my chests: on/off")&&ExcelBedrockMenu.stripCodes(m0[idxOf(c11,"menujoin")]).equals("Auto-open on join"),"toggle labels unchanged under the color");
++            check(ExcelBedrockMenu.stripCodes("\u00a71A\u00a7nB\u00a7lC\u00a7rD").equals("ABCD"),"stripCodes removes Java and Bedrock-only codes");
++            check(ExcelBedrockMenu.stripCodes(null)==null,"stripCodes(null) is null");
++            check(s11.contains("String[] labels = menuLabels(isGuildLocked());"),"openMenu sends the colored labels");
++            check(s11.contains("String command = COMMANDS[id];"),"routing is still by button index, not by label text");
++            String cs=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/ClickStats.java")));
++            check(cs.contains("ExcelBedrockMenu.stripCodes(button)"),"menu stats log the plain label");
++            check(!java.util.Arrays.asList(ExcelBedrockMenu.catalogGroupFormButtons(0)).stream().anyMatch(x->x.contains("\u00a7")),"other forms (Server Commands groups) are not colored");
++        }catch(Exception e){check(false,"1.5.21 color checks "+e);}
+         System.out.println(fails==0?"ALL PASS":"FAILED "+fails);
+         if(fails>0)System.exit(1);
+     }
