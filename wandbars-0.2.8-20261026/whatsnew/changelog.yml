@@ -1,0 +1,179 @@
+# ExcelWhatsNew news entries. NEWEST FIRST. After editing: /whatsnew reload (no restart).
+#
+# Each entry:
+#   id:      unique, never reuse or rename (players' OK is saved by this id)
+#   date:    short label for the title, e.g. "Oct 24"  -> "What's New (Oct 24)"
+#   posted:  YYYY-MM-DD (for the join age limit in config.yml)
+#   title:   one short line
+#   new-commands:     list of {cmd, what, bedrock (optional), java (optional)}
+#                     what = one plain line, kid-friendly. bedrock/java = the no-typing way
+#                     (a compass button or a pop-up), shown only to that kind of player.
+#   better-commands:  same shape, for commands that changed
+#   changes:          short plain lines for everything else
+# House style: plain words, short lines, no em dashes, no player names.
+# Add a new entry at the TOP; everyone who has not seen it gets it once on their next join.
+
+entries:
+  - id: 2026-10-26-wand-ranks-by-casting
+    date: Oct 26
+    posted: 2026-10-26
+    title: "Your wand ranks up when you cast"
+    changes:
+      - "Casting spells earns SP. Enough SP and your wand moves up a rank by itself."
+      - "Same wand, every spell kept, plus the new rank's spells. The whole server cheers."
+      - "Beginner to Student 800 SP, then Apprentice 1,600, then Master 1,800. About two days of play each."
+      - "Your SP is at the top of your Spell Book. A short line above your hotbar shows each gain."
+      - "Weekends give SP x1.2. Casting near your party gives x1.25. Together x1.5."
+      - "Each spell pays fully about once a minute. Healing pays when it really heals someone."
+  - id: 2026-10-26-wand-last-slot
+    date: Oct 26
+    posted: 2026-10-26
+    title: "Tap bar: your wand lives in slot 9"
+    changes:
+      - "Tap bar and Tap to pick: your wand moves to the last hotbar slot. Whatever was there swaps into its old slot."
+      - "Phones and tablets, Tap bar: tap the wand again to get your items back."
+      - "Computer, Tap bar: Q or right click puts your items back, same as before."
+      - "Spell info now shows what each spell really does and what the next rank changes."
+  - id: 2026-10-26-tap-to-pick-fix
+    date: Oct 26
+    posted: 2026-10-26
+    title: "Tap to pick really picks now"
+    changes:
+      - "Tap to pick: tapping a spell icon now only picks it, even Cure, Boon and Feed. The tap never casts."
+      - "Phones and tablets: press and hold the screen to cast the spell you picked. The bar stays up."
+      - "Computer: left click casts the spell you picked. Right click or Q still puts your items back."
+  - id: 2026-10-26-newer-news
+    date: Oct 26
+    posted: 2026-10-26
+    title: "News pages go both ways"
+    better-commands:
+      - cmd: /whatsnew
+        what: "New Newer news button. Page back to older news, then use Newer news to come forward again."
+        bedrock: "tap What's New on the compass."
+        java: "Or click What's New in the compass menu."
+  - id: 2026-10-26-mend-mana
+    date: Oct 26
+    posted: 2026-10-26
+    title: "Mend costs more mana"
+    changes:
+      - "Mend now costs more mana (4 / 8 / 12 / 17 by wand). Spamming it empties your bar in about 20 casts, so mix in your other heals."
+  - id: 2026-10-26-tap-bar-pages
+    date: Oct 26
+    posted: 2026-10-26
+    title: "Tap bar: every spell on your bar"
+    better-commands:
+      - cmd: /wandstyle
+        what: "Tap bar now puts every spell you have on the hotbar. More than fit? Crouch for the next page."
+        bedrock: "tap Wand controls on the compass."
+        java: "Or click Wand controls in the compass menu."
+    changes:
+      - "Phones and tablets: press and hold the screen to read what a spell does. It never casts."
+      - "Every wand style now says what crouch does in it."
+      - "Java players can pick Sneak bars too."
+      - "Fixed: in a stance, the Tap bar and compass no longer flicker when you scroll."
+  - id: 2026-10-26-trash-confirm
+    date: Oct 26
+    posted: 2026-10-26
+    title: "Trash asks before it deletes"
+    better-commands:
+      - cmd: /trash
+        what: "Tap OK once to see how many items, then tap OK again to delete. Wait 5 seconds and nothing is deleted."
+        bedrock: "tap Trash Bin on the compass."
+        java: "Or click Trash Bin in the compass menu."
+      - cmd: /trash chest
+        what: "Throw away things from a chest. Look at the chest and type it, or use the chest button in Trash."
+      - cmd: /trash help
+        what: "Explains the trash bin in chat. The book button in Trash does the same."
+    changes:
+      - "After a delete, chat says how many items went. Oops? Tap Recover or type /trash undo within 5 minutes."
+      - "From a chest: look at the chest, open Trash, and the first button names it. Or tap that button, then tap the chest."
+      - "Only chests you are allowed to open."
+  - id: 2026-10-26-stance-scroll
+    date: Oct 26
+    posted: 2026-10-26
+    title: "Stance lock no longer blocks your hotbar"
+    changes:
+      - "Fixed: in Fighter or Caster stance, your scroll wheel skips over the locked wand or weapon."
+      - "So every other hotbar slot, potions too, is always in reach."
+      - "On a controller, the bumpers skip it the same way. Tapping a slot works as before."
+      - "The locked item still never comes into your hand during the stance."
+  - id: 2026-10-25-bedrock-port
+    date: Oct 25
+    posted: 2026-10-25
+    title: "Bedrock players: port 25622 only"
+    changes:
+      - "The old Bedrock port is off now (Oct 26). Phones, tablets, Windows and consoles join only on port 25622."
+      - "Server will not connect on Bedrock? Edit the server and change only the port to 25622."
+      - "Keep your saved address. wrv.duckdns.org is the new short one, and the old address still works. Change only the port."
+      - "The first time you join on the new port, tap Trust. You only do it once."
+      - "Use BedrockConnect on a console? Put the new port there too."
+      - "Java players: nothing changes for you."
+  - id: 2026-10-25-trial-vaults
+    date: Oct 25
+    posted: 2026-10-25
+    title: "Trial vaults reopen"
+    changes:
+      - "Used a trial vault already? It reopens for you after 24 hours."
+      - "Click (or tap) a used vault to see how long is left."
+      - "In a hurry? Reopen it early: sneak + right-click it on a computer, sneak + tap it on a phone or console, or type /vaults."
+      - "Early reopen costs up to $750, and less the closer it is to ready."
+      - "You still need a trial key to open it."
+      - "Ominous vaults join in later. Keep pushing."
+  - id: 2026-10-25-wand-styles
+    date: Oct 25
+    posted: 2026-10-25
+    title: "New wand controls: Tap bar, Cycle and the original tap style"
+    better-commands:
+      - cmd: /wandstyle
+        what: "Pick how your Magic wand works. There are 5 styles now, and you can switch any time."
+        bedrock: "tap Wand controls on the compass."
+        java: "Or click Wand controls in the compass menu."
+    changes:
+      - "Tap bar (best on phone): tap your wand and your hotbar fills with spell icons. Tap an icon to cast it."
+      - "Tap bar: press and hold to read about the spell you last tapped: what it does, cost, cooldown and the next rank."
+      - "Tap bar: tap an empty slot to get your items back, or wait 15 seconds. Your items are always kept safe."
+      - "Cycle: each press goes to the next spell. Crouch to go back one."
+      - "Tap to cycle (original): the first wand style is back. Tap an icon to pick a spell, then press and hold to cast."
+      - "Classic and Sneak bars work the same as before."
+      - "Computers can now pick Classic, Cycle, Tap to cycle or Tap bar too. Sneak bars stays for phones and consoles."
+  - id: 2026-10-24-evening
+    date: Oct 24
+    posted: 2026-10-24
+    title: "Lost & Found, Maker's mark, a better trash bin, and more"
+    new-commands:
+      - cmd: /lostfound
+        what: "Get back your own stuff lost to lava, fire, the void or a despawn in the last 7 days. Also /recover."
+        bedrock: "tap Lost & Found on the compass."
+        java: "Or click Lost & Found in the compass menu."
+      - cmd: /mark off or /mark on
+        what: "Choose if things you craft get a \"Crafted by\" line with your name. /mark stats off hides the counters."
+        bedrock: "tap Maker's mark and Gear stats on the compass."
+        java: "Or click Maker's mark in the compass menu."
+      - cmd: /tips ok
+        what: "Hides the last tip. /tips shows all your tips."
+        bedrock: "tap OK on the tip pop-up."
+        java: "Or click [OK] on the tip in chat."
+      - cmd: /autosort
+        what: "Turns chest sorting on or off, just for you. It starts off. Also /sort."
+        bedrock: "tap Auto-sort my chests on the compass."
+        java: "Or click Auto-sort my chests in the compass menu."
+      - cmd: /wandstyle
+        what: "Pick how your wand controls work, on any device."
+        bedrock: "tap Wand controls on the compass."
+        java: "Or click Wand controls in the compass menu."
+      - cmd: /whatsnew
+        what: "Shows this news again any time. Also /news."
+        bedrock: "tap What's New on the compass."
+        java: "Or click What's New in the compass menu."
+    better-commands:
+      - cmd: /trash
+        what: "Put items on the red side and press OK to throw them away. Close it without OK and you get them back. /trash undo still works for 5 minutes."
+        bedrock: "tap Trash Bin on the compass."
+        java: "Or click Trash Bin in the compass menu."
+    changes:
+      - "Lost & Found costs $16,000. Your first one is free if you have less than $10,000. One a day."
+      - "Maker's mark: gear you craft shows who made it. Weapons count kills, and armor counts hits blocked."
+      - "Tips: the first few times you use something new, a short tip explains it until you press OK."
+      - "The compass Spawn button now takes you to the real spawn, the same place as /spawn."
+      - "Wand controls: everyone can pick a style with /wandstyle. Sneak bars is for phones and consoles."
+      - "The menu compass now opens when you tap the air, not just a block."
