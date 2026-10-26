@@ -1,0 +1,88 @@
+ca35e86d473913d005a66ccc8b7a45be2be65478c9ebaecd85f5d2d24ac15cd5  /workspace/batch-next/whatsnew-newer-20261026/ExcelWhatsNew-0.1.1.jar
+ok   seed changelog has 1 entry
+ok   seed changelog has no warnings []
+ok   seed id/date/posted
+ok   form title is What's New (Oct 24)
+ok   New commands lists /lostfound
+ok   New commands lists /mark
+ok   New commands lists /tips
+ok   New commands lists /autosort
+ok   New commands lists /wandstyle
+ok   New commands lists /whatsnew
+ok   Commands that got better: /trash
+ok   one-line description for /lostfound (100 chars)
+ok   one-line description for /mark off or /mark on (102 chars)
+ok   one-line description for /tips ok (46 chars)
+ok   one-line description for /autosort (71 chars)
+ok   one-line description for /wandstyle (56 chars)
+ok   one-line description for /whatsnew (43 chars)
+ok   /lostfound is registered by ExcelDeathRecord-0.3.0.jar
+ok   /recover is registered by ExcelDeathRecord-0.3.0.jar
+ok   /mark is registered by ExcelMakersMark-0.1.0.jar
+ok   /tips is registered by ExcelTips-0.1.0.jar
+ok   /autosort is registered by autosort-0.1.17+26.3-paper.jar
+ok   /sort is registered by autosort-0.1.17+26.3-paper.jar
+ok   /wandstyle is registered by ExcelWandBars-0.2.1.jar
+ok   /trash is registered by ExcelTrash-0.2.0.jar
+ok   /whatsnew and /news registered by this plugin
+ok   /whatsnew is for everyone (default true)
+ok   no em or en dashes
+ok   no UUIDs
+ok   nothing staff-only in the news
+ok   java header
+ok   java has the three sections
+ok   java never shows the Bedrock no-typing hints
+ok   java shows the Java compass hint
+ok   bedrock shows the no-typing hint
+ok   bedrock never shows the Java compass hint
+ok   bedrock section order
+ok   new entry on top parses
+ok   never said OK -> newest
+ok   OK on older -> newest is pending
+ok   OK on newest -> nothing
+ok   OK id removed, OK day not before newest -> nothing
+ok   OK id removed, newest posted after OK day -> pending
+ok   older than max-age-days -> not on join
+ok   max-age 0 = no limit
+ok   unseen count
+ok   dup id and missing id skipped
+ok   em dash warned
+ok   missing slash warned
+ok   missing what warned
+ok   wrong order warned
+ok   missing entries list warned
+ok   Newer news only when idx > 0
+ok   Newer news opens /whatsnew idx (the next newer one)
+ok   Older news opens /whatsnew idx+2 (unchanged)
+ok   Older news stops at the last shown entry
+ok   form newest + pending: OK, Older
+ok   form newest, already OK: Older, Close
+ok   form middle: Newer, Older, Close
+ok   form oldest shown: Newer, Close
+ok   form pending middle: OK, Newer, Older
+ok   form single entry: one button
+ok   middle form: id 0 Newer, 1 Older, 2 Close
+ok   pending newest: id 0 OK, id 1 Older (same ids as 0.1.0)
+ok   oldest form: id 0 Newer, id 1 Close (never Older)
+ok   closed or out-of-range id does nothing
+ok   java newest pending: [OK] [Older news]
+ok   java middle: [Newer news] [Older news]
+ok   java oldest: [Newer news]
+ok   java single entry, already OK: no row
+ok   Java/Bedrock parity: same buttons in the same order for every idx/shown/pending (Close is Bedrock only)
+ok   typed hint has both directions: &7Newer news: &e/whatsnew 3&7. Older news: &e/whatsnew 5&7.
+ok   typed hint newest: OK + Older, no Newer
+ok   typed hint oldest: Newer only
+ok   typed hint nothing to say: no line
+ok   list hint 1 entry: none
+ok   list hint 2 entries
+ok   list hint 10 entries: /whatsnew 2 to /whatsnew 10
+ok   list hint no longer hardcodes (or 3)
+ok   no em or en dashes in new text
+ok   no em or en dashes in new text
+ok   default config.yml has text.newer-button
+ok   live config 62b95a5e has no newer-button (code default 'Newer news' applies)
+ok   live config show-count is 10
+ok   code reads text.newer-button with default 'Newer news'
+ok   hardcoded (or 3) gone from source
+RESULT 86 passed, 0 failed

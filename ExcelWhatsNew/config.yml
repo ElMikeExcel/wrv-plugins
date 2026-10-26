@@ -1,0 +1,35 @@
+# ExcelWhatsNew 0.1.1 (Wink Reyes Valley). Settings. The news itself is in changelog.yml.
+# After editing either file: /whatsnew reload (no restart needed).
+
+join:
+  # Show the newest news entry once per join until the player says OK.
+  enabled: true
+  # Wait this long after joining before trying (lets the join menu and other join
+  # messages go first). ExcelTips pop-ups wait 45 s after join, so news comes first.
+  delay-seconds: 8
+  # Then wait for a calm moment: no menu or chest open, not in a fight, not dead.
+  # Bedrock: the player has moved in the last few seconds (nobody can move while a
+  # menu or tip pop-up is open, so this keeps the news off other pop-ups).
+  bedrock-require-recent-move: true
+  move-window-seconds: 3
+  combat-quiet-seconds: 10
+  # Give up for this join if no calm moment comes; it tries again next join.
+  max-wait-seconds: 180
+  # Don't announce news older than this many days on join (/whatsnew still has it). 0 = no limit.
+  max-age-days: 30
+
+# How many entries /whatsnew can page through (newest first).
+show-count: 3
+
+text:
+  ok-button: 'OK'
+  older-button: 'Older news'
+  # 0.1.1: pages back toward the newest entry. Missing key = 'Newer news'.
+  newer-button: 'Newer news'
+  close-button: 'Close'
+  footer-java: "Read it again any time: /whatsnew, or What's New in the compass menu."
+  footer-bedrock: "Read it again any time: tap What's New on the compass, or type /whatsnew."
+
+# Dates in changelog.yml are in this time zone (for max-age-days).
+time-zone: America/Chicago
+debug: false

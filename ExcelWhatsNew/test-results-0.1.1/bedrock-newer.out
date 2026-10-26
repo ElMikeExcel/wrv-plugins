@@ -1,0 +1,30 @@
+09:21:02 === bedrock newer Mon Oct 26 2026 09:21:02 GMT-0500 (Central Daylight Time)
+09:21:02 whatsnew reset .WNNewerB => No player .WNNewerB on file.
+09:21:05 spawned
+09:21:08 FORM other (closing) {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"
+09:21:09 FORM ours {"title":"What's New (Oct 26)","content":"§lTrash asks before it deletes§r\n\n§3§lCommands that got better§r\n§e/trash§r - Tap OK once to see how many items, then tap OK again to delete. Wait 5 second
+09:21:10 PASS Bedrock: /whatsnew 3 opens a form
+09:21:10 entry 3 buttons ["Newer news","Older news","Close"]
+09:21:10 PASS entry 3 buttons: Newer news, Older news, Close
+09:21:10 FORM ours {"title":"What's New (Oct 26)","content":"§lTap bar: every spell on your bar§r\n\n§3§lCommands that got better§r\n§e/wandstyle§r - Tap bar now puts every spell you have on the hotbar. More than fit? C
+09:21:10 PASS tap Newer news opens another form
+09:21:10 entry 2 buttons ["Newer news","Older news","Close"]
+09:21:10 PASS Newer news went to entry 2 (different text, same 3 buttons)
+09:21:10 FORM ours {"title":"What's New (Oct 26)","content":"§lTrash asks before it deletes§r\n\n§3§lCommands that got better§r\n§e/trash§r - Tap OK once to see how many items, then tap OK again to delete. Wait 5 second
+09:21:10 PASS Older news from entry 2 goes back to entry 3 (same text)
+09:21:10 FORM ours {"title":"What's New (Oct 26)","content":"§lTap bar: every spell on your bar§r\n\n§3§lCommands that got better§r\n§e/wandstyle§r - Tap bar now puts every spell you have on the hotbar. More than fit? C
+09:21:10 FORM ours {"title":"What's New (Oct 26)","content":"§lMend costs more mana§r\n\n§5§lOther changes§r\n- Mend now costs more mana (4 / 8 / 12 / 17 by wand). Spamming it empties your bar in about 20 casts, so mix 
+09:21:11 newest buttons ["OK","Older news"]
+09:21:11 PASS Newer twice reaches the newest: OK, Older news (no Newer)
+09:21:11 PASS newest form is the Mend news
+09:21:12 PASS OK on the newest still says Got it
+09:21:12 FORM ours {"title":"What's New (Oct 24)","content":"§lLost & Found, Maker's mark, a better trash bin, and more§r\n\n§a§lNew commands§r\n§e/lostfound§r - Get back your own stuff lost to lava, fire, the void or a
+09:21:12 entry 8 buttons ["Newer news","Close"]
+09:21:12 PASS last entry: Newer news, Close
+09:21:16 PASS Close (button 1 on the last entry) opens nothing
+09:21:16 FORM ours {"title":"What's New (Oct 26)","content":"§lMend costs more mana§r\n\n§5§lOther changes§r\n- Mend now costs more mana (4 / 8 / 12 / 17 by wand). Spamming it empties your bar in about 20 casts, so mix 
+09:21:17 newest after OK buttons ["Older news","Close"]
+09:21:17 PASS newest after OK: Older news, Close
+09:21:19 list tail: Type /whatsnew 2 to /whatsnew 8 to read an older one.
+09:21:19 PASS Bedrock list hint: /whatsnew 2 to /whatsnew 8
+09:21:22 RESULT bedrock-newer 12 passed 0 failed
