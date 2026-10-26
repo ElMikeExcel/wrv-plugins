@@ -1,0 +1,16 @@
+--- replaced-base/stage5/paths.yml
++++ live-stages/stage5/paths.yml
+@@ -1,4 +1,5 @@
+ #
++# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): path lists re-spread (all spells open by Seal 4); Disposal removed.
+ # Wink Reyes Valley - Magic SEAL 5 — THE GUILD OPENS, THE SCHOOLS OPEN progression paths (CUMULATIVE).
+ # WRV-070. Paired with config.yml: load_default_paths: false
+ # -> defaults/paths.defaults.yml is NOT loaded. Only the path below exists.
+@@ -148,7 +149,6 @@
+   - glide
+   - lift
+   - stash
+-  - disposal
+   - wave
+   - smite
+   - growth

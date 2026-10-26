@@ -1,0 +1,157 @@
+--- replaced-base/stage5/spells.yml
++++ live-stages/stage5/spells.yml
+@@ -1338,6 +1338,10 @@
+ stormshackle|2:
+   upgrade_required_path: apprentice
+   upgrade_required_casts: 40
++  costs:
++    mana: 16  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++  parameters:
++    cooldown: 7000  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+ stormshackle|3:
+   actions:
+     cast:
+@@ -2429,34 +2433,10 @@
+     type: ender_chest
+     cooldown: 2000
+ 
++# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): Disposal spell removed (destroys items, no undo).
++# enabled: false makes Magic 11.2.5 skip this key at load (ConfigurationUtils.isEnabled).
+ disposal:
+-  icon: disposal
+-  category: utility
+-  worth: 1060
+-  earns: 1
+-  show_undoable: false
+-  quick_cast: true
+-  actions:
+-    cast:
+-    - class: Inventory
+-  effects:
+-    cast:
+-    - class: EffectSingle
+-      sound: entity_enderman_hurt
+-      effectlib:
+-        class: WarpEffect
+-        particle: block_crack
+-        material: obsidian
+-        duration: 1000
+-        particle_count: 10
+-        particle_offset_x: 1
+-        particle_offset_z: 1
+-        particle_offset_y: 1
+-  parameters:
+-    target: self
+-    type: disposal
+-    cooldown: 2000
+-    title: Disposal
++  enabled: false
+ 
+ repairitem:
+   icon: anvil
+@@ -2546,6 +2526,7 @@
+   upgrade_required_path: master
+   upgrade_required_casts: 50
+   parameters:
++    cooldown: 40000  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+     radius: 6
+ 
+ lightning|3:
+@@ -2872,7 +2853,8 @@
+   # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+   upgrade_required_path: apprentice
+   parameters:
+-    range: 64
++    cooldown: 850  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++    range: 72  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT) (was 64)
+     player_damage: 4
+     entity_damage: 6
+     target_breakables: 3
+@@ -3604,6 +3586,9 @@
+       radius: 8
+       target_offset: 0,4,0
+       size: 3
++  parameters:
++    cooldown: 1500  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++    range: 24  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+ 
+ flare|3:
+   effects:
+@@ -3621,6 +3606,9 @@
+       target_offset: 0,12,0
+       size: 4
+       color: false
++  parameters:
++    cooldown: 1000  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++    range: 32  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+ 
+ stun:
+   icon: stun
+@@ -4820,6 +4808,7 @@
+ 
+ platform|4:
+   parameters:
++    radius: 2.5  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+     brush: ''
+ 
+ walls:
+@@ -6218,7 +6207,7 @@
+   parameters:
+     target: self
+     duration: 5000
+-    cooldown: 180000
++    cooldown: 600000  # WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): long cooldown (was 180000)
+     cooldown_mage: 6000
+     transparent: transparent_to_construction
+     effect_damage_resistance: 2
+@@ -7082,7 +7071,7 @@
+     allow_night: true
+     allow_day: true
+     allow_glowstone: false
+-    cooldown: 10000
++    cooldown: 1200000  # WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): long cooldown (was 10000)
+     time: toggle
+   costs:
+     mana: 40
+@@ -7141,7 +7130,7 @@
+         radius: 4
+   parameters:
+     target: none
+-    cooldown: 900000
++    cooldown: 1200000  # WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): long cooldown (was 900000)
+     weather: cycle
+   costs:
+     mana: 150
+@@ -7251,6 +7240,10 @@
+ mend|2:
+   upgrade_required_path: student
+   upgrade_required_casts: 40
++  costs:
++    mana: 6  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++  parameters:
++    amount: 1.75  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+ mend|3:
+   upgrade_required_path: apprentice
+   upgrade_required_casts: 40
+@@ -7322,6 +7315,10 @@
+ flashheal|2:
+   upgrade_required_path: apprentice
+   upgrade_required_casts: 40
++  costs:
++    mana: 19  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++  parameters:
++    amount: 5.5  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+ flashheal|3:
+   upgrade_required_path: master
+   upgrade_required_casts: 40
+@@ -7455,6 +7452,10 @@
+ greaterheal|2:
+   upgrade_required_path: master
+   upgrade_required_casts: 40
++  costs:
++    mana: 9  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++  parameters:
++    amount: 7  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+ greaterheal|3:
+   parameters:
+     amount: 8

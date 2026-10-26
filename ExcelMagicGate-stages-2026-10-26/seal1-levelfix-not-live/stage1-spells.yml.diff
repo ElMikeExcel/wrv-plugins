@@ -1,0 +1,35 @@
+--- base/spells.yml	2026-10-26 15:08:19.295016149 -0500
++++ new/spells.yml	2026-10-26 15:08:19.375016503 -0500
+@@ -1378,6 +1378,10 @@
+ mend|2:
+   upgrade_required_path: student
+   upgrade_required_casts: 40
++  costs:
++    mana: 6  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++  parameters:
++    amount: 1.75  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+ mend|3:
+   upgrade_required_path: apprentice
+   upgrade_required_casts: 40
+@@ -1449,6 +1453,10 @@
+ flashheal|2:
+   upgrade_required_path: apprentice
+   upgrade_required_casts: 40
++  costs:
++    mana: 19  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++  parameters:
++    amount: 5.5  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+ flashheal|3:
+   upgrade_required_path: master
+   upgrade_required_casts: 40
+@@ -1582,6 +1590,10 @@
+ greaterheal|2:
+   upgrade_required_path: master
+   upgrade_required_casts: 40
++  costs:
++    mana: 9  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
++  parameters:
++    amount: 7  # WRV level fix Oct 26 2026 (Mike 3:05 PM CDT)
+ greaterheal|3:
+   parameters:
+     amount: 8

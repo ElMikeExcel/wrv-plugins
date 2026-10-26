@@ -1,0 +1,56 @@
+# Wink Reyes Valley — Magic SEAL 2 — THE PATHFINDER (CUMULATIVE packet)
+# LuckPerms grants. WRV-070.
+#
+# Run AFTER the install boot with this packet (see INSTALL-RUNBOOK.md).
+# Nodes are magic.cast.<spell> = true. No wildcards, ever: no magic.*,
+# no magic.cast.*, no negation list (locked spells do not exist in the
+# packet config, so there is nothing to negate).
+#
+# Honest note (same as Phase 1): in Magic 11.2.5's plugin.yml,
+# magic.cast.* ships with default: true; a player's real gate is
+# (a) the spell EXISTING (hard whitelist) and (b) their wand/path
+# knowing it. These grants are the declarative, auditable record.
+
+# DEFAULT group — all 33 path spells (seals 1..2 cumulative):
+lp group default permission set magic.cast.heal true
+lp group default permission set magic.cast.boon true
+lp group default permission set magic.cast.feed true
+lp group default permission set magic.cast.extinguish true
+lp group default permission set magic.cast.aqualung true
+lp group default permission set magic.cast.cure true
+lp group default permission set magic.cast.shell true
+lp group default permission set magic.cast.gills true
+lp group default permission set magic.cast.stormshackle true
+lp group default permission set magic.cast.superheal true
+lp group default permission set magic.cast.recall true
+lp group default permission set magic.cast.blessing true
+lp group default permission set magic.cast.recall_death true
+lp group default permission set magic.cast.torch true
+lp group default permission set magic.cast.peek true
+lp group default permission set magic.cast.workbench true
+lp group default permission set magic.cast.bubble true
+lp group default permission set magic.cast.backflip true
+lp group default permission set magic.cast.gasp true
+lp group default permission set magic.cast.magictorch true
+lp group default permission set magic.cast.throwmagictorch true
+lp group default permission set magic.cast.fling true
+lp group default permission set magic.cast.dash true
+lp group default permission set magic.cast.evade true
+lp group default permission set magic.cast.hulkleap true
+lp group default permission set magic.cast.piggyback true
+lp group default permission set magic.cast.repairitem true
+lp group default permission set magic.cast.repairequipment true
+lp group default permission set magic.cast.glide true
+lp group default permission set magic.cast.lift true
+lp group default permission set magic.cast.stash true
+lp group default permission set magic.cast.disposal true
+lp group default permission set magic.cast.blink true
+# WRV heal kit Oct 23 2026 (HEAL-ROTATION-PLAN.md): healer kit spells
+lp group default permission set magic.cast.mend true
+lp group default permission set magic.cast.flashheal true
+lp group default permission set magic.cast.ward true
+lp group default permission set magic.cast.greaterheal true
+
+# Verify afterwards:
+#   lp group default permission check magic.cast.heal   -> true
+#   lp group default permission check magic.cast.lava   -> undefined

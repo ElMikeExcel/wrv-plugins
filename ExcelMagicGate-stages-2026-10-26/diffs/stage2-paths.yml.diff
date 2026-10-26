@@ -1,0 +1,39 @@
+--- replaced-base/stage2/paths.yml
++++ live-stages/stage2/paths.yml
+@@ -1,4 +1,5 @@
+ #
++# WRV Oct 26 2026 (Mike, 2:13-2:17 PM CDT): path lists re-spread (all spells open by Seal 4); Disposal removed.
+ # Wink Reyes Valley - Magic SEAL 2 — THE PATHFINDER progression paths (CUMULATIVE).
+ # WRV-070. Paired with config.yml: load_default_paths: false
+ # -> defaults/paths.defaults.yml is NOT loaded. Only the path below exists.
+@@ -76,6 +77,8 @@
+   - bubble
+   - backflip
+   - gasp
++  - eat_food
++  - rolldice
+   - mend
+ student:
+   icon: stick{CustomModelData:18002}
+@@ -102,6 +105,9 @@
+   - piggyback
+   - repairitem
+   - repairequipment
++  - skating
++  - wearskates
++  - admission
+   - flashheal
+   - ward
+ apprentice:
+@@ -120,7 +126,10 @@
+   - glide
+   - lift
+   - stash
+-  - disposal
++  - tamepet
++  - anvil
++  - healing
++  - music
+   - greaterheal
+ master:
+   icon: stick{CustomModelData:18004}

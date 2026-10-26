@@ -1,0 +1,21 @@
+--- replaced-base/stage5/grants.txt
++++ live-stages/stage5/grants.txt
+@@ -44,7 +44,7 @@
+ lp group default permission set magic.cast.glide true
+ lp group default permission set magic.cast.lift true
+ lp group default permission set magic.cast.stash true
+-lp group default permission set magic.cast.disposal true
++# (removed Oct 26 2026 (Mike, 2:13-2:17 PM CDT): magic.cast.disposal, Disposal spell taken off all wands)
+ lp group default permission set magic.cast.blink true
+ lp group default permission set magic.cast.missile true
+ lp group default permission set magic.cast.frost true
+@@ -120,7 +120,8 @@
+ lp group default permission set magic.cast.greaterheal true
+ lp group default permission set magic.cast.layonhands true
+ 
+-# Note: if the Seal 4 builder group was created, its 8 masons grants
++# Note (Oct 26 2026 (Mike, 2:13-2:17 PM CDT)): the builder group is no longer created at Seal 4 (Masons go to everyone).
++# Old note: if the Seal 4 builder group was created, its 8 masons grants
+ # become redundant at Seal 5 (the spells are on the master path and in
+ # the default group now). Leave them or unset them — harmless either way.
+ 
