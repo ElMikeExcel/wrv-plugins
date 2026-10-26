@@ -1,16 +1,22 @@
 # ExcelWandBars 0.2.9 (staged Oct 26, 2026, not installed)
 
 0.2.8 (`bc9fd7f6`, live since Oct 26, 2026 12:13 PM CDT) plus a saved spell bar per player.
-Jar sha256 `8f9de5c2c9f218bb8352e58006f56c65701fb7466d1eb4df335d6364d5006862` (deterministic build, date 2026-10-26).
+Jar sha256 `7634a3ab0b7f431092915451a51e762e63751349f904205dd1cdc27e7070cfbf` (deterministic build, date 2026-10-26).
 Restart needed (jar). Config edits after that: `/wandbars reload`.
+
+## Change Oct 26, 2026 (2:02 PM CDT): default 21 slots
+Mike: "go with what you think is best" on 14 vs 21; 21 picked. Default is now 21 slots (3 pages of 7) in the bundled
+`config.yml`, the code default (`BarLoadout.DEFAULT_SLOTS`, used when `bar-loadout` or `slots` is missing), the
+staged configs, `tools/add-loadout-config.py` and every player text that named 14. Seeding copies the first 21 spells.
+Previous build (14 slots) was `8f9de5c2`.
 
 ## Why
 Tap bar put every spell the wand knows on the hotbar, 7 per page, crouch to page. Seal stages grow the Master wand
 from 17 spells to about 124, which is about 18 pages of crouching. Design approved by Mike (voice, 1:04 PM CDT).
 
 ## What's new
-- **Own spell bar per player.** Each player has a saved loadout: 14 slots by default (2 pages of 7 in Tap bar,
-  or 8 + 6 in Sneak bars). `bar-loadout.slots` changes it (1 to 64). Only those spells are on the hotbar pages;
+- **Own spell bar per player.** Each player has a saved loadout: 21 slots by default (3 pages of 7 in Tap bar,
+  or 8 + 8 + 5 in Sneak bars; Mike picked 21 on Oct 26, 2:02 PM CDT). `bar-loadout.slots` changes it (1 to 64). Only those spells are on the hotbar pages;
   every other spell the wand knows stays in the Spellbook (kept in the wand's storage, never lost).
 - **New spells place themselves.** When a player's wand learns spells (rank-up by casting, or a new wand with more
   spells, for example after a seal break), each new spell goes into the first empty slot, in the wand's own spell
@@ -19,7 +25,7 @@ from 17 spells to about 124, which is about 18 pages of crouching. Design approv
   `Change your bar: /spellbar` (clickable on Java). `new-spell-lines: false` = placed quietly.
 - **Change it yourself, same on Java and Bedrock.**
   - Spell Book: new button `My spell bar (change it)` (Bedrock form button, Java clickable chat line).
-  - The bar screen lists slots `1: Heal` ... `14: (empty)`. Tap a slot: move it, take it off, or pick a spell for it.
+  - The bar screen lists slots `1: Heal` ... `21: (empty)`. Tap a slot: move it, take it off, or pick a spell for it.
   - Spell info screen (tap a spell in the Spell Book): `Put on my bar` / `Move on my bar` / `Take off my bar`, then
     pick a slot. Putting a spell into a used slot sends the old one to the Spellbook; putting a spell already on the
     bar into another used slot swaps the two.
@@ -27,9 +33,10 @@ from 17 spells to about 124, which is about 18 pages of crouching. Design approv
     `/spellbar`, `slot <n>`, `put <spell> [n]`, `remove <n>`, `swap <a> <b>`.
   - Bedrock uses Geyser/Floodgate forms like the other menus (form lines at most 38 characters); if a form cannot
     be sent, the same menu comes as chat.
-- **Existing players.** On first load the loadout is seeded from the current wand's spell order (first 14), silently.
-  Bar positions stay exactly where 0.2.8 had them (slots 1-7 page 1, 8-14 page 2). A wand with more than 14 spells
-  (today: a Seal 1 Master wand has 17) shows 2 pages instead of 3; the rest sit in the Spellbook.
+- **Existing players.** On first load the loadout is seeded from the current wand's spell order (first 21), silently.
+  Bar positions stay exactly where 0.2.8 had them (slots 1-7 page 1, 8-14 page 2, 15-21 page 3). Today's biggest
+  wand (a Seal 1 Master wand, 17 spells) fits completely: all 17 stay on the bar, 3 pages as before, 0 in the
+  Spellbook. Only wands with more than 21 spells (later seals) keep the rest in the Spellbook.
 - **Unknown spells are skipped.** A slot whose spell the held wand does not know shows empty and can never cast. The
   slot stays saved, so the spell comes back if that wand (or another one) knows it.
 - **Saved per player UUID** in `plugins/ExcelWandBars/loadouts.yml` (atomic save about 1 sec after a change, plus on
@@ -51,7 +58,7 @@ stages and every other plugin.
 ```yaml
 bar-loadout:
   enabled: true
-  slots: 14
+  slots: 21
   new-spell-lines: true
   max-new-spell-lines: 3
 ```
@@ -65,4 +72,4 @@ rank-up), `core/ControlsText.java`, `core/TipGate.java`, `plugin.yml`, `config.y
 Full diff: `ExcelWandBars-0.2.8-to-0.2.9.diff`.
 
 ## Tests
-Unit 1202 passed, 0 failed (0.2.8: 1105). Private rig (Paper 26.3, Magic 11.2.5, Geyser/Floodgate): see TEST-RESULTS.md.
+Unit 1227 passed, 0 failed (0.2.8: 1105). Private rig (Paper 26.3, Magic 11.2.5, Geyser/Floodgate): see TEST-RESULTS.md.

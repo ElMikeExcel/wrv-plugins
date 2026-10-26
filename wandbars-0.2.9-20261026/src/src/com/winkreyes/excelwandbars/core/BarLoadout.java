@@ -13,7 +13,7 @@ import java.util.Set;
  * 0.2.9: a player's own spell bar (their "loadout"). Pure (no Bukkit/Magic types),
  * unit-tested on the plain JVM.
  *
- * A loadout is a fixed number of bar slots (default 14 = 2 pages of 7), each holding
+ * A loadout is a fixed number of bar slots (default 21 = 3 pages of 7), each holding
  * one spell key or nothing, plus the set of spells this player has already been
  * shown ("seen"). Every spell the wand knows that is not on the bar is in the
  * player's Spellbook (Magic keeps it on the wand, parked after the last bar page).
@@ -31,6 +31,8 @@ import java.util.Set;
  */
 public final class BarLoadout {
     public static final int MIN_SLOTS = 1, MAX_SLOTS = 64;
+    /** Default bar size: 21 = 3 pages of 7 (Mike, Oct 26, 2026). Used when config.yml has no bar-loadout.slots. */
+    public static final int DEFAULT_SLOTS = 21;
 
     private final List<String> slots = new ArrayList<>();
     private final Set<String> seen = new LinkedHashSet<>();

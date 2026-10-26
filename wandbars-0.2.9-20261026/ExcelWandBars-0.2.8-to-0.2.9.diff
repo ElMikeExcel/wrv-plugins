@@ -19,7 +19,7 @@ diff -ruN -x build src-0.2.8/build.sh src/build.sh
  sha256sum "$OUT"
 diff -ruN -x build src-0.2.8/config.yml src/config.yml
 --- src-0.2.8/config.yml	2026-10-26 11:46:30.296685128 -0500
-+++ src/config.yml	2026-10-26 13:17:08.905430318 -0500
++++ src/config.yml	2026-10-26 14:04:05.705923958 -0500
 @@ -327,3 +327,20 @@
    keys:
      - menujoin:menu_compass
@@ -35,15 +35,15 @@ diff -ruN -x build src-0.2.8/config.yml src/config.yml
 +# A missing section counts as enabled: true with these defaults. Reload: /wandbars reload.
 +bar-loadout:
 +  enabled: true
-+  # 14 = 2 pages of 7 in Tap bar (8 per page in Sneak bars). 1 to 64.
-+  slots: 14
++  # 21 = 3 pages of 7 in Tap bar (8 + 8 + 5 in Sneak bars). 1 to 64.
++  slots: 21
 +  # "New spell: X added to your bar" / "New spell: X is in your Spellbook".
 +  new-spell-lines: true
 +  # More new spells at once than this: one "N more new spells" line instead.
 +  max-new-spell-lines: 3
 diff -ruN -x build src-0.2.8/plugin.yml src/plugin.yml
 --- src-0.2.8/plugin.yml	2026-10-26 11:46:30.288685092 -0500
-+++ src/plugin.yml	2026-10-26 13:17:01.281396501 -0500
++++ src/plugin.yml	2026-10-26 14:04:05.705923958 -0500
 @@ -1,24 +1,29 @@
  name: ExcelWandBars
 -version: 0.2.8
@@ -53,7 +53,7 @@ diff -ruN -x build src-0.2.8/plugin.yml src/plugin.yml
  author: WinkReyesValley
  softdepend: [Magic, Geyser-Spigot, floodgate]
 -description: Wand controls per player (/wandstyle classic, cycle or sneakbars, classic by default; Sneak bars is Bedrock only). In Sneak bars, sneak once while your Magic wand's spell bar is open to flip to the next bar (1, 2, 3, back to 1). A short wand tip shows on the first 15 wand uses until OK. /spellinfo shows each spell's cost, cooldown, range, rank and progress to its next rank (Bedrock form or Java chat). New in 0.2.2, for Bedrock players on Classic controls the wand's spell list opens as the Spell Book form (with Use this spell); a short action-bar line after a cast shows progress to the next rank. New in 0.2.3, a third style, Cycle (right click / press and hold / LT = next spell, sneak + right click or Q = back one, no spell list), for Java and Bedrock. New in 0.2.4, Tap to cycle (original) (the first wand setup, tap a hotbar spell icon to pick it, hold to cast) and Tap bar (best on phone, tap a hotbar spell icon to cast it at once), each with a one-line description in the Wand controls form. New in 0.2.5, Tap bar shows every unlocked spell in pages (crouch flips, Page 1/2 on screen), press and hold reads your spells and never casts, Tap to cycle (original) is now called Tap to pick (original). New in 0.2.6, Tap to pick (original) really picks. Tapping a spell icon selects it and never casts (also for spells that are quick cast on their own), press and hold (Bedrock) or left click (Java) casts the picked spell once, and a phone press and hold no longer closes the bar. New in 0.2.7, in Tap bar and Tap to pick (original) the wand moves to the last hotbar slot by itself (the item that was there goes to the wand's old slot, nothing is dropped), and in Tap bar on Bedrock tapping the wand again puts your items back. The spell info screen (/spellinfo and Spell Book) now shows what each spell really does (hearts, effects, radius, by rank), what the next rank changes, and how to reach the next wand rank.
-+description: Wand controls per player (/wandstyle classic, cycle or sneakbars, classic by default; Sneak bars is Bedrock only). In Sneak bars, sneak once while your Magic wand's spell bar is open to flip to the next bar (1, 2, 3, back to 1). A short wand tip shows on the first 15 wand uses until OK. /spellinfo shows each spell's cost, cooldown, range, rank and progress to its next rank (Bedrock form or Java chat). New in 0.2.2, for Bedrock players on Classic controls the wand's spell list opens as the Spell Book form (with Use this spell); a short action-bar line after a cast shows progress to the next rank. New in 0.2.3, a third style, Cycle (right click / press and hold / LT = next spell, sneak + right click or Q = back one, no spell list), for Java and Bedrock. New in 0.2.4, Tap to cycle (original) (the first wand setup, tap a hotbar spell icon to pick it, hold to cast) and Tap bar (best on phone, tap a hotbar spell icon to cast it at once), each with a one-line description in the Wand controls form. New in 0.2.5, Tap bar shows every unlocked spell in pages (crouch flips, Page 1/2 on screen), press and hold reads your spells and never casts, Tap to cycle (original) is now called Tap to pick (original). New in 0.2.6, Tap to pick (original) really picks. Tapping a spell icon selects it and never casts (also for spells that are quick cast on their own), press and hold (Bedrock) or left click (Java) casts the picked spell once, and a phone press and hold no longer closes the bar. New in 0.2.7, in Tap bar and Tap to pick (original) the wand moves to the last hotbar slot by itself (the item that was there goes to the wand's old slot, nothing is dropped), and in Tap bar on Bedrock tapping the wand again puts your items back. The spell info screen (/spellinfo and Spell Book) now shows what each spell really does (hearts, effects, radius, by rank), what the next rank changes, and how to reach the next wand rank. New in 0.2.9, each player has their own spell bar (14 slots, 2 pages of 7 by default). New spells go into empty slots by themselves (a short chat line says so), or into the Spellbook when the bar is full. Change it from the Spellbook (Put on my bar, Move, Take off) or /spellbar, same on Java and Bedrock.
++description: Wand controls per player (/wandstyle classic, cycle or sneakbars, classic by default; Sneak bars is Bedrock only). In Sneak bars, sneak once while your Magic wand's spell bar is open to flip to the next bar (1, 2, 3, back to 1). A short wand tip shows on the first 15 wand uses until OK. /spellinfo shows each spell's cost, cooldown, range, rank and progress to its next rank (Bedrock form or Java chat). New in 0.2.2, for Bedrock players on Classic controls the wand's spell list opens as the Spell Book form (with Use this spell); a short action-bar line after a cast shows progress to the next rank. New in 0.2.3, a third style, Cycle (right click / press and hold / LT = next spell, sneak + right click or Q = back one, no spell list), for Java and Bedrock. New in 0.2.4, Tap to cycle (original) (the first wand setup, tap a hotbar spell icon to pick it, hold to cast) and Tap bar (best on phone, tap a hotbar spell icon to cast it at once), each with a one-line description in the Wand controls form. New in 0.2.5, Tap bar shows every unlocked spell in pages (crouch flips, Page 1/2 on screen), press and hold reads your spells and never casts, Tap to cycle (original) is now called Tap to pick (original). New in 0.2.6, Tap to pick (original) really picks. Tapping a spell icon selects it and never casts (also for spells that are quick cast on their own), press and hold (Bedrock) or left click (Java) casts the picked spell once, and a phone press and hold no longer closes the bar. New in 0.2.7, in Tap bar and Tap to pick (original) the wand moves to the last hotbar slot by itself (the item that was there goes to the wand's old slot, nothing is dropped), and in Tap bar on Bedrock tapping the wand again puts your items back. The spell info screen (/spellinfo and Spell Book) now shows what each spell really does (hearts, effects, radius, by rank), what the next rank changes, and how to reach the next wand rank. New in 0.2.9, each player has their own spell bar (21 slots, 3 pages of 7 by default). New spells go into empty slots by themselves (a short chat line says so), or into the Spellbook when the bar is full. Change it from the Spellbook (Put on my bar, Move, Take off) or /spellbar, same on Java and Bedrock.
  commands:
    spellinfo:
      description: Read your wand's spells (what they do, cost, cooldown, range, rank).
@@ -165,7 +165,7 @@ diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/ExcelWandBars.java 
              if (args.length > 1 && args[0].equalsIgnoreCase("rankup")) {
 diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/LoadoutHook.java src/src/com/winkreyes/excelwandbars/LoadoutHook.java
 --- src-0.2.8/src/com/winkreyes/excelwandbars/LoadoutHook.java	1969-12-31 18:00:00.000000000 -0600
-+++ src/src/com/winkreyes/excelwandbars/LoadoutHook.java	2026-10-26 13:14:12.904649654 -0500
++++ src/src/com/winkreyes/excelwandbars/LoadoutHook.java	2026-10-26 14:04:05.705923958 -0500
 @@ -0,0 +1,444 @@
 +package com.winkreyes.excelwandbars;
 +
@@ -212,7 +212,7 @@ diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/LoadoutHook.java sr
 +    private final File file;
 +    private final Map<UUID, BarLoadout> map = new HashMap<>();
 +    boolean enabled = true;
-+    int size = 14;
++    int size = BarLoadout.DEFAULT_SLOTS;
 +    boolean newSpellLines = true;
 +    int maxLines = 3;
 +    private boolean saveQueued = false;
@@ -227,7 +227,7 @@ diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/LoadoutHook.java sr
 +
 +    void loadSettings(ConfigurationSection c) {
 +        enabled = c == null || c.getBoolean("enabled", true);
-+        size = BarLoadout.clampSize(c == null ? 14 : c.getInt("slots", 14));
++        size = BarLoadout.clampSize(c == null ? BarLoadout.DEFAULT_SLOTS : c.getInt("slots", BarLoadout.DEFAULT_SLOTS));
 +        newSpellLines = c == null || c.getBoolean("new-spell-lines", true);
 +        maxLines = Math.max(1, Math.min(10, c == null ? 3 : c.getInt("max-new-spell-lines", 3)));
 +        boolean any = false;
@@ -873,8 +873,8 @@ diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/StyleHook.java src/
      /** Remove the plugin's control keys from the held wand so its template rules again (admin rollback aid). */
 diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/core/BarLoadout.java src/src/com/winkreyes/excelwandbars/core/BarLoadout.java
 --- src-0.2.8/src/com/winkreyes/excelwandbars/core/BarLoadout.java	1969-12-31 18:00:00.000000000 -0600
-+++ src/src/com/winkreyes/excelwandbars/core/BarLoadout.java	2026-10-26 13:11:30.971931424 -0500
-@@ -0,0 +1,239 @@
++++ src/src/com/winkreyes/excelwandbars/core/BarLoadout.java	2026-10-26 14:04:05.705923958 -0500
+@@ -0,0 +1,241 @@
 +package com.winkreyes.excelwandbars.core;
 +
 +import java.util.ArrayList;
@@ -890,7 +890,7 @@ diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/core/BarLoadout.jav
 + * 0.2.9: a player's own spell bar (their "loadout"). Pure (no Bukkit/Magic types),
 + * unit-tested on the plain JVM.
 + *
-+ * A loadout is a fixed number of bar slots (default 14 = 2 pages of 7), each holding
++ * A loadout is a fixed number of bar slots (default 21 = 3 pages of 7), each holding
 + * one spell key or nothing, plus the set of spells this player has already been
 + * shown ("seen"). Every spell the wand knows that is not on the bar is in the
 + * player's Spellbook (Magic keeps it on the wand, parked after the last bar page).
@@ -908,6 +908,8 @@ diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/core/BarLoadout.jav
 + */
 +public final class BarLoadout {
 +    public static final int MIN_SLOTS = 1, MAX_SLOTS = 64;
++    /** Default bar size: 21 = 3 pages of 7 (Mike, Oct 26, 2026). Used when config.yml has no bar-loadout.slots. */
++    public static final int DEFAULT_SLOTS = 21;
 +
 +    private final List<String> slots = new ArrayList<>();
 +    private final Set<String> seen = new LinkedHashSet<>();
@@ -1293,8 +1295,8 @@ diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/core/TipGate.java s
      public static final String L_ORIGINAL_BEDROCK = "Tap to pick (original): tap your wand, tap a spell icon to pick it, press and hold to cast.";
 diff -ruN -x build src-0.2.8/tests/LoadoutTest.java src/tests/LoadoutTest.java
 --- src-0.2.8/tests/LoadoutTest.java	1969-12-31 18:00:00.000000000 -0600
-+++ src/tests/LoadoutTest.java	2026-10-26 13:24:00.923257774 -0500
-@@ -0,0 +1,212 @@
++++ src/tests/LoadoutTest.java	2026-10-26 14:04:34.666052409 -0500
+@@ -0,0 +1,256 @@
 +import com.winkreyes.excelwandbars.core.BarLoadout;
 +import com.winkreyes.excelwandbars.core.ControlsText;
 +import com.winkreyes.excelwandbars.core.LoadoutText;
@@ -1505,6 +1507,50 @@ diff -ruN -x build src-0.2.8/tests/LoadoutTest.java src/tests/LoadoutTest.java
 +        for (String a : ControlsText.howTo(WandStyle.TAPBAR, true)) if (a.toLowerCase().contains("click")) bedrockNoClick = false;
 +        Check.ok(bedrockNoClick, "Bedrock Tap bar how-to never says click");
 +        Check.ok(!LoadoutText.barContent(true, 7, 14, 0).toLowerCase().contains("click"), "Bedrock bar menu never says click");
++            // ---- default 21 slots (Mike, Oct 26, 2026: 3 pages of 7)
++        Check.eq(21, BarLoadout.DEFAULT_SLOTS, "default bar size 21");
++        BarLoadout d17 = BarLoadout.seed(spells("s", 17), BarLoadout.DEFAULT_SLOTS);
++        Check.eq(21, d17.size(), "default seed size 21");
++        Check.eq(17, d17.filled(), "Seal 1 Master 17 spells: all 17 on the bar");
++        Check.eq("s17", d17.get(16), "slot 17 = 17th spell");
++        Check.eq(17, d17.firstEmpty(), "first empty slot is 18");
++        Map<String, Integer> cur17 = new HashMap<>();
++        for (int i = 0; i < 17; i++) cur17.put("s" + (i + 1), (i / 7) * 8 + i % 7);
++        List<String> order17 = PageLayout.order(cur17, cur17.keySet());
++        BarLoadout.Layout lay17 = BarLoadout.seed(order17, BarLoadout.DEFAULT_SLOTS).layout(order17, 7);
++        Check.eq(PageLayout.pack(cur17, cur17.keySet(), 7), lay17.slots, "21 slots: seeded 17 = 0.2.8 packed layout");
++        Check.eq(3, lay17.pages, "17 spells on 21 slots = 3 pages (same as 0.2.8)");
++        Check.eq(0, lay17.inBook, "17 spells on 21 slots: 0 in the Spellbook");
++        Check.eq(17, lay17.onBar, "17 on bar");
++        BarLoadout.Sync d1 = d17.sync(spells("s", 38));
++        Check.eq(4, d1.placed.size(), "rank-up +21: 4 fill slots 18 to 21");
++        Check.eq(Integer.valueOf(17), d1.placed.get("s18"), "s18 into slot 18");
++        Check.eq(Integer.valueOf(20), d1.placed.get("s21"), "s21 into slot 21");
++        Check.eq(17, d1.toBook.size(), "rank-up +21: 17 to the Spellbook");
++        BarLoadout.Sync d2 = d17.sync(spells("s", 45));
++        Check.ok(d2.placed.isEmpty() && d2.toBook.size() == 7, "full 21 bar: next 7 to the Spellbook");
++        BarLoadout d105 = BarLoadout.seed(spells("y", 17), BarLoadout.DEFAULT_SLOTS);
++        int dbook = 0;
++        for (int n : new int[]{37, 63, 105}) dbook += d105.sync(spells("y", n)).toBook.size();
++        Check.eq(84, dbook, "105 spells: 21 on bar, 84 in the Spellbook");
++        BarLoadout.Layout dl = d105.layout(spells("y", 105), 7);
++        Check.eq(3, dl.pages, "105 spells on 21 slots: 3 pages");
++        Check.eq(21, dl.onBar, "21 on bar");
++        int dMin = Integer.MAX_VALUE;
++        for (Map.Entry<String, Integer> en : dl.slots.entrySet()) if (d105.indexOf(en.getKey()) < 0) dMin = Math.min(dMin, en.getValue());
++        Check.eq(24, dMin, "parked from slot 24 (after 3 pages of 8)");
++        Check.eq(Integer.valueOf(16), dl.slots.get("y15"), "slot 15 = page 3 first icon (global 16)");
++        BarLoadout.Layout dsb = BarLoadout.seed(spells("z", 21), BarLoadout.DEFAULT_SLOTS).layout(spells("z", 21), 8);
++        Check.eq(3, dsb.pages, "Sneak bars 21 = 8 + 8 + 5 = 3 pages");
++        Check.eq("Your spell bar (17 of 21)", LoadoutText.barTitleCount(17, 21), "title 17 of 21");
++        Check.ok(LoadoutText.barTitleCount(21, 21).length() <= LoadoutText.MAX && LoadoutText.slotButton(20, "Recall to Last Death Point Again").length() <= LoadoutText.MAX
++                && LoadoutText.slotTitle(20, null).length() <= LoadoutText.MAX, "21-slot buttons and titles <= 38");
++        Check.eq("21: (empty)", LoadoutText.slotButton(20, null), "slot 21 empty button");
++        Check.ok(LoadoutText.barContent(true, 7, 21, 0).contains("15 to 21 page 3") && !LoadoutText.barContent(true, 7, 21, 0).toLowerCase().contains("click"), "Bedrock bar menu names page 3, no click");
++        try {
++            String cfg = new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("config.yml")), java.nio.charset.StandardCharsets.UTF_8);
++            Check.ok(cfg.contains("\nbar-loadout:\n  enabled: true\n") && cfg.contains("\n  slots: 21\n") && !cfg.contains("slots: 14"), "bundled config.yml: bar-loadout slots 21");
++        } catch (java.io.IOException ex) { Check.ok(false, "read config.yml: " + ex); }
 +    }
 +}
 diff -ruN -x build src-0.2.8/tests/TestMain.java src/tests/TestMain.java

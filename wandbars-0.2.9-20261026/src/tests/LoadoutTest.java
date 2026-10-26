@@ -208,5 +208,49 @@ public final class LoadoutTest {
         for (String a : ControlsText.howTo(WandStyle.TAPBAR, true)) if (a.toLowerCase().contains("click")) bedrockNoClick = false;
         Check.ok(bedrockNoClick, "Bedrock Tap bar how-to never says click");
         Check.ok(!LoadoutText.barContent(true, 7, 14, 0).toLowerCase().contains("click"), "Bedrock bar menu never says click");
+            // ---- default 21 slots (Mike, Oct 26, 2026: 3 pages of 7)
+        Check.eq(21, BarLoadout.DEFAULT_SLOTS, "default bar size 21");
+        BarLoadout d17 = BarLoadout.seed(spells("s", 17), BarLoadout.DEFAULT_SLOTS);
+        Check.eq(21, d17.size(), "default seed size 21");
+        Check.eq(17, d17.filled(), "Seal 1 Master 17 spells: all 17 on the bar");
+        Check.eq("s17", d17.get(16), "slot 17 = 17th spell");
+        Check.eq(17, d17.firstEmpty(), "first empty slot is 18");
+        Map<String, Integer> cur17 = new HashMap<>();
+        for (int i = 0; i < 17; i++) cur17.put("s" + (i + 1), (i / 7) * 8 + i % 7);
+        List<String> order17 = PageLayout.order(cur17, cur17.keySet());
+        BarLoadout.Layout lay17 = BarLoadout.seed(order17, BarLoadout.DEFAULT_SLOTS).layout(order17, 7);
+        Check.eq(PageLayout.pack(cur17, cur17.keySet(), 7), lay17.slots, "21 slots: seeded 17 = 0.2.8 packed layout");
+        Check.eq(3, lay17.pages, "17 spells on 21 slots = 3 pages (same as 0.2.8)");
+        Check.eq(0, lay17.inBook, "17 spells on 21 slots: 0 in the Spellbook");
+        Check.eq(17, lay17.onBar, "17 on bar");
+        BarLoadout.Sync d1 = d17.sync(spells("s", 38));
+        Check.eq(4, d1.placed.size(), "rank-up +21: 4 fill slots 18 to 21");
+        Check.eq(Integer.valueOf(17), d1.placed.get("s18"), "s18 into slot 18");
+        Check.eq(Integer.valueOf(20), d1.placed.get("s21"), "s21 into slot 21");
+        Check.eq(17, d1.toBook.size(), "rank-up +21: 17 to the Spellbook");
+        BarLoadout.Sync d2 = d17.sync(spells("s", 45));
+        Check.ok(d2.placed.isEmpty() && d2.toBook.size() == 7, "full 21 bar: next 7 to the Spellbook");
+        BarLoadout d105 = BarLoadout.seed(spells("y", 17), BarLoadout.DEFAULT_SLOTS);
+        int dbook = 0;
+        for (int n : new int[]{37, 63, 105}) dbook += d105.sync(spells("y", n)).toBook.size();
+        Check.eq(84, dbook, "105 spells: 21 on bar, 84 in the Spellbook");
+        BarLoadout.Layout dl = d105.layout(spells("y", 105), 7);
+        Check.eq(3, dl.pages, "105 spells on 21 slots: 3 pages");
+        Check.eq(21, dl.onBar, "21 on bar");
+        int dMin = Integer.MAX_VALUE;
+        for (Map.Entry<String, Integer> en : dl.slots.entrySet()) if (d105.indexOf(en.getKey()) < 0) dMin = Math.min(dMin, en.getValue());
+        Check.eq(24, dMin, "parked from slot 24 (after 3 pages of 8)");
+        Check.eq(Integer.valueOf(16), dl.slots.get("y15"), "slot 15 = page 3 first icon (global 16)");
+        BarLoadout.Layout dsb = BarLoadout.seed(spells("z", 21), BarLoadout.DEFAULT_SLOTS).layout(spells("z", 21), 8);
+        Check.eq(3, dsb.pages, "Sneak bars 21 = 8 + 8 + 5 = 3 pages");
+        Check.eq("Your spell bar (17 of 21)", LoadoutText.barTitleCount(17, 21), "title 17 of 21");
+        Check.ok(LoadoutText.barTitleCount(21, 21).length() <= LoadoutText.MAX && LoadoutText.slotButton(20, "Recall to Last Death Point Again").length() <= LoadoutText.MAX
+                && LoadoutText.slotTitle(20, null).length() <= LoadoutText.MAX, "21-slot buttons and titles <= 38");
+        Check.eq("21: (empty)", LoadoutText.slotButton(20, null), "slot 21 empty button");
+        Check.ok(LoadoutText.barContent(true, 7, 21, 0).contains("15 to 21 page 3") && !LoadoutText.barContent(true, 7, 21, 0).toLowerCase().contains("click"), "Bedrock bar menu names page 3, no click");
+        try {
+            String cfg = new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("config.yml")), java.nio.charset.StandardCharsets.UTF_8);
+            Check.ok(cfg.contains("\nbar-loadout:\n  enabled: true\n") && cfg.contains("\n  slots: 21\n") && !cfg.contains("slots: 14"), "bundled config.yml: bar-loadout slots 21");
+        } catch (java.io.IOException ex) { Check.ok(false, "read config.yml: " + ex); }
     }
 }

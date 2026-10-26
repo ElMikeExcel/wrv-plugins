@@ -43,7 +43,7 @@ final class LoadoutHook implements Listener {
     private final File file;
     private final Map<UUID, BarLoadout> map = new HashMap<>();
     boolean enabled = true;
-    int size = 14;
+    int size = BarLoadout.DEFAULT_SLOTS;
     boolean newSpellLines = true;
     int maxLines = 3;
     private boolean saveQueued = false;
@@ -58,7 +58,7 @@ final class LoadoutHook implements Listener {
 
     void loadSettings(ConfigurationSection c) {
         enabled = c == null || c.getBoolean("enabled", true);
-        size = BarLoadout.clampSize(c == null ? 14 : c.getInt("slots", 14));
+        size = BarLoadout.clampSize(c == null ? BarLoadout.DEFAULT_SLOTS : c.getInt("slots", BarLoadout.DEFAULT_SLOTS));
         newSpellLines = c == null || c.getBoolean("new-spell-lines", true);
         maxLines = Math.max(1, Math.min(10, c == null ? 3 : c.getInt("max-new-spell-lines", 3)));
         boolean any = false;

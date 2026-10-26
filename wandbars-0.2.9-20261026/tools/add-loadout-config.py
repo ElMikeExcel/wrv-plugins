@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Add the 0.2.9 `bar-loadout:` section to a downloaded live plugins/ExcelWandBars/config.yml.
 Usage: add-loadout-config.py LIVE_IN.yml OUT.yml [--off]
-Appends tools/bar-loadout-block.yml (enabled true, 14 slots, new spell lines on, max 3).
+Appends tools/bar-loadout-block.yml (enabled true, 21 slots, new spell lines on, max 3).
 --off writes enabled: false (0.2.8 behaviour, every spell on the bar in pages).
 Refuses if bar-loadout: already exists. Everything already in the live file is kept byte for byte (append only)."""
 import sys, re, os
@@ -18,8 +18,8 @@ out = (live if live.endswith('\n') else live + '\n') + add
 import yaml
 d = yaml.safe_load(out)
 b = d['bar-loadout']
-assert b == {'enabled': not off, 'slots': 14, 'new-spell-lines': True, 'max-new-spell-lines': 3}, b
+assert b == {'enabled': not off, 'slots': 21, 'new-spell-lines': True, 'max-new-spell-lines': 3}, b
 assert '\u2014' not in add and '\u2013' not in add
 assert out.startswith(live)
 open(sys.argv[2], 'w', encoding='utf-8').write(out)
-print('OK: appended', len(add.splitlines()), 'lines; YAML parses; bar-loadout enabled', not off, ', 14 slots, lines on, max 3')
+print('OK: appended', len(add.splitlines()), 'lines; YAML parses; bar-loadout enabled', not off, ', 21 slots, lines on, max 3')

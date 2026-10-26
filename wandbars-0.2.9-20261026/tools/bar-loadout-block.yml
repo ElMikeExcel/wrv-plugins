@@ -9,8 +9,8 @@
 # A missing section counts as enabled: true with these defaults. Reload: /wandbars reload.
 bar-loadout:
   enabled: true
-  # 14 = 2 pages of 7 in Tap bar (8 per page in Sneak bars). 1 to 64.
-  slots: 14
+  # 21 = 3 pages of 7 in Tap bar (8 + 8 + 5 in Sneak bars). 1 to 64.
+  slots: 21
   # "New spell: X added to your bar" / "New spell: X is in your Spellbook".
   new-spell-lines: true
   # More new spells at once than this: one "N more new spells" line instead.
