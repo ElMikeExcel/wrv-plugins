@@ -41,6 +41,15 @@ public final class TestMain {
         Check.ok(LadderTable.describeOffLadder(MobCombatFile.read(fx("old-S0-MobCombatSettings.yml")), LadderTable.step(1)).contains("OLD pre-ladder S0"), "old S0 refusal names it");
         Check.ok(LadderTable.describeOffLadder(MobCombatFile.read(fx("old-S1-MobCombatSettings.yml")), LadderTable.step(1)).contains("OLD S1 file without the dungeon lines"), "old S1 refusal names it");
 
+        System.out.println("0.1.1: Seal 5 spawn 0.12 (Mike, Oct 25, 2026, 11:40 PM CDT); damage and cap unchanged");
+        Check.close(0.12, LadderTable.step(5).values().get("eliteMobsSpawnPercentage"), "S5 spawn = 0.12");
+        Check.close(LadderTable.step(4).values().get("scaledDamageToPlayerMultiplier"), LadderTable.step(5).values().get("scaledDamageToPlayerMultiplier"), "S5 toPlayer = S4 (2.20)");
+        Check.close(LadderTable.step(4).values().get("scaledDamageToEliteMultiplier"), LadderTable.step(5).values().get("scaledDamageToEliteMultiplier"), "S5 toElite = S4 (0.45)");
+        Check.close(120.0, LadderTable.step(5).values().get("naturalEliteMobsLevelCap"), "S5 cap = 120");
+        String s5old = fx("S5-norm-MobCombatSettings.yml").replace("eliteMobsSpawnPercentage: 0.12", "eliteMobsSpawnPercentage: 0.11");
+        Check.eq(0, LadderTable.matchStep(MobCombatFile.read(s5old)), "0.1.0-era S5 file (spawn 0.11) is off ladder in 0.1.1");
+        Check.ok(LadderTable.differences(MobCombatFile.read(s5old), LadderTable.step(5)).startsWith("eliteMobsSpawnPercentage=0.11 (want 0.12)"), "and the refusal names only the spawn line");
+
         System.out.println("Patch: each step from the previous, bytes = staged file in EliteMobs' number form");
         String cur = fx("S1-norm-MobCombatSettings.yml");
         Check.eq(cur, canonical(cur), "S1-norm is already in EliteMobs number form");

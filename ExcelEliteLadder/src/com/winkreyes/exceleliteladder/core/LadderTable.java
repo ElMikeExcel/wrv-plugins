@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The approved Elite Seal Ladder (Oct 25, 2026), with the Seal 5 dungeon values
+ * The approved Elite Seal Ladder (Oct 25, 2026; Seal 5 spawn 0.12 picked 11:40 PM CDT), with the Seal 5 dungeon values
  * (normalized 0.5 / 2.0) already in from S1. Hardcoded on purpose: the table is not
  * editable in config, so a typo in a config file can never change live combat.
  */
@@ -19,7 +19,7 @@ public final class LadderTable {
         new LadderStep(2, 0.08, 120, 0.5, 2.0, 0.50, 1.90),
         new LadderStep(3, 0.09, 120, 0.5, 2.0, 0.50, 2.05),
         new LadderStep(4, 0.10, 120, 0.5, 2.0, 0.45, 2.20),
-        new LadderStep(5, 0.11, 120, 0.5, 2.0, 0.45, 2.20),
+        new LadderStep(5, 0.12, 120, 0.5, 2.0, 0.45, 2.20),
     };
 
     /** Known pre-ladder files, so a refusal can say exactly what live is. */

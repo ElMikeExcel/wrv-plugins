@@ -9,4 +9,4 @@ lines, verifies the result (restoring on any failure), and runs `em reload`. Up 
 - Admin: `/eliteladder status | check | retry` (op).
 - Depends on (soft): EliteMobs, ExcelGuildGate.
 
-See CHANGELOG-0.1.0.md for the full behavior.
+See CHANGELOG-0.1.0.md for the full behavior and CHANGELOG-0.1.1.md for the Seal 5 spawn change (0.12).

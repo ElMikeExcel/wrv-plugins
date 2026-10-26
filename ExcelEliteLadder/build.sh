@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build ExcelEliteLadder-0.1.0.jar (deterministic: two builds give the same sha).
+# Build ExcelEliteLadder-0.1.1.jar (deterministic: two builds give the same sha).
 # Manual javac route like the other Excel plugins. Compile-only deps: Paper API + snakeyaml.
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -12,7 +12,7 @@ CP="$CP:$RT/net/md-5/bungeecord-chat/1.21-R0.2-deprecated+build.21/bungeecord-ch
 rm -rf build/classes && mkdir -p build/classes
 "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP" -d build/classes $(find src -name '*.java')
 cp plugin.yml config.yml build/classes/
-OUT=${OUT:-build/ExcelEliteLadder-0.1.0.jar}
+OUT=${OUT:-build/ExcelEliteLadder-0.1.1.jar}
 rm -f "$OUT"
 "$JDK/bin/jar" --create --file "$OUT" --date=2026-10-25T00:00:00-05:00 -C build/classes .
 sha256sum "$OUT"
