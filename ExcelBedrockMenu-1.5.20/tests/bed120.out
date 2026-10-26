@@ -1,0 +1,48 @@
+18:31:01 === bed120 Sun Oct 25 2026 18:31:01 GMT-0500 (Central Daylight Time)
+18:31:01 lp user 00000000-0000-0000-0000-000000000000 permission unset exceldeathrecord.lostfound =>
+18:31:02 lp user 00000000-0000-0000-0000-000000000000 permission unset exceltrash.use =>
+18:31:04 spawned
+18:31:07 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"mcMMO Stats"},{"text":"Skills &
+18:31:11 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"mcMMO Stats"},{"text":"Skills &
+18:31:11 PASS compass /menu opens a form
+18:31:11 menu buttons: Spawn | Teleport to a player | Party | Utility Pouch | Spellbook | Excel Shop | Adventurers Guild | Jobs & Money | mcMMO Stats | Skills & Perks | Leaderboard | Lost & Found | Trash Bin | Server Info | Server Commands | Server Website | What's New | Wand controls: Classic or Sneak bars | Auto-sort my chests: on/off | Auto-open on join
+18:31:11 PASS form title Server Menu
+18:31:11 PASS button list is exactly the 1.5.20 order (20 buttons)
+18:31:11 PASS Lost & Found 12th, Trash Bin 13th, right after Leaderboard
+18:31:11 PASS no button images (same as before)
+18:31:11 FORM {"title":"Lost & Found","content":"Price: Free (first recovery)\nYour money: $0\nItems stay here for 7 days.\n\nNothing to bring back. Only your own items lost to lava, fire, the void, or despawning in the last 7 days show here.","buttons":[{"text":"Close"}],"type":"form"}
+18:31:13 after Lost & Found tap: form={"title":"Lost & Found","content":"Price: Free (first recovery)\nYour money: $0\nItems stay here for 7 days.\n\nNothing to bring back. Only your own items lost to lava, fire, the void, or despawning in the last 7 days show here.","buttons":[{"text":"Close"}],"type":"form"} chat=[Tip] Lost something to lava, fire, the void, or despawning? If it was yours, it shows here for 7 days. Your first one is free if you have less than $10,000. Each one costs $16,000, and you can bring back one item every 24h. Death Protection from the Spawn Shop keeps your whole kit safe, so it's the better deal.
+Tap OK on the pop-up, or type /tips ok, to hide this tip.
+18:31:13 PASS Lost & Found tap reaches ExcelDeathRecord /lostfound (form or chat answer)
+18:31:13 PASS no unknown-command or guard message
+18:31:15 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"mcMMO Stats"},{"text":"Skills &
+18:31:15 CONTAINER_OPEN {"window_id":"first","window_type":"container","coordinates":{"x":1,"y":-58,"z":0},"runtime_entity_id":"-1"}
+18:31:18 after Trash Bin tap chat=
+18:31:18 PASS Trash Bin tap opens a container (the /trash bin inventory)
+18:31:18 PASS no unknown-command or guard message
+18:31:21 rejoin after the bin (waiting 65 s for the login throttle)
+18:32:29 spawned
+18:32:31 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"mcMMO Stats"},{"text":"Skills &
+18:32:35 lp user 00000000-0000-0000-0000-000000000000 permission set exceldeathrecord.lostfound false =>
+18:32:35 lp user 00000000-0000-0000-0000-000000000000 permission set exceltrash.use false =>
+18:32:36 lp user 00000000-0000-0000-0000-000000000000 permission check exceltrash.use =>
+18:32:39 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"mcMMO Stats"},{"text":"Skills &
+18:32:42 denied LF chat=You can't use Lost & Found right now. Ask an adult to check the server.
+[Tip] Your compass is the Server Menu. Tap with it to open Spawn, the shop, Party and more.
+It stays with you when you die. Lost it? Type /compass for a new one.
+Tap OK on the pop-up, or type /tips ok, to hide this tip.
+18:32:42 PASS without exceldeathrecord.lostfound: plain denied message
+18:32:43 PASS no Lost & Found form when denied
+18:32:44 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"mcMMO Stats"},{"text":"Skills &
+18:32:46 denied trash chat=You can't use the Trash Bin right now. Ask an adult to check the server.
+18:32:46 PASS without exceltrash.use: plain denied message, no bin opens
+18:32:46 lp user 00000000-0000-0000-0000-000000000000 permission unset exceldeathrecord.lostfound =>
+18:32:47 lp user 00000000-0000-0000-0000-000000000000 permission unset exceltrash.use =>
+18:32:47 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"mcMMO Stats"},{"text":"Skills &
+18:32:48 FORM {"title":"Leaderboards","content":"Pick a board.","buttons":[{"text":"Top Miner — .EbmBed · 0"},{"text":"Top Builder — .EbmBed · 0"},{"text":"Most Playtime — TipsJava · 31m"},{"text":"Top Slayer — Sh1 · 10"},{"text":"Top Traveler — .EbmBed · 0.0 km"},{"text":"Most Deaths — Cal · 26"},{"text":"Riches
+18:32:49 leaderboard chat= form=Leaderboards
+18:32:49 PASS Leaderboard button (unchanged) still answers
+18:32:50 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"mcMMO Stats"},{"text":"Skills &
+18:32:50 FORM {"title":"What's New (Oct 24)","content":"Lost & Found, Maker's mark, a better trash bin, and more\n\nNew commands\n/lostfound - Get back your own stuff lost to lava, fire, the void or a despawn in the last 7 days. Also /recover.\n/mark off or /mark on - Choose if things you craft get a \"Crafted by
+18:32:50 PASS What's New button (moved 2 down) still opens the news
+18:32:53 RESULT bed120 14 passed 0 failed

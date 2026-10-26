@@ -1,0 +1,129 @@
+diff -ruN base/ebm-1.5.19-src/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java src/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java
+--- base/ebm-1.5.19-src/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java	2026-10-25 18:26:13.915120365 -0500
++++ src/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java	2026-10-25 18:27:08.591362875 -0500
+@@ -161,18 +161,32 @@
+  * the Server Commands list gains a runnable /whatsnew row. Every other
+  * button keeps its 1.5.18 relative order. Built on the batch 1.5.18 source
+  * (ee3d00f0), NOT on the EliteMobs-fallback follow-up 1.5.19 (cb8bf9ec).
++ *
++ * v1.5.20 (Oct 25, 2026, Mike: match the Java compass): two new buttons
++ * right after "Leaderboard", the end of the Bedrock "Me" cluster (Jobs &
++ * Money, mcMMO Stats, Skills & Perks, Leaderboard), in the Java "Me" row
++ * order: "Lost & Found" (runs /lostfound as the player, ExcelDeathRecord
++ * 0.3.0, which shows the price before paying) then "Trash Bin" (runs /trash
++ * as the player, ExcelTrash 0.2.0). Same labels and the same commands as
++ * the Java server_menu.yml. Neither is a teleport, so no confirm step. A
++ * missing plugin gives a message instead of an unknown command, and a
++ * player without the command's own permission (exceldeathrecord.lostfound,
++ * exceltrash.use, both default true) gets a plain message. This form has
++ * no button images, so there are no icons. Built on the live
++ * 1.5.19-whatsnew source (178b03b7). Every other button keeps its
++ * 1.5.19-whatsnew relative order and behavior.
+  */
+ public class ExcelBedrockMenu extends JavaPlugin implements CommandExecutor {
+ 
+     private static final String[] BUTTONS = {
+         "Spawn", "Teleport to a player", "Party", "Utility Pouch", "Spellbook", "Excel Shop", "Adventurers Guild",
+-        "Jobs & Money", "mcMMO Stats", "Skills & Perks", "Leaderboard", "Server Info",
++        "Jobs & Money", "mcMMO Stats", "Skills & Perks", "Leaderboard", "Lost & Found", "Trash Bin", "Server Info",
+         "Server Commands", "Server Website", "What's New", "Wand controls: Classic or Sneak bars",
+         "Auto-sort my chests: on/off", "Auto-open on join"
+     };
+     private static final String[] COMMANDS = {
+         "spawn", "tpmenu", "excelparty", "pouch", "spellinfo", "shop", "ag", "jobs browse",
+-        "mcstats", "skillsperks", "leaderboard", "motd", "servercommands", "serverwebsite", "whatsnew", "wandstyle", "autosort", "menujoin"
++        "mcstats", "skillsperks", "leaderboard", "lostfound", "trash", "motd", "servercommands", "serverwebsite", "whatsnew", "wandstyle", "autosort", "menujoin"
+     };
+     // Village spawn coordinates (fallback if Essentials spawn lookup fails)
+     private static final double SPAWN_X = -784;
+@@ -879,6 +893,18 @@
+                     player.performCommand("whatsnew");
+                 }
+                 break;
++            case "lostfound":
++                // v1.5.20: ExcelDeathRecord 0.3.0 owns /lostfound (alias /recover).
++                runGuarded(player, "lostfound",
++                        "\u00a7eLost & Found isn't available right now. Ask an adult to check the server.",
++                        "\u00a7eYou can't use Lost & Found right now. Ask an adult to check the server.");
++                break;
++            case "trash":
++                // v1.5.20: ExcelTrash 0.2.0 owns /trash (alias /bin).
++                runGuarded(player, "trash",
++                        "\u00a7eThe Trash Bin isn't available right now. Ask an adult to check the server.",
++                        "\u00a7eYou can't use the Trash Bin right now. Ask an adult to check the server.");
++                break;
+             case "excelparty":
+                 // v1.5.7: ExcelTogether 0.2.0 owns this command. Not /party: mcMMO has that one.
+                 if (Bukkit.getPluginCommand("excelparty") == null) {
+@@ -893,6 +919,34 @@
+         }
+     }
+ 
++    /**
++     * v1.5.20: run a command owned by another plugin as the player. Missing
++     * command: the "missing" message. Player lacks the command's own
++     * permission node: the "denied" message. Otherwise performCommand, the
++     * same path the Java menu's [player] click line uses.
++     */
++    private void runGuarded(Player player, String label, String missing, String denied) {
++        org.bukkit.command.PluginCommand cmd = Bukkit.getPluginCommand(label);
++        switch (guardOutcome(cmd != null, cmd == null || cmd.testPermissionSilent(player))) {
++            case 0:
++                player.sendMessage(missing);
++                break;
++            case 1:
++                player.sendMessage(denied);
++                break;
++            default:
++                player.performCommand(label);
++                break;
++        }
++    }
++
++    /** 0 = command missing, 1 = no permission, 2 = run it. */
++    static int guardOutcome(boolean commandExists, boolean hasPermission) {
++        if (!commandExists) return 0;
++        if (!hasPermission) return 1;
++        return 2;
++    }
++
+     /** True when the console /spawn did not work and the village fallback must run. */
+     static boolean needsSpawnFallback(boolean commandDispatched, String worldNameAfter) {
+         return !commandDispatched || "em_adventurers_guild".equals(worldNameAfter);
+--- base/ebm-1.5.19-src/plugin.yml	2026-10-25 18:26:13.923120401 -0500
++++ src/ExcelBedrockMenu/plugin.yml	2026-10-25 18:27:08.595362892 -0500
+@@ -1,5 +1,5 @@
+ name: ExcelBedrockMenu
+-version: 1.5.19-whatsnew
++version: 1.5.20
+ author: Argus
+ main: com.winkreyes.excelbedrockmenu.ExcelBedrockMenu
+ api-version: "1.13"
+--- base/ebm-1.5.19-src/build.sh	2026-10-25 18:26:13.923120401 -0500
++++ src/ExcelBedrockMenu/build.sh	2026-10-25 18:27:39.739501028 -0500
+@@ -1,7 +1,7 @@
+ #!/bin/bash
+-# Build ExcelBedrockMenu-1.5.19-whatsnew.jar from this tree (batch 1.5.18 source + What's New button).
++# Build ExcelBedrockMenu-1.5.20.jar from this tree (live 1.5.19-whatsnew source + Lost & Found and Trash Bin buttons).
+ # Same recipe that reproduces the live 1.5.18 jar ee3d00f0 byte for byte from the 1.5.18 source:
+-# javac --release 21 with JDK 25.0.5, then `jar --date=2026-10-24T00:00:00Z` with an explicit sorted file list.
++# javac --release 21 with JDK 25.0.5, then `jar --date=2026-10-25T00:00:00Z` with an explicit sorted file list.
+ set -euo pipefail
+ cd "$(dirname "$0")"
+ JDK=${JDK:-/home/box/tools/jdk-25.0.5+8}
+@@ -13,11 +13,11 @@
+ rm -rf build && mkdir -p build/classes build/tests
+ "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP" -d build/classes $(find src -name '*.java' | sort) 2>&1 | grep -v '^Note:' || true
+ cp plugin.yml config.yml build/classes/
+-OUT=${OUT:-../ExcelBedrockMenu-1.5.19-whatsnew.jar}
++OUT=${OUT:-../../staged/ExcelBedrockMenu-1.5.20.jar}
+ OUT=$(realpath -m "$OUT"); rm -f "$OUT"
+-(cd build/classes && TZ=UTC "$JDK/bin/jar" --create --file "$OUT" --date=2026-10-24T00:00:00Z $(find com -name '*.class' | sort) config.yml plugin.yml)
++(cd build/classes && TZ=UTC "$JDK/bin/jar" --create --file "$OUT" --date=2026-10-25T00:00:00Z $(find com -name '*.class' | sort) config.yml plugin.yml)
+ sha256sum "$OUT"
+ # Unit checks (MenuLogicTest reads the source tree, so run from here)
+ "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP:build/classes" -d build/tests $(find test -name '*.java')
+-"$JDK/bin/java" -cp "$CP:build/classes:build/tests" com.winkreyes.excelbedrockmenu.MenuLogicTest > ../tests/MenuLogicTest-1.5.19-whatsnew.out || { tail -5 ../tests/MenuLogicTest-1.5.19-whatsnew.out; exit 1; }
+-grep -c '^ok' ../tests/MenuLogicTest-1.5.19-whatsnew.out; tail -1 ../tests/MenuLogicTest-1.5.19-whatsnew.out
++"$JDK/bin/java" -cp "$CP:build/classes:build/tests" com.winkreyes.excelbedrockmenu.MenuLogicTest > ../../tests/MenuLogicTest-1.5.20.out || { tail -5 ../../tests/MenuLogicTest-1.5.20.out; exit 1; }
++grep -c '^ok' ../../tests/MenuLogicTest-1.5.20.out; tail -1 ../../tests/MenuLogicTest-1.5.20.out
