@@ -1,5 +1,80 @@
 # ExcelGuide changelog
 
+## 0.3.4 (built Oct 26, 2026, CDT) - nicknames and short names count as "talking to a player"
+
+STAGED ONLY. Not installed live. Needs Mike's go and one restart (jar).
+Built on the live 0.3.3 (jar 6dde5362..., the 0.3.3 source rebuilds to that exact
+sha on the box). Contains everything in 0.3.3 and earlier.
+Jar sha256 b77208cd009037d48c3a4389de0aa2a6a6a563429bd565e8e745f63962c78de2
+(300,980 B, two clean builds, byte-identical).
+
+Why: chat aimed at another player by a chat nickname or a short form of the
+gamertag ("hey <short name>, is your mini map broken?") was not seen as aimed at
+a player, because a name only counted when the WHOLE gamertag was typed as one
+word. Those lines reached the AI and, after the 45 s delayed-answer wait, got a
+public Guide answer nobody asked for.
+
+### Players
+- Plain chat that talks to another player by a nickname or a short form of
+  their gamertag now gets no Guide answer (same as typing their full name
+  always did).
+- Real questions are answered exactly as before: website knowledge first, the
+  AI fallback, 45 s delayed public answers, thanked-answer reuse, /ask and
+  "Guide, ..." are unchanged.
+
+### How a name is matched (case-insensitive, whole words only)
+- Whole gamertag, squashed (unchanged from 0.3.3).
+- Gamertag parts of 3+ letters, cut at camelCase, digits, underscores, spaces
+  and the Bedrock (Floodgate) leading "." ("QuietOtter42" -> quiet, otter).
+- Runs of neighbouring parts ("BigQuietOtter" -> bigquiet, quietotter).
+- A one-word lowercase gamertag that cannot be cut counts from its first 4
+  letters up ("quietotter" -> quie, quiet, ...).
+- EssentialsX nicknames of online players and players seen in chat this run:
+  the display name with colours (& and § codes, &#RRGGBB), [tags], (tags) and
+  the leading "~" removed, cut by the same rules. Essentials is a soft
+  dependency, read by reflection; if it is missing or its API fails, the
+  Bukkit display name is used, and the plugin never errors.
+- A trailing "s" (possessive) is allowed.
+- Never a name on its own: parts under 3 letters, stopwords, the Guide's game
+  words (fox, creeper, village...), thanks words, all-digit parts and a
+  common-word stoplist (cool, king, big, pro, gamer, star, sun, dragon, ...).
+  A nickname that is itself a common word is ignored.
+
+### Tradeoffs (known, accepted)
+- A short real first name (for example an adult's first name used as their
+  short form) DOES count while that player is online or was seen in chat. So
+  "yo <first name>, good idea, what do you think?" is treated as talking to
+  that player and gets no Guide answer. A question that does not use the name
+  is answered as before.
+- An ordinary English word that is a camelCase part of someone's gamertag and
+  is not on the stoplist (for example "example" in "ExamplePlayer") will mute
+  plain-chat lines using that word while that player is online or seen. /ask
+  and "Guide, ..." still answer. The stoplist can grow if this shows up.
+- Two-letter short forms never count.
+- Nicknames are read from the players online whenever someone chats or uses
+  /ask, and kept for the rest of the run (up to 500). A nickname of a player
+  who was never online during this run is unknown. The /ask stat-word refusal
+  checks online players only; the delayed-answer gate also checks players seen
+  earlier in the run.
+
+### Admin
+- No config change. No new keys. plugin.yml: version 0.3.4, softdepend adds
+  Essentials (load order only; works without it).
+- The /ask stat-word privacy refusal also sees nicknames of online players.
+
+### Tests
+- New NameMatchTest 55/55 (made-up names only). Every existing harness gives
+  the same result as on 0.3.3 (pre-existing: RetrievalTest 129/135 and
+  ConfigKnowledgeTest needing the website source, both unchanged).
+- Replay of 128 real unanswered chat lines (private): the two
+  nickname-addressed lines are now skipped. One previously AI-called line is
+  now skipped (it addressed an online adult by first name). Three lines that
+  were already skipped are now skipped earlier. Nothing else changes.
+- Private Paper 26.3 rig with a fake key and a stub AI: short form and
+  nickname lines got no answer and no AI call after 55 s; a plain question got
+  the delayed public answer; /ask answered; boot without Essentials enables
+  cleanly and still answers.
+
 ## 0.3.3 (built Oct 26, 2026, CDT) - platform-correct control wording
 
 STAGED ONLY. Not installed live. Needs Mike's go and one restart (jar).

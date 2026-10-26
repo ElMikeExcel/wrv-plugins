@@ -1,10 +1,10 @@
 name: ExcelGuide
-version: 0.3.3
+version: 0.3.4
 author: Argus
 main: com.winkreyes.excelguide.ExcelGuide
 api-version: "1.13"
 description: The Valley Guide - an in-game question answerer that reads the same knowledge as the website's Ask page, answers personal questions (levels, balance, playtime, claim blocks, seal progress, Magic standing) from live plugin data, and logs the questions it could not answer so it can be taught. Read-only, it changes nothing in the world.
-softdepend: [Vault, mcMMO, Jobs, ExcelGuildGate, Magic, GriefPrevention]
+softdepend: [Vault, mcMMO, Jobs, ExcelGuildGate, Magic, GriefPrevention, Essentials]
 commands:
   guide:
     description: The Valley Guide - status, reload, the player-answer review queue, and your personal off/on switch.

@@ -740,8 +740,47 @@ public final class GuideEngine {
             peerFilter = new PeerFilter(PeerFilter.lists(cfg.peerGameTerms, cfg.peerSpoilerTerms,
                     cfg.peerBlockedWords, cfg.peerBlockedNames, cfg.peerSocialPhrases,
                     cfg.peerChatterPhrases), cfg.peerMinAnswerChars, cfg.peerMinAnswerWords);
+            peerFilter.setNicknames(nicknames);
         }
         return peerFilter;
+    }
+
+    /**
+     * Chat nicknames (0.3.4): lower-case player name -> nickname as the
+     * server shows it (colours and the "~" mark are cleaned later). Kept
+     * for online players and players seen this run (capped), so a line
+     * that calls someone by nickname counts as talking to a player.
+     */
+    private final java.util.Map<String, String> nicknames =
+            java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
+
+    /**
+     * The glue reports nicknames before each handled line (name -> the
+     * nickname, or null/blank/equal-to-name for none). Works with an
+     * empty map when Essentials is missing.
+     */
+    public synchronized void noteNicknames(java.util.Map<String, String> byName) {
+        if (byName == null) {
+            return;
+        }
+        for (var e : byName.entrySet()) {
+            if (e.getKey() == null) {
+                continue;
+            }
+            String k = NameMatch.key(e.getKey());
+            String nick = NameMatch.cleanDisplay(e.getValue());
+            if (nick.isBlank() || nick.equalsIgnoreCase(e.getKey())
+                    || TextNorm.normalize(nick).equals(TextNorm.normalize(e.getKey()))) {
+                nicknames.remove(k);
+            } else {
+                nicknames.remove(k);
+                nicknames.put(k, nick);
+            }
+        }
+        while (nicknames.size() > 500) {
+            String first = nicknames.keySet().iterator().next();
+            nicknames.remove(first);
+        }
     }
 
     private Collection<String> knownNames() {
@@ -2374,6 +2413,11 @@ public final class GuideEngine {
                     return true;
                 }
             } else if ((" " + norm + " ").contains(" " + n + " ")) {
+                return true;
+            }
+            // 0.3.4: short forms of the gamertag and the chat nickname
+            // ("hey Quiet, ..." for QuietOtter42), whole words only.
+            if (NameMatch.matches(tokens, NameMatch.tokens(name, nicknames.get(NameMatch.key(name))))) {
                 return true;
             }
         }
