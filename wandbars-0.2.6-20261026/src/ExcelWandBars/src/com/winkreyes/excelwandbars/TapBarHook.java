@@ -91,6 +91,10 @@ final class TapBarHook implements Listener {
     /** 0.2.5: right clicks with the Tap bar wand (Magic's right_click is "none" there): Bedrock reads, Java opens or puts items back. */
     private long rightReads, rightOpens, rightCloses, rightRepeats;
     private final Map<UUID, Long> lastRight = new HashMap<>();
+    /** 0.2.6 Tap to pick (original): right clicks are ours (Magic's right_click is "none" there). */
+    private long origRightOpens, origRightCloses, origHoldCasts, origHoldSwingCast, origRightRepeats;
+    /** 0.2.6: when this player's last cast started (PreCastEvent), so one press and hold casts once. */
+    private final Map<UUID, Long> lastCastStart = new HashMap<>();
     /** 0.2.5: a press and hold within this long after tapping an icon reads THAT spell (the finger is still on it). */
     private long holdReadsTapMs = 1500;
     /** 0.2.5: Tap bar stays up while the wand is held (no idle close); items back = the empty slot, Q or the wand slot hold. */
@@ -137,13 +141,16 @@ final class TapBarHook implements Listener {
         return "open on hold " + (openOnHold ? "ON" : "OFF") + ", empty slot closes " + (emptySlotCloses ? "ON" : "OFF")
                 + ", idle close " + (idleCloseMs == 0 ? "OFF" : (idleCloseMs / 1000) + "s" + (tapBarStaysOpen ? " (original only, Tap bar stays up)" : ""))
                 + ", close before other inventory " + (closeOnOtherInventory ? "ON" : "OFF")
-                + ", Tap bar hold shows spell info " + (holdShowsInfo ? "ON (never casts; hold after a tap reads that spell within " + holdReadsTapMs + " ms)" : "OFF") + ", icon lore " + (!iconLore ? "OFF" : loreMagicStyle ? "Magic's text + next rank" : "Spell Book text");
+                + ", Tap bar hold shows spell info " + (holdShowsInfo ? "ON (never casts; hold after a tap reads that spell within " + holdReadsTapMs + " ms)" : "OFF") + ", icon lore " + (!iconLore ? "OFF" : loreMagicStyle ? "Magic's text + next rank" : "Spell Book text")
+                + ", Tap to pick: tap picks (quick_cast manual), right click handled (Java open / items back, Bedrock hold casts once)";
     }
     String counters() { return "opened " + opened + " idle-closed " + closedIdle + " empty-closed " + closedEmpty + " other-closed " + closedOther
             + " hold-info " + holdsInfo + " hold-open " + holdsOpen + " hold-merged " + holdsMerged + " hold-skipped " + holdsSkipped + " lore " + loreSet
             + " held-cancelled-ignored " + heldCancelledIgnored + " drop-reads " + dropReads + " drop-closes " + dropCloses
             + " hold-casts-blocked " + holdCastsBlocked + " page-lines " + pageLines
-            + " right-reads " + rightReads + " right-opens " + rightOpens + " right-closes " + rightCloses + " right-repeats " + rightRepeats; }
+            + " right-reads " + rightReads + " right-opens " + rightOpens + " right-closes " + rightCloses + " right-repeats " + rightRepeats
+            + " pick-right-opens " + origRightOpens + " pick-right-closes " + origRightCloses + " pick-hold-casts " + origHoldCasts
+            + " pick-hold-swing-cast " + origHoldSwingCast + " pick-right-repeats " + origRightRepeats; }
     String lastHold(Player p) { return lastHold.getOrDefault(p.getUniqueId(), "-"); }
     String lastCast(Player p) { return lastCast.getOrDefault(p.getUniqueId(), "-") + " x" + casts.getOrDefault(p.getUniqueId(), 0); }
 
@@ -252,6 +259,7 @@ final class TapBarHook implements Listener {
         Player p = m == null || !m.isPlayer() ? null : m.getPlayer();
         if (p == null) return;
         UUID id = p.getUniqueId();
+        lastCastStart.put(id, System.currentTimeMillis());
         lastCast.put(id, event.getSpell() == null ? "?" : event.getSpell().getKey() + " STARTED");
         casts.merge(id, 1, Integer::sum);
         if (openWand(p) != null) {
@@ -315,6 +323,18 @@ final class TapBarHook implements Listener {
     /** 0.2.5: the held Tap bar wand (any use, not only hold-to-read), else null. */
     private Wand tapWand(Player p) {
         if (!tapBarStyle(p)) return null;
+        return inventoryRankWand(p);
+    }
+
+    /** 0.2.6: the held Tap to pick (original) wand, else null. */
+    private Wand pickWand(Player p) {
+        StyleHook s = plugin.styleHook();
+        if (s == null || !s.enabled() || s.styleOf(p) != WandStyle.ORIGINAL) return null;
+        return inventoryRankWand(p);
+    }
+
+    /** The held rank wand in inventory mode, in a normal world, no other screen open; else null. */
+    private Wand inventoryRankWand(Player p) {
         if (plugin.skipWorld(p.getWorld()) || p.getGameMode() == GameMode.SPECTATOR || p.isDead()) return null;
         InventoryType top = p.getOpenInventory().getType();
         if (top != InventoryType.CRAFTING && top != InventoryType.CREATIVE) return null;
@@ -443,6 +463,55 @@ final class TapBarHook implements Listener {
             if (n.isInventoryOpen()) { n.closeInventory(); rightCloses++; lastHold.put(id, "right close"); }
             else { String r = tryOpen(p, "right click"); rightOpens++; lastHold.put(id, "right open " + r); if ("opened".equals(r)) sendPageLine(p, 3L); }
         });
+    }
+
+    /**
+     * 0.2.6: right click with the Tap to pick (original) wand. Magic's right_click is "none" for this
+     * style (its toggle closed the bar when a phone's press and hold arrived as a right click, so the
+     * picked spell never cast). Here:
+     *  - bar down (Java and Bedrock): open the bar, as Magic's toggle did,
+     *  - Java, bar up: put the items back, as Magic's toggle did,
+     *  - Bedrock, bar up: press and hold casts the picked spell ONCE. If the swing of the same hold
+     *    already started a cast (Magic's left_click cast), nothing more happens.
+     * A held finger or mouse button repeats every 4 ticks; repeats are ignored. Crouch + right click
+     * stays Magic's page flip (right_click_sneak). A click that uses a block (chest, door) is left alone.
+     */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onRightClickPick(PlayerInteractEvent event) {
+        Action a = event.getAction();
+        if (a != Action.RIGHT_CLICK_AIR && a != Action.RIGHT_CLICK_BLOCK) return;
+        if (event.getHand() != null && event.getHand() != org.bukkit.inventory.EquipmentSlot.HAND) return;
+        Player p = event.getPlayer();
+        if (p.isSneaking()) return;
+        if (a == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock() != null && event.getClickedBlock().getType().isInteractable()) return;
+        Wand w = pickWand(p);
+        if (w == null) return;
+        UUID id = p.getUniqueId();
+        long now = System.currentTimeMillis();
+        Long prevRight = lastRight.put(id, now);
+        if (prevRight != null && now - prevRight < 350) { origRightRepeats++; return; }
+        final boolean bedrock = plugin.isBedrock(p);
+        final boolean wasOpen = w.isInventoryOpen();
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (!p.isOnline()) return;
+            Wand n = pickWand(p);
+            if (n == null) return;
+            if (!n.isInventoryOpen()) {
+                if (wasOpen) return; // something else closed it in between (empty slot, Q): leave it
+                String r = tryOpen(p, "right click");
+                origRightOpens++;
+                lastHold.put(id, "pick right open " + r);
+                if ("opened".equals(r)) sendPageLine(p, 3L);
+                return;
+            }
+            if (!wasOpen) return; // opened in between by the hotbar opener: leave it up
+            if (!bedrock) { n.closeInventory(); origRightCloses++; lastHold.put(id, "pick right close"); return; }
+            Long c = lastCastStart.get(id);
+            if (c != null && c >= now - 400) { origHoldSwingCast++; lastHold.put(id, "pick hold (swing cast)"); return; }
+            boolean ok = n.cast();
+            origHoldCasts++;
+            lastHold.put(id, "pick hold cast " + n.getActiveSpellKey() + (ok ? "" : " (not cast)"));
+        }, bedrock ? 3L : 1L);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -574,7 +643,7 @@ final class TapBarHook implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         UUID id = event.getPlayer().getUniqueId();
-        lastHoldSignal.remove(id); lastRight.remove(id); lastUse.remove(id); lastSwing.remove(id); lastTapKey.remove(id); lastTapAt.remove(id); lastHold.remove(id); lastUseClick.remove(id); lastSlotPick.remove(id);
+        lastHoldSignal.remove(id); lastRight.remove(id); lastUse.remove(id); lastSwing.remove(id); lastTapKey.remove(id); lastTapAt.remove(id); lastHold.remove(id); lastUseClick.remove(id); lastSlotPick.remove(id); lastCastStart.remove(id);
     }
 
     private void tick() {

@@ -29,6 +29,9 @@ public enum WandStyle {
      * inventory mode, no quick cast. Holding the wand fills the hotbar with spell
      * icons; picking a hotbar slot makes that spell active (Magic activateIcon),
      * left click (Bedrock touch: press and hold) casts it. Storage key "original";
+     * 0.2.6: quick_cast "manual" so a tap really only picks (quick_cast "false" let
+     * spells marked quick_cast in spells.yml cast on the tap), right_click handled by
+     * ExcelWandBars so a phone's press and hold casts instead of closing the bar.
      * 0.2.3 and older do not know it and use Classic, so a rollback is safe.
      */
     ORIGINAL("Tap to pick (original)"),

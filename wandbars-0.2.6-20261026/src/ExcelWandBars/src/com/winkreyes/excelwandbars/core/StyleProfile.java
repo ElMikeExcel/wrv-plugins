@@ -77,13 +77,22 @@ public final class StyleProfile {
         o.put("drop_sneak", "cycle_hotbar_reverse");
         o.put("swap", "cycle_hotbar");
         o.put("swap_sneak", "cycle_hotbar_reverse");
-        o.put("quick_cast", "false");
+        // 0.2.6 fix: "manual", not "false". With quick_cast false, Magic (Mage.activateIcon)
+        // still casts any spell whose own config says quick_cast: true (cure, boon,
+        // superheal, feed, recall in the live spells.yml) the moment its icon is picked,
+        // because only quick_cast "manual" (or "true") sets the wand's quickCastDisabled.
+        // "manual" = picking an icon only selects the spell, for every spell.
+        o.put("quick_cast", "manual");
         o.put("live_hotbar_cooldown", "true");
         o.put("live_hotbar_mana", "true");
+        // 0.2.6: right click is handled by ExcelWandBars (as in Tap bar). A phone's press and
+        // hold arrives as a right click too, and Magic's toggle closed the bar under the finger
+        // instead of casting. Java: right click still opens the bar / puts items back.
+        o.put("right_click", "none");
         wanted.put(WandStyle.ORIGINAL, o);
         // 0.2.4 Tap bar: the original's layout with quick cast on (picking a slot casts).
         Map<String, String> t = new LinkedHashMap<>(o);
-        t.put("quick_cast", "true");
+        t.put("quick_cast", "true"); // 0.2.6: unchanged, Tap bar still casts on tap
         // 0.2.5: left click / press and hold never casts in Tap bar (Magic's survival
         // left click casts from PlayerInteractEvent even when another plugin cancels it,
         // so the key itself is "none"). Drop (Q, press and hold the wand slot) is read by

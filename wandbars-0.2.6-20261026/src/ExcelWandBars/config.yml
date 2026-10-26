@@ -30,7 +30,10 @@ wand-style:
   # or the third button in the Wand controls form.
   # 0.2.4: original = the first wand setup (Oct 17 2026 Phase 1 wands.yml):
   # inventory mode, picking a hotbar spell icon makes it the active spell,
-  # left click (phone: press and hold) casts. tapbar = Tap bar, best on a
+  # left click (phone: press and hold) casts. 0.2.6: original uses Magic's
+  # quick_cast "manual" (a tap only picks, for every spell) and right_click
+  # "none" (ExcelWandBars handles it: Java opens / puts items back, phone press
+  # and hold casts the picked spell once). tapbar = Tap bar, best on a
   # phone: inventory mode + quick cast, picking a hotbar spell icon casts it
   # at once. Both are for Java and Bedrock (see tap-bar below).
   # 0.2.3 and older do not know these two keys and use Classic for them.

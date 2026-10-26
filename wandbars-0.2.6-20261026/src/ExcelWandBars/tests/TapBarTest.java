@@ -25,11 +25,11 @@ public final class TapBarTest {
         // The first iteration (WRV-070 Phase 1 wands.yml, Oct 17 2026) base_wand keys, exactly.
         Check.eq("inventory", o.get("mode"), "original: inventory mode (Phase 1)");
         Check.eq("cast", o.get("left_click"), "original: left_click cast (Phase 1)");
-        Check.eq("toggle", o.get("right_click"), "original: right_click toggle (Phase 1)");
+        Check.eq("none", o.get("right_click"), "original 0.2.6: right_click none (ExcelWandBars: open / items back on Java, hold casts once on Bedrock)");
         Check.eq("toggle", o.get("drop"), "original: drop toggle (Phase 1)");
         Check.eq("cycle_hotbar", o.get("swap"), "original: swap cycle_hotbar (Phase 1)");
         Check.eq("cycle_hotbar_reverse", o.get("swap_sneak"), "original: swap_sneak cycle_hotbar_reverse (Phase 1)");
-        Check.eq("false", o.get("quick_cast"), "original: no quick cast (Phase 1 had none)");
+        Check.eq("manual", o.get("quick_cast"), "original 0.2.6: quick_cast manual (picking never casts, even quick_cast spells)");
         Map<String, String> t = p.wanted(WandStyle.TAPBAR);
         Check.eq("true", t.get("quick_cast"), "tap bar: quick cast (slot pick casts)");
         Check.eq("inventory", t.get("mode"), "tap bar: inventory mode");

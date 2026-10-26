@@ -6,6 +6,7 @@ public class TestMain {
         StyleTest.run();
         CycleTest.run();
         TapBarTest.run();
+        PickTest.run();
         PageTest.run();
         CompassTest.run();
         TipTest.run();

@@ -34,7 +34,7 @@ public final class ControlsText {
                 "Hold your wand and all your spells fill the hotbar.",
                 "Press a hotbar key (1-9) or scroll to pick a spell. Left click casts it.",
                 "More spells than fit? Sneak flips to the next page.",
-                "Q or right click puts your items back.");
+                "Q or right click puts your items back. Right click again brings the bar back.");
         if (bedrock) {
             if (s == WandStyle.CYCLE) return List.of(
                     "Press and hold (controller: LT) to go to the next spell. Its name shows on screen.",
