@@ -13,7 +13,7 @@ find "$PROJ/tests" -name "*.java" | sort > "$OUT/test.txt"
 "$JDK/bin/javac" --release 21 -proc:none -cp "$OUT/classes:$CP:$JUNIT" -d "$OUT/test-classes" @"$OUT/test.txt"
 "$JDK/bin/java" -jar "$JUNIT" execute -cp "$OUT/classes:$OUT/test-classes:$CP" --select-package com.winkreyes.trash --details summary --fail-if-no-tests
 # deterministic jar: fixed timestamps, sorted entries
-cd "$OUT/classes"; find . -exec touch -h -d '2026-10-24 00:00:00' {} +
-rm -f "$HERE/ExcelTrash-0.2.0.jar"; find . -type f | sort | sed 's#^\./##' > ../entries.txt
-"$JDK/bin/jar" --create --file "$HERE/ExcelTrash-0.2.0.jar" --date=2026-10-24T00:00:00Z --no-manifest @../entries.txt
-sha256sum "$HERE/ExcelTrash-0.2.0.jar"
+cd "$OUT/classes"; find . -exec touch -h -d '2026-10-26 00:00:00' {} +
+rm -f "$HERE/ExcelTrash-0.3.0.jar"; find . -type f | sort | sed 's#^\./##' > ../entries.txt
+"$JDK/bin/jar" --create --file "$HERE/ExcelTrash-0.3.0.jar" --date=2026-10-26T00:00:00Z --no-manifest @../entries.txt
+sha256sum "$HERE/ExcelTrash-0.3.0.jar"

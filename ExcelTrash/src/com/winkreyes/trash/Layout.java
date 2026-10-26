@@ -2,14 +2,14 @@ package com.winkreyes.trash;
 
 /**
  * Slot maps (pure, unit-tested).
- * Inventory mode ("Trash", 4 rows, same as 0.1.0): 0-26 red trash side, 27-35 buttons.
- * Chest mode (6 rows): 0-26 live mirror of the chest you looked at, 27-35 buttons, 36-53 red trash side.
+ * Inventory mode ("Trash", 4 rows, same as 0.1.0): 0-26 trash slots, 27-35 buttons (27 chest, 29 help, 31 recover, 33 OK, 35 cancel).
+ * Chest mode (6 rows): 0-26 live mirror of the chest you looked at, 27-35 buttons, 36-53 trash slots.
  */
 public final class Layout {
     private Layout() {}
     // inventory mode
     public static final int A_SIZE = 36, A_BAG_END = 27;
-    public static final int A_CHEST = 27, A_UNDO = 31, A_OK = 33, A_CANCEL = 35;
+    public static final int A_CHEST = 27, A_HELP = 29, A_UNDO = 31, A_OK = 33, A_CANCEL = 35;
     // chest mode
     public static final int B_SIZE = 54, B_MIRROR = 27, B_BAG_START = 36;
     public static final int B_PREV = 27, B_INFO = 28, B_INV = 29, B_UNDO = 31, B_OK = 33, B_CANCEL = 34, B_NEXT = 35;

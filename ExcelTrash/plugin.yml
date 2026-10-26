@@ -1,16 +1,16 @@
 name: ExcelTrash
-version: '0.2.0'
+version: '0.3.0'
 main: com.winkreyes.trash.ExcelTrash
 api-version: '1.21'
 author: Wink Reyes Valley
 license: MIT
 softdepend: [GriefPrevention]
-description: /trash bin with chest mode, OK to delete, and a 5-minute one-shot recover of your last batch.
+description: /trash bin with chest mode, two-tap OK to delete, and a 5-minute one-shot recover of your last batch.
 commands:
   trash:
     aliases: [bin]
-    description: Open the trash bin. /trash chest uses the chest you look at. /trash undo recovers your last batch.
-    usage: /trash [chest|undo]
+    description: Open the trash bin. /trash chest uses the chest you look at. /trash undo recovers your last batch. /trash help explains it.
+    usage: /trash [chest|undo|help]
     permission: exceltrash.use
 permissions:
   exceltrash.use:
