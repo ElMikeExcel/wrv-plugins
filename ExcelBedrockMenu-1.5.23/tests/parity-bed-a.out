@@ -1,0 +1,59 @@
+01:46:02 === parity-bed phase a Mon Oct 26 2026 01:46:02 GMT-0500 (Central Daylight Time)
+01:46:05 spawned
+01:46:08 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"},{"text":"Server Commands"},{"text":"Server Website"},{"text":"What's New"},{"text":"Ask the Guide"}
+01:46:14 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"},{"text":"Server Commands"},{"text":"Server Website"},{"text":"What's New"},{"text":"Ask the Guide"}
+01:46:15 menu: Spawn | Teleport to a player | Party | Utility Pouch | Spellbook | Excel Shop | My Cosmetics | Adventurers Guild | Jobs & Money | Skills & Perks | Leaderboard | Lost & Found | Trash Bin | Server Info | Server Commands | Server Website | What's New | Ask the Guide | Wand controls: Classic or Sneak bars | Auto-sort my chests: on/off | Maker's mark and Gear stats | Auto-open on join
+01:46:15 PASS compass has "Wand controls: Classic or Sneak bars" (button 19)
+01:46:15 FORM {"title":"Wand controls","content":"Classic: Right click (Bedrock: press and hold, or LT) picks the next spell. Sneak + right click opens your spell list. Q goes back one spell. Left click casts.\n\nSneak bars: Right click (press and hold, or LT) opens your spell bar. Tap a spell on the bar to cast it. Sneak once to flip to the next bar (1, 2, 3, then back to 1). Right click again to close it.\n\nYou can switch back any time.","buttons":[{"text":"Classic (now)"},{"text":"Sneak bars"}],"type":"fo
+01:46:17 after Wand controls: form={"title":"Wand controls","content":"Classic: Right click (Bedrock: press and hold, or LT) picks the next spell. Sneak + right click opens your spell list. Q goes back one spell. Left click casts.\n\nSneak bars: Right click (press and hold, or LT) opens your spell bar. Tap a spell on the bar to cast  chat=
+01:46:17 PASS tap runs /wandstyle (ExcelWandBars answers)
+01:46:18 FORM {"title":"Server Commands","content":"Every command you can use, by group. Pick a group:","buttons":[{"text":"Getting Around"},{"text":"Money & Jobs"},{"text":"Skills & Levels"},{"text":"Shops & Trading"},{"text":"Claims & Land"},{"text":"Guild & Quests"},{"text":"Server Info"},{"text":"Your Items & Help"}],"type":"form"}
+01:46:18 FORM {"title":"Server Commands","content":"/lostfound - Get back your own stuff lost to lava, fire, the void or a despawn in the last 7 days\n/trash - Throw items away. /trash undo works for 5 minutes\n/mark - Choose if things you craft say \"Crafted by\" with your name\n/ask - Ask the Guide anything about the server\n\nButtons below run the command. Lines with <words> in them need typing in chat instead.","buttons":[{"text":"/lostfound"},{"text":"/trash"},{"text":"/mark"},{"text":"/ask"}],"type":"fo
+01:46:18 groups: Getting Around | Money & Jobs | Skills & Levels | Shops & Trading | Claims & Land | Guild & Quests | Server Info | Your Items & Help
+01:46:18 PASS /servercommands opens the Server Commands form
+01:46:18 PASS 8 groups, Your Items & Help is group 8 (button 8)
+01:46:18 group 8: {"title":"Server Commands","content":"/lostfound - Get back your own stuff lost to lava, fire, the void or a despawn in the last 7 days\n/trash - Throw items away. /trash undo works for 5 minutes\n/mark - Choose if things you craft say \"Crafted by\" with your name\n/ask - Ask the Guide anything about the server\n\nButtons below run the command. Lines with <words> in them need typing in chat instead.","buttons":[{"text":"/lostfound"},{"text":"/trash"},{"text":"/mark"},{"text":"/ask"}],"type":"form"}
+01:46:18 PASS group 8 buttons in order: /lostfound, /trash, /mark, /ask (/lostfound | /trash | /mark | /ask)
+01:46:18 FORM {"title":"Lost & Found","content":"Price: Free (first recovery)\nYour money: $0\nItems stay here for 7 days.\n\nNothing to bring back. Only your own items lost to lava, fire, the void, or despawning in the last 7 days show here.","buttons":[{"text":"Close"}],"type":"form"}
+01:46:21 lostfound: form=Lost & Found chat=[Tip] Lost something to lava, fire, the void, or despawning? If it was yours, it shows here for 7 days. Your first one is free if you have less than $10,000. Each one costs $16,000, and you can bring 
+01:46:21 PASS /lostfound runs (ExcelDeathRecord answers)
+01:46:21 FORM {"title":"Server Commands","content":"Every command you can use, by group. Pick a group:","buttons":[{"text":"Getting Around"},{"text":"Money & Jobs"},{"text":"Skills & Levels"},{"text":"Shops & Trading"},{"text":"Claims & Land"},{"text":"Guild & Quests"},{"text":"Server Info"},{"text":"Your Items & Help"}],"type":"form"}
+01:46:21 FORM {"title":"Server Commands","content":"/lostfound - Get back your own stuff lost to lava, fire, the void or a despawn in the last 7 days\n/trash - Throw items away. /trash undo works for 5 minutes\n/mark - Choose if things you craft say \"Crafted by\" with your name\n/ask - Ask the Guide anything about the server\n\nButtons below run the command. Lines with <words> in them need typing in chat instead.","buttons":[{"text":"/lostfound"},{"text":"/trash"},{"text":"/mark"},{"text":"/ask"}],"type":"fo
+01:46:22 CONTAINER_OPEN
+01:46:26 trash: containers=1 form=none chat=
+01:46:26 PASS /trash opens the trash bin
+01:46:28 FORM {"title":"Server Commands","content":"Every command you can use, by group. Pick a group:","buttons":[{"text":"Getting Around"},{"text":"Money & Jobs"},{"text":"Skills & Levels"},{"text":"Shops & Trading"},{"text":"Claims & Land"},{"text":"Guild & Quests"},{"text":"Server Info"},{"text":"Your Items & Help"}],"type":"form"}
+01:46:28 FORM {"title":"Server Commands","content":"/lostfound - Get back your own stuff lost to lava, fire, the void or a despawn in the last 7 days\n/trash - Throw items away. /trash undo works for 5 minutes\n/mark - Choose if things you craft say \"Crafted by\" with your name\n/ask - Ask the Guide anything about the server\n\nButtons below run the command. Lines with <words> in them need typing in chat instead.","buttons":[{"text":"/lostfound"},{"text":"/trash"},{"text":"/mark"},{"text":"/ask"}],"type":"fo
+01:46:28 FORM {"title":"Maker's mark","content":"Crafted by: your name on the tools, weapons and armor you craft.\n\nGear stats: weapons count kills and bosses, armor counts hits blocked.\n\nTap a switch to flip it.","buttons":[{"text":"Maker's mark: ON\nTap to turn off"},{"text":"Gear stats: ON\nTap to turn off"},{"text":"Close"}],"type":"form"}
+01:46:28 mark: {"title":"Maker's mark","content":"Crafted by: your name on the tools, weapons and armor you craft.\n\nGear stats: weapons count kills and bosses, armor counts hits blocked.\n\nTap a switch to flip it.","buttons":[{"text":"Maker's mark: ON\nTap to turn off"},{"text":"Gear stats: ON\nTap to turn off" chat=
+01:46:28 PASS /mark opens the Maker's mark form (no typing)
+01:46:29 FORM {"title":"Server Commands","content":"Every command you can use, by group. Pick a group:","buttons":[{"text":"Getting Around"},{"text":"Money & Jobs"},{"text":"Skills & Levels"},{"text":"Shops & Trading"},{"text":"Claims & Land"},{"text":"Guild & Quests"},{"text":"Server Info"},{"text":"Your Items & Help"}],"type":"form"}
+01:46:29 FORM {"title":"Server Commands","content":"/lostfound - Get back your own stuff lost to lava, fire, the void or a despawn in the last 7 days\n/trash - Throw items away. /trash undo works for 5 minutes\n/mark - Choose if things you craft say \"Crafted by\" with your name\n/ask - Ask the Guide anything about the server\n\nButtons below run the command. Lines with <words> in them need typing in chat instead.","buttons":[{"text":"/lostfound"},{"text":"/trash"},{"text":"/mark"},{"text":"/ask"}],"type":"fo
+01:46:29 FORM {"title":"Ask the Guide","content":[{"placeholder":"How do I claim land?","default":"","type":"input","text":"Type your question. The Guide answers from the server's own pages."}],"type":"custom_form"}
+01:46:30 ask: {"title":"Ask the Guide","content":[{"placeholder":"How do I claim land?","default":"","type":"input","text":"Type your question. The Guide answers from the server's own pages."}],"type":"custom_form"}
+01:46:30 PASS /ask opens the Ask the Guide text box
+01:46:30 FORM {"title":"Server Commands","content":"Every command you can use, by group. Pick a group:","buttons":[{"text":"Getting Around"},{"text":"Money & Jobs"},{"text":"Skills & Levels"},{"text":"Shops & Trading"},{"text":"Claims & Land"},{"text":"Guild & Quests"},{"text":"Server Info"},{"text":"Your Items & Help"}],"type":"form"}
+01:46:30 FORM {"title":"Server Commands","content":"/shop - Open the Excel Shop\n/cosmetics - See your colors, effects and sets, and equip them\n/excelshop setup - Start the guided setup for your own chest shop\n/excelshop manage - Manage your own chest shop\n/deathprotection status - See if your items are protected from death\n/mobveil status - See how much Mob Veil time you have left\n\nButtons below run the command. Lines with <words> in them need typing in chat instead.","buttons":[{"text":"/shop"},{"text
+01:46:31 shops group: /shop | /cosmetics | /excelshop setup | /excelshop manage | /deathprotection status | /mobveil status
+01:46:31 PASS /cosmetics is listed in Shops & Trading
+01:46:36 cosmetics: form=none chat=You don't have any cosmetics yet — they are sold at the spawn shop. containers=0
+01:46:36 PASS /cosmetics runs (ExcelCosmetics answers)
+01:46:38 clicks.csv new rows:
+   2026-10-26T01:46:15-05:00,.PtBed,00000000-0000-0000-0000-000000000000,bedrock,server_menu,wandstyle,18,FORM
+   2026-10-26T01:46:18-05:00,.PtBed,00000000-0000-0000-0000-000000000000,bedrock,commands_menu_page2,hdr_yi,7,FORM
+   2026-10-26T01:46:18-05:00,.PtBed,00000000-0000-0000-0000-000000000000,bedrock,commands_menu_page2,yi_lostfound,0,FORM
+   2026-10-26T01:46:21-05:00,.PtBed,00000000-0000-0000-0000-000000000000,bedrock,commands_menu_page2,hdr_yi,7,FORM
+   2026-10-26T01:46:22-05:00,.PtBed,00000000-0000-0000-0000-000000000000,bedrock,commands_menu_page2,yi_trash,1,FORM
+   2026-10-26T01:46:28-05:00,.PtBed,00000000-0000-0000-0000-000000000000,bedrock,commands_menu_page2,hdr_yi,7,FORM
+   2026-10-26T01:46:28-05:00,.PtBed,00000000-0000-0000-0000-000000000000,bedrock,commands_menu_page2,yi_mark,2,FORM
+   2026-10-26T01:46:29-05:00,.PtBed,00000000-0000-0000-0000-000000000000,bedrock,commands_menu_page2,hdr_yi,7,FORM
+   2026-10-26T01:46:29-05:00,.PtBed,00000000-0000-0000-0000-000000000000,bedrock,commands_menu_page2,yi_ask,3,FORM
+   2026-10-26T01:46:30-05:00,.PtBed,00000000-0000-0000-0000-000000000000,bedrock,commands_menu,hdr_st,3,FORM
+   2026-10-26T01:46:31-05:00,.PtBed,00000000-0000-0000-0000-000000000000,bedrock,commands_menu_page2,st_cosmetics,1,FORM
+01:46:38 PASS stats: Bedrock Wand controls counted as server_menu > wandstyle
+01:46:38 PASS stats: Bedrock tap counted as commands_menu_page2 > yi_lostfound
+01:46:38 PASS stats: Bedrock tap counted as commands_menu_page2 > yi_trash
+01:46:38 PASS stats: Bedrock tap counted as commands_menu_page2 > yi_mark
+01:46:38 PASS stats: Bedrock tap counted as commands_menu_page2 > yi_ask
+01:46:38 PASS stats: Bedrock tap counted as commands_menu_page2 > st_cosmetics
+01:46:41 RESULT parity-bed phase a 17 passed 0 failed

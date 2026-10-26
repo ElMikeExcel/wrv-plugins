@@ -1,0 +1,24 @@
+name: ExcelBedrockMenu
+version: 1.5.23
+author: Argus
+main: com.winkreyes.excelbedrockmenu.ExcelBedrockMenu
+api-version: "1.13"
+description: /menu that works on Bedrock via native Geyser forms. Removes the redundant Jobs & Money menu entry. (Renamed from BedrockMenu.)
+softdepend: [Geyser-Spigot, floodgate, DeluxeMenus, Essentials, EssentialsSpawn]
+commands:
+  menu:
+    description: Open the server menu
+    usage: /menu
+  tpmenu:
+    description: Pick an online player to send a teleport request to
+    usage: /tpmenu
+  childproofmenu:
+    description: Pick an online player to childproof in the claim you stand in (runs /childproof)
+    usage: "/childproofmenu [help]  (example: /childproof Alex)"
+  servercommands:
+    description: Show the server's command list, grouped
+    usage: /servercommands [group]
+    aliases: [cmds]
+  serverwebsite:
+    description: Show the server website address
+    usage: /serverwebsite

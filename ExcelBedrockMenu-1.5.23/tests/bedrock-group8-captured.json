@@ -1,0 +1,19 @@
+{
+  "title": "Server Commands",
+  "content": "/lostfound - Get back your own stuff lost to lava, fire, the void or a despawn in the last 7 days\n/trash - Throw items away. /trash undo works for 5 minutes\n/mark - Choose if things you craft say \"Crafted by\" with your name\n/ask - Ask the Guide anything about the server\n\nButtons below run the command. Lines with <words> in them need typing in chat instead.",
+  "buttons": [
+    {
+      "text": "/lostfound"
+    },
+    {
+      "text": "/trash"
+    },
+    {
+      "text": "/mark"
+    },
+    {
+      "text": "/ask"
+    }
+  ],
+  "type": "form"
+}
