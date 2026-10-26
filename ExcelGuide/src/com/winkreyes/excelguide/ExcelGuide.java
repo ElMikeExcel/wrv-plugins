@@ -309,6 +309,7 @@ public final class ExcelGuide extends JavaPlugin implements CommandExecutor {
         for (Player p : Bukkit.getOnlinePlayers()) {
             onlineNames.add(p.getName());
         }
+        engine.noteNicknames(Nicknames.online()); // 0.3.4: nicknames count as names
         List<GuideEngine.Reply> replies = engine.handle(
                 new GuideEngine.PlayerRef(player.getUniqueId(), player.getName()),
                 question, GuideEngine.Door.COMMAND, onlineNames, false,

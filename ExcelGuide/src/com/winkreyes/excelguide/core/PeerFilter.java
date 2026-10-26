@@ -380,7 +380,21 @@ public final class PeerFilter {
                 out.add(part);
             }
         }
+        // 0.3.4: also short forms (camelCase / digit parts, runs of
+        // parts, leading letters of a one-part name). Added on top of
+        // the 0.3.3 words, so nothing that matched before stops matching.
+        out.addAll(NameMatch.tokens(name));
         return out;
+    }
+
+    /**
+     * Chat nicknames by lower-case player name (0.3.4). The engine owns
+     * the map and keeps it current from the server glue; may be empty.
+     */
+    private java.util.Map<String, String> nicknames = java.util.Map.of();
+
+    public void setNicknames(java.util.Map<String, String> nicknames) {
+        this.nicknames = nicknames == null ? java.util.Map.of() : nicknames;
     }
 
     /** True when the line names any known player (online, seen in chat, or a configured name). */
@@ -402,6 +416,10 @@ public final class PeerFilter {
                 if (tokens.contains(nt) || tokens.contains(nt + "s")) { // "owl's" -> "owls"
                     return true;
                 }
+            }
+            String nick = nicknames.get(NameMatch.key(name));
+            if (nick != null && NameMatch.matches(tokens, NameMatch.tokens(name, nick))) {
+                return true; // 0.3.4: the player's chat nickname
             }
         }
         return false;
