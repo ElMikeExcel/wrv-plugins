@@ -3,6 +3,7 @@ package com.winkreyes.excelvaults;
 import com.winkreyes.excelvaults.core.Pricing;
 import com.winkreyes.excelvaults.core.Rules;
 import com.winkreyes.excelvaults.core.Store;
+import com.winkreyes.excelvaults.core.Texts;
 import com.winkreyes.excelvaults.core.TimeFmt;
 import com.winkreyes.excelvaults.core.VaultKey;
 import io.papermc.paper.event.block.VaultChangeStateEvent;
@@ -73,6 +74,8 @@ public final class ExcelVaults extends JavaPlugin implements Listener {
     private boolean enabled, notifyReady;
     private final TypeCfg normal = new TypeCfg(), ominous = new TypeCfg();
     private int minSeals, formDelay;
+    private boolean tapForm; private long tapFormCooldownMs;
+    private final Texts.TapGate tapGate = new Texts.TapGate();
     private double priceStep;
     private long hintCooldownMs;
     private ZoneId zone = ZoneId.of("America/Chicago");
@@ -115,7 +118,7 @@ public final class ExcelVaults extends JavaPlugin implements Listener {
                 + " (seals " + (s == null ? "unknown" : s + " of 5") + ", ominous " + (Rules.gateOpen(s, minSeals) ? "OPEN" : "waiting") + ")"
                 + ", reopen-now $" + money(normal.full) + (normal.scale ? " scaling to min $" + money(normal.min) : " flat") + " / $" + money(ominous.full) + (ominous.scale ? " scaling to min $" + money(ominous.min) : " flat")
                 + (econ == null ? " (no economy)" : "") + ", " + store.recordCount() + " cooldowns on " + store.vaultCount() + " vaults"
-                + ", Bedrock forms " + (floodgate ? "on" : "off") + ", audit " + (audit.available() ? "on" : "off") + (enabled ? "" : ", DISABLED") + ".";
+                + ", Bedrock forms " + (floodgate ? "on" + (tapForm ? " (tap opens reopen window)" : "") : "off") + ", audit " + (audit.available() ? "on" : "off") + (enabled ? "" : ", DISABLED") + ".";
     }
 
     private static long hours(long ms) { return ms / 3_600_000L; }
@@ -131,6 +134,8 @@ public final class ExcelVaults extends JavaPlugin implements Listener {
         notifyReady = c.getBoolean("notify-ready", true);
         hintCooldownMs = Math.max(0, c.getLong("hint-cooldown-seconds", 3)) * 1000L;
         formDelay = Math.max(0, c.getInt("bedrock-form-delay-ticks", 6));
+        tapForm = c.getBoolean("bedrock-tap-opens-form", true);
+        tapFormCooldownMs = Math.max(0, c.getLong("bedrock-tap-form-cooldown-seconds", 30)) * 1000L;
         try { zone = ZoneId.of(c.getString("timezone", "America/Chicago")); } catch (RuntimeException e) { zone = ZoneId.of("America/Chicago"); }
     }
 
@@ -282,8 +287,18 @@ public final class ExcelVaults extends JavaPlugin implements Listener {
         say(p, "hint", v);
         boolean pay = canPay(om);
         if (!pay) { say(p, "hint-pay-off", v); return; }
+        boolean bedrock = bedrock(p);
         say(p, "hint-pay", v);
-        if (!(floodgate && BedrockForms.isBedrock(p))) {
+        if (bedrock) {
+            // 0.1.1: chat buttons cannot be clicked on Bedrock. A plain tap opens the same reopen window
+            // (two buttons, nothing charged until "Reopen" is tapped), at most once per vault per cooldown.
+            if (tapForm && gate(om) && tapGate.allow(p.getUniqueId() + "|" + k, now, tapFormCooldownMs)) {
+                say(p, "bedrock-form-note", v);
+                openConfirm(p, k);
+            }
+            return;
+        }
+        {
             String cmd = "/vaults reopen " + k.world() + " " + k.x() + " " + k.y() + " " + k.z();
             p.sendMessage(AMP.deserialize(fill(msg("hint-button"), v))
                     .clickEvent(ClickEvent.runCommand(cmd))
@@ -298,7 +313,7 @@ public final class ExcelVaults extends JavaPlugin implements Listener {
         return Pricing.price(left, t.cooldownMs, t.full, t.min, t.scale, priceStep);
     }
 
-    @EventHandler public void onQuit(PlayerQuitEvent e) { lastHint.remove(e.getPlayer().getUniqueId()); buying.remove(e.getPlayer().getUniqueId()); }
+    @EventHandler public void onQuit(PlayerQuitEvent e) { lastHint.remove(e.getPlayer().getUniqueId()); buying.remove(e.getPlayer().getUniqueId()); tapGate.forgetPlayer(e.getPlayer().getUniqueId() + "|"); }
 
     // ------------------------------------------------------------ sweep: re-allow ready vaults
     private void sweep() {
@@ -475,7 +490,7 @@ public final class ExcelVaults extends JavaPlugin implements Listener {
                 buttons.add(en.key().pretty() + "\n" + (g ? TimeFmt.hm(left) + (canPay(en.ominous()) ? " | $" + money(price(en.ominous(), left)) : "") : "after seal " + minSeals));
                 keys.add(en.key());
             }
-            Bukkit.getScheduler().runTaskLater(this, () -> BedrockForms.list(p, plain(msg("list-header")), plain(msg("list-footer")), buttons,
+            Bukkit.getScheduler().runTaskLater(this, () -> BedrockForms.list(p, plain(msg("list-header")), plain(msgFor(p, "list-footer")), buttons,
                     i -> { if (i >= 0 && i < keys.size()) openConfirm(p, keys.get(i)); }, r -> Bukkit.getScheduler().runTask(this, r)), 1L);
             return;
         }
@@ -507,7 +522,8 @@ public final class ExcelVaults extends JavaPlugin implements Listener {
             case "help" -> {
                 Map<String, String> v = new HashMap<>();
                 v.put("normal-hours", Long.toString(hours(normal.cooldownMs))); v.put("ominous-hours", Long.toString(hours(ominous.cooldownMs)));
-                for (String l : lines("help")) s.sendMessage(AMP.deserialize(fill(l, v)));
+                List<String> help = s instanceof Player hp ? Texts.pickLines("help", bedrock(hp), this::cfgList) : lines("help");
+                for (String l : help) s.sendMessage(AMP.deserialize(fill(l, v)));
                 return true;
             }
             case "reopen" -> {
@@ -658,7 +674,14 @@ public final class ExcelVaults extends JavaPlugin implements Listener {
         for (Map.Entry<String, String> e : v.entrySet()) s = s.replace("{" + e.getKey() + "}", e.getValue());
         return s;
     }
-    private void say(Player p, String key, Map<String, String> v) { p.sendMessage(AMP.deserialize(fill(msg(key), v))); }
+    private void say(Player p, String key, Map<String, String> v) { p.sendMessage(AMP.deserialize(fill(msgFor(p, key), v))); }
+    private boolean bedrock(Player p) { return floodgate && BedrockForms.isBedrock(p); }
+    /** 0.1.1: Bedrock version of hint-pay / list-footer (config messages.<key>-bedrock, else the code default). */
+    private String msgFor(Player p, String key) {
+        if (key.equals("bedrock-form-note")) { String o = getConfig().getString("messages.bedrock-form-note"); return o != null ? o : Texts.BEDROCK_FORM_NOTE; }
+        return Texts.pick(key, p != null && bedrock(p), k -> getConfig().getString("messages." + k));
+    }
+    private List<String> cfgList(String k) { return getConfig().getStringList("messages." + k); }
     static String plain(String s) { return s.replaceAll("&[0-9a-fk-orA-FK-OR]", ""); }
     static String money(double d) {
         if (Math.abs(d - Math.rint(d)) < 0.005) return String.format(Locale.US, "%,d", (long) Math.rint(d));

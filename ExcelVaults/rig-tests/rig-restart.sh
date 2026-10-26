@@ -7,7 +7,7 @@ if [ -n "$P" ]; then
   for i in $(seq 1 60); do kill -0 $P 2>/dev/null || break; sleep 1; done
   kill -0 $P 2>/dev/null && { echo "rig $P did not stop"; exit 1; }
 fi
-cp "$(dirname "$0")/../ExcelVaults-0.1.0.jar" $R/plugins/
+rm -f $R/plugins/ExcelVaults-0.1.0.jar; cp "$(dirname "$0")/../ExcelVaults-0.1.1.jar" $R/plugins/
 rm -f $R/boot.log; $R/start2.sh; sleep 2
 for i in $(seq 1 90); do grep -aq 'Done (' $R/boot.log 2>/dev/null && break; sleep 1; done
 pgrep -f '^java .*paper.jar' | while read p; do [ "$(readlink /proc/$p/cwd)" = "$R" ] && echo "rig java pid $p"; done

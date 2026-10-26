@@ -1,0 +1,102 @@
+=== ExcelVaults Bedrock test Mon Oct 26 2026 01:31:40 GMT-0500 (Central Daylight Time)
+$ setblock 21 -60 5 minecraft:air
+   Changed the block at 21, -60, 5
+$ setblock 21 -60 5 minecraft:vault
+   Changed the block at 21, -60, 5
+ERR Checksum mismatch 865419a0d92956f2 != 101a7fa5d9da26af
+join attempt 1 failed: bedrock spawn timeout
+ERR Checksum mismatch 7a3907b917fa169a != 04a7cd74cc2daddf
+join attempt 2 failed: bedrock spawn timeout
+spawned, runtime id 3 pos {"x":21.5,"y":-58.37998962402344,"z":7.5}
+$ data get entity .VtBed UUID
+   .VtBed has the following entity data: [I; 0, 0, 0, 0]
+PASS Bedrock player is on the Java server through Geyser
+$ vaults reset .VtBed
+   Marked 1 recorded vaults of .VtBed to reopen now (seal gate still applies to ominous) and cleared today's paid-reopen count. Unloaded ones reopen when their area loads.
+$ gamemode survival .VtBed
+   Set game mode survival for .VtBed.
+$ clear .VtBed
+   Cleared all inventory items from .VtBed.
+$ eco set .VtBed 5000
+   You set .VtBed's balance to $5,000.
+$ minecraft:tp .VtBed 21.5 -60 7.5 180 30
+   Teleported .VtBed to 21.500000, -60.000000, 7.500000
+$ minecraft:item replace entity .VtBed weapon.mainhand with minecraft:trial_key 1
+   Replaced 1 slot(s) on .VtBed with [Trial Key]
+   tap holding network_id 876
+$ data get block 21 -60 5 server_data.rewarded_players
+   21, -60, 5 has the following block data: [[I; 0, 0, 0, 0]]
+PASS Bedrock tap with a trial key opens the vault (vanilla rewards the player)
+$ vaults status .VtBed
+   ExcelVaults .VtBed: 1 cooldowns, paid today normal 0 ominous 0
+    - world 21 -60 5 normal left=24h 0m
+PASS open recorded (24h cooldown)
+Geyser -> client for the vault after the open: update_block x12 [13122,13828,13122,13828], block_entity_data x10
+   {"type":"compound","name":"","value":{"display_item":{"type":"compound","value":{"Name":{"type":"string","value":"minecraft:iron_chestplate"},"Count":{"type":"byte","value":1},"Damage":{"type":"short","value":0},"tag":{"type":"compound","value":{"ench":{"type":"list","value":{"type":"compound","value":[{"id":{"type":"short","value":0},"lvl":{"type":"short","value":1}},{"id":{"type":"short","value"
+   {"type":"compound","name":"","value":{"display_item":{"type":"compound","value":{"Name":{"type":"string","value":"minecraft:iron_chestplate"},"Count":{"type":"byte","value":1},"Damage":{"type":"short","value":0},"tag":{"type":"compound","value":{"ench":{"type":"list","value":{"type":"compound","value":[{"id":{"type":"short","value":0},"lvl":{"type":"short","value":1}},{"id":{"type":"short","value"
+$ minecraft:item replace entity .VtBed weapon.mainhand with minecraft:air
+   Replaced 1 slot(s) on .VtBed with [Air]
+$ balance .VtBed
+   Balance of .VtBed: $5,000
+   tap holding network_id 0
+FORM id=0 {"title":"Reopen trial vault","content":"This normal vault opens again for you in 24h 0m.\nReopen it now for $750?\nYou still need a trial key to open it.\nThe price drops as the timer runs down (lowest $50).\n\nYour balance: $5,000","button1":"Reopen for $750","button2":"Cancel","type":"modal"}
+texts: This vault opens again for you in 24h 0m. | Sneak + tap it, or type /vaults, to reopen it now for $750. | A window opened: tap Reopen to pay, or Cancel. Nothing is charged until you tap Reopen.
+PASS Bedrock hint: time left and $750
+PASS 0.1.1 Bedrock hint: "Sneak + tap it, or type /vaults", no right-click, no chat button
+PASS 0.1.1 Bedrock: note that the window opened
+PASS 0.1.1 plain tap on a locked vault opens the reopen window (Reopen for $750 / Cancel), the tappable [Reopen]
+$ balance .VtBed
+   Balance of .VtBed: $5,000
+PASS tap window shown: no charge
+$ balance .VtBed
+   Balance of .VtBed: $5,000
+$ data get block 21 -60 5 server_data.rewarded_players
+   21, -60, 5 has the following block data: [[I; 0, 0, 0, 0]]
+PASS tap window Cancel: no charge, still locked
+   tap holding network_id 0
+PASS second plain tap within 30 s: hint again, window not reopened (cooldown)
+help: Trial vaults | - Each vault reopens for you after a while: 24h, ominous 72h. | - Tap a used vault to see how long is left. | - Sneak + tap it (or type /vaults) to pay and reopen it now. On a controller: sneak, then press LT. | - You still need a key to open it.
+PASS 0.1.1 Bedrock /vaults help: tap wording, controller line, no click words
+$ balance .VtBed
+   Balance of .VtBed: $5,000
+   tap holding network_id 0
+FORM id=1 {"title":"Reopen trial vault","content":"This normal vault opens again for you in 24h 0m.\nReopen it now for $750?\nYou still need a trial key to open it.\nThe price drops as the timer runs down (lowest $50).\n\nYour balance: $5,000","button1":"Reopen for $750","button2":"Cancel","type":"modal"}
+PASS Bedrock sneak + tap: modal form, "Reopen for $750" / "Cancel"
+PASS Bedrock confirm body: time left, price-drops line, balance, no em dash
+$ balance .VtBed
+   Balance of .VtBed: $5,000
+PASS form shown: no charge yet
+$ balance .VtBed
+   Balance of .VtBed: $5,000
+$ data get block 21 -60 5 server_data.rewarded_players
+   21, -60, 5 has the following block data: [[I; 0, 0, 0, 0]]
+PASS Bedrock Cancel: no charge, still locked
+FORM id=2 {"title":"Reopen trial vault","content":"This normal vault opens again for you in 24h 0m.\nReopen it now for $750?\nYou still need a trial key to open it.\nThe price drops as the timer runs down (lowest $50).\n\nYour balance: $5,000","button1":"Reopen for $750","button2":"Cancel","type":"modal"}
+PASS /vaults reopen from Bedrock: same modal
+$ balance .VtBed
+   Balance of .VtBed: $4,250
+$ data get block 21 -60 5 server_data.rewarded_players
+   Found no elements matching server_data.rewarded_players
+PASS Bedrock tap Reopen: charged $750, vault reopened
+PASS Bedrock: confirmation chat
+Geyser -> client for the vault after the paid reopen: update_block x8 [13114,13828,13114,13828], block_entity_data x8
+   {"type":"compound","name":"","value":{"display_item":{"type":"compound","value":{"Name":{"type":"string","value":"minecraft:ominous_bottle"},"Count":{"type":"byte","value":1},"Damage":{"type":"short","value":0}}},"connected_players":{"type":"list","value":{"type":"long","value":["3"]}},"connected_particle_range":{"type":"float","value":4.5}}}
+   {"type":"compound","name":"","value":{"display_item":{"type":"compound","value":{"Name":{"type":"string","value":"minecraft:ominous_bottle"},"Count":{"type":"byte","value":1},"Damage":{"type":"short","value":0}}},"connected_players":{"type":"list","value":{"type":"long","value":["3"]}},"connected_particle_range":{"type":"float","value":4.5}}}
+PASS purchases.csv: platform bedrock
+$ minecraft:item replace entity .VtBed weapon.mainhand with minecraft:trial_key 1
+   Replaced 1 slot(s) on .VtBed with [Trial Key]
+   tap holding network_id 876
+$ data get block 21 -60 5 server_data.rewarded_players
+   21, -60, 5 has the following block data: [[I; 0, 0, 0, 0]]
+PASS opened again
+$ vaults age .VtBed 720
+   Moved 1 cooldowns of .VtBed back 720 min.
+$ minecraft:item replace entity .VtBed weapon.mainhand with minecraft:air
+   Replaced 1 slot(s) on .VtBed with [Air]
+FORM id=3 {"title":"Your trial vaults waiting to reopen:","content":"Tap a vault below to reopen it now. Or sneak + tap a locked vault.","buttons":[{"text":"world 21 -60 5\n12h 0m | $375"}],"type":"form"}
+PASS /vaults on Bedrock: SimpleForm list, button shows 12h 0m | $375
+PASS 0.1.1 Bedrock list form text: tap a vault below, no [Reopen] or right-click
+FORM id=4 {"title":"Reopen trial vault","content":"This normal vault opens again for you in 12h 0m.\nReopen it now for $375?\nYou still need a trial key to open it.\nThe price drops as the timer runs down (lowest $50).\n\nYour balance: $4,250","button1":"Reopen for $375","button2":"Cancel","type":"modal"}
+PASS tap list entry: confirm at $375 (half the cooldown left)
+done
+RESULT pass=23 fail=0

@@ -1,9 +1,9 @@
-// Rig test for ExcelVaults 0.1.0. Box rig /workspace/excelvaults-rig: Paper 26.3, offline, flat world,
+// Rig test for ExcelVaults 0.1.1. Box rig /workspace/excelvaults-rig: Paper 26.3, offline, flat world,
 // EssentialsX economy via Vault, ExcelGuildGate 0.3.3, ExcelAuditLog 0.2.0, Geyser + floodgate, Via for the Java bot.
 // Console via RCON (port 26262). Plugin log lines read from boot.log.
 const mf=require('/workspace/ship1025-tests/node_modules/mineflayer');const {Vec3}=require('/workspace/ship1025-tests/node_modules/vec3');
 const fs=require('fs'),net=require('net');
-const D='/workspace/excelvaults-rig',LOG=D+'/boot.log',S='/workspace/batch-next/excelvaults-20261025';
+const D='/workspace/excelvaults-rig',LOG=D+'/boot.log',S='/workspace/batch-next/parity-fixes-20261026/vaults';
 const OUT=S+'/tests/rig-test.log';fs.writeFileSync(OUT,'');
 const L=(...a)=>{const s=a.join(' ');console.log(s);fs.appendFileSync(OUT,s+'\n')};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -98,7 +98,9 @@ const N='5 -60 5',O='9 -60 5',P='13 -60 5',Q='17 -60 5';
  st=await cons('vaults status VtJava');ok(/0 cooldowns/.test(st),'cooldown record cleared after reopen');
  // ---- 8 /vaults list
  await key();await click(N);await sleep(1200);bot.msgs.length=0;bot.chat('/vaults');await sleep(1200);
- ok(has(bot,/Your trial vaults waiting to reopen:/)&&has(bot,/world 5 -60 5 \(normal\) opens in 2[34]h \d+m \[Reopen now: \$(750|745)\]/),'/vaults lists the vault with time and price');dump(bot);
+ ok(has(bot,/Your trial vaults waiting to reopen:/)&&has(bot,/world 5 -60 5 \(normal\) opens in 2[34]h \d+m \[Reopen now: \$(750|745)\]/),'/vaults lists the vault with time and price');
+ ok(has(bot,/Click a \[Reopen\] button, or sneak \+ right-click a locked vault\./)&&!has(bot,/Tap a \[Reopen\]/),'0.1.1 Java /vaults footer says Click a [Reopen] button (live 0.1.0 config text upgraded in code)');dump(bot);
+ bot.msgs.length=0;bot.chat('/vaults help');await sleep(1200);ok(has(bot,/Sneak \+ right-click it \(or use \/vaults\)/)&&!has(bot,/Sneak \+ tap/),'0.1.1 Java /vaults help: right-click wording, no Bedrock tap wording');dump(bot);
  // ---- 9 vault locked before install: timer starts on first click, nothing mass-unlocked
  const a=intArr(U);await cons(`data modify block ${P} server_data.rewarded_players set value [[I;${a.join(',')}]]`,300);
  const ao=intArr(other.player.uuid);await cons(`data modify block ${Q} server_data.rewarded_players set value [[I;${ao.join(',')}]]`,300);
