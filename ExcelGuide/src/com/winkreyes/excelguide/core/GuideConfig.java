@@ -170,6 +170,11 @@ public final class GuideConfig {
     // block still apply; false = Mike reviews each one in /guide review.
     public boolean peerAutoApproveThanked = true;   // the asker's thanks alone approves (no review)
 
+    // 0.3.3 (parity rule, Oct 26, 2026): add one control note per reply
+    // for the reader's platform (PlatformText). Code default ON so the
+    // live config.yml needs no edit; set platform-notes: false to stop.
+    public boolean platformNotes = true;
+
     /** True when the AI fallback may engage: switch on AND a key present. */
     public boolean aiConfigured() {
         return aiEnabled && aiApiKey != null && !aiApiKey.isBlank()
@@ -308,6 +313,7 @@ public final class GuideConfig {
         c.peerChatterPhrases = strList(peer.get("chatter-phrases"));
         c.peerOthersThanksCount = bool(peer.get("others-thanks-count"), c.peerOthersThanksCount);
         c.peerAutoApproveThanked = bool(peer.get("auto-approve-thanked"), c.peerAutoApproveThanked);
+        c.platformNotes = bool(m.get("platform-notes"), c.platformNotes);
         Map<String, Object> da = sub(m, "delayed-answers");
         c.delayedEnabled = bool(da.get("enabled"), c.delayedEnabled);
         c.delayedDelaySeconds = clamp((int) num(da.get("delay-seconds"), c.delayedDelaySeconds), 15, 300);

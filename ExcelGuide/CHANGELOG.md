@@ -1,5 +1,83 @@
 # ExcelGuide changelog
 
+## 0.3.3 (built Oct 26, 2026, CDT) - platform-correct control wording
+
+STAGED ONLY. Not installed live. Needs Mike's go and one restart (jar).
+Built on 0.3.2 (jar b3137266..., the 0.3.2 source rebuilds to that exact
+sha on the box). Contains everything in 0.3.2, 0.3.1 and 0.3.0 below.
+Jar sha256 6dde536207bde5875ed9a61c3d22cae974fc7af7eb85d54ea968e86d77a00ec3
+(two clean builds, byte-identical).
+
+Why: Mike's parity rule (Oct 26, 2026 12:10 AM CDT): "always do onto one
+as you would do the other. All our plugins should work both bedrock and
+java." The Oct 26 parity audit (item 2) found the Guide answered mcMMO
+abilities, Trial Vault reopening, party invites and land claims in
+mouse-and-keyboard words only ("right-click", "Sneak + right-click",
+"click [Accept]"), which a phone, tablet or console player cannot follow.
+
+### Players
+- **Java (computer):** nothing changes for answers that already use
+  mouse words. If an answer only speaks touch ("Tap Wand controls on the
+  compass"), one grey line follows it: "On a computer: tap means click,
+  and press and hold means hold right-click."
+- **Bedrock (phone, tablet, console):** if an answer only speaks mouse
+  and keyboard, one grey line follows it: "On a phone or tablet:
+  right-click means press and hold, left-click means tap, and sneak
+  means the crouch button. On a controller: right-click is LT and
+  left-click is RT."
+- Answers that already give both ways ("Right-click (or tap) one
+  corner") get no extra line on either platform.
+- Public answers (the 0.3.2 delayed answers everyone sees) pick the
+  note per reader: a Java player and a Bedrock player reading the same
+  public answer each get their own control line, once per answer.
+- AI answers: the AI is now told to give both ways in one short phrase
+  when it describes a control (new rule 6 in the system prompt, also in
+  the public prompt). Cached and banked answers are reused for both
+  platforms exactly as before; the per-reader note covers older ones.
+
+### Admin
+- New optional config key `platform-notes` (default **true** in code).
+  The live config.yml needs no edit: a missing key means on. Set
+  `platform-notes: false` and `/guide reload` to stop the extra line.
+- Platform detection is the same Floodgate check the Guide already uses
+  for the /guide review pop-up and the player-answer tip (Floodgate
+  first, Geyser as fallback, all by reflection, no new dependency).
+
+### Technical
+- New `core/PlatformText.java` (no Bukkit): `noteFor(text, bedrock)`,
+  the two note lines and the AI rule.
+- `ExcelGuide.deliver(...)`: collects at most one note per reader per
+  delivery and sends it after that reader's last line, with the Guide
+  prefix in grey (section-sign 7). Platform is looked up once per reader
+  per delivery.
+- `AiPrompts.systemPrompt(...)`: rule 6 appended (the public prompt is
+  built from it, so it carries rule 6 too).
+- `GuideConfig.platformNotes`, parsed from top-level `platform-notes`.
+- Bundled config.yml, intents.yml, knowledge.yml and learned.yml are
+  byte-identical to 0.3.2.
+
+### Tests (box, Oct 26, 2026 CDT)
+- New PlatformTextTest 25/25.
+- Every other harness gives the same result as the 0.3.2 source on the
+  same box: TextNorm 22/22, IntentMatch 277/277, RateLimiter 12/12,
+  ClarifyFlow 47/47, Privacy 31/31, ToggleLog 19/19, AiFallback 71/71,
+  LearnCache 107/107, ClaimBlocks 31/31, Notice 55/55, PeerReview
+  114/114, PeerTip 61/61, AiObservability 33/33, DelayedAnswer 168/168.
+  RetrievalTest 129/135 (the same 6 corpus-drift fails as 0.3.1 and
+  0.3.2) and ConfigKnowledgeTest needs the site JSON on disk (same as
+  0.3.2).
+
+### Still to check in game
+- A Bedrock player asks "how do I use super breaker": the answer, then
+  the grey phone/controller line.
+- A Java player asks the same: no extra line.
+- A public delayed answer with "right-click": Bedrock readers get the
+  line, Java readers do not.
+
+### Rollback
+One restart back to 0.3.2 (b3137266...) from the dated .bak. No data
+or config change to undo.
+
 ## 0.3.2 (built Oct 25, 2026, CDT) - delayed answers in plain chat
 
 STAGED ON THE BOX TEST SERVER ONLY. Not installed live. Needs Mike's go

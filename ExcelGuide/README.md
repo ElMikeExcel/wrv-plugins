@@ -1,4 +1,4 @@
-# ExcelGuide 0.3.2 (source record)
+# ExcelGuide 0.3.3 (source record)
 
 Wink Reyes Valley's in-game Guide for Paper 26.3 (Java and Bedrock via
 Geyser/Floodgate). This folder records the 0.3.2 source: delayed

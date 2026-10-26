@@ -606,6 +606,13 @@ public final class ExcelGuide extends JavaPlugin implements CommandExecutor {
     void deliver(Player asker, List<GuideEngine.Reply> replies) {
         String prefix = prefix();
         boolean peerAnswer = false;
+        // 0.3.3: one platform control note per reader per delivery
+        // (PlatformText), after that reader's last line. Public replies
+        // pick the note per reader, so a Bedrock player and a Java player
+        // reading the same public answer each get their own controls.
+        boolean notes = config.platformNotes;
+        java.util.Map<java.util.UUID, String> pending = new java.util.LinkedHashMap<>();
+        java.util.Map<java.util.UUID, Boolean> platform = new java.util.HashMap<>();
         for (GuideEngine.Reply reply : replies) {
             String line = prefix + reply.text();
             if (PeerTip.isPeerAnswer(reply.text(), config.peerServePrefix)) {
@@ -614,13 +621,38 @@ public final class ExcelGuide extends JavaPlugin implements CommandExecutor {
             if (reply.channel() == GuideEngine.Channel.PUBLIC) {
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     p.sendMessage(line);
+                    if (notes) {
+                        noteFor(p, reply.text(), pending, platform);
+                    }
                 }
             } else if (asker.isOnline()) {
                 asker.sendMessage(line);
+                if (notes) {
+                    noteFor(asker, reply.text(), pending, platform);
+                }
+            }
+        }
+        for (java.util.Map.Entry<java.util.UUID, String> e : pending.entrySet()) {
+            Player p = Bukkit.getPlayer(e.getKey());
+            if (p != null && p.isOnline()) {
+                p.sendMessage(prefix + "§7" + e.getValue());
             }
         }
         if (peerAnswer && asker.isOnline()) {
             showPeerTip(asker);
+        }
+    }
+
+    private static void noteFor(Player reader, String text, java.util.Map<java.util.UUID, String> pending,
+                                java.util.Map<java.util.UUID, Boolean> platform) {
+        java.util.UUID id = reader.getUniqueId();
+        if (pending.containsKey(id)) {
+            return;
+        }
+        boolean br = platform.computeIfAbsent(id, k -> Bedrock.isBedrock(reader));
+        String note = com.winkreyes.excelguide.core.PlatformText.noteFor(text, br);
+        if (note != null) {
+            pending.put(id, note);
         }
     }
 
