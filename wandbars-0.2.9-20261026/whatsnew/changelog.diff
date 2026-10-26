@@ -1,0 +1,24 @@
+--- whatsnew/base-9f5b32d5.yml	2026-10-26 13:10:50.511751967 -0500
++++ whatsnew/changelog.yml	2026-10-26 14:04:05.705923958 -0500
+@@ -14,6 +14,21 @@
+ # Add a new entry at the TOP; everyone who has not seen it gets it once on their next join.
+ 
+ entries:
++  - id: 2026-10-26-my-spell-bar
++    date: Oct 26
++    posted: 2026-10-26
++    title: "Your own spell bar"
++    new-commands:
++      - cmd: /spellbar
++        what: "Pick which spells sit on your bar and in which slot."
++        bedrock: "Spell Book, then My spell bar (change it)"
++        java: "Spell Book, then click [My spell bar (change it)]"
++    changes:
++      - "Your bar now holds the spells you pick: 21 slots, 3 pages."
++      - "New spells go into your first empty slot by themselves. A chat line tells you."
++      - "Bar full? New spells wait in your Spellbook. Swap them in any time."
++      - "In the Spell Book, tap a spell, then Put on my bar and pick a slot."
++      - "Your bar is saved, even after you leave or the server restarts."
+   - id: 2026-10-26-wand-ranks-by-casting
+     date: Oct 26
+     posted: 2026-10-26
