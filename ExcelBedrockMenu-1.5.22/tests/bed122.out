@@ -1,0 +1,100 @@
+00:28:58 === bed122 phase a Mon Oct 26 2026 00:28:58 GMT-0500 (Central Daylight Time)
+00:29:01 spawned
+00:29:04 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:29:08 lp user <floodgate-test-uuid> permission unset excelcosmetics.use =>
+00:29:08 lp user <floodgate-test-uuid> permission unset excelguide.ask =>
+00:29:09 lp user <floodgate-test-uuid> permission unset excelmakersmark.use =>
+00:29:09 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:29:09 PASS compass /menu opens a form
+00:29:09 menu buttons: Spawn | Teleport to a player | Party | Utility Pouch | Spellbook | Excel Shop | My Cosmetics | Adventurers Guild | Jobs & Money | Skills & Perks | Leaderboard | Lost & Found | Trash Bin | Server Info | Server Commands | Server Website | What's New | Ask the Guide | Wand controls: Classic or Sneak bars | Auto-sort my chests: on/off | Maker's mark and Gear stats | Auto-open on join
+00:29:09 PASS form title Server Menu
+00:29:09 PASS button list (codes stripped) is exactly the 1.5.22 order (22 buttons)
+00:29:09 PASS raw labels carry the group color: Travel 1, Me 5, Shops 2 (incl. My Cosmetics), Help n (incl. Ask the Guide), Settings 8 (incl. Maker's mark)
+00:29:09 PASS under the 2-char code each label text is the plain label
+00:29:09 PASS no separate mcMMO Stats button (matches Java)
+00:29:10 FORM {"title":"Cosmetics","content":"Your cosmetics. Tap one to equip it.","buttons":[{"text":"Pink (equipped) — 6d 23h left"}],"type":"form"}
+00:29:12 after My Cosmetics tap: form={"title":"Cosmetics","content":"Your cosmetics. Tap one to equip it.","buttons":[{"text":"Pink (equipped) — 6d 23h left"}],"type":"form"} chat= containers=0
+00:29:12 PASS My Cosmetics runs /cosmetics (ExcelCosmetics answers), no unknown-command or guard message
+00:29:12 PASS with a cosmetic owned (rig grant: Pink color), ExcelCosmetics answers the Bedrock player with its own form, not a chest
+00:29:15 RESULT bed122 phase a 8 passed 0 failed
+00:47:43 === bed122 phase b Mon Oct 26 2026 00:47:43 GMT-0500 (Central Daylight Time)
+00:47:46 spawned
+00:47:49 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:47:52 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:47:52 FORM {"title":"Ask the Guide","content":[{"placeholder":"How do I claim land?","default":"","type":"input","text":"Type your question. The Guide answers from the server's own pages."}],"type":"custom_form"}
+00:47:53 ask form: {"title":"Ask the Guide","content":[{"placeholder":"How do I claim land?","default":"","type":"input","text":"Type your question. The Guide answers from the server's own pages."}],"type":"custom_form"}
+00:47:53 PASS Ask the Guide opens a Bedrock text-box form titled Ask the Guide
+00:47:53 PASS form has one text box with an example question
+00:47:57 guide answer chat=[Valley Guide] Hold a golden shovel and right-click two corners of your land to claim it. A claim keeps other players from breaking or taking your things, and placing your first chest starts a small claim around it.
+00:47:57 PASS Send runs /ask <question> and the Guide answers in chat
+00:47:57 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:47:58 FORM {"title":"Ask the Guide","content":[{"placeholder":"How do I claim land?","default":"","type":"input","text":"Type your question. The Guide answers from the server's own pages."}],"type":"custom_form"}
+00:47:59 empty send chat=No question typed. Tap Ask the Guide again, or type /ask and your question in chat.
+00:47:59 PASS blank Send gives the plain how-to message, runs nothing
+00:48:00 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:48:00 FORM {"title":"Ask the Guide","content":[{"placeholder":"How do I claim land?","default":"","type":"input","text":"Type your question. The Guide answers from the server's own pages."}],"type":"custom_form"}
+00:48:02 closed form chat=""
+00:48:02 PASS closing the text box does nothing
+00:48:05 RESULT bed122 phase b 5 passed 0 failed
+00:34:06 === bed122 phase c Mon Oct 26 2026 00:34:06 GMT-0500 (Central Daylight Time)
+00:34:08 spawned
+00:34:11 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:34:15 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:34:15 FORM {"title":"Maker's mark","content":"Crafted by: your name on the tools, weapons and armor you craft.\n\nGear stats: weapons count kills and bosses, armor counts hits blocked.\n\nTap a switch to flip it.","buttons":[{"text":"Maker's mark: ON\nTap to turn off"},{"text":"Gear stats: ON\nTap to turn off"},{"text":"Close"}],"type":"form"}
+00:34:15 mark form: {"title":"Maker's mark","content":"Crafted by: your name on the tools, weapons and armor you craft.\n\nGear stats: weapons count kills and bosses, armor counts hits blocked.\n\nTap a switch to flip it.","buttons":[{"text":"Maker's mark: ON\nTap to turn off"},{"text":"Gear stats: ON\nTap to turn off"},{"text":"Close"}],"type":"form"} chat=[Tip] Things you craft now say who made them. Look for the gray Crafted by line.
+Weapons also count kills and bosses slain. Armor counts hits blocked.
+Turn them off with /mark off or /mark stats off, 
+00:34:15 PASS Maker's mark opens ExcelMakersMark's own two-switch form (Maker's mark, Gear stats, Close)
+00:34:15 PASS no unknown-command or guard message
+00:34:17 mark switch tap chat=Maker's mark is OFF. Things you craft will not be signed.
+00:34:18 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:34:18 FORM {"title":"Maker's mark","content":"Crafted by: your name on the tools, weapons and armor you craft.\n\nGear stats: weapons count kills and bosses, armor counts hits blocked.\n\nTap a switch to flip it.","buttons":[{"text":"Maker's mark: OFF\nTap to turn on"},{"text":"Gear stats: ON\nTap to turn off"},{"text":"Close"}],"type":"form"}
+00:34:18 PASS tapping the Maker's mark switch flips it (same as Java /mark on|off)
+00:34:21 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:34:22 FORM {"title":"Skills & Perks","content":"mcMMO skills are live now: 19 skills and 83 perks, and levels run from 1 to 1,000. The game announces each new perk in chat the moment you unlock it.\n\nCheck yours any time:\n/mcstats shows all your levels.\nTyping a skill's name (like /smelting) shows that skill's own page.\n/mctop shows the leaderboards.\n\nMagic is awake: 1 of 5 seals broken. Get your first
+00:34:22 skills form: {"title":"Skills & Perks","content":"mcMMO skills are live now: 19 skills and 83 perks, and levels run from 1 to 1,000. The game announces each new perk in chat the moment you unlock it.\n\nCheck yours any time:\n/mcstats shows all your levels.\nTyping a skill's name (like /smelting) shows that skill's own page.\n/mctop shows the leaderboards.\n\nMagic is awake: 1 of 5 seals broken. Get your first wand from the Old Quartermaster in the spawn village. More spells open as each seal falls. Tap Spellbook in the menu to see your wand's spells.","buttons":[{"text":"My mcMMO stats"},{"text":"Skill Trees on the Website"},{"text":"Close"}],"type":"form"}
+00:34:22 PASS Skills & Perks buttons: My mcMMO stats, Skill Trees on the Website, Close
+00:34:22 PASS Magic line says awake, 1 of 5 (rig GuildGate has 1 seal broken, like live), first wand from the Old Quartermaster
+00:34:24 mcstats chat=[mcMMO] Stats
+If you don't have access to a skill it will not be shown here.
+-=GATHERING SKILLS=-
+Excavation: 0 XP(0/1,020)
+Fishing: 0 XP(0/1,020)
+Herbalism: 0 XP(0/1,020)
+Mining: 0 XP(0/1,020)
+Woodcutting: 0 XP(0/1,020)
+-=COMBAT SKILLS=-
+Archery: 0 XP(0/1,020)
+Axes: 0 XP(0/1,020)
+Crossbows: 0 XP(0/
+00:34:24 PASS My mcMMO stats runs /mcstats (mcMMO answers)
+00:34:27 RESULT bed122 phase c 6 passed 0 failed
+00:39:47 === bed122 phase d Mon Oct 26 2026 00:39:47 GMT-0500 (Central Daylight Time)
+00:39:49 spawned
+00:39:52 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:39:56 lp user <floodgate-test-uuid> permission set excelcosmetics.use false =>
+00:39:56 lp user <floodgate-test-uuid> permission set excelguide.ask false =>
+00:39:56 lp user <floodgate-test-uuid> permission set excelmakersmark.use false =>
+00:40:00 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:40:00 FORM {"title":"Cosmetics","content":"Your cosmetics. Tap one to equip it.","buttons":[{"text":"Pink (equipped) — 6d 23h left"}],"type":"form"}
+00:40:02 cosmetics with excelcosmetics.use=false (info only): chat= form=Cosmetics
+00:40:03 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:40:06 denied ask chat=You can't ask the Guide right now. Ask an adult to check the server.
+00:40:06 PASS without excelguide.ask: plain denied message, no text box
+00:40:07 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:40:10 denied mark chat=You can't use Maker's mark right now. Ask an adult to check the server.
+00:40:10 PASS without excelmakersmark.use: plain denied message, no form
+00:40:11 lp user <floodgate-test-uuid> permission unset excelcosmetics.use =>
+00:40:11 lp user <floodgate-test-uuid> permission unset excelguide.ask =>
+00:40:12 lp user <floodgate-test-uuid> permission unset excelmakersmark.use =>
+00:40:15 RESULT bed122 phase d 2 passed 0 failed
+00:51:21 === bed122 phase e Mon Oct 26 2026 00:51:21 GMT-0500 (Central Daylight Time)
+00:51:23 spawned
+00:51:26 FORM {"title":"Server Menu","content":"What would you like to do?","buttons":[{"text":"Spawn"},{"text":"Teleport to a player"},{"text":"Party"},{"text":"Utility Pouch"},{"text":"Spellbook"},{"text":"Excel Shop"},{"text":"My Cosmetics"},{"text":"Adventurers Guild"},{"text":"Jobs & Money"},{"text":"Skills & Perks"},{"text":"Leaderboard"},{"text":"Lost & Found"},{"text":"Trash Bin"},{"text":"Server Info"}
+00:51:30 excelmenu open skills_perks .EbmBed =>
+00:51:30 FORM {"title":"Skills & Perks","content":"","buttons":[{"text":"mcMMO Skills\nLive now: 19 skills, 83 perks\nLevels run 1 to 1,000\nNew perks announce in chat\nthe moment you unlock them"},{"text":"Check Your Skills\nClick to run /mcstats\nType /mining (any skill name)\nfor that skill's own page\n/mctop shows the leaderboards"},{"text":"Magic (Awake)\nSeals broken: 1 of 5\nFirst wand: the Old Quarterma
+00:51:30 ExcelMenu skills_perks form: {"title":"Skills & Perks","content":"","buttons":[{"text":"mcMMO Skills\nLive now: 19 skills, 83 perks\nLevels run 1 to 1,000\nNew perks announce in chat\nthe moment you unlock them"},{"text":"Check Your Skills\nClick to run /mcstats\nType /mining (any skill name)\nfor that skill's own page\n/mctop shows the leaderboards"},{"text":"Magic (Awake)\nSeals broken: 1 of 5\nFirst wand: the Old Quartermaster\nin the spawn village\nMore spells open as seals fall\nSee the full tree on the\nwebsite Skill Trees page"},{"text":"Skill Trees Website\nEvery ladder, every level\nTap for the address"},{"text":"Back to Server Menu"},{"text":"Close"}],"type":"form"}
+00:51:30 PASS fixed Java skills_perks.yml: Magic item reads Magic (Awake)
+00:51:30 PASS seal count placeholder resolves (1 of 5 on the rig, like live)
+00:51:30 PASS first-wand line present
+00:51:33 RESULT bed122 phase e 3 passed 0 failed

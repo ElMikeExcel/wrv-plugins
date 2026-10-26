@@ -1,0 +1,1094 @@
+diff -ru -x build -x build-repro.sh base/ebm-1.5.21-src/build.sh src/ExcelBedrockMenu/build.sh
+--- base/ebm-1.5.21-src/build.sh	2026-10-26 00:14:35.708909046 -0500
++++ src/ExcelBedrockMenu/build.sh	2026-10-26 00:16:50.657507644 -0500
+@@ -1,7 +1,7 @@
+ #!/bin/bash
+-# Build ExcelBedrockMenu-1.5.21.jar from this tree (live 1.5.19-whatsnew source + Lost & Found and Trash Bin buttons + group text colors).
++# Build ExcelBedrockMenu-1.5.22.jar from this tree (live 1.5.21 source + Java-parity buttons: My Cosmetics, Ask the Guide, Maker's mark; mcMMO Stats moved into Skills & Perks; Magic text fixed).
+ # Same recipe that reproduces the live 1.5.18 jar ee3d00f0 byte for byte from the 1.5.18 source:
+-# javac --release 21 with JDK 25.0.5, then `jar --date=2026-10-25T00:00:00Z` with an explicit sorted file list.
++# javac --release 21 with JDK 25.0.5, then `jar --date=2026-10-26T00:00:00Z` with an explicit sorted file list.
+ set -euo pipefail
+ cd "$(dirname "$0")"
+ JDK=${JDK:-/home/box/tools/jdk-25.0.5+8}
+@@ -13,11 +13,11 @@
+ rm -rf build && mkdir -p build/classes build/tests
+ "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP" -d build/classes $(find src -name '*.java' | sort) 2>&1 | grep -v '^Note:' || true
+ cp plugin.yml config.yml build/classes/
+-OUT=${OUT:-../../staged/ExcelBedrockMenu-1.5.21.jar}
++OUT=${OUT:-../../staged/ExcelBedrockMenu-1.5.22.jar}
+ OUT=$(realpath -m "$OUT"); rm -f "$OUT"
+-(cd build/classes && TZ=UTC "$JDK/bin/jar" --create --file "$OUT" --date=2026-10-25T00:00:00Z $(find com -name '*.class' | sort) config.yml plugin.yml)
++(cd build/classes && TZ=UTC "$JDK/bin/jar" --create --file "$OUT" --date=2026-10-26T00:00:00Z $(find com -name '*.class' | sort) config.yml plugin.yml)
+ sha256sum "$OUT"
+ # Unit checks (MenuLogicTest reads the source tree, so run from here)
+ "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP:build/classes" -d build/tests $(find test -name '*.java')
+-"$JDK/bin/java" -cp "$CP:build/classes:build/tests" com.winkreyes.excelbedrockmenu.MenuLogicTest > ../../tests/MenuLogicTest-1.5.21.out || { tail -5 ../../tests/MenuLogicTest-1.5.21.out; exit 1; }
+-grep -c '^ok' ../../tests/MenuLogicTest-1.5.21.out; tail -1 ../../tests/MenuLogicTest-1.5.21.out
++"$JDK/bin/java" -cp "$CP:build/classes:build/tests" com.winkreyes.excelbedrockmenu.MenuLogicTest > ../../tests/MenuLogicTest-1.5.22.out || { tail -5 ../../tests/MenuLogicTest-1.5.22.out; exit 1; }
++grep -c '^ok' ../../tests/MenuLogicTest-1.5.22.out; tail -1 ../../tests/MenuLogicTest-1.5.22.out
+diff -ru -x build -x build-repro.sh base/ebm-1.5.21-src/plugin.yml src/ExcelBedrockMenu/plugin.yml
+--- base/ebm-1.5.21-src/plugin.yml	2026-10-26 00:14:35.708909046 -0500
++++ src/ExcelBedrockMenu/plugin.yml	2026-10-26 00:15:37.681183937 -0500
+@@ -1,5 +1,5 @@
+ name: ExcelBedrockMenu
+-version: 1.5.21
++version: 1.5.22
+ author: Argus
+ main: com.winkreyes.excelbedrockmenu.ExcelBedrockMenu
+ api-version: "1.13"
+diff -ru -x build -x build-repro.sh base/ebm-1.5.21-src/server_menu.yml src/ExcelBedrockMenu/server_menu.yml
+--- base/ebm-1.5.21-src/server_menu.yml	2026-10-26 00:14:35.708909046 -0500
++++ src/ExcelBedrockMenu/server_menu.yml	2026-10-26 00:15:40.853198008 -0500
+@@ -1,135 +1,392 @@
+-menu_title: '&6&lServer Menu'
+-# Note: /menu is owned by the BedrockMenu plugin (native Bedrock dialogs).
+-# Java players are routed here via "dm open server_menu <player>".
+-size: 27
++# ExcelMenu definition: server_menu
++# Migrated 2026-10-20 from DeluxeMenus gui_menus/server_menu.yml
++# (source SHA-256 31a12723a17a79b0dec9c5da132ad387d4845bc431cd7c1f1bae628bc819996f; provenance in ~/workspace/excelmenu/dm-source/PROVENANCE.md)
++# Amended 2026-10-23 (menu coverage packet): 'ask' entry (Valley Guide pointer).
++# Amended 2026-10-25 (What's New packet): 'whatsnew' entry.
++# Rebuilt 2026-10-25 (compass cleanup, Mike: "just start going through this list and get them done",
++# Oct 25 3:53 PM CDT). Base = live 4d98d94c387da75f. Packet: /workspace/batch-next/compass-cleanup-20261025/
++#  * 5 rows, one row per job: Travel, Me, Shops, Help, Settings. Column 0 is a label pane.
++#  * Every live button kept with the SAME item id (ExcelMenuStats counts by item id).
++#  * Re-merged from the Oct 24 spellbook packet: spellbook (/spellinfo) and autosort (/autosort).
++#  * New Java buttons for live commands Bedrock already has: tpmenu, jobs browse, leaderboard.
++#  * New buttons for live features with no menu entry yet: lostfound, cosmetics, and the
++#    staged ExcelMakersMark 0.1.0 toggles (makersmark_on/off, gearstats_on/off, from makersmark/MENU-ENTRY.yml).
++#  * Removed as its own button: mcMMO Stats (still 2 taps away in Skills & Perks, and /mcstats).
++#  * No Mail button (Mike, Oct 25 3:53 PM CDT: not needed).
++format: 1
++title: '&6&lServer Menu'
++size: 45
+ items:
+-  commands:
+-    material: KNOWLEDGE_BOOK
+-    slot: 9
+-    display_name: '&a&lServer Commands'
++  # ---------------- Row 1: TRAVEL ----------------
++  hdr_travel:
++    material: LIGHT_BLUE_STAINED_GLASS_PANE
++    slot: 0
++    name: '&b&lTravel'
+     lore:
+-      - '&7Every command you can use'
+-    left_click_commands:
+-      - '[openguimenu] commands_menu'
++    - '&7Get around the valley'
+   spawn:
+     material: COMPASS
+-    slot: 10
+-    display_name: '&a&lSpawn'
++    slot: 1
++    name: '&a&lSpawn'
+     lore:
+-      - '&7Teleport back to the village'
+-    left_click_commands:
+-      - '[console] execute in minecraft:overworld run minecraft:tp %player_name% -784 80 -336'
+-  shop:
+-    material: EMERALD
+-    slot: 11
+-    display_name: '&a&lExcel Shop'
+-    lore:
+-      - '&7Spend your Jobs money'
+-      - '&7on useful items'
+-    left_click_commands:
+-      - '[player] shop'
+-    right_click_commands:
+-      - '[player] shop'
++    - '&7Teleport to spawn'
++    - '&7(asks Yes or Cancel first)'
++    clicks:
++      left:
++      - '[openguimenu] teleport_confirm_spawn'
+   guild_locked:
+     material: BELL
+-    slot: 12
++    slot: 2
+     priority: 1
+-    display_name: '&8&lAdventurers Guild'
++    name: '&8&lAdventurers Guild'
+     lore:
+-      - '&7Sealed by the five challenges'
+-      - '&7Tap to see the Road to the Guild'
+-    view_requirement:
+-      requirements:
+-        guild_locked:
+-          type: string equals
+-          input: '%guildgate_unlocked%'
+-          output: 'false'
+-    left_click_commands:
++    - '&7Sealed by the five challenges'
++    - '&7Tap to see the Road to the Guild'
++    view-requirement:
++      requirements:
++      - id: guild_locked
++        type: string-equals
++        input: '%guildgate_unlocked%'
++        output: 'false'
++    clicks:
++      left:
+       - '[player] seals'
+   guild_open:
+     material: BELL
+-    slot: 12
++    slot: 2
+     priority: 2
+-    display_name: '&a&lAdventurers Guild'
++    name: '&a&lAdventurers Guild'
++    lore:
++    - '&7Teleport to the EliteMobs'
++    - '&7guild hall'
++    view-requirement:
++      requirements:
++      - id: guild_unlocked
++        type: string-equals
++        input: '%guildgate_unlocked%'
++        output: 'true'
++    clicks:
++      left:
++      - '[openguimenu] teleport_confirm_guild'
++  tpmenu:
++    material: ENDER_PEARL
++    slot: 3
++    name: '&a&lTeleport to a player'
++    lore:
++    - '&7Pick a player and send'
++    - '&7them a teleport request'
++    clicks:
++      any:
++      - '[close]'
++      - '[player] tpmenu'
++  party:
++    material: PLAYER_HEAD
++    slot: 4
++    name: '&a&lParty'
++    lore:
++    - '&7Invite family to a party'
++    - '&7and see who is in yours'
++    clicks:
++      left:
++      - '[player] excelparty'
++  # ---------------- Row 2: ME ----------------
++  hdr_me:
++    material: LIME_STAINED_GLASS_PANE
++    slot: 9
++    name: '&a&lMe'
++    lore:
++    - '&7Your skills, magic, money and stuff'
++  skills:
++    material: ENCHANTED_BOOK
++    slot: 10
++    name: '&a&lSkills & Perks'
++    lore:
++    - '&7Your mcMMO stats and every'
++    - '&7perk ladder, in game and on the website'
++    clicks:
++      left:
++      - '[openguimenu] skills_perks'
++  spellbook:
++    material: WRITABLE_BOOK
++    slot: 11
++    name: '&d&lSpellbook'
+     lore:
+-      - '&7Teleport to the EliteMobs'
+-      - '&7guild hall'
+-    view_requirement:
+-      requirements:
+-        guild_unlocked:
+-          type: string equals
+-          input: '%guildgate_unlocked%'
+-          output: 'true'
+-    left_click_commands:
+-      - '[player] ag'
+-  mcmmo:
+-    material: EXPERIENCE_BOTTLE
++    - '&7Your Magic wand''s spells:'
++    - '&7cost, cooldown, range and rank'
++    - '&7Works while you hold this compass'
++    clicks:
++      any:
++      - '[close]'
++      - '[player] spellinfo'
++  jobs:
++    material: IRON_PICKAXE
++    slot: 12
++    name: '&a&lJobs & Money'
++    lore:
++    - '&7Browse the jobs that pay you'
++    - '&7and join one'
++    clicks:
++      any:
++      - '[close]'
++      - '[player] jobs browse'
++  leaderboard:
++    material: BEACON
++    slot: 13
++    name: '&a&lLeaderboard'
++    lore:
++    - '&7Who is on top in the valley'
++    clicks:
++      any:
++      - '[close]'
++      - '[player] leaderboard'
++  lostfound:
++    material: BUNDLE
+     slot: 14
+-    display_name: '&a&lmcMMO Stats'
++    name: '&a&lLost & Found'
++    lore:
++    - '&7Bring back something you lost'
++    - '&7to lava, fire, the void or despawning'
++    - '&7Shows the price before you pay'
++    clicks:
++      any:
++      - '[close]'
++      - '[player] lostfound'
++  utility_pouch:
++    material: CHEST
++    slot: 15
++    name: '&6Utility Pouch'
++    lore:
++    - '&7Park your Server Menu compass'
++    - '&7and your Magic wand here.'
++    clicks:
++      any:
++      - '[player] pouch'
++      - '[close]'
++  trash:
++    material: CAULDRON
++    slot: 16
++    name: '&a&lTrash Bin'
++    lore:
++    - '&7Throw items away.'
++    - '&7Changed your mind? Recover within 5 min.'
++    clicks:
++      left:
++      - '[close]'
++      - '[player] trash'
++  # ---------------- Row 3: SHOPS ----------------
++  hdr_shops:
++    material: YELLOW_STAINED_GLASS_PANE
++    slot: 18
++    name: '&e&lShops'
++    lore:
++    - '&7Spend your Jobs money'
++  shop:
++    material: EMERALD
++    slot: 19
++    name: '&a&lExcel Shop'
++    lore:
++    - '&7Spend your Jobs money'
++    - '&7on useful items'
++    clicks:
++      left:
++      - '[player] shop'
++      right:
++      - '[player] shop'
++  cosmetics:
++    material: AMETHYST_SHARD
++    slot: 20
++    name: '&d&lMy Cosmetics'
++    lore:
++    - '&7See and wear the cosmetics you own'
++    clicks:
++      any:
++      - '[close]'
++      - '[player] cosmetics'
++  # ---------------- Row 4: HELP ----------------
++  hdr_help:
++    material: ORANGE_STAINED_GLASS_PANE
++    slot: 27
++    name: '&6&lHelp'
++    lore:
++    - '&7News, answers and commands'
++  whatsnew:
++    material: NETHER_STAR
++    slot: 28
++    name: '&e&lWhat''s New'
++    lore:
++    - '&7The newest changes'
++    - '&7and new commands'
++    clicks:
++      left:
++      - '[close]'
++      - '[player] whatsnew'
++  ask:
++    material: OAK_SIGN
++    slot: 29
++    name: '&a&lAsk the Guide'
++    lore:
++    - '&7Type /ask and your question in chat'
++    - '&7The Guide answers from the server''s own pages'
++    clicks:
++      left:
++      - '[message] &7Type &e/ask &7and your question in chat, or start a message with &eGuide,'
++  commands:
++    material: KNOWLEDGE_BOOK
++    slot: 30
++    name: '&a&lServer Commands'
+     lore:
+-      - '&7See your skill levels'
+-    left_click_commands:
+-      - '[player] mcstats'
++    - '&7Every command you can use'
++    clicks:
++      left:
++      - '[openguimenu] commands_menu'
+   info:
+     material: BOOK
+-    slot: 15
+-    display_name: '&a&lServer Info'
++    slot: 31
++    name: '&a&lServer Info'
+     lore:
+-      - '&7What runs on this server'
+-    left_click_commands:
++    - '&7What runs on this server'
++    clicks:
++      left:
+       - '[player] motd'
++  website:
++    material: ENDER_EYE
++    slot: 32
++    name: '&a&lServer Website'
++    lore:
++    - '&7Guides, commands and news'
++    - '&7Tap for the address'
++    clicks:
++      left:
++      - '[json] {"text":"» Server Website: elmikeexcel.github.io/winkreyesvalley","color":"aqua","underlined":true,"clickEvent":{"action":"open_url","value":"https://elmikeexcel.github.io/winkreyesvalley/"},"hoverEvent":{"action":"show_text","value":"Open the server website"}}'
++      - '[message] &bhttps://elmikeexcel.github.io/winkreyesvalley/'
++      - '[message] &7Short, easy to type: &btinyurl.com/winkreyesvalley'
++  # ---------------- Row 5: SETTINGS ----------------
++  hdr_settings:
++    material: GRAY_STAINED_GLASS_PANE
++    slot: 36
++    name: '&7&lSettings'
++    lore:
++    - '&7Your on/off switches'
++  autosort:
++    material: HOPPER
++    slot: 37
++    name: '&e&lAuto-sort my chests: on/off'
++    lore:
++    - '&7Tidies your chests, barrels, shulker'
++    - '&7boxes and ender chest when you open them'
++    - '&7Click to switch it on or off'
++    - '&7Chat tells you which it is now'
++    clicks:
++      any:
++      - '[close]'
++      - '[player] autosort'
++  makersmark_on:
++    material: NAME_TAG
++    slot: 38
++    priority: 1
++    name: '&a&lMaker''s mark: ✔ ON'
++    lore:
++    - '&7Things you craft say'
++    - '&7"Crafted by" your name'
++    - '&7Click to turn it off'
++    view-requirement:
++      requirements:
++      - id: makersmark_on
++        type: string-equals
++        input: '%makersmark_mark%'
++        output: 'ON'
++    clicks:
++      left:
++      - '[player] mark off'
++      - '[refresh]'
++  makersmark_off:
++    material: PAPER
++    slot: 38
++    priority: 2
++    name: '&7&lMaker''s mark: &c&l✘ OFF'
++    lore:
++    - '&7Your crafts are not signed'
++    - '&7Click to turn it on'
++    view-requirement:
++      requirements:
++      - id: makersmark_off
++        type: string-equals
++        input: '%makersmark_mark%'
++        output: 'OFF'
++    clicks:
++      left:
++      - '[player] mark on'
++      - '[refresh]'
++  gearstats_on:
++    material: IRON_SWORD
++    slot: 39
++    priority: 1
++    name: '&a&lGear stats: ✔ ON'
++    lore:
++    - '&7Weapons count kills and bosses'
++    - '&7Armor counts hits blocked'
++    - '&7Click to turn it off'
++    view-requirement:
++      requirements:
++      - id: gearstats_on
++        type: string-equals
++        input: '%makersmark_stats%'
++        output: 'ON'
++    clicks:
++      left:
++      - '[player] mark stats off'
++      - '[refresh]'
++  gearstats_off:
++    material: WOODEN_SWORD
++    slot: 39
++    priority: 2
++    name: '&7&lGear stats: &c&l✘ OFF'
++    lore:
++    - '&7Nothing is counted'
++    - '&7Click to turn it on'
++    view-requirement:
++      requirements:
++      - id: gearstats_off
++        type: string-equals
++        input: '%makersmark_stats%'
++        output: 'OFF'
++    clicks:
++      left:
++      - '[player] mark stats on'
++      - '[refresh]'
+   autojoin_on:
+     material: LIME_DYE
+-    slot: 16
++    slot: 40
+     priority: 1
+-    display_name: '&a&lAuto-open on join: ✔ ON'
++    name: '&a&lAuto-open on join: ✔ ON'
+     lore:
+-      - '&7This menu opens when you join'
+-      - '&7Click to turn it off'
+-    view_requirement:
+-      requirements:
+-        menujoin_on:
+-          type: string equals
+-          input: '%menujoin_status%'
+-          output: 'ON'
+-    left_click_commands:
++    - '&7This menu opens when you join'
++    - '&7Click to turn it off'
++    view-requirement:
++      requirements:
++      - id: menujoin_on
++        type: string-equals
++        input: '%menujoin_status%'
++        output: 'ON'
++    clicks:
++      left:
+       - '[player] menujoin'
+       - '[refresh]'
+   autojoin_off:
+     material: GRAY_DYE
+-    slot: 16
++    slot: 40
+     priority: 2
+-    display_name: '&7&lAuto-open on join: &c&l✘ OFF'
++    name: '&7&lAuto-open on join: &c&l✘ OFF'
+     lore:
+-      - '&7This menu stays closed when you join'
+-      - '&7Click to turn it on'
+-    view_requirement:
+-      requirements:
+-        menujoin_off:
+-          type: string equals
+-          input: '%menujoin_status%'
+-          output: 'OFF'
+-    left_click_commands:
++    - '&7This menu stays closed when you join'
++    - '&7Click to turn it on'
++    view-requirement:
++      requirements:
++      - id: menujoin_off
++        type: string-equals
++        input: '%menujoin_status%'
++        output: 'OFF'
++    clicks:
++      left:
+       - '[player] menujoin'
+       - '[refresh]'
+-  website:
+-    material: COMPASS
+-    slot: 17
+-    display_name: '&a&lServer Website'
+-    lore:
+-      - '&7Guides, commands and news'
+-      - '&7Tap for the address'
+-    left_click_commands:
+-      - '[json] {"text":"» Server Website: elmikeexcel.github.io/winkreyesvalley","color":"aqua","underlined":true,"clickEvent":{"action":"open_url","value":"https://elmikeexcel.github.io/winkreyesvalley/"},"hoverEvent":{"action":"show_text","value":"Open the server website"}}'
+-      - '[message] &bhttps://elmikeexcel.github.io/winkreyesvalley/'
+-      - '[message] &7Short, easy to type: &btinyurl.com/winkreyesvalley'
+-  utility_pouch:
+-    material: CHEST
+-    slot: 19
+-    display_name: '&6Utility Pouch'
+-    lore:
+-      - '&7Park your Server Menu compass'
+-      - '&7and your Magic wand here.'
+-    click_commands:
+-      - '[player] pouch'
+-      - '[close]'
+diff -ru -x build -x build-repro.sh base/ebm-1.5.21-src/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java src/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java
+--- base/ebm-1.5.21-src/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java	2026-10-26 00:14:35.708909046 -0500
++++ src/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java	2026-10-26 00:26:45.332145255 -0500
+@@ -185,18 +185,47 @@
+  * (groupColor / coloredLabel); BUTTONS and COMMANDS keep the plain labels,
+  * routing is by button index as before, and ClickStats logs the label with
+  * the codes stripped so menu stats history lines up.
++ *
++ * v1.5.22 (Oct 26, 2026, Mike's parity rule: "always do onto one as you
++ * would do the other. All our plugins should work both bedrock and java."):
++ * the Bedrock compass matches the live Java compass (server_menu.yml
++ * e18910e4, live since Oct 25 11:18 PM CDT). Three new buttons, each placed
++ * next to its Java row-mates and colored by the same group:
++ *   "My Cosmetics" (Shops, right after Excel Shop) runs /cosmetics, the same
++ *   command as the Java button (ExcelCosmetics opens its own Bedrock form).
++ *   "Ask the Guide" (Help, right after What's New, the Java Help order) opens
++ *   a Bedrock text box form; Send runs /ask <question> as the player, the
++ *   exact command the Java button tells players to type. Bedrock has no chat
++ *   prompt on a button, so the form is the Bedrock form of that hint; if the
++ *   form cannot be sent the player gets the Java hint line instead.
++ *   "Maker's mark and Gear stats" (Settings, right after Auto-sort, the Java
++ *   order) runs bare /mark: ExcelMakersMark 0.1.0 answers a Bedrock player
++ *   with its own two-switch form (Maker's mark ON/OFF, Gear stats ON/OFF),
++ *   the Bedrock form of the two Java switches (/mark on|off, /mark stats
++ *   on|off).
++ * Removed as its own button: "mcMMO Stats" (Java removed it Oct 25; Mike,
++ * Oct 25: "Having it where it is, is good enough"). The Skills & Perks form
++ * gains a "My mcMMO stats" button that runs /mcstats, like the Java Skills &
++ * Perks menu, so it is still one tap away. Skills & Perks Magic line: the
++ * old "Magic is sealed for now" text is kept only while 0 seals are broken;
++ * from Seal 1 on it says Magic is awake, where the first wand comes from and
++ * the live seal count (Seal 1 broke Oct 23, 2026). All three new buttons are
++ * guarded like Lost & Found (missing plugin or no permission gives a plain
++ * message, never an unknown command). None is a teleport, so no confirm.
+  */
+ public class ExcelBedrockMenu extends JavaPlugin implements CommandExecutor {
+ 
+     private static final String[] BUTTONS = {
+-        "Spawn", "Teleport to a player", "Party", "Utility Pouch", "Spellbook", "Excel Shop", "Adventurers Guild",
+-        "Jobs & Money", "mcMMO Stats", "Skills & Perks", "Leaderboard", "Lost & Found", "Trash Bin", "Server Info",
+-        "Server Commands", "Server Website", "What's New", "Wand controls: Classic or Sneak bars",
+-        "Auto-sort my chests: on/off", "Auto-open on join"
++        "Spawn", "Teleport to a player", "Party", "Utility Pouch", "Spellbook", "Excel Shop", "My Cosmetics",
++        "Adventurers Guild", "Jobs & Money", "Skills & Perks", "Leaderboard", "Lost & Found", "Trash Bin",
++        "Server Info", "Server Commands", "Server Website", "What's New", "Ask the Guide",
++        "Wand controls: Classic or Sneak bars", "Auto-sort my chests: on/off", "Maker's mark and Gear stats",
++        "Auto-open on join"
+     };
+     private static final String[] COMMANDS = {
+-        "spawn", "tpmenu", "excelparty", "pouch", "spellinfo", "shop", "ag", "jobs browse",
+-        "mcstats", "skillsperks", "leaderboard", "lostfound", "trash", "motd", "servercommands", "serverwebsite", "whatsnew", "wandstyle", "autosort", "menujoin"
++        "spawn", "tpmenu", "excelparty", "pouch", "spellinfo", "shop", "cosmetics", "ag", "jobs browse",
++        "skillsperks", "leaderboard", "lostfound", "trash", "motd", "servercommands", "serverwebsite", "whatsnew",
++        "ask", "wandstyle", "autosort", "mark", "menujoin"
+     };
+     // Village spawn coordinates (fallback if Essentials spawn lookup fails)
+     private static final double SPAWN_X = -784;
+@@ -600,10 +629,10 @@
+         // only place a command gets special handling.
+         String[][] groups = {
+             {COLOR_TRAVEL, "spawn", "tpmenu", "excelparty", "ag"},
+-            {COLOR_ME, "pouch", "spellinfo", "jobs browse", "mcstats", "skillsperks", "leaderboard", "lostfound", "trash"},
+-            {COLOR_SHOPS, "shop"},
+-            {COLOR_HELP, "motd", "servercommands", "serverwebsite", "whatsnew"},
+-            {COLOR_SETTINGS, "wandstyle", "autosort", "menujoin"},
++            {COLOR_ME, "pouch", "spellinfo", "jobs browse", "skillsperks", "leaderboard", "lostfound", "trash"},
++            {COLOR_SHOPS, "shop", "cosmetics"},
++            {COLOR_HELP, "motd", "servercommands", "serverwebsite", "whatsnew", "ask"},
++            {COLOR_SETTINGS, "wandstyle", "autosort", "mark", "menujoin"},
+         };
+         for (String[] g : groups) {
+             for (int i = 1; i < g.length; i++) {
+@@ -752,7 +781,11 @@
+     // 1-1000) are copy, not a live mcMMO integration -- the spec says
+     // so, and skills-perks/INVENTORY.md is their source of truth.
+     // ------------------------------------------------------------------
+-    static final String[] SKILLS_PERKS_BUTTONS = {"Skill Trees on the Website", "Close"};
++    // v1.5.22: "My mcMMO stats" first (runs /mcstats, like the Java Skills & Perks
++    // menu's mcMMO Skills / Check Your Skills items), then the website follow-on.
++    static final String[] SKILLS_PERKS_BUTTONS = {"My mcMMO stats", "Skill Trees on the Website", "Close"};
++    static final int SKILLS_PERKS_MCSTATS = 0;
++    static final int SKILLS_PERKS_WEBSITE = 1;
+ 
+     /**
+      * Skills & Perks form body: the MENU-SPEC section 2 copy, verbatim,
+@@ -764,8 +797,23 @@
+                 + "1 to 1,000. The game announces each new perk in chat the moment you "
+                 + "unlock it.\n\nCheck yours any time:\n/mcstats shows all your levels.\n"
+                 + "Typing a skill's name (like /smelting) shows that skill's own page.\n"
+-                + "/mctop shows the leaderboards.\n\nMagic is sealed for now. It arrives "
+-                + "as the Adventurers Guild seals fall (" + sealsBroken + " of 5 today).";
++                + "/mctop shows the leaderboards.\n\n" + skillsPerksMagicLine(sealsBroken);
++    }
++
++    /**
++     * v1.5.22: the Magic line. "Sealed" only while no seal has broken (the
++     * spec copy, unchanged); from Seal 1 on Magic is live (Seal 1 broke Oct 23,
++     * 2026 and opened the Healer school), so the line says so, with the live
++     * count and where the first wand comes from.
++     */
++    static String skillsPerksMagicLine(int sealsBroken) {
++        if (sealsBroken <= 0) {
++            return "Magic is sealed for now. It arrives as the Adventurers Guild seals fall (0 of 5 today).";
++        }
++        int n = Math.min(sealsBroken, 5);
++        return "Magic is awake: " + n + " of 5 seals broken. Get your first wand from the Old "
++                + "Quartermaster in the spawn village. More spells open as each seal falls. "
++                + "Tap Spellbook in the menu to see your wand's spells.";
+     }
+ 
+     /**
+@@ -821,10 +869,16 @@
+                 skillsPerksContent(sealsBrokenCount()),
+                 SKILLS_PERKS_BUTTONS.clone(),
+                 id -> {
+-                    if (id != 0 || !player.isOnline()) {
+-                        return; // "Close", or the form was closed: nothing to do
++                    if (!player.isOnline()) {
++                        return;
+                     }
+-                    Bukkit.getScheduler().runTask(this, () -> openSkillsPerksWebsite(player));
++                    if (id == SKILLS_PERKS_MCSTATS) {
++                        // v1.5.22: same command as the Java Skills & Perks items.
++                        Bukkit.getScheduler().runTask(this, () -> player.performCommand("mcstats"));
++                    } else if (id == SKILLS_PERKS_WEBSITE) {
++                        Bukkit.getScheduler().runTask(this, () -> openSkillsPerksWebsite(player));
++                    }
++                    // "Close", or the form was closed: nothing to do
+                 },
+                 getLogger());
+         if (!sent) {
+@@ -955,6 +1009,23 @@
+                         "\u00a7eThe Trash Bin isn't available right now. Ask an adult to check the server.",
+                         "\u00a7eYou can't use the Trash Bin right now. Ask an adult to check the server.");
+                 break;
++            case "cosmetics":
++                // v1.5.22: ExcelCosmetics owns /cosmetics (its own Bedrock picker form).
++                runGuarded(player, "cosmetics",
++                        "\u00a7eCosmetics aren't available right now. Ask an adult to check the server.",
++                        "\u00a7eYou can't use cosmetics right now. Ask an adult to check the server.");
++                break;
++            case "mark":
++                // v1.5.22: ExcelMakersMark owns /mark; bare /mark on Bedrock opens its
++                // two-switch form (Maker's mark, Gear stats).
++                runGuarded(player, "mark",
++                        "\u00a7eMaker's mark isn't available right now. Ask an adult to check the server.",
++                        "\u00a7eYou can't use Maker's mark right now. Ask an adult to check the server.");
++                break;
++            case "ask":
++                // v1.5.22: ExcelGuide owns /ask. Bedrock gets a text box; Send runs /ask <question>.
++                openAskGuide(player);
++                break;
+             case "excelparty":
+                 // v1.5.7: ExcelTogether 0.2.0 owns this command. Not /party: mcMMO has that one.
+                 if (Bukkit.getPluginCommand("excelparty") == null) {
+@@ -969,6 +1040,66 @@
+         }
+     }
+ 
++    // ------------------------------------------------------------------
++    // Ask the Guide (v1.5.22). Java's button prints "Type /ask and your
++    // question in chat, or start a message with Guide,". Bedrock gets the same
++    // thing as a form: one text box, and Send runs /ask <question> as the
++    // player (the exact command Java players type).
++    // ------------------------------------------------------------------
++    static final String ASK_TITLE = "Ask the Guide";
++    static final String ASK_PROMPT = "Type your question. The Guide answers from the server's own pages.";
++    static final String ASK_PLACEHOLDER = "How do I claim land?";
++    static final String ASK_HINT = "\u00a77Type \u00a7e/ask \u00a77and your question in chat, or start a message with \u00a7eGuide,";
++    static final String ASK_EMPTY = "\u00a7eNo question typed. Tap Ask the Guide again, or type /ask and your question in chat.";
++    static final int ASK_MAX = 200;
++    static final String ASK_PERMISSION = "excelguide.ask";
++
++    /**
++     * The command line Send runs, or null when nothing usable was typed.
++     * Section codes and control characters are removed, spaces collapsed, a
++     * leading slash dropped (so a typed command never runs as itself; it is
++     * only ever asked as a question), and the length capped at ASK_MAX.
++     */
++    static String askCommandFor(String typed) {
++        if (typed == null) return null;
++        String q = stripCodes(typed).replaceAll("[\\p{Cntrl}]", " ").replaceAll("\\s+", " ").trim();
++        while (q.startsWith("/")) q = q.substring(1).trim();
++        if (q.isEmpty()) return null;
++        if (q.length() > ASK_MAX) q = q.substring(0, ASK_MAX).trim();
++        return "ask " + q;
++    }
++
++    private void openAskGuide(Player player) {
++        org.bukkit.command.PluginCommand cmd = Bukkit.getPluginCommand("ask");
++        // ExcelGuide's /ask has no permission on the command itself; it checks
++        // excelguide.ask inside, so the guard checks that node too (no text box
++        // for a player the Guide would refuse).
++        int outcome = guardOutcome(cmd != null, cmd == null
++                || (cmd.testPermissionSilent(player) && player.hasPermission(ASK_PERMISSION)));
++        if (outcome == 0) {
++            player.sendMessage("\u00a7eThe Guide isn't available right now. Ask an adult to check the server.");
++            return;
++        }
++        if (outcome == 1) {
++            player.sendMessage("\u00a7eYou can't ask the Guide right now. Ask an adult to check the server.");
++            return;
++        }
++        boolean sent = GeyserForms.sendInputForm(player, ASK_TITLE, ASK_PROMPT, ASK_PLACEHOLDER,
++                typed -> Bukkit.getScheduler().runTask(this, () -> {
++                    if (!player.isOnline()) return;
++                    String line = askCommandFor(typed);
++                    if (line == null) {
++                        player.sendMessage(ASK_EMPTY);
++                    } else {
++                        player.performCommand(line);
++                    }
++                }),
++                getLogger());
++        if (!sent) {
++            player.sendMessage(ASK_HINT);
++        }
++    }
++
+     /**
+      * v1.5.20: run a command owned by another plugin as the player. Missing
+      * command: the "missing" message. Player lacks the command's own
+diff -ru -x build -x build-repro.sh base/ebm-1.5.21-src/src/com/winkreyes/excelbedrockmenu/GeyserForms.java src/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/GeyserForms.java
+--- base/ebm-1.5.21-src/src/com/winkreyes/excelbedrockmenu/GeyserForms.java	2026-10-26 00:14:35.708909046 -0500
++++ src/ExcelBedrockMenu/src/com/winkreyes/excelbedrockmenu/GeyserForms.java	2026-10-26 00:15:37.677183919 -0500
+@@ -199,6 +199,87 @@
+         }
+     }
+ 
++    /**
++     * v1.5.22: sends a CustomForm with one text box (Ask the Guide). onText
++     * receives what the player typed (possibly empty) when they press Submit;
++     * nothing is called if the form is closed. The typed text is never logged:
++     * ClickStats gets only the fixed "Send" label. Returns true if sent.
++     */
++    static boolean sendInputForm(Player player, String title, String prompt,
++                                 String placeholder, Consumer<String> onText, Logger log) {
++        String step = "start";
++        try {
++            Plugin geyserPlugin = Bukkit.getPluginManager().getPlugin("Geyser-Spigot");
++            if (geyserPlugin == null || !geyserPlugin.isEnabled()) {
++                return false;
++            }
++            ClassLoader loader = geyserPlugin.getClass().getClassLoader();
++            UUID uuid = player.getUniqueId();
++
++            step = "GeyserApi.api()";
++            Class<?> apiClass = Class.forName("org.geysermc.geyser.api.GeyserApi",
++                    true, loader);
++            Object api = apiClass.getMethod("api").invoke(null);
++
++            step = "connectionByUuid";
++            Object connection = apiClass.getMethod("connectionByUuid", UUID.class)
++                    .invoke(api, uuid);
++            if (connection == null) {
++                return false;
++            }
++
++            step = "CustomForm.builder()";
++            Class<?> formClass = Class.forName("org.geysermc.cumulus.form.CustomForm",
++                    true, loader);
++            Object builder = formClass.getMethod("builder").invoke(null);
++            Class<?> builderClass = builder.getClass();
++
++            step = "title/input";
++            builderClass.getMethod("title", String.class).invoke(builder, title);
++            // One component only (index 0), so the response index never depends
++            // on whether a Cumulus version counts labels.
++            builderClass.getMethod("input", String.class, String.class)
++                    .invoke(builder, prompt, placeholder);
++
++            step = "validResultHandler";
++            Class<?> responseClass = Class.forName(
++                    "org.geysermc.cumulus.response.CustomFormResponse", true, loader);
++            Class<?> biConsumerClass = Class.forName("java.util.function.BiConsumer",
++                    true, loader);
++            Object handler = Proxy.newProxyInstance(loader,
++                    new Class<?>[]{biConsumerClass},
++                    (proxy, method, methodArgs) -> {
++                        if (method.getName().equals("accept") && methodArgs.length == 2) {
++                            Object response = methodArgs[1];
++                            Object typed = responseClass.getMethod("asInput", int.class)
++                                    .invoke(response, 0);
++                            ClickStats.tap(player, title, "Send", 0);
++                            onText.accept(typed == null ? "" : typed.toString());
++                        }
++                        return null;
++                    });
++            Method vrh = findHandler(builderClass, "validResultHandler", handler);
++            if (vrh == null) {
++                log.warning("GeyserForms: no compatible validResultHandler (CustomForm)");
++                return false;
++            }
++            vrh.invoke(builder, handler);
++
++            step = "build+send";
++            Object form = builderClass.getMethod("build").invoke(builder);
++            Method sendForm = findSendForm(connection.getClass(), form.getClass());
++            if (sendForm == null) {
++                log.warning("GeyserForms: no compatible sendForm (CustomForm)");
++                return false;
++            }
++            return (boolean) sendForm.invoke(connection, form);
++        } catch (Exception e) {
++            log.warning("GeyserForms CustomForm '" + title + "' failed at [" + step + "]: "
++                    + e.getClass().getSimpleName() + ": " + e.getMessage());
++            return false;
++        }
++    }
++
+     private static Method findHandler(Class<?> builderClass, String name, Object handler) {
+         for (Method m : builderClass.getMethods()) {
+             if (m.getName().equals(name) && m.getParameterCount() == 1) {
+diff -ru -x build -x build-repro.sh base/ebm-1.5.21-src/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java src/ExcelBedrockMenu/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java
+--- base/ebm-1.5.21-src/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java	2026-10-26 00:14:35.708909046 -0500
++++ src/ExcelBedrockMenu/test/com/winkreyes/excelbedrockmenu/MenuLogicTest.java	2026-10-26 00:26:45.332145255 -0500
+@@ -15,7 +15,7 @@
+         try{
+             String src=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java")));
+             String yml=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("commands_menu.yml")));
+-            check(src.contains("\"Party\", \"Utility Pouch\", \"Spellbook\", \"Excel Shop\", \"Adventurers Guild\""),"button array runs Party, then Utility Pouch (1.5.14), Spellbook (1.5.18), before Excel Shop");
++            check(src.contains("\"Party\", \"Utility Pouch\", \"Spellbook\", \"Excel Shop\", \"My Cosmetics\","),"button array runs Party, then Utility Pouch (1.5.14), Spellbook (1.5.18), before Excel Shop (My Cosmetics follows it in 1.5.22)");
+             check(src.contains("\"spawn\", \"tpmenu\", \"excelparty\", \"pouch\", \"spellinfo\", \"shop\""),"command array runs excelparty at the same index as Party, pouch right after it");
+             check(!src.contains("performCommand(\"party\")")&&!src.contains("\"spawn\", \"tpmenu\", \"party\""),"never runs bare /party (mcMMO)");
+             check(!src.contains("\"Spawn Shop\"")||src.indexOf("\"Spawn Shop\"")<src.indexOf("class ExcelBedrockMenu"),"no Spawn Shop label in code");
+@@ -71,7 +71,7 @@
+             check(src2.contains("runCatalogEntry(player, run)"),"catalogue routing calls the confirm gate");
+             check(src2.contains("if (requiresConfirm(command, isGuildLocked()))"),"action routing is gated by the confirm decision");
+             String yml2=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("plugin.yml")));
+-            check(yml2.contains("version: 1.5.21"),"plugin.yml is 1.5.21");
++            check(yml2.contains("version: 1.5.22"),"plugin.yml is 1.5.22");
+             check(src2.contains("websiteFormContent()")&&src2.contains("websiteChatLines()"),"showWebsite uses the pinned form/chat helpers");
+             check(src2.contains("WEBSITE_SHORT_URL"),"Java website answer carries the short link too");
+         }catch(Exception e){check(false,"1.5.10 source checks "+e);}
+@@ -98,11 +98,11 @@
+             String src3=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java")));
+             String[] buttons=parseStringArray(src3,"BUTTONS");
+             String[] commands=parseStringArray(src3,"COMMANDS");
+-            check(buttons.length==20,"menu now has 20 buttons (1.5.11's 13 + Skills & Perks + Spellbook, Wand controls and Auto-sort in 1.5.18 + What's New in 1.5.19 + Lost & Found and Trash Bin in 1.5.20)");
+-            check(commands.length==20,"command array has 20 entries, matching the buttons");
+-            String[] wantButtons={"Spawn","Teleport to a player","Party","Utility Pouch","Spellbook","Excel Shop","Adventurers Guild","Jobs & Money","mcMMO Stats","Skills & Perks","Leaderboard","Lost & Found","Trash Bin","Server Info","Server Commands","Server Website","What's New","Wand controls: Classic or Sneak bars","Auto-sort my chests: on/off","Auto-open on join"};
++            check(buttons.length==22,"menu now has 22 buttons (1.5.21's 20 + My Cosmetics, Ask the Guide, Maker's mark in 1.5.22, minus mcMMO Stats which moved into Skills & Perks)");
++            check(commands.length==22,"command array has 22 entries, matching the buttons");
++            String[] wantButtons={"Spawn","Teleport to a player","Party","Utility Pouch","Spellbook","Excel Shop","My Cosmetics","Adventurers Guild","Jobs & Money","Skills & Perks","Leaderboard","Lost & Found","Trash Bin","Server Info","Server Commands","Server Website","What's New","Ask the Guide","Wand controls: Classic or Sneak bars","Auto-sort my chests: on/off","Maker's mark and Gear stats","Auto-open on join"};
+             check(java.util.Arrays.equals(buttons,wantButtons),"full button set is the 1.5.11 set + Skills & Perks, in the 1.5.14 order (Pouch moved up), Spellbook after the Pouch (1.5.18), Auto-sort before Auto-open (1.5.18)");
+-            String[] wantCommands={"spawn","tpmenu","excelparty","pouch","spellinfo","shop","ag","jobs browse","mcstats","skillsperks","leaderboard","lostfound","trash","motd","servercommands","serverwebsite","whatsnew","wandstyle","autosort","menujoin"};
++            String[] wantCommands={"spawn","tpmenu","excelparty","pouch","spellinfo","shop","cosmetics","ag","jobs browse","skillsperks","leaderboard","lostfound","trash","motd","servercommands","serverwebsite","whatsnew","ask","wandstyle","autosort","mark","menujoin"};
+             check(java.util.Arrays.equals(commands,wantCommands),"full command set is the 1.5.11 set + skillsperks, in the 1.5.14 order (pouch moved up), spellinfo after pouch (1.5.18)");
+             check(idxOf(buttons,"Utility Pouch")==3,"Utility Pouch sits at index 3 (moved up in 1.5.14; was 12 through 1.5.13)");
+             check(idxOf(commands,"pouch")==idxOf(buttons,"Utility Pouch"),"pouch command at the same index as the Utility Pouch button");
+@@ -119,7 +119,7 @@
+             String[] buttons4=parseStringArray(src4,"BUTTONS");
+             String[] commands4=parseStringArray(src4,"COMMANDS");
+             check(idxOf(buttons4,"Skills & Perks")==9,"Skills & Perks sits at index 9 (7 through 1.5.13; 8 after the 1.5.14 Pouch move; 9 after the 1.5.18 Spellbook)");
+-            check(buttons4[8].equals("mcMMO Stats")&&buttons4[10].equals("Leaderboard"),"Skills & Perks is immediately after mcMMO Stats, before Leaderboard (spec placement, indices shifted one by 1.5.14)");
++            check(buttons4[8].equals("Jobs & Money")&&buttons4[10].equals("Leaderboard"),"Skills & Perks stays at index 9, now right after Jobs & Money (1.5.22: mcMMO Stats moved into the Skills & Perks form, My Cosmetics added above), before Leaderboard");
+             check(idxOf(commands4,"skillsperks")==idxOf(buttons4,"Skills & Perks"),"skillsperks token at the same index as the Skills & Perks button");
+             check("Skills & Perks".chars().allMatch(c->c<128),"Skills & Perks label is plain ASCII");
+             check(src4.contains("case \"skillsperks\""),"skillsperks is special-cased in runAction (it opens a form, not a command)");
+@@ -133,12 +133,12 @@
+             check(ExcelBedrockMenu.skillsPerksContent(0).equals(want0),"Skills & Perks body matches the spec copy exactly at 0 seals");
+             // ... and with a nonzero live count (the count is data, never hard-coded)
+             String c3=ExcelBedrockMenu.skillsPerksContent(3);
+-            check(c3.contains("(3 of 5 today)"),"seal count renders from GuildGate state (nonzero case)");
+-            check(!c3.contains("(0 of 5 today)"),"nonzero render does not keep the 0 count");
+-            check(ExcelBedrockMenu.skillsPerksContent(5).contains("(5 of 5 today)"),"seal count renders at all 5 fallen");
++            check(c3.contains("3 of 5 seals broken"),"seal count renders from GuildGate state (nonzero case, 1.5.22 awake wording)");
++            check(!c3.contains("0 of 5"),"nonzero render does not keep the 0 count");
++            check(ExcelBedrockMenu.skillsPerksContent(5).contains("5 of 5 seals broken"),"seal count renders at all 5 fallen");
+             check(src4.contains("sealsBrokenCount"),"the count is read live from GuildGate (sealsBrokenCount)");
+             // The form's buttons: Skill Trees follow-on first, Close second
+-            check(java.util.Arrays.equals(ExcelBedrockMenu.SKILLS_PERKS_BUTTONS,new String[]{"Skill Trees on the Website","Close"}),"Skills & Perks form buttons are Skill Trees on the Website + Close");
++            check(java.util.Arrays.equals(ExcelBedrockMenu.SKILLS_PERKS_BUTTONS,new String[]{"My mcMMO stats","Skill Trees on the Website","Close"}),"Skills & Perks form buttons are My mcMMO stats (1.5.22) + Skill Trees on the Website + Close");
+             // Follow-on form: the address as plain text + the spec's line
+             String web=ExcelBedrockMenu.skillsPerksWebsiteContent();
+             check(web.contains("elmikeexcel.github.io/winkreyesvalley"),"Skill Trees follow-on shows the website address as plain text");
+@@ -181,17 +181,20 @@
+             String src6=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java")));
+             String[] buttons6=parseStringArray(src6,"BUTTONS");
+             String[] commands6=parseStringArray(src6,"COMMANDS");
+-            check(buttons6.length==20&&commands6.length==20,"1.5.14 move kept 14 buttons / 14 commands; 1.5.18 adds Spellbook, Wand controls and Auto-sort (17); What's New (18); 1.5.20 Lost & Found and Trash Bin (20)");
++            check(buttons6.length==22&&commands6.length==22,"1.5.14 move kept 14 buttons / 14 commands; 1.5.18 adds Spellbook, Wand controls and Auto-sort (17); What's New (18); 1.5.20 Lost & Found and Trash Bin (20); 1.5.22 +3 -1 (22)");
+             check(idxOf(buttons6,"Utility Pouch")==3,"Utility Pouch now sits at index 3 (4th, top daily-driver cluster)");
+             check(idxOf(commands6,"pouch")==3,"pouch command at index 3, matching the button");
+             check(buttons6[0].equals("Spawn")&&buttons6[1].equals("Teleport to a player")&&buttons6[2].equals("Party"),"top of the menu above the Pouch is unchanged: Spawn / Teleport to a player / Party");
+-            String[] wantRestB={"Spawn","Teleport to a player","Party","Excel Shop","Adventurers Guild","Jobs & Money","mcMMO Stats","Skills & Perks","Leaderboard","Server Info","Server Commands","Server Website","Auto-open on join"};
+-            String[] wantRestC={"spawn","tpmenu","excelparty","shop","ag","jobs browse","mcstats","skillsperks","leaderboard","motd","servercommands","serverwebsite","menujoin"};
++            // 1.5.22: mcMMO Stats left the main menu, so the 1.5.13 order is pinned without it (12 entries).
++            String[] wantRestB={"Spawn","Teleport to a player","Party","Excel Shop","Adventurers Guild","Jobs & Money","Skills & Perks","Leaderboard","Server Info","Server Commands","Server Website","Auto-open on join"};
++            String[] wantRestC={"spawn","tpmenu","excelparty","shop","ag","jobs browse","skillsperks","leaderboard","motd","servercommands","serverwebsite","menujoin"};
++            java.util.Set<String> new1522B=new java.util.HashSet<>(java.util.Arrays.asList("My Cosmetics","Ask the Guide","Maker's mark and Gear stats"));
++            java.util.Set<String> new1522C=new java.util.HashSet<>(java.util.Arrays.asList("cosmetics","ask","mark"));
+             java.util.List<String> restB=new java.util.ArrayList<>(), restC=new java.util.ArrayList<>();
+-            for(String s:buttons6) if(!s.equals("Utility Pouch")&&!s.equals("Spellbook")&&!s.startsWith("Auto-sort")&&!s.startsWith("Wand controls")&&!s.equals("What's New")&&!s.equals("Lost & Found")&&!s.equals("Trash Bin")) restB.add(s);
+-            for(String s:commands6) if(!s.equals("pouch")&&!s.equals("spellinfo")&&!s.equals("autosort")&&!s.equals("wandstyle")&&!s.equals("whatsnew")&&!s.equals("lostfound")&&!s.equals("trash")) restC.add(s);
+-            check(restB.size()==13&&java.util.Arrays.equals(restB.toArray(new String[0]),wantRestB),"removing the Pouch leaves the 1.5.13 button order of the other 13 untouched");
+-            check(restC.size()==13&&java.util.Arrays.equals(restC.toArray(new String[0]),wantRestC),"removing pouch leaves the 1.5.13 command order of the other 13 untouched");
++            for(String s:buttons6) if(!new1522B.contains(s)&&!s.equals("Utility Pouch")&&!s.equals("Spellbook")&&!s.startsWith("Auto-sort")&&!s.startsWith("Wand controls")&&!s.equals("What's New")&&!s.equals("Lost & Found")&&!s.equals("Trash Bin")) restB.add(s);
++            for(String s:commands6) if(!new1522C.contains(s)&&!s.equals("pouch")&&!s.equals("spellinfo")&&!s.equals("autosort")&&!s.equals("wandstyle")&&!s.equals("whatsnew")&&!s.equals("lostfound")&&!s.equals("trash")) restC.add(s);
++            check(restB.size()==12&&java.util.Arrays.equals(restB.toArray(new String[0]),wantRestB),"removing the Pouch (and later additions) leaves the 1.5.13 button order untouched (minus mcMMO Stats, 1.5.22)");
++            check(restC.size()==12&&java.util.Arrays.equals(restC.toArray(new String[0]),wantRestC),"removing pouch (and later additions) leaves the 1.5.13 command order untouched (minus mcstats, 1.5.22)");
+         }catch(Exception e){check(false,"1.5.14 pouch move checks "+e);}
+         // v1.5.15: Bedrock form taps forwarded to ExcelMenuStats (reflection, fail-silent)
+         try{
+@@ -203,7 +206,7 @@
+             check(cs.contains("getMethod(\"recordTap\", Player.class, String.class, String.class, int.class, String.class)"),"hook calls ExcelMenuStats.recordTap by reflection");
+             check(cs.contains("catch (Throwable t)"),"hook never throws into the form handler");
+             check(!py.contains("ExcelMenuStats"),"no plugin.yml dependency on ExcelMenuStats");
+-            check(gf.split("ClickStats.tap",-1).length-1==2,"exactly two hook call sites");
++            check(gf.split("ClickStats.tap",-1).length-1==3,"exactly three hook call sites (1.5.22 adds the Ask the Guide Send tap)");
+         }catch(Exception e){check(false,"1.5.15 hook pins: "+e);}
+         // v1.5.16: childproof picker (front end for the commands.yml /childproof alias)
+         {
+@@ -236,7 +239,7 @@
+             check(!ChildproofMenu.resultLine(true,"Bob","none").contains("Done"),"childproof that ended with no access is not called done");
+             try{
+                 String py=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("plugin.yml")));
+-                check(py.contains("version: 1.5.21")&&py.contains("  childproofmenu:"),"plugin.yml 1.5.18 registers /childproofmenu");
++                check(py.contains("version: 1.5.22")&&py.contains("  childproofmenu:"),"plugin.yml 1.5.18 registers /childproofmenu");
+             }catch(Exception e){check(false,"plugin.yml read "+e);}
+         }
+         // v1.5.18: Spellbook button (Mike, Oct 24, 2026). Runs ExcelWandBars' /spellinfo.
+@@ -245,16 +248,16 @@
+             String[] b8=parseStringArray(s8,"BUTTONS"); String[] c8=parseStringArray(s8,"COMMANDS");
+             check(idxOf(b8,"Spellbook")==4&&idxOf(c8,"spellinfo")==4,"Spellbook button and spellinfo command both at index 4");
+             check(b8[3].equals("Utility Pouch")&&b8[5].equals("Excel Shop"),"Spellbook sits right after Utility Pouch, before Excel Shop");
+-            java.util.List<String> rb=new java.util.ArrayList<>(java.util.Arrays.asList(b8)); rb.remove("Spellbook"); rb.remove("Auto-sort my chests: on/off"); rb.remove("Wand controls: Classic or Sneak bars"); rb.remove("What's New"); rb.remove("Lost & Found"); rb.remove("Trash Bin");
+-            check(java.util.Arrays.equals(rb.toArray(new String[0]),new String[]{"Spawn","Teleport to a player","Party","Utility Pouch","Excel Shop","Adventurers Guild","Jobs & Money","mcMMO Stats","Skills & Perks","Leaderboard","Server Info","Server Commands","Server Website","Auto-open on join"}),"removing Spellbook and Auto-sort leaves the exact 1.5.17 button order");
+-            java.util.List<String> rc=new java.util.ArrayList<>(java.util.Arrays.asList(c8)); rc.remove("spellinfo"); rc.remove("autosort"); rc.remove("wandstyle"); rc.remove("whatsnew"); rc.remove("lostfound"); rc.remove("trash");
+-            check(java.util.Arrays.equals(rc.toArray(new String[0]),new String[]{"spawn","tpmenu","excelparty","pouch","shop","ag","jobs browse","mcstats","skillsperks","leaderboard","motd","servercommands","serverwebsite","menujoin"}),"removing spellinfo and autosort leaves the exact 1.5.17 command order");
++            java.util.List<String> rb=new java.util.ArrayList<>(java.util.Arrays.asList(b8)); rb.remove("Spellbook"); rb.remove("Auto-sort my chests: on/off"); rb.remove("Wand controls: Classic or Sneak bars"); rb.remove("What's New"); rb.remove("Lost & Found"); rb.remove("Trash Bin"); rb.removeAll(java.util.Arrays.asList("My Cosmetics","Ask the Guide","Maker's mark and Gear stats"));
++            check(java.util.Arrays.equals(rb.toArray(new String[0]),new String[]{"Spawn","Teleport to a player","Party","Utility Pouch","Excel Shop","Adventurers Guild","Jobs & Money","Skills & Perks","Leaderboard","Server Info","Server Commands","Server Website","Auto-open on join"}),"removing Spellbook and Auto-sort (and later additions) leaves the exact 1.5.17 button order (minus mcMMO Stats, 1.5.22)");
++            java.util.List<String> rc=new java.util.ArrayList<>(java.util.Arrays.asList(c8)); rc.remove("spellinfo"); rc.remove("autosort"); rc.remove("wandstyle"); rc.remove("whatsnew"); rc.remove("lostfound"); rc.remove("trash"); rc.removeAll(java.util.Arrays.asList("cosmetics","ask","mark"));
++            check(java.util.Arrays.equals(rc.toArray(new String[0]),new String[]{"spawn","tpmenu","excelparty","pouch","shop","ag","jobs browse","skillsperks","leaderboard","motd","servercommands","serverwebsite","menujoin"}),"removing spellinfo and autosort (and later additions) leaves the exact 1.5.17 command order (minus mcstats, 1.5.22)");
+             check(!ExcelBedrockMenu.requiresConfirm("spellinfo",false)&&!ExcelBedrockMenu.requiresConfirm("spellinfo",true),"Spellbook never opens the teleport confirm");
+             check(s8.contains("case \"spellinfo\":")&&s8.contains("Bukkit.getPluginCommand(\"spellinfo\") == null"),"spellinfo is guarded: missing ExcelWandBars gives a message, not an unknown command");
+             check("Spellbook".chars().allMatch(c->c<128),"Spellbook label is plain ASCII");
+             int as=idxOf(b8,"Auto-sort my chests: on/off");
+             check(as>=0&&as==idxOf(c8,"autosort"),"Auto-sort button and autosort command line up");
+-            check(as==b8.length-2&&b8[b8.length-1].equals("Auto-open on join"),"Auto-sort sits just before Auto-open on join (the switches together)");
++            check(as==b8.length-3&&b8[b8.length-2].equals("Maker's mark and Gear stats")&&b8[b8.length-1].equals("Auto-open on join"),"Auto-sort, then Maker's mark (1.5.22), then Auto-open on join (the switches together, Java Settings order)");
+             check(s8.contains("case \"autosort\":")&&s8.contains("Bukkit.getPluginCommand(\"autosort\") == null"),"autosort guarded: missing AutoSort gives a message");
+             check(!ExcelBedrockMenu.requiresConfirm("autosort",false)&&!ExcelBedrockMenu.requiresConfirm("autosort",true),"Auto-sort never opens the teleport confirm");
+             check(!java.util.Arrays.asList(c8).contains("sort"),"menu uses /autosort, never the bare /sort alias");
+@@ -270,14 +273,14 @@
+             int w=idxOf(b9,"What's New");
+             check(w>=0&&w==idxOf(c9,"whatsnew"),"What's New button lines up with the whatsnew command");
+             check(w>0&&b9[w-1].equals("Server Website"),"What's New sits right after Server Website");
+-            check(b9[w+1].startsWith("Wand controls"),"Wand controls follows What's New (switches block unchanged)");
++            check(b9[w+1].equals("Ask the Guide")&&b9[w+2].startsWith("Wand controls"),"Ask the Guide (1.5.22) follows What's New, as on the Java Help row; Wand controls after it");
+             check(s9.contains("case \"whatsnew\":")&&s9.contains("Bukkit.getPluginCommand(\"whatsnew\") == null"),"whatsnew guarded: missing ExcelWhatsNew gives a message");
+             check(!ExcelBedrockMenu.requiresConfirm("whatsnew",false)&&!ExcelBedrockMenu.requiresConfirm("whatsnew",true),"What's New never opens the teleport confirm");
+             check(!java.util.Arrays.asList(c9).contains("news"),"menu runs /whatsnew, not the /news alias");
+             int g=ExcelBedrockMenu.catalogGroupIndexFor("server info"); int found=-1;
+             for(int i=0;i<ExcelBedrockMenu.catalogEntryCount(g);i++) if("whatsnew".equals(ExcelBedrockMenu.catalogRun(g,i))) found=i;
+             check(found==ExcelBedrockMenu.catalogEntryCount(g)-1,"/whatsnew is the last runnable row of Server Info");
+-            check(b9.length==20&&c9.length==20,"20 buttons, 20 commands (1.5.20 adds two)");
++            check(b9.length==22&&c9.length==22,"22 buttons, 22 commands (1.5.20 adds two, 1.5.22 +3 -1)");
+         }catch(Exception e){check(false,"1.5.19 whatsnew checks "+e);}
+         // v1.5.20: Lost & Found and Trash Bin buttons (Mike, Oct 25, 2026: match the Java compass)
+         try{
+@@ -291,10 +294,10 @@
+             check(b10[tb+1].equals("Server Info"),"Server Info follows Trash Bin (help cluster unchanged)");
+             check(java.util.Collections.frequency(java.util.Arrays.asList(b10),"Lost & Found")==1&&java.util.Collections.frequency(java.util.Arrays.asList(b10),"Trash Bin")==1,"each new label appears once");
+             check(java.util.Collections.frequency(java.util.Arrays.asList(c10),"lostfound")==1&&java.util.Collections.frequency(java.util.Arrays.asList(c10),"trash")==1,"each new command appears once");
+-            java.util.List<String> rb=new java.util.ArrayList<>(java.util.Arrays.asList(b10)); rb.remove("Lost & Found"); rb.remove("Trash Bin");
+-            check(java.util.Arrays.equals(rb.toArray(new String[0]),new String[]{"Spawn","Teleport to a player","Party","Utility Pouch","Spellbook","Excel Shop","Adventurers Guild","Jobs & Money","mcMMO Stats","Skills & Perks","Leaderboard","Server Info","Server Commands","Server Website","What's New","Wand controls: Classic or Sneak bars","Auto-sort my chests: on/off","Auto-open on join"}),"removing the two new buttons leaves the exact live 1.5.19-whatsnew button order");
+-            java.util.List<String> rc=new java.util.ArrayList<>(java.util.Arrays.asList(c10)); rc.remove("lostfound"); rc.remove("trash");
+-            check(java.util.Arrays.equals(rc.toArray(new String[0]),new String[]{"spawn","tpmenu","excelparty","pouch","spellinfo","shop","ag","jobs browse","mcstats","skillsperks","leaderboard","motd","servercommands","serverwebsite","whatsnew","wandstyle","autosort","menujoin"}),"removing the two new commands leaves the exact live 1.5.19-whatsnew command order");
++            java.util.List<String> rb=new java.util.ArrayList<>(java.util.Arrays.asList(b10)); rb.remove("Lost & Found"); rb.remove("Trash Bin"); rb.removeAll(java.util.Arrays.asList("My Cosmetics","Ask the Guide","Maker's mark and Gear stats"));
++            check(java.util.Arrays.equals(rb.toArray(new String[0]),new String[]{"Spawn","Teleport to a player","Party","Utility Pouch","Spellbook","Excel Shop","Adventurers Guild","Jobs & Money","Skills & Perks","Leaderboard","Server Info","Server Commands","Server Website","What's New","Wand controls: Classic or Sneak bars","Auto-sort my chests: on/off","Auto-open on join"}),"removing the two new buttons (and the 1.5.22 ones) leaves the live 1.5.19-whatsnew button order (minus mcMMO Stats, 1.5.22)");
++            java.util.List<String> rc=new java.util.ArrayList<>(java.util.Arrays.asList(c10)); rc.remove("lostfound"); rc.remove("trash"); rc.removeAll(java.util.Arrays.asList("cosmetics","ask","mark"));
++            check(java.util.Arrays.equals(rc.toArray(new String[0]),new String[]{"spawn","tpmenu","excelparty","pouch","spellinfo","shop","ag","jobs browse","skillsperks","leaderboard","motd","servercommands","serverwebsite","whatsnew","wandstyle","autosort","menujoin"}),"removing the two new commands (and the 1.5.22 ones) leaves the live 1.5.19-whatsnew command order (minus mcstats, 1.5.22)");
+             check(!java.util.Arrays.asList(c10).contains("recover")&&!java.util.Arrays.asList(c10).contains("bin"),"menu runs /lostfound and /trash, not the /recover or /bin aliases");
+             check(!java.util.Arrays.asList(c10).contains("trash chest")&&!java.util.Arrays.asList(c10).contains("trash undo"),"Trash Bin opens the plain bin (same as Java [player] trash)");
+             check(!ExcelBedrockMenu.requiresConfirm("lostfound",false)&&!ExcelBedrockMenu.requiresConfirm("lostfound",true),"Lost & Found never opens the teleport confirm");
+@@ -318,16 +321,16 @@
+             check(java.util.Arrays.stream(b11).noneMatch(x->x.contains("\u00a7")),"BUTTONS keep plain labels (no codes in the array)");
+             java.util.Map<String,String> want=new java.util.HashMap<>();
+             for(String x:new String[]{"spawn","tpmenu","excelparty","ag"}) want.put(x,"\u00a71");
+-            for(String x:new String[]{"pouch","spellinfo","jobs browse","mcstats","skillsperks","leaderboard","lostfound","trash"}) want.put(x,"\u00a75");
+-            want.put("shop","\u00a72");
+-            for(String x:new String[]{"motd","servercommands","serverwebsite","whatsnew"}) want.put(x,"\u00a7n");
+-            for(String x:new String[]{"wandstyle","autosort","menujoin"}) want.put(x,"\u00a78");
+-            check(want.size()==c11.length,"every one of the 20 commands has a group");
++            for(String x:new String[]{"pouch","spellinfo","jobs browse","skillsperks","leaderboard","lostfound","trash"}) want.put(x,"\u00a75");
++            want.put("shop","\u00a72"); want.put("cosmetics","\u00a72");
++            for(String x:new String[]{"motd","servercommands","serverwebsite","whatsnew","ask"}) want.put(x,"\u00a7n");
++            for(String x:new String[]{"wandstyle","autosort","mark","menujoin"}) want.put(x,"\u00a78");
++            check(want.size()==c11.length,"every one of the 22 commands has a group");
+             boolean all=true; for(String x:c11) if(!want.get(x).equals(ExcelBedrockMenu.groupColor(x))) {all=false;System.out.println("  wrong color for "+x);}
+             check(all,"group colors: Travel 1, Me 5, Shops 2, Help n (copper), Settings 8");
+             check(ExcelBedrockMenu.groupColor("nosuch").equals(""),"unknown command gets no color");
+             String[] m0=ExcelBedrockMenu.menuLabels(false), m1=ExcelBedrockMenu.menuLabels(true);
+-            check(m0.length==b11.length&&m1.length==b11.length,"menuLabels keeps 20 labels, locked or not");
++            check(m0.length==b11.length&&m1.length==b11.length,"menuLabels keeps 22 labels, locked or not");
+             boolean same=true; for(int i=0;i<b11.length;i++){ if(!ExcelBedrockMenu.stripCodes(m0[i]).equals(b11[i])) same=false; if(!m0[i].startsWith(ExcelBedrockMenu.groupColor(c11[i]))) same=false; }
+             check(same,"each sent label = its group color + the exact plain label");
+             int ag=idxOf(c11,"ag");
+@@ -341,6 +344,56 @@
+             check(cs.contains("ExcelBedrockMenu.stripCodes(button)"),"menu stats log the plain label");
+             check(!java.util.Arrays.asList(ExcelBedrockMenu.catalogGroupFormButtons(0)).stream().anyMatch(x->x.contains("\u00a7")),"other forms (Server Commands groups) are not colored");
+         }catch(Exception e){check(false,"1.5.21 color checks "+e);}
++        // v1.5.22: Java parity (Mike, Oct 26, 2026: "always do onto one as you would do the other")
++        try{
++            String s12=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java")));
++            String gf12=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/winkreyes/excelbedrockmenu/GeyserForms.java")));
++            String sm12=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("server_menu.yml")));
++            String[] b=parseStringArray(s12,"BUTTONS"); String[] c=parseStringArray(s12,"COMMANDS");
++            int mc=idxOf(b,"My Cosmetics"), at=idxOf(b,"Ask the Guide"), mm=idxOf(b,"Maker's mark and Gear stats");
++            check(mc==6&&c[6].equals("cosmetics")&&b[5].equals("Excel Shop"),"My Cosmetics at index 6, right after Excel Shop (Java Shops row order), runs cosmetics");
++            check(at==17&&c[17].equals("ask")&&b[16].equals("What's New"),"Ask the Guide at index 17, right after What's New (Java Help row order), runs ask");
++            check(mm==20&&c[20].equals("mark")&&b[19].startsWith("Auto-sort")&&b[21].equals("Auto-open on join"),"Maker's mark at index 20, between Auto-sort and Auto-open (Java Settings row order), runs mark");
++            check(idxOf(b,"mcMMO Stats")<0&&idxOf(c,"mcstats")<0,"mcMMO Stats is no longer its own main button (Java removed it Oct 25)");
++            check(java.util.Arrays.asList(ExcelBedrockMenu.SKILLS_PERKS_BUTTONS).indexOf("My mcMMO stats")==ExcelBedrockMenu.SKILLS_PERKS_MCSTATS,"mcMMO stats stays one tap away inside Skills & Perks");
++            check(s12.contains("if (id == SKILLS_PERKS_MCSTATS)")&&s12.contains("player.performCommand(\"mcstats\")"),"the Skills & Perks stats button runs /mcstats, like the Java Skills & Perks items");
++            check(ExcelBedrockMenu.SKILLS_PERKS_BUTTONS[ExcelBedrockMenu.SKILLS_PERKS_WEBSITE].equals("Skill Trees on the Website"),"website follow-on index constant matches its label");
++            check(ExcelBedrockMenu.groupColor("cosmetics").equals("\u00a72")&&ExcelBedrockMenu.groupColor("shop").equals("\u00a72"),"My Cosmetics is Shops green like Excel Shop");
++            check(ExcelBedrockMenu.groupColor("ask").equals("\u00a7n"),"Ask the Guide is Help copper");
++            check(ExcelBedrockMenu.groupColor("mark").equals("\u00a78"),"Maker's mark is Settings gray");
++            // same commands as Java
++            check(sm12.contains("'[player] cosmetics'"),"Java My Cosmetics runs [player] cosmetics: Bedrock runs the same command");
++            check(sm12.contains("'[player] mark on'")&&sm12.contains("'[player] mark stats on'"),"Java runs /mark on|off and /mark stats on|off: Bedrock bare /mark opens ExcelMakersMark's two-switch form for the same two settings");
++            check(sm12.contains("Type &e/ask &7and your question in chat"),"Java Ask the Guide points at /ask: Bedrock Send runs /ask <question>");
++            // guards
++            check(s12.contains("runGuarded(player, \"cosmetics\",")&&s12.contains("runGuarded(player, \"mark\","),"cosmetics and mark are guarded (missing plugin or permission gives a message)");
++            check(ExcelBedrockMenu.ASK_PERMISSION.equals("excelguide.ask")&&s12.contains("player.hasPermission(ASK_PERMISSION)"),"ask guard also checks excelguide.ask (ExcelGuide checks it inside /ask, not on the command)");
++            check(s12.contains("Bukkit.getPluginCommand(\"ask\")")&&s12.contains("The Guide isn't available right now")&&s12.contains("You can't ask the Guide right now"),"ask is guarded before the form opens");
++            for(String x:new String[]{"cosmetics","ask","mark"}) check(!ExcelBedrockMenu.requiresConfirm(x,false)&&!ExcelBedrockMenu.requiresConfirm(x,true)&&ExcelBedrockMenu.teleportConfirmTitle(x,false)==null,x+" never opens the teleport confirm");
++            // ask sanitizer
++            check("ask How do I claim land?".equals(ExcelBedrockMenu.askCommandFor("How do I claim land?")),"plain question becomes /ask <question>");
++            check(ExcelBedrockMenu.askCommandFor("")==null&&ExcelBedrockMenu.askCommandFor("   ")==null&&ExcelBedrockMenu.askCommandFor(null)==null,"empty or blank input runs nothing");
++            check("ask spawn".equals(ExcelBedrockMenu.askCommandFor("/spawn")),"a typed command is only asked about, never run as itself");
++            check("ask op me".equals(ExcelBedrockMenu.askCommandFor("//op me")),"several leading slashes all dropped");
++            check("ask red text".equals(ExcelBedrockMenu.askCommandFor("\u00a7cred \u00a7ltext")),"color codes removed");
++            check("ask a b".equals(ExcelBedrockMenu.askCommandFor("a\nb")),"newlines become spaces");
++            check(ExcelBedrockMenu.askCommandFor("x".repeat(500)).length()==4+ExcelBedrockMenu.ASK_MAX,"question capped at ASK_MAX characters");
++            check(ExcelBedrockMenu.ASK_HINT.contains("/ask")&&ExcelBedrockMenu.ASK_HINT.contains("Guide,"),"form-failure fallback is the Java button's own hint line");
++            check((ExcelBedrockMenu.ASK_TITLE+ExcelBedrockMenu.ASK_PROMPT+ExcelBedrockMenu.ASK_PLACEHOLDER).chars().allMatch(ch->ch<128),"Ask form text is plain ASCII");
++            check(gf12.contains("static boolean sendInputForm(")&&gf12.contains("org.geysermc.cumulus.form.CustomForm")&&gf12.contains("getMethod(\"asInput\", int.class)"),"Ask form is a Cumulus CustomForm text box read with asInput(0)");
++            check(gf12.contains("ClickStats.tap(player, title, \"Send\", 0);"),"menu stats log only the fixed Send label, never the question");
++            // Magic text
++            String m0=ExcelBedrockMenu.skillsPerksMagicLine(0), m1=ExcelBedrockMenu.skillsPerksMagicLine(1);
++            check(m0.contains("sealed")&&m0.contains("(0 of 5 today)"),"0 seals keeps the sealed line");
++            check(m1.startsWith("Magic is awake: 1 of 5 seals broken.")&&!m1.contains("sealed for now"),"from Seal 1 the line says Magic is awake (live since Oct 23)");
++            check(m1.contains("Old Quartermaster in the spawn village"),"awake line says where the first wand comes from (matches the website)");
++            check(m1.contains("Spellbook"),"awake line points at the Spellbook button");
++            check(ExcelBedrockMenu.skillsPerksMagicLine(9).contains("5 of 5"),"count capped at 5");
++            check(ExcelBedrockMenu.skillsPerksContent(1).chars().allMatch(ch->ch<128),"Skills & Perks body stays plain ASCII");
++            String[] ml=ExcelBedrockMenu.menuLabels(false);
++            check(ml.length==22&&ml[mc].equals("\u00a72My Cosmetics")&&ml[at].equals("\u00a7nAsk the Guide")&&ml[mm].equals("\u00a78Maker's mark and Gear stats"),"sent labels carry their group colors");
++            check(java.util.Arrays.stream(b).allMatch(x->x.chars().allMatch(ch->ch<128)),"all 22 labels plain ASCII");
++        }catch(Exception e){check(false,"1.5.22 parity checks "+e);}
+         System.out.println(fails==0?"ALL PASS":"FAILED "+fails);
+         if(fails>0)System.exit(1);
+     }
