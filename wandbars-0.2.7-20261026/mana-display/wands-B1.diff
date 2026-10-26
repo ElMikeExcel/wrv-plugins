@@ -1,0 +1,18 @@
+--- a/Magic/wands.yml (live 289539cd)	2026-10-26 11:22:29.618295037 -0500
++++ b/Magic/wands.yml	2026-10-26 11:26:34.271380164 -0500
+@@ -126,6 +126,15 @@
+   action_bar:
+     message: "$spell"
+     interval: 3600000
++  # WRV mana number (staged Oct 26 2026, option B1): a thin bar at the top of the screen,
++  # "Mana 42" (the bar fill shows how full you are), shown only while the wand is held. Same on Java and Bedrock (Geyser shows
++  # Java boss bars). It does not use the action bar, so it never fights the stance, range,
++  # page or spell lines. Reload with: magic load (no restart).
++  boss_bar:
++    mode: mana
++    bar_title: "Mana @mana"
++    bar_color: blue
++    bar_style: solid
+   quiet: 1
+   effect_bubbles: false
+   item_attributes:

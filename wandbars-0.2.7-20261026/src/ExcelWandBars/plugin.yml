@@ -1,0 +1,29 @@
+name: ExcelWandBars
+version: 0.2.7
+main: com.winkreyes.excelwandbars.ExcelWandBars
+api-version: '1.13'
+author: WinkReyesValley
+softdepend: [Magic, Geyser-Spigot, floodgate]
+description: Wand controls per player (/wandstyle classic, cycle or sneakbars, classic by default; Sneak bars is Bedrock only). In Sneak bars, sneak once while your Magic wand's spell bar is open to flip to the next bar (1, 2, 3, back to 1). A short wand tip shows on the first 15 wand uses until OK. /spellinfo shows each spell's cost, cooldown, range, rank and progress to its next rank (Bedrock form or Java chat). New in 0.2.2, for Bedrock players on Classic controls the wand's spell list opens as the Spell Book form (with Use this spell); a short action-bar line after a cast shows progress to the next rank. New in 0.2.3, a third style, Cycle (right click / press and hold / LT = next spell, sneak + right click or Q = back one, no spell list), for Java and Bedrock. New in 0.2.4, Tap to cycle (original) (the first wand setup, tap a hotbar spell icon to pick it, hold to cast) and Tap bar (best on phone, tap a hotbar spell icon to cast it at once), each with a one-line description in the Wand controls form. New in 0.2.5, Tap bar shows every unlocked spell in pages (crouch flips, Page 1/2 on screen), press and hold reads your spells and never casts, Tap to cycle (original) is now called Tap to pick (original). New in 0.2.6, Tap to pick (original) really picks. Tapping a spell icon selects it and never casts (also for spells that are quick cast on their own), press and hold (Bedrock) or left click (Java) casts the picked spell once, and a phone press and hold no longer closes the bar. New in 0.2.7, in Tap bar and Tap to pick (original) the wand moves to the last hotbar slot by itself (the item that was there goes to the wand's old slot, nothing is dropped), and in Tap bar on Bedrock tapping the wand again puts your items back. The spell info screen (/spellinfo and Spell Book) now shows what each spell really does (hearts, effects, radius, by rank), what the next rank changes, and how to reach the next wand rank.
+commands:
+  spellinfo:
+    description: Read your wand's spells (what they do, cost, cooldown, range, rank).
+    usage: /spellinfo [spell | ok]
+    aliases: [spellbook, wandspells]
+    permission: excelwandbars.spells
+  wandstyle:
+    description: Pick your wand controls, Classic (right click = next spell, sneak + right click = list), Cycle (next / back only), Sneak bars (Bedrock, sneak flips the spell bar), Tap to cycle (original) or Tap bar (tap a spell icon to cast).
+    usage: /wandstyle [classic | cycle | sneakbars | original | tapbar | switch | ok]
+    aliases: [wandcontrols]
+    permission: excelwandbars.style
+  wandbars:
+    description: ExcelWandBars admin (status / reload / flip / info / style / tip / spelltip / progress / use / lastform / formtap / tapbar / wandslot / wandtap / simbedrock <player> / spelldump <player> or spelldump template <key>).
+    usage: /wandbars [reload | flip <player> | info <player> | style <player> [classic|bars|cycle|original|tapbar|clear|apply|unset] | chooser <player> | choosertap <player> <n> | tip <player> [reset] | spelltip <player> [reset] | progress <player> | use <player> <spell> | lastform <player> | formtap <player> <n> | tapbar <player> [open] | wandslot <player> | wandtap <player> | simbedrock <player> [on|off] | spelldump <player> | spelldump template <spell|level>]
+    permission: excelwandbars.admin
+permissions:
+  excelwandbars.spells:
+    default: true
+  excelwandbars.style:
+    default: true
+  excelwandbars.admin:
+    default: op

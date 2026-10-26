@@ -1,0 +1,3764 @@
+diff -ruN -x build src-0.2.6/build.sh src/build.sh
+--- src-0.2.6/build.sh	2026-10-26 10:12:55.931782906 -0500
++++ src/build.sh	2026-10-26 10:27:52.707760481 -0500
+@@ -1,7 +1,8 @@
+ #!/bin/bash
+-# Build ExcelWandBars-0.2.6.jar (deterministic: fixed jar date, sorted inputs).
++# Build ExcelWandBars-0.2.7.jar (deterministic: fixed jar date, sorted inputs).
+ # Manual javac route, same as the other Excel plugins. Magic 11.2.5's jar is
+ # COMPILE-ONLY (soft-depend at runtime); nothing from Magic or Geyser is packaged.
++# 0.2.7: Geyser-Spigot's jar is compile-only too (GeyserTapHook, loaded by name only when Geyser runs).
+ set -euo pipefail
+ cd "$(dirname "$0")"
+ JDK=${JDK:-/home/box/tools/jdk-25.0.5+8}
+@@ -11,11 +12,12 @@
+ for j in adventure-api-4.20.0 adventure-key-4.20.0 adventure-text-serializer-legacy-4.20.0 adventure-text-serializer-plain-4.20.0 examination-api-1.3.0 examination-string-1.3.0 option-1.0.0 gson-2.11.0 guava-33.3.1-jre snakeyaml-2.2; do CP="$CP:$LIBS/$j.jar"; done
+ RT=${RT:-/workspace/build-libs-wrv/runtime-libraries}
+ CP="$CP:$RT/net/md-5/bungeecord-chat/1.21-R0.2-deprecated+build.21/bungeecord-chat-1.21-R0.2-deprecated+build.21.jar:$RT/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar"
+-CP="$CP:$MAGIC"
++GEYSER=${GEYSER:-/workspace/wb025-rig/plugins/Geyser-Spigot.jar}
++CP="$CP:$MAGIC:$GEYSER"
+ rm -rf build/classes && mkdir -p build/classes
+ "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP" -d build/classes $(find src -name '*.java' | sort)
+ cp plugin.yml config.yml build/classes/
+-OUT=${OUT:-../files/plugins/ExcelWandBars-0.2.6.jar}
++OUT=${OUT:-../files/plugins/ExcelWandBars-0.2.7.jar}
+ rm -f "$OUT"
+ "$JDK/bin/jar" --create --file "$OUT" --date=2026-10-26T00:00:00-05:00 -C build/classes .
+ sha256sum "$OUT"
+diff -ruN -x build src-0.2.6/config.yml src/config.yml
+--- src-0.2.6/config.yml	2026-10-26 10:12:55.931782906 -0500
++++ src/config.yml	2026-10-26 11:07:32.874317588 -0500
+@@ -1,4 +1,4 @@
+-# ExcelWandBars 0.2.5 (Wink Reyes Valley). Separate plugin; Magic (elmakers)
++# ExcelWandBars 0.2.7 (Wink Reyes Valley). Separate plugin; Magic (elmakers)
+ # files are not changed. EliteMobs (MagmaGuy) is not touched.
+ 
+ # 0.2.0: wand controls are a per-player choice. Everyone gets the default
+@@ -110,6 +110,36 @@
+   # is only for Tap to pick (original)). Items back: tap the empty slot at the
+   # end of the bar, Q / press and hold the wand slot, or switch away.
+   tap-bar-stays-open: true
++  # 0.2.7: Tap bar, tapping the wand itself (the slot already selected).
++  #   toggle = bar up: your items come back; bar down: the bar opens
++  #   close  = only puts your items back
++  #   off    = nothing (items back: the empty slot next to the wand, or press and hold the wand slot)
++  # Bedrock only: Geyser does not pass this tap on to the server, so ExcelWandBars reads it
++  # inside Geyser. A Java client sends nothing when you press the key of the slot you are on
++  # (Java: Q or right click puts your items back). Not in this file = toggle.
++  tap-wand: toggle
++  # A phone may re-send the selected slot right after the server changes the hotbar (bar
++  # opened, wand moved, spell cast, page flipped). Anything this soon after is not a tap.
++  tap-wand-guard-ms: 700
++
++# 0.2.7: the rank wand lives in the last hotbar slot. Moving it is ONE swap: the wand goes to
++# the slot, and whatever was there (an item, a stack or nothing) goes to the wand's old slot.
++# Nothing is dropped, deleted or copied. Never while the spell bar is up, a chest or other
++# screen is open, an item is on the cursor, within quiet-after-click-ms of an inventory click,
++# when dead, in spectator or creative, or in a skip world. If you hold the item in the last
++# slot, it waits until you pick something else (your hand never changes under you).
++# Picking the wand in another slot moves it and selects the last slot. Hotbar only: a wand
++# in the main inventory stays where it is. Not in this file = these defaults.
++wand-slot:
++  enabled: true
++  # 1-9, like the hotbar keys.
++  slot: 9
++  # The styles that keep the wand in that slot (classic, bars, cycle, original, tapbar).
++  styles:
++    - tapbar
++    - original
++  quiet-after-click-ms: 3000
++  sweep-ticks: 20
+ 
+ sneak-flip:
+   # Only for players on the Sneak bars style (Bedrock); classic players never flip.
+@@ -159,6 +189,21 @@
+   # A second open request within this many ms (same press twice) is ignored.
+   debounce-ms: 600
+ 
++spell-info:
++  # Spell info 2026-10-26. The Spell Book / press and hold screen now shows what
++  # each spell really does (hearts, effects, who, radius), worked out from
++  # Magic's spells.yml, plus what the next rank changes. These lines are the
++  # only typed text: how a player reaches each wand rank. Shown as
++  # "How to reach Student rank:" on every spell and in the Spell Book header.
++  # {rank} = the rank name. Empty text ('') hides the line. Keep it short
++  # (phones), no em dashes, and never mention seals.
++  # Change with /wandbars reload (no restart).
++  rank-up:
++    default: "{rank} rank is not open yet. Watch What's New."
++    # student: "Ask the Old Quartermaster."
++    # apprentice: "..."
++    # master: "..."
++
+ progress-line:
+   # 0.2.2: after a successful cast, one short action-bar line shows the
+   # spell's progress, e.g. "Boon: 12/40 casts to Rank 2". Sent once, never
+diff -ruN -x build src-0.2.6/plugin.yml src/plugin.yml
+--- src-0.2.6/plugin.yml	2026-10-26 10:12:55.935782924 -0500
++++ src/plugin.yml	2026-10-26 11:07:42.086358448 -0500
+@@ -1,10 +1,10 @@
+ name: ExcelWandBars
+-version: 0.2.6
++version: 0.2.7
+ main: com.winkreyes.excelwandbars.ExcelWandBars
+ api-version: '1.13'
+ author: WinkReyesValley
+ softdepend: [Magic, Geyser-Spigot, floodgate]
+-description: Wand controls per player (/wandstyle classic, cycle or sneakbars, classic by default; Sneak bars is Bedrock only). In Sneak bars, sneak once while your Magic wand's spell bar is open to flip to the next bar (1, 2, 3, back to 1). A short wand tip shows on the first 15 wand uses until OK. /spellinfo shows each spell's cost, cooldown, range, rank and progress to its next rank (Bedrock form or Java chat). New in 0.2.2, for Bedrock players on Classic controls the wand's spell list opens as the Spell Book form (with Use this spell); a short action-bar line after a cast shows progress to the next rank. New in 0.2.3, a third style, Cycle (right click / press and hold / LT = next spell, sneak + right click or Q = back one, no spell list), for Java and Bedrock. New in 0.2.4, Tap to cycle (original) (the first wand setup, tap a hotbar spell icon to pick it, hold to cast) and Tap bar (best on phone, tap a hotbar spell icon to cast it at once), each with a one-line description in the Wand controls form. New in 0.2.5, Tap bar shows every unlocked spell in pages (crouch flips, Page 1/2 on screen), press and hold reads your spells and never casts, Tap to cycle (original) is now called Tap to pick (original). New in 0.2.6, Tap to pick (original) really picks. Tapping a spell icon selects it and never casts (also for spells that are quick cast on their own), press and hold (Bedrock) or left click (Java) casts the picked spell once, and a phone press and hold no longer closes the bar.
++description: Wand controls per player (/wandstyle classic, cycle or sneakbars, classic by default; Sneak bars is Bedrock only). In Sneak bars, sneak once while your Magic wand's spell bar is open to flip to the next bar (1, 2, 3, back to 1). A short wand tip shows on the first 15 wand uses until OK. /spellinfo shows each spell's cost, cooldown, range, rank and progress to its next rank (Bedrock form or Java chat). New in 0.2.2, for Bedrock players on Classic controls the wand's spell list opens as the Spell Book form (with Use this spell); a short action-bar line after a cast shows progress to the next rank. New in 0.2.3, a third style, Cycle (right click / press and hold / LT = next spell, sneak + right click or Q = back one, no spell list), for Java and Bedrock. New in 0.2.4, Tap to cycle (original) (the first wand setup, tap a hotbar spell icon to pick it, hold to cast) and Tap bar (best on phone, tap a hotbar spell icon to cast it at once), each with a one-line description in the Wand controls form. New in 0.2.5, Tap bar shows every unlocked spell in pages (crouch flips, Page 1/2 on screen), press and hold reads your spells and never casts, Tap to cycle (original) is now called Tap to pick (original). New in 0.2.6, Tap to pick (original) really picks. Tapping a spell icon selects it and never casts (also for spells that are quick cast on their own), press and hold (Bedrock) or left click (Java) casts the picked spell once, and a phone press and hold no longer closes the bar. New in 0.2.7, in Tap bar and Tap to pick (original) the wand moves to the last hotbar slot by itself (the item that was there goes to the wand's old slot, nothing is dropped), and in Tap bar on Bedrock tapping the wand again puts your items back. The spell info screen (/spellinfo and Spell Book) now shows what each spell really does (hearts, effects, radius, by rank), what the next rank changes, and how to reach the next wand rank.
+ commands:
+   spellinfo:
+     description: Read your wand's spells (what they do, cost, cooldown, range, rank).
+@@ -17,8 +17,8 @@
+     aliases: [wandcontrols]
+     permission: excelwandbars.style
+   wandbars:
+-    description: ExcelWandBars admin (status / reload / flip / info / style / tip / spelltip / progress / use / lastform / formtap / tapbar / simbedrock <player>).
+-    usage: /wandbars [reload | flip <player> | info <player> | style <player> [classic|bars|cycle|original|tapbar|clear|apply|unset] | chooser <player> | choosertap <player> <n> | tip <player> [reset] | spelltip <player> [reset] | progress <player> | use <player> <spell> | lastform <player> | formtap <player> <n> | tapbar <player> [open] | simbedrock <player> [on|off]]
++    description: ExcelWandBars admin (status / reload / flip / info / style / tip / spelltip / progress / use / lastform / formtap / tapbar / wandslot / wandtap / simbedrock <player> / spelldump <player> or spelldump template <key>).
++    usage: /wandbars [reload | flip <player> | info <player> | style <player> [classic|bars|cycle|original|tapbar|clear|apply|unset] | chooser <player> | choosertap <player> <n> | tip <player> [reset] | spelltip <player> [reset] | progress <player> | use <player> <spell> | lastform <player> | formtap <player> <n> | tapbar <player> [open] | wandslot <player> | wandtap <player> | simbedrock <player> [on|off] | spelldump <player> | spelldump template <spell|level>]
+     permission: excelwandbars.admin
+ permissions:
+   excelwandbars.spells:
+diff -ruN -x build src-0.2.6/run-tests.sh src/run-tests.sh
+--- src-0.2.6/run-tests.sh	2026-10-26 10:12:55.931782906 -0500
++++ src/run-tests.sh	2026-10-26 11:07:32.874317588 -0500
+@@ -5,7 +5,10 @@
+ cd "$(dirname "$0")"
+ JDK=${JDK:-/home/box/tools/jdk-25.0.5+8}
+ FG=${FG:-/workspace/build-libs-wrv/floodgate.jar}
++YAML=${YAML:-/workspace/build-libs-wrv/paper1.21.4/snakeyaml-2.2.jar}
++# Spell info 2026-10-26: golden checks read the live Magic spells.yml copy (sha256 c505e510...).
++SPELLS=${SPELLS:-$(pwd)/tests/data/spells.yml}
+ rm -rf build/test-classes && mkdir -p build/test-classes
+-"$JDK/bin/javac" --release 21 -proc:none -nowarn -d build/test-classes \
++"$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$YAML" -d build/test-classes \
+   $(find src/com/winkreyes/excelwandbars/core -name '*.java') $(find tests -name '*.java')
+-"$JDK/bin/java" -Dfloodgate="$FG" -cp build/test-classes TestMain
++"$JDK/bin/java" -Dfloodgate="$FG" -Dspells="$SPELLS" -cp "build/test-classes:$YAML" TestMain
+diff -ruN -x build src-0.2.6/src/com/winkreyes/excelwandbars/ExcelWandBars.java src/src/com/winkreyes/excelwandbars/ExcelWandBars.java
+--- src-0.2.6/src/com/winkreyes/excelwandbars/ExcelWandBars.java	2026-10-26 10:12:55.935782924 -0500
++++ src/src/com/winkreyes/excelwandbars/ExcelWandBars.java	2026-10-26 11:07:32.874317588 -0500
+@@ -28,6 +28,8 @@
+     private SpellScreen screen;
+     private SpellTipHook spellTip;
+     private TapBarHook tapBar;
++    private WandSlotHook wandSlot;
++    private String geyserTap = "off";
+     /** Admin test aid (/wandbars simbedrock): treat these online Java players as Bedrock. Memory only, cleared on quit. */
+     private final java.util.Set<java.util.UUID> simBedrock = new java.util.HashSet<>();
+     private final FlipGate.Options flipOptions = new FlipGate.Options();
+@@ -69,6 +71,17 @@
+                     tapBar = null;
+                     getLogger().warning("Tap bar opener off (" + t + ").");
+                 }
++                try {
++                    // 0.2.7: the wand lives in the last hotbar slot (Tap bar / Tap to pick by default).
++                    wandSlot = new WandSlotHook(this, (com.elmakers.mine.bukkit.api.magic.MagicAPI) magic);
++                    wandSlot.loadSettings(getConfig().getConfigurationSection("wand-slot"));
++                    getServer().getPluginManager().registerEvents(wandSlot, this);
++                    wandSlot.start();
++                } catch (Throwable t) {
++                    wandSlot = null;
++                    getLogger().warning("Wand slot off (" + t + ").");
++                }
++                if (tapBar != null) installGeyserTap();
+             }
+             try {
+                 tips = new TipHook(this, (com.elmakers.mine.bukkit.api.magic.MagicAPI) magic);
+@@ -119,6 +132,7 @@
+                 + " (default " + style.prefs().defaultStyle().key() + ", " + style.prefs().size() + " player choice(s) saved"
+                 + ", sneak bars " + (style.barsBedrockOnly() ? "Bedrock only" : "everyone") + ", " + style.pagesSummary() + ")");
+         getLogger().info(tapBar == null ? "Tap bar opener OFF" : "Tap bar / Tap to pick (original): " + tapBar.summary());
++        getLogger().info(wandSlot == null ? "Wand slot OFF" : "Wand slot " + wandSlot.summary());
+         getLogger().info(screen == null ? "Spell screen OFF" : "Spell screen: Bedrock Classic spell list as a form " + (screen.bedrockForm() ? "ON" : "OFF")
+                 + ", progress line " + (screen.gate().enabled ? "ON (min gap " + screen.gate().minGapMs + " ms, skip during stance " + screen.gate().skipDuringStance + ")" : "OFF")
+                 + ", Spell Book tip " + (spellTip == null || !spellTip.gate().enabled ? "OFF" : "ON (until OK, " + spellTip.gate().known().size() + " player(s) tracked)"));
+@@ -136,6 +150,13 @@
+ 
+     @Override
+     public void onDisable() {
++        if (!"off".equals(geyserTap)) {
++            try { Object r = Class.forName("com.winkreyes.excelwandbars.GeyserTapHook").getMethod("uninstall").invoke(null); getLogger().info("Geyser wand tap: " + r); }
++            catch (Throwable ignored) { }
++            geyserTap = "off";
++        }
++        if (wandSlot != null) { try { wandSlot.stop(); } catch (Throwable ignored) { } }
++        wandSlot = null;
+         if (tapBar != null) { try { tapBar.stop(); } catch (Throwable ignored) { } }
+         tapBar = null;
+         if (tips != null) tips.save();
+@@ -164,6 +185,22 @@
+         for (String w : c.getStringList("skip-worlds")) skipWorlds.add(w.toLowerCase(Locale.ROOT));
+         skipPrefixes.clear();
+         for (String w : c.getStringList("skip-world-prefixes")) skipPrefixes.add(w.toLowerCase(Locale.ROOT));
++        rankUpHow.clear();
++        org.bukkit.configuration.ConfigurationSection ru = c.getConfigurationSection("spell-info.rank-up");
++        if (ru != null) for (String k : ru.getKeys(false)) rankUpHow.put(k.toLowerCase(Locale.ROOT), ru.getString(k, ""));
++    }
++
++    /** Spell info 2026-10-26: spell-info.rank-up text, per wand rank key, then "default". {rank} = rank name. Reloadable. */
++    private final java.util.Map<String, String> rankUpHow = new java.util.HashMap<>();
++
++    static final String DEFAULT_RANK_UP = "{rank} rank is not open yet. Watch What's New.";
++
++    String rankUpHow(String rankKey, String rankName) {
++        String t = rankKey == null ? null : rankUpHow.get(rankKey.toLowerCase(Locale.ROOT));
++        if (t == null) t = rankUpHow.get("default");
++        if (t == null) t = DEFAULT_RANK_UP; // section missing from an older config.yml
++        if (t == null) return "";
++        return t.replace("{rank}", rankName == null ? "" : rankName).replace("\u2014", ",").trim();
+     }
+ 
+     FlipGate.Options flipOptions() { return flipOptions; }
+@@ -178,6 +215,52 @@
+         return s.styleOf(p).inventory();
+     }
+     TapBarHook tapBar() { return tapBar; }
++    WandSlotHook wandSlot() { return wandSlot; }
++
++    /**
++     * 0.2.7: Bedrock "tap the wand" (Tap bar). Geyser does not forward a tap on the slot that is
++     * already selected, so GeyserTapHook notes it inside Geyser and we act on the main thread.
++     * Loaded by name only when Geyser-Spigot runs; tap-bar.tap-wand: off makes every note a no-op.
++     */
++    private int geyserRetries = 0;
++
++    private void installGeyserTap() {
++        Plugin g = Bukkit.getPluginManager().getPlugin("Geyser-Spigot");
++        if (g == null || !g.isEnabled()) { geyserTap = "off"; tapBar.setTapWandSource("no Geyser"); return; }
++        try {
++            final ExcelWandBars self = this;
++            java.util.function.BiConsumer<java.util.UUID, Integer> cb = (id, slot) -> {
++                try {
++                    if (!self.isEnabled()) return;
++                    Bukkit.getScheduler().runTask(self, () -> {
++                        Player p = Bukkit.getPlayer(id);
++                        TapBarHook tb = tapBar;
++                        if (p != null && tb != null) {
++                            String r = tb.onWandTap(p, slot);
++                            if (debug) getLogger().info("Wand tap from " + p.getName() + " slot " + (slot + 1) + ": " + r);
++                        }
++                    });
++                } catch (Throwable ignored) { }
++            };
++            Object r = Class.forName("com.winkreyes.excelwandbars.GeyserTapHook")
++                    .getMethod("install", java.util.function.BiConsumer.class).invoke(null, cb);
++            geyserTap = String.valueOf(r);
++            tapBar.setTapWandSource("Geyser " + geyserTap);
++            // Geyser fills its translator table when it starts, after the server has loaded the
++            // plugins, so on boot the first try finds none. Try again once a second for a minute.
++            if ("no Geyser translator".equals(geyserTap) && geyserRetries++ < 60) {
++                Bukkit.getScheduler().runTaskLater(this, () -> { if (isEnabled() && tapBar != null) installGeyserTap(); }, 20L);
++            } else if ("installed".equals(geyserTap)) {
++                getLogger().info("Tap bar tap the wand: Geyser hook installed.");
++            } else if ("no Geyser translator".equals(geyserTap)) {
++                getLogger().warning("Tap bar tap the wand off: Geyser never loaded its translators. Items back still works: the empty slot, or press and hold the wand slot.");
++            }
++        } catch (Throwable t) {
++            geyserTap = "off";
++            tapBar.setTapWandSource("Geyser hook failed: " + t.getClass().getSimpleName());
++            getLogger().warning("Geyser wand tap off (" + t + "). Items back still works: the empty slot, or press and hold the wand slot.");
++        }
++    }
+     MagicHook magicHook() { return hook; }
+     StyleHook styleHook() { return style; }
+     TipHook tips() { return tips; }
+@@ -251,10 +334,23 @@
+                 if (tips != null) { tips.save(); tips.loadSettings(getConfig().getConfigurationSection("wand-tip")); tips.load(); }
+                 if (spellTip != null) { spellTip.save(); spellTip.loadSettings(getConfig().getConfigurationSection("spell-tip")); spellTip.load(); }
+                 if (tapBar != null) tapBar.loadSettings(getConfig().getConfigurationSection("tap-bar"));
++                if (wandSlot != null) wandSlot.loadSettings(getConfig().getConfigurationSection("wand-slot"));
+                 if (screen != null) screen.loadSettings(getConfig().getConfigurationSection("spell-screen"), getConfig().getConfigurationSection("progress-line"));
+                 sender.sendMessage("ExcelWandBars settings reloaded.");
+                 return true;
+             }
++            if (args.length > 1 && args[0].equalsIgnoreCase("spelldump")) {
++                // Admin/console: /wandbars spelldump <player>  or  /wandbars spelldump template <key>
++                if (hook == null) { sender.sendMessage("Magic hook is off."); return true; }
++                if (args[1].equalsIgnoreCase("template") && args.length > 2) {
++                    for (String l : hook.dumpTemplate(args[2])) sender.sendMessage(l);
++                    return true;
++                }
++                Player t = Bukkit.getPlayerExact(args[1]);
++                if (t == null) { sender.sendMessage("Player not online: " + args[1]); return true; }
++                for (String l : hook.dump(t)) sender.sendMessage(l);
++                return true;
++            }
+             if (args.length > 1 && args[0].equalsIgnoreCase("style")) {
+                 // Admin: /wandbars style <player> [classic|bars|clear|apply|unset]
+                 Player t = Bukkit.getPlayerExact(args[1]);
+@@ -309,6 +405,20 @@
+                         + " held=" + t.getInventory().getHeldItemSlot() + " lastcast " + tapBar.lastCast(t) + " | " + tapBar.counters() + " | hold " + tapBar.lastHold(t));
+                 return true;
+             }
++            if (args.length > 1 && args[0].equalsIgnoreCase("wandslot")) {
++                // 0.2.7 admin/rig: /wandbars wandslot <player> : run the wand slot check once now.
++                Player t = Bukkit.getPlayerExact(args[1]);
++                if (t == null || wandSlot == null) { sender.sendMessage("No such player (or wand slot off)."); return true; }
++                sender.sendMessage("wandslot " + t.getName() + ": " + wandSlot.check(t, "admin") + " held=" + t.getInventory().getHeldItemSlot() + " | " + wandSlot.counters());
++                return true;
++            }
++            if (args.length > 1 && args[0].equalsIgnoreCase("wandtap")) {
++                // 0.2.7 admin/rig: /wandbars wandtap <player> : act as if they tapped the selected slot (guard applies).
++                Player t = Bukkit.getPlayerExact(args[1]);
++                if (t == null || tapBar == null) { sender.sendMessage("No such player (or tap bar off)."); return true; }
++                sender.sendMessage("wandtap " + t.getName() + ": " + tapBar.onWandTap(t, t.getInventory().getHeldItemSlot()) + " (geyser " + geyserTap + ")");
++                return true;
++            }
+             if (args.length > 1 && args[0].equalsIgnoreCase("simbedrock")) {
+                 // Admin test aid: /wandbars simbedrock <player> [on|off]. Memory only; cleared when they leave.
+                 Player t = Bukkit.getPlayerExact(args[1]);
+@@ -397,6 +507,7 @@
+                     + " progress lines " + screen.lines() + " uses " + hook.uses())
+                     + ", spell tip " + (spellTip == null ? "OFF" : "shown " + spellTip.shown() + " handed " + spellTip.handed())
+                     + ", tap bar " + (tapBar == null ? "OFF" : tapBar.counters())
++                    + ", " + (wandSlot == null ? "wand slot OFF" : wandSlot.counters()) + ", geyser wand tap " + geyserTap
+                     + ", simbedrock " + simBedrock.size());
+             return true;
+         }
+diff -ruN -x build src-0.2.6/src/com/winkreyes/excelwandbars/GeyserTapHook.java src/src/com/winkreyes/excelwandbars/GeyserTapHook.java
+--- src-0.2.6/src/com/winkreyes/excelwandbars/GeyserTapHook.java	1969-12-31 18:00:00.000000000 -0600
++++ src/src/com/winkreyes/excelwandbars/GeyserTapHook.java	2026-10-26 10:26:27.215381290 -0500
+@@ -0,0 +1,81 @@
++package com.winkreyes.excelwandbars;
++
++import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
++import org.cloudburstmc.protocol.bedrock.packet.MobEquipmentPacket;
++import org.geysermc.geyser.registry.Registries;
++import org.geysermc.geyser.session.GeyserSession;
++import org.geysermc.geyser.translator.protocol.PacketTranslator;
++
++import java.util.UUID;
++import java.util.function.BiConsumer;
++
++/**
++ * 0.2.7: Bedrock "tap the wand" for Tap bar. A Bedrock player who taps the hotbar slot that is
++ * already selected sends the slot again, but Geyser drops it on purpose (GeyserSession.switchHeldSlot
++ * returns when the slot is the same, to match Java, where pressing the selected key sends nothing).
++ * This wraps Geyser's own translator for that packet: every packet still goes to Geyser's translator
++ * unchanged, in the same order; we only NOTE a same-slot one and hand it to the main thread.
++ * Loaded only when Geyser-Spigot is running (by name, so the plugin starts without Geyser), and
++ * Geyser's translator is put back when this plugin stops.
++ */
++public final class GeyserTapHook {
++    private static Wrapper installed;
++
++    private GeyserTapHook() {}
++
++    @SuppressWarnings({"unchecked", "rawtypes"})
++    public static synchronized String install(BiConsumer<UUID, Integer> onSameSlot) {
++        if (installed != null) { installed.callback = onSameSlot; return "already"; }
++        PacketTranslator current = Registries.BEDROCK_PACKET_TRANSLATORS.get(MobEquipmentPacket.class);
++        if (current == null) return "no Geyser translator";
++        if (current.getClass().getName().equals(Wrapper.class.getName())) return "wrapped by an older copy";
++        Wrapper w = new Wrapper((PacketTranslator<MobEquipmentPacket>) current, onSameSlot);
++        ((org.geysermc.geyser.registry.AbstractMappedRegistry) Registries.BEDROCK_PACKET_TRANSLATORS).register(MobEquipmentPacket.class, w);
++        installed = w;
++        return "installed";
++    }
++
++    @SuppressWarnings({"unchecked", "rawtypes"})
++    public static synchronized String uninstall() {
++        if (installed == null) return "none";
++        Object now = Registries.BEDROCK_PACKET_TRANSLATORS.get(MobEquipmentPacket.class);
++        installed.callback = null;
++        if (now == installed) {
++            ((org.geysermc.geyser.registry.AbstractMappedRegistry) Registries.BEDROCK_PACKET_TRANSLATORS).register(MobEquipmentPacket.class, installed.original);
++            installed = null;
++            return "restored";
++        }
++        installed = null;
++        return "replaced by someone else, left alone";
++    }
++
++    static final class Wrapper extends PacketTranslator<MobEquipmentPacket> {
++        final PacketTranslator<MobEquipmentPacket> original;
++        volatile BiConsumer<UUID, Integer> callback;
++
++        Wrapper(PacketTranslator<MobEquipmentPacket> original, BiConsumer<UUID, Integer> callback) {
++            this.original = original;
++            this.callback = callback;
++        }
++
++        @Override
++        public void translate(GeyserSession session, MobEquipmentPacket packet) {
++            try {
++                BiConsumer<UUID, Integer> cb = callback;
++                if (cb != null && packet.getContainerId() == 0) {
++                    int slot = packet.getHotbarSlot();
++                    if (slot >= 0 && slot <= 8 && session.getPlayerInventoryHolder().inventory().getHeldItemSlot() == slot) {
++                        UUID id = session.javaUuid();
++                        if (id != null) cb.accept(id, slot);
++                    }
++                }
++            } catch (Throwable ignored) {
++                // never let our note break Geyser's own handling
++            }
++            original.translate(session, packet);
++        }
++
++        @Override
++        public boolean shouldExecuteInEventLoop() { return original.shouldExecuteInEventLoop(); }
++    }
++}
+diff -ruN -x build src-0.2.6/src/com/winkreyes/excelwandbars/MagicHook.java src/src/com/winkreyes/excelwandbars/MagicHook.java
+--- src-0.2.6/src/com/winkreyes/excelwandbars/MagicHook.java	2026-10-26 10:12:55.935782924 -0500
++++ src/src/com/winkreyes/excelwandbars/MagicHook.java	2026-10-26 11:07:32.874317588 -0500
+@@ -203,11 +203,18 @@
+         f.maxRank = max;
+         addCosts(s.getCosts(), wand, msg, f.costs);
+         addCosts(s.getActiveCosts(), wand, msg, f.activeCosts);
+-        f.cooldownMs = Math.max(0, s.getCooldown());
+-        f.range = s.getRange();
+         ConfigurationSection params = s.getSpellParameters();
++        // Spell info 2026-10-26: the real wait, as Magic's BaseSpell.updateCooldown works it out:
++        // ceil((1 - wand cooldown_reduction) * cooldown), and the same for cooldown_mage
++        // (a pause before the caster's next spell) unless the spell has bypass_mage_cooldown.
++        double red = cooldownReduction(wand);
++        f.cooldownMs = reduced(Math.max(0, s.getCooldown()), red);
++        f.mageCooldownMs = mageCooldown(params, red);
++        f.range = s.getRange();
+         String target = params == null ? null : params.getString("target");
+         f.selfOnly = target != null && target.equalsIgnoreCase("self");
++        if ((target != null && target.equalsIgnoreCase("none")) || s.isPassive()) f.range = 0;
++        f.effects.addAll(effectsOf(s));
+         // Magic's isToggleable() is true for nearly every spell ("may be cancelled"),
+         // so "toggle" here means a sustained spell: it has a per-second active cost.
+         f.toggle = !f.activeCosts.isEmpty();
+@@ -221,9 +228,140 @@
+         f.rankByWand = !f.pathOk && pathless(wand);
+         String act = wand.getActiveSpellKey();
+         f.active = act != null && base(act).equalsIgnoreCase(base(key));
++        if (f.rankByWand && f.rank < f.maxRank) nextByWand(wand, f, red);
+         return f;
+     }
+ 
++    // ------------------------------------------------------------------ spell info 2026-10-26
++
++    static double cooldownReduction(Wand wand) {
++        try { return Math.max(0, wand.getCooldownReduction()); } catch (Throwable t) { return 0; }
++    }
++
++    static long reduced(long ms, double red) {
++        if (ms <= 0 || red >= 1) return 0;
++        return (long) Math.ceil((1.0f - (float) red) * ms);
++    }
++
++    static long mageCooldown(ConfigurationSection params, double red) {
++        if (params == null || params.getBoolean("bypass_mage_cooldown", false)) return 0;
++        return reduced(Math.max(0, params.getInt("cooldown_mage", 0)), red);
++    }
++
++    /** Magic config (sections, lists of sections) as plain maps and lists for the pure core. */
++    static Object plain(Object o) {
++        if (o instanceof ConfigurationSection cs) {
++            Map<String, Object> m = new LinkedHashMap<>();
++            for (String k : cs.getKeys(false)) m.put(k, plain(cs.get(k)));
++            return m;
++        }
++        if (o instanceof Map<?, ?> mm) {
++            Map<String, Object> m = new LinkedHashMap<>();
++            for (Map.Entry<?, ?> e : mm.entrySet()) m.put(String.valueOf(e.getKey()), plain(e.getValue()));
++            return m;
++        }
++        if (o instanceof List<?> l) {
++            List<Object> out = new ArrayList<>();
++            for (Object x : l) out.add(plain(x));
++            return out;
++        }
++        return o;
++    }
++
++    /** The plain-words effect lines of one spell rank, from its merged Magic config. */
++    @SuppressWarnings("unchecked")
++    List<String> effectsOf(SpellTemplate t) {
++        try {
++            ConfigurationSection cfg = t == null ? null : t.getConfiguration();
++            if (cfg == null) return new ArrayList<>();
++            return com.winkreyes.excelwandbars.core.SpellEffects.lines((Map<String, Object>) plain(cfg));
++        } catch (Throwable e) {
++            if (plugin.debug()) plugin.getLogger().info("spell effects " + (t == null ? "?" : t.getKey()) + ": " + e);
++            return new ArrayList<>();
++        }
++    }
++
++    /** The spell rank a wand rank (path) gives: Magic's level_spells_to_path rule. */
++    int levelAt(String baseKey, int maxLevel, com.elmakers.mine.bukkit.api.wand.WandUpgradePath path) {
++        MageController c = api.getController();
++        return com.winkreyes.excelwandbars.core.SpellEffects.levelAt(maxLevel,
++                lvl -> {
++                    SpellTemplate t = c.getSpellTemplate(lvl <= 1 ? baseKey : baseKey + "|" + lvl);
++                    return t == null ? null : t.getRequiredUpgradePath();
++                },
++                need -> path.hasPath(need));
++    }
++
++    /** One rank's facts from a template (no player data): effects, cost, cooldown, range. */
++    SpellFacts templateFacts(SpellTemplate t, Wand wand, double red) {
++        SpellFacts g = new SpellFacts();
++        Messages msg = api.getController().getMessages();
++        addCosts(t.getCosts(), wand, msg, g.costs);
++        addCosts(t.getActiveCosts(), wand, msg, g.activeCosts);
++        ConfigurationSection params = t.getSpellParameters();
++        g.cooldownMs = reduced(Math.max(0, t.getCooldown()), red);
++        g.mageCooldownMs = mageCooldown(params, red);
++        g.range = t.getRange();
++        String target = params == null ? null : params.getString("target");
++        g.selfOnly = target != null && target.equalsIgnoreCase("self");
++        if ((target != null && target.equalsIgnoreCase("none")) || t.isPassive()) g.range = 0;
++        g.effects.addAll(effectsOf(t));
++        return g;
++    }
++
++    /**
++     * Rank wands (no Magic path): the first higher wand rank that raises this spell,
++     * the spell rank it gives, what changes, and the configured "how to get there" text.
++     */
++    void nextByWand(Wand wand, SpellFacts f, double red) {
++        try {
++            com.elmakers.mine.bukkit.api.wand.WandUpgradePath path = rankFromTemplate(wand);
++            if (path == null) return;
++            String b = base(f.key);
++            MageController c = api.getController();
++            com.elmakers.mine.bukkit.api.wand.WandUpgradePath up = path.getUpgrade();
++            for (int i = 0; up != null && i < 8; i++, up = up.getUpgrade()) {
++                int lvl = levelAt(b, f.maxRank, up);
++                if (lvl <= f.rank) continue;
++                SpellTemplate now = c.getSpellTemplate(f.rank <= 1 ? b : b + "|" + f.rank);
++                SpellTemplate next = c.getSpellTemplate(lvl <= 1 ? b : b + "|" + lvl);
++                if (next == null) return;
++                f.nextWandRank = SpellInfoText.strip(up.getName());
++                f.nextWandRankLevel = lvl;
++                List<String> was = now == null ? SpellInfoText.rankLines(f) : SpellInfoText.rankLines(templateFacts(now, wand, red));
++                f.nextChanges.addAll(com.winkreyes.excelwandbars.core.SpellEffects.changes(was, SpellInfoText.rankLines(templateFacts(next, wand, red))));
++                f.rankUpHow = plugin.rankUpHow(up.getKey(), f.nextWandRank);
++                return;
++            }
++        } catch (Throwable t) {
++            if (plugin.debug()) plugin.getLogger().info("next rank " + f.key + ": " + t);
++        }
++    }
++
++    /** Admin/console check: every line each spell on a player's book shows. */
++    List<String> dump(Player p) {
++        List<String> out = new ArrayList<>();
++        List<SpellFacts> book = book(p);
++        if (book == null) { out.add("No Magic wand found on " + p.getName()); return out; }
++        Wand bw = bookWand(p, api.getMage(p));
++        if (bw != null) for (String h : rankHeader(bw, book)) out.add("[header] " + h);
++        for (SpellFacts f : book) {
++            out.add("== " + f.key);
++            for (String l : SpellInfoText.lines(f)) out.add("   " + l);
++        }
++        return out;
++    }
++
++    /** Admin/console check: the effect lines of one spell template key (e.g. mend|3). */
++    List<String> dumpTemplate(String key) {
++        List<String> out = new ArrayList<>();
++        SpellTemplate t = api.getController().getSpellTemplate(key);
++        if (t == null) { out.add("No spell template " + key); return out; }
++        out.add("== " + key);
++        for (String l : effectsOf(t)) out.add("   " + l);
++        return out;
++    }
++
+     /** True when the wand's rank is (or comes after) the rank a spell upgrade needs. */
+     /** 0.2.2: a wand with no Magic path (WRV rank wands: no path, no default_wand_path). Magic never ranks its spells up by casts. */
+     static boolean pathless(Wand wand) {
+@@ -265,9 +403,15 @@
+                 // nothing left to learn on this rank and every rank spell held. Read only, quiet.
+                 byCasts = !path.canProgress(cp) && path.checkUpgradeRequirements(cp, true);
+             }
+-            return com.winkreyes.excelwandbars.core.ProgressText.header(SpellInfoText.strip(path.getName()),
++            List<String> h = com.winkreyes.excelwandbars.core.ProgressText.header(SpellInfoText.strip(path.getName()),
+                     next == null ? null : SpellInfoText.strip(next.getName()), byCasts, byWand,
+                     com.winkreyes.excelwandbars.core.ProgressText.candidates(book));
++            // Spell info 2026-10-26: say how the next wand rank is reached (config text, reloadable).
++            if (byWand && next != null) {
++                String how = plugin.rankUpHow(next.getKey(), SpellInfoText.strip(next.getName()));
++                if (how != null && !how.isBlank()) h.add("How to reach " + SpellInfoText.strip(next.getName()) + " rank: " + how.trim());
++            }
++            return h;
+         } catch (Throwable t) {
+             if (plugin.debug()) plugin.getLogger().info("rank header: " + t);
+             return new ArrayList<>();
+diff -ruN -x build src-0.2.6/src/com/winkreyes/excelwandbars/StyleHook.java src/src/com/winkreyes/excelwandbars/StyleHook.java
+--- src-0.2.6/src/com/winkreyes/excelwandbars/StyleHook.java	2026-10-26 10:12:55.935782924 -0500
++++ src/src/com/winkreyes/excelwandbars/StyleHook.java	2026-10-26 10:27:52.707760481 -0500
+@@ -366,7 +366,7 @@
+         WandStyle cur = styleOf(p);
+         if (!barsAllowed(p)) {
+             // Java: every style but Sneak bars (Bedrock only). One line each.
+-            p.sendMessage(Component.text("Wand controls (now: " + com.winkreyes.excelwandbars.core.ControlsText.buttonName(cur, false) + "). Click one:", NamedTextColor.GOLD));
++            p.sendMessage(Component.text("Wand controls (now: " + com.winkreyes.excelwandbars.core.ControlsText.shortName(cur, false) + "). Click one:", NamedTextColor.GOLD));
+             for (WandStyle s : com.winkreyes.excelwandbars.core.ControlsText.chooserOrder(false)) {
+                 p.sendMessage(Component.text(" [" + com.winkreyes.excelwandbars.core.ControlsText.buttonName(s, false) + "]" + (s == cur ? " (now)" : ""), NamedTextColor.AQUA)
+                         .hoverEvent(HoverEvent.showText(Component.text(String.join("\n", howTo(s)))))
+diff -ruN -x build src-0.2.6/src/com/winkreyes/excelwandbars/TapBarHook.java src/src/com/winkreyes/excelwandbars/TapBarHook.java
+--- src-0.2.6/src/com/winkreyes/excelwandbars/TapBarHook.java	2026-10-26 10:12:55.935782924 -0500
++++ src/src/com/winkreyes/excelwandbars/TapBarHook.java	2026-10-26 10:26:27.211381273 -0500
+@@ -105,6 +105,12 @@
+     private final Map<UUID, Integer> casts = new HashMap<>();
+     private long opened, closedIdle, closedEmpty, closedOther;
+     private BukkitTask ticker;
++    /** 0.2.7: tapping the wand itself (the slot already selected). toggle = items back when the bar is up, bar up when it is down. */
++    private String tapWand = "toggle";
++    private long tapWandGuardMs = 700;
++    private final Map<UUID, Long> lastServerChange = new HashMap<>();
++    private long wandTapCloses, wandTapOpens, wandTapGuarded, wandTapIgnored, wandTapSeen;
++    private String wandTapSource = "off";
+ 
+     TapBarHook(ExcelWandBars plugin, MagicAPI api) { this.plugin = plugin; this.api = api; }
+ 
+@@ -122,6 +128,51 @@
+         loreMagicStyle = ils.equals("magic") || ils.equals("magic-plus-rank");
+         holdReadsTapMs = Math.max(0, c == null ? 1500 : c.getLong("hold-reads-tap-ms", 1500));
+         tapBarStaysOpen = c == null || c.getBoolean("tap-bar-stays-open", true);
++        Object tw = c == null ? null : c.get("tap-wand");
++        String tws = tw == null ? "toggle" : String.valueOf(tw).trim().toLowerCase(java.util.Locale.ROOT);
++        tapWand = tws.equals("false") || tws.equals("off") || tws.equals("none") ? "off" : tws.equals("close") ? "close" : "toggle";
++        tapWandGuardMs = Math.max(0, c == null ? 700 : c.getLong("tap-wand-guard-ms", 700));
++    }
++
++    boolean tapWandWanted() { return !"off".equals(tapWand); }
++    void setTapWandSource(String s) { wandTapSource = s; }
++
++    /** 0.2.7: WandSlotHook moved the wand and selected it: count it as the player's pick (the Tap bar opener needs one). */
++    void notePick(Player p) { lastSlotPick.put(p.getUniqueId(), System.currentTimeMillis()); noteServerChange(p); }
++
++    /** 0.2.7: the server just changed this player's hotbar or selection; a re-sent slot right after is not a tap. */
++    void noteServerChange(Player p) { lastServerChange.put(p.getUniqueId(), System.currentTimeMillis()); }
++
++    /**
++     * 0.2.7 Tap bar: a Bedrock tap on the slot that is already selected, read from Geyser
++     * (Geyser does not forward it; Java sends nothing at all for it). Main thread.
++     */
++    String onWandTap(Player p, int slot) {
++        wandTapSeen++;
++        if (p == null || !p.isOnline()) return "offline";
++        if ("off".equals(tapWand)) { wandTapIgnored++; return "off"; }
++        Wand w = tapWand(p);
++        long now = System.currentTimeMillis();
++        Long last = lastServerChange.get(p.getUniqueId());
++        boolean wandHeld = w != null && p.getInventory().getHeldItemSlot() == slot;
++        if (!wandHeld) { wandTapIgnored++; return "not the wand"; }
++        if (!com.winkreyes.excelwandbars.core.WandSlotPlan.isWandTap(true, true, slot, p.getInventory().getHeldItemSlot(), now, last == null ? 0L : last, tapWandGuardMs)) {
++            wandTapGuarded++; return "guard";
++        }
++        noteServerChange(p);
++        lastUse.put(p.getUniqueId(), now);
++        if (w.isInventoryOpen()) {
++            w.closeInventory();
++            wandTapCloses++;
++            lastHold.put(p.getUniqueId(), "wand tap close");
++            return "closed";
++        }
++        if (!"toggle".equals(tapWand)) { wandTapIgnored++; return "bar down"; }
++        String r = tryOpen(p, "wand tap");
++        wandTapOpens++;
++        lastHold.put(p.getUniqueId(), "wand tap open " + r);
++        if ("opened".equals(r)) sendPageLine(p, 3L);
++        return "open " + r;
+     }
+ 
+     void start() {
+@@ -142,7 +193,8 @@
+                 + ", idle close " + (idleCloseMs == 0 ? "OFF" : (idleCloseMs / 1000) + "s" + (tapBarStaysOpen ? " (original only, Tap bar stays up)" : ""))
+                 + ", close before other inventory " + (closeOnOtherInventory ? "ON" : "OFF")
+                 + ", Tap bar hold shows spell info " + (holdShowsInfo ? "ON (never casts; hold after a tap reads that spell within " + holdReadsTapMs + " ms)" : "OFF") + ", icon lore " + (!iconLore ? "OFF" : loreMagicStyle ? "Magic's text + next rank" : "Spell Book text")
+-                + ", Tap to pick: tap picks (quick_cast manual), right click handled (Java open / items back, Bedrock hold casts once)";
++                + ", Tap to pick: tap picks (quick_cast manual), right click handled (Java open / items back, Bedrock hold casts once)"
++                + ", Tap bar tap the wand: " + tapWand + " (guard " + tapWandGuardMs + " ms, source " + wandTapSource + ")";
+     }
+     String counters() { return "opened " + opened + " idle-closed " + closedIdle + " empty-closed " + closedEmpty + " other-closed " + closedOther
+             + " hold-info " + holdsInfo + " hold-open " + holdsOpen + " hold-merged " + holdsMerged + " hold-skipped " + holdsSkipped + " lore " + loreSet
+@@ -150,7 +202,8 @@
+             + " hold-casts-blocked " + holdCastsBlocked + " page-lines " + pageLines
+             + " right-reads " + rightReads + " right-opens " + rightOpens + " right-closes " + rightCloses + " right-repeats " + rightRepeats
+             + " pick-right-opens " + origRightOpens + " pick-right-closes " + origRightCloses + " pick-hold-casts " + origHoldCasts
+-            + " pick-hold-swing-cast " + origHoldSwingCast + " pick-right-repeats " + origRightRepeats; }
++            + " pick-hold-swing-cast " + origHoldSwingCast + " pick-right-repeats " + origRightRepeats
++            + " wand-tap seen " + wandTapSeen + " closes " + wandTapCloses + " opens " + wandTapOpens + " guarded " + wandTapGuarded + " ignored " + wandTapIgnored; }
+     String lastHold(Player p) { return lastHold.getOrDefault(p.getUniqueId(), "-"); }
+     String lastCast(Player p) { return lastCast.getOrDefault(p.getUniqueId(), "-") + " x" + casts.getOrDefault(p.getUniqueId(), 0); }
+ 
+@@ -188,6 +241,7 @@
+         if (top != InventoryType.CRAFTING && top != InventoryType.PLAYER) return "other inventory open (" + top + ")";
+         w.openInventory();
+         opened++;
++        noteServerChange(p);
+         scheduleLore(p, 2L);
+         lastUse.put(p.getUniqueId(), System.currentTimeMillis());
+         if (plugin.debug()) plugin.getLogger().info("Tap bar opened for " + p.getName() + " (" + why + ")");
+@@ -221,6 +275,7 @@
+     public void onHeld(PlayerItemHeldEvent event) {
+         Player p = event.getPlayer();
+         if (!uses(p)) return;
++        noteServerChange(p);
+         Wand w = openWand(p);
+         if (w == null) {
+             if (event.isCancelled()) { heldCancelledIgnored++; return; }
+@@ -260,6 +315,7 @@
+         if (p == null) return;
+         UUID id = p.getUniqueId();
+         lastCastStart.put(id, System.currentTimeMillis());
++        noteServerChange(p);
+         lastCast.put(id, event.getSpell() == null ? "?" : event.getSpell().getKey() + " STARTED");
+         casts.merge(id, 1, Integer::sum);
+         if (openWand(p) != null) {
+@@ -409,7 +465,7 @@
+                 lastUse.put(id, System.currentTimeMillis());
+                 return;
+             }
+-            if (wasOpen && now2.isInventoryOpen()) { now2.closeInventory(); dropCloses++; lastHold.put(id, "drop close"); return; }
++            if (wasOpen && now2.isInventoryOpen()) { now2.closeInventory(); noteServerChange(p); dropCloses++; lastHold.put(id, "drop close"); return; }
+             if (!now2.isInventoryOpen()) { String r = tryOpen(p, "drop"); holdsOpen++; lastHold.put(id, "drop open " + r); }
+         });
+     }
+@@ -460,7 +516,7 @@
+             if (!p.isOnline()) return;
+             Wand n = tapWand(p);
+             if (n == null) return;
+-            if (n.isInventoryOpen()) { n.closeInventory(); rightCloses++; lastHold.put(id, "right close"); }
++            if (n.isInventoryOpen()) { n.closeInventory(); noteServerChange(p); rightCloses++; lastHold.put(id, "right close"); }
+             else { String r = tryOpen(p, "right click"); rightOpens++; lastHold.put(id, "right open " + r); if ("opened".equals(r)) sendPageLine(p, 3L); }
+         });
+     }
+@@ -626,6 +682,7 @@
+             n++;
+         }
+         loreSet += n;
++        if (n > 0) noteServerChange(p);
+         return n;
+     }
+ 
+@@ -640,10 +697,16 @@
+         closedOther++;
+     }
+ 
++    /** 0.2.7: a crouch can flip the page (the hotbar icons change): not a wand tap right after. */
++    @EventHandler(priority = EventPriority.MONITOR)
++    public void onSneakStamp(org.bukkit.event.player.PlayerToggleSneakEvent event) {
++        if (event.isSneaking() && uses(event.getPlayer())) noteServerChange(event.getPlayer());
++    }
++
+     @EventHandler
+     public void onQuit(PlayerQuitEvent event) {
+         UUID id = event.getPlayer().getUniqueId();
+-        lastHoldSignal.remove(id); lastRight.remove(id); lastUse.remove(id); lastSwing.remove(id); lastTapKey.remove(id); lastTapAt.remove(id); lastHold.remove(id); lastUseClick.remove(id); lastSlotPick.remove(id); lastCastStart.remove(id);
++        lastHoldSignal.remove(id); lastRight.remove(id); lastUse.remove(id); lastSwing.remove(id); lastTapKey.remove(id); lastTapAt.remove(id); lastHold.remove(id); lastUseClick.remove(id); lastSlotPick.remove(id); lastCastStart.remove(id); lastServerChange.remove(id);
+     }
+ 
+     private void tick() {
+diff -ruN -x build src-0.2.6/src/com/winkreyes/excelwandbars/WandSlotHook.java src/src/com/winkreyes/excelwandbars/WandSlotHook.java
+--- src-0.2.6/src/com/winkreyes/excelwandbars/WandSlotHook.java	1969-12-31 18:00:00.000000000 -0600
++++ src/src/com/winkreyes/excelwandbars/WandSlotHook.java	2026-10-26 10:25:43.703188297 -0500
+@@ -0,0 +1,266 @@
++package com.winkreyes.excelwandbars;
++
++import com.elmakers.mine.bukkit.api.magic.Mage;
++import com.elmakers.mine.bukkit.api.magic.MagicAPI;
++import com.elmakers.mine.bukkit.api.wand.Wand;
++import com.winkreyes.excelwandbars.core.WandSlotPlan;
++import com.winkreyes.excelwandbars.core.WandStyle;
++import org.bukkit.Bukkit;
++import org.bukkit.GameMode;
++import org.bukkit.configuration.ConfigurationSection;
++import org.bukkit.entity.Player;
++import org.bukkit.event.EventHandler;
++import org.bukkit.event.EventPriority;
++import org.bukkit.event.Listener;
++import org.bukkit.event.inventory.InventoryClickEvent;
++import org.bukkit.event.inventory.InventoryDragEvent;
++import org.bukkit.event.inventory.InventoryType;
++import org.bukkit.event.player.PlayerItemHeldEvent;
++import org.bukkit.event.player.PlayerJoinEvent;
++import org.bukkit.event.player.PlayerQuitEvent;
++import org.bukkit.event.player.PlayerRespawnEvent;
++import org.bukkit.inventory.ItemStack;
++import org.bukkit.inventory.PlayerInventory;
++import org.bukkit.scheduler.BukkitTask;
++
++import java.util.EnumSet;
++import java.util.HashMap;
++import java.util.Locale;
++import java.util.Map;
++import java.util.Set;
++import java.util.UUID;
++
++/**
++ * 0.2.7: the rank wand lives in the last hotbar slot (slot 9) for the hotbar-icon styles
++ * (Tap bar and Tap to pick (original) by default).
++ *
++ * How a move works: ONE swap of two hotbar slots in the same tick. The wand goes to slot 9 and
++ * whatever was in slot 9 (an item, a whole stack, or nothing) goes to the slot the wand came
++ * from. Nothing is created, dropped or deleted. Never while Magic's spell bar is up (Magic holds
++ * the real hotbar then and puts it back on close), never with a chest or other screen open,
++ * never with an item on the cursor, never within a few seconds of an inventory click, never when
++ * dead, in spectator or creative, and never in a skip world.
++ *
++ * Two triggers:
++ *  - the player picks the wand in another slot (bar down): the pick is cancelled, the two slots
++ *    swap and slot 9 is selected the next tick, so they hold the wand and the Tap bar opens as before;
++ *  - a sweep every second (and a few seconds after join or respawn) for a wand sitting elsewhere.
++ * If the player is HOLDING the wand in another slot, Magic's wand is put away first (its state is
++ * saved onto the item), then the slots swap, slot 9 is selected and Magic picks the wand up again.
++ * If they hold the item in slot 9 (not the wand) the sweep waits, so their hand never changes.
++ * ExcelAttunement's stance lock runs first (LOW) and a refused pick is left alone (ignoreCancelled).
++ */
++final class WandSlotHook implements Listener {
++    private final ExcelWandBars plugin;
++    private final MagicAPI api;
++    private boolean enabled = true;
++    private int target = 8;
++    private final Set<WandStyle> styles = EnumSet.of(WandStyle.TAPBAR, WandStyle.ORIGINAL);
++    private long clickQuietMs = 3000;
++    private long sweepTicks = 20;
++    private final Map<UUID, Long> lastClick = new HashMap<>();
++    private long movedPick, movedSweep, movedHeld, pickAborted, sweepSkippedHolding;
++    private BukkitTask ticker;
++
++    WandSlotHook(ExcelWandBars plugin, MagicAPI api) { this.plugin = plugin; this.api = api; }
++
++    void loadSettings(ConfigurationSection c) {
++        enabled = c == null || c.getBoolean("enabled", true);
++        target = WandSlotPlan.targetIndex(c == null ? 9 : c.getInt("slot", 9));
++        clickQuietMs = Math.max(0, c == null ? 3000 : c.getLong("quiet-after-click-ms", 3000));
++        sweepTicks = Math.max(5, c == null ? 20 : c.getLong("sweep-ticks", 20));
++        styles.clear();
++        java.util.List<String> list = c == null || !c.isList("styles") ? java.util.List.of("tapbar", "original") : c.getStringList("styles");
++        for (String s : list) {
++            WandStyle w = WandStyle.parse(s == null ? "" : s.toLowerCase(Locale.ROOT));
++            if (w != null) styles.add(w);
++        }
++    }
++
++    void start() {
++        if (ticker != null) ticker.cancel();
++        ticker = Bukkit.getScheduler().runTaskTimer(plugin, this::sweepAll, 40L, sweepTicks);
++    }
++
++    void stop() { if (ticker != null) { ticker.cancel(); ticker = null; } }
++
++    String summary() {
++        StringBuilder sb = new StringBuilder();
++        for (WandStyle s : styles) { if (sb.length() > 0) sb.append(", "); sb.append(s.key()); }
++        return (enabled ? "ON" : "OFF") + " (slot " + (target + 1) + ", styles " + sb + ", quiet after click " + clickQuietMs + " ms, sweep every " + sweepTicks + " ticks)";
++    }
++
++    String counters() {
++        return "wand-slot pick " + movedPick + " sweep " + movedSweep + " held " + movedHeld + " pick-aborted " + pickAborted + " waits-holding-slot " + sweepSkippedHolding;
++    }
++
++    int targetIndex() { return target; }
++
++    boolean applies(Player p) {
++        if (!enabled || p == null || !p.isOnline()) return false;
++        StyleHook s = plugin.styleHook();
++        return s != null && s.enabled() && styles.contains(s.styleOf(p));
++    }
++
++    /** A rank wand this player may use. Magic's getWand(item) may write to the item, so it only ever gets a clone. */
++    boolean isRankWandItem(Player p, ItemStack it) {
++        if (it == null || it.getType().isAir()) return false;
++        try {
++            if (!api.isWand(it)) return false;
++            Wand w = api.getWand(it.clone());
++            StyleHook s = plugin.styleHook();
++            return w != null && s != null && s.isRankWand(w) && w.canUse(p);
++        } catch (Throwable t) {
++            return false;
++        }
++    }
++
++    private int rankWandSlot(Player p) {
++        PlayerInventory inv = p.getInventory();
++        for (int i = 0; i < 9; i++) if (isRankWandItem(p, inv.getItem(i))) return i;
++        return -1;
++    }
++
++    private Wand activeWand(Player p) {
++        Mage m = api.getMage(p);
++        return m == null ? null : m.getActiveWand();
++    }
++
++    private WandSlotPlan.State state(Player p) {
++        WandSlotPlan.State s = new WandSlotPlan.State();
++        Wand w = activeWand(p);
++        s.barOpen = w != null && w.isInventoryOpen();
++        InventoryType top = p.getOpenInventory().getTopInventory().getType();
++        s.otherScreenOpen = top != InventoryType.CRAFTING && top != InventoryType.PLAYER;
++        ItemStack cur = p.getItemOnCursor();
++        s.cursorHasItem = cur != null && !cur.getType().isAir();
++        s.deadOrSpectator = p.isDead() || p.getGameMode() == GameMode.SPECTATOR || p.getGameMode() == GameMode.CREATIVE;
++        s.skipWorld = plugin.skipWorld(p.getWorld());
++        Long c = lastClick.get(p.getUniqueId());
++        s.recentInventoryClick = c != null && System.currentTimeMillis() - c < clickQuietMs;
++        s.heldSlot = p.getInventory().getHeldItemSlot();
++        s.targetIsRankWand = isRankWandItem(p, p.getInventory().getItem(target));
++        return s;
++    }
++
++    /** The swap itself: wand to the target, the target's item (or nothing) to the wand's old slot. */
++    private void swap(Player p, int from) {
++        PlayerInventory inv = p.getInventory();
++        ItemStack wand = inv.getItem(from);
++        ItemStack other = inv.getItem(target);
++        inv.setItem(from, other == null ? null : other.clone());
++        inv.setItem(target, wand == null ? null : wand.clone());
++        TapBarHook tb = plugin.tapBar();
++        if (tb != null) tb.noteServerChange(p);
++    }
++
++    /** /wandbars wandslot and the sweep: one check and, if it is safe, one move. Main thread. */
++    String check(Player p, String why) {
++        if (!applies(p)) return "style";
++        WandSlotPlan.State s = state(p);
++        s.wandSlot = rankWandSlot(p);
++        String r = WandSlotPlan.why(s, target);
++        if ("holding the target slot".equals(r)) sweepSkippedHolding++;
++        if (!"move".equals(r)) return r;
++        int from = s.wandSlot;
++        boolean held = s.heldSlot == from;
++        if (held) {
++            Wand w = activeWand(p);
++            if (w != null) {
++                if (w.isInventoryOpen()) return "bar open";
++                w.deactivate(); // Magic saves the wand's state onto the item in hand, synchronously
++            }
++            if (!isRankWandItem(p, p.getInventory().getItem(from))) return "wand changed";
++            swap(p, from);
++            p.getInventory().setHeldItemSlot(target);
++            Mage m = api.getMage(p);
++            if (m != null) m.checkWand();
++            movedHeld++;
++        } else {
++            swap(p, from);
++            movedSweep++;
++        }
++        if (plugin.debug()) plugin.getLogger().info("Wand slot: moved " + p.getName() + "'s wand " + (from + 1) + " -> " + (target + 1) + " (" + why + (held ? ", held" : "") + ")");
++        return "moved " + (from + 1) + "->" + (target + 1) + (held ? " (held)" : "");
++    }
++
++    private void sweepAll() {
++        if (!enabled) return;
++        for (Player p : Bukkit.getOnlinePlayers()) {
++            try { if (applies(p)) check(p, "sweep"); } catch (Throwable t) {
++                if (plugin.debug()) plugin.getLogger().warning("Wand slot sweep for " + p.getName() + ": " + t);
++            }
++        }
++    }
++
++    /**
++     * Picking the wand in another slot with the bar down. HIGH and ignoreCancelled: after
++     * ExcelAttunement (LOW, stance lock) and Magic (NORMAL), and a refused pick is never touched.
++     * Picking any other slot is never cancelled here.
++     */
++    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
++    public void onHeld(PlayerItemHeldEvent event) {
++        Player p = event.getPlayer();
++        if (!applies(p)) return;
++        int ns = event.getNewSlot();
++        if (ns == target) return;
++        ItemStack picked = p.getInventory().getItem(ns);
++        if (!isRankWandItem(p, picked)) return;
++        WandSlotPlan.State s = state(p);
++        s.wandSlot = ns;
++        if (WandSlotPlan.onPick(s, ns, target) != WandSlotPlan.Action.SWAP) return;
++        // The previous item must not be an active wand that is still up (two wands): leave that to Magic.
++        Wand w = activeWand(p);
++        if (w != null) return;
++        event.setCancelled(true);
++        final int prev = event.getPreviousSlot();
++        final ItemStack snapshot = picked.clone();
++        Bukkit.getScheduler().runTask(plugin, () -> {
++            if (!p.isOnline()) return;
++            PlayerInventory inv = p.getInventory();
++            WandSlotPlan.State now = state(p);
++            now.wandSlot = ns;
++            boolean same = inv.getHeldItemSlot() == prev && snapshot.isSimilar(inv.getItem(ns));
++            if (!same || WandSlotPlan.onPick(now, ns, target) != WandSlotPlan.Action.SWAP || activeWand(p) != null) {
++                pickAborted++;
++                // Nothing moved: give them the slot they picked, as if this plugin was not here.
++                if (inv.getHeldItemSlot() == prev && activeWand(p) == null) {
++                    inv.setHeldItemSlot(ns);
++                    TapBarHook tb = plugin.tapBar();
++                    if (tb != null) tb.notePick(p);
++                    Mage m = api.getMage(p);
++                    if (m != null) m.checkWand();
++                }
++                return;
++            }
++            swap(p, ns);
++            inv.setHeldItemSlot(target);
++            TapBarHook tb = plugin.tapBar();
++            if (tb != null) tb.notePick(p); // the Tap bar opener wants "the player picked the wand"
++            Mage m = api.getMage(p);
++            if (m != null) m.checkWand();
++            movedPick++;
++            if (plugin.debug()) plugin.getLogger().info("Wand slot: " + p.getName() + " picked the wand in slot " + (ns + 1) + ", moved to " + (target + 1));
++        });
++    }
++
++    @EventHandler(priority = EventPriority.MONITOR)
++    public void onClick(InventoryClickEvent event) {
++        if (event.getWhoClicked() instanceof Player p) lastClick.put(p.getUniqueId(), System.currentTimeMillis());
++    }
++
++    @EventHandler(priority = EventPriority.MONITOR)
++    public void onDrag(InventoryDragEvent event) {
++        if (event.getWhoClicked() instanceof Player p) lastClick.put(p.getUniqueId(), System.currentTimeMillis());
++    }
++
++    /** Join and respawn: wait the quiet time first (Magic and other plugins settle the inventory). */
++    @EventHandler(priority = EventPriority.MONITOR)
++    public void onJoin(PlayerJoinEvent event) { lastClick.put(event.getPlayer().getUniqueId(), System.currentTimeMillis()); }
++
++    @EventHandler(priority = EventPriority.MONITOR)
++    public void onRespawn(PlayerRespawnEvent event) { lastClick.put(event.getPlayer().getUniqueId(), System.currentTimeMillis()); }
++
++    @EventHandler
++    public void onQuit(PlayerQuitEvent event) { lastClick.remove(event.getPlayer().getUniqueId()); }
++}
+diff -ruN -x build src-0.2.6/src/com/winkreyes/excelwandbars/core/ControlsText.java src/src/com/winkreyes/excelwandbars/core/ControlsText.java
+--- src-0.2.6/src/com/winkreyes/excelwandbars/core/ControlsText.java	2026-10-26 10:12:55.935782924 -0500
++++ src/src/com/winkreyes/excelwandbars/core/ControlsText.java	2026-10-26 10:27:35.015682011 -0500
+@@ -14,25 +14,25 @@
+     public static List<String> howTo(WandStyle s, boolean bedrock) {
+         // 0.2.4: the two hotbar-icon styles, worded the same way everywhere.
+         if (s == WandStyle.TAPBAR) return bedrock ? List.of(
+-                "Tap your wand in the hotbar and all your spells fill the bar.",
++                "Your wand sits in the last hotbar slot. Tap it and all your spells fill the bar.",
+                 "Tap a spell icon to cast it right away. Each spell keeps its own icon and slot.",
+                 "More spells than fit? Crouch flips to the next page (Page 1/2 shows on screen).",
+                 "Press and hold the screen (not an icon) to read your spells: what each does, mana, cooldown and rank. It never casts.",
+-                "Tap the empty slot at the end of the bar to get your items back.")
++                "Tap the wand again, or the empty slot next to it, to get your items back.")
+                 : List.of(
+-                "Hold your wand and all your spells fill the hotbar.",
+-                "Press a hotbar key (1-9) or scroll to cast that spell right away.",
++                "Your wand sits in the last hotbar slot (9). Hold it and all your spells fill the hotbar.",
++                "Press a hotbar key (1-8) or scroll to cast that spell right away.",
+                 "More spells than fit? Sneak flips to the next page (Page 1/2 shows on screen).",
+                 "Left click reads your spells: what each does, mana, cooldown and rank. It never casts. Hover an icon for the same.",
+-                "Q, right click or the empty slot at the end of the bar puts your items back. Right click again brings the bar back.");
++                "Q, right click or the empty slot next to the wand puts your items back. Right click again brings the bar back.");
+         if (s == WandStyle.ORIGINAL) return bedrock ? List.of(
+-                "Tap your wand in the hotbar and all your spells fill the bar.",
++                "Your wand sits in the last hotbar slot. Tap it and all your spells fill the bar.",
+                 "Tap a spell icon to pick it, then press and hold the screen (controller: RT) to cast.",
+                 "More spells than fit? Crouch flips to the next page.",
+                 "Press and hold your wand, or tap the empty slot at the end of the bar, to get your items back.")
+                 : List.of(
+-                "Hold your wand and all your spells fill the hotbar.",
+-                "Press a hotbar key (1-9) or scroll to pick a spell. Left click casts it.",
++                "Your wand sits in the last hotbar slot (9). Hold it and all your spells fill the hotbar.",
++                "Press a hotbar key (1-8) or scroll to pick a spell. Left click casts it.",
+                 "More spells than fit? Sneak flips to the next page.",
+                 "Q or right click puts your items back. Right click again brings the bar back.");
+         if (bedrock) {
+@@ -94,10 +94,17 @@
+     /** 0.2.4: the name shown on a chooser button. */
+     public static String buttonName(WandStyle s, boolean bedrock) {
+         if (s == WandStyle.CYCLE) return "Cycle (next spell)";
+-        if (s == WandStyle.TAPBAR) return bedrock ? "Tap bar (best on phone)" : "Tap bar";
++        // 0.2.7: the title line also says how to get your items back (line 2 is full at about 40 characters).
++        if (s == WandStyle.TAPBAR) return bedrock ? "Tap bar (tap wand: items back)" : "Tap bar (Q: items back)";
+         return s.label();
+     }
+ 
++    /** 0.2.7: the short style name for running text (the form's top line). */
++    public static String shortName(WandStyle s, boolean bedrock) {
++        if (s == WandStyle.TAPBAR) return bedrock ? "Tap bar (best on phone)" : "Tap bar";
++        return buttonName(s, bedrock);
++    }
++
+     /** 0.2.4: one plain line per style, short enough for one line on a phone form button. */
+     public static String oneLine(WandStyle s, boolean bedrock) {
+         if (bedrock) {
+@@ -125,7 +132,7 @@
+ 
+     /** 0.2.4: the form's top text is ONE short line so nothing is cut off on an iPad or phone. */
+     public static String chooserContent(WandStyle current, boolean bedrock, boolean barsAllowed) {
+-        return "Now: " + buttonName(current, bedrock) + ". Pick one. Switch any time.";
++        return "Now: " + shortName(current, bedrock) + ". Pick one. Switch any time.";
+     }
+ 
+     /** Chat chooser heading when no form can be sent. */
+diff -ruN -x build src-0.2.6/src/com/winkreyes/excelwandbars/core/SpellEffects.java src/src/com/winkreyes/excelwandbars/core/SpellEffects.java
+--- src-0.2.6/src/com/winkreyes/excelwandbars/core/SpellEffects.java	1969-12-31 18:00:00.000000000 -0600
++++ src/src/com/winkreyes/excelwandbars/core/SpellEffects.java	2026-10-26 11:07:32.874317588 -0500
+@@ -0,0 +1,553 @@
++package com.winkreyes.excelwandbars.core;
++
++import java.util.ArrayList;
++import java.util.LinkedHashMap;
++import java.util.List;
++import java.util.Locale;
++import java.util.Map;
++import java.util.function.IntFunction;
++import java.util.function.Predicate;
++
++/**
++ * Spell info 2026-10-26: what a spell really does, in plain words, worked out
++ * from the spell's own Magic config (the merged spells.yml block for one rank:
++ * "parameters", "actions", "triggers"). Nothing is typed in by hand, so the
++ * numbers follow spells.yml at every seal stage and never go stale.
++ *
++ * Magic 11.2.5 rules used here (read from its source):
++ *  - action parameters: the spell's parameters, overridden by keys on the action
++ *    itself, inherited by the actions inside it.
++ *  - Heal "amount" is health points (2 = 1 heart). Repeat "repeat" (default 2)
++ *    runs its actions that many times; a Delay inside waits "delay" ms first.
++ *  - effect_X: N gives potion level N+1 for "duration" ms.
++ *  - Feed "feed" is food points (2 = 1 drumstick).
++ *  - target any_entity with nothing aimed at targets the caster (Targeting.java).
++ *  - cancel_on_damage: a hit of MORE than that many health points cancels.
++ * Pure Java (maps and lists only), unit-tested against the live spells.yml.
++ * No em dashes. Lines are kept short for Bedrock forms and item lore.
++ */
++public final class SpellEffects {
++    private SpellEffects() {}
++
++    // ------------------------------------------------------------------ number words
++
++    /** Health points as hearts: 1.5 -> "0.75 heart", 2 -> "1 heart", 10 -> "5 hearts". */
++    public static String hearts(double hp) {
++        double h = hp / 2.0;
++        String n = num(h);
++        return n + (Math.abs(h - 1.0) < 1e-9 || h < 1.0 ? " heart" : " hearts");
++    }
++
++    /** Food points as drumsticks: 6 -> "3 drumsticks". */
++    public static String drumsticks(double points) {
++        double d = points / 2.0;
++        String n = num(d);
++        return n + (Math.abs(d - 1.0) < 1e-9 || d < 1.0 ? " drumstick" : " drumsticks");
++    }
++
++    /** Up to 2 decimals, trailing zeros trimmed. */
++    public static String num(double d) {
++        if (Math.abs(d - Math.rint(d)) < 1e-9) return Long.toString((long) Math.rint(d));
++        String s = String.format(Locale.ROOT, "%.2f", d);
++        while (s.endsWith("0")) s = s.substring(0, s.length() - 1);
++        return s.endsWith(".") ? s.substring(0, s.length() - 1) : s;
++    }
++
++    static String roman(int level) {
++        String[] r = {"", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
++        return level >= 1 && level < r.length ? r[level] : Integer.toString(level);
++    }
++
++    // ------------------------------------------------------------------ Magic config helpers
++
++    /**
++     * Magic's ConfigurationUtils.addConfigurations(child, parent, false), the way
++     * spell levels and "inherit" are built: keys in child win, nested maps merge,
++     * lists and plain values from child replace the parent's.
++     */
++    @SuppressWarnings("unchecked")
++    public static Map<String, Object> merge(Map<String, ?> child, Map<String, ?> parent) {
++        Map<String, Object> out = new LinkedHashMap<>();
++        if (parent != null) out.putAll(parent);
++        if (child == null) return out;
++        for (Map.Entry<String, ?> e : child.entrySet()) {
++            Object c = e.getValue(), p = out.get(e.getKey());
++            if (c instanceof Map && p instanceof Map) out.put(e.getKey(), merge((Map<String, ?>) c, (Map<String, ?>) p));
++            else out.put(e.getKey(), c);
++        }
++        return out;
++    }
++
++    /**
++     * Magic Wand.levelSpells with level_spells_to_path (Wand.java, 11.2.5): the spell
++     * rank a wand of a given rank gets. requiredPath(level) is the upgrade_required_path
++     * of that rank's template (null if none); holds(path) is the wand rank's hasPath.
++     */
++    public static int levelAt(int maxLevel, IntFunction<String> requiredPath, Predicate<String> holds) {
++        int target = maxLevel;
++        String need = requiredPath.apply(target);
++        while (target > 1 && need != null && !holds.test(need)) {
++            target--;
++            need = requiredPath.apply(target);
++        }
++        return Math.min(target + 1, maxLevel);
++    }
++
++    // ------------------------------------------------------------------ walk the actions
++
++    private static final class Report {
++        String who;                       // first line
++        long castMs;                      // Delay before the main effect (top level, not in a Repeat)
++        final List<String> castSelf = new ArrayList<>();    // potions on the caster during the cast
++        double healNow;                   // instant heal (HP) per target
++        double hotAmount; int hotTimes; long hotEvery;      // heal over time
++        final List<String> gives = new ArrayList<>();
++        final List<String> cures = new ArrayList<>();
++        double feed; double saturation; int feedTimes = 1; long feedEvery;
++        long focusMs;                     // wrv_focus on the caster
++        String lockoutMod; long lockoutMs;
++        boolean whileOn;                  // infinite repeat (toggle)
++        String bolt;                      // damage chain description lines
++        final List<String> extra = new ArrayList<>();
++        final List<String> unknown = new ArrayList<>();
++    }
++
++    private static final java.util.Set<String> QUIET = java.util.Set.of(
++            "message", "playeffects", "removeentity", "spawnentity", "asynchronous", "serial", "parallel");
++
++    @SuppressWarnings("unchecked")
++    private static Map<String, Object> local(Map<String, Object> inherited, Map<String, ?> action) {
++        Map<String, Object> p = new LinkedHashMap<>(inherited);
++        for (Map.Entry<String, ?> e : action.entrySet()) {
++            String k = e.getKey();
++            if (k.equals("class") || k.equals("actions") || k.equals("fail")) continue;
++            p.put(k, e.getValue());
++        }
++        return p;
++    }
++
++    @SuppressWarnings("unchecked")
++    private static List<Map<String, Object>> list(Object o) {
++        List<Map<String, Object>> out = new ArrayList<>();
++        if (o instanceof List<?> l) for (Object x : l) if (x instanceof Map) out.add((Map<String, Object>) x);
++        return out;
++    }
++
++    private static String cls(Map<String, ?> a) {
++        Object c = a.get("class");
++        String s = c == null ? "" : c.toString();
++        if (s.endsWith("Action")) s = s.substring(0, s.length() - 6);
++        return s.toLowerCase(Locale.ROOT);
++    }
++
++    static double d(Map<String, ?> p, String k, double def) {
++        Object o = p.get(k);
++        if (o instanceof Number n) return n.doubleValue();
++        if (o != null) try { return Double.parseDouble(o.toString().trim()); } catch (NumberFormatException ignored) {}
++        return def;
++    }
++
++    static boolean b(Map<String, ?> p, String k, boolean def) {
++        Object o = p.get(k);
++        if (o instanceof Boolean x) return x;
++        if (o != null) return o.toString().trim().equalsIgnoreCase("true");
++        return def;
++    }
++
++    static String s(Map<String, ?> p, String k) {
++        Object o = p.get(k);
++        return o == null ? null : o.toString();
++    }
++
++    private static List<String> strings(Object o) {
++        List<String> out = new ArrayList<>();
++        if (o instanceof List<?> l) { for (Object x : l) { if (x != null) out.add(x.toString()); } }
++        else if (o != null) out.add(o.toString());
++        return out;
++    }
++
++    private static boolean contains(List<Map<String, Object>> actions, String cls) {
++        for (Map<String, Object> a : actions) {
++            if (cls(a).equals(cls)) return true;
++            if (contains(list(a.get("actions")), cls)) return true;
++        }
++        return false;
++    }
++
++    // ------------------------------------------------------------------ potion words
++
++    private static final Map<String, String> EFFECT = new LinkedHashMap<>();
++    static {
++        EFFECT.put("speed", "Speed"); EFFECT.put("jump", "Jump Boost"); EFFECT.put("slow", "Slowness");
++        EFFECT.put("damage_resistance", "Resistance"); EFFECT.put("fire_resistance", "Fire Resistance");
++        EFFECT.put("absorption", "Absorption"); EFFECT.put("heal", "Instant Health");
++        EFFECT.put("regeneration", "Regeneration"); EFFECT.put("night_vision", "Night Vision");
++        EFFECT.put("water_breathing", "Water Breathing"); EFFECT.put("confusion", "Nausea");
++        EFFECT.put("poison", "Poison"); EFFECT.put("slow_digging", "Mining Fatigue");
++        EFFECT.put("weakness", "Weakness"); EFFECT.put("wither", "Wither"); EFFECT.put("blindness", "Blindness");
++        EFFECT.put("hunger", "Hunger"); EFFECT.put("increase_damage", "Strength"); EFFECT.put("fast_digging", "Haste");
++        EFFECT.put("invisibility", "Invisibility"); EFFECT.put("levitation", "Levitation"); EFFECT.put("slow_falling", "Slow Falling");
++    }
++    /** Effects whose level changes nothing a player can see: shown without a number. */
++    private static final java.util.Set<String> NO_LEVEL = java.util.Set.of("night_vision", "water_breathing", "fire_resistance", "invisibility");
++
++    public static String effectName(String key) {
++        String k = key.toLowerCase(Locale.ROOT);
++        String n = EFFECT.get(k);
++        if (n != null) return n;
++        StringBuilder sb = new StringBuilder();
++        for (String w : k.split("_")) if (!w.isEmpty()) sb.append(sb.length() > 0 ? " " : "").append(Character.toUpperCase(w.charAt(0))).append(w.substring(1));
++        return sb.toString();
++    }
++
++    /** "effect_speed: 1" style keys in p, as (key, amplifier). Magic reads "a,b" as ticks,power. */
++    private static Map<String, Integer> potions(Map<String, Object> p) {
++        Map<String, Integer> out = new LinkedHashMap<>();
++        for (Map.Entry<String, Object> e : p.entrySet()) {
++            if (!e.getKey().startsWith("effect_") || e.getKey().equals("effect_only")) continue;
++            String v = String.valueOf(e.getValue());
++            try {
++                int amp = v.contains(",") ? (int) Float.parseFloat(v.split(",")[1].trim()) : (int) Float.parseFloat(v.trim());
++                out.put(e.getKey().substring(7), amp);
++            } catch (NumberFormatException ignored) {}
++        }
++        return out;
++    }
++
++    /** One potion as words. durationMs <= 0 means "while on". */
++    static String potionLine(String key, int amp, long durationMs, boolean whileOn) {
++        String name = effectName(key) + (NO_LEVEL.contains(key) ? "" : " " + roman(amp + 1));
++        String when = whileOn ? " while on" : (durationMs > 0 ? " for " + Durations.ms(durationMs) : "");
++        switch (key) {
++            case "heal": // vanilla: Instant Health heals 4 << amplifier health
++                return "Heals " + hearts(4 << Math.max(0, amp)) + " at once (" + name + ")";
++            case "absorption": // vanilla: 4 extra health per level
++                return name + when + " (" + hearts(4.0 * (amp + 1)).replace("heart", "extra heart") + ")";
++            case "regeneration": { // vanilla: 1 health every 50 >> amplifier ticks
++                if (whileOn || durationMs <= 0) return name + when;
++                long every = Math.max(1, 50 >> Math.max(0, amp));
++                long hp = (durationMs / 50) / every;
++                return name + when + (hp > 0 ? " (about " + hearts(hp) + ")" : "");
++            }
++            case "damage_resistance":
++                return name + when + " (" + Math.min(100, 20 * (amp + 1)) + "% less damage)";
++            case "speed":
++                return name + when + " (" + (20 * (amp + 1)) + "% faster)";
++            default:
++                return name + when;
++        }
++    }
++
++    // ------------------------------------------------------------------ main entry
++
++    /** Plain effect lines for one spell rank. cfg = the merged spell config for that rank. */
++    @SuppressWarnings("unchecked")
++    public static List<String> lines(Map<String, ?> cfg) {
++        List<String> out = new ArrayList<>();
++        if (cfg == null) return out;
++        Map<String, Object> params = cfg.get("parameters") instanceof Map ? new LinkedHashMap<>((Map<String, Object>) cfg.get("parameters")) : new LinkedHashMap<>();
++        Map<String, Object> acts = cfg.get("actions") instanceof Map ? (Map<String, Object>) cfg.get("actions") : Map.of();
++        List<Map<String, Object>> cast = list(acts.get("cast"));
++        Report r = new Report();
++        r.whileOn = "infinite".equalsIgnoreCase(String.valueOf(params.get("repeat"))) || "cancel".equalsIgnoreCase(String.valueOf(cfg.get("toggle")));
++        r.who = who(cfg, params, cast);
++        walk(cast, params, r, Scope.TARGET, false, 0, 0, 0);
++        render(cfg, params, cast, r, out);
++        List<Map<String, Object>> sneak = list(acts.get("alternate_sneak"));
++        for (Map<String, Object> a : sneak) {
++            if (cls(a).equals("recall") && "place".equalsIgnoreCase(s(a, "type"))) {
++                int markers = (int) d(params, "marker_count", 1);
++                out.add("Crouch and cast to place a marker");
++                out.add("You can keep " + markers + " marker" + (markers == 1 ? "" : "s"));
++            }
++        }
++        return out;
++    }
++
++    private enum Scope { TARGET, CASTER, AREA }
++
++    @SuppressWarnings("unchecked")
++    private static void walk(List<Map<String, Object>> actions, Map<String, Object> p, Report r, Scope scope,
++                             boolean inRepeat, int times, long every, int projectile) {
++        for (Map<String, Object> a : actions) {
++            String c = cls(a);
++            Map<String, Object> lp = local(p, a);
++            List<Map<String, Object>> kids = list(a.get("actions"));
++            switch (c) {
++                case "changecontext":
++                    walk(kids, lp, r, b(lp, "target_caster", false) ? Scope.CASTER : scope, inRepeat, times, every, projectile);
++                    break;
++                case "modifier": {
++                    String m = s(lp, "add_modifiers");
++                    long dur = (long) d(lp, "duration", 0);
++                    if (scope == Scope.CASTER && "wrv_focus".equalsIgnoreCase(m)) r.focusMs = dur;
++                    else if (m != null && m.equalsIgnoreCase(r.lockoutMod)) r.lockoutMs = dur;
++                    break;
++                }
++                case "checkmodifiers":
++                    r.lockoutMod = s(lp, "blocked");
++                    walk(kids, lp, r, scope, inRepeat, times, every, projectile);
++                    break;
++                case "repeat": {
++                    String rs = String.valueOf(lp.getOrDefault("repeat", "2"));
++                    boolean inf = rs.equalsIgnoreCase("infinite");
++                    int n = inf ? -1 : (int) d(lp, "repeat", 2);
++                    long dl = 0;
++                    for (Map<String, Object> k : kids) if (cls(k).equals("delay")) dl = (long) d(local(lp, k), "delay", d(local(lp, k), "warmup", 1));
++                    if (projectile > 0) break; // counted in bolt()
++                    walk(kids, lp, r, scope, true, n, dl, projectile);
++                    break;
++                }
++                case "delay":
++                    if (!inRepeat && projectile == 0 && scope == Scope.TARGET) r.castMs = (long) d(lp, "delay", d(lp, "warmup", 1));
++                    break;
++                case "heal": {
++                    double amt = d(lp, "amount", 20);
++                    if (d(lp, "percentage", 0) > 0) { r.extra.add("Heals " + num(d(lp, "percentage", 0) * 100) + "% of max health"); break; }
++                    if (inRepeat && times > 0) { r.hotAmount = amt; r.hotTimes = times; r.hotEvery = every; }
++                    else r.healNow += amt;
++                    break;
++                }
++                case "feed":
++                    r.feed = d(lp, "feed", 20); r.saturation = d(lp, "saturation", 20);
++                    if (inRepeat && times > 0) { r.feedTimes = times; r.feedEvery = every; }
++                    break;
++                case "potioneffect": {
++                    long dur = (long) d(lp, "duration", 0);
++                    Map<String, Integer> pot = potions(lp);
++                    if (scope == Scope.CASTER) {
++                        for (Map.Entry<String, Integer> e : pot.entrySet()) r.castSelf.add(effectName(e.getKey()) + (NO_LEVEL.contains(e.getKey()) ? "" : " " + roman(e.getValue() + 1)));
++                        break;
++                    }
++                    if (projectile > 0) break; // counted in bolt()
++                    boolean inf = inRepeat && times < 0;
++                    for (Map.Entry<String, Integer> e : pot.entrySet()) {
++                        String line = potionLine(e.getKey(), e.getValue(), dur, inf);
++                        if (!r.gives.contains(line)) r.gives.add(line);
++                    }
++                    for (String x : strings(lp.get("remove_effects"))) {
++                        String n = effectName(x);
++                        if (!r.cures.contains(n)) r.cures.add(n);
++                    }
++                    break;
++                }
++                case "areaofeffect":
++                    walk(kids, lp, r, Scope.AREA, inRepeat, times, every, projectile);
++                    break;
++                case "customprojectile":
++                    if (contains(kids, "damage")) { r.bolt = "x"; boltLines(kids, lp, r, 0); break; }
++                    walk(kids, lp, r, scope, inRepeat, times, every, projectile);
++                    break;
++                case "sphere": {
++                    double rad = d(lp, "radius", 1);
++                    String brush = String.valueOf(lp.get("brush"));
++                    if (brush.equalsIgnoreCase("erase") && String.valueOf(lp.get("destructible")).contains("fire")) {
++                        r.extra.add("Puts out fire blocks within " + num(rad) + " blocks");
++                    } else if (contains(kids, "modifyblock")) {
++                        long undo = (long) d(lp, "undo", 0);
++                        r.extra.add("Makes a " + blockName(brush) + " dome where it lands");
++                        r.extra.add("Dome size: " + num(rad) + " blocks from middle to edge");
++                        if (undo > 0) r.extra.add("The dome lasts " + Durations.ms(undo));
++                        double refl = d(lp, "reflect_chance", 0);
++                        if (refl > 0) r.extra.add("Spells that hit it bounce back " + num(refl * 100) + "% of the time");
++                    }
++                    break;
++                }
++                case "ignite":
++                    if (d(lp, "duration", 5000) <= 0) r.extra.add("Puts out burning players and mobs nearby");
++                    break;
++                case "airsupply":
++                    r.extra.add("max".equalsIgnoreCase(s(lp, "air")) ? "Fills your air bar all the way" : "Gives you air");
++                    break;
++                case "hat": {
++                    long undo = (long) d(lp, "undo", 0);
++                    r.extra.add("Puts a " + blockName(String.valueOf(lp.get("brush"))) + " helmet on you" + (undo > 0 ? " for " + Durations.ms(undo) : ""));
++                    List<String> en = new ArrayList<>();
++                    if (lp.get("enchantments") instanceof Map<?, ?> m) for (Map.Entry<?, ?> e : m.entrySet()) en.add(enchantName(String.valueOf(e.getKey()), (int) d(Map.of("v", e.getValue()), "v", 1)));
++                    if (!en.isEmpty()) r.extra.add("Helmet has " + String.join(" and ", en));
++                    break;
++                }
++                case "recall":
++                    recall(lp, r);
++                    break;
++                case "checkentity":
++                    if (String.valueOf(lp.get("allowed_entities")).contains("zombie_villager")) r.extra.add("Turns zombie villagers back into villagers");
++                    break;
++                default:
++                    if (!QUIET.contains(c)) { if (!r.unknown.contains(c)) r.unknown.add(c); }
++                    walk(kids, lp, r, scope, inRepeat, times, every, projectile);
++            }
++        }
++    }
++
++    /** Damage carried by a bolt (CustomProjectile), with the targets it jumps to. */
++    private static void boltLines(List<Map<String, Object>> kids, Map<String, Object> p, Report r, int depth) {
++        double dmgPlayer = 0; int hits = 0; String slow = null; long slowMs = 0;
++        Map<String, Object> chain = null; List<Map<String, Object>> chainKids = null;
++        for (Map<String, Object> a : kids) {
++            String c = cls(a); Map<String, Object> lp = local(p, a);
++            if (c.equals("damage")) { hits++; dmgPlayer = d(lp, "player_damage", d(lp, "damage", 1)); }
++            else if (c.equals("potioneffect")) {
++                for (Map.Entry<String, Integer> e : potions(lp).entrySet()) { slow = effectName(e.getKey()) + " " + roman(e.getValue() + 1); slowMs = (long) d(lp, "duration", 0); }
++            } else if (c.equals("repeat")) {
++                int n = (int) d(lp, "repeat", 2);
++                for (Map<String, Object> k : list(a.get("actions"))) if (cls(k).equals("damage")) hits += n;
++            } else if (c.equals("areaofeffect")) {
++                chain = lp;
++                for (Map<String, Object> k : list(a.get("actions"))) {
++                    if (cls(k).equals("asynchronous")) for (Map<String, Object> k2 : list(k.get("actions"))) { if (cls(k2).equals("customprojectile")) { chainKids = list(k2.get("actions")); chain = local(local(lp, k), k2); } }
++                    if (cls(k).equals("customprojectile")) { chainKids = list(k.get("actions")); chain = local(lp, k); }
++                }
++            }
++        }
++        List<String> l = r.extra;
++        String each = hearts(dmgPlayer).replace(" heart", " heart");
++        if (depth == 0) {
++            l.add("Each hit: " + each + " damage");
++            if (slow != null) l.add("Each hit: " + slow + " for " + Durations.ms(slowMs));
++            l.add("First target is hit " + hits + " time" + (hits == 1 ? "" : "s"));
++        } else {
++            l.add((depth == 1 ? "Each of those is hit " : "That one is hit ") + hits + " time" + (hits == 1 ? "" : "s"));
++        }
++        if (chain != null && chainKids != null) {
++            int count = (int) d(chain, "target_count", -1);
++            double rad = d(chain, "radius", 8);
++            l.add((depth == 0 ? "Then jumps to " + (count > 0 ? "up to " + count + " more" : "everyone near") : "Each then jumps to " + (count > 0 ? (count == 1 ? "1 more" : "up to " + count + " more") : "everyone near")) + " within " + num(rad) + " blocks");
++            boltLines(chainKids, chain, r, depth + 1);
++        }
++    }
++
++    private static String blockName(String brush) {
++        String b = brush == null ? "" : brush.toLowerCase(Locale.ROOT);
++        if (b.contains("glass")) return "glass";
++        return b.replace('_', ' ');
++    }
++
++    private static String enchantName(String key, int level) {
++        String n;
++        switch (key.toLowerCase(Locale.ROOT)) {
++            case "oxygen": case "respiration": n = "Respiration"; break;
++            case "water_worker": case "aqua_affinity": n = "Aqua Affinity"; return n;
++            default: n = effectName(key);
++        }
++        return n + " " + roman(level);
++    }
++
++    private static void recall(Map<String, Object> p, Report r) {
++        if ("death".equalsIgnoreCase(s(p, "type"))) { r.extra.add("Takes you back to where you last died"); return; }
++        List<String> places = new ArrayList<>();
++        if (b(p, "allow_home", false)) places.add("your bed");
++        if (b(p, "allow_town", false)) places.add("your town");
++        if (b(p, "allow_wand", false)) places.add("a lost wand");
++        if (b(p, "allow_death", false)) places.add("where you died");
++        if (b(p, "allow_spawn", false)) places.add("spawn");
++        if (b(p, "allow_marker", false)) places.add("your markers");
++        if (places.isEmpty()) return;
++        r.extra.add("Lets you pick: " + joinAnd(places));
++    }
++
++    // ------------------------------------------------------------------ who
++
++    @SuppressWarnings("unchecked")
++    private static String who(Map<String, ?> cfg, Map<String, Object> p, List<Map<String, Object>> cast) {
++        String target = s(p, "target");
++        String type = String.valueOf(p.getOrDefault("target_type", "")).toLowerCase(Locale.ROOT);
++        String kinds = type.equals("player") ? "players" : "players and mobs";
++        boolean passive = b(cfg, "passive", false) || cfg.get("triggers") != null;
++        if (passive) {
++            for (Object t : (cfg.get("triggers") instanceof List<?> l ? l : List.of())) {
++                if (t instanceof Map<?, ?> m && "drowning".equalsIgnoreCase(String.valueOf(m.get("damage_type")))) return "Works by itself when you start to drown";
++            }
++            return "Works by itself";
++        }
++        boolean topArea = false, projArea = false, projectile = false;
++        for (Map<String, Object> a : cast) {
++            String c = cls(a);
++            if (c.equals("areaofeffect")) topArea = true;
++            if (c.equals("customprojectile")) { projectile = true; if (contains(list(a.get("actions")), "areaofeffect") && !contains(list(a.get("actions")), "damage")) projArea = true; }
++        }
++        double rad = d(p, "radius", 8);
++        if (target != null && target.equalsIgnoreCase("self") && topArea)
++            return "Who: you and friendly " + kinds + "|within " + num(rad) + " blocks of you";
++        if (target != null && target.equalsIgnoreCase("self")) return "Who: you";
++        if (projArea) return "Who: friendly " + kinds + " within|" + num(rad) + " blocks of where your shot lands";
++        if (target != null && target.equalsIgnoreCase("any_entity")) {
++            String one = type.equals("player") ? "player" : "player or mob";
++            String w = b(p, "only_friendly", false) ? "Who: a friendly " + one + " you aim at" : "Who: the " + one + " you aim at";
++            return w + "|Aim at nothing to use it on yourself";
++        }
++        if (projectile && contains(cast, "damage")) return "Shoots a bolt at what you aim at";
++        if (projectile) return "Shoots at what you aim at";
++        if (contains(cast, "sphere")) return "Works where you aim";
++        return null;
++    }
++
++    // ------------------------------------------------------------------ render
++
++    private static void render(Map<String, ?> cfg, Map<String, Object> p, List<Map<String, Object>> cast, Report r, List<String> out) {
++        if (r.who != null) for (String w : r.who.split("\\|")) out.add(w);
++        boolean area = r.who != null && r.who.contains("within");
++        long warm = (long) d(p, "warmup", 0);
++        double cancelDmg = p.get("cancel_on_damage") instanceof Boolean bb ? (bb ? 0.00001 : 0) : d(p, "cancel_on_damage", 0);
++        if (r.castMs > 0) {
++            out.add("Takes " + Durations.ms(r.castMs) + " to cast");
++            if (!r.castSelf.isEmpty()) out.add("You get " + String.join(" and ", r.castSelf) + " while casting");
++        } else if (warm > 0 && contains(cast, "recall")) {
++            out.add("You wait " + Durations.ms(warm) + ", then you go");
++        }
++        if (r.castMs > 0 || warm > 0) {
++            if (cancelDmg > 0) out.add(cancelDmg < 0.01 ? "Getting hurt stops it" : "A hit over " + hearts(cancelDmg) + " stops it");
++            if (b(p, "cancel_on_cast_other", false)) out.add("Casting another spell stops it");
++        }
++        String eachSuffix = area ? " each" : "";
++        if (r.healNow > 0 && r.hotTimes > 0) {
++            out.add("Heals " + hearts(r.healNow) + " right away");
++            out.add("Then " + hearts(r.hotAmount) + " every " + Durations.ms(r.hotEvery) + " for " + Durations.ms(r.hotEvery * r.hotTimes));
++            out.add(hearts(r.healNow + r.hotAmount * r.hotTimes) + " in all");
++        } else if (r.hotTimes > 0) {
++            out.add("Heals " + hearts(r.hotAmount) + " every " + Durations.ms(r.hotEvery) + " for " + Durations.ms(r.hotEvery * r.hotTimes));
++            out.add(hearts(r.hotAmount * r.hotTimes) + " in all");
++        } else if (r.healNow > 0) {
++            out.add((r.castMs > 0 ? "Then heals " : "Heals ") + hearts(r.healNow) + eachSuffix);
++        }
++        for (String g : r.gives) out.add(g.startsWith("Heals ") ? g : (r.whileOn ? "Gives " : "Gives ") + g);
++        if (!r.cures.isEmpty()) out.add("Cures " + joinAnd(r.cures));
++        if (r.feed > 0) {
++            if (r.feedTimes > 1) out.add("Fills " + drumsticks(r.feed * r.feedTimes) + " of food over " + Durations.ms(r.feedEvery * r.feedTimes));
++            else out.add("Fills " + drumsticks(r.feed) + " of food" + eachSuffix);
++        }
++        if (r.lockoutMod != null && r.lockoutMs > 0) out.add("Same target can get it again after " + Durations.ms(r.lockoutMs));
++        out.addAll(r.extra);
++        if (r.focusMs > 0) out.add("Your mana refills slower for " + Durations.ms(r.focusMs) + " after");
++    }
++
++    /** "A, B and C". */
++    public static String joinAnd(List<String> items) {
++        if (items.isEmpty()) return "";
++        if (items.size() == 1) return items.get(0);
++        return String.join(", ", items.subList(0, items.size() - 1)) + " and " + items.get(items.size() - 1);
++    }
++
++    /** Short lines for Bedrock forms and item lore: wraps at a space, max chars per line (a longer single word stays whole). */
++    public static List<String> wrap(String line, int max) {
++        List<String> out = new ArrayList<>();
++        if (line == null) return out;
++        String rest = line.trim();
++        while (rest.length() > max) {
++            int cut = rest.lastIndexOf(' ', max);
++            if (cut <= 0) cut = rest.indexOf(' ');
++            if (cut <= 0) break;
++            out.add(rest.substring(0, cut).trim());
++            rest = rest.substring(cut + 1).trim();
++        }
++        if (!rest.isEmpty()) out.add(rest);
++        return out;
++    }
++
++    /** Lines in next that are not in now, in next's order (what a rank adds or changes). */
++    public static List<String> changes(List<String> now, List<String> next) {
++        List<String> out = new ArrayList<>();
++        for (String n : next) if (!now.contains(n)) out.add(n);
++        return out;
++    }
++}
+diff -ruN -x build src-0.2.6/src/com/winkreyes/excelwandbars/core/SpellFacts.java src/src/com/winkreyes/excelwandbars/core/SpellFacts.java
+--- src-0.2.6/src/com/winkreyes/excelwandbars/core/SpellFacts.java	2026-10-26 10:12:55.935782924 -0500
++++ src/src/com/winkreyes/excelwandbars/core/SpellFacts.java	2026-10-26 11:07:32.874317588 -0500
+@@ -31,4 +31,18 @@
+     public boolean rankByWand = false;
+     /** 0.2.2: this is the wand's active spell right now (the one a cast uses). */
+     public boolean active = false;
++
++    // Spell info 2026-10-26: real effects and how the next rank is reached.
++    /** What this rank does, in plain words, from the spell's own config (SpellEffects.lines). */
++    public final List<String> effects = new ArrayList<>();
++    /** Magic cooldown_mage after the cast (0 = none, or the spell skips it). Already cut by the wand's cooldown reduction. */
++    public long mageCooldownMs = 0;
++    /** Pathless rank wands: the first wand rank that raises this spell ("Student"), "" = none. */
++    public String nextWandRank = "";
++    /** The spell rank that wand rank gives (0 = none). */
++    public int nextWandRankLevel = 0;
++    /** What changes at that rank (effect, cost, cooldown or range lines that differ). */
++    public final List<String> nextChanges = new ArrayList<>();
++    /** How a player reaches nextWandRank (config text, reloadable). "" = say nothing. */
++    public String rankUpHow = "";
+ }
+diff -ruN -x build src-0.2.6/src/com/winkreyes/excelwandbars/core/SpellInfoText.java src/src/com/winkreyes/excelwandbars/core/SpellInfoText.java
+--- src-0.2.6/src/com/winkreyes/excelwandbars/core/SpellInfoText.java	2026-10-26 10:12:55.935782924 -0500
++++ src/src/com/winkreyes/excelwandbars/core/SpellInfoText.java	2026-10-26 11:07:32.874317588 -0500
+@@ -42,15 +42,38 @@
+         return sb.toString();
+     }
+ 
+-    /** Full tooltip, one fact per line. */
++    /** Max characters in a generated line (Bedrock forms on phones, item lore). */
++    public static final int LINE = 44;
++
++    /** "Cooldown: none, just a 1 sec pause" style line(s). */
++    static List<String> cooldownLines(SpellFacts f) {
++        List<String> out = new ArrayList<>();
++        if (f.cooldownMs > 0) {
++            out.add("Cooldown: " + Durations.ms(f.cooldownMs));
++            if (f.mageCooldownMs > 0) out.add("Other spells wait " + Durations.ms(f.mageCooldownMs) + " after it");
++        } else if (f.mageCooldownMs > 0) {
++            out.add("Cooldown: none, just a " + Durations.ms(f.mageCooldownMs) + " pause");
++        } else {
++            out.add("Cooldown: none");
++        }
++        return out;
++    }
++
++    /**
++     * Full tooltip, one fact per line. Spell info 2026-10-26: the real effects
++     * (hearts, effects, targets, radius) from the spell's config, an accurate
++     * cooldown, and on rank wands what the next rank changes and how to get it.
++     * Nothing here ever mentions seals.
++     */
+     public static List<String> lines(SpellFacts f) {
+         List<String> out = new ArrayList<>();
+         out.add(f.name + "  (" + rankText(f) + ")");
+         if (f.description != null && !f.description.isBlank()) out.add(f.description.trim());
++        for (String e : f.effects) out.addAll(SpellEffects.wrap(e, LINE));
+         out.add("Cost: " + costText(f));
+         if (f.toggle) out.add("Toggle: cast again to stop. Ends when your mana runs out.");
+         if (f.stopsManaRegen) out.add("Mana does not refill while it is on.");
+-        out.add("Cooldown: " + (f.cooldownMs > 0 ? Durations.ms(f.cooldownMs) : "none"));
++        out.addAll(cooldownLines(f));
+         String r = rangeText(f);
+         if (!r.isEmpty()) out.add("Range: " + r);
+         if (f.durationMs > 0) out.add("Lasts: " + Durations.ms(f.durationMs));
+@@ -61,7 +84,19 @@
+             StringBuilder n = new StringBuilder("Next rank: ");
+             if (f.rankByWand) {
+                 // The wand has no Magic path: casting never ranks this spell up, the wand's next rank does.
+-                out.add("Next rank: comes with " + cap(f.nextRankPath) + " rank");
++                if (f.nextWandRank != null && !f.nextWandRank.isBlank() && f.nextWandRankLevel > f.rank) {
++                    out.add("Next rank: Rank " + f.nextWandRankLevel + " at " + f.nextWandRank + " rank");
++                    if (!f.nextChanges.isEmpty()) {
++                        out.add("Rank " + f.nextWandRankLevel + " changes:");
++                        for (String c : f.nextChanges) for (String w : SpellEffects.wrap(c, LINE - 2)) out.add("- " + w);
++                    }
++                    if (f.rankUpHow != null && !f.rankUpHow.isBlank()) {
++                        out.add("How to reach " + f.nextWandRank + " rank:");
++                        out.addAll(SpellEffects.wrap(f.rankUpHow.trim(), LINE));
++                    }
++                } else {
++                    out.add("Next rank: comes with " + cap(f.nextRankPath) + " rank");
++                }
+                 return out;
+             }
+             if (f.nextRankCasts > 0) {
+@@ -77,6 +112,19 @@
+         return out;
+     }
+ 
++    /**
++     * The lines one rank shows that can change between ranks (effects, cost,
++     * cooldown, range). Used to list what the next rank changes.
++     */
++    public static List<String> rankLines(SpellFacts f) {
++        List<String> out = new ArrayList<>(f.effects);
++        out.add("Cost: " + costText(f));
++        out.addAll(cooldownLines(f));
++        String r = rangeText(f);
++        if (!r.isEmpty()) out.add("Range: " + r);
++        return out;
++    }
++
+     public static String cap(String s) {
+         if (s == null || s.isEmpty()) return "";
+         return Character.toUpperCase(s.charAt(0)) + s.substring(1);
+diff -ruN -x build src-0.2.6/src/com/winkreyes/excelwandbars/core/TipGate.java src/src/com/winkreyes/excelwandbars/core/TipGate.java
+--- src-0.2.6/src/com/winkreyes/excelwandbars/core/TipGate.java	2026-10-26 10:12:55.935782924 -0500
++++ src/src/com/winkreyes/excelwandbars/core/TipGate.java	2026-10-26 10:27:52.707760481 -0500
+@@ -110,7 +110,7 @@
+     public static final String L_CYCLE_BEDROCK = "Cycle: press and hold for the next spell, crouch + hold to go back, tap to cast (controller: LT, RT).";
+     /** 0.2.4 hotbar-icon styles. */
+     public static final String L_TAPBAR = "Tap bar: all your spells fill the hotbar. A key casts at once, left click reads, sneak for more, Q puts items back.";
+-    public static final String L_TAPBAR_BEDROCK = "Tap bar (best on phone): all your spells fill the bar. Tap one to cast, press and hold to read, crouch for more spells.";
++    public static final String L_TAPBAR_BEDROCK = "Tap bar (best on phone): tap a spell to cast, press and hold to read, crouch for more, tap the wand for your items.";
+     public static final String L_ORIGINAL = "Tap to pick (original): hotbar key picks a spell, left-click casts, Q puts your items back.";
+     public static final String L_ORIGINAL_BEDROCK = "Tap to pick (original): tap your wand, tap a spell icon to pick it, press and hold to cast.";
+     public static final String L_SNEAK = "Sneak bars: press and hold to open your spell bar, tap a spell to cast, crouch to flip to the next bar.";
+diff -ruN -x build src-0.2.6/src/com/winkreyes/excelwandbars/core/WandSlotPlan.java src/src/com/winkreyes/excelwandbars/core/WandSlotPlan.java
+--- src-0.2.6/src/com/winkreyes/excelwandbars/core/WandSlotPlan.java	1969-12-31 18:00:00.000000000 -0600
++++ src/src/com/winkreyes/excelwandbars/core/WandSlotPlan.java	2026-10-26 10:24:26.562846152 -0500
+@@ -0,0 +1,87 @@
++package com.winkreyes.excelwandbars.core;
++
++/**
++ * 0.2.7: where the rank wand lives (the last hotbar slot by default) and when it may be
++ * moved there. Pure logic, no Bukkit. A move is always ONE swap of two hotbar slots in
++ * the same tick: the wand goes to the target slot and whatever was in the target slot
++ * (an item, a stack, or nothing) goes to the slot the wand came from. Nothing is created,
++ * dropped or deleted, so a move can never dupe or lose an item.
++ */
++public final class WandSlotPlan {
++    private WandSlotPlan() {}
++
++    /** Config "slot" is 1-9 like the hotbar keys; anything else falls back to 9. Returns the 0-8 index. */
++    public static int targetIndex(int configuredSlot) {
++        if (configuredSlot < 1 || configuredSlot > 9) return 8;
++        return configuredSlot - 1;
++    }
++
++    /** What the player is doing right now, as seen by the server. */
++    public static final class State {
++        public boolean barOpen;          // Magic's spell bar is up (real hotbar stored by Magic)
++        public boolean otherScreenOpen;  // a chest, furnace, villager... (top inventory not the player's own)
++        public boolean cursorHasItem;    // an item is on the mouse cursor (inventory screen)
++        public boolean deadOrSpectator;  // dead, spectator or creative
++        public boolean skipWorld;        // Magic is off here
++        public boolean recentInventoryClick; // clicked an inventory slot in the last few seconds
++        public int wandSlot = -1;        // hotbar index of the rank wand, -1 = none in the hotbar
++        public int heldSlot;             // selected hotbar index
++        public boolean targetIsRankWand; // the target slot already holds a rank wand
++    }
++
++    public enum Action { NONE, SWAP }
++
++    /** Why a sweep did or did not move the wand (for /wandbars wandslot and the counters). */
++    public static String why(State s, int target) {
++        if (s.wandSlot < 0) return "no wand in hotbar";
++        if (s.wandSlot == target) return "already there";
++        if (s.targetIsRankWand) return "target holds a wand";
++        if (s.barOpen) return "bar open";
++        if (s.otherScreenOpen) return "screen open";
++        if (s.cursorHasItem) return "cursor item";
++        if (s.deadOrSpectator) return "dead/spectator/creative";
++        if (s.skipWorld) return "skip world";
++        if (s.recentInventoryClick) return "inventory click";
++        if (s.heldSlot == target && s.heldSlot != s.wandSlot) return "holding the target slot";
++        return "move";
++    }
++
++    /**
++     * The timed sweep (and join / respawn / after the bar closes). Moves only when it cannot
++     * surprise the player: never while the bar is up (Magic holds the real hotbar then), never
++     * with another screen open or an item on the cursor, never right after an inventory click,
++     * and never while the player holds the item in the target slot (their hand would change).
++     */
++    public static Action sweep(State s, int target) {
++        return "move".equals(why(s, target)) ? Action.SWAP : Action.NONE;
++    }
++
++    /**
++     * The player picks the wand in another hotbar slot (bar down). Same checks as the sweep,
++     * except the selection itself is the trigger: the item in the target slot goes to the slot
++     * they picked and the selection moves to the target, so they hold the wand either way.
++     */
++    public static Action onPick(State s, int pickedSlot, int target) {
++        if (pickedSlot != s.wandSlot || pickedSlot == target) return Action.NONE;
++        if (s.targetIsRankWand || s.barOpen || s.otherScreenOpen || s.cursorHasItem || s.deadOrSpectator || s.skipWorld) return Action.NONE;
++        return Action.SWAP;
++    }
++
++    /** Swap two slots of a 9-slot hotbar model (used by the tests and to describe a move). */
++    public static <T> void swap(T[] hotbar, int a, int b) {
++        T t = hotbar[a]; hotbar[a] = hotbar[b]; hotbar[b] = t;
++    }
++
++    /**
++     * 0.2.7 Tap bar: a Bedrock tap on the hotbar slot that is ALREADY selected (the wand).
++     * Geyser does not pass that on to the server, so ExcelWandBars reads it from Geyser.
++     * A phone may also re-send the selected slot right after the server changes it (bar opened,
++     * wand moved, spell cast), so anything within guardMs of such a change is not a tap.
++     */
++    public static boolean isWandTap(boolean tapBarStyle, boolean wandHeld, int tappedSlot, int heldSlot,
++                                    long now, long lastServerChange, long guardMs) {
++        if (!tapBarStyle || !wandHeld) return false;
++        if (tappedSlot != heldSlot) return false;
++        return now - lastServerChange >= guardMs;
++    }
++}
+diff -ruN -x build src-0.2.6/tests/SpellDump.java src/tests/SpellDump.java
+--- src-0.2.6/tests/SpellDump.java	1969-12-31 18:00:00.000000000 -0600
++++ src/tests/SpellDump.java	2026-10-26 11:07:32.874317588 -0500
+@@ -0,0 +1,11 @@
++import com.winkreyes.excelwandbars.core.SpellEffects;
++import java.util.*;
++public final class SpellDump {
++    public static void main(String[] a) throws Exception {
++        SpellsYml y = new SpellsYml(a[0]);
++        for (String k : y.merged.keySet()) {
++            System.out.println("== " + k);
++            for (String l : SpellEffects.lines(y.get(k))) System.out.println("   " + l);
++        }
++    }
++}
+diff -ruN -x build src-0.2.6/tests/SpellInfoTest.java src/tests/SpellInfoTest.java
+--- src-0.2.6/tests/SpellInfoTest.java	1969-12-31 18:00:00.000000000 -0600
++++ src/tests/SpellInfoTest.java	2026-10-26 11:07:32.874317588 -0500
+@@ -0,0 +1,118 @@
++import com.winkreyes.excelwandbars.core.*;
++import java.util.*;
++
++/**
++ * Spell info 2026-10-26: golden checks against the live Magic spells.yml copy
++ * (tests/data/spells.yml, sha256 c505e510...). Every expected number here was
++ * checked by hand against that file. If spells.yml changes, these fail on
++ * purpose: re-check the numbers, then update the expectations.
++ */
++public final class SpellInfoTest {
++    static final Map<String, List<String>> WANDS = new LinkedHashMap<>();
++    static {
++        WANDS.put("beginner", List.of("heal", "boon", "feed", "extinguish", "aqualung", "mend"));
++        WANDS.put("student", List.of("heal", "boon", "feed", "extinguish", "aqualung", "cure", "shell", "gills", "stormshackle", "mend", "flashheal", "ward"));
++        WANDS.put("apprentice", List.of("heal", "boon", "feed", "extinguish", "aqualung", "cure", "shell", "gills", "stormshackle", "superheal", "recall", "mend", "flashheal", "ward", "greaterheal"));
++        WANDS.put("master", List.of("heal", "boon", "feed", "extinguish", "aqualung", "cure", "shell", "gills", "stormshackle", "superheal", "recall", "blessing", "recall_death", "mend", "flashheal", "ward", "greaterheal"));
++    }
++    static final Map<String, List<String>> HOLDS = Map.of(
++            "beginner", List.of("beginner"), "student", List.of("student", "beginner"),
++            "apprentice", List.of("apprentice", "student", "beginner"), "master", List.of("master", "apprentice", "student", "beginner"));
++
++    static int level(SpellsYml y, String spell, String rank) {
++        return SpellEffects.levelAt(y.maxLevel(spell), l -> y.requiredPath(spell, l), p -> HOLDS.get(rank).contains(p));
++    }
++
++    static List<String> fx(SpellsYml y, String key) { return SpellEffects.lines(y.get(key)); }
++
++    public static void run(String path) throws Exception {
++        System.out.println("SpellInfoTest");
++        Check.eq("0.75 heart", SpellEffects.hearts(1.5), "hearts 1.5 HP");
++        Check.eq("1 heart", SpellEffects.hearts(2), "hearts 2 HP");
++        Check.eq("1.25 hearts", SpellEffects.hearts(2.5), "hearts 2.5 HP");
++        Check.eq("5 hearts", SpellEffects.hearts(10), "hearts 10 HP");
++        Check.eq("3 drumsticks", SpellEffects.drumsticks(6), "food 6");
++        Check.eq(List.of("Cures Nausea, Weakness, Poison, Slowness,", "Mining Fatigue and Wither"),
++                SpellEffects.wrap("Cures Nausea, Weakness, Poison, Slowness, Mining Fatigue and Wither", 44), "wrap at a space");
++        if (path == null || path.isBlank() || !new java.io.File(path).exists()) { Check.ok(false, "spells.yml copy missing: " + path); return; }
++        SpellsYml y = new SpellsYml(path);
++
++        // Spell rank each wand rank gives (Magic Wand.levelSpells with level_spells_to_path).
++        String[][] want = {
++            {"beginner", "heal=2 boon=2 feed=1 extinguish=1 aqualung=1 mend=2"},
++            {"student", "heal=2 boon=3 feed=1 extinguish=1 aqualung=1 cure=2 shell=2 gills=1 stormshackle=1 mend=3 flashheal=2 ward=1"},
++            {"apprentice", "heal=3 boon=3 feed=1 extinguish=1 aqualung=1 cure=3 shell=3 gills=1 stormshackle=1 superheal=1 recall=4 mend=4 flashheal=3 ward=1 greaterheal=2"},
++            {"master", "heal=3 boon=4 feed=1 extinguish=1 aqualung=1 cure=5 shell=4 gills=1 stormshackle=1 superheal=1 recall=5 blessing=1 recall_death=1 mend=5 flashheal=4 ward=1 greaterheal=3"},
++        };
++        for (String[] w : want) {
++            StringBuilder sb = new StringBuilder();
++            for (String sp : WANDS.get(w[0])) sb.append(sb.length() > 0 ? " " : "").append(sp).append('=').append(level(y, sp, w[0]));
++            Check.eq(w[1], sb.toString(), "spell ranks on a " + w[0] + " wand");
++        }
++
++        // Golden lines (hand-checked against spells.yml).
++        Check.eq(List.of("Who: a friendly player or mob you aim at", "Aim at nothing to use it on yourself",
++                "Heals 0.75 heart", "Your mana refills slower for 5 sec after"), fx(y, "mend|2"), "Mend rank 2 (Beginner)");
++        Check.ok(fx(y, "mend|3").contains("Heals 1 heart"), "Mend rank 3 heals 2 HP");
++        Check.ok(fx(y, "mend|4").contains("Heals 1.25 hearts"), "Mend rank 4 heals 2.5 HP");
++        Check.ok(fx(y, "mend|5").contains("Heals 1.5 hearts"), "Mend rank 5 heals 3 HP");
++        Check.eq(List.of("Who: a friendly player or mob you aim at", "Aim at nothing to use it on yourself",
++                "Heals 0.5 heart every 1 sec for 10 sec", "5 hearts in all", "Same target can get it again after 10 sec",
++                "Your mana refills slower for 5 sec after"), fx(y, "heal|2"), "Heal rank 2 (Beginner)");
++        Check.ok(fx(y, "heal|3").containsAll(List.of("Heals 1 heart right away", "Then 0.5 heart every 1 sec for 10 sec", "6 hearts in all")), "Heal rank 3");
++        Check.eq(List.of("Who: you", "Gives Speed II while on (40% faster)", "Gives Jump Boost III while on"), fx(y, "boon|2"), "Boon rank 2 (Beginner)");
++        Check.ok(fx(y, "boon|3").contains("Gives Speed III while on (60% faster)"), "Boon rank 3 Speed III");
++        Check.ok(fx(y, "boon|4").contains("Gives Night Vision while on"), "Boon rank 4 night vision");
++        Check.eq(List.of("Who: a friendly player you aim at", "Aim at nothing to use it on yourself", "Heals 2 hearts",
++                "Cures Poison and Wither", "Fills 3 drumsticks of food", "Your mana refills slower for 5 sec after"), fx(y, "feed"), "Feed");
++        Check.eq(List.of("Works where you aim", "Puts out fire blocks within 10 blocks", "Puts out burning players and mobs nearby"), fx(y, "extinguish"), "Extinguish");
++        Check.eq(List.of("Works by itself when you start to drown", "Fills your air bar all the way"), fx(y, "aqualung"), "Aqualung");
++        Check.ok(fx(y, "cure|2").contains("Cures Nausea, Weakness, Poison, Slowness, Mining Fatigue and Wither"), "Cure rank 2 cures");
++        Check.ok(fx(y, "cure|2").contains("within 5 blocks of you"), "Cure rank 2 radius 5");
++        Check.ok(fx(y, "cure|3").contains("within 8 blocks of you"), "Cure rank 3 radius 8");
++        Check.ok(fx(y, "cure|4").contains("Fills 2 drumsticks of food over 2 sec"), "Cure rank 4 food");
++        Check.ok(fx(y, "cure|5").contains("Turns zombie villagers back into villagers"), "Cure rank 5 villagers");
++        Check.ok(fx(y, "shell|2").containsAll(List.of("The dome lasts 5 sec", "Spells that hit it bounce back 50% of the time", "Dome size: 3 blocks from middle to edge")), "Shell rank 2");
++        Check.ok(fx(y, "gills").containsAll(List.of("Gives Water Breathing for 30 sec", "Puts a glass helmet on you for 30 sec", "Helmet has Respiration III and Aqua Affinity")), "Gills");
++        Check.ok(fx(y, "stormshackle").containsAll(List.of("Each hit: 0.25 heart damage", "Each hit: Slowness I for 4 sec", "First target is hit 3 times",
++                "Then jumps to up to 3 more within 8 blocks", "Each of those is hit 3 times", "Each then jumps to 1 more within 8 blocks", "That one is hit 1 time")), "Storm Shackle");
++        Check.ok(fx(y, "flashheal|2").contains("Heals 2.5 hearts") && fx(y, "flashheal|3").contains("Heals 3 hearts") && fx(y, "flashheal|4").contains("Heals 3.5 hearts"), "Flash Heal ranks");
++        Check.ok(fx(y, "ward").containsAll(List.of("Gives Absorption I for 15 sec (2 extra hearts)", "Same target can get it again after 12 sec")), "Ward");
++        Check.ok(fx(y, "superheal").containsAll(List.of("Heals 4 hearts each", "Gives Regeneration I for 5 sec (about 1 heart)", "Fills 2 drumsticks of food each")), "Superheal");
++        Check.ok(fx(y, "greaterheal|2").containsAll(List.of("Takes 2 sec to cast", "You get Slowness II while casting", "A hit over 2 hearts stops it", "Casting another spell stops it", "Then heals 3 hearts")), "Greater Heal rank 2");
++        Check.ok(fx(y, "greaterheal|3").contains("Then heals 4 hearts"), "Greater Heal rank 3");
++        Check.ok(fx(y, "recall|4").containsAll(List.of("You wait 5 sec, then you go", "A hit over 0.5 heart stops it", "You can keep 2 markers")), "Recall rank 4");
++        Check.ok(fx(y, "blessing").containsAll(List.of("Heals 8 hearts at once (Instant Health III)", "Gives Resistance II for 10 sec (40% less damage)", "Gives Absorption II for 10 sec (4 extra hearts)")), "Blessing");
++
++        // Every template players can get: something to say, no em dash, no seals, short after wrapping.
++        Set<String> seen = new TreeSet<>();
++        for (Map.Entry<String, List<String>> w : WANDS.entrySet()) for (String sp : w.getValue()) {
++            for (int l = 1; l <= y.maxLevel(sp); l++) seen.add(l == 1 ? sp : sp + "|" + l);
++        }
++        for (String k : seen) {
++            List<String> lines = fx(y, k);
++            Check.ok(!lines.isEmpty(), k + " has effect lines");
++            for (String s : lines) {
++                Check.ok(!s.contains("\u2014") && !s.toLowerCase(Locale.ROOT).contains("seal"), k + " clean: " + s);
++                for (String part : SpellEffects.wrap(s, SpellInfoText.LINE)) Check.ok(part.length() <= SpellInfoText.LINE, k + " short: " + part);
++            }
++        }
++
++        // Full screen for Mend on a Beginner wand, as a player sees it.
++        SpellFacts m = new SpellFacts();
++        m.key = "mend"; m.name = "Mend"; m.description = "A quick, cheap touch of healing."; m.rank = 2; m.maxRank = 5; m.bar = 1;
++        m.costs.add("4 Mana"); m.mageCooldownMs = 1000; m.range = 16; m.effects.addAll(fx(y, "mend|2"));
++        m.rankByWand = true; m.pathOk = false; m.nextRankPath = "student";
++        SpellFacts m3 = new SpellFacts(); m3.costs.add("8 Mana"); m3.mageCooldownMs = 1000; m3.range = 16; m3.effects.addAll(fx(y, "mend|3"));
++        m.nextWandRank = "Student"; m.nextWandRankLevel = 3;
++        m.nextChanges.addAll(SpellEffects.changes(SpellInfoText.rankLines(m), SpellInfoText.rankLines(m3)));
++        m.rankUpHow = "Student rank is not open yet. Watch What's New.";
++        List<String> screen = SpellInfoText.lines(m);
++        System.out.println("    " + String.join("\n    ", screen));
++        Check.ok(screen.contains("Cooldown: none, just a 1 sec pause"), "Mend cooldown shows the 1 sec pause");
++        Check.ok(screen.contains("Next rank: Rank 3 at Student rank"), "Mend next rank line");
++        Check.ok(screen.contains("- Heals 1 heart") && screen.contains("- Cost: 8 Mana"), "Mend rank 3 changes");
++        Check.ok(screen.contains("How to reach Student rank:"), "how-to line");
++        Check.ok(screen.stream().anyMatch(x -> x.startsWith("Next rank")), "lore keeps a Next rank line (Magic-style lore)");
++    }
++}
+diff -ruN -x build src-0.2.6/tests/SpellsYml.java src/tests/SpellsYml.java
+--- src-0.2.6/tests/SpellsYml.java	1969-12-31 18:00:00.000000000 -0600
++++ src/tests/SpellsYml.java	2026-10-26 11:07:32.874317588 -0500
+@@ -0,0 +1,51 @@
++import com.winkreyes.excelwandbars.core.SpellEffects;
++import java.io.FileInputStream;
++import java.util.*;
++
++/** Test helper: loads a Magic spells.yml and builds each template's merged config the way Magic 11.2.5 does. */
++public final class SpellsYml {
++    final Map<String, Object> raw;
++    final Map<String, Map<String, Object>> merged = new LinkedHashMap<>();
++
++    @SuppressWarnings("unchecked")
++    SpellsYml(String path) throws Exception {
++        try (FileInputStream in = new FileInputStream(path)) {
++            raw = (Map<String, Object>) new org.yaml.snakeyaml.Yaml().load(in);
++        }
++        for (String k : raw.keySet()) get(k);
++    }
++
++    @SuppressWarnings("unchecked")
++    Map<String, Object> get(String key) {
++        if (merged.containsKey(key)) return merged.get(key);
++        Map<String, Object> node = (Map<String, Object>) raw.get(key);
++        if (node == null) return null;
++        Map<String, Object> out = new LinkedHashMap<>(node);
++        Object inh = node.get("inherit");
++        if (inh != null && !"false".equalsIgnoreCase(inh.toString())) {
++            Map<String, Object> parent = get(inh.toString());
++            if (parent != null) out = SpellEffects.merge(out, parent);
++        }
++        int bar = key.indexOf('|');
++        if (bar > 0) {
++            int lvl = Integer.parseInt(key.substring(bar + 1));
++            String up = key.substring(0, bar) + (lvl == 2 ? "" : "|" + (lvl - 1));
++            Map<String, Object> parent = get(up);
++            if (parent != null) out = SpellEffects.merge(out, parent);
++        }
++        merged.put(key, out);
++        return out;
++    }
++
++    int maxLevel(String base) {
++        int m = 1;
++        while (raw.containsKey(base + "|" + (m + 1))) m++;
++        return m;
++    }
++
++    String requiredPath(String base, int level) {
++        Map<String, Object> c = get(level == 1 ? base : base + "|" + level);
++        Object o = c == null ? null : c.get("upgrade_required_path");
++        return o == null ? null : o.toString();
++    }
++}
+diff -ruN -x build src-0.2.6/tests/TapBarTest.java src/tests/TapBarTest.java
+--- src-0.2.6/tests/TapBarTest.java	2026-10-26 10:12:55.935782924 -0500
++++ src/tests/TapBarTest.java	2026-10-26 10:27:35.015682011 -0500
+@@ -85,7 +85,7 @@
+             Check.ok(!btn.contains("\u2014") && !btn.contains("\u2013"), "no long dash " + st);
+             if (br) Check.ok(!btn.toLowerCase().contains("click"), "Bedrock button never says click: " + btn);
+         }
+-        Check.ok(ControlsText.button(WandStyle.TAPBAR, WandStyle.TAPBAR, true).startsWith("Tap bar (best on phone) (now)\n"), "current style marked (now)");
++        Check.ok(ControlsText.button(WandStyle.TAPBAR, WandStyle.TAPBAR, true).startsWith("Tap bar (tap wand: items back) (now)\n"), "current style marked (now)");
+         Check.eq("Cycle (next spell)", ControlsText.buttonName(WandStyle.CYCLE, true), "Cycle button name");
+         String c = ControlsText.chooserContent(WandStyle.CLASSIC, true, true);
+         Check.ok(c.length() <= 60 && !c.contains("\n"), "top text one short line (" + c.length() + "): " + c);
+diff -ruN -x build src-0.2.6/tests/TestMain.java src/tests/TestMain.java
+--- src-0.2.6/tests/TestMain.java	2026-10-26 10:12:55.935782924 -0500
++++ src/tests/TestMain.java	2026-10-26 11:07:32.874317588 -0500
+@@ -7,10 +7,12 @@
+         CycleTest.run();
+         TapBarTest.run();
+         PickTest.run();
++        WandSlotTest.run();
+         PageTest.run();
+         CompassTest.run();
+         TipTest.run();
+         ProgressTest.run();
++        SpellInfoTest.run(System.getProperty("spells", ""));
+         CumulusFormTest.run(System.getProperty("floodgate", ""));
+         System.out.println("TOTAL: " + Check.passed + " passed, " + Check.failed + " failed");
+         if (Check.failed > 0) System.exit(1);
+diff -ruN -x build src-0.2.6/tests/WandSlotTest.java src/tests/WandSlotTest.java
+--- src-0.2.6/tests/WandSlotTest.java	1969-12-31 18:00:00.000000000 -0600
++++ src/tests/WandSlotTest.java	2026-10-26 10:28:32.495936957 -0500
+@@ -0,0 +1,88 @@
++import com.winkreyes.excelwandbars.core.*;
++import java.util.*;
++
++public final class WandSlotTest {
++    static WandSlotPlan.State st(int wand, int held) { WandSlotPlan.State s = new WandSlotPlan.State(); s.wandSlot = wand; s.heldSlot = held; return s; }
++
++    public static void run() {
++        System.out.println("WandSlotTest");
++        Check.eq(8, WandSlotPlan.targetIndex(9), "slot 9 -> index 8");
++        Check.eq(0, WandSlotPlan.targetIndex(1), "slot 1 -> index 0");
++        Check.eq(8, WandSlotPlan.targetIndex(0), "bad slot 0 -> 9");
++        Check.eq(8, WandSlotPlan.targetIndex(12), "bad slot 12 -> 9");
++        int T = 8;
++        Check.eq(WandSlotPlan.Action.SWAP, WandSlotPlan.sweep(st(2, 0), T), "sweep: wand in 3, holding 1 -> move");
++        Check.eq(WandSlotPlan.Action.SWAP, WandSlotPlan.sweep(st(2, 2), T), "sweep: holding the wand in 3 -> move (held path)");
++        Check.eq(WandSlotPlan.Action.NONE, WandSlotPlan.sweep(st(8, 0), T), "sweep: already in 9");
++        Check.eq(WandSlotPlan.Action.NONE, WandSlotPlan.sweep(st(-1, 0), T), "sweep: no wand in hotbar");
++        Check.eq("holding the target slot", WandSlotPlan.why(st(2, 8), T), "sweep waits while holding slot 9's item");
++        String[] blocks = { "barOpen", "otherScreenOpen", "cursorHasItem", "deadOrSpectator", "skipWorld", "recentInventoryClick", "targetIsRankWand" };
++        for (String b : blocks) {
++            WandSlotPlan.State s = st(2, 0);
++            switch (b) {
++                case "barOpen": s.barOpen = true; break;
++                case "otherScreenOpen": s.otherScreenOpen = true; break;
++                case "cursorHasItem": s.cursorHasItem = true; break;
++                case "deadOrSpectator": s.deadOrSpectator = true; break;
++                case "skipWorld": s.skipWorld = true; break;
++                case "recentInventoryClick": s.recentInventoryClick = true; break;
++                default: s.targetIsRankWand = true;
++            }
++            Check.eq(WandSlotPlan.Action.NONE, WandSlotPlan.sweep(s, T), "sweep blocked by " + b);
++        }
++        // pick
++        Check.eq(WandSlotPlan.Action.SWAP, WandSlotPlan.onPick(st(2, 0), 2, T), "pick wand in 3 -> swap");
++        Check.eq(WandSlotPlan.Action.NONE, WandSlotPlan.onPick(st(2, 0), 4, T), "pick another slot -> never touched");
++        Check.eq(WandSlotPlan.Action.NONE, WandSlotPlan.onPick(st(8, 0), 8, T), "pick wand in 9 -> nothing");
++        WandSlotPlan.State bo = st(2, 0); bo.barOpen = true;
++        Check.eq(WandSlotPlan.Action.NONE, WandSlotPlan.onPick(bo, 2, T), "pick with bar up -> Magic's");
++        WandSlotPlan.State rc = st(2, 0); rc.recentInventoryClick = true;
++        Check.eq(WandSlotPlan.Action.SWAP, WandSlotPlan.onPick(rc, 2, T), "pick right after a click still moves (the pick is the player's own act)");
++        WandSlotPlan.State cu = st(2, 0); cu.cursorHasItem = true;
++        Check.eq(WandSlotPlan.Action.NONE, WandSlotPlan.onPick(cu, 2, T), "pick with cursor item -> no move");
++
++        // Swap model: every item kept exactly once, counts unchanged (no dupe, no loss).
++        Random r = new Random(27);
++        boolean allOk = true;
++        for (int n = 0; n < 2000; n++) {
++            String[] bar = new String[9];
++            int wand = r.nextInt(9);
++            for (int i = 0; i < 9; i++) bar[i] = i == wand ? "WAND" : (r.nextInt(3) == 0 ? null : ("item" + i + "x" + (1 + r.nextInt(64))));
++            List<String> before = new ArrayList<>(Arrays.asList(bar));
++            if (wand != T) WandSlotPlan.swap(bar, wand, T);
++            List<String> after = new ArrayList<>(Arrays.asList(bar));
++            List<String> b2 = new ArrayList<>(before); b2.removeIf(Objects::isNull); Collections.sort(b2);
++            List<String> a2 = new ArrayList<>(after); a2.removeIf(Objects::isNull); Collections.sort(a2);
++            boolean ok = b2.equals(a2) && "WAND".equals(bar[T]) && Objects.equals(bar[wand], before.get(T));
++            for (int i = 0; i < 9; i++) if (i != wand && i != T && !Objects.equals(bar[i], before.get(i))) ok = false;
++            if (!ok) { allOk = false; System.out.println("    bad " + before + " -> " + after); break; }
++        }
++        Check.ok(allOk, "2000 random hotbars: one swap keeps every item exactly once, wand in 9, slot 9's item in the wand's old slot, others untouched");
++
++        // wand tap guard
++        Check.ok(WandSlotPlan.isWandTap(true, true, 8, 8, 10_000, 9_000, 700), "tap on the selected wand slot 1 s after a change -> tap");
++        Check.ok(!WandSlotPlan.isWandTap(true, true, 8, 8, 10_000, 9_500, 700), "re-sent slot 0.5 s after a change -> not a tap");
++        Check.ok(!WandSlotPlan.isWandTap(true, true, 3, 8, 10_000, 0, 700), "another slot -> not a wand tap");
++        Check.ok(!WandSlotPlan.isWandTap(false, true, 8, 8, 10_000, 0, 700), "other style -> not a wand tap");
++        Check.ok(!WandSlotPlan.isWandTap(true, false, 8, 8, 10_000, 0, 700), "not holding the wand -> not a wand tap");
++
++        // Menu wording: Tap bar lines say what tap, hold and crouch do, fit a phone button, no long dash.
++        String bt = ControlsText.button(WandStyle.TAPBAR, WandStyle.TAPBAR, true);
++        String[] l = bt.split("\n");
++        Check.ok(l[0].length() <= 38, "Bedrock Tap bar title line <= 38 with (now) (" + l[0].length() + "): " + l[0]);
++        Check.ok(l[1].length() <= 38, "Bedrock Tap bar line 2 <= 38 (" + l[1].length() + "): " + l[1]);
++        Check.ok(bt.contains("Tap:") && bt.contains("Hold:") && bt.contains("Crouch:") && bt.contains("tap wand: items back"), "Bedrock Tap bar button: tap, hold, crouch and tap wand");
++        String jt = ControlsText.button(WandStyle.TAPBAR, WandStyle.CLASSIC, false);
++        Check.ok(jt.contains("Q: items back") && jt.contains("sneak pages") && jt.contains("left click reads"), "Java Tap bar button: key, left click, sneak, Q");
++        Check.ok(!jt.contains("tap wand"), "Java never promises tap the wand (Java sends nothing for it)");
++        String hb = String.join(" ", ControlsText.howTo(WandStyle.TAPBAR, true));
++        Check.ok(hb.contains("last hotbar slot") && hb.contains("Tap the wand again"), "Bedrock Tap bar how-to: last slot + tap the wand");
++        String hj = String.join(" ", ControlsText.howTo(WandStyle.TAPBAR, false));
++        Check.ok(hj.contains("last hotbar slot (9)") && hj.contains("(1-8)") && !hj.contains("Tap the wand"), "Java Tap bar how-to: slot 9, keys 1-8");
++        for (WandStyle s : WandStyle.values()) for (boolean b : new boolean[] { true, false }) {
++            String all = ControlsText.button(s, s, b) + String.join(" ", ControlsText.howTo(s, b)) + ControlsText.chooserContent(s, b, true);
++            Check.ok(!all.contains("\u2014") && !all.contains("\u2013"), "no long dash " + s + " " + b);
++        }
++        Check.ok(ControlsText.chooserContent(WandStyle.TAPBAR, true, true).equals("Now: Tap bar (best on phone). Pick one. Switch any time."), "form top line keeps the short name");
++    }
++}
+diff -ruN -x build src-0.2.6/tests/data/spells.yml src/tests/data/spells.yml
+--- src-0.2.6/tests/data/spells.yml	1969-12-31 18:00:00.000000000 -0600
++++ src/tests/data/spells.yml	2026-10-26 11:07:32.874317588 -0500
+@@ -0,0 +1,1591 @@
++#
++# Wink Reyes Valley - Magic Phase 1 (HEALER RELEASE) curated spells.
++# WRV-070. This file is the COMPLETE spell set for Phase 1.
++#
++# Paired with config.yml: load_default_spells: false
++# -> defaults/spells.defaults.yml is NOT loaded. Only the spells below exist.
++#
++# Every block below is copied VERBATIM from Magic 11.2.5
++# defaults/spells.defaults.yml (the exact build scratch-tested Oct 17, 2026),
++# so parameters, costs, cooldowns and upgrade requirements are the author's
++# shipped values - with ONE documented exception, added Oct 17, 2026:
++# `worth` (the SP learn price) is re-scaled per rank band for the ~2-day
++# hybrid ladder pace (the math is in LADDER.md, same folder). Only the
++# SELECTION and those prices are ours.
++#
++# Phase 1 list (13 player spells + 1 inherited base template):
++#   healer core : heal, cure, blessing, boon
++#   utility     : superheal, feed, extinguish, aqualung, gills, shell,
++#                 recall, recall_death
++#   custom      : stormshackle (Storm Shackle - OUR spell, bottom of this
++#                 file; NOT one of the verbatim blocks above. Mike's design
++#                 change, Oct 17, 2026: a chain-lightning variant with
++#                 token damage that slows what it arcs to. The raw
++#                 lightning / chainlightning spells stay OUT of Phase 1;
++#                 they remain Phase 2 per the roadmap.)
++#   base_passive is NOT a castable spell: it is the passive template that
++#   aqualung inherits from (inherit: base_passive) and recall_death inherits
++#   from recall. Both inheritance targets are inside this file.
++#
++# Locked shelf (lava, grenade, wither, vengeance, nuke, shops, ...) is
++# absent by construction: those keys are not in this file and the defaults
++# file is never loaded.
++#
++
++heal:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  icon: heal
++  category: light
++  tags: noduel
++  upgrade_required_path: student
++  upgrade_required_casts: 50
++  worth: 1200
++  earns: 2
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: CheckModifiers
++      blocked: wrv_renewed
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_renewed
++        duration: 10000
++      - class: Repeat
++        actions:
++        - class: Delay
++        - class: Heal
++      fail:
++      - class: Message
++        message_type: action_bar
++        message: '&eYour Heal is already on them'
++  effects:
++    cast:
++    - sound: entity_generic_drink
++      sound_pitch: 0.1
++      sound_volume: 0.4
++    - sound: block_beacon_activate
++      sound_pitch: 0.1
++      sound_volume: 1.4
++    - sound: entity_generic_drink
++      sound_pitch: 0.3
++      sound_volume: 0.2
++      location: target
++    - class: EffectSingle
++      sound: magic.shimmer
++      effectlib:
++        class: ConeEffect
++        iterations: 5
++        lengthGrow: 0.12
++        particle: heart
++    - class: EffectSingle
++      sound: magic.shimmer
++      location: target
++      effectlib:
++        class: Modified
++        period: 16
++        duration: $total_duration
++        parameters:
++          radius: (t/i) * 1.5 + 1.5
++          rings: (1 - (t/i)) * 3 + 1
++        effect:
++          class: WarpEffect
++          particle: heart
++          particles: 8
++          grow: 0.5
++    - class: EffectSingle
++      location: target
++      effectlib:
++        class: Modified
++        period: 2
++        duration: $total_duration
++        parameters:
++          radius: (t/i) * 0.5 + 1
++          rings: (1 - (t/i)) * 11 + 1
++        effect:
++          class: WarpEffect
++          particle: end_rod
++          particles: 7
++    - class: EffectSingle
++      effectlib:
++        class: LineEffect
++        particle: end_rod
++        duration: 500
++        particles: 10
++        particle_count: 4
++        particle_offset_x: 0.1
++        particle_offset_y: 0.1
++        particle_offset_z: 0.1
++    - class: EffectSingle
++      effectlib:
++        class: LineEffect
++        particle: heart
++        duration: 1000
++        particles: 4
++        particle_count: 2
++        particle_offset_x: 0.1
++        particle_offset_y: 0.1
++        particle_offset_z: 0.1
++        period: 4
++    cast_self:
++    - sound: entity_generic_drink
++      sound_pitch: 0.1
++      sound_volume: 0.4
++    - sound: block_beacon_activate
++      sound_pitch: 0.1
++      sound_volume: 1.4
++    - class: EffectSingle
++      sound: magic.shimmer
++      location: target
++      effectlib:
++        class: Modified
++        period: 16
++        duration: $total_duration
++        parameters:
++          radius: (t/i) * 1.5 + 1.5
++          rings: (1 - (t/i)) * 3 + 1
++        effect:
++          class: WarpEffect
++          particle: heart
++          particles: 8
++          grow: 0.5
++    - class: EffectSingle
++      location: target
++      effectlib:
++        class: Modified
++        period: 2
++        duration: $total_duration
++        parameters:
++          radius: (t/i) * 0.5 + 1
++          rings: (1 - (t/i)) * 11 + 1
++        effect:
++          class: WarpEffect
++          particle: end_rod
++          particles: 7
++    cast_finish:
++    - sound: block_beacon_activate
++      sound_pitch: 1.2
++      sound_volume: 0.5
++      location: both
++    - class: EffectSingle
++      custom_sound: magic.shimmer_quiet
++      sound_pitch: 5
++      location: origin
++      effectlib:
++        class: AnimatedBall
++        duration: 200
++        particle: heart
++        size: 3
++  parameters:
++    # Renew-style heal over time: 1 HP every 1 s for 10 s. Taking damage or
++    # casting another spell no longer cancels it.
++    cancel_on_damage: 0
++    cancel_on_cast_other: false
++    delay: 1000
++    repeat: 10
++    total_duration: 10000
++    target_type: LivingEntity
++    target: any_entity
++    allow_max_range: false
++    range: 8
++    cooldown: 8000
++    bypass_pvp: true
++    bypass_friendly_fire: true
++    only_friendly: true
++    hitbox: true
++    amount: 1
++    cooldown_mage: 1000
++  costs:
++    mana: 12
++heal|2:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  upgrade_required_path: apprentice
++  upgrade_required_casts: 50
++  parameters:
++    range: 32
++    cooldown: 7000
++heal|3:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  # Riptide-style: instant 2 HP up front, then the 10 s heal over time.
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: CheckModifiers
++      blocked: wrv_renewed
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_renewed
++        duration: 10000
++      - class: Heal
++        amount: 2
++      - class: Repeat
++        actions:
++        - class: Delay
++        - class: Heal
++      fail:
++      - class: Message
++        message_type: action_bar
++        message: '&eYour Heal is already on them'
++  parameters:
++    cooldown: 6000
++  costs:
++    mana: 15
++
++cure:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  icon: cure
++  upgrade_required_path: student
++  upgrade_required_casts: 20
++  category: light
++  worth: 550
++  earns: 20
++  quick_cast: true
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: AreaOfEffect
++      actions:
++      - class: PotionEffect
++  effects:
++    cast:
++    - sound: entity_generic_drink
++      sound_pitch: 0.1
++      sound_volume: 0.4
++    - sound: block_beacon_activate
++      sound_pitch: 0.1
++      sound_volume: 1.4
++    - sound: entity_generic_drink
++      sound_pitch: 0.3
++      sound_volume: 0.2
++      location: targets
++      source_location: body
++      effectlib:
++        class: Warp
++        radius: 1
++        rings: 8
++        grow: 0.1
++        particle: end_rod
++    - class: EffectSingle
++      sound: magic.shimmer
++      source_location: body
++      location: source
++      effectlib:
++        class: Modified
++        iterations: 40
++        period: 2
++        parameters:
++          radius: (t/i) * 5 + 0.5
++          radius_nucleus: (t/i) * 8 + 2
++        effect:
++          class: AtomEffect
++          particle_nucleus: heart
++          particle_orbital: crit
++          particles_nucleus: 4
++          particles_orbital: 30
++  parameters:
++    target: self
++    target_type: LivingEntity
++    radius: 5
++    bypass_confusion: true
++    cooldown: 12000
++    bypass_pvp: true
++    bypass_friendly_fire: true
++    only_friendly: true
++    target_self: true
++    remove_effects:
++    - confusion
++    - poison
++    - slow
++    - slow_digging
++    cooldown_mage: 1000
++  costs:
++    mana: 20
++cure|2:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  upgrade_required_path: apprentice
++  upgrade_required_casts: 30
++  parameters:
++    cooldown: 10000
++    remove_effects:
++    - confusion
++    - weakness
++    - poison
++    - slow
++    - slow_digging
++    - wither
++cure|3:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  upgrade_required_path: master
++  upgrade_required_casts: 30
++  # Stock cure|3 dropped the area (self only). Keep it a group cleanse.
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: AreaOfEffect
++      actions:
++      - class: PotionEffect
++  parameters:
++    radius: 8
++    remove_effects:
++    - confusion
++    - weakness
++    - poison
++    - slow
++    - slow_digging
++    - wither
++    - blindness
++    - hunger
++cure|4:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  # Group cleanse plus a small snack (2 drumsticks), not a full meal, so food matters.
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: AreaOfEffect
++      actions:
++      - class: PotionEffect
++      - class: Repeat
++        actions:
++        - class: Delay
++        - class: Feed
++  parameters:
++    feed: 1
++    saturation: 1
++    exhaustion: false
++    delay: 500
++    repeat: 4
++    cooldown: 8000
++cure|5:
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: AreaOfEffect
++      actions:
++      - class: CheckEntity
++        allowed_entities: zombie_villager
++        actions:
++        - class: RemoveEntity
++        - class: ChangeContext
++          target_entity: true
++          target_offset: 0,-0.3,0
++          actions:
++          - class: SpawnEntity
++            type: villager
++            set_target: true
++        - class: PlayEffects
++          effects: cured
++      - class: PotionEffect
++      - class: Repeat
++        actions:
++        - class: Delay
++        - class: Feed
++  effects:
++    cured:
++    - class: EffectSingle
++      sound: entity_zombie_villager_cure
++      location: target
++      source_location: body
++      effectlib:
++        class: Modified
++        iterations: 40
++        period: 2
++        parameters:
++          radius: (t/i) * 3 + 0.75
++          radius_nucleus: (t/i) * 0.5 + 0.6
++        effect:
++          class: AtomEffect
++          particle_nucleus: villager_happy
++          particle_orbital: crit
++          particles_nucleus: 10
++          particles_orbital: 30
++  parameters:
++    friendly_types: zombie_villager
++
++blessing:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  icon: blessing
++  category: master
++  worth: 2600
++  earns: 8
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: CustomProjectile
++      actions:
++      - class: AreaOfEffect
++        actions:
++        - class: PotionEffect
++  effects:
++    cast:
++    - sound: block_beacon_activate
++      sound_pitch: 1.2
++      sound_volume: 1.2
++      location: both
++    tick:
++    - location: target
++      particle: end_rod
++      particle_count: 20
++      particle_offset_x: 0.1
++      particle_offset_y: 0.1
++      particle_offset_z: 0.1
++    hit:
++    - sound: block_beacon_deactivate
++      sound_pitch: 1.8
++      sound_volume: 1.2
++      location: both
++    - location: target
++      effectlib:
++        class: HelixEffect
++        particle: end_rod
++        iterations: 1
++        particles: 40
++        particle_count: 4
++        particle_offset_x: 0.2
++        particle_offset_y: 0.01
++        particle_offset_z: 0.2
++        offset: 0,0.1,0
++        radius: $radius
++    cast_finish:
++    - location: targets
++      sound: block_beacon_deactivate
++      sound_pitch: 0.8
++      sound_volume: 0.8
++      effectlib:
++        class: Love
++        iterations: 20
++  parameters:
++    target_type: Player
++    projectile: Snowball
++    effect_heal: 2
++    effect_damage_resistance: 1
++    effect_fire_resistance: 1
++    effect_absorption: 1
++    duration: 10000
++    radius: 8
++    target_self_timeout: 100
++    cooldown: 90000
++    bypass_friendly_fire: true
++    only_friendly: true
++    gravity: 0.05
++    velocity: 15
++    range: 8
++    cooldown_mage: 1000
++  costs:
++    mana: 150
++
++boon:
++  icon: boon
++  alias: perk
++  category: utility
++  worth: 880
++  earns: 6
++  upgrade_required_path: beginner
++  upgrade_required_casts: 40
++  quick_cast: true
++  toggle: cancel
++  disable_mana_regeneration: true
++  boss_bar: true
++  # WRV boonfix v2 (Oct 23, 2026): Boon is a toggle. Casting turns it ON;
++  # casting again, or running out of mana, turns it OFF. The wand's quiet: 1
++  # hides Magic's "on" text and the built-in "off" text read "Boon
++  # Interrupted", so we add a clear ON line and reword the OFF line.
++  # Speed is now applied for 1.5 s and refreshed every 1 s while Boon is on
++  # (was 30 s), so it ends within ~0.5-1.5 s of Boon turning off instead of
++  # lingering up to 30 s. No forced removal: vanilla effect merging keeps a
++  # longer or stronger Speed from a potion/beacon/other plugin.
++  messages:
++    cancel: "a:&eBoon is off"
++  actions:
++    cast:
++    - class: Message
++      message_type: action_bar
++      message: "&aBoon on: Speed II while your mana lasts. Cast again to stop."
++    - class: Repeat
++      actions:
++      - class: PotionEffect
++        duration: 1500
++      - class: Delay
++        delay: 1000
++  effects:
++    cast:
++    - sound: entity_experience_orb_pickup
++      sound_pitch: 0.2
++      sound_volume: 0.8
++    - sound: entity_generic_drink
++      sound_pitch: 1.75
++      sound_volume: 0.6
++    - sound: entity_generic_drink
++      sound_pitch: 1.75
++      sound_volume: 0.6
++    - sound: block_beacon_activate
++      sound_pitch: 1.5
++      sound_volume: 0.75
++    - location: origin
++      source_location: body
++      color_override: color
++      effectlib:
++        class: EquationEffect
++        x_equation: 0
++        y_equation: 0.4 * (cos(t/57.2958)  * (2.71828^(cos(t/57.2958)) - 2 * cos(4t/57.2958) - (sin(t/(12 * 57.2958)))^5))
++        z_equation: 0.4 * (sin(t/57.2958)  * (2.71828^(cos(t/57.2958)) - 2 * cos(4t/57.2958) - (sin(t/(12 * 57.2958)))^5))
++        particles: 50
++        duration: 3600000
++        relative_offset: -0.5,0,0
++        disappear_with_origin_entity: true
++  parameters:
++    target: self
++    effect_speed: 1
++    cooldown: 6000
++    cancel_on_death: true
++    repeat: infinite
++    bypass_mage_cooldown: true
++  costs:
++    mana: 20
++  active_costs:
++    mana: 1
++boon|2:
++  upgrade_required_path: student
++  upgrade_required_casts: 50
++  parameters:
++    effect_jump: 2
++boon|3:
++  upgrade_required_path: master
++  upgrade_required_casts: 50
++  parameters:
++    effect_speed: 2
++boon|4:
++  parameters:
++    effect_night_vision: 5
++
++superheal:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  icon: wrv_superheal
++  upgrade_required_path: student
++  upgrade_required_casts: 20
++  category: light
++  worth: 880
++  earns: 20
++  quick_cast: true
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: AreaOfEffect
++      actions:
++      - class: PotionEffect
++      - class: Feed
++      - class: Heal
++  effects:
++    cast:
++    - sound: entity_generic_drink
++      sound_pitch: 0.1
++      sound_volume: 0.4
++    - sound: block_beacon_activate
++      sound_pitch: 0.1
++      sound_volume: 1.4
++    - sound: entity_generic_drink
++      sound_pitch: 0.3
++      sound_volume: 0.2
++      location: targets
++      source_location: body
++      effectlib:
++        class: Warp
++        radius: 1
++        rings: 8
++        grow: 0.1
++        particle: end_rod
++    - class: EffectSingle
++      sound: magic.shimmer
++      source_location: body
++      location: source
++      effectlib:
++        class: Modified
++        iterations: 40
++        period: 2
++        parameters:
++          radius: (t/i) * 5 + 0.5
++          radius_nucleus: (t/i) * 8 + 2
++        effect:
++          class: AtomEffect
++          particle_nucleus: heart
++          particle_orbital: crit
++          particles_nucleus: 4
++          particles_orbital: 30
++  parameters:
++    target: self
++    target_type: LivingEntity
++    radius: 12
++    bypass_confusion: true
++    cooldown: 45000
++    bypass_pvp: true
++    bypass_friendly_fire: true
++    only_friendly: true
++    target_self: true
++    # Group heal: 8 HP now plus Regeneration I for 5 s. Was a FULL heal and FULL
++    # hunger+saturation for everyone in 16 blocks. Food now tops up a little only.
++    amount: 8
++    effect_regeneration: 0
++    duration: 5000
++    feed: 4
++    saturation: 1
++    exhaustion: false
++    remove_effects:
++    - confusion
++    - weakness
++    - poison
++    - slow
++    - slow_digging
++    - wither
++    cooldown_mage: 1000
++  costs:
++    mana: 110
++
++feed:
++  icon: wrv_feed
++  category: staff
++  quick_cast: true
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: Feed
++    - class: Heal
++    - class: PotionEffect
++  effects:
++    cast:
++    - sound: entity_generic_drink
++      sound_pitch: 0.1
++      sound_volume: 0.4
++    - sound: block_beacon_activate
++      sound_pitch: 0.1
++      sound_volume: 1.4
++    - sound: entity_generic_drink
++      sound_pitch: 0.3
++      sound_volume: 0.2
++      location: target
++      effectlib:
++        class: Warp
++        radius: 1
++        rings: 8
++        grow: 0.1
++        particle: end_rod
++    - class: EffectSingle
++      sound: magic.shimmer
++      source_location: body
++      location: target
++      effectlib:
++        class: Modified
++        iterations: 40
++        period: 2
++        parameters:
++          radius: (t/i) * 5 + 0.5
++          radius_nucleus: (t/i) * 8 + 2
++        effect:
++          class: AtomEffect
++          particle_nucleus: heart
++          particle_orbital: crit
++          particles_nucleus: 4
++          particles_orbital: 30
++  parameters:
++    # WRV Oct 23 2026: no picker menu (Bedrock showed identical heads), no bread,
++    # partial hunger only so food still matters. Aim at a player within 8 blocks,
++    # or at nothing to feed yourself.
++    target_type: Player
++    target: any_entity
++    allow_max_range: false
++    range: 8
++    hitbox: true
++    feed: 6
++    saturation: 2
++    exhaustion: false
++    amount: 4
++    cooldown: 60000
++    bypass_confusion: true
++    bypass_pvp: true
++    bypass_friendly_fire: true
++    only_friendly: true
++    remove_effects:
++    - poison
++    - wither
++    cooldown_mage: 1000
++  costs:
++    mana: 30
++
++extinguish:
++  icon: wrv_extinguish
++  category: utility
++  worth: 400
++  earns: 4
++  actions:
++    cast:
++    - class: Sphere
++      actions:
++      - class: ModifyBlock
++    - class: AreaOfEffect
++      actions:
++      - class: Ignite
++        duration: 0
++  effects:
++    cast:
++    - class: EffectSingle
++      sound: block_fire_extinguish
++      effectlib:
++        class: ConeEffect
++        iterations: 20
++        particle: smoke_normal
++        lengthGrow: 0.03
++        radiusGrow: 0.008
++  parameters:
++    allow_max_range: false
++    range: 32
++    check_destructible: true
++    destructible: fire
++    brush: erase
++    radius: 10
++    transparent: transparent_to_construction
++    cooldown: 8000
++    target_self: true
++    bypass_mage_cooldown: true
++  costs:
++    mana: 30
++
++aqualung:
++  icon: gasp
++  inherit: base_passive
++  legacy_icon: spell_icon:76
++  legacy_icon_disabled: spell_icon_disabled:76
++  worth: 120
++  triggers:
++  - trigger: damage
++    damage_type: drowning
++  actions:
++    cast:
++    - class: AirSupply
++  effects:
++    cast:
++    - sound: magic.shimmer
++      sound_volume: 0.2
++      particle: bubble_column_up
++      particle_count: 16
++      particle_offset_x: 0.5
++      particle_offset_y: 0.5
++      particle_offset_z: 0.5
++    - sound: entity_player_breath
++      sound_pitch: 1.3
++      sound_volume: 1.5
++      location: origin
++      effectlib:
++        class: Modified
++        duration: 3000
++        parameters:
++          radius: (t/i) * 3 + 0.3
++        effect:
++          class: Sphere
++          particle_count: 4
++          particles: 16
++          particle_offset_x: 0.2
++          particle_offset_y: 0.2
++          particle_offset_z: 0.2
++          particle: water_bubble
++          radius: 1
++  parameters:
++    air: max
++    cooldown: 60000
++
++    bypass_mage_cooldown: true
++gills:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  icon: wrv_gills
++  category: light
++  worth: 320
++  actions:
++    cast:
++    - class: PotionEffect
++    - class: Hat
++  effects:
++    cast:
++    - class: EffectSingle
++      sound: block_water_ambient
++      location: origin
++      source_location: eyes
++      effectlib:
++        class: SphereEffect
++        iterations: 10
++        period: 4
++        particle: drip_water
++        radius: 0.5
++  parameters:
++    target_type: LivingEntity
++    target: self
++    cooldown: 30000
++    duration: 30000
++    undo: 30000
++    effect_water_breathing: 1
++    enchantments:
++      oxygen: 3
++      water_worker: 1
++    brush: cyan_stained_glass
++    brushcolor: true
++    bypass_mage_cooldown: true
++  costs:
++    mana: 15
++
++shell:
++  icon: shell
++  alias: dome
++  category: combat
++  worth: 470
++  earns: 2
++  upgrade_required_path: student
++  upgrade_required_casts: 50
++  actions:
++    cast:
++    - class: CustomProjectile
++      actions:
++      - class: Sphere
++        actions:
++        - class: ModifyBlock
++  effects:
++    cast:
++    - class: EffectSingle
++      sound: magic.shield
++    - sound: block_stone_place
++      sound_pitch: 1.2
++      sound_volume: 1.7
++    - sound: entity_ender_dragon_hurt
++      sound_pitch: 1.9
++      sound_volume: 0.8
++    tick:
++    - location: target
++      particle: block_crack
++      particle_count: 10
++      particle_offset_x: 0.2
++      particle_offset_y: 0.2
++      particle_offset_z: 0.2
++    hit:
++    - sound: block_stone_place
++      sound_pitch: 0.1
++      sound_volume: 1.7
++      location: target
++    - location: target
++      sound: entity_ender_dragon_hurt
++      sound_pitch: 1.2
++      sound_volume: 0.8
++      effectlib:
++        class: SphereEffect
++        particle: block_crack
++        particle_count: 10
++        particles: 5
++        particle_offset_x: 0.3
++        particle_offset_y: 0.3
++        particle_offset_z: 0.3
++        radius: $radius
++        duration: 2000
++  parameters:
++    target: other
++    allow_max_range: false
++    velocity: 50
++    target_type: LivingEntity
++    range: 32
++    thickness: 1
++    radius: 3
++    type: sphere
++    transparent: transparent_to_construction
++    destructible: destructible_replace
++    check_destructible: true
++    undo: 4000
++    brush: white_stained_glass
++    brushcolor: true
++    cooldown: 5000
++    breakable: 4
++    reflect_chance: 0.25
++    miss_effects: hit
++    miss: actions
++    bypass_mage_cooldown: true
++  costs:
++    mana: 75
++shell|2:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  upgrade_required_path: apprentice
++  upgrade_required_casts: 50
++  parameters:
++    reflect_chance: 0.5
++    undo: 5000
++    breakable: 3
++shell|3:
++  upgrade_required_path: master
++  upgrade_required_casts: 50
++  parameters:
++    reflect_chance: 0.75
++    breakable: 2
++shell|4:
++  parameters:
++    reflect_chance: 0.9
++    breakable: 1
++
++recall:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  icon: recall
++  category: utility
++  tags: noduel,nojail
++  worth: 100
++  earns: 5
++  cast_on_no_target: false
++  upgrade_required_path: beginner
++  upgrade_required_casts: 25
++  world_border_restricted: false
++  quick_cast: true
++  show_undoable: false
++  actions:
++    cast:
++    - class: Recall
++  effects:
++    no_action: []
++    no_target: []
++    wait:
++    - source_location: eyes
++      color_override: color
++      sound: block_note_block_bit
++      sound_pitch: 0.2
++      sound_volume: 0.3
++      effectlib:
++        class: WarpEffect
++        duration: $warmup
++        period: 1
++        particle: redstone
++        particle_offset_x: 0.9
++        particle_offset_y: 0.1
++        particle_offset_z: 0.9
++        radius: 1
++        offset: 0,-1,0
++    - class: EffectSingle
++      source_location: eyes
++      effectlib:
++        class: WarpEffect
++        duration: 1000
++        period: 2
++        particle: portal
++        particle_count: 10
++        particle_offset_x: 0.9
++        particle_offset_y: 0.1
++        particle_offset_z: 0.9
++        radius: 1
++        offset: 0,-1,0
++    cast:
++    - sound: block_beacon_activate
++      sound_pitch: 0.75
++      sound_volume: 0.8
++    - sound: entity_enderman_teleport
++      sound_pitch: 0.25
++      sound_volume: 0.5
++    - class: EffectSingle
++      sound: magic.teleport
++      sound_volume: 0.8
++      sound_pitch: 0.3
++      source_location: eyes
++      color_override: color
++      effectlib:
++        class: WarpEffect
++        duration: 1000
++        period: 1
++        particle: redstone
++        particle_offset_x: 0.9
++        particle_offset_y: 0.1
++        particle_offset_z: 0.9
++        radius: 1
++        offset: 0,-1,0
++    menu:
++    - sound: entity_enderman_teleport
++      sound_pitch: 1.5
++      sound_volume: 0.75
++    teleporting:
++    - sound: entity_enderman_teleport
++      sound_pitch: 0.75
++      sound_volume: 0.75
++      location: both
++    - class: EffectSingle
++      location: both
++      source_location: eyes
++      color_override: color
++      effectlib:
++        class: WarpEffect
++        particle: redstone
++        particle_offset_x: 0.9
++        particle_offset_y: 0.1
++        particle_offset_z: 0.9
++        offset: 0,-1,0
++        period: 2
++        update_locations: false
++    - class: EffectSingle
++      sound: magic.teleport
++      sound_pitch: 1.2
++      location: both
++      source_location: eyes
++      effectlib:
++        class: WarpEffect
++        period: 1
++        particle: portal
++        particle_count: 10
++        particle_offset_x: 0.9
++        particle_offset_y: 0.1
++        particle_offset_z: 0.9
++        offset: 0,-1,0
++        update_locations: false
++  parameters:
++    options:
++    - type: home
++    - type: death
++    - type: town
++      show_unavailable: false
++    - type: spawn
++      show_unavailable: false
++    - type: placeholder
++    - type: placeholder
++    - type: marker
++      show_unavailable: false
++      marker: 3
++    - type: marker
++      show_unavailable: false
++      marker: 2
++    - type: marker
++      show_unavailable: false
++      marker: 1
++    warmup: 5000
++    cancel_on_damage: 1
++    cancel_on_cast_other: true
++    allow_spawn: false
++    allow_marker: false
++    allow_death: false
++    allow_souls: false
++    allow_wand: true
++    allow_home: true
++    allow_cross_world: true
++    allow_town: true
++    allow_fields: true
++    allow_friends: false
++    icon_death: skull_item
++    icon_soul: skeleton_skull
++    icon_field: wood_door
++    icon_wand: stick{CustomModelData:18001}
++    icon_spawn: wood_door
++    icon_home: red_bed
++    icon_town: iron_door
++    icon_marker: redstone_block
++    icon_move_marker: redstone_block
++    show_unavailable: true
++    unavailable_icon: gray_dye
++    loud: true
++    cooldown: 15000
++    protection_duration: 5000
++    target: none
++    bypass_mage_cooldown: true
++recall|2:
++  upgrade_required_path: student
++  upgrade_required_casts: 30
++  parameters:
++    allow_death: true
++    allow_souls: true
++recall|3:
++  upgrade_required_path: apprentice
++  actions:
++    alternate_sneak:
++    - class: Recall
++      type: place
++  parameters:
++    allow_marker: true
++recall|4:
++  upgrade_required_path: master
++  parameters:
++    marker_count: 2
++recall|5:
++  parameters:
++    marker_count: 3
++
++recall_death:
++  inherit: recall
++  icon: superkill
++  parameters:
++    type: death
++    warmup: 0
++
++    bypass_mage_cooldown: true
++base_passive:
++  passive: true
++  cast_on_no_target: false
++  effects: {}
++  parameters:
++    quiet: true
++    target: self
++
++#
++# =====================================================================
++# CUSTOM SPELL - Storm Shackle (stormshackle) - WRV-070, Oct 17, 2026
++# =====================================================================
++# Mike's design: "a chain lightning that does VERY LOW damage but SLOWS
++# the enemies it arcs to." Built from Magic 11.2.5's chainlightning
++# block (copied structure and effects), with these deliberate changes:
++#
++#   DAMAGE: every Damage action uses player_damage 0.5 / entity_damage
++#     0.5 (chainlightning ships 1.5 / 2, plus a 0.5 / 1 repeat tick).
++#     0.5 is the smallest damage value the shipped defaults themselves
++#     use for a damage tick = a quarter-heart per strike. The `repeat`
++#     parameter drops 4 -> 2, halving the repeat ticks. Worst case per
++#     enemy is ~2 HP (one heart) if it eats every branch; a typical
++#     single arc hit is 0.5-1 HP. This is a control spell, not a weapon.
++#   SLOW: a PotionEffect action rides next to EVERY Damage action, so
++#     each struck enemy is slowed. Format is Magic's own (verified
++#     against the shipped defaults - frost and curse use the same
++#     mechanism, and against the 11.2.5 bytecode): a bare PotionEffect
++#     action reads `effect_<name>` + `duration` from its parameters.
++#     Here, action-local parameters set:
++#       effect_slow: 0   -> Slowness amplifier 0 = Slowness I
++#       duration: 4000   -> 4000 ms = 4 seconds
++#   COST: mana 50 (heal-tier; chainlightning ships 75), cooldown
++#     10000 ms (half of chainlightning's 20000; in family with the
++#     Phase 1 support spells). Not free, not spammable.
++#   No upgrade variants (|2/|3) and no upgrade_required_*: Phase 1
++#     ships exactly this one level, target_count stays 3 (the raw
++#     spell's apprentice/master variants raise it to 5/8 - Phase 2
++#     territory, not ours).
++#   category: utility (control/support, not combat). icon reuses the
++#     chainlightning icon, which still resolves from default icons.
++#   Display name/description live in this packet's messages.yml.
++#
++stormshackle:
++  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
++  icon: chainlightning
++  category: utility
++  worth: 1260
++  earns: 6
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: CustomProjectile
++      actions:
++      - class: Damage
++      - class: PotionEffect
++        duration: 4000
++        effect_slow: 0
++      - class: Delay
++      - class: AreaOfEffect
++        actions:
++        - class: Asynchronous
++          actions:
++          - class: CustomProjectile
++            velocity: 150
++            actions:
++            - class: Damage
++            - class: PotionEffect
++              duration: 4000
++              effect_slow: 0
++            - class: Delay
++            - class: AreaOfEffect
++              target_count: 1
++              actions:
++              - class: CustomProjectile
++                actions:
++                - class: Damage
++                - class: PotionEffect
++                  duration: 4000
++                  effect_slow: 0
++            - class: Repeat
++              actions:
++              - class: Damage
++                player_damage: 0.5
++                entity_damage: 0.5
++              - class: PotionEffect
++                duration: 4000
++                effect_slow: 0
++              - class: Delay
++      - class: Repeat
++        actions:
++        - class: Damage
++        - class: PotionEffect
++          duration: 4000
++          effect_slow: 0
++        - class: Delay
++  effects:
++    cast:
++    - class: EffectSingle
++      sound: magic.zap
++      location: origin
++    - sound: block_conduit_activate
++      sound_pitch: 1.75
++    projectile:
++    - class: EffectSingle
++      effectlib:
++        class: LineEffect
++        isZigZag: true
++        zigZags: 2
++        zigZagOffset: 0,0.05,0
++        length: 10
++        particles: 50
++        particle: redstone
++        color: FFF000
++        duration: 2000
++    - location: source
++      effectlib:
++        class: LineEffect
++        isZigZag: true
++        zigZags: 2
++        zigZagOffset: 0,0.05,0
++        length: 10
++        particles: 20
++        particle: fireworks_spark
++        particle_count: 4
++        particle_offset_x: 0.1
++        particle_offset_y: 0.1
++        particle_offset_z: 0.1
++        duration: 2000
++    tick:
++    - particle: fireworks_spark
++      particle_count: 2
++      particle_offset_x: 0.2
++      particle_offset_y: 0.2
++      particle_offset_z: 0.2
++      location: target
++    hit:
++    - sound: entity_guardian_attack
++      sound_pitch: 2
++      sound_volume: 0.5
++      location: target
++    - class: EffectSingle
++      sound: magic.zap_crack
++      sound_volume: 0.5
++      location: target
++      particle: fireworks_spark
++      particle_count: 10
++      particle_offset_x: 1
++      particle_offset_y: 1
++      particle_offset_z: 1
++    - sound: block_conduit_activate
++      sound_pitch: 1.8
++      location: target
++  parameters:
++    tick_size: 5
++    target: other
++    target_self: false
++    target_source: false
++    range: 48
++    velocity: 100
++    radius: 8
++    target_count: 3
++    target_type: Damageable
++    player_damage: 0.5
++    entity_damage: 0.5
++    delay: 250
++    repeat: 2
++    target_breakables: 1
++    cooldown: 8000
++    ignore_modified: true
++    cooldown_mage: 1000
++  costs:
++    mana: 15
++mend:
++  icon: wrv_mend
++  category: light
++  worth: 200
++  earns: 2
++  upgrade_required_path: student
++  upgrade_required_casts: 40
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: Heal
++  effects:
++    cast:
++    - sound: entity_generic_drink
++      sound_pitch: 1.4
++      sound_volume: 0.4
++    - sound: block_amethyst_block_chime
++      sound_pitch: 1.6
++      sound_volume: 0.9
++      location: both
++    - class: EffectSingle
++      location: target
++      effectlib:
++        class: HelixEffect
++        particle: heart
++        iterations: 1
++        particles: 12
++        radius: 0.6
++  parameters:
++    target_type: LivingEntity
++    target: any_entity
++    allow_max_range: false
++    range: 16
++    hitbox: true
++    bypass_pvp: true
++    bypass_friendly_fire: true
++    only_friendly: true
++    bypass_confusion: true
++    amount: 1.5
++    cooldown_mage: 1000
++  costs:
++    mana: 4
++mend|2:
++  upgrade_required_path: student
++  upgrade_required_casts: 40
++mend|3:
++  upgrade_required_path: apprentice
++  upgrade_required_casts: 40
++  parameters:
++    amount: 2
++  costs:
++    mana: 8
++mend|4:
++  upgrade_required_path: master
++  upgrade_required_casts: 40
++  parameters:
++    amount: 2.5
++  costs:
++    mana: 12
++mend|5:
++  parameters:
++    amount: 3
++  costs:
++    mana: 17
++  upgrade_required_path: master
++  upgrade_required_casts: 40
++flashheal:
++  icon: wrv_flashheal
++  category: light
++  worth: 500
++  earns: 3
++  upgrade_required_path: apprentice
++  upgrade_required_casts: 40
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: Heal
++  effects:
++    cast:
++    - sound: entity_generic_drink
++      sound_pitch: 1.4
++      sound_volume: 0.4
++    - sound: block_amethyst_block_chime
++      sound_pitch: 1.6
++      sound_volume: 0.9
++      location: both
++    - class: EffectSingle
++      location: target
++      effectlib:
++        class: HelixEffect
++        particle: heart
++        iterations: 1
++        particles: 12
++        radius: 0.6
++  parameters:
++    target_type: LivingEntity
++    target: any_entity
++    allow_max_range: false
++    range: 16
++    hitbox: true
++    bypass_pvp: true
++    bypass_friendly_fire: true
++    only_friendly: true
++    bypass_confusion: true
++    amount: 5
++    cooldown_mage: 1000
++  costs:
++    mana: 15
++flashheal|2:
++  upgrade_required_path: apprentice
++  upgrade_required_casts: 40
++flashheal|3:
++  upgrade_required_path: master
++  upgrade_required_casts: 40
++  parameters:
++    amount: 6
++  costs:
++    mana: 24
++flashheal|4:
++  parameters:
++    amount: 7
++  costs:
++    mana: 35
++  upgrade_required_path: master
++  upgrade_required_casts: 40
++ward:
++  icon: wrv_ward
++  category: light
++  worth: 470
++  earns: 3
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: CheckModifiers
++      blocked: wrv_warded
++      actions:
++      - class: PotionEffect
++      - class: Modifier
++        add_modifiers: wrv_warded
++        duration: 12000
++      fail:
++      - class: Message
++        message_type: action_bar
++        message: '&eThat player is still Warded'
++  effects:
++    cast:
++    - sound: entity_generic_drink
++      sound_pitch: 1.4
++      sound_volume: 0.4
++    - sound: block_amethyst_block_chime
++      sound_pitch: 1.6
++      sound_volume: 0.9
++      location: both
++    - class: EffectSingle
++      location: target
++      effectlib:
++        class: HelixEffect
++        particle: heart
++        iterations: 1
++        particles: 12
++        radius: 0.6
++  parameters:
++    target_type: Player
++    target: any_entity
++    allow_max_range: false
++    range: 16
++    hitbox: true
++    bypass_pvp: true
++    bypass_friendly_fire: true
++    only_friendly: true
++    bypass_confusion: true
++    effect_absorption: 0
++    duration: 15000
++    cooldown: 6000
++    cooldown_mage: 1000
++  costs:
++    mana: 15
++greaterheal:
++  icon: wrv_greaterheal
++  category: light
++  worth: 600
++  earns: 4
++  upgrade_required_path: master
++  upgrade_required_casts: 40
++  boss_bar: true
++  actions:
++    cast:
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: Modifier
++        add_modifiers: wrv_focus
++        duration: 5000
++    - class: ChangeContext
++      target_caster: true
++      actions:
++      - class: PotionEffect
++        effect_slow: 1
++        duration: 2000
++    - class: Delay
++    - class: Heal
++  effects:
++    cast:
++    - sound: entity_generic_drink
++      sound_pitch: 1.4
++      sound_volume: 0.4
++    - sound: block_amethyst_block_chime
++      sound_pitch: 1.6
++      sound_volume: 0.9
++      location: both
++    - class: EffectSingle
++      location: target
++      effectlib:
++        class: HelixEffect
++        particle: heart
++        iterations: 1
++        particles: 12
++        radius: 0.6
++  parameters:
++    target_type: LivingEntity
++    target: any_entity
++    allow_max_range: false
++    range: 16
++    hitbox: true
++    bypass_pvp: true
++    bypass_friendly_fire: true
++    only_friendly: true
++    bypass_confusion: true
++    amount: 6
++    delay: 2000
++    cooldown_mage: 2000
++    cancel_on_damage: 4
++    cancel_on_cast_other: true
++    cancel_on_death: true
++  costs:
++    mana: 8
++greaterheal|2:
++  upgrade_required_path: master
++  upgrade_required_casts: 40
++greaterheal|3:
++  parameters:
++    amount: 8
++  costs:
++    mana: 10
++  upgrade_required_path: master
++  upgrade_required_casts: 40
