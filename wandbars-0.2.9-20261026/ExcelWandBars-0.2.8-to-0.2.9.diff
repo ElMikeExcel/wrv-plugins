@@ -1,0 +1,1520 @@
+diff -ruN -x build src-0.2.8/build.sh src/build.sh
+--- src-0.2.8/build.sh	2026-10-26 11:46:30.284685074 -0500
++++ src/build.sh	2026-10-26 13:16:53.757363127 -0500
+@@ -1,5 +1,5 @@
+ #!/bin/bash
+-# Build ExcelWandBars-0.2.7.jar (deterministic: fixed jar date, sorted inputs).
++# Build ExcelWandBars-0.2.9.jar (deterministic: fixed jar date, sorted inputs).
+ # Manual javac route, same as the other Excel plugins. Magic 11.2.5's jar is
+ # COMPILE-ONLY (soft-depend at runtime); nothing from Magic or Geyser is packaged.
+ # 0.2.7: Geyser-Spigot's jar is compile-only too (GeyserTapHook, loaded by name only when Geyser runs).
+@@ -17,7 +17,7 @@
+ rm -rf build/classes && mkdir -p build/classes
+ "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP" -d build/classes $(find src -name '*.java' | sort)
+ cp plugin.yml config.yml build/classes/
+-OUT=${OUT:-../files/plugins/ExcelWandBars-0.2.8.jar}
++OUT=${OUT:-../files/plugins/ExcelWandBars-0.2.9.jar}
+ rm -f "$OUT"
+ "$JDK/bin/jar" --create --file "$OUT" --date=2026-10-26T00:00:00-05:00 -C build/classes .
+ sha256sum "$OUT"
+diff -ruN -x build src-0.2.8/config.yml src/config.yml
+--- src-0.2.8/config.yml	2026-10-26 11:46:30.296685128 -0500
++++ src/config.yml	2026-10-26 13:17:08.905430318 -0500
+@@ -327,3 +327,20 @@
+   keys:
+     - menujoin:menu_compass
+     - excelmenujoin:menu_compass
++
++# 0.2.9: each player's own spell bar (Tap bar, Tap to pick (original), Sneak bars).
++# Every player picks which spells sit on their bar. New spells (rank up, a new wand)
++# go into the first empty slots with a short chat line, or into the Spellbook when the
++# bar is full. Change it from the Spellbook (Put on my bar, Move, Take off) or /spellbar.
++# Saved per player in plugins/ExcelWandBars/loadouts.yml (server data, not in this file).
++# On a player's first load the bar is filled from their wand's current order (first slots).
++# enabled: false = the 0.2.8 behaviour (every spell on the bar in pages of 7).
++# A missing section counts as enabled: true with these defaults. Reload: /wandbars reload.
++bar-loadout:
++  enabled: true
++  # 14 = 2 pages of 7 in Tap bar (8 per page in Sneak bars). 1 to 64.
++  slots: 14
++  # "New spell: X added to your bar" / "New spell: X is in your Spellbook".
++  new-spell-lines: true
++  # More new spells at once than this: one "N more new spells" line instead.
++  max-new-spell-lines: 3
+diff -ruN -x build src-0.2.8/plugin.yml src/plugin.yml
+--- src-0.2.8/plugin.yml	2026-10-26 11:46:30.288685092 -0500
++++ src/plugin.yml	2026-10-26 13:17:01.281396501 -0500
+@@ -1,24 +1,29 @@
+ name: ExcelWandBars
+-version: 0.2.8
++version: 0.2.9
+ main: com.winkreyes.excelwandbars.ExcelWandBars
+ api-version: '1.13'
+ author: WinkReyesValley
+ softdepend: [Magic, Geyser-Spigot, floodgate]
+-description: Wand controls per player (/wandstyle classic, cycle or sneakbars, classic by default; Sneak bars is Bedrock only). In Sneak bars, sneak once while your Magic wand's spell bar is open to flip to the next bar (1, 2, 3, back to 1). A short wand tip shows on the first 15 wand uses until OK. /spellinfo shows each spell's cost, cooldown, range, rank and progress to its next rank (Bedrock form or Java chat). New in 0.2.2, for Bedrock players on Classic controls the wand's spell list opens as the Spell Book form (with Use this spell); a short action-bar line after a cast shows progress to the next rank. New in 0.2.3, a third style, Cycle (right click / press and hold / LT = next spell, sneak + right click or Q = back one, no spell list), for Java and Bedrock. New in 0.2.4, Tap to cycle (original) (the first wand setup, tap a hotbar spell icon to pick it, hold to cast) and Tap bar (best on phone, tap a hotbar spell icon to cast it at once), each with a one-line description in the Wand controls form. New in 0.2.5, Tap bar shows every unlocked spell in pages (crouch flips, Page 1/2 on screen), press and hold reads your spells and never casts, Tap to cycle (original) is now called Tap to pick (original). New in 0.2.6, Tap to pick (original) really picks. Tapping a spell icon selects it and never casts (also for spells that are quick cast on their own), press and hold (Bedrock) or left click (Java) casts the picked spell once, and a phone press and hold no longer closes the bar. New in 0.2.7, in Tap bar and Tap to pick (original) the wand moves to the last hotbar slot by itself (the item that was there goes to the wand's old slot, nothing is dropped), and in Tap bar on Bedrock tapping the wand again puts your items back. The spell info screen (/spellinfo and Spell Book) now shows what each spell really does (hearts, effects, radius, by rank), what the next rank changes, and how to reach the next wand rank.
++description: Wand controls per player (/wandstyle classic, cycle or sneakbars, classic by default; Sneak bars is Bedrock only). In Sneak bars, sneak once while your Magic wand's spell bar is open to flip to the next bar (1, 2, 3, back to 1). A short wand tip shows on the first 15 wand uses until OK. /spellinfo shows each spell's cost, cooldown, range, rank and progress to its next rank (Bedrock form or Java chat). New in 0.2.2, for Bedrock players on Classic controls the wand's spell list opens as the Spell Book form (with Use this spell); a short action-bar line after a cast shows progress to the next rank. New in 0.2.3, a third style, Cycle (right click / press and hold / LT = next spell, sneak + right click or Q = back one, no spell list), for Java and Bedrock. New in 0.2.4, Tap to cycle (original) (the first wand setup, tap a hotbar spell icon to pick it, hold to cast) and Tap bar (best on phone, tap a hotbar spell icon to cast it at once), each with a one-line description in the Wand controls form. New in 0.2.5, Tap bar shows every unlocked spell in pages (crouch flips, Page 1/2 on screen), press and hold reads your spells and never casts, Tap to cycle (original) is now called Tap to pick (original). New in 0.2.6, Tap to pick (original) really picks. Tapping a spell icon selects it and never casts (also for spells that are quick cast on their own), press and hold (Bedrock) or left click (Java) casts the picked spell once, and a phone press and hold no longer closes the bar. New in 0.2.7, in Tap bar and Tap to pick (original) the wand moves to the last hotbar slot by itself (the item that was there goes to the wand's old slot, nothing is dropped), and in Tap bar on Bedrock tapping the wand again puts your items back. The spell info screen (/spellinfo and Spell Book) now shows what each spell really does (hearts, effects, radius, by rank), what the next rank changes, and how to reach the next wand rank. New in 0.2.9, each player has their own spell bar (14 slots, 2 pages of 7 by default). New spells go into empty slots by themselves (a short chat line says so), or into the Spellbook when the bar is full. Change it from the Spellbook (Put on my bar, Move, Take off) or /spellbar, same on Java and Bedrock.
+ commands:
+   spellinfo:
+     description: Read your wand's spells (what they do, cost, cooldown, range, rank).
+     usage: /spellinfo [spell | ok]
+     aliases: [spellbook, wandspells]
+     permission: excelwandbars.spells
++  spellbar:
++    description: Your own spell bar. Pick which spells are on it and in which slot.
++    usage: /spellbar [slot <n> | put <spell> [n] | remove <n> | swap <a> <b>]
++    aliases: [mybar]
++    permission: excelwandbars.spells
+   wandstyle:
+     description: Pick your wand controls, Classic (right click = next spell, sneak + right click = list), Cycle (next / back only), Sneak bars (Bedrock, sneak flips the spell bar), Tap to cycle (original) or Tap bar (tap a spell icon to cast).
+     usage: /wandstyle [classic | cycle | sneakbars | original | tapbar | switch | ok]
+     aliases: [wandcontrols]
+     permission: excelwandbars.style
+   wandbars:
+-    description: ExcelWandBars admin (status / reload / flip / info / style / tip / spelltip / progress / use / lastform / formtap / tapbar / wandslot / wandtap / simbedrock <player> / spelldump <player> or spelldump template <key>).
+-    usage: /wandbars [reload | flip <player> | info <player> | style <player> [classic|bars|cycle|original|tapbar|clear|apply|unset] | chooser <player> | choosertap <player> <n> | tip <player> [reset] | spelltip <player> [reset] | progress <player> | use <player> <spell> | lastform <player> | formtap <player> <n> | tapbar <player> [open] | wandslot <player> | wandtap <player> | simbedrock <player> [on|off] | spelldump <player> | spelldump template <spell|level> | rankup <player> [status|check|addsp <n>]]
++    description: ExcelWandBars admin (status / reload / flip / info / style / tip / spelltip / progress / use / lastform / formtap / tapbar / wandslot / wandtap / simbedrock <player> / spelldump <player> or spelldump template <key> / rankup / loadout).
++    usage: /wandbars [reload | flip <player> | info <player> | style <player> [classic|bars|cycle|original|tapbar|clear|apply|unset] | chooser <player> | choosertap <player> <n> | tip <player> [reset] | spelltip <player> [reset] | progress <player> | use <player> <spell> | lastform <player> | formtap <player> <n> | tapbar <player> [open] | wandslot <player> | wandtap <player> | simbedrock <player> [on|off] | spelldump <player> | spelldump template <spell|level> | rankup <player> [status|check|addsp <n>] | loadout <player> [show|reseed|save|do <spellbar args>]]
+     permission: excelwandbars.admin
+ permissions:
+   excelwandbars.spells:
+diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/ExcelWandBars.java src/src/com/winkreyes/excelwandbars/ExcelWandBars.java
+--- src-0.2.8/src/com/winkreyes/excelwandbars/ExcelWandBars.java	2026-10-26 11:45:37.024448825 -0500
++++ src/src/com/winkreyes/excelwandbars/ExcelWandBars.java	2026-10-26 13:14:55.432838283 -0500
+@@ -31,6 +31,8 @@
+     /** Rank-up by casting (2026-10-26). */
+     private RankUpHook rankUp;
+     private WandSlotHook wandSlot;
++    /** 0.2.9: each player's own spell bar. */
++    private LoadoutHook loadouts;
+     private String geyserTap = "off";
+     /** Admin test aid (/wandbars simbedrock): treat these online Java players as Bedrock. Memory only, cleared on quit. */
+     private final java.util.Set<java.util.UUID> simBedrock = new java.util.HashSet<>();
+@@ -122,6 +124,17 @@
+                 }
+             }
+             try {
++                // 0.2.9: each player's own spell bar (bar-loadout.enabled: false = 0.2.8 paging).
++                loadouts = new LoadoutHook(this, (com.elmakers.mine.bukkit.api.magic.MagicAPI) magic);
++                loadouts.loadSettings(getConfig().getConfigurationSection("bar-loadout"));
++                loadouts.load();
++                getServer().getPluginManager().registerEvents(loadouts, this);
++                getLogger().info("Own spell bar per player " + loadouts.summary() + ".");
++            } catch (Throwable t) {
++                loadouts = null;
++                getLogger().warning("Own spell bar off (" + t + "), every spell on the bar in pages as in 0.2.8.");
++            }
++            try {
+                 // Rank-up by casting (2026-10-26): off until rank-up-casting.enabled is true (reloadable).
+                 rankUp = new RankUpHook(this, (com.elmakers.mine.bukkit.api.magic.MagicAPI) magic);
+                 rankUp.loadSettings(getConfig().getConfigurationSection("rank-up-casting"));
+@@ -177,6 +190,8 @@
+         if (spellTip != null) spellTip.save();
+         if (rankUp != null) rankUp.save();
+         rankUp = null;
++        if (loadouts != null) loadouts.save();
++        loadouts = null;
+         tips = null;
+         spellTip = null;
+         screen = null;
+@@ -236,6 +251,7 @@
+     }
+     TapBarHook tapBar() { return tapBar; }
+     RankUpHook rankUp() { return rankUp; }
++    LoadoutHook loadouts() { return loadouts; }
+     /** 0.2.8: player-facing rank names (config rank-names). Magic's template and path keys never change. */
+     private final java.util.Map<String, String> rankNames = new java.util.HashMap<>();
+     String rankDisplay(String key, String magicName) {
+@@ -329,6 +345,13 @@
+             hook.openSpellBook(p, args.length > 0 ? args[0] : null);
+             return true;
+         }
++        if (name.equals("spellbar")) {
++            // 0.2.9: change your own spell bar (Bedrock form or Java clickable chat).
++            if (!(sender instanceof Player p)) { sender.sendMessage("Players only. Admins: /wandbars loadout <player>"); return true; }
++            if (loadouts == null || hook == null) { p.sendMessage(ChatColor.GRAY + com.winkreyes.excelwandbars.core.LoadoutText.OFF); return true; }
++            loadouts.handle(p, args);
++            return true;
++        }
+         if (name.equals("wandstyle")) {
+             if (!(sender instanceof Player p)) {
+                 sender.sendMessage("Players only. Admins: /wandbars style <player> [classic|bars|clear]");
+@@ -365,7 +388,22 @@
+                 if (wandSlot != null) wandSlot.loadSettings(getConfig().getConfigurationSection("wand-slot"));
+                 if (screen != null) screen.loadSettings(getConfig().getConfigurationSection("spell-screen"), getConfig().getConfigurationSection("progress-line"));
+                 if (rankUp != null) { rankUp.save(); rankUp.loadSettings(getConfig().getConfigurationSection("rank-up-casting")); }
+-                sender.sendMessage("ExcelWandBars settings reloaded." + (rankUp != null ? " Rank-up by casting: " + (rankUp.enabled ? "ON" : "off") : ""));
++                if (loadouts != null) { loadouts.loadSettings(getConfig().getConfigurationSection("bar-loadout")); loadouts.save(); }
++                sender.sendMessage("ExcelWandBars settings reloaded." + (rankUp != null ? " Rank-up by casting: " + (rankUp.enabled ? "ON" : "off") + "." : "")
++                        + (loadouts != null ? " Own spell bar: " + loadouts.summary() + "." : ""));
++                if (style != null) for (Player op : Bukkit.getOnlinePlayers()) Bukkit.getScheduler().runTaskLater(this, () -> { if (op.isOnline() && style != null) style.applyNow(op, "reload"); }, 2L);
++                return true;
++            }
++            if (args.length > 1 && args[0].equalsIgnoreCase("loadout")) {
++                // 0.2.9 admin/rig: /wandbars loadout <player> [show | reseed | do <spellbar args...>]
++                if (loadouts == null) { sender.sendMessage("Own spell bar is not loaded."); return true; }
++                Player t = Bukkit.getPlayerExact(args[1]);
++                if (t == null) { sender.sendMessage("Player not online: " + args[1]); return true; }
++                String a = args.length > 2 ? args[2].toLowerCase(Locale.ROOT) : "show";
++                if (a.equals("reseed")) sender.sendMessage("reseed: " + loadouts.reseed(t));
++                else if (a.equals("do")) sender.sendMessage("do: " + loadouts.handle(t, java.util.Arrays.copyOfRange(args, 3, args.length)));
++                else if (a.equals("save")) { loadouts.save(); sender.sendMessage("saved"); }
++                for (String l : loadouts.describe(t)) sender.sendMessage(l);
+                 return true;
+             }
+             if (args.length > 1 && args[0].equalsIgnoreCase("rankup")) {
+diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/LoadoutHook.java src/src/com/winkreyes/excelwandbars/LoadoutHook.java
+--- src-0.2.8/src/com/winkreyes/excelwandbars/LoadoutHook.java	1969-12-31 18:00:00.000000000 -0600
++++ src/src/com/winkreyes/excelwandbars/LoadoutHook.java	2026-10-26 13:14:12.904649654 -0500
+@@ -0,0 +1,444 @@
++package com.winkreyes.excelwandbars;
++
++import com.elmakers.mine.bukkit.api.magic.Mage;
++import com.elmakers.mine.bukkit.api.magic.MagicAPI;
++import com.elmakers.mine.bukkit.api.spell.SpellTemplate;
++import com.elmakers.mine.bukkit.api.wand.Wand;
++import com.elmakers.mine.bukkit.api.wand.WandTemplate;
++import com.winkreyes.excelwandbars.core.BarLoadout;
++import com.winkreyes.excelwandbars.core.LoadoutText;
++import com.winkreyes.excelwandbars.core.PageLayout;
++import com.winkreyes.excelwandbars.core.SpellInfoText;
++import com.winkreyes.excelwandbars.core.WandStyle;
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.event.ClickEvent;
++import net.kyori.adventure.text.format.NamedTextColor;
++import org.bukkit.Bukkit;
++import org.bukkit.configuration.ConfigurationSection;
++import org.bukkit.configuration.file.YamlConfiguration;
++import org.bukkit.entity.Player;
++import org.bukkit.event.Listener;
++
++import java.io.File;
++import java.nio.file.Files;
++import java.nio.file.StandardCopyOption;
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.HashMap;
++import java.util.LinkedHashMap;
++import java.util.List;
++import java.util.Locale;
++import java.util.Map;
++import java.util.UUID;
++
++/**
++ * 0.2.9: each player's own spell bar (loadout). Saved per player in loadouts.yml
++ * (server data folder only). StyleHook asks it for the bar layout; the Spell Book and
++ * /spellbar change it. Config bar-loadout.enabled: false = the 0.2.8 "every spell on the
++ * bar in pages" behaviour.
++ */
++final class LoadoutHook implements Listener {
++    private final ExcelWandBars plugin;
++    private final MagicAPI api;
++    private final File file;
++    private final Map<UUID, BarLoadout> map = new HashMap<>();
++    boolean enabled = true;
++    int size = 14;
++    boolean newSpellLines = true;
++    int maxLines = 3;
++    private boolean saveQueued = false;
++    private long saves = 0, seeded = 0, placed = 0, toBook = 0, changes = 0;
++    private String lastSync = "-";
++
++    LoadoutHook(ExcelWandBars plugin, MagicAPI api) {
++        this.plugin = plugin;
++        this.api = api;
++        this.file = new File(plugin.getDataFolder(), "loadouts.yml");
++    }
++
++    void loadSettings(ConfigurationSection c) {
++        enabled = c == null || c.getBoolean("enabled", true);
++        size = BarLoadout.clampSize(c == null ? 14 : c.getInt("slots", 14));
++        newSpellLines = c == null || c.getBoolean("new-spell-lines", true);
++        maxLines = Math.max(1, Math.min(10, c == null ? 3 : c.getInt("max-new-spell-lines", 3)));
++        boolean any = false;
++        for (BarLoadout l : map.values()) if (l.size() != size) { l.resize(size); any = true; }
++        if (any) saveSoon();
++    }
++
++    String summary() {
++        return enabled ? "ON (" + size + " slots, new spell lines " + (newSpellLines ? "ON, max " + maxLines : "off") + ", " + map.size() + " player(s) saved)"
++                : "off (bar-loadout.enabled: false, every spell on the bar in pages as in 0.2.8)";
++    }
++
++    String counters() {
++        return "seeded " + seeded + " placed " + placed + " to-book " + toBook + " changes " + changes + " saves " + saves + " last " + lastSync;
++    }
++
++    // ------------------------------------------------------------------ storage
++
++    void load() {
++        map.clear();
++        try {
++            if (!file.isFile()) return;
++            YamlConfiguration y = YamlConfiguration.loadConfiguration(file);
++            ConfigurationSection s = y.getConfigurationSection("players");
++            if (s == null) return;
++            for (String k : s.getKeys(false)) {
++                try {
++                    UUID id = UUID.fromString(k);
++                    map.put(id, BarLoadout.restore(s.getStringList(k + ".slots"), s.getStringList(k + ".seen"), size));
++                } catch (IllegalArgumentException bad) { plugin.getLogger().warning("loadouts.yml: skipped " + k); }
++            }
++        } catch (Throwable t) { plugin.getLogger().warning("loadouts.yml: " + t); }
++    }
++
++    /** Write to loadouts.yml.tmp, then move over loadouts.yml (never a half-written file). */
++    void save() {
++        saveQueued = false;
++        try {
++            YamlConfiguration y = new YamlConfiguration();
++            y.set("version", 1);
++            for (Map.Entry<UUID, BarLoadout> e : map.entrySet()) {
++                y.set("players." + e.getKey() + ".slots", e.getValue().storedSlots());
++                y.set("players." + e.getKey() + ".seen", new ArrayList<>(e.getValue().seen()));
++            }
++            if (!plugin.getDataFolder().isDirectory()) plugin.getDataFolder().mkdirs();
++            File tmp = new File(plugin.getDataFolder(), "loadouts.yml.tmp");
++            y.save(tmp);
++            try { Files.move(tmp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE); }
++            catch (java.nio.file.AtomicMoveNotSupportedException no) { Files.move(tmp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING); }
++            saves++;
++        } catch (Throwable t) { plugin.getLogger().warning("loadouts.yml: " + t); }
++    }
++
++    void saveSoon() {
++        if (saveQueued) return;
++        saveQueued = true;
++        try { Bukkit.getScheduler().runTaskLater(plugin, () -> { if (saveQueued) save(); }, 20L); }
++        catch (Throwable t) { save(); } // plugin disabling
++    }
++
++    BarLoadout get(UUID id) { return map.get(id); }
++
++    void forget(UUID id) { if (map.remove(id) != null) saveSoon(); }
++
++    // ------------------------------------------------------------------ wand reads
++
++    static Map<String, Integer> current(com.elmakers.mine.bukkit.wand.Wand impl) {
++        Map<String, Integer> cur = new HashMap<>();
++        for (Map.Entry<String, Integer> e : impl.getSpellInventory().entrySet()) cur.put(e.getKey().toLowerCase(Locale.ROOT), e.getValue());
++        return cur;
++    }
++
++    static Collection<String> known(Wand w) {
++        List<String> out = new ArrayList<>();
++        if (w instanceof com.elmakers.mine.bukkit.wand.Wand impl) { for (String k : impl.getBaseSpells()) if (k != null) out.add(k.toLowerCase(Locale.ROOT)); return out; }
++        Collection<String> sp = w.getSpells();
++        if (sp != null) for (String k : sp) { String n = BarLoadout.norm(k); if (n != null && !out.contains(n)) out.add(n); }
++        return out;
++    }
++
++    /** The wand's spells in the order the player sees them now (bar slots, then the rest). */
++    static List<String> currentOrder(Wand w) {
++        if (w instanceof com.elmakers.mine.bukkit.wand.Wand impl) return PageLayout.order(current(impl), known(w));
++        return new ArrayList<>(known(w));
++    }
++
++    /** The wand template's own spell list (then its parents'), the curated order for new spells. */
++    static List<String> templateOrder(Wand w) {
++        List<String> out = new ArrayList<>();
++        try {
++            WandTemplate t = w.getTemplate();
++            for (int d = 0; t != null && d < 32; d++, t = t.getParent()) {
++                ConfigurationSection c = t.getConfiguration();
++                if (c != null) for (String s : c.getStringList("spells")) { String k = BarLoadout.norm(s); if (k != null && !out.contains(k)) out.add(k); }
++            }
++        } catch (Throwable ignored) { }
++        return out;
++    }
++
++    static List<String> placementOrder(Wand w) {
++        Map<String, Integer> cur = w instanceof com.elmakers.mine.bukkit.wand.Wand impl ? current(impl) : new HashMap<>();
++        return BarLoadout.placementOrder(templateOrder(w), cur, known(w));
++    }
++
++    String spellName(String key) {
++        try {
++            SpellTemplate t = api.getController().getSpellTemplate(key);
++            if (t != null && t.getName() != null) return SpellInfoText.strip(t.getName());
++        } catch (Throwable ignored) { }
++        return key;
++    }
++
++    Map<String, String> names(Collection<String> keys) {
++        Map<String, String> m = new LinkedHashMap<>();
++        for (String k : keys) if (k != null) m.put(k, spellName(k));
++        return m;
++    }
++
++    // ------------------------------------------------------------------ the bar
++
++    /**
++     * Seed (first time) or sync (new spells) this player's loadout against the wand they hold.
++     * announce: send the "New spell" lines (inventory styles only).
++     */
++    BarLoadout.Sync observe(Player p, Wand w, boolean announce) {
++        UUID id = p.getUniqueId();
++        BarLoadout l = map.get(id);
++        if (l == null) {
++            l = BarLoadout.seed(currentOrder(w), size);
++            map.put(id, l);
++            seeded++;
++            lastSync = p.getName() + " seeded " + l.filled() + "/" + l.size();
++            saveSoon();
++            return new BarLoadout.Sync();
++        }
++        BarLoadout.Sync r = l.sync(placementOrder(w));
++        if (!r.changed()) return r;
++        placed += r.placed.size();
++        toBook += r.toBook.size();
++        lastSync = p.getName() + " placed " + r.placed + " book " + r.toBook;
++        saveSoon();
++        plugin.getLogger().info("Spell bar for " + p.getName() + ": " + r.count() + " new spell(s), " + r.placed.size() + " on the bar, " + r.toBook.size() + " in the Spellbook.");
++        if (announce && newSpellLines) {
++            List<String> on = new ArrayList<>(), book = new ArrayList<>();
++            for (String k : r.placed.keySet()) on.add(spellName(k));
++            for (String k : r.toBook) book.add(spellName(k));
++            for (String line : LoadoutText.announce(on, book, maxLines)) {
++                NamedTextColor c = line.startsWith("Change") ? NamedTextColor.GRAY : NamedTextColor.GREEN;
++                Component m = Component.text(line, c);
++                if (!plugin.isBedrock(p) && line.startsWith("Change")) m = m.clickEvent(ClickEvent.runCommand("/spellbar"));
++                p.sendMessage(m);
++            }
++        }
++        return r;
++    }
++
++    /** The layout for this wand; never stores anything (an unseen player is previewed as seeded). */
++    BarLoadout.Layout layout(Player p, Wand w, int perPage) {
++        BarLoadout l = map.get(p.getUniqueId());
++        if (l == null) l = BarLoadout.seed(currentOrder(w), size);
++        return l.layout(currentOrder(w), perPage);
++    }
++
++    // ------------------------------------------------------------------ menus (/spellbar, Spell Book buttons)
++
++    private static final class Item { final String label, args; Item(String l, String a) { label = l; args = a; } }
++
++    private void menu(Player p, String title, String content, List<Item> items) {
++        boolean bedrock = plugin.isBedrock(p);
++        MagicHook mh = plugin.magicHook();
++        if (bedrock && mh != null) {
++            List<String> labels = new ArrayList<>();
++            for (Item i : items) labels.add(LoadoutText.fit(i.label));
++            boolean sent = mh.sendForm(p, LoadoutText.fit(title), content, labels, id -> {
++                if (id < 0 || id >= items.size()) return;
++                String a = items.get(id).args;
++                if (a == null) return;
++                Bukkit.getScheduler().runTask(plugin, () -> { if (p.isOnline()) handle(p, a.isEmpty() ? new String[0] : a.split(" ")); });
++            });
++            if (sent) return;
++        }
++        p.sendMessage(Component.text(title, NamedTextColor.GOLD));
++        for (String line : content.split("\n")) p.sendMessage(Component.text(" " + line, NamedTextColor.GRAY));
++        for (Item i : items) {
++            if (i.args == null) continue; // Close
++            p.sendMessage(Component.text(" [" + i.label + "]", NamedTextColor.AQUA)
++                    .clickEvent(ClickEvent.runCommand(i.args.startsWith("@book") ? "/spellbook" + i.args.substring(5) : "/spellbar " + i.args)));
++        }
++    }
++
++    /** The wand the menus read: the held rank wand, else the Spell Book's wand. */
++    private Wand menuWand(Player p) {
++        Mage mage = api.getMage(p);
++        MagicHook mh = plugin.magicHook();
++        return mh == null ? (mage == null ? null : mage.getActiveWand()) : mh.bookWand(p, mage);
++    }
++
++    private int perPage(Player p) {
++        StyleHook s = plugin.styleHook();
++        return s == null ? 7 : s.perPageFor(s.styleOf(p));
++    }
++
++    /** null = fine; else the line to show. */
++    private String blocked(Player p) {
++        StyleHook s = plugin.styleHook();
++        if (!enabled || s == null || !s.enabled() || !s.pagesOn()) return LoadoutText.OFF;
++        if (!s.styleOf(p).inventory()) return LoadoutText.NOT_BAR_STYLE;
++        return null;
++    }
++
++    /** Is the bar loadout on for this player's style (Spell Book buttons)? */
++    boolean usable(Player p) { return blocked(p) == null; }
++
++    private BarLoadout ensure(Player p, Wand w) {
++        BarLoadout l = map.get(p.getUniqueId());
++        if (l == null) { observe(p, w, false); l = map.get(p.getUniqueId()); }
++        else observe(p, w, true);
++        return l;
++    }
++
++    void openBar(Player p) {
++        String why = blocked(p);
++        if (why != null) { p.sendMessage(Component.text(why, NamedTextColor.GRAY)); return; }
++        Wand w = menuWand(p);
++        if (w == null) { p.sendMessage(Component.text(LoadoutText.NO_WAND, NamedTextColor.GRAY)); return; }
++        BarLoadout l = ensure(p, w);
++        Collection<String> known = known(w);
++        Map<String, String> nm = names(known);
++        int inBook = 0;
++        for (String k : known) if (l.indexOf(k) < 0) inBook++;
++        List<Item> items = new ArrayList<>();
++        int used = 0;
++        for (int i = 0; i < l.size(); i++) {
++            String k = l.get(i);
++            boolean ok = k != null && known.contains(k);
++            if (ok) used++;
++            items.add(new Item(LoadoutText.slotButton(i, ok ? nm.get(k) : null), "slot " + (i + 1)));
++        }
++        items.add(new Item(LoadoutText.BACK_BOOK, "@book"));
++        items.add(new Item(LoadoutText.CLOSE, null));
++        menu(p, LoadoutText.barTitleCount(used, l.size()), LoadoutText.barContent(plugin.isBedrock(p), perPage(p), l.size(), inBook), items);
++    }
++
++    void openSlot(Player p, int slot) {
++        Wand w = menuWand(p);
++        if (w == null) { p.sendMessage(Component.text(LoadoutText.NO_WAND, NamedTextColor.GRAY)); return; }
++        BarLoadout l = ensure(p, w);
++        if (slot < 0 || slot >= l.size()) { openBar(p); return; }
++        Collection<String> known = known(w);
++        String k = l.get(slot);
++        String name = k != null && known.contains(k) ? spellName(k) : null;
++        List<Item> items = new ArrayList<>();
++        items.add(new Item(LoadoutText.PICK_BUTTON, "pick " + (slot + 1)));
++        if (name != null) {
++            items.add(new Item(LoadoutText.moveButton(name), "put " + k));
++            items.add(new Item(LoadoutText.offButton(name), "remove " + (slot + 1)));
++        }
++        items.add(new Item(LoadoutText.BACK_BAR, ""));
++        items.add(new Item(LoadoutText.CLOSE, null));
++        menu(p, LoadoutText.slotTitle(slot, name), name == null ? "This slot is empty." : name + " is in this slot.", items);
++    }
++
++    void openPickSpell(Player p, int slot) {
++        Wand w = menuWand(p);
++        if (w == null) { p.sendMessage(Component.text(LoadoutText.NO_WAND, NamedTextColor.GRAY)); return; }
++        BarLoadout l = ensure(p, w);
++        if (slot < 0 || slot >= l.size()) { openBar(p); return; }
++        List<Item> items = new ArrayList<>();
++        for (String k : currentOrder(w)) {
++            if (k.equals(l.get(slot))) continue;
++            items.add(new Item(LoadoutText.pickSpellButton(spellName(k), l.indexOf(k)), "put " + k + " " + (slot + 1)));
++        }
++        items.add(new Item(LoadoutText.BACK_BAR, ""));
++        items.add(new Item(LoadoutText.CLOSE, null));
++        menu(p, LoadoutText.slotTitle(slot, l.get(slot) == null ? null : spellName(l.get(slot))), LoadoutText.pickSpellContent(slot), items);
++    }
++
++    void openPickSlot(Player p, String key) {
++        String why = blocked(p);
++        if (why != null) { p.sendMessage(Component.text(why, NamedTextColor.GRAY)); return; }
++        Wand w = menuWand(p);
++        if (w == null) { p.sendMessage(Component.text(LoadoutText.NO_WAND, NamedTextColor.GRAY)); return; }
++        String k = BarLoadout.norm(key);
++        Collection<String> known = known(w);
++        if (k == null || !known.contains(k)) { p.sendMessage(Component.text(LoadoutText.NOT_KNOWN, NamedTextColor.GRAY)); return; }
++        BarLoadout l = ensure(p, w);
++        String name = spellName(k);
++        List<Item> items = new ArrayList<>();
++        for (int i = 0; i < l.size(); i++) {
++            String o = l.get(i);
++            items.add(new Item(LoadoutText.slotButton(i, o != null && known.contains(o) ? spellName(o) : null), "put " + k + " " + (i + 1)));
++        }
++        items.add(new Item(LoadoutText.BACK_BAR, ""));
++        items.add(new Item(LoadoutText.CLOSE, null));
++        menu(p, LoadoutText.pickTitle(name), LoadoutText.pickSlotContent(name), items);
++    }
++
++    /** Detail page buttons: on the bar now? (-1 = no; -2 = loadout not usable here). */
++    int slotOf(Player p, String key) {
++        if (!usable(p)) return -2;
++        BarLoadout l = map.get(p.getUniqueId());
++        if (l == null) {
++            Wand w = menuWand(p);
++            if (w == null) return -2;
++            l = BarLoadout.seed(currentOrder(w), size);
++        }
++        return l.indexOf(key);
++    }
++
++    private void done(Player p, BarLoadout.Change c, boolean reopen) {
++        if (c.ok()) {
++            changes++;
++            saveSoon();
++            plugin.getLogger().info("Spell bar for " + p.getName() + ": " + c);
++            StyleHook s = plugin.styleHook();
++            if (s != null) Bukkit.getScheduler().runTask(plugin, () -> { if (p.isOnline()) s.applyNow(p, "spell bar change"); });
++        }
++        List<String> keys = new ArrayList<>();
++        if (c.spell != null) keys.add(c.spell);
++        if (c.other != null) keys.add(c.other);
++        p.sendMessage(Component.text(LoadoutText.changed(c, names(keys)), c.ok() ? NamedTextColor.GREEN : NamedTextColor.GRAY));
++        if (reopen) openBar(p);
++    }
++
++    private static int num(String s) { try { return Integer.parseInt(s.trim()) - 1; } catch (Exception e) { return -1; } }
++
++    /** /spellbar [slot n | pick n | put spell [n] | remove n | swap a b]. Returns a status word (rig tests). */
++    String handle(Player p, String[] a) {
++        if (a.length > 0 && a[0].equalsIgnoreCase("@book")) { if (plugin.magicHook() != null) plugin.magicHook().openSpellBook(p, null); return "book"; }
++        String why = blocked(p);
++        if (why != null) { p.sendMessage(Component.text(why, NamedTextColor.GRAY)); return "blocked"; }
++        Wand w = menuWand(p);
++        if (w == null) { p.sendMessage(Component.text(LoadoutText.NO_WAND, NamedTextColor.GRAY)); return "no-wand"; }
++        String sub = a.length == 0 ? "" : a[0].toLowerCase(Locale.ROOT);
++        BarLoadout l = ensure(p, w);
++        Collection<String> known = known(w);
++        switch (sub) {
++            case "": openBar(p); return "bar";
++            case "slot": if (a.length > 1) { openSlot(p, num(a[1])); return "slot"; } break;
++            case "pick": if (a.length > 1) { openPickSpell(p, num(a[1])); return "pick"; } break;
++            case "put":
++                if (a.length == 2) { openPickSlot(p, a[1]); return "pick-slot"; }
++                if (a.length > 2) {
++                    String k = BarLoadout.norm(a[1]);
++                    if (k == null || !known.contains(k)) { p.sendMessage(Component.text(LoadoutText.NOT_KNOWN, NamedTextColor.GRAY)); return "not-known"; }
++                    BarLoadout.Change c = l.put(k, num(a[2]));
++                    done(p, c, true);
++                    return c.toString();
++                }
++                break;
++            case "remove": if (a.length > 1) { BarLoadout.Change c = l.remove(num(a[1])); done(p, c, true); return c.toString(); } break;
++            case "swap": if (a.length > 2) { BarLoadout.Change c = l.swap(num(a[1]), num(a[2])); done(p, c, true); return c.toString(); } break;
++            default: break;
++        }
++        openBar(p);
++        return "bar";
++    }
++
++    /** Admin/rig view. */
++    List<String> describe(Player p) {
++        List<String> out = new ArrayList<>();
++        BarLoadout l = map.get(p.getUniqueId());
++        out.add("loadout " + p.getName() + ": " + (l == null ? "not seeded yet" : l.filled() + "/" + l.size() + " slots " + l.storedSlots() + " seen " + l.seen().size()));
++        Wand w = menuWand(p);
++        if (w != null) {
++            BarLoadout.Layout lay = layout(p, w, perPage(p));
++            out.add("  wand " + w.getTemplateKey() + " knows " + known(w).size() + " | layout pages " + lay.pages + " on bar " + lay.onBar + " in book " + lay.inBook + " " + lay.slots);
++        }
++        out.add("  " + counters());
++        return out;
++    }
++
++    /** Admin: reseed from the held wand (rig aid). */
++    String reseed(Player p) {
++        Wand w = menuWand(p);
++        if (w == null) return "no wand";
++        map.remove(p.getUniqueId());
++        observe(p, w, false);
++        return "seeded " + map.get(p.getUniqueId()).storedSlots();
++    }
++
++    static boolean barStyle(WandStyle s) { return s != null && s.inventory(); }
++}
+diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/MagicHook.java src/src/com/winkreyes/excelwandbars/MagicHook.java
+--- src-0.2.8/src/com/winkreyes/excelwandbars/MagicHook.java	2026-10-26 11:45:37.024448825 -0500
++++ src/src/com/winkreyes/excelwandbars/MagicHook.java	2026-10-26 13:15:44.105054177 -0500
+@@ -101,7 +101,11 @@
+         if (r == FlipGate.Result.ONE_BAR && s.barOpen && pagesWord(player) && plugin.showBarLine()) {
+             // 0.2.5: crouch always answers. All spells fit on one page: say so instead of doing nothing.
+             int n = wand instanceof com.elmakers.mine.bukkit.wand.Wand w1 ? w1.getSpellInventory().size() : 0;
+-            player.sendActionBar(Component.text("Page 1/1: all " + n + " of your spells are on the bar", NamedTextColor.AQUA));
++            int on = n;
++            // 0.2.9: own spell bar: say how many are on it and where the rest are.
++            LoadoutHook lo = plugin.styleHook() == null ? null : plugin.styleHook().loadouts();
++            if (lo != null) on = lo.layout(player, wand, plugin.styleHook().perPageFor(plugin.styleHook().styleOf(player))).onBar;
++            player.sendActionBar(Component.text(com.winkreyes.excelwandbars.core.LoadoutText.onePage(on, n), NamedTextColor.AQUA));
+         }
+         if (r != FlipGate.Result.FLIP) return r;
+         wand.cycleHotbar();
+@@ -521,6 +525,7 @@
+         }
+         if (pick != null) {
+             for (String line : SpellInfoText.lines(pick)) p.sendMessage(Component.text(line, NamedTextColor.YELLOW));
++            barChatButtons(p, pick);
+             return true;
+         }
+         p.sendMessage(Component.text(com.winkreyes.excelwandbars.core.ControlsText.bookTitle(bedrock), NamedTextColor.GOLD));
+@@ -533,6 +538,10 @@
+                     .hoverEvent(HoverEvent.showText(hover))
+                     .clickEvent(ClickEvent.runCommand("/spellinfo " + f.key)));
+         }
++        if (loadoutUsable(p)) {
++            p.sendMessage(Component.text("[" + com.winkreyes.excelwandbars.core.LoadoutText.BOOK_BUTTON + "]", NamedTextColor.GOLD)
++                    .clickEvent(ClickEvent.runCommand("/spellbar")));
++        }
+         if (plugin.styleHook() != null && plugin.styleHook().enabled()) {
+             p.sendMessage(Component.text(com.winkreyes.excelwandbars.core.ControlsText.controlsButton(styleLabel(p), bedrock), NamedTextColor.GOLD)
+                     .clickEvent(ClickEvent.runCommand("/wandstyle")));
+@@ -567,11 +576,19 @@
+                   + (plugin.styleHook() != null && plugin.styleHook().styleOf(p) == com.winkreyes.excelwandbars.core.WandStyle.CYCLE
+                      ? "\nCrouch and press and hold goes back one spell." : ""));
+         boolean styleButton = plugin.styleHook() != null && plugin.styleHook().enabled();
++        // 0.2.9: own spell bar button first after the spells.
++        boolean barButton = loadoutUsable(p);
++        if (barButton) buttons.add(com.winkreyes.excelwandbars.core.LoadoutText.BOOK_BUTTON);
+         if (styleButton) buttons.add("Wand controls: " + styleLabel(p) + " (change)");
+         if (tipButton) buttons.add(com.winkreyes.excelwandbars.core.SpellTip.OK_BUTTON);
+-        final int styleId = styleButton ? book.size() : -2;
+-        final int tipId = tipButton ? book.size() + (styleButton ? 1 : 0) : -2;
++        final int barId = barButton ? book.size() : -2;
++        final int styleId = styleButton ? book.size() + (barButton ? 1 : 0) : -2;
++        final int tipId = tipButton ? book.size() + (barButton ? 1 : 0) + (styleButton ? 1 : 0) : -2;
+         boolean sent = sendForm(p, "Spell Book", content.toString(), buttons, id -> {
++            if (id == barId) {
++                Bukkit.getScheduler().runTask(plugin, () -> { if (p.isOnline() && plugin.loadouts() != null) plugin.loadouts().openBar(p); });
++                return;
++            }
+             if (id == styleId) {
+                 Bukkit.getScheduler().runTask(plugin, () -> { if (p.isOnline() && plugin.styleHook() != null) plugin.styleHook().openChooser(p); });
+                 return;
+@@ -607,18 +624,59 @@
+         boolean tapBar = plugin.styleHook() != null && plugin.styleHook().enabled() && plugin.styleHook().styleOf(p) == com.winkreyes.excelwandbars.core.WandStyle.TAPBAR;
+         boolean canUse = holdsBookWand(p, f) && !f.active && !tapBar;
+         if (f.active && holdsBookWand(p, f) && !tapBar) content = "You are using this spell now.\n\n" + content;
+-        if (canUse) buttons.add(USE_BUTTON);
+-        buttons.add("Back to Spell Book");
+-        buttons.add("Close");
+-        final int useId = canUse ? 0 : -2, backId = canUse ? 1 : 0;
++        List<Runnable> acts = new ArrayList<>();
++        if (canUse) { buttons.add(USE_BUTTON); acts.add(() -> useSpell(p, f.key)); }
++        // 0.2.9: own spell bar buttons (hotbar styles only).
++        int onBar = barSlot(p, f.key);
++        if (onBar >= -1) {
++            final String k = base(f.key);
++            if (onBar >= 0) content = "On your bar: slot " + (onBar + 1) + ".\n\n" + content;
++            else content = "Not on your bar. It is in your Spellbook.\n\n" + content;
++            buttons.add(onBar >= 0 ? com.winkreyes.excelwandbars.core.LoadoutText.MOVE_BUTTON : com.winkreyes.excelwandbars.core.LoadoutText.PUT_BUTTON);
++            acts.add(() -> { if (plugin.loadouts() != null) plugin.loadouts().openPickSlot(p, k); });
++            if (onBar >= 0) {
++                final int slot = onBar;
++                buttons.add(com.winkreyes.excelwandbars.core.LoadoutText.OFF_BUTTON);
++                acts.add(() -> { if (plugin.loadouts() != null) plugin.loadouts().handle(p, new String[]{"remove", String.valueOf(slot + 1)}); });
++            }
++        }
++        buttons.add("Back to Spell Book"); acts.add(() -> openSpellBook(p, null));
++        buttons.add("Close"); acts.add(null);
+         boolean sent = sendForm(p, f.name + " (" + SpellInfoText.rankText(f) + ")", content, buttons, id -> {
+-            if (id == useId) Bukkit.getScheduler().runTask(plugin, () -> { if (p.isOnline()) useSpell(p, f.key); });
+-            else if (id == backId) Bukkit.getScheduler().runTask(plugin, () -> { if (p.isOnline()) openSpellBook(p, null); });
++            if (id < 0 || id >= acts.size() || acts.get(id) == null) return;
++            Runnable r = acts.get(id);
++            Bukkit.getScheduler().runTask(plugin, () -> { if (p.isOnline()) r.run(); });
+         });
+-        if (!sent) for (String line : lines) p.sendMessage(Component.text(line, NamedTextColor.YELLOW));
++        if (!sent) { for (String line : lines) p.sendMessage(Component.text(line, NamedTextColor.YELLOW)); barChatButtons(p, f); }
+         return sent;
+     }
+ 
++    // ------------------------------------------------------------------ 0.2.9 own spell bar
++
++    private boolean loadoutUsable(Player p) {
++        LoadoutHook lo = plugin.loadouts();
++        return lo != null && lo.usable(p);
++    }
++
++    /** Slot of this spell on the player's own bar, -1 = in the Spellbook, -2 = no own bar here. */
++    private int barSlot(Player p, String key) {
++        LoadoutHook lo = plugin.loadouts();
++        return lo == null ? -2 : lo.slotOf(p, base(key));
++    }
++
++    /** Java chat: clickable bar buttons under a spell's details. */
++    private void barChatButtons(Player p, SpellFacts f) {
++        int onBar = barSlot(p, f.key);
++        if (onBar < -1) return;
++        String k = base(f.key);
++        p.sendMessage(Component.text(onBar >= 0 ? "On your bar: slot " + (onBar + 1) + "." : "Not on your bar. It is in your Spellbook.", NamedTextColor.GRAY));
++        Component line = Component.text("[" + (onBar >= 0 ? com.winkreyes.excelwandbars.core.LoadoutText.MOVE_BUTTON : com.winkreyes.excelwandbars.core.LoadoutText.PUT_BUTTON) + "]", NamedTextColor.AQUA)
++                .clickEvent(ClickEvent.runCommand("/spellbar put " + k));
++        if (onBar >= 0) line = line.append(Component.text(" ")).append(Component.text("[" + com.winkreyes.excelwandbars.core.LoadoutText.OFF_BUTTON + "]", NamedTextColor.AQUA)
++                .clickEvent(ClickEvent.runCommand("/spellbar remove " + (onBar + 1))));
++        p.sendMessage(line);
++    }
++
+     // ------------------------------------------------------------------ 0.2.4 Tap bar: hold = read the spell
+ 
+     /** The spell key on a Magic spell icon (null for anything else). */
+diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/RankUpHook.java src/src/com/winkreyes/excelwandbars/RankUpHook.java
+--- src-0.2.8/src/com/winkreyes/excelwandbars/RankUpHook.java	2026-10-26 11:46:21.512646168 -0500
++++ src/src/com/winkreyes/excelwandbars/RankUpHook.java	2026-10-26 13:15:09.024898568 -0500
+@@ -449,6 +449,9 @@
+             int newSpells = 0;
+             for (String k : afterLv.keySet()) if (!beforeLv.containsKey(k)) newSpells++;
+             announce(p, to, newSpells);
++            // 0.2.9: put the new spells into the player's own bar (empty slots first, else the Spellbook), after the rank lines.
++            StyleHook sh = plugin.styleHook();
++            if (sh != null) sh.applyLater(p, "rank up", 20L);
+             return "OK " + from + " -> " + to + " (-" + need + " SP, +" + newSpells + " spells, added " + added + ", replaceTemplate " + replaced + ", bound " + wand.isBound() + (lost.isEmpty() ? "" : ", re-added " + lost) + ")";
+         } catch (Throwable t) {
+             failedUps++;
+diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/StyleHook.java src/src/com/winkreyes/excelwandbars/StyleHook.java
+--- src-0.2.8/src/com/winkreyes/excelwandbars/StyleHook.java	2026-10-26 10:27:52.707760481 -0500
++++ src/src/com/winkreyes/excelwandbars/StyleHook.java	2026-10-26 13:14:38.316762367 -0500
+@@ -242,7 +242,26 @@
+     }
+ 
+     /** Put the player's chosen style on the wand they hold. Main thread only. */
+-    Result apply(Player p) {
++    Result apply(Player p) { return apply(p, false); }
++
++    /** 0.2.9: a player's own spell bar change: apply now (the repeat guard is for event loops, not for menu taps). */
++    Result applyNow(Player p, String why) {
++        try {
++            Result r = apply(p, true);
++            if (plugin.debug() || r == Result.APPLIED || r == Result.FAILED) plugin.getLogger().info("Wand style " + styleOf(p).key() + " for " + p.getName() + " (" + why + "): " + r);
++            return r;
++        } catch (Throwable t) {
++            plugin.getLogger().warning("Wand style error for " + p.getName() + " (" + why + "): " + t);
++            return Result.FAILED;
++        }
++    }
++
++    /** 0.2.9: run apply a little later (after a rank-up has added spells to the wand). */
++    void applyLater(Player p, String why, long ticks) {
++        Bukkit.getScheduler().runTaskLater(plugin, () -> applySafe(p, why), ticks);
++    }
++
++    Result apply(Player p, boolean force) {
+         if (!enabled) return Result.DISABLED;
+         Mage mage = api.getMage(p);
+         Wand w = mage == null ? null : mage.getActiveWand();
+@@ -250,10 +269,14 @@
+         if (!isRankWand(w)) return Result.NOT_RANK_WAND;
+         if (!w.canUse(p)) return Result.NOT_OWNER;
+         WandStyle style = styleOf(p);
++        // 0.2.9: seed this player's own spell bar the first time, and place spells the wand
++        // learned since (chat lines only in the hotbar styles; Classic and Cycle update quietly).
++        LoadoutHook lo = loadouts();
++        if (lo != null && pagesEnabled) lo.observe(p, w, style.inventory());
+         Map<String, String> need = profile.changes(effective(w), style);
+-        Layout lay = layoutFor(w, style);
++        Layout lay = layoutFor(p, w, style);
+         if (need.isEmpty() && (lay == null || lay.ok)) return Result.ALREADY;
+-        if (!guard.allow(p.getUniqueId(), System.currentTimeMillis())) return Result.THROTTLED;
++        if (!force && !guard.allow(p.getUniqueId(), System.currentTimeMillis())) return Result.THROTTLED;
+         // Same order as Magic's WandCommandExecutor.onWandConfigure.
+         w.closeInventory();
+         w.saveState();
+@@ -261,6 +284,7 @@
+         for (Map.Entry<String, String> e : need.entrySet()) node.set(e.getKey(), e.getValue());
+         if (lay != null && !lay.ok) {
+             // 0.2.5: every unlocked spell on the hotbar pages (packed, same order), enough pages for them.
++            // 0.2.9: with bar-loadout on, the player's own bar; every other spell is parked after the last page (Spellbook).
+             node.set("hotbar_count", lay.pages);
+             node.createSection("spell_inventory", new LinkedHashMap<String, Object>(lay.packed));
+             layouts++;
+@@ -271,7 +295,7 @@
+         applied++;
+         Wand now = mage.getActiveWand();
+         if (now != null && !profile.changes(effective(now), style).isEmpty()) return Result.FAILED;
+-        Layout after = now == null ? null : layoutFor(now, style);
++        Layout after = now == null ? null : layoutFor(p, now, style);
+         if (after != null && !after.ok) return Result.FAILED;
+         return Result.APPLIED;
+     }
+@@ -280,6 +304,7 @@
+ 
+     private int perPageTap = 7, perPageBars = 8;
+     String pagesSummary() {
++        if (pagesEnabled && loadouts() != null) return "own spell bar per player ON (" + plugin.loadouts().size + " slots, " + perPageTap + " per page Tap bar / original, " + perPageBars + " Sneak bars)";
+         return pagesEnabled ? "all spells on the bar in pages ON (" + perPageTap + " per page Tap bar / original, " + perPageBars + " Sneak bars)" : "pages OFF";
+     }
+     private boolean pagesEnabled = true;
+@@ -288,16 +313,34 @@
+ 
+     /** What the wand's hotbar pages should be for this style (null = chest style or paging off). */
+     static final class Layout {
+-        Map<String, Integer> packed; int pages; int curPages; boolean ok; int spells;
++        Map<String, Integer> packed; int pages; int curPages; boolean ok; int spells; int inBook;
++    }
++
++    LoadoutHook loadouts() {
++        LoadoutHook lo = plugin.loadouts();
++        return lo != null && lo.enabled ? lo : null;
+     }
++    boolean pagesOn() { return pagesEnabled; }
++    int perPageFor(WandStyle style) { return style == WandStyle.BARS ? perPageBars : perPageTap; }
+ 
+-    Layout layoutFor(Wand w, WandStyle style) {
++    Layout layoutFor(Player p, Wand w, WandStyle style) {
+         if (!pagesEnabled || style == null || !style.inventory()) return null;
+         if (!(w instanceof com.elmakers.mine.bukkit.wand.Wand impl)) return null;
+         Map<String, Integer> cur = new java.util.HashMap<>();
+         for (Map.Entry<String, Integer> e : impl.getSpellInventory().entrySet()) cur.put(e.getKey().toLowerCase(Locale.ROOT), e.getValue());
+-        int per = style == WandStyle.BARS ? perPageBars : perPageTap;
++        int per = perPageFor(style);
+         Layout l = new Layout();
++        LoadoutHook lo = loadouts();
++        if (lo != null && p != null) {
++            com.winkreyes.excelwandbars.core.BarLoadout.Layout bl = lo.layout(p, w, per);
++            l.packed = bl.slots;
++            l.spells = bl.onBar;
++            l.inBook = bl.inBook;
++            l.pages = bl.pages;
++            l.curPages = impl.getHotbarCount();
++            l.ok = l.curPages == l.pages && com.winkreyes.excelwandbars.core.PageLayout.same(cur, l.packed);
++            return l;
++        }
+         l.packed = com.winkreyes.excelwandbars.core.PageLayout.pack(cur, impl.getBaseSpells(), per);
+         l.spells = l.packed.size();
+         l.pages = com.winkreyes.excelwandbars.core.PageLayout.pages(l.spells, per);
+@@ -310,9 +353,9 @@
+         Mage mage = api.getMage(p);
+         Wand w = mage == null ? null : mage.getActiveWand();
+         if (w == null) return "no wand";
+-        Layout l = layoutFor(w, styleOf(p));
++        Layout l = layoutFor(p, w, styleOf(p));
+         if (l == null) return "no pages (" + styleOf(p).key() + ")";
+-        return "spells=" + l.spells + " pages=" + l.curPages + "/" + l.pages + " ok=" + l.ok + " packed=" + l.packed;
++        return (loadouts() != null ? "loadout on-bar=" + l.spells + " book=" + l.inBook : "spells=" + l.spells) + " pages=" + l.curPages + "/" + l.pages + " ok=" + l.ok + " packed=" + l.packed;
+     }
+ 
+     /** Remove the plugin's control keys from the held wand so its template rules again (admin rollback aid). */
+diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/core/BarLoadout.java src/src/com/winkreyes/excelwandbars/core/BarLoadout.java
+--- src-0.2.8/src/com/winkreyes/excelwandbars/core/BarLoadout.java	1969-12-31 18:00:00.000000000 -0600
++++ src/src/com/winkreyes/excelwandbars/core/BarLoadout.java	2026-10-26 13:11:30.971931424 -0500
+@@ -0,0 +1,239 @@
++package com.winkreyes.excelwandbars.core;
++
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.LinkedHashMap;
++import java.util.LinkedHashSet;
++import java.util.List;
++import java.util.Locale;
++import java.util.Map;
++import java.util.Set;
++
++/**
++ * 0.2.9: a player's own spell bar (their "loadout"). Pure (no Bukkit/Magic types),
++ * unit-tested on the plain JVM.
++ *
++ * A loadout is a fixed number of bar slots (default 14 = 2 pages of 7), each holding
++ * one spell key or nothing, plus the set of spells this player has already been
++ * shown ("seen"). Every spell the wand knows that is not on the bar is in the
++ * player's Spellbook (Magic keeps it on the wand, parked after the last bar page).
++ *
++ *  - First load: seeded from the wand's current spell order (the first N), and every
++ *    spell the wand knows counts as seen, so nobody gets "new spell" lines for
++ *    spells they already had.
++ *  - New spells (known by the wand, not seen yet) go into the first EMPTY slots;
++ *    when the bar is full they stay in the Spellbook. Either way they become seen.
++ *  - A slot holding a spell the held wand does not know is skipped on that wand
++ *    (shown empty, never cast) and keeps its place for a wand that does know it.
++ *  - Manual changes: put (with swap), remove, swap.
++ *
++ * Keys are stored as Magic base keys, lower case ("mend", never "mend|3").
++ */
++public final class BarLoadout {
++    public static final int MIN_SLOTS = 1, MAX_SLOTS = 64;
++
++    private final List<String> slots = new ArrayList<>();
++    private final Set<String> seen = new LinkedHashSet<>();
++
++    public BarLoadout(int size) { resize(size); }
++
++    public static String norm(String key) {
++        if (key == null) return null;
++        String k = key.trim();
++        int i = k.indexOf('|');
++        if (i >= 0) k = k.substring(0, i);
++        k = k.toLowerCase(Locale.ROOT);
++        return k.isEmpty() ? null : k;
++    }
++
++    public static int clampSize(int n) { return Math.max(MIN_SLOTS, Math.min(MAX_SLOTS, n)); }
++
++    public int size() { return slots.size(); }
++    public String get(int i) { return i >= 0 && i < slots.size() ? slots.get(i) : null; }
++    public List<String> slots() { return java.util.Collections.unmodifiableList(slots); }
++    public Set<String> seen() { return java.util.Collections.unmodifiableSet(seen); }
++    public boolean seenAny() { return !seen.isEmpty(); }
++
++    /** Grow with empty slots, or cut from the end (cut spells go back to the Spellbook; still known). */
++    public void resize(int size) {
++        int n = clampSize(size);
++        while (slots.size() < n) slots.add(null);
++        while (slots.size() > n) slots.remove(slots.size() - 1);
++    }
++
++    /** Slot of this spell on the bar, or -1. */
++    public int indexOf(String key) {
++        String k = norm(key);
++        if (k == null) return -1;
++        for (int i = 0; i < slots.size(); i++) if (k.equals(slots.get(i))) return i;
++        return -1;
++    }
++
++    public int firstEmpty() {
++        for (int i = 0; i < slots.size(); i++) if (slots.get(i) == null) return i;
++        return -1;
++    }
++
++    public int filled() { int n = 0; for (String s : slots) if (s != null) n++; return n; }
++
++    /** First load: the first N spells in the wand's current order; everything the wand knows is seen. */
++    public static BarLoadout seed(List<String> wandOrder, int size) {
++        BarLoadout l = new BarLoadout(size);
++        int i = 0;
++        for (String s : wandOrder) {
++            String k = norm(s);
++            if (k == null || !l.seen.add(k)) continue;
++            if (i < l.slots.size()) l.slots.set(i++, k);
++        }
++        return l;
++    }
++
++    /** Restore from storage. Unknown junk (blank, duplicates) is dropped. */
++    public static BarLoadout restore(List<String> storedSlots, Collection<String> storedSeen, int size) {
++        BarLoadout l = new BarLoadout(size);
++        Set<String> used = new java.util.HashSet<>();
++        if (storedSlots != null) {
++            for (int i = 0; i < storedSlots.size() && i < l.slots.size(); i++) {
++                String k = norm(storedSlots.get(i));
++                if (k != null && used.add(k)) l.slots.set(i, k);
++            }
++        }
++        if (storedSeen != null) for (String s : storedSeen) { String k = norm(s); if (k != null) l.seen.add(k); }
++        for (String s : l.slots) if (s != null) l.seen.add(s);
++        return l;
++    }
++
++    /** Storage form: one entry per slot, "" for empty. */
++    public List<String> storedSlots() {
++        List<String> out = new ArrayList<>();
++        for (String s : slots) out.add(s == null ? "" : s);
++        return out;
++    }
++
++    /** What sync did: new spells put on the bar (slot index), and new spells left in the Spellbook. */
++    public static final class Sync {
++        public final Map<String, Integer> placed = new LinkedHashMap<>();
++        public final List<String> toBook = new ArrayList<>();
++        public boolean changed() { return !placed.isEmpty() || !toBook.isEmpty(); }
++        public int count() { return placed.size() + toBook.size(); }
++    }
++
++    /**
++     * The held wand's spells, in the order new ones should be placed (template order first).
++     * Spells not seen yet go into the first empty slots, the rest to the Spellbook.
++     */
++    public Sync sync(List<String> wandOrder) {
++        Sync r = new Sync();
++        for (String s : wandOrder) {
++            String k = norm(s);
++            if (k == null || seen.contains(k)) continue;
++            seen.add(k);
++            if (indexOf(k) >= 0) continue; // a manual pick before it was seen (cannot normally happen)
++            int e = firstEmpty();
++            if (e >= 0) { slots.set(e, k); r.placed.put(k, e); }
++            else r.toBook.add(k);
++        }
++        return r;
++    }
++
++    /** Result of a manual change, for the chat line. */
++    public static final class Change {
++        public final String kind; // put, move, swap, remove, same, bad
++        public final String spell, other; public final int slot, from;
++        Change(String kind, String spell, String other, int slot, int from) { this.kind = kind; this.spell = spell; this.other = other; this.slot = slot; this.from = from; }
++        public boolean ok() { return !kind.equals("bad") && !kind.equals("same"); }
++        @Override public String toString() { return kind + " " + spell + " slot " + (slot + 1) + (from >= 0 ? " from " + (from + 1) : "") + (other != null ? " other " + other : ""); }
++    }
++
++    /**
++     * Put a spell in a slot. On the bar already: the two slots swap. Off the bar: it takes
++     * the slot and whatever was there goes back to the Spellbook.
++     */
++    public Change put(String key, int slot) {
++        String k = norm(key);
++        if (k == null || slot < 0 || slot >= slots.size()) return new Change("bad", k, null, slot, -1);
++        seen.add(k);
++        int from = indexOf(k);
++        String there = slots.get(slot);
++        if (from == slot) return new Change("same", k, null, slot, from);
++        if (from >= 0) {
++            slots.set(from, there);
++            slots.set(slot, k);
++            return there == null ? new Change("move", k, null, slot, from) : new Change("swap", k, there, slot, from);
++        }
++        slots.set(slot, k);
++        return new Change("put", k, there, slot, -1);
++    }
++
++    /** Take whatever is in this slot off the bar (it stays in the Spellbook). */
++    public Change remove(int slot) {
++        if (slot < 0 || slot >= slots.size() || slots.get(slot) == null) return new Change("bad", null, null, slot, -1);
++        String k = slots.get(slot);
++        slots.set(slot, null);
++        return new Change("remove", k, null, slot, -1);
++    }
++
++    /** Swap two slots (either may be empty). */
++    public Change swap(int a, int b) {
++        if (a < 0 || b < 0 || a >= slots.size() || b >= slots.size()) return new Change("bad", null, null, b, a);
++        if (a == b) return new Change("same", slots.get(a), null, b, a);
++        String x = slots.get(a), y = slots.get(b);
++        if (x == null && y == null) return new Change("same", null, null, b, a);
++        slots.set(a, y); slots.set(b, x);
++        if (x == null) return new Change("move", y, null, a, b);
++        return y == null ? new Change("move", x, null, b, a) : new Change("swap", x, y, b, a);
++    }
++
++    // ------------------------------------------------------------------ Magic layout
++
++    /** The wand's layout: spell key to Magic's global slot (bar page p, slot i = p * 8 + i), and the page count. */
++    public static final class Layout {
++        public final Map<String, Integer> slots = new LinkedHashMap<>();
++        public int pages = 1, onBar = 0, inBook = 0;
++    }
++
++    /**
++     * The bar for the held wand. Slots whose spell this wand knows are placed at
++     * page = i / perPage, column = i % perPage (the 8th column stays empty for Tap bar).
++     * Every other spell the wand knows is parked after the last page, in wand order, so
++     * Magic keeps it (Spellbook) but never shows it on the bar.
++     */
++    public Layout layout(List<String> wandOrder, int perPage) {
++        int pp = PageLayout.clampPerPage(perPage);
++        Set<String> known = new LinkedHashSet<>();
++        for (String s : wandOrder) { String k = norm(s); if (k != null) known.add(k); }
++        Layout out = new Layout();
++        int last = -1;
++        for (int i = 0; i < slots.size(); i++) { String k = slots.get(i); if (k != null && known.contains(k)) last = i; }
++        out.pages = last < 0 ? 1 : last / pp + 1;
++        for (int i = 0; i < slots.size(); i++) {
++            String k = slots.get(i);
++            if (k == null || !known.contains(k)) continue;
++            out.slots.put(k, (i / pp) * PageLayout.SLOTS_PER_BAR + (i % pp));
++            out.onBar++;
++        }
++        int next = out.pages * PageLayout.SLOTS_PER_BAR;
++        for (String k : known) {
++            if (out.slots.containsKey(k)) continue;
++            out.slots.put(k, next++);
++            out.inBook++;
++        }
++        return out;
++    }
++
++    /**
++     * Placement order for new spells: the wand template's own list first (the curated order),
++     * then anything else by its current slot (then name).
++     */
++    public static List<String> placementOrder(List<String> templateOrder, Map<String, Integer> current, Collection<String> wandSpells) {
++        Set<String> known = new LinkedHashSet<>();
++        for (String s : wandSpells) { String k = norm(s); if (k != null) known.add(k); }
++        List<String> out = new ArrayList<>();
++        Set<String> added = new java.util.HashSet<>();
++        if (templateOrder != null) for (String s : templateOrder) { String k = norm(s); if (k != null && known.contains(k) && added.add(k)) out.add(k); }
++        Map<String, Integer> cur = new java.util.HashMap<>();
++        if (current != null) for (Map.Entry<String, Integer> e : current.entrySet()) { String k = norm(e.getKey()); if (k != null && e.getValue() != null) cur.put(k, e.getValue()); }
++        for (String k : PageLayout.order(cur, known)) if (added.add(k)) out.add(k);
++        return out;
++    }
++}
+diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/core/ControlsText.java src/src/com/winkreyes/excelwandbars/core/ControlsText.java
+--- src-0.2.8/src/com/winkreyes/excelwandbars/core/ControlsText.java	2026-10-26 10:27:35.015682011 -0500
++++ src/src/com/winkreyes/excelwandbars/core/ControlsText.java	2026-10-26 13:17:35.217547021 -0500
+@@ -14,26 +14,28 @@
+     public static List<String> howTo(WandStyle s, boolean bedrock) {
+         // 0.2.4: the two hotbar-icon styles, worded the same way everywhere.
+         if (s == WandStyle.TAPBAR) return bedrock ? List.of(
+-                "Your wand sits in the last hotbar slot. Tap it and all your spells fill the bar.",
++                "Your wand sits in the last hotbar slot. Tap it and your spell bar fills the hotbar.",
+                 "Tap a spell icon to cast it right away. Each spell keeps its own icon and slot.",
+-                "More spells than fit? Crouch flips to the next page (Page 1/2 shows on screen).",
++                "Two pages? Crouch flips to the next page (Page 1/2 shows on screen).",
++                "Pick which spells are on your bar: Spellbook, My spell bar. New spells go into empty slots.",
+                 "Press and hold the screen (not an icon) to read your spells: what each does, mana, cooldown and rank. It never casts.",
+                 "Tap the wand again, or the empty slot next to it, to get your items back.")
+                 : List.of(
+-                "Your wand sits in the last hotbar slot (9). Hold it and all your spells fill the hotbar.",
++                "Your wand sits in the last hotbar slot (9). Hold it and your spell bar fills the hotbar.",
+                 "Press a hotbar key (1-8) or scroll to cast that spell right away.",
+-                "More spells than fit? Sneak flips to the next page (Page 1/2 shows on screen).",
++                "Two pages? Sneak flips to the next page (Page 1/2 shows on screen).",
++                "Pick which spells are on your bar: /spellbar. New spells go into empty slots.",
+                 "Left click reads your spells: what each does, mana, cooldown and rank. It never casts. Hover an icon for the same.",
+                 "Q, right click or the empty slot next to the wand puts your items back. Right click again brings the bar back.");
+         if (s == WandStyle.ORIGINAL) return bedrock ? List.of(
+-                "Your wand sits in the last hotbar slot. Tap it and all your spells fill the bar.",
++                "Your wand sits in the last hotbar slot. Tap it and your spell bar fills the hotbar.",
+                 "Tap a spell icon to pick it, then press and hold the screen (controller: RT) to cast.",
+-                "More spells than fit? Crouch flips to the next page.",
++                "Two pages? Crouch flips to the next page. Change your bar in the Spellbook.",
+                 "Press and hold your wand, or tap the empty slot at the end of the bar, to get your items back.")
+                 : List.of(
+-                "Your wand sits in the last hotbar slot (9). Hold it and all your spells fill the hotbar.",
++                "Your wand sits in the last hotbar slot (9). Hold it and your spell bar fills the hotbar.",
+                 "Press a hotbar key (1-8) or scroll to pick a spell. Left click casts it.",
+-                "More spells than fit? Sneak flips to the next page.",
++                "Two pages? Sneak flips to the next page. Change your bar: /spellbar.",
+                 "Q or right click puts your items back. Right click again brings the bar back.");
+         if (bedrock) {
+             if (s == WandStyle.CYCLE) return List.of(
+diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/core/LoadoutText.java src/src/com/winkreyes/excelwandbars/core/LoadoutText.java
+--- src-0.2.8/src/com/winkreyes/excelwandbars/core/LoadoutText.java	1969-12-31 18:00:00.000000000 -0600
++++ src/src/com/winkreyes/excelwandbars/core/LoadoutText.java	2026-10-26 13:24:00.919257756 -0500
+@@ -0,0 +1,121 @@
++package com.winkreyes.excelwandbars.core;
++
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Map;
++
++/**
++ * 0.2.9: every player-facing line for the spell bar loadout. Plain text, no em dashes.
++ * Form buttons and titles stay at or under {@link #MAX} characters (Bedrock forms).
++ */
++public final class LoadoutText {
++    private LoadoutText() {}
++
++    public static final int MAX = 38;
++
++    public static String fit(String s) {
++        if (s == null) return "";
++        return s.length() <= MAX ? s : s.substring(0, MAX - 3).trim() + "...";
++    }
++
++    // ---------------------------------------------------------------- new spell lines
++
++    public static String newOnBar(String name) { return "New spell: " + name + " added to your bar"; }
++    public static String newInBook(String name) { return "New spell: " + name + " is in your Spellbook"; }
++    public static String more(int n) { return n + " more new spell" + (n == 1 ? "" : "s") + ". See /spellbook"; }
++    public static final String HOW_TO_CHANGE = "Change your bar: /spellbar";
++
++    /** The chat lines for one sync: at most max named lines, then one "N more" line. */
++    public static List<String> announce(List<String> placedNames, List<String> bookNames, int max) {
++        List<String> out = new ArrayList<>();
++        int cap = Math.max(1, max), shown = 0, total = placedNames.size() + bookNames.size();
++        for (String n : placedNames) { if (shown >= cap) break; out.add(newOnBar(n)); shown++; }
++        for (String n : bookNames) { if (shown >= cap) break; out.add(newInBook(n)); shown++; }
++        if (total > shown) out.add(more(total - shown));
++        if (!bookNames.isEmpty()) out.add(HOW_TO_CHANGE);
++        return out;
++    }
++
++    // ---------------------------------------------------------------- menus
++
++    public static final String BAR_TITLE = "Your spell bar";
++    public static final String BOOK_BUTTON = "My spell bar (change it)";
++    public static final String PUT_BUTTON = "Put on my bar";
++    public static final String MOVE_BUTTON = "Move on my bar";
++    public static final String OFF_BUTTON = "Take off my bar";
++    public static final String PICK_BUTTON = "Pick a spell for this slot";
++    public static final String BACK_BAR = "Back to my bar";
++    public static final String BACK_BOOK = "Back to Spell Book";
++    public static final String CLOSE = "Close";
++    public static final String EMPTY = "(empty)";
++
++    public static String barTitleCount(int used, int size) { return fit("Your spell bar (" + used + " of " + size + ")"); }
++
++    public static String slotButton(int slot, String name) { return fit((slot + 1) + ": " + (name == null ? EMPTY : name)); }
++
++    public static String slotTitle(int slot, String name) { return fit("Slot " + (slot + 1) + ": " + (name == null ? EMPTY : name)); }
++
++    public static String moveButton(String name) { return fit("Move " + name + " to another slot"); }
++    public static String offButton(String name) { return fit("Take " + name + " off the bar"); }
++
++    public static String pickSpellButton(String name, int slotOnBar) {
++        return fit(slotOnBar >= 0 ? name + " (slot " + (slotOnBar + 1) + ")" : name);
++    }
++
++    public static String pickTitle(String name) { return fit("Where should " + name + " go?"); }
++
++    public static String barContent(boolean bedrock, int perPage, int size, int inBook) {
++        StringBuilder sb = new StringBuilder();
++        sb.append(bedrock ? "Tap a slot to change it." : "Click a slot to change it.");
++        sb.append(" ").append(pagesLine(perPage, size));
++        sb.append("\nNew spells go into empty slots by themselves.");
++        if (inBook > 0) sb.append("\n").append(inBook).append(inBook == 1 ? " spell is" : " spells are").append(" only in your Spellbook.");
++        return sb.toString();
++    }
++
++    /** "Slots 1 to 7 are page 1, 8 to 14 page 2." (up to 3 pages named, then "7 slots per page"). */
++    public static String pagesLine(int perPage, int size) {
++        int pp = Math.max(1, perPage);
++        int pages = (size + pp - 1) / pp;
++        if (pages <= 1) return "All " + size + " slots are on page 1.";
++        if (pages > 3) return pp + " slots per page, " + pages + " pages.";
++        StringBuilder sb = new StringBuilder("Slots 1 to " + Math.min(pp, size) + " are page 1");
++        for (int p = 1; p < pages; p++) sb.append(", ").append(p * pp + 1).append(" to ").append(Math.min((p + 1) * pp, size)).append(" page ").append(p + 1);
++        return sb.append(".").toString();
++    }
++
++    public static String pickSlotContent(String name) {
++        return "Pick a slot for " + name + ". A spell already there goes back to your Spellbook. If " + name + " is on your bar now, the two swap.";
++    }
++
++    public static String pickSpellContent(int slot) {
++        return "Pick the spell for slot " + (slot + 1) + ". A spell already on your bar swaps places.";
++    }
++
++    // ---------------------------------------------------------------- results
++
++    public static String changed(BarLoadout.Change c, Map<String, String> names) {
++        String a = c.spell == null ? "" : names.getOrDefault(c.spell, c.spell);
++        String b = c.other == null ? "" : names.getOrDefault(c.other, c.other);
++        switch (c.kind) {
++            case "put": return c.other == null ? a + " is in slot " + (c.slot + 1) + " now."
++                    : a + " is in slot " + (c.slot + 1) + " now. " + b + " went back to your Spellbook.";
++            case "move": return a + " moved to slot " + (c.slot + 1) + ".";
++            case "swap": return a + " is in slot " + (c.slot + 1) + ", " + b + " is in slot " + (c.from + 1) + ".";
++            case "remove": return a + " is off your bar. It stays in your Spellbook.";
++            case "same": return "No change.";
++            default: return "That did not work. Open /spellbar and try again.";
++        }
++    }
++
++    public static final String NOT_KNOWN = "Your wand does not know that spell.";
++    public static final String NO_WAND = "No wand found. Keep your wand in your inventory, then try /spellbar again.";
++    public static final String NOT_BAR_STYLE = "Your wand style has no spell bar. Pick Tap bar with /wandstyle to use one.";
++    public static final String OFF = "Spell bars are not turned on here.";
++
++    /** Crouch on a one-page bar (replaces 0.2.8's "all N of your spells are on the bar"). */
++    public static String onePage(int onBar, int total) {
++        return onBar >= total ? "Page 1/1: all " + total + " of your spells are on the bar"
++                : "Page 1/1: " + onBar + " of your " + total + " spells. More: /spellbar";
++    }
++}
+diff -ruN -x build src-0.2.8/src/com/winkreyes/excelwandbars/core/TipGate.java src/src/com/winkreyes/excelwandbars/core/TipGate.java
+--- src-0.2.8/src/com/winkreyes/excelwandbars/core/TipGate.java	2026-10-26 10:27:52.707760481 -0500
++++ src/src/com/winkreyes/excelwandbars/core/TipGate.java	2026-10-26 13:15:58.721119010 -0500
+@@ -109,7 +109,7 @@
+     public static final String L_CYCLE = "Cycle: right-click for the next spell, sneak + right-click or Q to go back, left-click to cast. No spell list.";
+     public static final String L_CYCLE_BEDROCK = "Cycle: press and hold for the next spell, crouch + hold to go back, tap to cast (controller: LT, RT).";
+     /** 0.2.4 hotbar-icon styles. */
+-    public static final String L_TAPBAR = "Tap bar: all your spells fill the hotbar. A key casts at once, left click reads, sneak for more, Q puts items back.";
++    public static final String L_TAPBAR = "Tap bar: your spell bar fills the hotbar. A key casts at once, left click reads, sneak for page 2, Q puts items back.";
+     public static final String L_TAPBAR_BEDROCK = "Tap bar (best on phone): tap a spell to cast, press and hold to read, crouch for more, tap the wand for your items.";
+     public static final String L_ORIGINAL = "Tap to pick (original): hotbar key picks a spell, left-click casts, Q puts your items back.";
+     public static final String L_ORIGINAL_BEDROCK = "Tap to pick (original): tap your wand, tap a spell icon to pick it, press and hold to cast.";
+diff -ruN -x build src-0.2.8/tests/LoadoutTest.java src/tests/LoadoutTest.java
+--- src-0.2.8/tests/LoadoutTest.java	1969-12-31 18:00:00.000000000 -0600
++++ src/tests/LoadoutTest.java	2026-10-26 13:24:00.923257774 -0500
+@@ -0,0 +1,212 @@
++import com.winkreyes.excelwandbars.core.BarLoadout;
++import com.winkreyes.excelwandbars.core.ControlsText;
++import com.winkreyes.excelwandbars.core.LoadoutText;
++import com.winkreyes.excelwandbars.core.PageLayout;
++import com.winkreyes.excelwandbars.core.TipGate;
++import com.winkreyes.excelwandbars.core.WandStyle;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.LinkedHashMap;
++import java.util.List;
++import java.util.Map;
++
++/** 0.2.9: each player's own spell bar (BarLoadout + LoadoutText). */
++public final class LoadoutTest {
++    static List<String> spells(String prefix, int n) { List<String> l = new ArrayList<>(); for (int i = 1; i <= n; i++) l.add(prefix + i); return l; }
++
++    public static void run() {
++        System.out.println("LoadoutTest");
++        // ---- norm
++        Check.eq("heal", BarLoadout.norm("Heal|3"), "norm strips level and lower-cases");
++        Check.eq(null, BarLoadout.norm("  "), "norm blank = null");
++
++        // ---- seed: first 14 of the current order, everything seen
++        List<String> s17 = spells("s", 17);
++        BarLoadout l = BarLoadout.seed(s17, 14);
++        Check.eq(14, l.size(), "seed size 14");
++        Check.eq(14, l.filled(), "seed fills 14");
++        Check.eq("s1", l.get(0), "seed slot 1 = first spell");
++        Check.eq("s14", l.get(13), "seed slot 14 = 14th spell");
++        Check.eq(17, l.seen().size(), "seed: all 17 seen (no new spell lines)");
++        Check.eq(-1, l.indexOf("s15"), "seed: 15th in the Spellbook");
++        BarLoadout small = BarLoadout.seed(spells("b", 6), 14);
++        Check.eq(6, small.filled(), "beginner 6 spells: 6 filled");
++        Check.eq(6, small.firstEmpty(), "first empty slot is 7");
++        Check.eq(2, BarLoadout.seed(List.of("heal|2", "Heal", "boon"), 14).filled(), "seed drops duplicate levels");
++
++        // ---- seed equals the 0.2.8 page layout for the same wand (nobody's bar moves on first load)
++        Map<String, Integer> cur = new HashMap<>();
++        for (int i = 0; i < 10; i++) cur.put("s" + (i + 1), (i / 7) * 8 + i % 7);
++        List<String> order = PageLayout.order(cur, cur.keySet());
++        BarLoadout ten = BarLoadout.seed(order, 14);
++        BarLoadout.Layout lay10 = ten.layout(order, 7);
++        Map<String, Integer> old = PageLayout.pack(cur, cur.keySet(), 7);
++        Check.eq(old, lay10.slots, "seeded layout = 0.2.8 packed layout (10 spells)");
++        Check.eq(2, lay10.pages, "10 spells = 2 pages");
++        Check.eq(0, lay10.inBook, "10 spells: none in the Spellbook");
++
++        // ---- sync: seal or rank-up adds spells, empty slots first
++        BarLoadout.Sync r = small.sync(List.of("b1", "b2", "b3", "b4", "b5", "b6", "n1", "n2"));
++        Check.eq(2, r.placed.size(), "2 new spells placed");
++        Check.eq(Integer.valueOf(6), r.placed.get("n1"), "n1 into slot 7");
++        Check.eq(Integer.valueOf(7), r.placed.get("n2"), "n2 into slot 8");
++        Check.ok(r.toBook.isEmpty(), "none to the Spellbook");
++        Check.ok(!small.sync(List.of("b1", "n1", "n2")).changed(), "sync again: nothing new");
++
++        // full bar: new spells go to the Spellbook
++        BarLoadout full = BarLoadout.seed(spells("m", 17), 14);
++        BarLoadout.Sync r2 = full.sync(spells("m", 20));
++        Check.eq(List.of("m18", "m19", "m20"), r2.toBook, "full bar: 3 new to the Spellbook");
++        Check.ok(r2.placed.isEmpty(), "full bar: none placed");
++        // a removed slot gets the next new spell
++        full.remove(4);
++        BarLoadout.Sync r3 = full.sync(spells("m", 21));
++        Check.eq(Integer.valueOf(4), r3.placed.get("m21"), "removed slot 5 gets the next new spell");
++
++        // a spell seen and then taken off is NOT put back by sync
++        BarLoadout t = BarLoadout.seed(List.of("a", "b", "c"), 4);
++        t.remove(1);
++        t.sync(List.of("a", "b", "c", "d"));
++        Check.eq(-1, t.indexOf("b"), "removed spell stays off the bar");
++        Check.eq(1, t.indexOf("d"), "new spell d fills the freed slot 2");
++
++        // ---- seal stage growth 17 -> 37 -> 63 -> 105 (Master), 14 slots
++        BarLoadout seal = BarLoadout.seed(spells("x", 17), 14);
++        int book = 3;
++        for (int n : new int[]{37, 63, 105}) { BarLoadout.Sync s = seal.sync(spells("x", n)); book += s.toBook.size(); Check.ok(s.placed.isEmpty(), "seal " + n + ": bar full, nothing moved"); }
++        Check.eq(91, book, "105 spells: 14 on bar, 91 in the Spellbook");
++        BarLoadout.Layout sl = seal.layout(spells("x", 105), 7);
++        Check.eq(2, sl.pages, "105 spells still 2 pages");
++        Check.eq(14, sl.onBar, "14 on bar");
++        Check.eq(91, sl.inBook, "91 parked");
++        Check.eq(105, sl.slots.size(), "every known spell keeps a slot (Magic keeps all)");
++        int minParked = Integer.MAX_VALUE;
++        for (Map.Entry<String, Integer> e : sl.slots.entrySet()) if (seal.indexOf(e.getKey()) < 0) minParked = Math.min(minParked, e.getValue());
++        Check.eq(16, minParked, "parked from slot 16 (after 2 pages of 8)");
++        Check.eq(Integer.valueOf(8), sl.slots.get("x8"), "slot 8 = page 2 first icon (global 8)");
++        Check.eq(Integer.valueOf(6), sl.slots.get("x7"), "slot 7 = page 1 seventh icon (global 6)");
++        boolean noCol8 = true;
++        for (Map.Entry<String, Integer> e : sl.slots.entrySet()) { int g = e.getValue(); if (g < 16 && g % 8 == 7) noCol8 = false; }
++        Check.ok(noCol8, "Tap bar: 8th column always empty on the bar");
++
++        // ---- layout skips spells the wand does not know
++        BarLoadout k = BarLoadout.seed(List.of("a", "b", "c"), 14);
++        BarLoadout.Layout kl = k.layout(List.of("a", "c"), 7);
++        Check.ok(!kl.slots.containsKey("b"), "unknown spell b never on the bar (cannot be cast)");
++        Check.eq(Integer.valueOf(2), kl.slots.get("c"), "c keeps its slot 3");
++        Check.eq(1, kl.pages, "1 page");
++        Check.eq(1, k.indexOf("b"), "b keeps its place for a wand that knows it");
++        BarLoadout e = new BarLoadout(14);
++        BarLoadout.Layout el = e.layout(List.of("a", "b"), 7);
++        Check.eq(1, el.pages, "empty loadout: 1 page");
++        Check.eq(Integer.valueOf(8), el.slots.get("a"), "empty loadout: a parked at 8");
++        // last filled slot drives page count
++        BarLoadout far = new BarLoadout(14); far.put("a", 12);
++        Check.eq(2, far.layout(List.of("a"), 7).pages, "spell in slot 13 = 2 pages");
++        Check.eq(Integer.valueOf(13), far.layout(List.of("a"), 7).slots.get("a"), "slot 13 -> global 13 (page 2 col 6)");
++        // sneak bars 8 per page
++        BarLoadout sb = BarLoadout.seed(spells("q", 14), 14);
++        BarLoadout.Layout sbl = sb.layout(spells("q", 14), 8);
++        Check.eq(Integer.valueOf(7), sbl.slots.get("q8"), "Sneak bars: slot 8 = page 1 col 8");
++        Check.eq(2, sbl.pages, "Sneak bars 14 = 2 pages");
++
++        // ---- manual: put, swap, move, remove
++        BarLoadout m = BarLoadout.seed(List.of("a", "b", "c", "d", "e"), 4); // e in book
++        BarLoadout.Change c1 = m.put("e", 1);
++        Check.eq("put", c1.kind, "put from book");
++        Check.eq("b", c1.other, "b goes back to the book");
++        Check.eq("e", m.get(1), "e in slot 2");
++        Check.eq(-1, m.indexOf("b"), "b off the bar");
++        BarLoadout.Change c2 = m.put("a", 2);
++        Check.eq("swap", c2.kind, "put an on-bar spell = swap");
++        Check.eq("a", m.get(2), "a in slot 3"); Check.eq("c", m.get(0), "c in slot 1");
++        BarLoadout.Change c3 = m.remove(3);
++        Check.eq("remove", c3.kind, "remove");
++        Check.eq(null, m.get(3), "slot 4 empty");
++        BarLoadout.Change c4 = m.put("a", 3);
++        Check.eq("move", c4.kind, "move to an empty slot");
++        Check.eq(null, m.get(2), "old slot empty after move");
++        Check.eq("same", m.put("a", 3).kind, "same slot = no change");
++        Check.eq("bad", m.put("a", 99).kind, "slot out of range");
++        Check.eq("bad", m.remove(2).kind, "remove empty = bad");
++        BarLoadout.Change c5 = m.swap(0, 1);
++        Check.eq("swap", c5.kind, "swap slots");
++        Check.eq("e", m.get(0), "e now slot 1");
++        Check.eq("move", m.swap(0, 2).kind, "swap with empty = move");
++        Check.ok(m.seen().contains("b"), "put does not forget seen");
++
++        // ---- resize: shrink loses nothing (wand still knows them), grow adds empty
++        BarLoadout rz = BarLoadout.seed(spells("r", 14), 14);
++        rz.resize(7);
++        Check.eq(7, rz.size(), "shrink to 7");
++        Check.eq(14, rz.seen().size(), "shrink keeps seen");
++        Check.eq(7, rz.layout(spells("r", 14), 7).inBook, "shrink: 7 to the Spellbook");
++        rz.resize(21);
++        Check.eq(7, rz.firstEmpty(), "grow: new empty slots at the end");
++        Check.ok(!rz.sync(spells("r", 14)).changed(), "grow does not re-announce old spells");
++        Check.eq(BarLoadout.MAX_SLOTS, new BarLoadout(1000).size(), "size clamp max");
++        Check.eq(1, new BarLoadout(0).size(), "size clamp min");
++
++        // ---- storage round trip
++        BarLoadout st = BarLoadout.seed(List.of("a", "b", "c"), 5);
++        st.remove(1);
++        List<String> stored = st.storedSlots();
++        Check.eq(List.of("a", "", "c", "", ""), stored, "stored slots with blanks");
++        BarLoadout back = BarLoadout.restore(stored, st.seen(), 5);
++        Check.eq(st.slots(), back.slots(), "restore slots");
++        Check.eq(st.seen(), back.seen(), "restore seen");
++        BarLoadout junk = BarLoadout.restore(List.of("a", "A", "", "b|2"), List.of("a", "b"), 3);
++        Check.eq(java.util.Arrays.asList("a", null, null), junk.slots(), "restore drops duplicates and cuts to size");
++        Check.ok(junk.seen().contains("b"), "cut slot spell still seen");
++
++        // ---- placement order: template list first, then current slot
++        Map<String, Integer> pc = new LinkedHashMap<>(); pc.put("z", 0); pc.put("y", 1); pc.put("w", 2);
++        Check.eq(List.of("y", "z", "w"), BarLoadout.placementOrder(List.of("y", "z", "gone"), pc, List.of("z", "y", "w")), "placement: template order, then slot");
++
++        // ---- text: lines, buttons <= 38, no em dashes
++        Check.eq("New spell: Heal added to your bar", LoadoutText.newOnBar("Heal"), "on-bar line (brief wording)");
++        Check.eq("New spell: Heal is in your Spellbook", LoadoutText.newInBook("Heal"), "book line (brief wording)");
++        List<String> ann = LoadoutText.announce(List.of("A", "B"), List.of("C", "D", "E"), 3);
++        Check.eq(5, ann.size(), "announce: 3 named + more + how to change");
++        Check.eq("2 more new spells. See /spellbook", ann.get(3), "announce more line");
++        Check.eq(LoadoutText.HOW_TO_CHANGE, ann.get(4), "announce: how to change when some are in the book");
++        Check.eq(1, LoadoutText.announce(List.of("A"), List.of(), 3).size(), "one placed = one line");
++        List<String> ui = new ArrayList<>(List.of(LoadoutText.BAR_TITLE, LoadoutText.BOOK_BUTTON, LoadoutText.PUT_BUTTON, LoadoutText.MOVE_BUTTON, LoadoutText.OFF_BUTTON,
++                LoadoutText.PICK_BUTTON, LoadoutText.BACK_BAR, LoadoutText.BACK_BOOK, LoadoutText.CLOSE,
++                LoadoutText.barTitleCount(14, 14), LoadoutText.slotButton(13, "Recall to Last Death Point Again"), LoadoutText.slotTitle(13, null),
++                LoadoutText.moveButton("Greater Heal"), LoadoutText.offButton("Summon a Very Long Named Thing"),
++                LoadoutText.pickSpellButton("Greater Heal", 13), LoadoutText.pickTitle("Greater Heal")));
++        boolean fits = true;
++        for (String u : ui) if (u.length() > LoadoutText.MAX) { fits = false; System.out.println("    too long: " + u); }
++        Check.ok(fits, "every menu line <= 38 chars");
++        Check.eq("14: Recall to Last Death Point Again", LoadoutText.slotButton(13, "Recall to Last Death Point Again"), "slot button");
++        Check.ok(LoadoutText.slotButton(1, "An Extremely Long Spell Name That Goes On").endsWith("..."), "long name trimmed with ...");
++        List<String> all = new ArrayList<>(ui);
++        all.addAll(ann);
++        all.add(LoadoutText.barContent(true, 7, 14, 3)); all.add(LoadoutText.barContent(false, 7, 14, 0));
++        all.add(LoadoutText.pickSlotContent("Heal")); all.add(LoadoutText.pickSpellContent(2));
++        all.add(LoadoutText.NOT_KNOWN); all.add(LoadoutText.NO_WAND); all.add(LoadoutText.NOT_BAR_STYLE); all.add(LoadoutText.OFF);
++        all.add(LoadoutText.onePage(6, 6)); all.add(LoadoutText.onePage(6, 9));
++        Map<String, String> nm = Map.of("a", "Heal", "b", "Boon");
++        for (BarLoadout.Change ch : List.of(c1, c2, c3, c4, c5)) all.add(LoadoutText.changed(ch, nm));
++        all.addAll(ControlsText.howTo(WandStyle.TAPBAR, true)); all.addAll(ControlsText.howTo(WandStyle.TAPBAR, false));
++        all.addAll(ControlsText.howTo(WandStyle.ORIGINAL, true)); all.addAll(ControlsText.howTo(WandStyle.ORIGINAL, false));
++        all.add(TipGate.L_TAPBAR);
++        boolean clean = true;
++        for (String a : all) if (a.contains("\u2014") || a.contains("\u2013")) { clean = false; System.out.println("    dash: " + a); }
++        Check.ok(clean, "no em or en dashes in any 0.2.9 text");
++        Check.eq("Page 1/1: all 6 of your spells are on the bar", LoadoutText.onePage(6, 6), "one page, all on bar (0.2.8 wording)");
++        Check.eq("Page 1/1: 6 of your 9 spells. More: /spellbar", LoadoutText.onePage(6, 9), "one page, some in book");
++        Check.eq("Heal is in slot 2 now. Boon went back to your Spellbook.", LoadoutText.changed(c1.kind.equals("put") ? c1 : null, Map.of("e", "Heal", "b", "Boon")), "put line");
++        Check.eq("Slots 1 to 7 are page 1, 8 to 14 page 2.", LoadoutText.pagesLine(7, 14), "pages line 14");
++        Check.eq("Slots 1 to 7 are page 1, 8 to 14 page 2, 15 to 21 page 3.", LoadoutText.pagesLine(7, 21), "pages line 21");
++        Check.eq("Slots 1 to 8 are page 1, 9 to 14 page 2.", LoadoutText.pagesLine(8, 14), "pages line Sneak bars");
++        Check.eq("All 5 slots are on page 1.", LoadoutText.pagesLine(7, 5), "pages line 1 page");
++        Check.eq("7 slots per page, 5 pages.", LoadoutText.pagesLine(7, 35), "pages line many");
++        boolean bedrockNoClick = true;
++        for (String a : ControlsText.howTo(WandStyle.TAPBAR, true)) if (a.toLowerCase().contains("click")) bedrockNoClick = false;
++        Check.ok(bedrockNoClick, "Bedrock Tap bar how-to never says click");
++        Check.ok(!LoadoutText.barContent(true, 7, 14, 0).toLowerCase().contains("click"), "Bedrock bar menu never says click");
++    }
++}
+diff -ruN -x build src-0.2.8/tests/TestMain.java src/tests/TestMain.java
+--- src-0.2.8/tests/TestMain.java	2026-10-26 11:45:07.024315715 -0500
++++ src/tests/TestMain.java	2026-10-26 13:16:53.753363110 -0500
+@@ -13,6 +13,7 @@
+         TipTest.run();
+         ProgressTest.run();
+         RankUpTest.run();
++        LoadoutTest.run();
+         SpellInfoTest.run(System.getProperty("spells", ""));
+         CumulusFormTest.run(System.getProperty("floodgate", ""));
+         System.out.println("TOTAL: " + Check.passed + " passed, " + Check.failed + " failed");

@@ -1,0 +1,17 @@
+
+# 0.2.9: each player's own spell bar (Tap bar, Tap to pick (original), Sneak bars).
+# Every player picks which spells sit on their bar. New spells (rank up, a new wand)
+# go into the first empty slots with a short chat line, or into the Spellbook when the
+# bar is full. Change it from the Spellbook (Put on my bar, Move, Take off) or /spellbar.
+# Saved per player in plugins/ExcelWandBars/loadouts.yml (server data, not in this file).
+# On a player's first load the bar is filled from their wand's current order (first slots).
+# enabled: false = the 0.2.8 behaviour (every spell on the bar in pages of 7).
+# A missing section counts as enabled: true with these defaults. Reload: /wandbars reload.
+bar-loadout:
+  enabled: true
+  # 14 = 2 pages of 7 in Tap bar (8 per page in Sneak bars). 1 to 64.
+  slots: 14
+  # "New spell: X added to your bar" / "New spell: X is in your Spellbook".
+  new-spell-lines: true
+  # More new spells at once than this: one "N more new spells" line instead.
+  max-new-spell-lines: 3

@@ -1,0 +1,1591 @@
+#
+# Wink Reyes Valley - Magic Phase 1 (HEALER RELEASE) curated spells.
+# WRV-070. This file is the COMPLETE spell set for Phase 1.
+#
+# Paired with config.yml: load_default_spells: false
+# -> defaults/spells.defaults.yml is NOT loaded. Only the spells below exist.
+#
+# Every block below is copied VERBATIM from Magic 11.2.5
+# defaults/spells.defaults.yml (the exact build scratch-tested Oct 17, 2026),
+# so parameters, costs, cooldowns and upgrade requirements are the author's
+# shipped values - with ONE documented exception, added Oct 17, 2026:
+# `worth` (the SP learn price) is re-scaled per rank band for the ~2-day
+# hybrid ladder pace (the math is in LADDER.md, same folder). Only the
+# SELECTION and those prices are ours.
+#
+# Phase 1 list (13 player spells + 1 inherited base template):
+#   healer core : heal, cure, blessing, boon
+#   utility     : superheal, feed, extinguish, aqualung, gills, shell,
+#                 recall, recall_death
+#   custom      : stormshackle (Storm Shackle - OUR spell, bottom of this
+#                 file; NOT one of the verbatim blocks above. Mike's design
+#                 change, Oct 17, 2026: a chain-lightning variant with
+#                 token damage that slows what it arcs to. The raw
+#                 lightning / chainlightning spells stay OUT of Phase 1;
+#                 they remain Phase 2 per the roadmap.)
+#   base_passive is NOT a castable spell: it is the passive template that
+#   aqualung inherits from (inherit: base_passive) and recall_death inherits
+#   from recall. Both inheritance targets are inside this file.
+#
+# Locked shelf (lava, grenade, wither, vengeance, nuke, shops, ...) is
+# absent by construction: those keys are not in this file and the defaults
+# file is never loaded.
+#
+
+heal:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: heal
+  category: light
+  tags: noduel
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  worth: 1200
+  earns: 2
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CheckModifiers
+      blocked: wrv_renewed
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_renewed
+        duration: 10000
+      - class: Repeat
+        actions:
+        - class: Delay
+        - class: Heal
+      fail:
+      - class: Message
+        message_type: action_bar
+        message: '&eYour Heal is already on them'
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 0.1
+      sound_volume: 0.4
+    - sound: block_beacon_activate
+      sound_pitch: 0.1
+      sound_volume: 1.4
+    - sound: entity_generic_drink
+      sound_pitch: 0.3
+      sound_volume: 0.2
+      location: target
+    - class: EffectSingle
+      sound: magic.shimmer
+      effectlib:
+        class: ConeEffect
+        iterations: 5
+        lengthGrow: 0.12
+        particle: heart
+    - class: EffectSingle
+      sound: magic.shimmer
+      location: target
+      effectlib:
+        class: Modified
+        period: 16
+        duration: $total_duration
+        parameters:
+          radius: (t/i) * 1.5 + 1.5
+          rings: (1 - (t/i)) * 3 + 1
+        effect:
+          class: WarpEffect
+          particle: heart
+          particles: 8
+          grow: 0.5
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: Modified
+        period: 2
+        duration: $total_duration
+        parameters:
+          radius: (t/i) * 0.5 + 1
+          rings: (1 - (t/i)) * 11 + 1
+        effect:
+          class: WarpEffect
+          particle: end_rod
+          particles: 7
+    - class: EffectSingle
+      effectlib:
+        class: LineEffect
+        particle: end_rod
+        duration: 500
+        particles: 10
+        particle_count: 4
+        particle_offset_x: 0.1
+        particle_offset_y: 0.1
+        particle_offset_z: 0.1
+    - class: EffectSingle
+      effectlib:
+        class: LineEffect
+        particle: heart
+        duration: 1000
+        particles: 4
+        particle_count: 2
+        particle_offset_x: 0.1
+        particle_offset_y: 0.1
+        particle_offset_z: 0.1
+        period: 4
+    cast_self:
+    - sound: entity_generic_drink
+      sound_pitch: 0.1
+      sound_volume: 0.4
+    - sound: block_beacon_activate
+      sound_pitch: 0.1
+      sound_volume: 1.4
+    - class: EffectSingle
+      sound: magic.shimmer
+      location: target
+      effectlib:
+        class: Modified
+        period: 16
+        duration: $total_duration
+        parameters:
+          radius: (t/i) * 1.5 + 1.5
+          rings: (1 - (t/i)) * 3 + 1
+        effect:
+          class: WarpEffect
+          particle: heart
+          particles: 8
+          grow: 0.5
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: Modified
+        period: 2
+        duration: $total_duration
+        parameters:
+          radius: (t/i) * 0.5 + 1
+          rings: (1 - (t/i)) * 11 + 1
+        effect:
+          class: WarpEffect
+          particle: end_rod
+          particles: 7
+    cast_finish:
+    - sound: block_beacon_activate
+      sound_pitch: 1.2
+      sound_volume: 0.5
+      location: both
+    - class: EffectSingle
+      custom_sound: magic.shimmer_quiet
+      sound_pitch: 5
+      location: origin
+      effectlib:
+        class: AnimatedBall
+        duration: 200
+        particle: heart
+        size: 3
+  parameters:
+    # Renew-style heal over time: 1 HP every 1 s for 10 s. Taking damage or
+    # casting another spell no longer cancels it.
+    cancel_on_damage: 0
+    cancel_on_cast_other: false
+    delay: 1000
+    repeat: 10
+    total_duration: 10000
+    target_type: LivingEntity
+    target: any_entity
+    allow_max_range: false
+    range: 8
+    cooldown: 8000
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    hitbox: true
+    amount: 1
+    cooldown_mage: 1000
+  costs:
+    mana: 12
+heal|2:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  parameters:
+    range: 32
+    cooldown: 7000
+heal|3:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  # Riptide-style: instant 2 HP up front, then the 10 s heal over time.
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CheckModifiers
+      blocked: wrv_renewed
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_renewed
+        duration: 10000
+      - class: Heal
+        amount: 2
+      - class: Repeat
+        actions:
+        - class: Delay
+        - class: Heal
+      fail:
+      - class: Message
+        message_type: action_bar
+        message: '&eYour Heal is already on them'
+  parameters:
+    cooldown: 6000
+  costs:
+    mana: 15
+
+cure:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: cure
+  upgrade_required_path: student
+  upgrade_required_casts: 20
+  category: light
+  worth: 550
+  earns: 20
+  quick_cast: true
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: AreaOfEffect
+      actions:
+      - class: PotionEffect
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 0.1
+      sound_volume: 0.4
+    - sound: block_beacon_activate
+      sound_pitch: 0.1
+      sound_volume: 1.4
+    - sound: entity_generic_drink
+      sound_pitch: 0.3
+      sound_volume: 0.2
+      location: targets
+      source_location: body
+      effectlib:
+        class: Warp
+        radius: 1
+        rings: 8
+        grow: 0.1
+        particle: end_rod
+    - class: EffectSingle
+      sound: magic.shimmer
+      source_location: body
+      location: source
+      effectlib:
+        class: Modified
+        iterations: 40
+        period: 2
+        parameters:
+          radius: (t/i) * 5 + 0.5
+          radius_nucleus: (t/i) * 8 + 2
+        effect:
+          class: AtomEffect
+          particle_nucleus: heart
+          particle_orbital: crit
+          particles_nucleus: 4
+          particles_orbital: 30
+  parameters:
+    target: self
+    target_type: LivingEntity
+    radius: 5
+    bypass_confusion: true
+    cooldown: 12000
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    target_self: true
+    remove_effects:
+    - confusion
+    - poison
+    - slow
+    - slow_digging
+    cooldown_mage: 1000
+  costs:
+    mana: 20
+cure|2:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 30
+  parameters:
+    cooldown: 10000
+    remove_effects:
+    - confusion
+    - weakness
+    - poison
+    - slow
+    - slow_digging
+    - wither
+cure|3:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: master
+  upgrade_required_casts: 30
+  # Stock cure|3 dropped the area (self only). Keep it a group cleanse.
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: AreaOfEffect
+      actions:
+      - class: PotionEffect
+  parameters:
+    radius: 8
+    remove_effects:
+    - confusion
+    - weakness
+    - poison
+    - slow
+    - slow_digging
+    - wither
+    - blindness
+    - hunger
+cure|4:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  # Group cleanse plus a small snack (2 drumsticks), not a full meal, so food matters.
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: AreaOfEffect
+      actions:
+      - class: PotionEffect
+      - class: Repeat
+        actions:
+        - class: Delay
+        - class: Feed
+  parameters:
+    feed: 1
+    saturation: 1
+    exhaustion: false
+    delay: 500
+    repeat: 4
+    cooldown: 8000
+cure|5:
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: AreaOfEffect
+      actions:
+      - class: CheckEntity
+        allowed_entities: zombie_villager
+        actions:
+        - class: RemoveEntity
+        - class: ChangeContext
+          target_entity: true
+          target_offset: 0,-0.3,0
+          actions:
+          - class: SpawnEntity
+            type: villager
+            set_target: true
+        - class: PlayEffects
+          effects: cured
+      - class: PotionEffect
+      - class: Repeat
+        actions:
+        - class: Delay
+        - class: Feed
+  effects:
+    cured:
+    - class: EffectSingle
+      sound: entity_zombie_villager_cure
+      location: target
+      source_location: body
+      effectlib:
+        class: Modified
+        iterations: 40
+        period: 2
+        parameters:
+          radius: (t/i) * 3 + 0.75
+          radius_nucleus: (t/i) * 0.5 + 0.6
+        effect:
+          class: AtomEffect
+          particle_nucleus: villager_happy
+          particle_orbital: crit
+          particles_nucleus: 10
+          particles_orbital: 30
+  parameters:
+    friendly_types: zombie_villager
+
+blessing:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: blessing
+  category: master
+  worth: 2600
+  earns: 8
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CustomProjectile
+      actions:
+      - class: AreaOfEffect
+        actions:
+        - class: PotionEffect
+  effects:
+    cast:
+    - sound: block_beacon_activate
+      sound_pitch: 1.2
+      sound_volume: 1.2
+      location: both
+    tick:
+    - location: target
+      particle: end_rod
+      particle_count: 20
+      particle_offset_x: 0.1
+      particle_offset_y: 0.1
+      particle_offset_z: 0.1
+    hit:
+    - sound: block_beacon_deactivate
+      sound_pitch: 1.8
+      sound_volume: 1.2
+      location: both
+    - location: target
+      effectlib:
+        class: HelixEffect
+        particle: end_rod
+        iterations: 1
+        particles: 40
+        particle_count: 4
+        particle_offset_x: 0.2
+        particle_offset_y: 0.01
+        particle_offset_z: 0.2
+        offset: 0,0.1,0
+        radius: $radius
+    cast_finish:
+    - location: targets
+      sound: block_beacon_deactivate
+      sound_pitch: 0.8
+      sound_volume: 0.8
+      effectlib:
+        class: Love
+        iterations: 20
+  parameters:
+    target_type: Player
+    projectile: Snowball
+    effect_heal: 2
+    effect_damage_resistance: 1
+    effect_fire_resistance: 1
+    effect_absorption: 1
+    duration: 10000
+    radius: 8
+    target_self_timeout: 100
+    cooldown: 90000
+    bypass_friendly_fire: true
+    only_friendly: true
+    gravity: 0.05
+    velocity: 15
+    range: 8
+    cooldown_mage: 1000
+  costs:
+    mana: 150
+
+boon:
+  icon: boon
+  alias: perk
+  category: utility
+  worth: 880
+  earns: 6
+  upgrade_required_path: beginner
+  upgrade_required_casts: 40
+  quick_cast: true
+  toggle: cancel
+  disable_mana_regeneration: true
+  boss_bar: true
+  # WRV boonfix v2 (Oct 23, 2026): Boon is a toggle. Casting turns it ON;
+  # casting again, or running out of mana, turns it OFF. The wand's quiet: 1
+  # hides Magic's "on" text and the built-in "off" text read "Boon
+  # Interrupted", so we add a clear ON line and reword the OFF line.
+  # Speed is now applied for 1.5 s and refreshed every 1 s while Boon is on
+  # (was 30 s), so it ends within ~0.5-1.5 s of Boon turning off instead of
+  # lingering up to 30 s. No forced removal: vanilla effect merging keeps a
+  # longer or stronger Speed from a potion/beacon/other plugin.
+  messages:
+    cancel: "a:&eBoon is off"
+  actions:
+    cast:
+    - class: Message
+      message_type: action_bar
+      message: "&aBoon on: Speed II while your mana lasts. Cast again to stop."
+    - class: Repeat
+      actions:
+      - class: PotionEffect
+        duration: 1500
+      - class: Delay
+        delay: 1000
+  effects:
+    cast:
+    - sound: entity_experience_orb_pickup
+      sound_pitch: 0.2
+      sound_volume: 0.8
+    - sound: entity_generic_drink
+      sound_pitch: 1.75
+      sound_volume: 0.6
+    - sound: entity_generic_drink
+      sound_pitch: 1.75
+      sound_volume: 0.6
+    - sound: block_beacon_activate
+      sound_pitch: 1.5
+      sound_volume: 0.75
+    - location: origin
+      source_location: body
+      color_override: color
+      effectlib:
+        class: EquationEffect
+        x_equation: 0
+        y_equation: 0.4 * (cos(t/57.2958)  * (2.71828^(cos(t/57.2958)) - 2 * cos(4t/57.2958) - (sin(t/(12 * 57.2958)))^5))
+        z_equation: 0.4 * (sin(t/57.2958)  * (2.71828^(cos(t/57.2958)) - 2 * cos(4t/57.2958) - (sin(t/(12 * 57.2958)))^5))
+        particles: 50
+        duration: 3600000
+        relative_offset: -0.5,0,0
+        disappear_with_origin_entity: true
+  parameters:
+    target: self
+    effect_speed: 1
+    cooldown: 6000
+    cancel_on_death: true
+    repeat: infinite
+    bypass_mage_cooldown: true
+  costs:
+    mana: 20
+  active_costs:
+    mana: 1
+boon|2:
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  parameters:
+    effect_jump: 2
+boon|3:
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  parameters:
+    effect_speed: 2
+boon|4:
+  parameters:
+    effect_night_vision: 5
+
+superheal:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: wrv_superheal
+  upgrade_required_path: student
+  upgrade_required_casts: 20
+  category: light
+  worth: 880
+  earns: 20
+  quick_cast: true
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: AreaOfEffect
+      actions:
+      - class: PotionEffect
+      - class: Feed
+      - class: Heal
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 0.1
+      sound_volume: 0.4
+    - sound: block_beacon_activate
+      sound_pitch: 0.1
+      sound_volume: 1.4
+    - sound: entity_generic_drink
+      sound_pitch: 0.3
+      sound_volume: 0.2
+      location: targets
+      source_location: body
+      effectlib:
+        class: Warp
+        radius: 1
+        rings: 8
+        grow: 0.1
+        particle: end_rod
+    - class: EffectSingle
+      sound: magic.shimmer
+      source_location: body
+      location: source
+      effectlib:
+        class: Modified
+        iterations: 40
+        period: 2
+        parameters:
+          radius: (t/i) * 5 + 0.5
+          radius_nucleus: (t/i) * 8 + 2
+        effect:
+          class: AtomEffect
+          particle_nucleus: heart
+          particle_orbital: crit
+          particles_nucleus: 4
+          particles_orbital: 30
+  parameters:
+    target: self
+    target_type: LivingEntity
+    radius: 12
+    bypass_confusion: true
+    cooldown: 45000
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    target_self: true
+    # Group heal: 8 HP now plus Regeneration I for 5 s. Was a FULL heal and FULL
+    # hunger+saturation for everyone in 16 blocks. Food now tops up a little only.
+    amount: 8
+    effect_regeneration: 0
+    duration: 5000
+    feed: 4
+    saturation: 1
+    exhaustion: false
+    remove_effects:
+    - confusion
+    - weakness
+    - poison
+    - slow
+    - slow_digging
+    - wither
+    cooldown_mage: 1000
+  costs:
+    mana: 110
+
+feed:
+  icon: wrv_feed
+  category: staff
+  quick_cast: true
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: Feed
+    - class: Heal
+    - class: PotionEffect
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 0.1
+      sound_volume: 0.4
+    - sound: block_beacon_activate
+      sound_pitch: 0.1
+      sound_volume: 1.4
+    - sound: entity_generic_drink
+      sound_pitch: 0.3
+      sound_volume: 0.2
+      location: target
+      effectlib:
+        class: Warp
+        radius: 1
+        rings: 8
+        grow: 0.1
+        particle: end_rod
+    - class: EffectSingle
+      sound: magic.shimmer
+      source_location: body
+      location: target
+      effectlib:
+        class: Modified
+        iterations: 40
+        period: 2
+        parameters:
+          radius: (t/i) * 5 + 0.5
+          radius_nucleus: (t/i) * 8 + 2
+        effect:
+          class: AtomEffect
+          particle_nucleus: heart
+          particle_orbital: crit
+          particles_nucleus: 4
+          particles_orbital: 30
+  parameters:
+    # WRV Oct 23 2026: no picker menu (Bedrock showed identical heads), no bread,
+    # partial hunger only so food still matters. Aim at a player within 8 blocks,
+    # or at nothing to feed yourself.
+    target_type: Player
+    target: any_entity
+    allow_max_range: false
+    range: 8
+    hitbox: true
+    feed: 6
+    saturation: 2
+    exhaustion: false
+    amount: 4
+    cooldown: 60000
+    bypass_confusion: true
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    remove_effects:
+    - poison
+    - wither
+    cooldown_mage: 1000
+  costs:
+    mana: 30
+
+extinguish:
+  icon: wrv_extinguish
+  category: utility
+  worth: 400
+  earns: 4
+  actions:
+    cast:
+    - class: Sphere
+      actions:
+      - class: ModifyBlock
+    - class: AreaOfEffect
+      actions:
+      - class: Ignite
+        duration: 0
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: block_fire_extinguish
+      effectlib:
+        class: ConeEffect
+        iterations: 20
+        particle: smoke_normal
+        lengthGrow: 0.03
+        radiusGrow: 0.008
+  parameters:
+    allow_max_range: false
+    range: 32
+    check_destructible: true
+    destructible: fire
+    brush: erase
+    radius: 10
+    transparent: transparent_to_construction
+    cooldown: 8000
+    target_self: true
+    bypass_mage_cooldown: true
+  costs:
+    mana: 30
+
+aqualung:
+  icon: gasp
+  inherit: base_passive
+  legacy_icon: spell_icon:76
+  legacy_icon_disabled: spell_icon_disabled:76
+  worth: 120
+  triggers:
+  - trigger: damage
+    damage_type: drowning
+  actions:
+    cast:
+    - class: AirSupply
+  effects:
+    cast:
+    - sound: magic.shimmer
+      sound_volume: 0.2
+      particle: bubble_column_up
+      particle_count: 16
+      particle_offset_x: 0.5
+      particle_offset_y: 0.5
+      particle_offset_z: 0.5
+    - sound: entity_player_breath
+      sound_pitch: 1.3
+      sound_volume: 1.5
+      location: origin
+      effectlib:
+        class: Modified
+        duration: 3000
+        parameters:
+          radius: (t/i) * 3 + 0.3
+        effect:
+          class: Sphere
+          particle_count: 4
+          particles: 16
+          particle_offset_x: 0.2
+          particle_offset_y: 0.2
+          particle_offset_z: 0.2
+          particle: water_bubble
+          radius: 1
+  parameters:
+    air: max
+    cooldown: 60000
+
+    bypass_mage_cooldown: true
+gills:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: wrv_gills
+  category: light
+  worth: 320
+  actions:
+    cast:
+    - class: PotionEffect
+    - class: Hat
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: block_water_ambient
+      location: origin
+      source_location: eyes
+      effectlib:
+        class: SphereEffect
+        iterations: 10
+        period: 4
+        particle: drip_water
+        radius: 0.5
+  parameters:
+    target_type: LivingEntity
+    target: self
+    cooldown: 30000
+    duration: 30000
+    undo: 30000
+    effect_water_breathing: 1
+    enchantments:
+      oxygen: 3
+      water_worker: 1
+    brush: cyan_stained_glass
+    brushcolor: true
+    bypass_mage_cooldown: true
+  costs:
+    mana: 15
+
+shell:
+  icon: shell
+  alias: dome
+  category: combat
+  worth: 470
+  earns: 2
+  upgrade_required_path: student
+  upgrade_required_casts: 50
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Sphere
+        actions:
+        - class: ModifyBlock
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.shield
+    - sound: block_stone_place
+      sound_pitch: 1.2
+      sound_volume: 1.7
+    - sound: entity_ender_dragon_hurt
+      sound_pitch: 1.9
+      sound_volume: 0.8
+    tick:
+    - location: target
+      particle: block_crack
+      particle_count: 10
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    hit:
+    - sound: block_stone_place
+      sound_pitch: 0.1
+      sound_volume: 1.7
+      location: target
+    - location: target
+      sound: entity_ender_dragon_hurt
+      sound_pitch: 1.2
+      sound_volume: 0.8
+      effectlib:
+        class: SphereEffect
+        particle: block_crack
+        particle_count: 10
+        particles: 5
+        particle_offset_x: 0.3
+        particle_offset_y: 0.3
+        particle_offset_z: 0.3
+        radius: $radius
+        duration: 2000
+  parameters:
+    target: other
+    allow_max_range: false
+    velocity: 50
+    target_type: LivingEntity
+    range: 32
+    thickness: 1
+    radius: 3
+    type: sphere
+    transparent: transparent_to_construction
+    destructible: destructible_replace
+    check_destructible: true
+    undo: 4000
+    brush: white_stained_glass
+    brushcolor: true
+    cooldown: 5000
+    breakable: 4
+    reflect_chance: 0.25
+    miss_effects: hit
+    miss: actions
+    bypass_mage_cooldown: true
+  costs:
+    mana: 75
+shell|2:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 50
+  parameters:
+    reflect_chance: 0.5
+    undo: 5000
+    breakable: 3
+shell|3:
+  upgrade_required_path: master
+  upgrade_required_casts: 50
+  parameters:
+    reflect_chance: 0.75
+    breakable: 2
+shell|4:
+  parameters:
+    reflect_chance: 0.9
+    breakable: 1
+
+recall:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: recall
+  category: utility
+  tags: noduel,nojail
+  worth: 100
+  earns: 5
+  cast_on_no_target: false
+  upgrade_required_path: beginner
+  upgrade_required_casts: 25
+  world_border_restricted: false
+  quick_cast: true
+  show_undoable: false
+  actions:
+    cast:
+    - class: Recall
+  effects:
+    no_action: []
+    no_target: []
+    wait:
+    - source_location: eyes
+      color_override: color
+      sound: block_note_block_bit
+      sound_pitch: 0.2
+      sound_volume: 0.3
+      effectlib:
+        class: WarpEffect
+        duration: $warmup
+        period: 1
+        particle: redstone
+        particle_offset_x: 0.9
+        particle_offset_y: 0.1
+        particle_offset_z: 0.9
+        radius: 1
+        offset: 0,-1,0
+    - class: EffectSingle
+      source_location: eyes
+      effectlib:
+        class: WarpEffect
+        duration: 1000
+        period: 2
+        particle: portal
+        particle_count: 10
+        particle_offset_x: 0.9
+        particle_offset_y: 0.1
+        particle_offset_z: 0.9
+        radius: 1
+        offset: 0,-1,0
+    cast:
+    - sound: block_beacon_activate
+      sound_pitch: 0.75
+      sound_volume: 0.8
+    - sound: entity_enderman_teleport
+      sound_pitch: 0.25
+      sound_volume: 0.5
+    - class: EffectSingle
+      sound: magic.teleport
+      sound_volume: 0.8
+      sound_pitch: 0.3
+      source_location: eyes
+      color_override: color
+      effectlib:
+        class: WarpEffect
+        duration: 1000
+        period: 1
+        particle: redstone
+        particle_offset_x: 0.9
+        particle_offset_y: 0.1
+        particle_offset_z: 0.9
+        radius: 1
+        offset: 0,-1,0
+    menu:
+    - sound: entity_enderman_teleport
+      sound_pitch: 1.5
+      sound_volume: 0.75
+    teleporting:
+    - sound: entity_enderman_teleport
+      sound_pitch: 0.75
+      sound_volume: 0.75
+      location: both
+    - class: EffectSingle
+      location: both
+      source_location: eyes
+      color_override: color
+      effectlib:
+        class: WarpEffect
+        particle: redstone
+        particle_offset_x: 0.9
+        particle_offset_y: 0.1
+        particle_offset_z: 0.9
+        offset: 0,-1,0
+        period: 2
+        update_locations: false
+    - class: EffectSingle
+      sound: magic.teleport
+      sound_pitch: 1.2
+      location: both
+      source_location: eyes
+      effectlib:
+        class: WarpEffect
+        period: 1
+        particle: portal
+        particle_count: 10
+        particle_offset_x: 0.9
+        particle_offset_y: 0.1
+        particle_offset_z: 0.9
+        offset: 0,-1,0
+        update_locations: false
+  parameters:
+    options:
+    - type: home
+    - type: death
+    - type: town
+      show_unavailable: false
+    - type: spawn
+      show_unavailable: false
+    - type: placeholder
+    - type: placeholder
+    - type: marker
+      show_unavailable: false
+      marker: 3
+    - type: marker
+      show_unavailable: false
+      marker: 2
+    - type: marker
+      show_unavailable: false
+      marker: 1
+    warmup: 5000
+    cancel_on_damage: 1
+    cancel_on_cast_other: true
+    allow_spawn: false
+    allow_marker: false
+    allow_death: false
+    allow_souls: false
+    allow_wand: true
+    allow_home: true
+    allow_cross_world: true
+    allow_town: true
+    allow_fields: true
+    allow_friends: false
+    icon_death: skull_item
+    icon_soul: skeleton_skull
+    icon_field: wood_door
+    icon_wand: stick{CustomModelData:18001}
+    icon_spawn: wood_door
+    icon_home: red_bed
+    icon_town: iron_door
+    icon_marker: redstone_block
+    icon_move_marker: redstone_block
+    show_unavailable: true
+    unavailable_icon: gray_dye
+    loud: true
+    cooldown: 15000
+    protection_duration: 5000
+    target: none
+    bypass_mage_cooldown: true
+recall|2:
+  upgrade_required_path: student
+  upgrade_required_casts: 30
+  parameters:
+    allow_death: true
+    allow_souls: true
+recall|3:
+  upgrade_required_path: apprentice
+  actions:
+    alternate_sneak:
+    - class: Recall
+      type: place
+  parameters:
+    allow_marker: true
+recall|4:
+  upgrade_required_path: master
+  parameters:
+    marker_count: 2
+recall|5:
+  parameters:
+    marker_count: 3
+
+recall_death:
+  inherit: recall
+  icon: superkill
+  parameters:
+    type: death
+    warmup: 0
+
+    bypass_mage_cooldown: true
+base_passive:
+  passive: true
+  cast_on_no_target: false
+  effects: {}
+  parameters:
+    quiet: true
+    target: self
+
+#
+# =====================================================================
+# CUSTOM SPELL - Storm Shackle (stormshackle) - WRV-070, Oct 17, 2026
+# =====================================================================
+# Mike's design: "a chain lightning that does VERY LOW damage but SLOWS
+# the enemies it arcs to." Built from Magic 11.2.5's chainlightning
+# block (copied structure and effects), with these deliberate changes:
+#
+#   DAMAGE: every Damage action uses player_damage 0.5 / entity_damage
+#     0.5 (chainlightning ships 1.5 / 2, plus a 0.5 / 1 repeat tick).
+#     0.5 is the smallest damage value the shipped defaults themselves
+#     use for a damage tick = a quarter-heart per strike. The `repeat`
+#     parameter drops 4 -> 2, halving the repeat ticks. Worst case per
+#     enemy is ~2 HP (one heart) if it eats every branch; a typical
+#     single arc hit is 0.5-1 HP. This is a control spell, not a weapon.
+#   SLOW: a PotionEffect action rides next to EVERY Damage action, so
+#     each struck enemy is slowed. Format is Magic's own (verified
+#     against the shipped defaults - frost and curse use the same
+#     mechanism, and against the 11.2.5 bytecode): a bare PotionEffect
+#     action reads `effect_<name>` + `duration` from its parameters.
+#     Here, action-local parameters set:
+#       effect_slow: 0   -> Slowness amplifier 0 = Slowness I
+#       duration: 4000   -> 4000 ms = 4 seconds
+#   COST: mana 50 (heal-tier; chainlightning ships 75), cooldown
+#     10000 ms (half of chainlightning's 20000; in family with the
+#     Phase 1 support spells). Not free, not spammable.
+#   No upgrade variants (|2/|3) and no upgrade_required_*: Phase 1
+#     ships exactly this one level, target_count stays 3 (the raw
+#     spell's apprentice/master variants raise it to 5/8 - Phase 2
+#     territory, not ours).
+#   category: utility (control/support, not combat). icon reuses the
+#     chainlightning icon, which still resolves from default icons.
+#   Display name/description live in this packet's messages.yml.
+#
+stormshackle:
+  # WRV balance/Bedrock proposal Oct 23 2026 (staged only, not live)
+  icon: chainlightning
+  category: utility
+  worth: 1260
+  earns: 6
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+      - class: PotionEffect
+        duration: 4000
+        effect_slow: 0
+      - class: Delay
+      - class: AreaOfEffect
+        actions:
+        - class: Asynchronous
+          actions:
+          - class: CustomProjectile
+            velocity: 150
+            actions:
+            - class: Damage
+            - class: PotionEffect
+              duration: 4000
+              effect_slow: 0
+            - class: Delay
+            - class: AreaOfEffect
+              target_count: 1
+              actions:
+              - class: CustomProjectile
+                actions:
+                - class: Damage
+                - class: PotionEffect
+                  duration: 4000
+                  effect_slow: 0
+            - class: Repeat
+              actions:
+              - class: Damage
+                player_damage: 0.5
+                entity_damage: 0.5
+              - class: PotionEffect
+                duration: 4000
+                effect_slow: 0
+              - class: Delay
+      - class: Repeat
+        actions:
+        - class: Damage
+        - class: PotionEffect
+          duration: 4000
+          effect_slow: 0
+        - class: Delay
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.zap
+      location: origin
+    - sound: block_conduit_activate
+      sound_pitch: 1.75
+    projectile:
+    - class: EffectSingle
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 50
+        particle: redstone
+        color: FFF000
+        duration: 2000
+    - location: source
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 20
+        particle: fireworks_spark
+        particle_count: 4
+        particle_offset_x: 0.1
+        particle_offset_y: 0.1
+        particle_offset_z: 0.1
+        duration: 2000
+    tick:
+    - particle: fireworks_spark
+      particle_count: 2
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+      location: target
+    hit:
+    - sound: entity_guardian_attack
+      sound_pitch: 2
+      sound_volume: 0.5
+      location: target
+    - class: EffectSingle
+      sound: magic.zap_crack
+      sound_volume: 0.5
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 1
+      particle_offset_y: 1
+      particle_offset_z: 1
+    - sound: block_conduit_activate
+      sound_pitch: 1.8
+      location: target
+  parameters:
+    tick_size: 5
+    target: other
+    target_self: false
+    target_source: false
+    range: 48
+    velocity: 100
+    radius: 8
+    target_count: 3
+    target_type: Damageable
+    player_damage: 0.5
+    entity_damage: 0.5
+    delay: 250
+    repeat: 2
+    target_breakables: 1
+    cooldown: 8000
+    ignore_modified: true
+    cooldown_mage: 1000
+  costs:
+    mana: 15
+mend:
+  icon: wrv_mend
+  category: light
+  worth: 200
+  earns: 2
+  upgrade_required_path: student
+  upgrade_required_casts: 40
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: Heal
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 1.4
+      sound_volume: 0.4
+    - sound: block_amethyst_block_chime
+      sound_pitch: 1.6
+      sound_volume: 0.9
+      location: both
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: HelixEffect
+        particle: heart
+        iterations: 1
+        particles: 12
+        radius: 0.6
+  parameters:
+    target_type: LivingEntity
+    target: any_entity
+    allow_max_range: false
+    range: 16
+    hitbox: true
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    bypass_confusion: true
+    amount: 1.5
+    cooldown_mage: 1000
+  costs:
+    mana: 4
+mend|2:
+  upgrade_required_path: student
+  upgrade_required_casts: 40
+mend|3:
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 40
+  parameters:
+    amount: 2
+  costs:
+    mana: 8
+mend|4:
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+  parameters:
+    amount: 2.5
+  costs:
+    mana: 12
+mend|5:
+  parameters:
+    amount: 3
+  costs:
+    mana: 17
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+flashheal:
+  icon: wrv_flashheal
+  category: light
+  worth: 500
+  earns: 3
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 40
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: Heal
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 1.4
+      sound_volume: 0.4
+    - sound: block_amethyst_block_chime
+      sound_pitch: 1.6
+      sound_volume: 0.9
+      location: both
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: HelixEffect
+        particle: heart
+        iterations: 1
+        particles: 12
+        radius: 0.6
+  parameters:
+    target_type: LivingEntity
+    target: any_entity
+    allow_max_range: false
+    range: 16
+    hitbox: true
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    bypass_confusion: true
+    amount: 5
+    cooldown_mage: 1000
+  costs:
+    mana: 15
+flashheal|2:
+  upgrade_required_path: apprentice
+  upgrade_required_casts: 40
+flashheal|3:
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+  parameters:
+    amount: 6
+  costs:
+    mana: 24
+flashheal|4:
+  parameters:
+    amount: 7
+  costs:
+    mana: 35
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+ward:
+  icon: wrv_ward
+  category: light
+  worth: 470
+  earns: 3
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CheckModifiers
+      blocked: wrv_warded
+      actions:
+      - class: PotionEffect
+      - class: Modifier
+        add_modifiers: wrv_warded
+        duration: 12000
+      fail:
+      - class: Message
+        message_type: action_bar
+        message: '&eThat player is still Warded'
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 1.4
+      sound_volume: 0.4
+    - sound: block_amethyst_block_chime
+      sound_pitch: 1.6
+      sound_volume: 0.9
+      location: both
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: HelixEffect
+        particle: heart
+        iterations: 1
+        particles: 12
+        radius: 0.6
+  parameters:
+    target_type: Player
+    target: any_entity
+    allow_max_range: false
+    range: 16
+    hitbox: true
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    bypass_confusion: true
+    effect_absorption: 0
+    duration: 15000
+    cooldown: 6000
+    cooldown_mage: 1000
+  costs:
+    mana: 15
+greaterheal:
+  icon: wrv_greaterheal
+  category: light
+  worth: 600
+  earns: 4
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+  boss_bar: true
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: PotionEffect
+        effect_slow: 1
+        duration: 2000
+    - class: Delay
+    - class: Heal
+  effects:
+    cast:
+    - sound: entity_generic_drink
+      sound_pitch: 1.4
+      sound_volume: 0.4
+    - sound: block_amethyst_block_chime
+      sound_pitch: 1.6
+      sound_volume: 0.9
+      location: both
+    - class: EffectSingle
+      location: target
+      effectlib:
+        class: HelixEffect
+        particle: heart
+        iterations: 1
+        particles: 12
+        radius: 0.6
+  parameters:
+    target_type: LivingEntity
+    target: any_entity
+    allow_max_range: false
+    range: 16
+    hitbox: true
+    bypass_pvp: true
+    bypass_friendly_fire: true
+    only_friendly: true
+    bypass_confusion: true
+    amount: 6
+    delay: 2000
+    cooldown_mage: 2000
+    cancel_on_damage: 4
+    cancel_on_cast_other: true
+    cancel_on_death: true
+  costs:
+    mana: 8
+greaterheal|2:
+  upgrade_required_path: master
+  upgrade_required_casts: 40
+greaterheal|3:
+  parameters:
+    amount: 8
+  costs:
+    mana: 10
+  upgrade_required_path: master
+  upgrade_required_casts: 40
