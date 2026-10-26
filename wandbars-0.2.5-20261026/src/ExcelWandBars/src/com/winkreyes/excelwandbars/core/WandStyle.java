@@ -31,12 +31,19 @@ public enum WandStyle {
      * left click (Bedrock touch: press and hold) casts it. Storage key "original";
      * 0.2.3 and older do not know it and use Classic, so a rollback is safe.
      */
-    ORIGINAL("Tap to cycle (original)"),
+    ORIGINAL("Tap to pick (original)"),
     /**
      * 0.2.4: Mike's phone action bar. Inventory mode + quick cast: holding the wand
      * fills the hotbar with spell icons, picking a slot casts that spell at once
      * (Magic cancels the slot change, so the wand stays selected and the next tap
      * always registers). Same icon in the same slot every time. Storage key "tapbar".
+     */
+    /*
+     * 0.2.5: Tap bar shows EVERY unlocked spell: pages of 7 (the 8th slot stays empty
+     * for "items back"), crouch flips the page ("Page 1/2" on the action bar). Left click
+     * and press and hold never cast (left_click none); Q / press and hold on the wand
+     * slot is read by the plugin (drop none). ORIGINAL's label is now "Tap to pick
+     * (original)" (storage key "original" unchanged, the old name still parses).
      */
     TAPBAR("Tap bar");
 
@@ -57,7 +64,7 @@ public enum WandStyle {
             case "cycle": case "cycler": case "cycling": case "next": case "quickcycle": case "quick-cycle":
                 return CYCLE;
             case "original": case "first": case "tapcycle": case "tap-cycle": case "tap_cycle": case "tap-to-cycle":
-            case "taptocycle": case "v1": case "pick":
+            case "taptocycle": case "v1": case "pick": case "taptopick": case "tap-to-pick": case "tap_to_pick":
                 return ORIGINAL;
             case "tapbar": case "tap-bar": case "tap_bar": case "tap": case "phone": case "mobile": case "actionbar":
             case "action-bar": case "wow":

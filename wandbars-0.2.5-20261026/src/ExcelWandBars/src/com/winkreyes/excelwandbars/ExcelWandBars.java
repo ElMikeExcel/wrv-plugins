@@ -117,8 +117,8 @@ public final class ExcelWandBars extends JavaPlugin {
                 + ", compass guard " + (compassGuard == null ? "OFF" : "ON " + compassGuard.keys()));
         getLogger().info(style == null ? "Wand style switch OFF" : "Wand style switch " + (style.enabled() ? "ON" : "OFF")
                 + " (default " + style.prefs().defaultStyle().key() + ", " + style.prefs().size() + " player choice(s) saved"
-                + ", sneak bars " + (style.barsBedrockOnly() ? "Bedrock only" : "everyone") + ")");
-        getLogger().info(tapBar == null ? "Tap bar opener OFF" : "Tap bar / Tap to cycle (original): " + tapBar.summary());
+                + ", sneak bars " + (style.barsBedrockOnly() ? "Bedrock only" : "everyone") + ", " + style.pagesSummary() + ")");
+        getLogger().info(tapBar == null ? "Tap bar opener OFF" : "Tap bar / Tap to pick (original): " + tapBar.summary());
         getLogger().info(screen == null ? "Spell screen OFF" : "Spell screen: Bedrock Classic spell list as a form " + (screen.bedrockForm() ? "ON" : "OFF")
                 + ", progress line " + (screen.gate().enabled ? "ON (min gap " + screen.gate().minGapMs + " ms, skip during stance " + screen.gate().skipDuringStance + ")" : "OFF")
                 + ", Spell Book tip " + (spellTip == null || !spellTip.gate().enabled ? "OFF" : "ON (until OK, " + spellTip.gate().known().size() + " player(s) tracked)"));

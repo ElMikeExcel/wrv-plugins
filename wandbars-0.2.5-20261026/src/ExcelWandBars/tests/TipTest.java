@@ -51,7 +51,7 @@ public final class TipTest {
         Check.ok(f.takeForm(b, 1, 0), "never hit: pop-up allowed");
         // text
         List<String> j = TipGate.lines(false), br = TipGate.lines(true);
-        Check.ok(!String.join(" ", j).contains("Sneak bars"), "Java tip has no Sneak bars line");
+        Check.ok(String.join(" ", j).contains(TipGate.L_SNEAK_JAVA) && !String.join(" ", j).toLowerCase().contains("crouch"), "0.2.5 parity: Java tip has the Sneak bars line, Java wording");
         Check.ok(String.join(" ", br).contains("Sneak bars"), "Bedrock tip has the Sneak bars line");
         Check.ok(String.join(" ", j).contains("/wandstyle") && String.join(" ", br).contains("/wandstyle"), "both mention /wandstyle");
         Check.ok(String.join(" ", j).contains("compass") && String.join(" ", br).contains("compass"), "both mention the compass menu");

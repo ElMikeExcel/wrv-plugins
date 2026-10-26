@@ -12,7 +12,7 @@ public final class TapBarTest {
         Check.eq(WandStyle.BARS, WandStyle.parse("inventory"), "inventory still Sneak bars (0.2.0 alias)");
         Check.eq("original", WandStyle.ORIGINAL.key(), "storage key original");
         Check.eq("tapbar", WandStyle.TAPBAR.key(), "storage key tapbar");
-        Check.eq("Tap to cycle (original)", WandStyle.ORIGINAL.label(), "label original");
+        Check.eq("Tap to pick (original)", WandStyle.ORIGINAL.label(), "label original");
         Check.eq("Tap bar", WandStyle.TAPBAR.label(), "label Tap bar");
         Check.ok(WandStyle.ORIGINAL.inventory() && WandStyle.TAPBAR.inventory() && WandStyle.BARS.inventory(), "inventory(): bars, original, tap bar");
         Check.ok(!WandStyle.CLASSIC.inventory() && !WandStyle.CYCLE.inventory(), "Classic + Cycle are chest");
@@ -33,9 +33,17 @@ public final class TapBarTest {
         Map<String, String> t = p.wanted(WandStyle.TAPBAR);
         Check.eq("true", t.get("quick_cast"), "tap bar: quick cast (slot pick casts)");
         Check.eq("inventory", t.get("mode"), "tap bar: inventory mode");
-        Check.eq("toggle", t.get("drop"), "tap bar: drop (hold the wand slot / Q) puts the items back");
+        Check.eq("none", t.get("drop"), "tap bar 0.2.5: drop none (ExcelWandBars reads Q / a held slot, never casts)");
+        Check.eq("none", t.get("left_click"), "tap bar 0.2.5: left_click none (press and hold never casts)");
         Check.eq("true", t.get("live_hotbar_cooldown"), "tap bar: cooldown shows on the icons");
-        for (String k : StyleProfile.KEYS) if (!k.equals("quick_cast")) Check.eq(o.get(k), t.get(k), "tap bar = original except quick_cast: " + k);
+        Check.eq("none", t.get("right_click"), "tap bar 0.2.5: right_click none (ExcelWandBars: Bedrock hold reads, Java right click opens / items back)");
+        Check.eq("cycle_hotbar", t.get("right_click_sneak"), "tap bar: crouch + right click still flips the page (Magic)");
+        for (String k : StyleProfile.KEYS) if (!k.equals("quick_cast") && !k.equals("left_click") && !k.equals("drop") && !k.equals("right_click")) Check.eq(o.get(k), t.get(k), "tap bar = original except quick_cast: " + k);
+        // 0.2.5: every style's one-line menu text says what crouch / sneak does.
+        for (boolean br : new boolean[] { true, false }) for (WandStyle st : WandStyle.values()) {
+            String one = ControlsText.oneLine(st, br).toLowerCase();
+            Check.ok(one.contains(br ? "crouch" : "sneak"), "menu line says what " + (br ? "crouch" : "sneak") + " does: " + st + ": " + one);
+        }
 
         // classify tells the three inventory styles apart
         Check.eq(WandStyle.ORIGINAL, StyleProfile.classify(o), "classify original");
@@ -68,7 +76,7 @@ public final class TapBarTest {
         // chooser: five buttons, name line + one-line description, short top text
         List<WandStyle> ord = ControlsText.chooserOrder(true);
         Check.eq(List.of(WandStyle.CLASSIC, WandStyle.BARS, WandStyle.CYCLE, WandStyle.ORIGINAL, WandStyle.TAPBAR), ord, "Bedrock order: Classic, Sneak bars, Cycle, original, Tap bar");
-        Check.eq(4, ControlsText.chooserOrder(false).size(), "Java: four (no Sneak bars)");
+        Check.eq(4, ControlsText.chooserOrder(false).size(), "chooserOrder(false): four (only if sneak-bars-java is turned off)");
         for (boolean br : new boolean[] { true, false }) for (WandStyle st : WandStyle.values()) {
             String btn = ControlsText.button(st, WandStyle.TAPBAR, br);
             String[] lines = btn.split("\n");

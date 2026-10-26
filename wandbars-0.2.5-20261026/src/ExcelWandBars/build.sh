@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build ExcelWandBars-0.2.4.jar (deterministic: fixed jar date, sorted inputs).
+# Build ExcelWandBars-0.2.5.jar (deterministic: fixed jar date, sorted inputs).
 # Manual javac route, same as the other Excel plugins. Magic 11.2.5's jar is
 # COMPILE-ONLY (soft-depend at runtime); nothing from Magic or Geyser is packaged.
 set -euo pipefail
@@ -15,7 +15,7 @@ CP="$CP:$MAGIC"
 rm -rf build/classes && mkdir -p build/classes
 "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP" -d build/classes $(find src -name '*.java' | sort)
 cp plugin.yml config.yml build/classes/
-OUT=${OUT:-../../ExcelWandBars-0.2.4.jar}
+OUT=${OUT:-../../ExcelWandBars-0.2.5.jar}
 rm -f "$OUT"
-"$JDK/bin/jar" --create --file "$OUT" --date=2026-10-24T00:00:00-05:00 -C build/classes .
+"$JDK/bin/jar" --create --file "$OUT" --date=2026-10-26T00:00:00-05:00 -C build/classes .
 sha256sum "$OUT"

@@ -1,4 +1,4 @@
-# ExcelWandBars 0.2.4 (Wink Reyes Valley). Separate plugin; Magic (elmakers)
+# ExcelWandBars 0.2.5 (Wink Reyes Valley). Separate plugin; Magic (elmakers)
 # files are not changed. EliteMobs (MagmaGuy) is not touched.
 
 # 0.2.0: wand controls are a per-player choice. Everyone gets the default
@@ -18,6 +18,10 @@ wand-style:
   # saved from 0.2.0 gets Classic put back on their wand (choice kept in
   # styles.yml, used again if they join from Bedrock).
   bars-bedrock-only: true
+  # 0.2.5 (Java/Bedrock parity): Sneak bars is offered to Java players too.
+  # A new key, so a config.yml from 0.2.4 or older (bars-bedrock-only: true)
+  # still gets it. Set false to keep Sneak bars Bedrock only again.
+  sneak-bars-java: true
   # classic = chest mode: right click next spell, sneak + right click spell
   # list, Q back one spell. bars = inventory mode + quick cast.
   # 0.2.3: cycle = chest mode, just cycling: right click next spell, sneak +
@@ -31,6 +35,16 @@ wand-style:
   # at once. Both are for Java and Bedrock (see tap-bar below).
   # 0.2.3 and older do not know these two keys and use Classic for them.
   default: classic
+  # 0.2.5: every unlocked spell on the hotbar (Sneak bars, Tap to pick (original),
+  # Tap bar). The wand's spells are packed in their current order, with enough
+  # pages for all of them; crouch flips the page ("Page 1/2" on the action bar).
+  # Tap bar / original: 7 spells per page, the 8th slot stays empty so a phone
+  # player can always tap it to get their items back. Sneak bars: 8 per page.
+  # Chest styles (Classic, Cycle) are not touched.
+  pages:
+    enabled: true
+    tap-bar-per-page: 7
+    sneak-bars-per-page: 8
   # Only wands whose template inherits this one are touched (the rank wands).
   rank-wand-inherits: base_wand
   # Never touched even if they inherit base_wand (the builder wand keeps its own controls).
@@ -48,7 +62,10 @@ wand-style:
   #  original:
   #    live_hotbar_mana: false
   #  tapbar:
-  #    drop: toggle
+  #    left_click: none   (0.2.5 default: press and hold / left click never casts)
+  #    drop: none         (0.2.5 default: ExcelWandBars reads Q / a held slot)
+  #    right_click: none  (0.2.5 default: ExcelWandBars handles it. Bedrock press
+  #                        and hold reads, Java right click opens / items back)
 
 # 0.2.4: Tap bar and Tap to cycle (original). Magic (elmakers) keeps your real
 # hotbar stored while the spell icons are up and puts it back on close, death,
@@ -66,7 +83,8 @@ tap-bar:
   close-after-idle-seconds: 15
   # Put the items back before a chest, furnace, villager or other inventory opens.
   close-before-other-inventory: true
-  # Tap bar only: press and hold (a phone sends it as a left click / swing)
+  # Tap bar only: press and hold (a phone sends it as a swing, a right click
+  # (item use), or a drop when the finger is on a hotbar slot; 0.2.5 reads all three)
   # never casts. Bar down: it opens the bar. Bar up: it shows the Spell Book
   # page for the last spell icon you tapped (what it does, cost, cooldown,
   # range, rank, Next rank: N of M casts), or the whole Spell Book if none.
@@ -81,6 +99,14 @@ tap-bar:
   #   off       = Magic's own icon text only
   # Refreshed when the bar opens and after each cast.
   icon-lore: spellbook
+  # 0.2.5: a press and hold (or Q / a phone's press and hold on a hotbar slot)
+  # within this many ms after tapping a spell icon reads THAT spell. Later, a
+  # press and hold on the screen shows all your spells (tap one for its page).
+  hold-reads-tap-ms: 1500
+  # 0.2.5: Tap bar stays up while you hold the wand (close-after-idle-seconds
+  # is only for Tap to pick (original)). Items back: tap the empty slot at the
+  # end of the bar, Q / press and hold the wand slot, or switch away.
+  tap-bar-stays-open: true
 
 sneak-flip:
   # Only for players on the Sneak bars style (Bedrock); classic players never flip.

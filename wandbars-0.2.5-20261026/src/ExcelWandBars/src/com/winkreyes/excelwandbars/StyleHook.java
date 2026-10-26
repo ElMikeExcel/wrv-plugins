@@ -65,6 +65,8 @@ final class StyleHook implements Listener {
     private final File file;
     private boolean enabled = true;
     private boolean barsBedrockOnly = true;
+    /** 0.2.5 parity: Sneak bars for Java too (new key, so an older config.yml with bars-bedrock-only: true still opens it). */
+    private boolean sneakBarsJava = true;
     private String inheritKey = "base_wand";
     private final Set<String> excluded = new HashSet<>();
     private long applied = 0;
@@ -81,9 +83,14 @@ final class StyleHook implements Listener {
     void loadSettings(ConfigurationSection c) {
         enabled = c == null || c.getBoolean("enabled", true);
         barsBedrockOnly = c == null || c.getBoolean("bars-bedrock-only", true);
+        sneakBarsJava = c == null || c.getBoolean("sneak-bars-java", true);
         WandStyle d = c == null ? null : WandStyle.parse(c.getString("default", "classic"));
         prefs.setDefault(d == null ? WandStyle.CLASSIC : d);
         inheritKey = c == null ? "base_wand" : c.getString("rank-wand-inherits", "base_wand");
+        // 0.2.5 pages (new keys; an older config.yml without them gets these defaults).
+        pagesEnabled = c == null || c.getBoolean("pages.enabled", true);
+        perPageTap = com.winkreyes.excelwandbars.core.PageLayout.clampPerPage(c == null ? 7 : c.getInt("pages.tap-bar-per-page", 7));
+        perPageBars = com.winkreyes.excelwandbars.core.PageLayout.clampPerPage(c == null ? 8 : c.getInt("pages.sneak-bars-per-page", 8));
         excluded.clear();
         // Missing section or key (e.g. a 0.1.0 config.yml kept on upgrade) = the builder wand stays excluded.
         List<String> ex = c != null && c.isSet("exclude-templates") ? c.getStringList("exclude-templates") : List.of("masons");
@@ -139,17 +146,18 @@ final class StyleHook implements Listener {
                 + " right_click_sneak=" + e.get("right_click_sneak") + " drop=" + e.get("drop") + " quick_cast=" + e.get("quick_cast")
                 + " matches=" + profile.changes(e, styleOf(p)).isEmpty()
                 + " saved=" + savedStyle(p).key() + " bedrock=" + plugin.isBedrock(p)
-                + " open=" + w.isInventoryOpen() + " active=" + w.getActiveSpellKey();
+                + " open=" + w.isInventoryOpen() + " active=" + w.getActiveSpellKey()
+                + " left_click=" + e.get("left_click") + " | " + describeLayout(p);
     }
 
     boolean enabled() { return enabled; }
     StylePrefs prefs() { return prefs; }
     long applied() { return applied; }
-    boolean barsBedrockOnly() { return barsBedrockOnly; }
+    boolean barsBedrockOnly() { return barsBedrockOnly && !sneakBarsJava; }
     /** What the player picked (or the default), before the Bedrock-only rule. */
     WandStyle savedStyle(Player p) { return prefs.get(p.getUniqueId()); }
     /** May this player use Sneak bars? (0.2.1: Bedrock only.) */
-    boolean barsAllowed(Player p) { return !barsBedrockOnly || plugin.isBedrock(p); }
+    boolean barsAllowed(Player p) { return !barsBedrockOnly() || plugin.isBedrock(p); }
     /**
      * The style that is put on the wand. 0.2.1: Sneak bars is Bedrock only,
      * so a Java player always gets Classic, even with "bars" saved (their
@@ -243,20 +251,68 @@ final class StyleHook implements Listener {
         if (!w.canUse(p)) return Result.NOT_OWNER;
         WandStyle style = styleOf(p);
         Map<String, String> need = profile.changes(effective(w), style);
-        if (need.isEmpty()) return Result.ALREADY;
+        Layout lay = layoutFor(w, style);
+        if (need.isEmpty() && (lay == null || lay.ok)) return Result.ALREADY;
         if (!guard.allow(p.getUniqueId(), System.currentTimeMillis())) return Result.THROTTLED;
         // Same order as Magic's WandCommandExecutor.onWandConfigure.
         w.closeInventory();
         w.saveState();
         ConfigurationSection node = new MemoryConfiguration();
         for (Map.Entry<String, String> e : need.entrySet()) node.set(e.getKey(), e.getValue());
+        if (lay != null && !lay.ok) {
+            // 0.2.5: every unlocked spell on the hotbar pages (packed, same order), enough pages for them.
+            node.set("hotbar_count", lay.pages);
+            node.createSection("spell_inventory", new LinkedHashMap<String, Object>(lay.packed));
+            layouts++;
+        }
         w.configure(node);
         w.deactivate();
         mage.checkWand();
         applied++;
         Wand now = mage.getActiveWand();
         if (now != null && !profile.changes(effective(now), style).isEmpty()) return Result.FAILED;
+        Layout after = now == null ? null : layoutFor(now, style);
+        if (after != null && !after.ok) return Result.FAILED;
         return Result.APPLIED;
+    }
+
+    // ------------------------------------------------------------------ 0.2.5 pages
+
+    private int perPageTap = 7, perPageBars = 8;
+    String pagesSummary() {
+        return pagesEnabled ? "all spells on the bar in pages ON (" + perPageTap + " per page Tap bar / original, " + perPageBars + " Sneak bars)" : "pages OFF";
+    }
+    private boolean pagesEnabled = true;
+    private long layouts = 0;
+    long layouts() { return layouts; }
+
+    /** What the wand's hotbar pages should be for this style (null = chest style or paging off). */
+    static final class Layout {
+        Map<String, Integer> packed; int pages; int curPages; boolean ok; int spells;
+    }
+
+    Layout layoutFor(Wand w, WandStyle style) {
+        if (!pagesEnabled || style == null || !style.inventory()) return null;
+        if (!(w instanceof com.elmakers.mine.bukkit.wand.Wand impl)) return null;
+        Map<String, Integer> cur = new java.util.HashMap<>();
+        for (Map.Entry<String, Integer> e : impl.getSpellInventory().entrySet()) cur.put(e.getKey().toLowerCase(Locale.ROOT), e.getValue());
+        int per = style == WandStyle.BARS ? perPageBars : perPageTap;
+        Layout l = new Layout();
+        l.packed = com.winkreyes.excelwandbars.core.PageLayout.pack(cur, impl.getBaseSpells(), per);
+        l.spells = l.packed.size();
+        l.pages = com.winkreyes.excelwandbars.core.PageLayout.pages(l.spells, per);
+        l.curPages = impl.getHotbarCount();
+        l.ok = l.curPages == l.pages && com.winkreyes.excelwandbars.core.PageLayout.same(cur, l.packed);
+        return l;
+    }
+
+    String describeLayout(Player p) {
+        Mage mage = api.getMage(p);
+        Wand w = mage == null ? null : mage.getActiveWand();
+        if (w == null) return "no wand";
+        Layout l = layoutFor(w, styleOf(p));
+        if (l == null) return "no pages (" + styleOf(p).key() + ")";
+        return "spells=" + l.spells + " pages=" + l.curPages + "/" + l.pages + " ok=" + l.ok + " packed=" + l.packed;
     }
 
     /** Remove the plugin's control keys from the held wand so its template rules again (admin rollback aid). */

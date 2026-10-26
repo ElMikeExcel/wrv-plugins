@@ -86,6 +86,16 @@ final class TapBarHook implements Listener {
     private final Map<UUID, Long> lastTapAt = new HashMap<>();
     private final Map<UUID, String> lastHold = new HashMap<>();
     private long holdsInfo, holdsOpen, holdsMerged, holdsSkipped, loreSet;
+    /** 0.2.5 counters: cancelled slot changes ignored (bar down), holds read from a drop, casts blocked during a hold. */
+    private long heldCancelledIgnored, dropReads, dropCloses, holdCastsBlocked, pageLines;
+    /** 0.2.5: right clicks with the Tap bar wand (Magic's right_click is "none" there): Bedrock reads, Java opens or puts items back. */
+    private long rightReads, rightOpens, rightCloses, rightRepeats;
+    private final Map<UUID, Long> lastRight = new HashMap<>();
+    /** 0.2.5: a press and hold within this long after tapping an icon reads THAT spell (the finger is still on it). */
+    private long holdReadsTapMs = 1500;
+    /** 0.2.5: Tap bar stays up while the wand is held (no idle close); items back = the empty slot, Q or the wand slot hold. */
+    private boolean tapBarStaysOpen = true;
+    private final Map<UUID, Long> lastHoldSignal = new HashMap<>();
     private final Map<UUID, Long> lastUse = new HashMap<>();
     private final Map<UUID, String> lastCast = new HashMap<>();
     private final Map<UUID, Integer> casts = new HashMap<>();
@@ -106,6 +116,8 @@ final class TapBarHook implements Listener {
         String ils = il == null ? "spellbook" : String.valueOf(il).trim().toLowerCase(java.util.Locale.ROOT);
         iconLore = !(ils.equals("false") || ils.equals("off") || ils.equals("none"));
         loreMagicStyle = ils.equals("magic") || ils.equals("magic-plus-rank");
+        holdReadsTapMs = Math.max(0, c == null ? 1500 : c.getLong("hold-reads-tap-ms", 1500));
+        tapBarStaysOpen = c == null || c.getBoolean("tap-bar-stays-open", true);
     }
 
     void start() {
@@ -123,12 +135,15 @@ final class TapBarHook implements Listener {
 
     String summary() {
         return "open on hold " + (openOnHold ? "ON" : "OFF") + ", empty slot closes " + (emptySlotCloses ? "ON" : "OFF")
-                + ", idle close " + (idleCloseMs == 0 ? "OFF" : (idleCloseMs / 1000) + "s")
+                + ", idle close " + (idleCloseMs == 0 ? "OFF" : (idleCloseMs / 1000) + "s" + (tapBarStaysOpen ? " (original only, Tap bar stays up)" : ""))
                 + ", close before other inventory " + (closeOnOtherInventory ? "ON" : "OFF")
-                + ", Tap bar hold shows spell info " + (holdShowsInfo ? "ON" : "OFF") + ", icon lore " + (!iconLore ? "OFF" : loreMagicStyle ? "Magic's text + next rank" : "Spell Book text");
+                + ", Tap bar hold shows spell info " + (holdShowsInfo ? "ON (never casts; hold after a tap reads that spell within " + holdReadsTapMs + " ms)" : "OFF") + ", icon lore " + (!iconLore ? "OFF" : loreMagicStyle ? "Magic's text + next rank" : "Spell Book text");
     }
     String counters() { return "opened " + opened + " idle-closed " + closedIdle + " empty-closed " + closedEmpty + " other-closed " + closedOther
-            + " hold-info " + holdsInfo + " hold-open " + holdsOpen + " hold-merged " + holdsMerged + " hold-skipped " + holdsSkipped + " lore " + loreSet; }
+            + " hold-info " + holdsInfo + " hold-open " + holdsOpen + " hold-merged " + holdsMerged + " hold-skipped " + holdsSkipped + " lore " + loreSet
+            + " held-cancelled-ignored " + heldCancelledIgnored + " drop-reads " + dropReads + " drop-closes " + dropCloses
+            + " hold-casts-blocked " + holdCastsBlocked + " page-lines " + pageLines
+            + " right-reads " + rightReads + " right-opens " + rightOpens + " right-closes " + rightCloses + " right-repeats " + rightRepeats; }
     String lastHold(Player p) { return lastHold.getOrDefault(p.getUniqueId(), "-"); }
     String lastCast(Player p) { return lastCast.getOrDefault(p.getUniqueId(), "-") + " x" + casts.getOrDefault(p.getUniqueId(), 0); }
 
@@ -183,18 +198,29 @@ final class TapBarHook implements Listener {
         if (picked == null || System.currentTimeMillis() - picked > 2000) return;
         // After StyleHook's next-tick apply (which re-activates the wand once when it changes controls).
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            try { tryOpen(p, "hold"); } catch (Throwable t) { plugin.getLogger().warning("Tap bar open error for " + p.getName() + ": " + t); }
+            try { if ("opened".equals(tryOpen(p, "hold"))) sendPageLine(p, 3L); } catch (Throwable t) { plugin.getLogger().warning("Tap bar open error for " + p.getName() + ": " + t); }
         }, 4L);
     }
 
-    /** Before Magic's handler: note the tap, and an empty slot means "give me my items back". */
-    @EventHandler(priority = EventPriority.LOWEST)
+    /**
+     * 0.2.5: MONITOR (was LOWEST), after ExcelAttunement (LOW) and Magic (NORMAL) have decided.
+     * Bar down: a switch someone cancelled (ExcelAttunement's stance lock refusing the wand)
+     * is ignored completely, so it can never count as "picked the wand" and open the bar.
+     * Bar up: Magic itself cancels every slot change (quick cast / pick keeps the wand
+     * selected), so a cancelled event is normal there; note the tapped icon, and an empty
+     * slot means "give me my items back".
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onHeld(PlayerItemHeldEvent event) {
         Player p = event.getPlayer();
         if (!uses(p)) return;
-        lastSlotPick.put(p.getUniqueId(), System.currentTimeMillis());
         Wand w = openWand(p);
-        if (w == null) return;
+        if (w == null) {
+            if (event.isCancelled()) { heldCancelledIgnored++; return; }
+            lastSlotPick.put(p.getUniqueId(), System.currentTimeMillis());
+            return;
+        }
+        lastSlotPick.put(p.getUniqueId(), System.currentTimeMillis());
         lastUse.put(p.getUniqueId(), System.currentTimeMillis());
         int slot = event.getNewSlot();
         MagicHook mh = plugin.magicHook();
@@ -228,7 +254,40 @@ final class TapBarHook implements Listener {
         UUID id = p.getUniqueId();
         lastCast.put(id, event.getSpell() == null ? "?" : event.getSpell().getKey() + " STARTED");
         casts.merge(id, 1, Integer::sum);
-        if (openWand(p) != null) { lastUse.put(id, System.currentTimeMillis()); scheduleLore(p, 3L); }
+        if (openWand(p) != null) {
+            lastUse.put(id, System.currentTimeMillis()); scheduleLore(p, 3L);
+            // 0.2.5: a tap shows what you cast (name, mana, cooldown, rank) on the action bar.
+            if (tapBarStyle(p) && event.getSpell() != null) {
+                final String key = event.getSpell().getKey();
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    if (!p.isOnline() || openWand(p) == null) return;
+                    MagicHook mh = plugin.magicHook();
+                    SpellFacts f = mh == null ? null : mh.factsFor(p, key);
+                    if (f != null) p.sendActionBar(Component.text(SpellInfoText.summary(f) + " | " + SpellInfoText.rankText(f), NamedTextColor.AQUA));
+                }, 2L);
+            }
+        }
+    }
+
+    /**
+     * 0.2.5 belt and braces: in Tap bar, pressing and holding never casts. left_click is
+     * "none" on the wand, but if anything still starts a cast within 300 ms of a hold
+     * (swing / left click / Q) and NOT right after a slot tap, it is stopped here, before
+     * Magic spends mana or starts the cooldown.
+     */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onPreCastGuard(com.elmakers.mine.bukkit.api.event.PreCastEvent event) {
+        Mage m = event.getMage();
+        Player p = m == null || !m.isPlayer() ? null : m.getPlayer();
+        if (p == null || !tapBarStyle(p)) return;
+        long now = System.currentTimeMillis();
+        Long hold = lastHoldSignal.get(p.getUniqueId());
+        if (hold == null || now - hold > 300) return;
+        Long tap = lastSlotPick.get(p.getUniqueId());
+        if (tap != null && now - tap <= 300) return;
+        event.setCancelled(true);
+        holdCastsBlocked++;
+        if (plugin.debug()) plugin.getLogger().info("Tap bar: blocked a cast during press and hold for " + p.getName());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -250,7 +309,12 @@ final class TapBarHook implements Listener {
 
     /** The held wand when this swing belongs to Tap bar's hold-to-read, else null. */
     private Wand holdWand(Player p) {
-        if (!holdShowsInfo || !tapBarStyle(p)) return null;
+        return holdShowsInfo ? tapWand(p) : null;
+    }
+
+    /** 0.2.5: the held Tap bar wand (any use, not only hold-to-read), else null. */
+    private Wand tapWand(Player p) {
+        if (!tapBarStyle(p)) return null;
         if (plugin.skipWorld(p.getWorld()) || p.getGameMode() == GameMode.SPECTATOR || p.isDead()) return null;
         InventoryType top = p.getOpenInventory().getType();
         if (top != InventoryType.CRAFTING && top != InventoryType.CREATIVE) return null;
@@ -268,6 +332,7 @@ final class TapBarHook implements Listener {
         Player p = event.getPlayer();
         Wand w = holdWand(p);
         if (w == null) return;
+        lastHoldSignal.put(p.getUniqueId(), System.currentTimeMillis());
         event.setCancelled(true);
         hold(p, w);
     }
@@ -281,8 +346,52 @@ final class TapBarHook implements Listener {
         Player p = event.getPlayer();
         Wand w = holdWand(p);
         if (w == null) return;
+        lastHoldSignal.put(p.getUniqueId(), System.currentTimeMillis());
         if (a == Action.LEFT_CLICK_AIR) event.setCancelled(true);
         hold(p, w);
+    }
+
+    /**
+     * 0.2.5: Q, or on a phone pressing and holding a hotbar slot, is a drop. Tap bar sets the
+     * wand's drop action to "none" (Magic keeps the wand: it is undroppable, and spell icons
+     * are never dropped either), and this decides what it means:
+     *  - right after tapping a spell icon (the finger is still on it): read THAT spell,
+     *  - a spell icon itself: read it,
+     *  - otherwise with the bar up: put the items back (what drop did in 0.2.4),
+     *  - bar down: open it.
+     * Never casts. Observes only (Magic cancels the drop itself).
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onDrop(org.bukkit.event.player.PlayerDropItemEvent event) {
+        Player p = event.getPlayer();
+        if (!holdShowsInfo || !tapBarStyle(p)) return;
+        Wand w = holdWand(p);
+        if (w == null) return;
+        UUID id = p.getUniqueId();
+        long now = System.currentTimeMillis();
+        lastHoldSignal.put(id, now);
+        MagicHook mh = plugin.magicHook();
+        ItemStack dropped = event.getItemDrop() == null ? null : event.getItemDrop().getItemStack();
+        String iconKey = mh == null ? null : mh.spellKeyOf(dropped);
+        String tapKey = lastTapKey.get(id);
+        Long at = lastTapAt.get(id);
+        final String key = iconKey != null ? iconKey : (tapKey != null && at != null && now - at <= holdReadsTapMs ? tapKey : null);
+        final boolean wasOpen = w.isInventoryOpen();
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (!p.isOnline()) return;
+            Wand now2 = holdWand(p);
+            if (now2 == null) return;
+            if (key != null && mh != null) {
+                lastSwing.put(id, System.currentTimeMillis()); // the swings of the same held finger merge into this read
+                String r = mh.showSpellInfo(p, key);
+                dropReads++; holdsInfo++;
+                lastHold.put(id, "drop " + r);
+                lastUse.put(id, System.currentTimeMillis());
+                return;
+            }
+            if (wasOpen && now2.isInventoryOpen()) { now2.closeInventory(); dropCloses++; lastHold.put(id, "drop close"); return; }
+            if (!now2.isInventoryOpen()) { String r = tryOpen(p, "drop"); holdsOpen++; lastHold.put(id, "drop open " + r); }
+        });
     }
 
     private final Map<UUID, Long> lastUseClick = new HashMap<>();
@@ -291,7 +400,49 @@ final class TapBarHook implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onRightClick(PlayerInteractEvent event) {
         Action a = event.getAction();
-        if (a == Action.RIGHT_CLICK_AIR || a == Action.RIGHT_CLICK_BLOCK) lastUseClick.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
+        // 0.2.5: only a click that really uses something (chest, door, button, villager) makes the
+        // swing that comes with it "not a hold". A right click on air or a plain block does not:
+        // a phone's press and hold could otherwise be skipped and show nothing.
+        if (a == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock() != null && event.getClickedBlock().getType().isInteractable())
+            lastUseClick.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
+    }
+
+    /**
+     * 0.2.5: right click with the Tap bar wand. A phone's press and hold on the screen arrives as a
+     * right click (item use), and Magic's own right_click (toggle) cannot be cancelled by a plugin,
+     * so 0.2.4 closed the bar and showed nothing. Tap bar now sets Magic's right_click to "none" and
+     * handles it here. Bedrock: press and hold = read (same as the swing). Java: right click opens the
+     * bar or puts your items back (what Magic's toggle did). Crouch + right click stays Magic's page
+     * flip (right_click_sneak). A click that uses a block (chest, door) is left alone.
+     */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onRightClickWand(PlayerInteractEvent event) {
+        Action a = event.getAction();
+        if (a != Action.RIGHT_CLICK_AIR && a != Action.RIGHT_CLICK_BLOCK) return;
+        if (event.getHand() != null && event.getHand() != org.bukkit.inventory.EquipmentSlot.HAND) return;
+        Player p = event.getPlayer();
+        if (p.isSneaking()) return;
+        if (a == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock() != null && event.getClickedBlock().getType().isInteractable()) return;
+        Wand w = tapWand(p);
+        if (w == null) return;
+        UUID id = p.getUniqueId();
+        long now = System.currentTimeMillis();
+        Long prevRight = lastRight.put(id, now);
+        boolean repeat = prevRight != null && now - prevRight < 350; // a held mouse button / finger repeats every 4 ticks
+        if (plugin.isBedrock(p) && holdShowsInfo) {
+            lastHoldSignal.put(id, now);
+            rightReads++;
+            hold(p, w); // merges with the swing of the same finger
+            return;
+        }
+        if (repeat) { rightRepeats++; return; }
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (!p.isOnline()) return;
+            Wand n = tapWand(p);
+            if (n == null) return;
+            if (n.isInventoryOpen()) { n.closeInventory(); rightCloses++; lastHold.put(id, "right close"); }
+            else { String r = tryOpen(p, "right click"); rightOpens++; lastHold.put(id, "right open " + r); if ("opened".equals(r)) sendPageLine(p, 3L); }
+        });
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -327,17 +478,32 @@ final class TapBarHook implements Listener {
             String r = tryOpen(p, "press and hold");
             holdsOpen++;
             lastHold.put(id, "open " + r);
+            if ("opened".equals(r)) sendPageLine(p, 3L);
             return;
         }
         MagicHook mh = plugin.magicHook();
         if (mh == null) return;
+        // 0.2.5: the finger still on the icon just tapped = read that spell; otherwise the list
+        // of all your spells (Bedrock form: tap one for the full page; Java: chat with hover).
         String key = lastTapKey.get(id);
         Long at = lastTapAt.get(id);
-        if (key != null && (at == null || now - at > rememberTapMs)) key = null;
+        if (key != null && (at == null || now - at > Math.min(rememberTapMs, holdReadsTapMs))) key = null;
         String r = mh.showSpellInfo(p, key);
         holdsInfo++;
         lastHold.put(id, r);
         if (plugin.debug()) plugin.getLogger().info("Tap bar hold for " + p.getName() + ": " + r);
+    }
+
+    /** 0.2.5: "Page 1/2: Heal, Boon, ..." once when the bar opens with more than one page. */
+    private void sendPageLine(Player p, long ticks) {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (!p.isOnline()) return;
+            MagicHook mh = plugin.magicHook();
+            String line = mh == null ? null : mh.pageLine(p);
+            if (line == null) return;
+            p.sendActionBar(Component.text(line, NamedTextColor.AQUA));
+            pageLines++;
+        }, ticks);
     }
 
     // ------------------------------------------------------------------ icon name / lore = the Spell Book lines
@@ -408,7 +574,7 @@ final class TapBarHook implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         UUID id = event.getPlayer().getUniqueId();
-        lastUse.remove(id); lastSwing.remove(id); lastTapKey.remove(id); lastTapAt.remove(id); lastHold.remove(id); lastUseClick.remove(id); lastSlotPick.remove(id);
+        lastHoldSignal.remove(id); lastRight.remove(id); lastUse.remove(id); lastSwing.remove(id); lastTapKey.remove(id); lastTapAt.remove(id); lastHold.remove(id); lastUseClick.remove(id); lastSlotPick.remove(id);
     }
 
     private void tick() {
@@ -416,6 +582,7 @@ final class TapBarHook implements Listener {
         long now = System.currentTimeMillis();
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (!uses(p)) continue;
+            if (tapBarStaysOpen && tapBarStyle(p)) continue; // 0.2.5: Tap bar stays up while the wand is held
             Wand w = openWand(p);
             if (w == null) continue;
             Long last = lastUse.get(p.getUniqueId());

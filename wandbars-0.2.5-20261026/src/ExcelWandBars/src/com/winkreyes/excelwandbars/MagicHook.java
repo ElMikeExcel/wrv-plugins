@@ -98,6 +98,11 @@ final class MagicHook implements Listener {
         s.flying = player.isFlying();
         FlipGate.Result r = gate.decide(player.getUniqueId(), s, plugin.flipOptions(), System.currentTimeMillis());
         if (plugin.debug()) plugin.getLogger().info(player.getName() + " sneak -> " + r);
+        if (r == FlipGate.Result.ONE_BAR && s.barOpen && pagesWord(player) && plugin.showBarLine()) {
+            // 0.2.5: crouch always answers. All spells fit on one page: say so instead of doing nothing.
+            int n = wand instanceof com.elmakers.mine.bukkit.wand.Wand w1 ? w1.getSpellInventory().size() : 0;
+            player.sendActionBar(Component.text("Page 1/1: all " + n + " of your spells are on the bar", NamedTextColor.AQUA));
+        }
         if (r != FlipGate.Result.FLIP) return r;
         wand.cycleHotbar();
         flips++;
@@ -107,11 +112,32 @@ final class MagicHook implements Listener {
                 if (!player.isOnline()) return;
                 Wand now = mage.getActiveWand();
                 if (now != wand || !now.isInventoryOpen()) return;
-                String line = BarText.line(w.getCurrentHotbar(), w.getHotbars().size(), barNames(w, mage, w.getCurrentHotbar()));
+                String line = pagesWord(player)
+                        ? com.winkreyes.excelwandbars.core.PageLayout.pageLine(w.getCurrentHotbar(), w.getHotbars().size(), barNames(w, mage, w.getCurrentHotbar()))
+                        : BarText.line(w.getCurrentHotbar(), w.getHotbars().size(), barNames(w, mage, w.getCurrentHotbar()));
                 player.sendActionBar(Component.text(line, NamedTextColor.AQUA));
             });
         }
         return r;
+    }
+
+    /** 0.2.5: Tap bar and Tap to pick (original) call them pages; Sneak bars keeps "Bar". */
+    private boolean pagesWord(Player p) {
+        StyleHook s = plugin.styleHook();
+        if (s == null || !s.enabled()) return false;
+        com.winkreyes.excelwandbars.core.WandStyle st = s.styleOf(p);
+        return st == com.winkreyes.excelwandbars.core.WandStyle.TAPBAR || st == com.winkreyes.excelwandbars.core.WandStyle.ORIGINAL;
+    }
+
+    /** 0.2.5: "Page 1/2: Heal, Boon, ..." for the open bar, or null when it has one page (or is closed). */
+    String pageLine(Player p) {
+        Mage mage = api.getMage(p);
+        Wand wand = mage == null ? null : mage.getActiveWand();
+        if (!(wand instanceof com.elmakers.mine.bukkit.wand.Wand w) || !w.isInventoryOpen()) return null;
+        int count = w.getHotbars() == null ? 0 : w.getHotbars().size();
+        if (count < 2) return null;
+        return com.winkreyes.excelwandbars.core.PageLayout.pageLine(w.getCurrentHotbar(), count, barNames(w, mage, w.getCurrentHotbar()))
+                + (plugin.isBedrock(p) ? " (crouch: next)" : " (sneak: next)");
     }
 
     private String keyOf(ItemStack item) {
@@ -382,7 +408,8 @@ final class MagicHook implements Listener {
         if (tipButton) {
             content.append("Tip: ").append(String.join(" ", com.winkreyes.excelwandbars.core.SpellTip.body(true))).append("\n\n");
         }
-        content.append(bars ? "Tap a spell to read what it does, its cost and its cooldown.\nSneak once with the bar open to flip to the next bar."
+        content.append(bars ? (pagesWord(p) ? "Tap a spell to read what it does, its mana cost, cooldown and rank. Reading never casts.\nMore than one page? Crouch with the bar up for the next page."
+                        : "Tap a spell to read what it does, its cost and its cooldown.\nSneak once with the bar open to flip to the next bar.")
                 : "Tap a spell to read it, then Use this spell to put it on your wand.\nTap to cast. Press and hold picks the next spell."
                   + (plugin.styleHook() != null && plugin.styleHook().styleOf(p) == com.winkreyes.excelwandbars.core.WandStyle.CYCLE
                      ? "\nCrouch and press and hold goes back one spell." : ""));
@@ -423,8 +450,10 @@ final class MagicHook implements Listener {
         List<String> lines = SpellInfoText.lines(f);
         String content = String.join("\n\n", lines.subList(1, lines.size()));
         List<String> buttons = new ArrayList<>();
-        boolean canUse = holdsBookWand(p, f) && !f.active;
-        if (f.active && holdsBookWand(p, f)) content = "You are using this spell now.\n\n" + content;
+        // 0.2.5: no "Use this spell" in Tap bar (a tap on the icon casts; the active spell is not used there).
+        boolean tapBar = plugin.styleHook() != null && plugin.styleHook().enabled() && plugin.styleHook().styleOf(p) == com.winkreyes.excelwandbars.core.WandStyle.TAPBAR;
+        boolean canUse = holdsBookWand(p, f) && !f.active && !tapBar;
+        if (f.active && holdsBookWand(p, f) && !tapBar) content = "You are using this spell now.\n\n" + content;
         if (canUse) buttons.add(USE_BUTTON);
         buttons.add("Back to Spell Book");
         buttons.add("Close");

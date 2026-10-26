@@ -121,7 +121,9 @@ final class CompassGuard implements Listener {
     public void onDrop(PlayerDropItemEvent e) { later(e.getPlayer(), 3); }
     @EventHandler(priority = EventPriority.MONITOR)
     public void onSwap(PlayerSwapHandItemsEvent e) { later(e.getPlayer(), 3); }
-    @EventHandler(priority = EventPriority.MONITOR)
+    // 0.2.5: ignoreCancelled. A slot change ExcelAttunement refused (stance lock) changed nothing,
+    // so there is nothing to re-check (audit 2026-10-26 finding 3). The other triggers still run.
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onHeld(PlayerItemHeldEvent e) { later(e.getPlayer(), 3); }
     @EventHandler(priority = EventPriority.MONITOR)
     public void onClose(InventoryCloseEvent e) { if (e.getPlayer() instanceof Player p) later(p, 3); }

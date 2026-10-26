@@ -104,16 +104,18 @@ public final class TipGate {
     public static final String L_INTRO = "Wand tip: you can pick how your wand works!";
     public static final String L_CLASSIC = "Classic: right-click to pick the next spell, left-click to cast.";
     /** 0.2.2: Bedrock players read tap and hold, not right-click (phones, tablets, controllers). */
-    public static final String L_CLASSIC_BEDROCK = "Classic: controller LT picks the next spell, RT casts. On a phone, try Tap bar.";
+    public static final String L_CLASSIC_BEDROCK = "Classic: press and hold (controller LT) picks the next spell, tap (RT) casts. On a phone, try Tap bar.";
     /** 0.2.3 Cycle line (Java and Bedrock wording). */
     public static final String L_CYCLE = "Cycle: right-click for the next spell, sneak + right-click or Q to go back, left-click to cast. No spell list.";
     public static final String L_CYCLE_BEDROCK = "Cycle: press and hold for the next spell, crouch + hold to go back, tap to cast (controller: LT, RT).";
     /** 0.2.4 hotbar-icon styles. */
-    public static final String L_TAPBAR = "Tap bar: hold your wand, a hotbar key casts that spell at once, left click reads it. Q puts items back.";
-    public static final String L_TAPBAR_BEDROCK = "Tap bar (best on phone): tap your wand, tap a spell icon to cast it, press and hold to read about it.";
-    public static final String L_ORIGINAL = "Tap to cycle (original): hotbar key picks a spell, left-click casts, Q puts your items back.";
-    public static final String L_ORIGINAL_BEDROCK = "Tap to cycle (original): tap your wand, tap a spell icon to pick it, press and hold to cast.";
-    public static final String L_SNEAK = "Sneak bars: press and hold to open your spell bar, tap a spell to cast, sneak to flip to the next bar.";
+    public static final String L_TAPBAR = "Tap bar: all your spells fill the hotbar. A key casts at once, left click reads, sneak for more, Q puts items back.";
+    public static final String L_TAPBAR_BEDROCK = "Tap bar (best on phone): all your spells fill the bar. Tap one to cast, press and hold to read, crouch for more spells.";
+    public static final String L_ORIGINAL = "Tap to pick (original): hotbar key picks a spell, left-click casts, Q puts your items back.";
+    public static final String L_ORIGINAL_BEDROCK = "Tap to pick (original): tap your wand, tap a spell icon to pick it, press and hold to cast.";
+    public static final String L_SNEAK = "Sneak bars: press and hold to open your spell bar, tap a spell to cast, crouch to flip to the next bar.";
+    /** 0.2.5 parity: Sneak bars for Java too, Java wording. */
+    public static final String L_SNEAK_JAVA = "Sneak bars: right-click opens your spell bar, a hotbar key casts, sneak flips to the next bar.";
     public static final String L_PICK_BEDROCK = "Pick one with /wandstyle or the Wand controls button in the compass menu.";
     public static final String L_PICK_JAVA = "Type /wandstyle to see your controls. Your spells: Spellbook button in the compass menu.";
     public static final String L_OK_BEDROCK = "Tap OK on the pop-up, or type /wandstyle ok, to hide this tip.";
@@ -121,13 +123,13 @@ public final class TipGate {
     public static final String OK_BUTTON = "OK, got it!";
     public static final String DONE_ACK = "Got it! The wand tip won't show again. /wandstyle any time.";
 
-    /** Chat lines for one tip. Bedrock players also get the Sneak bars line. */
+    /** Chat lines for one tip. 0.2.5: everyone gets the Sneak bars line (Java wording on Java). */
     public static List<String> lines(boolean bedrock) {
         List<String> out = new ArrayList<>();
         out.add(L_INTRO);
         out.add(bedrock ? L_CLASSIC_BEDROCK : L_CLASSIC);
         out.add(bedrock ? L_CYCLE_BEDROCK : L_CYCLE);
-        if (bedrock) out.add(L_SNEAK);
+        out.add(bedrock ? L_SNEAK : L_SNEAK_JAVA);
         out.add(bedrock ? L_ORIGINAL_BEDROCK : L_ORIGINAL);
         out.add(bedrock ? L_TAPBAR_BEDROCK : L_TAPBAR);
         out.add(bedrock ? L_PICK_BEDROCK : L_PICK_JAVA);

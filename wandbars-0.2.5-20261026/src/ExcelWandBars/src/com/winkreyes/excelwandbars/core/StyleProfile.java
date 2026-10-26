@@ -84,6 +84,15 @@ public final class StyleProfile {
         // 0.2.4 Tap bar: the original's layout with quick cast on (picking a slot casts).
         Map<String, String> t = new LinkedHashMap<>(o);
         t.put("quick_cast", "true");
+        // 0.2.5: left click / press and hold never casts in Tap bar (Magic's survival
+        // left click casts from PlayerInteractEvent even when another plugin cancels it,
+        // so the key itself is "none"). Drop (Q, press and hold the wand slot) is read by
+        // ExcelWandBars: close the bar, or read the spell icon just tapped.
+        t.put("left_click", "none");
+        t.put("drop", "none");
+        // 0.2.5: right click / a phone's press and hold is handled by ExcelWandBars (read on Bedrock,
+        // open or items back on Java). Magic's toggle here closed the bar under a held finger.
+        t.put("right_click", "none");
         wanted.put(WandStyle.TAPBAR, t);
     }
 
@@ -140,7 +149,8 @@ public final class StyleProfile {
         if (m.equals("inventory")) {
             String qc = norm("quick_cast", effective.get("quick_cast"));
             String d = effective.get("drop");
-            boolean dropToggle = d != null && d.trim().equalsIgnoreCase("toggle");
+            // 0.2.5 Tap bar sets drop "none" (0.2.4 used "toggle"); both mean Tap bar.
+            boolean dropToggle = d != null && (d.trim().equalsIgnoreCase("toggle") || d.trim().equalsIgnoreCase("none"));
             if (!"true".equals(qc)) return WandStyle.ORIGINAL;
             return dropToggle ? WandStyle.TAPBAR : WandStyle.BARS;
         }
