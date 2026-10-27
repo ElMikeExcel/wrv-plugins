@@ -1,6 +1,6 @@
 # ExcelTelemetry 0.1.1 install record
 
-Status: approved deployment in progress; do not treat as installed until startup verification is recorded. This PR remains draft and unmerged.
+Status: source record only. Deployment evidence is maintained separately. Real-encounter acceptance remains pending. This PR remains draft and unmerged.
 
 - Candidate JAR: 56,598 bytes; SHA-256 `dd6472dcb9a3a7efd60ab4ace33e54c785ed59400039747961c930dd7170fee7`.
 - Previous 0.1.0 rollback JAR: SHA-256 `11f51c7abcd19788a0fdc1badd8b284dbceb5ac65f11e64c044f6aaba0a234b3`.
