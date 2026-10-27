@@ -1,0 +1,17 @@
+--- /workspace/shared/acrobatics-repeat-review/baseline/com/winkreyes/acrobatics/core/PayoutMath.java	2026-10-26 20:38:36.423894990 -0500
++++ /workspace/shared/acrobatics-repeat-review/candidate/com/winkreyes/acrobatics/core/PayoutMath.java	2026-10-26 20:39:09.723962042 -0500
+@@ -73,9 +73,11 @@
+         }
+         xp *= styleMultiplier(fallDistance, settings.styleStartBlocks(),
+                 settings.stylePerBlock(), settings.styleCap());
+-        xp *= repeatMultiplier(priorRepeatsAtSpot, settings.repeatMultipliers());
+-        long rounded = Math.round(xp);
+-        return (int) Math.max(0, Math.min(settings.maxXpPerLanding(), rounded));
++        // Cap the fresh-jump award first, so high falls cannot hide the repeat penalty.
++        long freshAward = Math.max(0, Math.min(settings.maxXpPerLanding(), Math.round(xp)));
++        double repeat = Math.max(0.0, Math.min(1.0,
++                repeatMultiplier(priorRepeatsAtSpot, settings.repeatMultipliers())));
++        return (int) Math.round(freshAward * repeat);
+     }
+ }
+ 
