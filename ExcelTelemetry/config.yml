@@ -1,0 +1,40 @@
+# ExcelTelemetry 0.1.1 - observation only. Changing values here
+# changes what gets RECORDED, never what the server does.
+capture:
+  kills: true          # mob kills with per-victim damage ledgers (player-involved only)
+  deaths: true         # player deaths with cause + gear snapshot
+  bosses: true         # boss-encounter ledgers: dragon / wither / elder guardian / warden / raids
+  mcmmo: true          # mcMMO level-ups + join/quit/hourly level snapshots
+  advancements: true   # boss-relevant advancement completions (watch list below)
+
+ledger:
+  ttl-minutes: 10      # damage ledgers for mobs nobody has hit in this long are pruned
+
+encounter:
+  idle-close-minutes: 10  # an open boss encounter with no damage for this long closes as "abandoned"
+
+# Fallback health signatures when neither trial provider is active.
+# Active BossTrial/legacy DragonTrial config supplies its own health values.
+dragon:
+  phase1-max-health: 250
+  phase2-max-health: 300
+
+mcmmo:
+  snapshot-interval-seconds: 3600   # hourly snapshots for online players (0 disables)
+
+# Flags are DATA ONLY - "look at this", never a verdict. Whether a
+# tactic counts as cheese is the administrator's call; telemetry makes it visible.
+integrity:
+  explosion-share-threshold: 0.60   # flag a boss kill when explosions dealt >= this share
+  fast-kill-seconds:                # flag a boss kill faster than this (seconds)
+    ender_dragon: 45
+    wither: 20
+    elder_guardian: 15
+    warden: 20
+    raid: 120
+
+advancements:
+  watch:
+    - "minecraft:end/kill_dragon"
+    - "minecraft:nether/summon_wither"
+    - "minecraft:end/root"

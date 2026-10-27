@@ -1,0 +1,16 @@
+name: ExcelTelemetry
+version: 0.1.1
+main: com.winkreyes.exceltelemetry.ExcelTelemetry
+api-version: '1.21'
+description: Observation-only player-power tracking for seal tuning (Wink Reyes Valley). Captures kills, deaths, boss encounters and mcMMO growth into JSONL. Enforces nothing; no in-game commands in v1.
+author: Excel (Wink Reyes Valley)
+softdepend: [mcMMO, EliteMobs, ExcelRewardGuard, ExcelGuildGate, ExcelBossTrial, ExcelDragonTrial]
+commands:
+  telemetry:
+    description: ExcelTelemetry status (console only).
+    usage: /telemetry status
+    permission: exceltelemetry.status
+permissions:
+  exceltelemetry.status:
+    description: Read ExcelTelemetry status from the console.
+    default: op
