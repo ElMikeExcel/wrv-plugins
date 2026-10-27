@@ -1,0 +1,47 @@
+# ExcelAcrobatics configuration.
+#
+# Base rate: mcMMO pays Acrobatics XP on a fall's final damage using the
+# "Fall" value in its own experience.yml, which is 600 on this server
+# (verified against the captured live config, Oct 14, 2026). The install
+# checklist includes a calibration jump on land to confirm the rate
+# against the exact live build before players rely on it.
+xp-per-damage-point: 600
+
+# A fall must reach this height (blocks) before a water landing can pay.
+min-fall-blocks: 4.0
+
+# Style bonus (Mike's ask): no bonus up to this height, then this much
+# per extra block, capped. Defaults: +5% per block past 10, up to +100%.
+style-start-blocks: 10
+style-per-block: 0.05
+style-cap: 1.0
+
+# Same-spot repeats inside the window pay less, never zero (Mike's rule).
+# Index = how many times this spot already paid: 1st landing 100%,
+# then 25% for every repeat after (75% reduction after the fresh-award cap).
+repeat-multipliers: [1.0, 0.25]
+repeat-radius-blocks: 5
+repeat-window-minutes: 10
+
+# Safety valve per single landing.
+max-xp-per-landing: 25000
+
+# Fatal falls (Mike's rule): mcMMO pays nothing when a fall kills you.
+# This plugin pays Acrobatics XP for a death fall ONLY when the death
+# actually costs a decent amount of vanilla XP, so jumping to your
+# death with a nearly empty XP bar can never farm it. The single
+# condition: points lost (everything you had minus the orbs that drop
+# and can be recovered) must reach death-min-xp-lost. For scale: dying
+# at level 15 loses about 215 points past the orbs and passes; dying at
+# level 10 loses about 90 and does not.
+death-award-enabled: true
+death-min-xp-lost: 200
+death-min-fall-damage: 5.0
+
+# mcMMO multiplies fall XP by this when Feather Falling boots are worn
+# (its own experience.yml value on this server: 2.0). Mirrored here.
+feather-fall-xp-multiplier: 2.0
+
+# Tell the player what a landing paid.
+notify-player: true
+
