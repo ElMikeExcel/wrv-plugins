@@ -1,0 +1,26 @@
+name: ExcelGuildGate
+version: 0.3.4
+author: Argus
+main: com.winkreyes.excelguildgate.ExcelGuildGate
+api-version: "1.13"
+description: The Road to the Guild - the Adventurers Guild stays locked until the family breaks five boss seals together. Seal falls are celebrated with broadcasts, a narrator voice line and stage guide (narration needs the server resource pack; the text works without it), and a join catch-up for anyone who was away.
+softdepend: [Geyser-Spigot, floodgate, EliteMobs, PlaceholderAPI, ExcelBossTrial]
+commands:
+  seals:
+    description: See the Road to the Guild quest progress
+    usage: /seals
+    aliases: [road]
+  guildgate:
+    description: Admin controls for the Road to the Guild gate
+    usage: /guildgate <status|recovery|grant|revoke|reset|open|catchup|narrate|packreset>
+    permission: excelguildgate.admin
+permissions:
+  excelguildgate.admin:
+    description: Allows /guildgate admin commands
+    default: op
+  excelguildgate.bypass:
+    description: Allows entering the guild while it is still sealed
+    default: false
+  excelguildgate.recovery:
+    description: Preview and explicitly confirm reviewed seal recovery; grants no items or XP
+    default: false
