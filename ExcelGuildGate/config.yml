@@ -1,0 +1,178 @@
+# ExcelGuildGate - The Road to the Guild
+# The Adventurers Guild (/ag, world em_adventurers_guild) stays locked until
+# every enabled seal below is broken. Seals are server-wide: the whole family
+# works on the same road, and progress is saved in state.yml.
+
+# Master switch for the gate. If false, /ag and guild-world teleports are
+# never blocked (seals still get tracked and celebrated).
+gateEnabled: true
+
+# Seal requirements (v0.3.3). Extra conditions a seal's victory must
+# meet before it counts. Currently only the raid has one: Mike's rule
+# (Oct 20, 2026) - the raid seal breaks only for a victory under the
+# strongest omen, Bad Omen level 5 (the vanilla cap: no raid can
+# carry more). A raid won under a lesser omen is still a real win -
+# the village is safe, the drops and Hero of the Village are
+# untouched - but the seal does not break and no cooldown starts;
+# the game says why in chat with the level it saw. This section is
+# optional: without it, the requirement runs on the built-in
+# default of 5.
+sealRequirements:
+  raidOmenLevel: 5
+
+# Join catch-up (v0.2.0). The plugin tracks, per player, the highest
+# fallen-seal count they have been told about (their "seen-stage", saved
+# in state.yml). When a seal falls, everyone online is marked told on the
+# spot. A player who was away gets ONE combined personal message on their
+# next join listing every beat they missed; nobody is told twice, and a
+# revoked seal never causes a repeat or "negative" message.
+# This section is optional: without it (for example the 0.1.0 config),
+# catch-up runs on built-in defaults.
+catchup:
+  enabled: true
+  # Seconds after joining before the catch-up check runs, so the message
+  # is not buried in the join spam.
+  joinDelaySeconds: 5
+  # One entry per beat, in order. The Nth fallen seal, in any boss order,
+  # carries the Nth beat. {name} is informational; the line is what the
+  # player reads (color codes with & work).
+  beats:
+    - name: "The Healer"
+      line: "&aThe First Seal fell &7- the Adventurers Guild stirs, and &aThe Healer's &7magic returns to the valley."
+    - name: "The Pathfinder"
+      line: "&aThe Second Seal fell &7- &aThe Pathfinder's &7magic returns: light for dark places, keen sight, and the getting-around arts."
+    - name: "The Wonder"
+      line: "&aThe Third Seal fell &7- &aThe Wonder &7returns: lightning answers the call again, and the wild elements stir."
+    - name: "The Masons"
+      line: "&aThe Fourth Seal fell &7- &aThe Masons' &7magic returns: spells that place, move, and shape stone and timber."
+    - name: "The Guild Opens"
+      line: "&6The Fifth Seal fell &7- &6the Adventurers Guild is OPEN&7, and the last schools of magic return with it. Type &f/ag &7to visit!"
+
+# Narration (v0.3.0). When a seal falls in play, the narrator speaks:
+# a recorded voice line per stage (custom sounds wrv:guildgate.seal1..5
+# from the server resource pack) plays for everyone online, followed by
+# that stage's short guide below, one line at a time. Players without the
+# pack hear nothing and lose nothing - every line of the guide is text.
+# A player who was away hears the voice line for their highest missed
+# stage once, alongside their join catch-up.
+# This section is optional: without it (for example the 0.1.0 config),
+# narration runs on built-in defaults identical to the values below.
+narration:
+  enabled: true
+  # Replay the narrator line on the catch-up join (highest missed stage,
+  # that player only, once). The live moment is unaffected by this toggle.
+  catchupReplay: true
+  # Seconds between the staggered guide lines.
+  guideLineDelaySeconds: 2
+  # Java pack delivery (v0.3.2). Bedrock players get the narrator pack
+  # through Geyser, which the server FORCES on them; Java players used
+  # to get it only from the one-shot server.properties prompt, and a
+  # player who declined that once was never offered the narrator again.
+  # The plugin now offers the SAME pack (same zip, same address, same
+  # fingerprint) to Java players itself, under Mike's five-chances rule
+  # (Oct 19, 2026): every player gets at most maxOffers offers, one per
+  # join; the prompt itself shows the count ("offer N of 5") and says
+  # that after 5 offers, or once they download it, it will not ask
+  # again. An accept ends the asking forever, and so does the fifth
+  # offer - there is no reset or re-offer cycle. Bedrock players are
+  # never offered - Geyser already serves them. State is kept in
+  # narrator-pack-state.txt in this plugin's folder. This section is
+  # optional: without it, delivery runs on the defaults below.
+  javaPack:
+    enabled: true
+    url: "https://elmikeexcel.github.io/winkreyesvalley/packs/wrv-guildgate-narrator-pack.zip"
+    sha1: "e1ef3b835d59280e613ae435f6efca760389045e"
+    # The middle of the offer prompt (what the pack is). The plugin
+    # wraps it with the offer counter in front and the "will not ask
+    # again" line behind, so the count is always right.
+    prompt: "The valley has a narrator — accept to hear the seal falls spoken aloud."
+    # Lifetime offers per player (Mike's rule: 5). An accept, or the
+    # last offer, ends the asking forever.
+    maxOffers: 5
+    # Ticks after joining before the offer is sent (40 = 2 seconds).
+    sendDelayTicks: 40
+  # One entry per stage, in order. "lines" replaces that stage's guide
+  # wholesale (color codes with & work). "sound" optionally overrides the
+  # stage's sound event; leave it out for the default
+  # wrv:guildgate.seal<stage>, or set it to "" to silence that stage's
+  # voice line (its guide text still runs). FINAL WORDING (Oct 18, 2026):
+  # first-wand acquisition is DECIDED, village-first (Mike, Oct 17, 2026) -
+  # the quartermaster is an old guild man who left the Guild long ago and
+  # lives in the village; at Seal 1 he issues each player a bound
+  # apprentice wand there. The guild world stays sealed until Seal 5.
+  guides:
+    - lines:
+        - "&6— What fell open: &fThe Healer &6—"
+        - "&7Healing magic is back: mend wounds, cure poison and curses, and bless your party before a fight."
+        - "&7To cast any of it, &fyou'll need a wand &7— seek the &fold quartermaster in the village&7: he left the Guild long ago, and when a seal falls he places a &fbound apprentice wand &7in your hand."
+        - "&7Spells are learned with spell points (SP) earned by casting; ranks run Beginner to Master."
+        - "&7The full ladder lives on the &fSkill Trees &7page of the server website."
+    - lines:
+        - "&6— What fell open: &fThe Pathfinder &6—"
+        - "&7Light for dark places, keen sight, and the getting-around arts return; the road itself feels shorter."
+        - "&7New spells join your wand's ladder at every rank; the short hop, &fBlink&7, waits at Master."
+        - "&7Keep casting to earn SP — each rank's spells run about two days of family play."
+        - "&7The full ladder lives on the &fSkill Trees &7page of the server website."
+    - lines:
+        - "&6— What fell open: &fThe Wonder &6—"
+        - "&7The wild elements stir: sparks, storms, and sky-fire answer the call again."
+        - "&7Its headline pair, &fLightning &7and &fChain Lightning&7, sit at Master rank — worth the climb."
+        - "&7Keep casting to earn SP — each rank's spells run about two days of family play."
+        - "&7The full ladder lives on the &fSkill Trees &7page of the server website."
+    - lines:
+        - "&6— What fell open: &fThe Masons &6—"
+        - "&7Building magic wakes: spells that place, move, and shape stone and timber."
+        - "&7The Masons do not sit on the wand ladder yet — their craft comes by the &fbuilder's handout &7(the masons wand and the builder group). Ask Mike."
+        - "&7When the last seal falls, the Masons take their place at Master rank like everyone else."
+        - "&7The full ladder lives on the &fSkill Trees &7page of the server website."
+    - lines:
+        - "&6— What fell open: &fThe Guild Opens &6—"
+        - "&6The Adventurers Guild is OPEN. &7Type &f/ag &7and walk in: Hermes and Casus are waiting."
+        - "&7The last schools of magic return with it, and the top rank of every ladder stands open."
+        - "&7The Masons join the Master rank; every seal's spells now exist in the valley."
+        - "&7The full ladders live on the &fSkill Trees &7page of the server website."
+
+seals:
+  ender_dragon:
+    enabled: true
+    name: "The Ender Dragon"
+    hint: "Waits in the End, past the stronghold portal."
+    flavor: "The Ender Dragon has fallen! The End is free."
+  wither:
+    enabled: true
+    name: "The Wither"
+    hint: "Summon it somewhere far from anything you love."
+    flavor: "The Wither has fallen! The sky is quiet again."
+  elder_guardian:
+    enabled: true
+    name: "The Elder Guardians"
+    hint: "All three guardians of ONE ocean monument, each truly fought. Bring milk for the mining fatigue."
+    flavor: "The Elder Guardians have fallen! The monument's curse is lifted."
+  warden:
+    enabled: true
+    name: "The Warden"
+    hint: "Sleeps in the deep dark and hunts by sound. Sneak, or bring everyone."
+    flavor: "The Warden has fallen! The deep dark feels safer tonight."
+  raid:
+    enabled: true
+    name: "A Raid Victory"
+    hint: "The worst omen, then a village: only a raid won under Bad Omen V breaks this seal. Hold the line until the horn sounds victory."
+    flavor: "The raid is broken! The village celebrates its heroes."
+# A disabled seal is not required for the unlock and is left off the /seals
+# quest page entirely (the progress line only counts enabled seals). Turn one
+# off here if the family wants to skip it, no rebuild needed.
+
+messages:
+  questTitle: "The Road to the Guild"
+  lockedCommandMessage: "&cThe Adventurers Guild is still sealed."
+  lockedHeader: "&6— The Road to the Guild —"
+  sealBrokenLine1: "&6Seal broken: &f{flavor}"
+  sealBrokenLine2: "&7Road to the Guild: &a{broken} of {total} &7seals broken."
+  raidNoWinnerLine: "&eThe raid is broken and the village is safe - but no champion stood among its winners, so the raid seal does not break. A raid won with one of our own among its heroes will count."
+  raidLowOmenLine: "&eThe raid is broken and the village is safe - but the omen behind it reached only level {level}, and the raid seal answers only to the strongest omen: level {required}. Win a raid at Bad Omen level {required} and the seal will break."
+  unlockLine1: "&6&lThe Road to the Guild is complete!"
+  unlockLine2: "&eEvery seal is broken. The Adventurers Guild is open! Type /ag to visit."
+  progressLine: "&7Progress: &a{broken} of {total} &7seals broken."
+  catchupHeader: "&6&lWhile you were away:"
+  questFooterLocked: "&7The guild opens when every seal is broken."
+  questFooterOpen: "&aThe guild is open! &7Type &f/ag &7to visit."
