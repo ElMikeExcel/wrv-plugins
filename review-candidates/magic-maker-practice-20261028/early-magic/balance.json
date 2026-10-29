@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "status": "offline_candidate_not_installed",
+  "practice_thresholds": [
+    40,
+    120,
+    300,
+    600,
+    1000
+  ],
+  "spells": {
+    "stormshackle": {
+      "display_name": "Storm Shackle",
+      "unlock_seal": 1,
+      "entry_rank": "beginner",
+      "delivery": "first_impact_only",
+      "secondary_damage": false,
+      "terrain_changes": false,
+      "levels": [
+        {
+          "damage_hp": 0.5,
+          "mana": 15,
+          "cooldown_ms": 8000
+        },
+        {
+          "damage_hp": 0.75,
+          "mana": 16,
+          "cooldown_ms": 7000
+        },
+        {
+          "damage_hp": 1.0,
+          "mana": 18,
+          "cooldown_ms": 7000
+        },
+        {
+          "damage_hp": 1.25,
+          "mana": 20,
+          "cooldown_ms": 7000
+        }
+      ],
+      "earns": 6
+    },
+    "wrv_spark": {
+      "display_name": "Spark",
+      "unlock_seal": 2,
+      "entry_rank": "beginner",
+      "delivery": "single_target",
+      "secondary_damage": false,
+      "terrain_changes": false,
+      "levels": [
+        {
+          "damage_hp": 1.0,
+          "mana": 6,
+          "cooldown_ms": 3000
+        },
+        {
+          "damage_hp": 1.5,
+          "mana": 7,
+          "cooldown_ms": 3000
+        },
+        {
+          "damage_hp": 2.0,
+          "mana": 8,
+          "cooldown_ms": 3000
+        }
+      ],
+      "earns": 6
+    },
+    "wrv_frostbite": {
+      "display_name": "Frostbite",
+      "unlock_seal": 2,
+      "entry_rank": "beginner",
+      "delivery": "first_impact_only",
+      "secondary_damage": false,
+      "terrain_changes": false,
+      "levels": [
+        {
+          "damage_hp": 0.5,
+          "mana": 10,
+          "cooldown_ms": 10000
+        },
+        {
+          "damage_hp": 0.75,
+          "mana": 12,
+          "cooldown_ms": 9000
+        },
+        {
+          "damage_hp": 0.9,
+          "mana": 14,
+          "cooldown_ms": 9000
+        }
+      ],
+      "earns": 6
+    }
+  }
+}

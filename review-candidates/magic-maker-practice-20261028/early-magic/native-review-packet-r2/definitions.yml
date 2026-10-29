@@ -1,0 +1,1182 @@
+stormshackle:
+  icon: chainlightning
+  category: utility
+  worth: 1260
+  earns: 6
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+        damage: 0.5
+        player_damage: 0.5
+        entity_damage: 0.5
+      - class: PotionEffect
+        duration: 4000
+        effect_slow: 0
+      - class: Delay
+      - class: AreaOfEffect
+        actions:
+        - class: Asynchronous
+          actions:
+          - class: CustomProjectile
+            velocity: 150
+            actions:
+            - class: PotionEffect
+              duration: 4000
+              effect_slow: 0
+            - class: Delay
+            - class: AreaOfEffect
+              target_count: 1
+              actions:
+              - class: CustomProjectile
+                actions:
+                - class: PotionEffect
+                  duration: 4000
+                  effect_slow: 0
+            - class: Repeat
+              actions:
+              - class: PotionEffect
+                duration: 4000
+                effect_slow: 0
+              - class: Delay
+      - class: Repeat
+        actions:
+        - class: PotionEffect
+          duration: 4000
+          effect_slow: 0
+        - class: Delay
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.zap
+      location: origin
+    - sound: block_conduit_activate
+      sound_pitch: 1.75
+    projectile:
+    - class: EffectSingle
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 50
+        particle: redstone
+        color: FFF000
+        duration: 2000
+    - location: source
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 20
+        particle: fireworks_spark
+        particle_count: 4
+        particle_offset_x: 0.1
+        particle_offset_y: 0.1
+        particle_offset_z: 0.1
+        duration: 2000
+    tick:
+    - particle: fireworks_spark
+      particle_count: 2
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+      location: target
+    hit:
+    - sound: entity_guardian_attack
+      sound_pitch: 2
+      sound_volume: 0.5
+      location: target
+    - class: EffectSingle
+      sound: magic.zap_crack
+      sound_volume: 0.5
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 1
+      particle_offset_y: 1
+      particle_offset_z: 1
+    - sound: block_conduit_activate
+      sound_pitch: 1.8
+      location: target
+  parameters:
+    tick_size: 5
+    target: other
+    target_self: false
+    target_source: false
+    range: 48
+    velocity: 100
+    radius: 8
+    target_count: 3
+    target_type: Damageable
+    player_damage: 0.5
+    entity_damage: 0.5
+    delay: 250
+    repeat: 2
+    target_breakables: 0
+    cooldown: 8000
+    ignore_modified: true
+    cooldown_mage: 1000
+    damage: 0.5
+  costs:
+    mana: 15
+  upgrade_required_path: apprentice
+  name: Storm Shackle
+  earns_cooldown_scale: 1
+stormshackle|2:
+  icon: chainlightning
+  category: utility
+  worth: 1260
+  earns: 6
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+        damage: 0.75
+        player_damage: 0.75
+        entity_damage: 0.75
+      - class: PotionEffect
+        duration: 4000
+        effect_slow: 0
+      - class: Delay
+      - class: AreaOfEffect
+        actions:
+        - class: Asynchronous
+          actions:
+          - class: CustomProjectile
+            velocity: 150
+            actions:
+            - class: PotionEffect
+              duration: 4000
+              effect_slow: 0
+            - class: Delay
+            - class: AreaOfEffect
+              target_count: 1
+              actions:
+              - class: CustomProjectile
+                actions:
+                - class: PotionEffect
+                  duration: 4000
+                  effect_slow: 0
+            - class: Repeat
+              actions:
+              - class: PotionEffect
+                duration: 4000
+                effect_slow: 0
+              - class: Delay
+      - class: Repeat
+        actions:
+        - class: PotionEffect
+          duration: 4000
+          effect_slow: 0
+        - class: Delay
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.zap
+      location: origin
+    - sound: block_conduit_activate
+      sound_pitch: 1.75
+    projectile:
+    - class: EffectSingle
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 50
+        particle: redstone
+        color: FFF000
+        duration: 2000
+    - location: source
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 20
+        particle: fireworks_spark
+        particle_count: 4
+        particle_offset_x: 0.1
+        particle_offset_y: 0.1
+        particle_offset_z: 0.1
+        duration: 2000
+    tick:
+    - particle: fireworks_spark
+      particle_count: 2
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+      location: target
+    hit:
+    - sound: entity_guardian_attack
+      sound_pitch: 2
+      sound_volume: 0.5
+      location: target
+    - class: EffectSingle
+      sound: magic.zap_crack
+      sound_volume: 0.5
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 1
+      particle_offset_y: 1
+      particle_offset_z: 1
+    - sound: block_conduit_activate
+      sound_pitch: 1.8
+      location: target
+  parameters:
+    tick_size: 5
+    target: other
+    target_self: false
+    target_source: false
+    range: 48
+    velocity: 100
+    radius: 8
+    target_count: 3
+    target_type: Damageable
+    player_damage: 0.75
+    entity_damage: 0.75
+    delay: 250
+    repeat: 2
+    target_breakables: 0
+    cooldown: 7000
+    ignore_modified: true
+    cooldown_mage: 1000
+    damage: 0.75
+  costs:
+    mana: 16
+  upgrade_required_path: apprentice
+  name: Storm Shackle
+  earns_cooldown_scale: 1
+stormshackle|3:
+  icon: chainlightning
+  category: utility
+  worth: 1260
+  earns: 6
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+        damage: 1.0
+        player_damage: 1.0
+        entity_damage: 1.0
+      - class: PotionEffect
+        duration: 4000
+        effect_slow: 1
+      - class: Delay
+      - class: AreaOfEffect
+        actions:
+        - class: Asynchronous
+          actions:
+          - class: CustomProjectile
+            velocity: 150
+            actions:
+            - class: PotionEffect
+              duration: 4000
+              effect_slow: 1
+            - class: Delay
+            - class: AreaOfEffect
+              target_count: 1
+              actions:
+              - class: CustomProjectile
+                actions:
+                - class: PotionEffect
+                  duration: 4000
+                  effect_slow: 1
+            - class: Repeat
+              actions:
+              - class: PotionEffect
+                duration: 4000
+                effect_slow: 1
+              - class: Delay
+      - class: Repeat
+        actions:
+        - class: PotionEffect
+          duration: 4000
+          effect_slow: 1
+        - class: Delay
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.zap
+      location: origin
+    - sound: block_conduit_activate
+      sound_pitch: 1.75
+    projectile:
+    - class: EffectSingle
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 50
+        particle: redstone
+        color: FFF000
+        duration: 2000
+    - location: source
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 20
+        particle: fireworks_spark
+        particle_count: 4
+        particle_offset_x: 0.1
+        particle_offset_y: 0.1
+        particle_offset_z: 0.1
+        duration: 2000
+    tick:
+    - particle: fireworks_spark
+      particle_count: 2
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+      location: target
+    hit:
+    - sound: entity_guardian_attack
+      sound_pitch: 2
+      sound_volume: 0.5
+      location: target
+    - class: EffectSingle
+      sound: magic.zap_crack
+      sound_volume: 0.5
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 1
+      particle_offset_y: 1
+      particle_offset_z: 1
+    - sound: block_conduit_activate
+      sound_pitch: 1.8
+      location: target
+  parameters:
+    tick_size: 5
+    target: other
+    target_self: false
+    target_source: false
+    range: 48
+    velocity: 100
+    radius: 8
+    target_count: 3
+    target_type: Damageable
+    player_damage: 1.0
+    entity_damage: 1.0
+    delay: 250
+    repeat: 2
+    target_breakables: 0
+    cooldown: 7000
+    ignore_modified: true
+    cooldown_mage: 1000
+    damage: 1.0
+  costs:
+    mana: 18
+  upgrade_required_path: apprentice
+  name: Storm Shackle
+  earns_cooldown_scale: 1
+stormshackle|4:
+  icon: chainlightning
+  category: utility
+  worth: 1260
+  earns: 6
+  actions:
+    cast:
+    - class: ChangeContext
+      target_caster: true
+      actions:
+      - class: Modifier
+        add_modifiers: wrv_focus
+        duration: 5000
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+        damage: 1.25
+        player_damage: 1.25
+        entity_damage: 1.25
+      - class: PotionEffect
+        duration: 1000
+        effect_slow: 6
+      - class: PotionEffect
+        duration: 4000
+        effect_slow: 1
+      - class: Delay
+      - class: AreaOfEffect
+        actions:
+        - class: Asynchronous
+          actions:
+          - class: CustomProjectile
+            velocity: 150
+            actions:
+            - class: PotionEffect
+              duration: 4000
+              effect_slow: 1
+            - class: Delay
+            - class: AreaOfEffect
+              target_count: 1
+              actions:
+              - class: CustomProjectile
+                actions:
+                - class: PotionEffect
+                  duration: 4000
+                  effect_slow: 1
+            - class: Repeat
+              actions:
+              - class: PotionEffect
+                duration: 4000
+                effect_slow: 1
+              - class: Delay
+      - class: Repeat
+        actions:
+        - class: PotionEffect
+          duration: 4000
+          effect_slow: 1
+        - class: Delay
+  effects:
+    cast:
+    - class: EffectSingle
+      sound: magic.zap
+      location: origin
+    - sound: block_conduit_activate
+      sound_pitch: 1.75
+    projectile:
+    - class: EffectSingle
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 50
+        particle: redstone
+        color: FFF000
+        duration: 2000
+    - location: source
+      effectlib:
+        class: LineEffect
+        isZigZag: true
+        zigZags: 2
+        zigZagOffset: 0,0.05,0
+        length: 10
+        particles: 20
+        particle: fireworks_spark
+        particle_count: 4
+        particle_offset_x: 0.1
+        particle_offset_y: 0.1
+        particle_offset_z: 0.1
+        duration: 2000
+    tick:
+    - particle: fireworks_spark
+      particle_count: 2
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+      location: target
+    hit:
+    - sound: entity_guardian_attack
+      sound_pitch: 2
+      sound_volume: 0.5
+      location: target
+    - class: EffectSingle
+      sound: magic.zap_crack
+      sound_volume: 0.5
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 1
+      particle_offset_y: 1
+      particle_offset_z: 1
+    - sound: block_conduit_activate
+      sound_pitch: 1.8
+      location: target
+  parameters:
+    tick_size: 5
+    target: other
+    target_self: false
+    target_source: false
+    range: 48
+    velocity: 100
+    radius: 8
+    target_count: 3
+    target_type: Damageable
+    player_damage: 1.25
+    entity_damage: 1.25
+    delay: 250
+    repeat: 2
+    target_breakables: 0
+    cooldown: 7000
+    ignore_modified: true
+    cooldown_mage: 1000
+    damage: 1.25
+  costs:
+    mana: 20
+  upgrade_required_path: master
+  name: Storm Shackle
+  earns_cooldown_scale: 1
+wrv_spark:
+  icon: missile
+  upgrade_required_path: beginner
+  category: combat
+  worth: 660
+  earns: 6
+  earns_cooldown_scale: 1
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+        damage: 1.0
+        player_damage: 1.0
+        entity_damage: 1.0
+  effects:
+    cast:
+    - sound: block_beacon_power_select
+      sound_pitch: 1.8
+      sound_volume: 0.9
+    - sound: entity_arrow_shoot
+      sound_pitch: 2
+      sound_volume: 0.2
+    - sound: entity_guardian_attack
+      sound_pitch: 1.5
+      sound_volume: 0.2
+    - sound: magic.zap_crack
+      sound_volume: 0.75
+      location: origin
+      color_override: color
+      effectlib:
+        class: ConeEffect
+        iterations: 10
+        particle: dust_color_transition
+        to_color: '#222222'
+        lengthGrow: 0.1
+        radiusGrow: 0.003
+        updateLocations: false
+        updateDirections: false
+        particle_count: 8
+        particle_offset_y: 0.1
+        particle_offset_x: 0.1
+        particle_offset_z: 0.1
+    tick:
+    - particle: dust_color_transition
+      color: '#FFFFFF'
+      location: target
+      particle_count: 4
+      particle_offset_y: 0.2
+      particle_offset_x: 0.2
+      particle_offset_z: 0.2
+      particle_size: 1
+    break:
+    - class: EffectSingle
+      location: target
+      particle: block_crack
+      particle_count: 100
+      particle_offset_x: 0.6
+      particle_offset_y: 0.6
+      particle_offset_z: 0.6
+    hit_block:
+    - class: EffectSingle
+      location: target
+      particle: block_crack
+      particle_count: 30
+      particle_offset_x: 0.2
+      particle_offset_y: 1
+      particle_offset_z: 0.2
+    hit_entity:
+    - class: EffectSingle
+      location: target
+      particle: redstone
+      particle_count: 30
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    hit:
+    - sound: entity_player_attack_knockback
+      sound_pitch: 2
+      location: target
+    - class: EffectSingle
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 0.3
+      particle_offset_y: 0.3
+      particle_offset_z: 0.3
+      sound: magic.zap
+      sound_volume: 0.3
+      particle_data: 0.1
+    headshot:
+    - sound: entity_player_attack_knockback
+      sound_pitch: 2
+      location: target
+    - class: EffectSingle
+      location: target
+      particle: fireworks_spark
+      particle_count: 20
+      particle_offset_y: 0.2
+      particle_offset_x: 0.2
+      particle_offset_z: 0.2
+      particle_data: 0.1
+      sound: magic.zap
+      sound_volume: 0.3
+    - sound: entity_player_attack_crit
+      sound_pitch: 0.8
+      location: target
+      particle: crit_magic
+      particle_count: 30
+      particle_offset_y: 1
+      particle_offset_x: 1
+      particle_offset_z: 1
+      particle_data: 0.5
+  parameters:
+    allow_max_range: true
+    velocity: 200
+    range: 24
+    hitbox: true
+    target_type: Damageable
+    player_damage: 1.0
+    entity_damage: 1.0
+    target_breakables: 0
+    cooldown: 3000
+    reorient: false
+    undo: 10000
+    damage: 1.0
+  costs:
+    mana: 6
+  name: Spark
+wrv_spark|2:
+  icon: missile
+  upgrade_required_path: beginner
+  category: combat
+  worth: 660
+  earns: 6
+  earns_cooldown_scale: 1
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+        damage: 1.5
+        player_damage: 1.5
+        entity_damage: 1.5
+  effects:
+    cast:
+    - sound: block_beacon_power_select
+      sound_pitch: 1.8
+      sound_volume: 0.9
+    - sound: entity_arrow_shoot
+      sound_pitch: 2
+      sound_volume: 0.2
+    - sound: entity_guardian_attack
+      sound_pitch: 1.5
+      sound_volume: 0.2
+    - sound: magic.zap_crack
+      sound_volume: 0.75
+      location: origin
+      color_override: color
+      effectlib:
+        class: ConeEffect
+        iterations: 10
+        particle: dust_color_transition
+        to_color: '#222222'
+        lengthGrow: 0.1
+        radiusGrow: 0.003
+        updateLocations: false
+        updateDirections: false
+        particle_count: 8
+        particle_offset_y: 0.1
+        particle_offset_x: 0.1
+        particle_offset_z: 0.1
+    tick:
+    - particle: dust_color_transition
+      color: '#FFFFFF'
+      location: target
+      particle_count: 4
+      particle_offset_y: 0.2
+      particle_offset_x: 0.2
+      particle_offset_z: 0.2
+      particle_size: 1
+    break:
+    - class: EffectSingle
+      location: target
+      particle: block_crack
+      particle_count: 100
+      particle_offset_x: 0.6
+      particle_offset_y: 0.6
+      particle_offset_z: 0.6
+    hit_block:
+    - class: EffectSingle
+      location: target
+      particle: block_crack
+      particle_count: 30
+      particle_offset_x: 0.2
+      particle_offset_y: 1
+      particle_offset_z: 0.2
+    hit_entity:
+    - class: EffectSingle
+      location: target
+      particle: redstone
+      particle_count: 30
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    hit:
+    - sound: entity_player_attack_knockback
+      sound_pitch: 2
+      location: target
+    - class: EffectSingle
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 0.3
+      particle_offset_y: 0.3
+      particle_offset_z: 0.3
+      sound: magic.zap
+      sound_volume: 0.3
+      particle_data: 0.1
+    headshot:
+    - sound: entity_player_attack_knockback
+      sound_pitch: 2
+      location: target
+    - class: EffectSingle
+      location: target
+      particle: fireworks_spark
+      particle_count: 20
+      particle_offset_y: 0.2
+      particle_offset_x: 0.2
+      particle_offset_z: 0.2
+      particle_data: 0.1
+      sound: magic.zap
+      sound_volume: 0.3
+    - sound: entity_player_attack_crit
+      sound_pitch: 0.8
+      location: target
+      particle: crit_magic
+      particle_count: 30
+      particle_offset_y: 1
+      particle_offset_x: 1
+      particle_offset_z: 1
+      particle_data: 0.5
+  parameters:
+    allow_max_range: true
+    velocity: 200
+    range: 32
+    hitbox: true
+    target_type: Damageable
+    player_damage: 1.5
+    entity_damage: 1.5
+    target_breakables: 0
+    cooldown: 3000
+    reorient: false
+    undo: 10000
+    damage: 1.5
+  costs:
+    mana: 7
+  name: Spark
+wrv_spark|3:
+  icon: missile
+  upgrade_required_path: student
+  category: combat
+  worth: 660
+  earns: 6
+  earns_cooldown_scale: 1
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+        damage: 2.0
+        player_damage: 2.0
+        entity_damage: 2.0
+  effects:
+    cast:
+    - sound: block_beacon_power_select
+      sound_pitch: 1.8
+      sound_volume: 0.9
+    - sound: entity_arrow_shoot
+      sound_pitch: 2
+      sound_volume: 0.2
+    - sound: entity_guardian_attack
+      sound_pitch: 1.5
+      sound_volume: 0.2
+    - sound: magic.zap_crack
+      sound_volume: 0.75
+      location: origin
+      color_override: color
+      effectlib:
+        class: ConeEffect
+        iterations: 10
+        particle: dust_color_transition
+        to_color: '#222222'
+        lengthGrow: 0.1
+        radiusGrow: 0.003
+        updateLocations: false
+        updateDirections: false
+        particle_count: 8
+        particle_offset_y: 0.1
+        particle_offset_x: 0.1
+        particle_offset_z: 0.1
+    tick:
+    - particle: dust_color_transition
+      color: '#FFFFFF'
+      location: target
+      particle_count: 4
+      particle_offset_y: 0.2
+      particle_offset_x: 0.2
+      particle_offset_z: 0.2
+      particle_size: 1
+    break:
+    - class: EffectSingle
+      location: target
+      particle: block_crack
+      particle_count: 100
+      particle_offset_x: 0.6
+      particle_offset_y: 0.6
+      particle_offset_z: 0.6
+    hit_block:
+    - class: EffectSingle
+      location: target
+      particle: block_crack
+      particle_count: 30
+      particle_offset_x: 0.2
+      particle_offset_y: 1
+      particle_offset_z: 0.2
+    hit_entity:
+    - class: EffectSingle
+      location: target
+      particle: redstone
+      particle_count: 30
+      particle_offset_x: 0.2
+      particle_offset_y: 0.2
+      particle_offset_z: 0.2
+    hit:
+    - sound: entity_player_attack_knockback
+      sound_pitch: 2
+      location: target
+    - class: EffectSingle
+      location: target
+      particle: fireworks_spark
+      particle_count: 10
+      particle_offset_x: 0.3
+      particle_offset_y: 0.3
+      particle_offset_z: 0.3
+      sound: magic.zap
+      sound_volume: 0.3
+      particle_data: 0.1
+    headshot:
+    - sound: entity_player_attack_knockback
+      sound_pitch: 2
+      location: target
+    - class: EffectSingle
+      location: target
+      particle: fireworks_spark
+      particle_count: 20
+      particle_offset_y: 0.2
+      particle_offset_x: 0.2
+      particle_offset_z: 0.2
+      particle_data: 0.1
+      sound: magic.zap
+      sound_volume: 0.3
+    - sound: entity_player_attack_crit
+      sound_pitch: 0.8
+      location: target
+      particle: crit_magic
+      particle_count: 30
+      particle_offset_y: 1
+      particle_offset_x: 1
+      particle_offset_z: 1
+      particle_data: 0.5
+  parameters:
+    allow_max_range: true
+    velocity: 200
+    range: 48
+    hitbox: true
+    target_type: Damageable
+    player_damage: 2.0
+    entity_damage: 2.0
+    target_breakables: 0
+    cooldown: 3000
+    reorient: false
+    undo: 10000
+    damage: 2.0
+  costs:
+    mana: 8
+  name: Spark
+wrv_frostbite:
+  icon: frost
+  category: combat
+  worth: 880
+  earns: 6
+  upgrade_required_path: beginner
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+        damage: 0.5
+        player_damage: 0.5
+        entity_damage: 0.5
+      - class: AreaOfEffect
+        actions:
+        - class: PotionEffect
+        - class: Ignite
+          duration: 0
+  effects:
+    cast:
+    - sound: entity_player_breath
+      sound_pitch: 2
+      sound_volume: 0.5
+    - class: EffectSingle
+      sound: magic.zap
+    tick:
+    - location: target
+      particle: snowball
+      particle_count: 4
+      particle_offset_x: 0.01
+      particle_offset_y: 0.01
+      particle_offset_z: 0.01
+    hit:
+    - location: target
+      sound: block_snow_fall
+      sound_pitch: 0.75
+      sound_volume: 2
+      effectlib:
+        class: Modified
+        duration: 500
+        parameters:
+          size: (t/i) * 2
+        effect:
+          class: AnimatedBall
+          particles: 20
+          particle_count: 10
+          particle_offset_x: 1
+          particle_offset_y: 1
+          particle_offset_z: 1
+          particle: snowball
+          size: 1
+          y_factor: 0.3
+    - class: EffectSingle
+      location: target
+      target_offset: 0,0.2,0
+      effectlib:
+        class: Shield
+        duration: $undo
+        period: 4
+        particle: snowball
+        radius: $radius
+  parameters:
+    target_type: Damageable
+    velocity: 50
+    target: other
+    allow_max_range: false
+    range: 48
+    hitbox: true
+    radius: 1
+    transparent: freeze_transparent
+    damage: 0.5
+    duration: 1000
+    effect_slow: 1
+    undo: 4000
+    cooldown: 10000
+    entity_undo: false
+    target_breakables: 0
+    player_damage: 0.5
+    entity_damage: 0.5
+  costs:
+    mana: 10
+  name: Frostbite
+  earns_cooldown_scale: 1
+wrv_frostbite|2:
+  icon: frost
+  category: combat
+  worth: 880
+  earns: 6
+  upgrade_required_path: student
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+        damage: 0.75
+        player_damage: 0.75
+        entity_damage: 0.75
+      - class: AreaOfEffect
+        actions:
+        - class: PotionEffect
+        - class: Ignite
+          duration: 0
+  effects:
+    cast:
+    - sound: entity_player_breath
+      sound_pitch: 2
+      sound_volume: 0.5
+    - class: EffectSingle
+      sound: magic.zap
+    tick:
+    - location: target
+      particle: snowball
+      particle_count: 4
+      particle_offset_x: 0.01
+      particle_offset_y: 0.01
+      particle_offset_z: 0.01
+    hit:
+    - location: target
+      sound: block_snow_fall
+      sound_pitch: 0.75
+      sound_volume: 2
+      effectlib:
+        class: Modified
+        duration: 500
+        parameters:
+          size: (t/i) * 2
+        effect:
+          class: AnimatedBall
+          particles: 20
+          particle_count: 10
+          particle_offset_x: 1
+          particle_offset_y: 1
+          particle_offset_z: 1
+          particle: snowball
+          size: 1
+          y_factor: 0.3
+    - class: EffectSingle
+      location: target
+      target_offset: 0,0.2,0
+      effectlib:
+        class: Shield
+        duration: $undo
+        period: 4
+        particle: snowball
+        radius: $radius
+  parameters:
+    target_type: Damageable
+    velocity: 50
+    target: other
+    allow_max_range: false
+    range: 48
+    hitbox: true
+    radius: 2
+    transparent: freeze_transparent
+    damage: 0.75
+    duration: 2000
+    effect_slow: 1
+    undo: 5000
+    cooldown: 9000
+    entity_undo: false
+    player_damage: 0.75
+    entity_damage: 0.75
+    target_breakables: 0
+  costs:
+    mana: 12
+  name: Frostbite
+  earns_cooldown_scale: 1
+wrv_frostbite|3:
+  icon: frost
+  category: combat
+  worth: 880
+  earns: 6
+  upgrade_required_path: apprentice
+  actions:
+    cast:
+    - class: CustomProjectile
+      actions:
+      - class: Damage
+        damage: 0.9
+        player_damage: 0.9
+        entity_damage: 0.9
+      - class: AreaOfEffect
+        actions:
+        - class: PotionEffect
+        - class: Ignite
+          duration: 0
+  effects:
+    cast:
+    - sound: entity_player_breath
+      sound_pitch: 2
+      sound_volume: 0.5
+    - class: EffectSingle
+      sound: magic.zap
+    tick:
+    - location: target
+      particle: snowball
+      particle_count: 4
+      particle_offset_x: 0.01
+      particle_offset_y: 0.01
+      particle_offset_z: 0.01
+    hit:
+    - location: target
+      sound: block_snow_fall
+      sound_pitch: 0.75
+      sound_volume: 2
+      effectlib:
+        class: Modified
+        duration: 500
+        parameters:
+          size: (t/i) * 2
+        effect:
+          class: AnimatedBall
+          particles: 20
+          particle_count: 10
+          particle_offset_x: 1
+          particle_offset_y: 1
+          particle_offset_z: 1
+          particle: snowball
+          size: 1
+          y_factor: 0.3
+    - class: EffectSingle
+      location: target
+      target_offset: 0,0.2,0
+      effectlib:
+        class: Shield
+        duration: $undo
+        period: 4
+        particle: snowball
+        radius: $radius
+  parameters:
+    target_type: Damageable
+    velocity: 50
+    target: other
+    allow_max_range: false
+    range: 48
+    hitbox: true
+    radius: 2
+    transparent: freeze_transparent
+    damage: 0.9
+    duration: 3000
+    effect_slow: 1
+    undo: 8000
+    cooldown: 9000
+    entity_undo: false
+    player_damage: 0.9
+    entity_damage: 0.9
+    target_breakables: 0
+  costs:
+    mana: 14
+  name: Frostbite
+  earns_cooldown_scale: 1

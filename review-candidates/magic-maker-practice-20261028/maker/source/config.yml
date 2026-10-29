@@ -1,0 +1,102 @@
+# ExcelMakersMark 0.1.0 (Wink Reyes Valley). After editing: /mark reload (no restart).
+#
+# What it does: tools, weapons, armor, shields, bows, crossbows, tridents, maces,
+# spears and elytra that a player crafts get one gray line, "Crafted by <name>".
+# The line is rebuilt from a hidden item tag on every anvil, smithing table and
+# grindstone result, so it cannot be faked or removed. Magic (elmakers) items,
+# EliteMobs (MagmaGuy) items and shop items are never touched.
+
+mark:
+  # Master switch for signing new crafts. Existing marks stay.
+  enabled: true
+  # A netherite upgrade of an UNSIGNED item signs it for the player who upgraded it.
+  # A signed item always keeps its original crafter.
+  sign-smithing-upgrades: true
+
+# Gear stats (optional). Counted on all eligible gear, signed or not, except
+# Magic wands and EliteMobs items. Players can turn their own off with /mark stats off.
+stats:
+  enabled: true
+  kills: true        # weapons: "Kills: 12 (Players: 1)" (Players part only when above 0)
+  hits: true         # armor: "Hits blocked: 34" (every hit from a mob, player or projectile while worn)
+  trophies: true     # weapons: "Slain: Ender Dragon, Wither x2"
+  # Armor lore is redrawn at most this often per piece (the count itself is saved on every hit).
+  redraw-seconds: 5
+
+trophies:
+  # Every tracked weapon that hurt the boss during the fight gets credit, not only the last hit.
+  # ENTITY_TYPE: label shown on the item
+  bosses:
+    ENDER_DRAGON: Ender Dragon
+    WITHER: Wither
+    ELDER_GUARDIAN: Elder Guardian
+    WARDEN: Warden
+  # Optional extras, off by default.
+  raid-captain:
+    enabled: false
+    label: Raid Captain
+  # Bosses matched by their name tag (for example named EliteMobs bosses).
+  # id: short name stored on the item, match: text in the boss name, label: shown on the item
+  named:
+    enabled: false
+    list:
+      - {id: example_boss, match: 'Example Boss Name', label: Example Boss}
+  # A "Slain:" line longer than this wraps to a second line.
+  wrap-at: 40
+
+exclude:
+  # Items carrying any item tag from these plugins are never signed or counted.
+  pdc-namespaces: [elitemobs, magic, excelshops, wrvshops, shopvillager, excelshopvillager, excelmenujoin, menujoin]
+  # Ask Magic (elmakers) whether an item is a wand, upgrade, spell or brush, and skip it.
+  magic-items: true
+
+names:
+  # Removed from the front of the name: EssentialsX nickname prefix and the Bedrock (Floodgate) dot.
+  strip-prefixes: ['~', '.']
+  max-length: 24
+
+date-time-zone: America/Chicago
+
+# Bedrock: /mark (or a compass button that runs it) opens a pop-up with the two switches
+# (Maker's mark, Gear stats). Java players get the chat lines and the compass menu buttons.
+bedrock-toggle-form: true
+
+tip:
+  enabled: true
+  # true = hand the tip to ExcelTips when it has the "makersmark" entry. Off by default: ExcelTips 0.1.0
+  # stops a tip after 3 shows (default-max-shows), and our rule is: keep showing until the player says OK.
+  # Only turn this on if ExcelTips' makersmark entry gets max-shows: 0.
+  use-exceltips: false
+  exceltips-feature: makersmark
+  # 0 = keep showing on each use until the player says OK.
+  max-shows: 0
+  min-gap-seconds: 20
+  bedrock-form: true
+  bedrock-form-cooldown-seconds: 300
+  prefix: '&b[Tip] &f'
+  java:
+    - 'Things you craft now say who made them. Look for the gray Crafted by line.'
+    - 'Weapons also count kills and bosses slain. Armor counts hits blocked.'
+    - 'Turn them off with /mark off or /mark stats off, or in the compass menu.'
+  bedrock:
+    - 'Things you craft now say who made them. Look for the gray Crafted by line.'
+    - 'Weapons also count kills and bosses slain. Armor counts hits blocked.'
+    - 'Turn them off with /mark off or /mark stats off, or tap the buttons in the compass menu.'
+
+debug: false
+
+# Offline alternative only. Flags default off; ordinary-history enables recording, identity provisioning and merge protection.
+experimental:
+  history-recovery: false
+  ordinary-history: false
+  # Requires coordinated Magic observer/lore registration and verified native identity.
+  magic-history: false
+  # Sole history owner; off when a shared coordinator owns registration.
+  magic-history-only-owner: false
+  # Shared coordinator consumes this provider; never enable both ownership modes.
+  magic-shared-history-provider: false
+  # Selected save-before-confirm policy: pause FUTURE admissions after a completed slow call, not a timeout.
+  strict-ingress-pause-ms: 50
+
+# Shared history provider is explicit opt-in; mutually exclusive with magic-history-only-owner.
+# Set experimental.magic-shared-history-provider: true only with the reviewed shared runtime.
