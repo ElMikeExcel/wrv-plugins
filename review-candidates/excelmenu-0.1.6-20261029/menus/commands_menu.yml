@@ -1,0 +1,458 @@
+# ExcelMenu definition: commands_menu
+# Migrated 2026-10-20 from DeluxeMenus gui_menus/commands_menu.yml
+format: 1
+title: '&6&lServer Commands'
+size: 54
+items:
+  hdr_ga:
+    material: MAP
+    slot: 0
+    name: '&6&lGetting Around'
+    lore:
+    - '&8Command group'
+  ga_menu:
+    material: COMPASS
+    slot: 1
+    name: '&a&l/menu'
+    lore:
+    - '&7Open the server menu'
+    - '&8Getting Around'
+    clicks:
+      left:
+      - '[player] menu'
+  ga_spawn:
+    material: LODESTONE
+    slot: 2
+    name: '&a&l/spawn'
+    lore:
+    - '&7Teleport back to the village spawn'
+    - '&8Getting Around'
+    clicks:
+      left:
+      - '[openguimenu] teleport_confirm_spawncmd'
+  ga_tpmenu:
+    material: ENDER_PEARL
+    slot: 3
+    name: '&a&l/tpmenu'
+    lore:
+    - '&7Pick a player to send a teleport request to'
+    - '&8Getting Around'
+    clicks:
+      left:
+      - '[player] tpmenu'
+  ga_tpa_player:
+    material: PAPER
+    slot: 4
+    name: '&a&l/tpa <player>'
+    lore:
+    - '&7Ask to teleport to a player'
+    - '&8Getting Around'
+    clicks:
+      left:
+      - '[message] &7Type it in chat: &e/tpa <player>'
+  ga_tpaccept:
+    material: LIME_DYE
+    slot: 5
+    name: '&a&l/tpaccept'
+    lore:
+    - '&7Accept a request (/tpdeny says no)'
+    - '&8Getting Around'
+    clicks:
+      left:
+      - '[player] tpaccept'
+  ga_warps:
+    material: FILLED_MAP
+    slot: 6
+    name: '&a&l/warps'
+    lore:
+    - '&7List the server warps (/warp <name> to go)'
+    - '&8Getting Around'
+    clicks:
+      left:
+      - '[player] warps'
+  hdr_mj:
+    material: GOLD_INGOT
+    slot: 7
+    name: '&6&lMoney & Jobs'
+    lore:
+    - '&8Command group'
+  mj_balance:
+    material: EMERALD
+    slot: 8
+    name: '&a&l/balance'
+    lore:
+    - '&7See how much money you have'
+    - '&8Money & Jobs'
+    clicks:
+      left:
+      - '[player] balance'
+  mj_pay_player_amount:
+    material: SUNFLOWER
+    slot: 9
+    name: '&a&l/pay <player> <amount>'
+    lore:
+    - '&7Send money to another player'
+    - '&8Money & Jobs'
+    clicks:
+      left:
+      - '[message] &7Type it in chat: &e/pay <player> <amount>'
+  mj_balancetop:
+    material: GOLD_BLOCK
+    slot: 10
+    name: '&a&l/balancetop'
+    lore:
+    - '&7The richest players on the server'
+    - '&8Money & Jobs'
+    clicks:
+      left:
+      - '[player] balancetop'
+  mj_jobs:
+    material: IRON_PICKAXE
+    slot: 11
+    name: '&a&l/jobs'
+    lore:
+    - '&7Browse jobs and join one'
+    - '&8Money & Jobs'
+    clicks:
+      left:
+      - '[player] jobs browse'
+  mj_jobs_stats:
+    material: BOOK
+    slot: 12
+    name: '&a&l/jobs stats'
+    lore:
+    - '&7Your job levels, XP and pay rates'
+    - '&8Money & Jobs'
+    clicks:
+      left:
+      - '[player] jobs stats'
+  mj_jobs_join_job:
+    material: WRITABLE_BOOK
+    slot: 13
+    name: '&a&l/jobs join <job>'
+    lore:
+    - '&7Join a job by name (or browse with /jobs)'
+    - '&8Money & Jobs'
+    clicks:
+      left:
+      - '[message] &7Type it in chat: &e/jobs join <job>'
+  hdr_sl:
+    material: EXPERIENCE_BOTTLE
+    slot: 14
+    name: '&6&lSkills & Levels'
+    lore:
+    - '&8Command group'
+  sl_mcstats:
+    material: ENCHANTED_BOOK
+    slot: 15
+    name: '&a&l/mcstats'
+    lore:
+    - '&7Your mcMMO skill levels'
+    - '&8Skills & Levels'
+    clicks:
+      left:
+      - '[player] mcstats'
+  sl_mctop:
+    material: DIAMOND
+    slot: 16
+    name: '&a&l/mctop'
+    lore:
+    - '&7The top mcMMO players'
+    - '&8Skills & Levels'
+    clicks:
+      left:
+      - '[player] mctop'
+  sl_skill_name:
+    material: IRON_SWORD
+    slot: 17
+    name: '&a&l/<skill name>'
+    lore:
+    - '&7Inspect one skill: /mining, /swords, /axes, /fishing and more'
+    - '&8Skills & Levels'
+    clicks:
+      left:
+      - '[message] &7Type it in chat: &e/<skill name>'
+  sl_party:
+    material: CAKE
+    slot: 18
+    name: '&a&l/party'
+    lore:
+    - '&7Your mcMMO party: members, chat and invites'
+    - '&8Skills & Levels'
+    clicks:
+      left:
+      - '[player] party'
+  sl_leaderboard:
+    material: BEACON
+    slot: 19
+    name: '&a&l/leaderboard'
+    lore:
+    - '&7Top players on every board'
+    - '&8Skills & Levels'
+    clicks:
+      left:
+      - '[player] leaderboard'
+  hdr_st:
+    material: CHEST
+    slot: 20
+    name: '&6&lShops & Trading'
+    lore:
+    - '&8Command group'
+  st_shop:
+    material: EMERALD
+    slot: 21
+    name: '&a&l/shop'
+    lore:
+    - '&7Open the Spawn Shop'
+    - '&8Shops & Trading'
+    clicks:
+      left:
+      - '[player] shop'
+  st_excelshop_setup:
+    material: CRAFTING_TABLE
+    slot: 22
+    name: '&a&l/excelshop setup'
+    lore:
+    - '&7Start the guided setup for your own chest shop'
+    - '&8Shops & Trading'
+    clicks:
+      left:
+      - '[player] excelshop setup'
+  st_excelshop_manage:
+    material: BARREL
+    slot: 23
+    name: '&a&l/excelshop manage'
+    lore:
+    - '&7Manage your own chest shop'
+    - '&8Shops & Trading'
+    clicks:
+      left:
+      - '[player] excelshop manage'
+  st_deathprotection_status:
+    material: TOTEM_OF_UNDYING
+    slot: 24
+    name: '&a&l/deathprotection status'
+    lore:
+    - '&7See if your items are protected from death'
+    - '&8Shops & Trading'
+    clicks:
+      left:
+      - '[player] deathprotection status'
+  st_mobveil_status:
+    material: GLASS_BOTTLE
+    slot: 25
+    name: '&a&l/mobveil status'
+    lore:
+    - '&7See how much Mob Veil time you have left'
+    - '&8Shops & Trading'
+    clicks:
+      left:
+      - '[player] mobveil status'
+  hdr_cl:
+    material: GOLDEN_SHOVEL
+    slot: 26
+    name: '&6&lClaims & Land'
+    lore:
+    - '&8Command group'
+  cl_claim:
+    material: OAK_FENCE
+    slot: 27
+    name: '&a&l/claim'
+    lore:
+    - '&7Claim the land around you'
+    - '&8Claims & Land'
+    clicks:
+      left:
+      - '[player] claim'
+  cl_claimslist:
+    material: MAP
+    slot: 28
+    name: '&a&l/claimslist'
+    lore:
+    - '&7Your claim blocks and where your claims are'
+    - '&8Claims & Land'
+    clicks:
+      left:
+      - '[player] claimslist'
+  cl_trust_player:
+    material: LEAD
+    slot: 29
+    name: '&a&l/trust <player>'
+    lore:
+    - '&7Give a player full access to your claims'
+    - '&8Claims & Land'
+    clicks:
+      left:
+      - '[message] &7Type it in chat: &e/trust <player>'
+  cl_extendclaim_blocks:
+    material: STICK
+    slot: 30
+    name: '&a&l/extendclaim <blocks>'
+    lore:
+    - '&7Grow the claim you are standing in'
+    - '&8Claims & Land'
+    clicks:
+      left:
+      - '[message] &7Type it in chat: &e/extendclaim <blocks>'
+  cl_buyclaimblocks_amount:
+    material: GOLD_INGOT
+    slot: 31
+    name: '&a&l/buyclaimblocks <amount>'
+    lore:
+    - '&7Buy more claim blocks with server money'
+    - '&8Claims & Land'
+    clicks:
+      left:
+      - '[message] &7Type it in chat: &e/buyclaimblocks <amount>'
+  cl_trapped:
+    material: IRON_BARS
+    slot: 32
+    name: '&a&l/trapped'
+    lore:
+    - '&7Escape if you are stuck inside a claim'
+    - '&8Claims & Land'
+    clicks:
+      left:
+      - '[player] trapped'
+  cl_abandonclaim:
+    material: BARRIER
+    slot: 33
+    name: '&a&l/abandonclaim'
+    lore:
+    - '&7Delete the claim you stand in (no undo)'
+    - '&8Claims & Land'
+    clicks:
+      left:
+      - '[message] &7Type it in chat: &e/abandonclaim'
+  hdr_gq:
+    material: BELL
+    slot: 34
+    name: '&6&lGuild & Quests'
+    lore:
+    - '&8Command group'
+  gq_ag:
+    material: NETHER_STAR
+    slot: 35
+    name: '&a&l/ag'
+    lore:
+    - '&7Teleport to the Adventurers Guild'
+    - '&8Guild & Quests'
+    clicks:
+      left:
+      - '[openguimenu] teleport_confirm_guild'
+  gq_seals:
+    material: WRITABLE_BOOK
+    slot: 36
+    name: '&a&l/seals'
+    lore:
+    - '&7Road to the Guild: the five seals quest (also /road)'
+    - '&8Guild & Quests'
+    clicks:
+      left:
+      - '[player] seals'
+  gq_em:
+    material: ZOMBIE_HEAD
+    slot: 37
+    name: '&a&l/em'
+    lore:
+    - '&7EliteMobs: your elite level, gear skills and menus'
+    - '&8Guild & Quests'
+    clicks:
+      left:
+      - '[player] em'
+  gq_em_party:
+    material: SHIELD
+    slot: 38
+    name: '&a&l/em party'
+    lore:
+    - '&7Dungeon parties: add create, invite or ready'
+    - '&8Guild & Quests'
+    clicks:
+      left:
+      - '[message] &7Type it in chat: &e/em party'
+  hdr_si:
+    material: BOOK
+    slot: 39
+    name: '&6&lServer Info'
+    lore:
+    - '&8Command group'
+  si_motd:
+    material: OAK_SIGN
+    slot: 40
+    name: '&a&l/motd'
+    lore:
+    - '&7Server info and news'
+    - '&8Server Info'
+    clicks:
+      left:
+      - '[player] motd'
+  si_list:
+    material: PLAYER_HEAD
+    slot: 41
+    name: '&a&l/list'
+    lore:
+    - '&7See who is online right now'
+    - '&8Server Info'
+    clicks:
+      left:
+      - '[player] list'
+  si_msg_player_message:
+    material: FEATHER
+    slot: 42
+    name: '&a&l/msg <player> <message>'
+    lore:
+    - '&7Send a private message (/r replies)'
+    - '&8Server Info'
+    clicks:
+      left:
+      - '[message] &7Type it in chat: &e/msg <player> <message>'
+  si_playermap:
+    material: FILLED_MAP
+    slot: 43
+    name: '&a&l/playermap'
+    lore:
+    - '&7How player maps work and who is on them'
+    - '&8Server Info'
+    clicks:
+      left:
+      - '[player] playermap'
+  si_compass:
+    material: COMPASS
+    slot: 44
+    name: '&a&l/compass'
+    lore:
+    - '&7Get a new server menu compass'
+    - '&8Server Info'
+    clicks:
+      left:
+      - '[player] compass'
+  si_menujoin:
+    material: LEVER
+    slot: 45
+    name: '&a&l/menujoin'
+    lore:
+    - '&7Turn the auto-open menu on or off'
+    - '&8Server Info'
+    clicks:
+      left:
+      - '[player] menujoin'
+  si_servercommands:
+    material: KNOWLEDGE_BOOK
+    slot: 46
+    name: '&a&l/servercommands'
+    lore:
+    - '&7This command list'
+    - '&8Server Info'
+    clicks:
+      left:
+      - '[player] servercommands'
+  si_serverwebsite:
+    material: ENDER_EYE
+    slot: 47
+    name: '&a&l/serverwebsite'
+    lore:
+    - '&7Get the server website address'
+    - '&8Server Info'
+    clicks:
+      left:
+      - '[player] serverwebsite'

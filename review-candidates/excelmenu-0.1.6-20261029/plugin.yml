@@ -1,0 +1,19 @@
+name: ExcelMenu
+version: 0.1.6-timer-map-offline
+main: com.winkreyes.excelmenu.bukkit.ExcelMenu
+api-version: '1.13'
+author: WinkReyesValley
+description: The valley's own menu plugin — one definition per menu renders the Java chest GUI and the Bedrock form; every definition is validated at load (navigation targets must exist) and the boot self-check names every loaded menu. Replaces DeluxeMenus.
+softdepend: [PlaceholderAPI, Vault, Geyser-Spigot, floodgate]
+commands:
+  excelmenu:
+    description: ExcelMenu admin — list loaded menus, open one, reload definitions.
+    usage: /excelmenu list|open <menu> [player]|reload
+  dm:
+    description: DeluxeMenus compatibility alias (open/list/reload) so the fleet's existing "dm open ..." dispatches keep working.
+    usage: /dm list|open <menu> [player]|reload
+permissions:
+  excelmenu.admin:
+    default: op
+
+# ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
