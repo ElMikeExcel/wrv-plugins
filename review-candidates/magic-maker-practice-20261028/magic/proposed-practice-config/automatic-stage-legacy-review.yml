@@ -1,0 +1,85 @@
+# OFFLINE REVIEW ONLY. Disabled by default. One manifest follows actual MagicGate applied stages.
+spell-practice:
+  enabled: false
+  practice-targets: players-and-pets-hostiles
+  migration-epoch: wrv-first-current-v1
+  migration-capacity: 65536
+  issuer-capacity: 8192
+  receipt-capacity: 8192
+  player-capacity: 256
+  spells:
+    heal:
+      policy-id: wrv-useful-v1-heal
+      native-levels: 3
+      accepted-kinds:
+      - DIRECT_HEAL
+      minimum-interval-ms: 0
+      daily-cap: 0
+      receipt-capacity: 8192
+      minimum-seal: 1
+    mend:
+      policy-id: wrv-useful-v1-mend
+      native-levels: 5
+      accepted-kinds:
+      - DIRECT_HEAL
+      minimum-interval-ms: 0
+      daily-cap: 0
+      receipt-capacity: 8192
+      minimum-seal: 1
+    flashheal:
+      policy-id: wrv-useful-v1-flashheal
+      native-levels: 4
+      accepted-kinds:
+      - DIRECT_HEAL
+      minimum-interval-ms: 0
+      daily-cap: 0
+      receipt-capacity: 8192
+      minimum-seal: 1
+    greaterheal:
+      policy-id: wrv-useful-v1-greaterheal
+      native-levels: 3
+      accepted-kinds:
+      - DIRECT_HEAL
+      minimum-interval-ms: 0
+      daily-cap: 0
+      receipt-capacity: 8192
+      minimum-seal: 1
+    cure:
+      policy-id: wrv-useful-v1-cure
+      native-levels: 5
+      accepted-kinds:
+      - DIRECT_CLEANSE
+      minimum-interval-ms: 0
+      daily-cap: 0
+      receipt-capacity: 8192
+      minimum-seal: 1
+    stormshackle:
+      policy-id: wrv-useful-v1-stormshackle
+      native-levels: 4
+      accepted-kinds:
+      - HOSTILE_DAMAGE
+      - HOSTILE_CONTROL
+      minimum-interval-ms: 0
+      daily-cap: 0
+      receipt-capacity: 8192
+      minimum-seal: 1
+    wrv_spark:
+      policy-id: wrv-useful-v1-wrv_spark
+      native-levels: 3
+      accepted-kinds:
+      - HOSTILE_DAMAGE
+      minimum-interval-ms: 0
+      daily-cap: 0
+      receipt-capacity: 8192
+      minimum-seal: 2
+    wrv_frostbite:
+      policy-id: wrv-useful-v1-wrv_frostbite
+      native-levels: 3
+      accepted-kinds:
+      - HOSTILE_DAMAGE
+      - HOSTILE_CONTROL
+      minimum-interval-ms: 0
+      daily-cap: 0
+      receipt-capacity: 8192
+      minimum-seal: 2
+  sp-routing: legacy

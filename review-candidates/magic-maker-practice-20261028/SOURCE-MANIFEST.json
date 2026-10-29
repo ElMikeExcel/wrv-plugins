@@ -1,0 +1,799 @@
+{
+  "source": "approved combined offline review archive 2311",
+  "files": [
+    {
+      "path": "magic/src/wrv/magic/eligibility/ApprovedPracticeCurve.java",
+      "sha256": "e8266d7f80654b015457ac3b6378cb7866a8e7c9b8f37922015e632ba6239336",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/src/wrv/magic/eligibility/BukkitCombatHealthTracker.java",
+      "sha256": "f812aa43cd51f02728be8a79a0a855007880c6227057048348426c9e9fd94275",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/src/wrv/magic/eligibility/CombatDeficitLedger.java",
+      "sha256": "a08b75d7ad627b08586bc49b46c56d9a2c83a61231cf794edd5c29db65ac60bf",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/src/wrv/magic/eligibility/NativeSelfHealFrameProvider.java",
+      "sha256": "fc1207959ef1a9e4edc7f7eb5cb27ea56f6d350ad7ee41d0bcb805dde62a17bb",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/src/wrv/magic/eligibility/SelfHealReceiptGate.java",
+      "sha256": "4e3cf715e1f6b70198b301b047accb08b20b3a76bd1fcda00158a2d8909afb7e",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/src/wrv/magic/eligibility/SourceAwareReceiptSink.java",
+      "sha256": "e4305fcf670b31af1b001d675983a9f23de616bb288d10967aa8320694cf7df5",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/AppliedMagicStage.java",
+      "sha256": "9bcbd641725234ac3de209a671237949bb2af9d5560e4a049531e9d911426e74",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/BedrockForms.java",
+      "sha256": "9ff2e16b679797dd12f00d147c5fc492d96878d6c18b8af82cc372e922ee3c5b",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/CompassGuard.java",
+      "sha256": "664f0ee4b7856f066ed0a06f672a158fa7ae92f41213146552c42252f0eb17d6",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/CurrentPlayerPracticeProviders.java",
+      "sha256": "c7179e838bea3761e7106d22ff14bd22c35f8012d14d81219df27484d64f07a9",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/ExcelWandBars.java",
+      "sha256": "96736a9d48621f783a9a3305d015c939aa2349d37627f6a45a90c464a56ac8e7",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/FirstObservationCoordinator.java",
+      "sha256": "70d26e4f73a125ff765d07da0240b26637664f6e3f9fd13fb3d80f2327c7f40d",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/FlexibleInventoryGuard.java",
+      "sha256": "948c7c4565a1edc4a51f207212aa23e818b4a16430b7f8449533e24aa5c796d1",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/GeyserHoldHook.java",
+      "sha256": "0973336da1fc891e0855dbc83bd50218ca5751c9dbe20355961c3e7ce7330a81",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/GeyserTapHook.java",
+      "sha256": "3fc450110eb09a8c8d7b6bc194a6d0d6712f66e4f92e9b8b76147ea81bca985d",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/LoadoutHook.java",
+      "sha256": "ae28c652feba71ea5600a8c558899559a715e714de2dccb0fbff2f41171bab70",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/MagicHook.java",
+      "sha256": "02e60979cffd4c4dec4d0a02e269186d209fab3d1db94011502d724b96cab0c6",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/ManagedMagicRuntime.java",
+      "sha256": "4dea159de6e6c96957041ab9835c3666e4cdb0eed39ed668dab8b0cc6708c309",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/MigrationTouchGuard.java",
+      "sha256": "d7d0173b8e64ab2aebeaf798787c71faabeba2f1983b703e45a0f243ce3729bd",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/NativePracticeAdmission.java",
+      "sha256": "6d223d81110e4353a1a6032ac0aaac417f5c890b0b9e09b7da49ac6566f13622",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/OwnedPracticeLifecycle.java",
+      "sha256": "b8d5bd9cb68063e3ca802235aac25ceac707565728fc519e9637f72a04624fa1",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/PracticeBootstrap.java",
+      "sha256": "9152f4f1827ff252ccd6dcdfc083bb1977c45ebdf3b20453417bc9377dd2c5e7",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/PracticeBootstrapConfig.java",
+      "sha256": "ae2acd5b07676d149d5d9e41589aca365951263a79b556d010b112cdda9e436a",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/PracticeDisplayBridge.java",
+      "sha256": "9b5a2ffb9e730e449d6eff57a02bd0f9ff6141e6941741ffb536fc7d5d58a4ba",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/PreparedPracticeFactory.java",
+      "sha256": "806a4311e9d41db1ff0d3b2bb7c94f97a225e76f2a908e342e0ef5022ae992b2",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/RankUpHook.java",
+      "sha256": "8b3f4ea1521358a34f1e9460c7bca6bd6b7845f52d045a8ee18cdd7d570a63bc",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/RenderedExitGuard.java",
+      "sha256": "f574c274ca573f262721ab5f87a8cbfa8caa1d92ad24309e6f1d0116fcf5b9f2",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/SharedHistoryAttachment.java",
+      "sha256": "b6c129ca2da709da006cff47f57f06f3d28cb848b541d1313b1a4cf2e1c705ef",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/SourceAwarePracticeBinding.java",
+      "sha256": "11f844010949645f1fe0edbd3159960b065327f532596fa0154ab4c71201c1dd",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/SpellScreen.java",
+      "sha256": "0b38f79460007129ae1d64ee41b15f9d4d8bae7fe993f0c96d2698cac75b6620",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/SpellTipHook.java",
+      "sha256": "a599b01b6d8228d82b253135b9b346a5f48c0512c1e3378f7801c6f7bacab3ef",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/StoredNativeRanks.java",
+      "sha256": "7a13a68363a8f760ee2f52156fd8d2cfbc32c641ad6dea98106535f4963c1d77",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/StyleHook.java",
+      "sha256": "5ff40ddb24b2971622f70cd0fd6fb36bcdd24f0c09c29ba7c1fb7680d8c1bf7b",
+      "modification": "Sanitized personal attribution/example/message or replaced local reference path with explicit environment input; see SANITIZATION.md",
+      "original_sha256": "e057815467a626cd086715a2cf0f99a718dc38ac02209949470bd149f41a56ec"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/TapBarHook.java",
+      "sha256": "785edcac44a1bf5ff83607d8995f5451bb4489ea042541e11ac13cdc78baafc2",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/TeamUsefulTargets.java",
+      "sha256": "74915868a5be79279bf0330087c70ef2ed3e9c2d66866fc12976d07cc4ed9522",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/TipHook.java",
+      "sha256": "2960858157314844b267be48765de0230642eb266d18eff6253979ed2ceda849",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/WandSlotHook.java",
+      "sha256": "87749b25df5eccc84dfde685a06e8a3d3cb89a25330c50f8990ea9f781fd0571",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/ApplyGuard.java",
+      "sha256": "90a07ba0cfca15837efe35faac6655683bffdaa395ed821a8e7bfc35a5d4c833",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/BarLoadout.java",
+      "sha256": "da1edd1c7d93373d23b86f768af6faeb60040f796f2d9767952e60c8e1950cdf",
+      "modification": "Sanitized personal attribution/example/message or replaced local reference path with explicit environment input; see SANITIZATION.md",
+      "original_sha256": "5948dea736fd9551aee497f208a05e4b26ab626c1dec329bae95577030be813b"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/BarText.java",
+      "sha256": "94e155cefd94c2b740e78027b4ec076dcd02db4c587fa81777675e957c513652",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/CompassDedupe.java",
+      "sha256": "16977859450af599c3b90db2ae07cc9c887844cdd6d5ae303da734e575e3a020",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/ControlsText.java",
+      "sha256": "92f48bab7d0d53ba44004f94b7907200faa49ca49b06d0f2f1dcd8fc3f7ceb2c",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/CrouchHoldGate.java",
+      "sha256": "85b9b9aaac48660d34f4e40af1dfced9b7fda88772fce7d1afcc24d06e1d7328",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/Durations.java",
+      "sha256": "bf40b06a5d1fa22509bd533ebad157bb9319f5c36e2d04694741f855978649a1",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/EarnMath.java",
+      "sha256": "73a8e4ab495d56921d93648ea710485f6e3fdc2db164e2855efc375ae778859f",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/EarnedBarGate.java",
+      "sha256": "33480d203b1fa9a1f9941355e97fa26fe21ba4666c9a201d5410467e71b5cb86",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/ExitSlotPolicy.java",
+      "sha256": "ecc66725a564f9bbde18097b8ca3f97074ed4b4e31e904050e318fc2d8ef93cc",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/FlexibleBarLayout.java",
+      "sha256": "4c93cdc9430e7a30c9d779f2a585a394c19f1c28de112c5a05df91b44585dade",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/FlipGate.java",
+      "sha256": "4590227bb4daf40f06662a15a1b5fb250b9155d9e88d0bfc171323092a1fac41",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/LoadoutText.java",
+      "sha256": "2f33b107f7fdf5ec29b270b91e42c55b3bd5049a668d99a1f43e430fa8653d60",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/PageLayout.java",
+      "sha256": "41aeb41678d99a223a308624eeb45dbb328427ea8e2182b5777d99b31d0c225f",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/PracticeDisplay.java",
+      "sha256": "b98fe7f2a4902c4155c81c4486acb307dac78b66e1c68536c67c82397953eca5",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/ProgressGate.java",
+      "sha256": "2560b12831af223f0f0a6de3f94b8d5dc1e1a6fc86c994c9ea81984ad0266be0",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/ProgressText.java",
+      "sha256": "8a51629e6aec44b12b6dd00d203c1fc8c44de7df13bd5269b7aeab5c8c498165",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/RankLadder.java",
+      "sha256": "62cac1728e33d986db5cfb522c9dd858915ab9696f534e2cd47daabde49bf9cb",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/RankText.java",
+      "sha256": "707d7a2771399329f19951b37d336a6b8c42cbc1ef63c6b0ec1ae883d804438e",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/SharedSpAward.java",
+      "sha256": "596926e05f62205589cc98b2ce94e723d66369a7dd9aa88d208f93b5b54f2136",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/SharedSpShadow.java",
+      "sha256": "f27ae2d5b9f54ee9691cc03f914559836c4dd0e2e6089f0353ca383eca2e3c4a",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/SpellEffects.java",
+      "sha256": "97bff8d3009526b6252e8e07f117882ebd00ce16e9e8fccbfc97ebaa463186ba",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/SpellFacts.java",
+      "sha256": "fd86976252ac48bc6546e694031abb65767f97097339bb1518dca82ed35811e9",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/SpellInfoText.java",
+      "sha256": "659bc9bab43838ec28e3c98738d6357023792c4c559d10597404e4336408eaaf",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/SpellTip.java",
+      "sha256": "2892fc590024996299c58d4f597b9c6b7e871669ebb314375f8b910f5dfd15cd",
+      "modification": "Sanitized personal attribution/example/message or replaced local reference path with explicit environment input; see SANITIZATION.md",
+      "original_sha256": "651b542bd313e016c266374df0d8541642a7d3194be1453c589fc5d4f5a8ee7b"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/SpellbookGroups.java",
+      "sha256": "fd8aa3da1d01d3b29b8a6f13bece87c4d1b7bfc61eac9a5f34db1a409308192f",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/SpellbookText.java",
+      "sha256": "bbe293ee5b39d87e6731dcec7c23bf877105b173b824aff39fff8dcf288a8dd1",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/StylePrefs.java",
+      "sha256": "b6d84304089c97a303d1a4c701080a0284d765e36ff553351c2dc4f07f406d19",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/StyleProfile.java",
+      "sha256": "50067b62a494b5d86679c4e56d7e2de4d21f920a51a769d2984f9f725583e805",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/TipGate.java",
+      "sha256": "3a63e7d976a36308735ef8f36de34a9481d398409d669c382c5d338920f6f749",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/WandSlotPlan.java",
+      "sha256": "6fc6b2d50b7c139afee591e0b129ec68b4463f5030c1ced827b71b8c526b4a3f",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/com/winkreyes/excelwandbars/core/WandStyle.java",
+      "sha256": "21b0f8ef15aaaef8e99d8050a899745ced71e8b0f14403b8ab6fbb2679a097e9",
+      "modification": "Sanitized personal attribution/example/message or replaced local reference path with explicit environment input; see SANITIZATION.md",
+      "original_sha256": "d303ee691a6e0c0b8061482aa8d9d4797f3eb426ce0e20254a4c3599af9acb19"
+    },
+    {
+      "path": "magic/coordinator/src/wrv/magic/evidence/EvidenceFingerprint.java",
+      "sha256": "2215b7550e8e11b11caa4b96e27f194a3bcc7fcc8d3d1d8c70575e84203f1c12",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/wrv/magic/evidence/IssuedUsefulSinkV2.java",
+      "sha256": "d52c140e97d995343b356c755917208f595babb90ae22e644d626875e6d826aa",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/wrv/magic/evidence/PracticeConsumerAckV2.java",
+      "sha256": "e59227f62a95629dbd94aac17c9e3fe8f431cb11a825068f35f086873be6f421",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/wrv/magic/retention/AuthenticatedWindow.java",
+      "sha256": "065a38478e859e685fbcf9e93d08803214dcb55f2c1f650371a7f6b24b24b9cb",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/wrv/magic/retention/BoundedPractice.java",
+      "sha256": "f76ec7e235648fd39333c9b7a602b332a02ed08e1468003680e4645a9ae36ab5",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/wrv/sp/route/NativeCastRouteAdapter.java",
+      "sha256": "4db267733b4e09fcb3754550ac0ea983dab6994d66fcc2e0aa08aec59245d520",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/coordinator/src/wrv/sp/route/SingleSpRoute.java",
+      "sha256": "411bd735948b1ab868efa451b1c538c63f0159e0e055cb00e01f3e8f3557ae86",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/first-observation-core/src/com/winkreyes/excelwandbars/FirstObservationFloor.java",
+      "sha256": "de9451290dd88cadcf9ca38853b70a449a2f2fa4fcad90ef6000384a1effd1d9",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/native-source/src/wrv/magic/evidence/ConsumerFanout.java",
+      "sha256": "14af1ea04ce6ce224f1cb2641a214b4b0ca51b112536bdbacb1492e4e1119316",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/native-source/src/wrv/magic/evidence/EffectObserver.java",
+      "sha256": "a04c5870586f1761b6751e88bf7e3a3880731b46f37dd541af03ea46fd863d37",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/native-source/src/wrv/magic/evidence/HealthTransitionBridge.java",
+      "sha256": "4199d6b5e8c8d1632dfc5f4df353908104d5e4a8c92d93f38d35e048b2fe57d7",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/native-source/src/wrv/magic/evidence/SharedHistoryProvider.java",
+      "sha256": "fc24460cbb8995259876501e4640bf2afbc9b7380ef69402a8a68bcdd9a8a06b",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/native-source/src/wrv/magic/evidence/StrictActionGraph.java",
+      "sha256": "0c2e1a27820ddc6dd8ae5454e5971d3f68228013a0e4a4b1252e651b404547c4",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/native-source/src/wrv/magic/evidence/WandLoreBridge.java",
+      "sha256": "d39d5b560c452b1f5cfd87b33acb9af7bcf699026ab1be69c1755736aa4b691d",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/native-source/src/wrv/magic/level/LearnedHooks.java",
+      "sha256": "393c39c979cb389be1fd43580e6f7167e2bf1d188a65492c22449967093f4608",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/native-source/src/wrv/magic/level/LearnedLevelResolver.java",
+      "sha256": "c481dc350409ee76f6d91eef13a2840eb5c8430165276ce29b861d6e58fa9a13",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/native-source/src/wrv/magic/level/OriginalWandContext.java",
+      "sha256": "79336d6d5f5725dc0f84ec2d207d71097e0d442db31da7fbb28c3024ac3930ad",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/native-source/src/wrv/magic/level/RawWandLoadBridge.java",
+      "sha256": "9e256d3c5cc8db9f0d001cc2763466e33a4dfd5f7cd3d84cb027c3eeb2db891a",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/native-source/tools/PatchLearnedObserver.java",
+      "sha256": "fbe7c3894961022d6f604c4100dc7712c930d02a84253f31d18e1fdc83d0e8b6",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/native-source/build.py",
+      "sha256": "28c330aab53a7bb774bc1d78a177e2909e2f57cd262b27b322efea75fdfc8073",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/Accomplishments.java",
+      "sha256": "d37fade29c4f63fa0fb377694363890ddab1ec97d2fac1ce14000a4ad0fe51cd",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/AcquisitionHooks.java",
+      "sha256": "29bc8d6f80d26c2ae2f0ffde077c00d1c7febac82a319db049d6d1ccaf9d0310",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/Bedrock.java",
+      "sha256": "c8760968a149b6e21bf89f7cfb91a931caa8e396119a3d9f740d605a83b7d8fb",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/CraftHooks.java",
+      "sha256": "8663ee6a8985e50aeca8aade8d235ccb2c98bf3e979cb040bf8559edc6878f19",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/ExcelMakersMark.java",
+      "sha256": "e6702a28f95f4a2a6d1105f75d6edd1a69e4d42d2e2d39041530f6171bf5b072",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/FarmCredit.java",
+      "sha256": "fdaf96174b94ac5e5dfa18f83499c1a8c27e65c003512d4ab4988d0305b5bb56",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/HistoryOnlyMagicRegistration.java",
+      "sha256": "2d9ae4662d5112f37d7b6fe679af0a6035fe890977d4f24ea1548f5e2dd1cff5",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/HistoryRecoveryService.java",
+      "sha256": "3eea97961541e50a1f0506e9718ef55ab545163496f14c7288a2cbb2d357d38e",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/IdentityProvisioningHooks.java",
+      "sha256": "06361810d43b14c4a4ed395e1f7368c8a8a112d44f87609085f667f8855a7cae",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/MagicPhysicalItems.java",
+      "sha256": "c77d05fe52ecdf32f455ac2891021fd01b98e8a5e655744797b223d169b95a85",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/MakerMagicBridge.java",
+      "sha256": "a104953b8bd19e2ae537dfb94c10d57dae39ccd3a97e4c3140fd61fbaca9db4f",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/Marks.java",
+      "sha256": "b74cc02ffa44290c8c20f174978092e6690662a9e954c3eef7c177e5e49d5538",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/ObservedGearMergeHooks.java",
+      "sha256": "ed26d9ca8325c48b826f513040d2841cc1de0979f21905aa7d3207068f7a7049",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/OrdinaryHistoryRecorder.java",
+      "sha256": "4475f5e2c51df66f0bf47be5f9c4edcc2657544b324982c50fc1b96bee332ba1",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/OwnedSlotIdentity.java",
+      "sha256": "47dd0dead3ffe2d86f79eb305dac7171ccb2221e2b155a1e02a8b83fb755a7b0",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/PapiHook.java",
+      "sha256": "5d7c417576bfff2d07fdffd0580ac9122dd05bfb4bd2ec58095c16c9f4e7ac79",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/Prefs.java",
+      "sha256": "99264f46c098ee838072650726947469cf5214ec8607f6a254c5a4f5bcbf042d",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/SharedHistoryMagicRegistration.java",
+      "sha256": "c7fb380013b6f90d8a3c597bfddd5f277dd899407eba8eebb40df6a2e471dc4c",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/StatsHooks.java",
+      "sha256": "c43427d3f0b3f70d25f97a3dbf2b1e902dec9da8063bb7e045b6836b89074d81",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/Tips.java",
+      "sha256": "6783ebe1bd24d77e021a37f8c89932106749c3b2c68b54f9d938e46a64c6081b",
+      "modification": "Sanitized personal attribution/example/message or replaced local reference path with explicit environment input; see SANITIZATION.md",
+      "original_sha256": "cec4c41b8865c34dba417cfd973ed42bb7ecf42330d0a69d53e3661df6ce9cfc"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/core/Gear.java",
+      "sha256": "ce5d4dda66eae9a2462ef51c5d4391d4ce3ceb3d2d0e1f9e0aa272a9dfa5ba24",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/core/KillCredit.java",
+      "sha256": "2b3b5ab42e5b6df437f77cc59e1ae8b628a6878c2344d714a99779e8b21a85ec",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/core/LoreModel.java",
+      "sha256": "22be2265c519ee46bb4a1d00d2df605196a740ce04c9f6b491cb7e376a5815bc",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/core/MilestoneColors.java",
+      "sha256": "00cf63e9ba5139905a34a23736d8a01d095643dcb98e9b104d5e649b6f415937",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/core/NameClean.java",
+      "sha256": "fbe9803ca3dda59bc8e8158b60a3876afba8984dfd2a0cfdf98e031097cb2f1e",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/core/ProjectileIdentity.java",
+      "sha256": "9a4d77f31445f343759f69ea39c4acc8515ccb4eb0302dc418870473bc75d261",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/core/TransferEvidence.java",
+      "sha256": "9a39e0b40d9954a1fd496ca6b5f3d5e6eb42c36acdce37f2f86b9d5bbdf2f6f2",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/core/Trophies.java",
+      "sha256": "2afc29474f73b61759c96563b2c0b265fbe9b9e33823b721373cc4e143d4e447",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/history/HistoryItemTokens.java",
+      "sha256": "32eebac6810da670200c0609b0da55ba64597cd6f9a432c48a075dde745f2b9b",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/history/HistoryLedger.java",
+      "sha256": "48ea7b5e7c1b7f92a9880782f7dd189509f918a49abecdb57e5b299474fd1f90",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/history/HistoryMergeTransaction.java",
+      "sha256": "79d5ccc7862a17e191cb93e5285b0c51fffca05bb09d9fbfe3e4a082436d6357",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/history/HistorySlotTransaction.java",
+      "sha256": "8dafe391deed757d60a45d87a217f899bbf9fd3f681ec5f748cd17a5f05c3b10",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/history/HistoryView.java",
+      "sha256": "56518f7d024dcc95706ad46a0562b1b6c6279115268831de519cde0514c68171",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/history/MergeEvidence.java",
+      "sha256": "43b7ef9e138f46b056be092ad7420d3ac74ce6c99923a51eec26a803d3fad52b",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/history/PendingRecovery.java",
+      "sha256": "bd66c806bb6ff2cf88b21b88caba890530bdb553e24cad4e13b34a3254725280",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/history/RecoveryContext.java",
+      "sha256": "e00263e1aea066eab1a07c594f7fd40393ce941853915af3f64d7053a90a54bd",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/com/winkreyes/makersmark/history/StrictIngress.java",
+      "sha256": "ee3a339c265331bd08beedc7fc768c753a9b1dc7525c2b8254945c22a0d571c5",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/wrv/makersmark/magic/FreshMagicLore.java",
+      "sha256": "ab042e9d6f50f559bf6f9c4c826a7d231c4ead4e7769865e6fa93431dfa5292e",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/wrv/makersmark/magic/MagicBossContributors.java",
+      "sha256": "0e169064fb4a197e42531cbcbe5afd6a54b2e81fd75f70f8fcf05a325866b2a7",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/src/wrv/makersmark/magic/MagicDeathJoin.java",
+      "sha256": "c7ceabf40ef429e254bf007bf8fae369100b6cde180d92232d69c2ec114929b7",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/config.yml",
+      "sha256": "5907100099e4d9e016c16370aaa37abcf0f1661975e5302db8f53b1a6ae430d8",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/plugin.yml",
+      "sha256": "fc4174f2f433a60a58ff10450dae28d3ceada7c730365726c807dc2c010b0ffc",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/LICENSE",
+      "sha256": "6e023bf12e74dcc4d9e3fd614863e7560d32cbbaec6445dff15e08aa34aaca27",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/build.sh",
+      "sha256": "052c17555f3473e1c5f4f9f241842f34ab3c2e58aad3988a774289b578743525",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/build-offline.sh",
+      "sha256": "67d7b0b58dbb454f7b08a81fab8d3c40e1290d88067a7b24ebdd949448f174e0",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/TestRunner.java",
+      "sha256": "6192b7121f62b83efc034953240b5da43b7931a4f34bc87c150cfb61ac84c599",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/tests/AccomplishmentsTest.java",
+      "sha256": "bd29e539f453adab3f4c93fee99d492fe236b2cc0a82213dce403cc8e6b995dc",
+      "modification": "Sanitized personal attribution/example/message or replaced local reference path with explicit environment input; see SANITIZATION.md",
+      "original_sha256": "498e1687fd0da796d91c0475d79a0abf0f68954844c3775806f8cb6d02ec6229"
+    },
+    {
+      "path": "maker/source/tests/com/winkreyes/makersmark/ColorCreditTest.java",
+      "sha256": "6ffe9e42abaa85cd809fb8e719221d90efb4a374ce0e992c901b27118cc85a37",
+      "modification": "Sanitized personal attribution/example/message or replaced local reference path with explicit environment input; see SANITIZATION.md",
+      "original_sha256": "9bd96b93271c490fc92c432ea5c9e31dbd55482470a1f0a00f15cbe2d7b1a546"
+    },
+    {
+      "path": "maker/source/tests/com/winkreyes/makersmark/FinderDataTest.java",
+      "sha256": "7a3739aed132530555108cf1b452d2c7f7c76f03103f46e91f601617e1ab53ca",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/tests/com/winkreyes/makersmark/core/CoreTest.java",
+      "sha256": "5aaa235efd72d382df4a477e1867db6eb8af6548fc84aa6f7e7922f2c0dbaca3",
+      "modification": "Sanitized personal attribution/example/message or replaced local reference path with explicit environment input; see SANITIZATION.md",
+      "original_sha256": "0eca97e6f16178715d59cdea7a9bf4a052502ed25797043ab030430b6b02ec8a"
+    },
+    {
+      "path": "maker/source/tests/com/winkreyes/makersmark/core/MilestoneColorsTest.java",
+      "sha256": "4413dcbbedb845888303e6b1b060a77b988081396ff0cbacf968b509598b230b",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "maker/source/tests/com/winkreyes/makersmark/core/TransferEvidenceTest.java",
+      "sha256": "2f6a85ef189c1632a6b5208b2ad7a8d22b2178b7f41b2689ed89bad6e2fc2bca",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/proposed-practice-config/automatic-stage-legacy-review.yml",
+      "sha256": "59c1d5193567a804ec4ff9ac62362dd5832f7150218a280b22f2da5b47a15cde",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "early-magic/balance.json",
+      "sha256": "e627369ec72d7e4d32101a7ad7e513e92321ee933241358e426b057b9b17bd7b",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "early-magic/generate.py",
+      "sha256": "a729956bf8bb75b5b7cb6335f0478ca942b87497bcb90c25a5acd60d0def6ee5",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "early-magic/validate.py",
+      "sha256": "3a83b2ab00ec2f083807f87da80f8d561921744073b4857a314630bfe346d5b6",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "early-magic/test_validate.py",
+      "sha256": "7433c83b0ef40859ecc05bba664997f3604af147239fbabd0b4dd3baa25eef0a",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "early-magic/test_generate.py",
+      "sha256": "3d311c757434dbebd6bfc4a5615afc9e15abe68dee38e557221eb41de9d9dec1",
+      "modification": "Sanitized personal attribution/example/message or replaced local reference path with explicit environment input; see SANITIZATION.md",
+      "original_sha256": "ed29e8ce035b4d2b0367c847cb8ca563cbbb4ed6afd137fb174d93f30755e24b"
+    },
+    {
+      "path": "early-magic/native-review-packet-r2/definitions.yml",
+      "sha256": "86dd86411c5b047ec377f77cae57de307ee68aead15bffe6f1682da59a7f4692",
+      "modification": "none; byte-identical approved archive source"
+    },
+    {
+      "path": "magic/native-source/dependencies.json",
+      "sha256": "88dc8f9c8c951cc80e762330178044ba0519d9369ed466ec1c1441d99e3d02a8",
+      "modification": "none; exact reviewed native build source, added to correct archive omission"
+    },
+    {
+      "path": "magic/native-source/test/CallbackAuthorityTest.java",
+      "sha256": "5aa2db6f1fcd01237f52cbe772329f13be974ad5b32c4888441dcad5ae6f431f",
+      "modification": "none; exact reviewed native build source, added to correct archive omission"
+    },
+    {
+      "path": "magic/native-source/test/ContextLookupTest.java",
+      "sha256": "b895cbb3f39f86ba7bf146277e443ef7e4703907da826f9cac20781cecb876b8",
+      "modification": "none; exact reviewed native build source, added to correct archive omission"
+    },
+    {
+      "path": "magic/native-source/test/InitialFenceTest.java",
+      "sha256": "339a925589b6133b8bb43f8334e729d566fd2d27890a4a30fd5e48782f8af268",
+      "modification": "none; exact reviewed native build source, added to correct archive omission"
+    },
+    {
+      "path": "magic/native-source/test/LearnedLinkageTest.java",
+      "sha256": "381985db45bc4cd149a507ecb0d8f2e66e905b5d1fbe06a49f432003065307d7",
+      "modification": "none; exact reviewed native build source, added to correct archive omission"
+    },
+    {
+      "path": "magic/native-source/test/LearnedRetirementTest.java",
+      "sha256": "68a145c37cdc167d3d968479a2c49cc8959e8610024f779106ac571b8adc00f0",
+      "modification": "none; exact reviewed native build source, added to correct archive omission"
+    },
+    {
+      "path": "magic/native-source/test/LoreBridgeTest.java",
+      "sha256": "5a5abfdee8f5988c72c516f174f860c91613ffdd43221adfef883811bb197ffc",
+      "modification": "none; exact reviewed native build source, added to correct archive omission"
+    },
+    {
+      "path": "magic/native-source/test/RawWandLoadTest.java",
+      "sha256": "4fb0d317a9ce6f4cc9297cbb689d54485a9c6b3fa6eda5fc8b880fa8f6fec7e2",
+      "modification": "none; exact reviewed native build source, added to correct archive omission"
+    },
+    {
+      "path": "maker/source/CHANGELOG.md",
+      "sha256": "9301271e5d409f4422bf970100c7c0acc645be0d6768cf29708e90926543a76e",
+      "modification": "none; original packaged resource required by build wrapper, export omission corrected"
+    }
+  ]
+}
