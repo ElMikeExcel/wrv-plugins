@@ -1,0 +1,424 @@
+{
+  "current_source_comparison": [
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/ActionDispatcher.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/BedrockMenus.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/BukkitContext.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/ConfirmHolder.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/ExcelMenu.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/MenuCommands.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/MenuHolder.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/MenuListener.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/MenuService.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/Placeholders.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/ActionParser.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/BedrockDetail.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/DefinitionLoader.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/JavaConfirm.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/MenuDef.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/MenuValidator.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/RequirementEngine.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/Selector.java",
+      "frozen_matches_current": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/Text.java",
+      "frozen_matches_current": true
+    }
+  ],
+  "files": [
+    {
+      "path": "timer-harness/com/winkreyes/excelmenu/bukkit/MenuHolder.java",
+      "original_sha256": "9b90d9e8ff58d97b1d7594fc6cc42876c0c64b17879f3433d4c8b601f7489b5b",
+      "sha256": "9b90d9e8ff58d97b1d7594fc6cc42876c0c64b17879f3433d4c8b601f7489b5b",
+      "changed": false
+    },
+    {
+      "path": "timer-harness/com/winkreyes/excelmenu/bukkit/RefreshHarness.java",
+      "original_sha256": "c8a079183fb9e4c1426593cad1dbf10a74ea469c804fd8294d4f7610d9da61d3",
+      "sha256": "5898ee250adda9fbbdc4770ccc8f7dd68a31b74f94d7726992130bcba7a936e0",
+      "changed": true
+    },
+    {
+      "path": "timer-harness/com/winkreyes/excelmenu/core/MenuDef.java",
+      "original_sha256": "9e361153cbe379a6a07d3d0d472d319e3ee4377966c43944127e09a2fa42533a",
+      "sha256": "f8cab4b97faf7d8f30723c9b845a8f961bb04a036bcaf06bdec0122c01d0b7da",
+      "changed": true
+    },
+    {
+      "path": "timer-harness/org/bukkit/inventory/Inventory.java",
+      "original_sha256": "05d4c58faa7b6d9467290f134a369dd8f690f431ef7d1cd4e812398a1c89829a",
+      "sha256": "1ff6a81a4da8bc83dee9d6b342df2b2e4638983afa3e69a21f9717af995a3996",
+      "changed": true
+    },
+    {
+      "path": "timer-harness/org/bukkit/inventory/InventoryHolder.java",
+      "original_sha256": "d7b93f862b7d264760b90d5de6c5a6d60cdc6a8b015f5b661d9704f1a3e8f17d",
+      "sha256": "f2a3fa3e03215c2e253c6c5c8443b9b254c553e0eef809ad97467c1114d0b9c3",
+      "changed": true
+    },
+    {
+      "path": "FORMAT.md",
+      "original_sha256": "c9965385c6b8a30999b4c85ae24ca1f8f2b6143917d9a43668fc9b32a9442065",
+      "sha256": "c9965385c6b8a30999b4c85ae24ca1f8f2b6143917d9a43668fc9b32a9442065",
+      "changed": false
+    },
+    {
+      "path": "config.yml",
+      "original_sha256": "aa3a62c10ca6d3d07077beb9cd0781c8c65a22721164cfeddcd84f9a254f9e02",
+      "sha256": "aa3a62c10ca6d3d07077beb9cd0781c8c65a22721164cfeddcd84f9a254f9e02",
+      "changed": false
+    },
+    {
+      "path": "menus/basics_menu.yml",
+      "original_sha256": "26b766ed347e7b7b2d7d2a49b988b89e10e4748031b78e14a28fb39f0b08050b",
+      "sha256": "2b10f9aafb4ef2ccfb0f9585287ff01d9a5e5d741ebc3e0c381235e79af2ef92",
+      "changed": true
+    },
+    {
+      "path": "menus/commands_menu.yml",
+      "original_sha256": "c74b21301768ebc642b24570b7ba6fb9f302e2b62f09587c65239339064cca69",
+      "sha256": "626eeb1045852b1dec6c5a3f5826f0020e6cfd20c33ec0e0440481f4202e3791",
+      "changed": true
+    },
+    {
+      "path": "menus/server_menu.yml",
+      "original_sha256": "2e86584fb6e5dec059cc7f6fda4be10d01491c368afdc6438f027bc86f5d6373",
+      "sha256": "b161519d83091ec6e286c9eb7d1b860cfb5ccc3ff968e72ff2e9fb1abab0c423",
+      "changed": true
+    },
+    {
+      "path": "menus/skills_perks.yml",
+      "original_sha256": "5df3f0a3fbe5b73ca69047c387cc1e293ce3882a2705d4cb199b6aee591e4c72",
+      "sha256": "5b1e97d2ee1180e9a433d33ce051b8667ddd5822cd940838ea4d86c96e36deb2",
+      "changed": true
+    },
+    {
+      "path": "menus/spawnshop.yml",
+      "original_sha256": "e0d5176f5826f896c9ff5728bf995e7d86711237dd7fe59c09c4f981ded61afd",
+      "sha256": "3c0518676162f3908d9718794beb2181849e40daa839bfde7475b06e2ead5dd1",
+      "changed": true
+    },
+    {
+      "path": "menus/spawnshop_building.yml",
+      "original_sha256": "789bba263d4f38695610d45ff4351204f3cf1ca82ab2985b6a2a160aa771c71a",
+      "sha256": "39c9dda6e8dbeb7b7e2d0a0cd9ea72c18e2638b994cda14f1743297ca5909b42",
+      "changed": true
+    },
+    {
+      "path": "menus/spawnshop_cosmetics_colors.yml",
+      "original_sha256": "5d19d52ccafc2203b89aa0db923dd4571ff13c5450993ded4de56facb580d495",
+      "sha256": "5d19d52ccafc2203b89aa0db923dd4571ff13c5450993ded4de56facb580d495",
+      "changed": false
+    },
+    {
+      "path": "menus/spawnshop_cosmetics_sets.yml",
+      "original_sha256": "f51abab233721eeba92b3227e1dd997e290bfc6f2dd4f0dc1abbf8b71bdcbdf8",
+      "sha256": "27b75da02957c293dcadba295cb6622777e8ee30f40aba75661ac16957e66fd2",
+      "changed": true
+    },
+    {
+      "path": "menus/spawnshop_enchanting.yml",
+      "original_sha256": "9a912ecafaccad14d9c2a4a647df149a303caebb000651088ae341be9a4b00f5",
+      "sha256": "8efe526019ad5cb2a35ccb6e11a3d7b6c6a530e80ba72971a297e7443b3d402a",
+      "changed": true
+    },
+    {
+      "path": "menus/spawnshop_food.yml",
+      "original_sha256": "6d4553c68790dad515cd60b51d3aa9e819304145badef4f21e86e4ff18ec0a3d",
+      "sha256": "e9efa4e8263e32a8945022de0d2d75e06ce1cef353ee0c12352d5f85bc37e4b2",
+      "changed": true
+    },
+    {
+      "path": "menus/spawnshop_potions_protection.yml",
+      "original_sha256": "d9cdb28e4d933e2d6c755f9bd3fbd0b171650ffedaaab836a1d84232cd6fe06c",
+      "sha256": "fa5fb4ed41abc4cbcf70ab89b622fc0808ec5e374cc572cf1b351253646373da",
+      "changed": true
+    },
+    {
+      "path": "menus/spawnshop_safe_blocks.yml",
+      "original_sha256": "3825b4f87e215ce19eafd4ac5c5e3bbc4e86d80adda4febd1789d8268a04eb8f",
+      "sha256": "3825b4f87e215ce19eafd4ac5c5e3bbc4e86d80adda4febd1789d8268a04eb8f",
+      "changed": false
+    },
+    {
+      "path": "menus/spawnshop_travel_animals.yml",
+      "original_sha256": "ac45cc8cc4872571186b81911b88ec931d261077996e516a67b0bb561d248627",
+      "sha256": "942a5c092885370b2a44dabbbe2fdf42378b67d3385340d1ab92ede54f6abb3a",
+      "changed": true
+    },
+    {
+      "path": "menus/teleport_confirm_guild.yml",
+      "original_sha256": "7304d95cfde645f071bac48fd86f775115d7a791f2224bdf58d56da9c9966be1",
+      "sha256": "d2de1b6d85ba023ee32bb8c1e1900346677f8e355b11e6ef416ff58907135e60",
+      "changed": true
+    },
+    {
+      "path": "menus/teleport_confirm_home.yml",
+      "original_sha256": "ae9f9a1d4e4ecf5ce33480e7d4e9d7f6d5e7afed3feb02ad69d1d7e79ba54206",
+      "sha256": "21fdfbcb6ef5d44a5168981941ea3cf25cebadbb1305c4823dc0df96d7ba024c",
+      "changed": true
+    },
+    {
+      "path": "menus/teleport_confirm_spawn.yml",
+      "original_sha256": "1999a7624d22f6af7728431c79fc8ebbb0a2a85db79e97e619e99d5855dd16d1",
+      "sha256": "424e9fb90d7c0617fbf6c2fea7253ec895ff2533370c4f67a52ccc63b6e06c30",
+      "changed": true
+    },
+    {
+      "path": "menus/teleport_confirm_spawncmd.yml",
+      "original_sha256": "4dc97cd64a15a03719125f607d25580c19f813c6108abc487b56af25a9f60b09",
+      "sha256": "7561512da590f08781085ad2a33df392f812e5219dd3b945228e7d576e1d7782",
+      "changed": true
+    },
+    {
+      "path": "plugin.yml",
+      "original_sha256": "59151d34bc4551408fefdd4b5d3c7c3416a33208de2a84f9da36d9e565b8d523",
+      "sha256": "59151d34bc4551408fefdd4b5d3c7c3416a33208de2a84f9da36d9e565b8d523",
+      "changed": false
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/ActionDispatcher.java",
+      "original_sha256": "07ec93c4653e2079bda8ab9c4aa4a67e97f4b861aa9cb16bfeebdecc45690eae",
+      "sha256": "9190d0274252390b0dbdca0d72dcff05ea571b494e37e6ef29fc2c7afe0e226a",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/BedrockMenus.java",
+      "original_sha256": "cc8761c9714eb1659bc0dd281b37345dacb88b4653f9f3b90b308a4a53a075fb",
+      "sha256": "95ce08b66d850aa9ccd332c438e6db77a7ec8fa300debea488f5d0531f017736",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/BukkitContext.java",
+      "original_sha256": "071f66f138119b9c80a17a9b36302aafcb85cb44bdcd8d57f939b829fe008a78",
+      "sha256": "8494e2f4855309804fc0f8389751ec40030c7f4da1c9f3ce57d382120fda77f9",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/ConfirmHolder.java",
+      "original_sha256": "8657649ab740a37758db99e08b17198bb2eec59a38c1a4debe8963445f6fbc9b",
+      "sha256": "7a935e08e93f333b6d5c93bd497656184a7255338faf9cb49b4963966c390e82",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/ExcelMenu.java",
+      "original_sha256": "0ce32b61005382b1f74cc50a0cb5ccf18f36828d62ea6d78f425a47824beb738",
+      "sha256": "c7e464874961738ac7957875ef47ce8ddfa17437a4f13a0d39cce064eac8a6b5",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/MenuCommands.java",
+      "original_sha256": "61956c2aaacc018f357cc81617c9b9bc60f41386eaca7f655fec72dfdeebf003",
+      "sha256": "9500aa564575faac3d6c3c33113549f9912cec7380e002906f2a7fe226f7fc31",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/MenuHolder.java",
+      "original_sha256": "9b90d9e8ff58d97b1d7594fc6cc42876c0c64b17879f3433d4c8b601f7489b5b",
+      "sha256": "9b90d9e8ff58d97b1d7594fc6cc42876c0c64b17879f3433d4c8b601f7489b5b",
+      "changed": false
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/MenuListener.java",
+      "original_sha256": "8df9829d1005c5ba07a2d61d94f3ba994f8a253c3ff92ebbea0bb3b88813a1b0",
+      "sha256": "5e5e714ff8af651b63c4b2163bf575dc98563bdf33992ce467f7b79b735555ba",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/MenuService.java",
+      "original_sha256": "5d99d4707f56685e2fe875f168bdbd7d4c94022c3d81890c1b63658903557b6e",
+      "sha256": "3d0245c7fb5006f8f2714fc0c99eb126cf7d6ad201b5614243ddff8d5a6c9f6c",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/bukkit/Placeholders.java",
+      "original_sha256": "679fd23096e7272c85d77f6bdf85cefddf0379921f858326f4e7d66c48a84821",
+      "sha256": "679fd23096e7272c85d77f6bdf85cefddf0379921f858326f4e7d66c48a84821",
+      "changed": false
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/ActionParser.java",
+      "original_sha256": "eb879872c6de8504e1f9343a16edd097058a1a024f5e16c3a26712a9712a6db6",
+      "sha256": "ada44b634768369a8b837a150af1f97789cf6db55dbdfcf82a4c2f9faa9be585",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/BedrockDetail.java",
+      "original_sha256": "76f622ddf881c141c583b0af8a801dfd0d02306ee65a2d3082d391795fc2d176",
+      "sha256": "e9d05a0e348867b307a4eb6b0f6ee3d9767ad52075978d844afa79a3204ebc57",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/DefinitionLoader.java",
+      "original_sha256": "20cb891c2fa42b3c0a670ae47063837cc7b236c87643bf5eda350f8fb03e5cf3",
+      "sha256": "6150b310cb0fe3a57fef55a28e818276c97e02c775370b780bd74b07b4713278",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/JavaConfirm.java",
+      "original_sha256": "e8eef9cbd8434517cdf0751bc1a82111899c0daa21bdf830caec15da69ae8ac4",
+      "sha256": "d4721ad298ed9cf0231a6de3594f65dd896f51c9a6003e9830ca74f7fe868cde",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/MenuDef.java",
+      "original_sha256": "8ecf7223d693b79f101fcf05a79b5a4f6857a966fc2dce430d75d3ce196a5aa9",
+      "sha256": "8ecf7223d693b79f101fcf05a79b5a4f6857a966fc2dce430d75d3ce196a5aa9",
+      "changed": false
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/MenuValidator.java",
+      "original_sha256": "e995c899e61cea754d252cf38a8d320837cbab96e764b1dffb97fa6bd7620e5e",
+      "sha256": "e3861f26d8e6a49ea93953f3aa6cacefd63dca349c246e2a295172936d19c857",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/RequirementEngine.java",
+      "original_sha256": "eea40d41fdb6a454168339f44bcbce8eccd8f458ceac860f521386afaefba136",
+      "sha256": "a0db0ce5d009aedc57e7a1bffedf4efffbf5343ec7e98a0c87d473a583547cb5",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/Selector.java",
+      "original_sha256": "df0053bf4a21ce8c829082e4935cccf802c731f2ef795a4d6f02489fbf19eeda",
+      "sha256": "c72e194cd2c3462761011e1b0e076bee4f95dac21db7edce15128b53fa2c22ae",
+      "changed": true
+    },
+    {
+      "path": "src/com/winkreyes/excelmenu/core/Text.java",
+      "original_sha256": "bd770f2083c663f08a9fb025e26a0e5db8851cd93703acfd3cb7a31f69a41129",
+      "sha256": "fb36deb4d540d017741cb8d6f1d70ea3a5782e2202edbdc4c2b4e3c464d0ccda",
+      "changed": true
+    },
+    {
+      "path": "tests/Check.java",
+      "original_sha256": "758ee83e54383e9d8a3b24cff77ab5b518a8fc97d2663a6e9490cce03649ca9c",
+      "sha256": "a54f7eb76e3597b215c8f7cdfe8b28dc05b2876bcfc1084c97fac181b8b96984",
+      "changed": true
+    },
+    {
+      "path": "tests/MenuFixtures.java",
+      "original_sha256": "a1a922e5ea7eada40ca6eb5c29cb9f92fa63bc09e1cb7f68e5c2b21540760c4f",
+      "sha256": "a1a082ae86e1d1d6125ade37f58127a571372d5786cf43b55a5ccf733d406e19",
+      "changed": true
+    },
+    {
+      "path": "tests/TestActions.java",
+      "original_sha256": "a4eccc9862163c84cdd84572ff6f39157adcd331235cf1571d1d8f8227a82717",
+      "sha256": "c0ac2b33ae7fcffb5cf2d1f900fc05712dfbe443b74bafbd8226ec4e53dd1a7a",
+      "changed": true
+    },
+    {
+      "path": "tests/TestBedrockRender.java",
+      "original_sha256": "7f794bfa001941ea27e59bdaa2f58556d2a459f359effabc5f0afef054fbb6f0",
+      "sha256": "8cd743d98959cddada4c3bdd5600fcab0807f7cff508a837ce7485278f3bd8fd",
+      "changed": true
+    },
+    {
+      "path": "tests/TestBedrockText.java",
+      "original_sha256": "bfc494519a494ff1716953028528c559e53c3dc83952f0ab8d6d78a80ebcaede",
+      "sha256": "156e27e73b28efc0617106fe7f24f22fc03681801290777c392c6c9fb643705f",
+      "changed": true
+    },
+    {
+      "path": "tests/TestBroken.java",
+      "original_sha256": "29b5fe6f4647c27a9f917e5eca92687eb803ac45d61017d393ac3bf923ffe6e9",
+      "sha256": "31eaabec5aac843d65abcd1468e52f727593800ebde1625e3a1ddc5ed1cf2751",
+      "changed": true
+    },
+    {
+      "path": "tests/TestDefinitions.java",
+      "original_sha256": "e9c5a076450f23c3db6869ec579a74d4e4f1374ed912fb70f89074f202c5cf9d",
+      "sha256": "a8722abf75bd0acc7cb29bb88cda19c9c5c570a3ad32b2c88c95fc4c275e68aa",
+      "changed": true
+    },
+    {
+      "path": "tests/TestFourLabel.java",
+      "original_sha256": "47afdcf6659eb7d1e84bcedc40cc8a1728c968880806fe0b207a0132a43d7512",
+      "sha256": "dd4003cdd04e5a9a34ac33c02ff43e56bc30f6e24c874e623cfa9aca0703a6a6",
+      "changed": true
+    },
+    {
+      "path": "tests/TestJavaConfirm.java",
+      "original_sha256": "73c24dbc3f9b67cbed532341b686b4bd4ef5e601edd939f01dea27c0ba3499f4",
+      "sha256": "f2d090728d1c5e1f07897f680d8e90390193a31640535838b55902f0169e8751",
+      "changed": true
+    },
+    {
+      "path": "tests/TestMain.java",
+      "original_sha256": "13b1aa75fc02a126c36c11984a37587a953c9518959951c39e8107cd3f2fc17c",
+      "sha256": "13b1aa75fc02a126c36c11984a37587a953c9518959951c39e8107cd3f2fc17c",
+      "changed": false
+    },
+    {
+      "path": "tests/TestRequirements.java",
+      "original_sha256": "e876320ac749aaee4c8d2ccf49fbea93794a6a018e67821c111c589c33572d3b",
+      "sha256": "7b6bb67f9330a945cd89e390cec3cdd9f54b5a2d4e133e7bb2fc9e9e38148103",
+      "changed": true
+    },
+    {
+      "path": "tests/TestSelector.java",
+      "original_sha256": "ec6029d691011f5597301847dd9d61172bcddea136aedf01fc18677096b34fb7",
+      "sha256": "2432c2ac81f28a4376a5754718d5bff571a326ecdf1ad222850d53ba93aa7dda",
+      "changed": true
+    },
+    {
+      "path": "tests/TestText.java",
+      "original_sha256": "6c8fb9d56fe433bc2d11f9d1f0871b03e8ce68ed5c72acd340484e2f8bf7fa23",
+      "sha256": "7c7a1dfba1b52072f1b1d04d3093ceebd13393f4a9e842a697603a29ff425891",
+      "changed": true
+    }
+  ]
+}

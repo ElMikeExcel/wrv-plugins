@@ -1,0 +1,23 @@
+# ExcelMenu definition: basics_menu
+# Migrated 2026-10-20 from DeluxeMenus gui_menus/basics_menu.yml
+format: 1
+title: Basics Menu
+size: 9
+command: basicsmenu
+open-requirement:
+  requirements:
+  - id: permission
+    type: has-permission
+    permission: deluxemenus.admin
+    deny:
+    - '[message] &cYou don''t have permission to do that!'
+items:
+  teststone:
+    material: STONE
+    slot: 0
+    data: 1
+    name: '&aThis is a special stone'
+    lore:
+    - '&aTest1'
+    - '&cTest2'
+    - '&eTest3'

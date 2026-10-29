@@ -1,0 +1,32 @@
+# ExcelMenu definition: teleport_confirm_guild
+# Migrated 2026-10-20 from DeluxeMenus gui_menus/teleport_confirm_guild.yml
+format: 1
+title: '&6&lTeleport to the Guild?'
+size: 9
+items:
+  'yes':
+    material: LIME_DYE
+    slot: 3
+    name: '&a&lYes, teleport'
+    lore:
+    - '&7Take me to the guild hall'
+    clicks:
+      left:
+      - '[player] ag'
+      - '[close]'
+  info:
+    material: BELL
+    slot: 4
+    name: '&e&lAdventurers Guild'
+    lore:
+    - '&7Teleport to the EliteMobs'
+    - '&7guild hall'
+  cancel:
+    material: RED_DYE
+    slot: 5
+    name: '&c&lCancel'
+    lore:
+    - '&7Stay where I am'
+    clicks:
+      left:
+      - '[close]'

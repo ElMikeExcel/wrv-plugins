@@ -1,0 +1,95 @@
+# ExcelMenu definition: spawnshop_travel_animals
+# Migrated 2026-10-20 from DeluxeMenus gui_menus/spawnshop_travel_animals.yml
+format: 1
+title: '&e$%vault_eco_balance_2dp% &8| &2Travel & Animals'
+size: 9
+type: dispenser
+update-interval: 1
+items:
+  saddle:
+    material: SADDLE
+    slot: 0
+    amount: 1
+    name: '&a&lSaddle'
+    lore:
+    - '&7Ride horses and pigs'
+    - '&eBundle price: &f$400'
+    - '&8Tap to choose quantity. No charge yet.'
+    clicks:
+      left:
+      - '[player] excelshop browse saddle'
+      right:
+      - '[player] excelshop browse saddle'
+  nametag:
+    material: NAME_TAG
+    slot: 1
+    amount: 1
+    name: '&a&lName Tag'
+    lore:
+    - '&7Name your pet'
+    - '&eBundle price: &f$350'
+    - '&8Tap to choose quantity. No charge yet.'
+    clicks:
+      left:
+      - '[player] excelshop browse nametag'
+      right:
+      - '[player] excelshop browse nametag'
+  lead:
+    material: LEAD
+    slot: 2
+    amount: 2
+    name: '&a&l2 Leads'
+    lore:
+    - '&7Walk your animals'
+    - '&eBundle price: &f$150'
+    - '&8Tap to choose quantity. No charge yet.'
+    clicks:
+      left:
+      - '[player] excelshop browse lead'
+      right:
+      - '[player] excelshop browse lead'
+  pearl:
+    material: ENDER_PEARL
+    slot: 3
+    amount: 4
+    name: '&a&l4 Ender Pearls'
+    lore:
+    - '&7Throw to teleport'
+    - '&eBundle price: &f$400'
+    - '&8Tap to choose quantity. No charge yet.'
+    clicks:
+      left:
+      - '[player] excelshop browse pearl'
+      right:
+      - '[player] excelshop browse pearl'
+  rocket:
+    material: FIREWORK_ROCKET
+    slot: 4
+    amount: 16
+    name: '&a&l16 Fireworks'
+    lore:
+    - '&7Party time'
+    - '&eBundle price: &f$200'
+    - '&8Tap to choose quantity. No charge yet.'
+    clicks:
+      left:
+      - '[player] excelshop browse rocket'
+      right:
+      - '[player] excelshop browse rocket'
+  balance:
+    material: GOLD_NUGGET
+    slot: 5
+    update: true
+    name: '&e&lCurrent balance: &f$%vault_eco_balance_2dp%'
+    lore:
+    - '&7Tap an item to review your purchase.'
+    - '&7Browsing does not spend money.'
+  back:
+    material: ARROW
+    slot: 6
+    name: '&c&lBack to Categories'
+    clicks:
+      left:
+      - '[openguimenu] spawnshop'
+      right:
+      - '[openguimenu] spawnshop'

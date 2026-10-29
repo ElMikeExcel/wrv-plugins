@@ -1,0 +1,2 @@
+// Excel signature - WRV maintained source; existing authorship notices preserved.
+package com.winkreyes.excelmenu.core; import java.util.*; public class MenuDef { public record ItemDef(String id, boolean update){} public Map<Integer,ItemDef> visible=new LinkedHashMap<>(); }

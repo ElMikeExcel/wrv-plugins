@@ -1,0 +1,126 @@
+# ExcelMenu definition: spawnshop
+# Migrated 2026-10-20 from DeluxeMenus gui_menus/spawnshop.yml
+format: 1
+title: '&eBalance $%vault_eco_balance_2dp% &8| &2Spawn Shop'
+size: 9
+type: dispenser
+command: shop
+update-interval: 1
+items:
+  category_food:
+    material: BREAD
+    slot: 0
+    name: '&a&lFood'
+    lore:
+    - '&7Bread, steak, golden carrots'
+    - '&7and golden apples.'
+    - '&e4 products'
+    - '&8Tap to browse. No charge yet.'
+    clicks:
+      left:
+      - '[openguimenu] spawnshop_food'
+      right:
+      - '[openguimenu] spawnshop_food'
+  category_building:
+    material: OAK_LOG
+    slot: 1
+    name: '&a&lBuilding'
+    lore:
+    - '&7Torches, oak logs, glass,'
+    - '&7iron ingots and water buckets.'
+    - '&e5 products'
+    - '&8Tap to browse. No charge yet.'
+    clicks:
+      left:
+      - '[openguimenu] spawnshop_building'
+      right:
+      - '[openguimenu] spawnshop_building'
+  category_travel_animals:
+    material: SADDLE
+    slot: 2
+    name: '&a&lTravel & Animals'
+    lore:
+    - '&7Saddles, name tags, leads,'
+    - '&7ender pearls and fireworks.'
+    - '&e5 products'
+    - '&8Tap to browse. No charge yet.'
+    clicks:
+      left:
+      - '[openguimenu] spawnshop_travel_animals'
+      right:
+      - '[openguimenu] spawnshop_travel_animals'
+  category_enchanting:
+    material: ENCHANTED_BOOK
+    slot: 3
+    name: '&a&lEnchanting'
+    lore:
+    - '&7XP bottles, Mending,'
+    - '&7Unbreaking III and Efficiency IV.'
+    - '&e4 products'
+    - '&8Tap to browse. No charge yet.'
+    clicks:
+      left:
+      - '[openguimenu] spawnshop_enchanting'
+      right:
+      - '[openguimenu] spawnshop_enchanting'
+  category_potions_protection:
+    material: POTION
+    slot: 4
+    name: '&a&lPotions & Protection'
+    lore:
+    - '&7Veil Potions, Death Protection'
+    - '&7and +Death Protection Potions.'
+    - '&e3 products'
+    - '&8Tap to browse. No charge yet.'
+    clicks:
+      left:
+      - '[openguimenu] spawnshop_potions_protection'
+      right:
+      - '[openguimenu] spawnshop_potions_protection'
+  category_safe_blocks:
+    material: LIGHT
+    slot: 5
+    name: '&a&lSafe Blocks'
+    lore:
+    - '&7Light blocks and petrified oak'
+    - '&7slabs - see them before you buy.'
+    - '&e2 products'
+    - '&8Opens as a chest so you can see the blocks.'
+    - '&8Tap to browse. No charge yet.'
+    clicks:
+      left:
+      - '[openguimenu] spawnshop_safe_blocks'
+      right:
+      - '[openguimenu] spawnshop_safe_blocks'
+  category_cosmetics:
+    material: PINK_DYE
+    slot: 6
+    name: '&d&lCosmetics'
+    lore:
+    - '&7Chat colors, name effects,'
+    - '&7archetype sets & the Emote Pack.'
+    - '&7Rent by the week, or own forever.'
+    - '&e26 products'
+    - '&8Tap to browse. No charge yet.'
+    clicks:
+      left:
+      - '[openguimenu] spawnshop_cosmetics_colors'
+      right:
+      - '[openguimenu] spawnshop_cosmetics_colors'
+  balance:
+    material: GOLD_NUGGET
+    slot: 7
+    update: true
+    name: '&e&lCurrent balance: &f$%vault_eco_balance_2dp%'
+    lore:
+    - '&7Choose a category to browse.'
+    - '&7Browsing does not spend money.'
+  back:
+    material: ARROW
+    slot: 8
+    name: '&c&lBack to Menu'
+    clicks:
+      left:
+      - '[player] menu'
+      right:
+      - '[player] menu'
