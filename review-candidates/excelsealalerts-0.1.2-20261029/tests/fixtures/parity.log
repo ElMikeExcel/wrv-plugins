@@ -1,0 +1,23 @@
+[14:00:00] [Server thread/INFO]: [SealLog] READY version=1.0.0
+[14:01:00] [Server thread/INFO]: [SealLog] BOSS_SPAWN seal=wither reason=BUILD_WITHER nearby=Steve_Test,.BedrockTest1 at=world@120,64,-40
+[14:01:30] [Server thread/INFO]: [SealLog] PLAYER_JOINED seal=wither player=Alex_Test players=.BedrockTest1,Steve_Test,Alex_Test
+[14:02:00] [Server thread/INFO]: [SealLog] BOSS_HEALTH seal=wither milestone=75% health=73% players=.BedrockTest1,Steve_Test,Alex_Test
+[14:03:00] [Server thread/INFO]: [SealLog] BOSS_HEALTH seal=wither milestone=50% health=49% players=.BedrockTest1,Steve_Test,Alex_Test
+[14:05:00] [Server thread/INFO]: [SealLog] BOSS_DEATH seal=wither killer=Steve_Test players=.BedrockTest1,Steve_Test,Alex_Test at=world@121,64,-41
+[14:05:01] [Server thread/INFO]: [ExcelGuildGate] Seal broken: wither (killer: Steve_Test) - 2 of 5 seals broken.
+[14:10:00] [Server thread/INFO]: [SealLog] BOSS_EMERGE seal=warden reason=NATURAL nearby=.BedrockTest1 at=world@10,-40,10
+[14:11:00] [Server thread/INFO]: [SealLog] BOSS_DEATH seal=warden killer=- players=.BedrockTest1 at=world@10,-40,10
+[14:11:01] [Server thread/INFO]: [ExcelGuildGate] Seal broken: warden - 4 of 5 seals broken.
+[14:12:00] [Server thread/INFO]: [SealLog] BOSS_DEATH seal=elder_guardian killer=- players=- at=world@300,40,300
+[14:13:00] [Server thread/INFO]: [SealLog] BOSS_HEALTH seal=elder_guardian milestone=75% health=70% players=Steve_Test
+[14:20:00] [Server thread/INFO]: [SealLog] RAID_START seal=raid id=5_64_5 player=Steve_Test omen=5 waves=7 village=world@5,64,5
+[14:21:00] [Server thread/INFO]: [SealLog] RAID_WAVE seal=raid id=5_64_5 wave=1/7 raiders=6 players=Steve_Test,Alex_Test village=world@5,64,5
+[14:30:00] [Server thread/INFO]: [SealLog] RAID_WON seal=raid id=5_64_5 winners=Steve_Test,Alex_Test players=Steve_Test,Alex_Test village=world@5,64,5
+[14:30:01] [Server thread/INFO]: [ExcelGuildGate] Seal broken: raid (killer: Steve_Test) - 3 of 5 seals broken.
+[14:40:00] [Server thread/INFO]: [SealLog] RAID_START seal=raid id=9_64_9 player=Alex_Test omen=2 waves=5 village=world@9,64,9
+[14:45:00] [Server thread/INFO]: [SealLog] RAID_LOST seal=raid id=9_64_9 reason=FINISHED players=Alex_Test village=world@9,64,9
+[14:50:00] [Server thread/INFO]: [SealLog] RAID_START seal=raid id=1_64_1 player=Alex_Test omen=1 waves=5 village=world@1,64,1
+[14:52:00] [Server thread/INFO]: [SealLog] RAID_ENDED seal=raid id=1_64_1 reason=TIMEOUT players=Alex_Test village=world@1,64,1
+[15:01:00] [Server thread/INFO]: [ExcelGuildGate] [GuildGate] CONSOLE granted seal elder_guardian (5 of 5).
+[15:01:00] [Server thread/INFO]: [ExcelGuildGate] All seals broken: the Adventurers Guild is now OPEN.
+[15:02:00] [Server thread/INFO]: [ExcelGuildGate] [GuildGate] CONSOLE revoked seal elder_guardian (4 of 5).

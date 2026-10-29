@@ -1,0 +1,53 @@
+# ExcelSealAlerts - the server pushes seal events to the "WRV seal watch alerts"
+# webhook itself, over HTTPS (port 443). It replaces the box-side SFTP poll
+# (sealwatch.py), which can no longer reach the server.
+#
+# SECRETS: url and key below are placeholders. Fill them in ON THE SERVER only
+# (Shockbyte file manager). Never commit real values to a repo or paste them in
+# chat. While either is still a placeholder, the plugin runs but holds every
+# event in outbox.jsonl and posts nothing.
+webhook:
+  url: "PASTE-WEBHOOK-URL-HERE"
+  key: "PASTE-WEBHOOK-KEY-HERE"
+  # Same defaults as sealwatch.py: "Authorization: Bearer <key>".
+  # If header is anything other than Authorization, the prefix defaults to "".
+  header: "Authorization"
+  prefix: "Bearer "
+  # Per-request timeout. Posts never run on the main server thread.
+  timeoutSeconds: 10
+  # Attempts per post, and the wait before each retry (seconds).
+  maxAttempts: 5
+  backoffSeconds: [5, 15, 45, 120, 300]
+
+# Envelope "source" field. Kept as "wrv-sealwatch" so the existing seal watch
+# routine reads these posts exactly like the old box poll; "sender" says it
+# came from this plugin.
+source: "wrv-sealwatch"
+
+# Mike's rule (Oct 23, 2026): bundle seal updates into one ping about every
+# 10 minutes. Game events wait up to this long and go out together. A quiet
+# server sends nothing.
+batchSeconds: 600
+# These go out right away instead of waiting for the batch.
+immediateTypes: [server_started, server_stopping, heartbeat, alerts_recovered, test]
+
+# Daily check-in so a silent failure gets noticed: if no heartbeat arrives by
+# this time + a few minutes, the server or this plugin is down.
+heartbeat:
+  enabled: true
+  time: "08:00"
+  zone: "America/Chicago"
+
+# How often (seconds, 30-60) the plugin re-reads the GuildGate and BossTrial
+# state files off the main thread (seal counts, cooldowns).
+statePollSeconds: 30
+
+# How player names appear in posts.
+#   gamertag - in-game names, same as sealwatch.py sent (default)
+#   label    - names from "labels" below; anyone unlisted shows as Player-xxxx
+#   hidden   - every player shows as "a player"
+players:
+  mode: "gamertag"
+  labels: {}
+
+# Excel diagnostics are runtime-only, OFF at startup; no config key enables them.

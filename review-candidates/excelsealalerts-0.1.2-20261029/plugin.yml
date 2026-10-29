@@ -1,0 +1,18 @@
+name: ExcelSealAlerts
+version: '0.1.2-runtime-diagnostic-OFFLINE'
+main: com.winkreyes.sealalerts.ExcelSealAlerts
+api-version: '1.21'
+prefix: SealAlerts
+author: Wink Reyes Valley
+license: MIT
+description: Pushes guild seal events (fights, trials, seals, cooldowns), a daily heartbeat and server start/stop to the WRV seal watch webhook over HTTPS. Read-only toward gameplay; posts are async with retries.
+softdepend: [ExcelSealLog, ExcelGuildGate, ExcelBossTrial]
+commands:
+  sealalerts:
+    description: Seal alert status and a manual test post
+    usage: /sealalerts <status|test|flush|reload|diagnostics>
+    permission: excelsealalerts.admin
+permissions:
+  excelsealalerts.admin:
+    description: Use /sealalerts
+    default: op
