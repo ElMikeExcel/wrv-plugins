@@ -1,0 +1,397 @@
+[
+  {
+    "path": "BUILD.md",
+    "bytes": 2476,
+    "sha256": "cec20a7e3f64551719e3423eb6c8a9243b1a2684e3f56509b59ef2b84cc561e6"
+  },
+  {
+    "path": "DEPENDENCY-INVENTORY.json",
+    "bytes": 5209,
+    "sha256": "8de1c574d7427dce8d4ab82272d7fa0a2c1d6befa2891fa322b7b4d58e26ba32"
+  },
+  {
+    "path": "LICENSE",
+    "bytes": 1087,
+    "sha256": "6e023bf12e74dcc4d9e3fd614863e7560d32cbbaec6445dff15e08aa34aaca27"
+  },
+  {
+    "path": "PRIVACY-SCAN.json",
+    "bytes": 114,
+    "sha256": "0d8dbf4ffba049a6fc4892f2345232df35c7bb2634d720fe23732df07982845f"
+  },
+  {
+    "path": "README.md",
+    "bytes": 2983,
+    "sha256": "7751c8287177564def04b897e8a5e6df3df167324ea69f7a6627b3a8abd8e7ee"
+  },
+  {
+    "path": "SANITIZATION.md",
+    "bytes": 1634,
+    "sha256": "7ca3baa293c8bbb4abd51e4626b6a5cbf426ecaa6e326cf2cd2fa0528bf360b4"
+  },
+  {
+    "path": "SOURCE-PROVENANCE.json",
+    "bytes": 18583,
+    "sha256": "cd78c3bf5d27755bec1cdb55b8be72a2a2b62700576f1cecdcca96265f753354"
+  },
+  {
+    "path": "TEST-RESULTS.md",
+    "bytes": 1681,
+    "sha256": "5aa1c93bb6972faf9ff74496ee49b6b28b86817d6f68d1b6af48d5e5db5caa97"
+  },
+  {
+    "path": "build-and-test.sh",
+    "bytes": 1954,
+    "sha256": "01c1e8e10d72dca1e1731bc47710023ef4e6887b192adb58e485067cf1e86773"
+  },
+  {
+    "path": "config.yml",
+    "bytes": 1058,
+    "sha256": "3be43e283f5829751d27354c4c8134c059abd03590d5eae464ed9d6814935ed0"
+  },
+  {
+    "path": "mobile-menus/spawnshop.yml",
+    "bytes": 2541,
+    "sha256": "5b633d3faccec450c0fbd993e5eaf9091cce1faeb0629f933c4db0433aa64475"
+  },
+  {
+    "path": "mobile-menus/spawnshop_building.yml",
+    "bytes": 2394,
+    "sha256": "53db933185ff43a3b6cccaeb0acb307f1c53193dfc4c6f648ee04262ad9385ac"
+  },
+  {
+    "path": "mobile-menus/spawnshop_enchanting.yml",
+    "bytes": 2120,
+    "sha256": "6e7d7b90cc633df506c24128fd2400e555851cb011c378269da247d009fd2f69"
+  },
+  {
+    "path": "mobile-menus/spawnshop_food.yml",
+    "bytes": 2054,
+    "sha256": "47b22f75759850912a1553184af448e768919a8b7d6e2b091d6316a3f75aa6f4"
+  },
+  {
+    "path": "mobile-menus/spawnshop_potions_protection.yml",
+    "bytes": 2708,
+    "sha256": "5c136217ac213586c0742048176cee25538f75e9f5d5430d28f42dad76ff83ba"
+  },
+  {
+    "path": "mobile-menus/spawnshop_travel_animals.yml",
+    "bytes": 2408,
+    "sha256": "1c0cd5f1080747fa271f71cb0cf914ace78d849cd20b27864f4f8a4f433908a7"
+  },
+  {
+    "path": "plugin.yml",
+    "bytes": 743,
+    "sha256": "45c6d65b15ced72e3f279bf58f1374a40751da5f1ae1a63ea11a0a7685b9f75c"
+  },
+  {
+    "path": "spawn-catalog.yml",
+    "bytes": 2131,
+    "sha256": "b44883814261325a6ad5e5a47a00a54b4d6b73d8e7fd5f96226909ed1f1028ac"
+  },
+  {
+    "path": "src/com/winkreyes/shops/BalanceDisplay.java",
+    "bytes": 3770,
+    "sha256": "923b6ccffefdddc269ef3808dfeb4aeca0efa5c9b6bbb6c7d4406d4a75fc72f8"
+  },
+  {
+    "path": "src/com/winkreyes/shops/BedrockForms.java",
+    "bytes": 14615,
+    "sha256": "9259c8128d435b467a7dae026284f4049ba728c0c4909126c180a1b9225db019"
+  },
+  {
+    "path": "src/com/winkreyes/shops/CompassShortcut.java",
+    "bytes": 2283,
+    "sha256": "f962fee90a6bfdbf49a6953e15149b939691d1a9163d111fc1077b935da9bc33"
+  },
+  {
+    "path": "src/com/winkreyes/shops/InventoryPlan.java",
+    "bytes": 2911,
+    "sha256": "6a1029a65ca7da883e63d23400d139dd6f4cfa66925be33d97d52da87d836c8a"
+  },
+  {
+    "path": "src/com/winkreyes/shops/JavaNumberDialogs.java",
+    "bytes": 13754,
+    "sha256": "7b7dc8845b375169b473aa46d5633e1091e15c25b896b39e0d99feb4391d8070"
+  },
+  {
+    "path": "src/com/winkreyes/shops/LegacyDataMigration.java",
+    "bytes": 25971,
+    "sha256": "2d590e1ebe5aacbbdfa07dacbc380f4df2fc45f908696c66eded8a4ed383da82"
+  },
+  {
+    "path": "src/com/winkreyes/shops/LegacyShopBridge.java",
+    "bytes": 19481,
+    "sha256": "9a18bdfff0e95f738929b89d082799cedb7e36564fce495f7e932a4b03f4c419"
+  },
+  {
+    "path": "src/com/winkreyes/shops/LegacyShopUi.java",
+    "bytes": 21403,
+    "sha256": "9c57ff6b9fbcad9ca6791c8fd1274619b65ce90c3c948336c9eb18dbe61e2bcf"
+  },
+  {
+    "path": "src/com/winkreyes/shops/LegacyTrading.java",
+    "bytes": 1386,
+    "sha256": "be6fb7dc1c99e8a9c3f3d8fdb051e6012563b33d0c83007eab960f2697455120"
+  },
+  {
+    "path": "src/com/winkreyes/shops/LegacyTransactionFence.java",
+    "bytes": 1617,
+    "sha256": "00e25c950eefd3a0c74ac94276e195c6f5e117153836a83f53bde8a2f2353538"
+  },
+  {
+    "path": "src/com/winkreyes/shops/MobileCatalog.java",
+    "bytes": 13196,
+    "sha256": "61c17a2c06687e2501bed3eaa6e93df61c42535ca50541f873daa09566c2d460"
+  },
+  {
+    "path": "src/com/winkreyes/shops/ShopAdapter.java",
+    "bytes": 9778,
+    "sha256": "d68003d3fdf1c4b7258316c81cce9b419d622465b90d2e7d9815e1227d315f6f"
+  },
+  {
+    "path": "src/com/winkreyes/shops/ShopText.java",
+    "bytes": 4961,
+    "sha256": "d58f7d8b78f10ceae80fd62b8eec0add3e3b56ef61cd3104893628688a40a885"
+  },
+  {
+    "path": "src/com/winkreyes/shops/ShopUi.java",
+    "bytes": 44187,
+    "sha256": "5502b2704a050d5eb6ff60bb6711aa348c66dafe3e7842ed63ea24b0fa9cfaba"
+  },
+  {
+    "path": "src/com/winkreyes/shops/SpawnCatalog.java",
+    "bytes": 4714,
+    "sha256": "0b19a34cb17f3ab7a9becb327f9783da24f3caf57ea5a8efa4be760431aafb61"
+  },
+  {
+    "path": "src/com/winkreyes/shops/WRVShops.java",
+    "bytes": 32030,
+    "sha256": "5ec07be9ac2eedd114288e7ece54e7dab2740dd490b6a0d60876a07e3f1c3cbe"
+  },
+  {
+    "path": "src/com/winkreyes/shops/checkout/CheckoutService.java",
+    "bytes": 19066,
+    "sha256": "2b6bcec26022f48a6deb970c14a8b2dc468679b7cb5e43343a2be990c5d9d54c"
+  },
+  {
+    "path": "src/com/winkreyes/shops/checkout/DataFileLock.java",
+    "bytes": 6816,
+    "sha256": "a34d0631897b60439e5063acd5f084943faf295e84be8736838c5dee97a44856"
+  },
+  {
+    "path": "src/com/winkreyes/shops/checkout/FileJournal.java",
+    "bytes": 17436,
+    "sha256": "583e9e9a6102938b296c167d53d25a40e6a860fb07b4fd098548a4c85a525c62"
+  },
+  {
+    "path": "src/com/winkreyes/shops/checkout/GlobalSessionGuard.java",
+    "bytes": 11815,
+    "sha256": "b7a2c133a4b90d776322129cb6422fc73ba8e99cffbe46d628daa93980d02d4d"
+  },
+  {
+    "path": "src/com/winkreyes/shops/checkout/Money.java",
+    "bytes": 2729,
+    "sha256": "12fd5fad51eeef950ae9f009b21837d29e66900c8d31d0b1109c8ec70c091cd0"
+  },
+  {
+    "path": "src/com/winkreyes/shops/log/Platform.java",
+    "bytes": 1445,
+    "sha256": "79e8728333ba6e149f6b521878487b9ba682f33af9357fb49bfc5a9ad82a94ad"
+  },
+  {
+    "path": "src/com/winkreyes/shops/log/PurchaseLog.java",
+    "bytes": 15884,
+    "sha256": "1967551735dfa711d137e8a160edb79631f787eec89feec3f5e2921408f9bfed"
+  },
+  {
+    "path": "src/com/winkreyes/shops/store/BlockPos.java",
+    "bytes": 1476,
+    "sha256": "a7859a83be74b7971394c77c62504998aff194d86e6fdd32e7ccf9069c05da58"
+  },
+  {
+    "path": "src/com/winkreyes/shops/store/ClaimOwnership.java",
+    "bytes": 984,
+    "sha256": "f05b1414f0383211ce933af9ddb07f29e3e76ba8864db02c2b41bd305a60631a"
+  },
+  {
+    "path": "src/com/winkreyes/shops/store/GriefPreventionOwnership.java",
+    "bytes": 2747,
+    "sha256": "c4bd4654d167a7ed5ef20e124e457372560b6f5305727dd3751b09530fa8ec28"
+  },
+  {
+    "path": "src/com/winkreyes/shops/store/OwnershipProof.java",
+    "bytes": 557,
+    "sha256": "2d8093147a3cbdb8723fc557eee7133d967b6ab902e6c7790fd5fbbc442795af"
+  },
+  {
+    "path": "src/com/winkreyes/shops/store/RegistryException.java",
+    "bytes": 455,
+    "sha256": "088ef5d3a6c5b47a7f8181e1d3a7c708e91855223da854a4594ac03b6c532f25"
+  },
+  {
+    "path": "src/com/winkreyes/shops/store/RegistryFile.java",
+    "bytes": 9988,
+    "sha256": "94d52405b27c4e65ecdf0926890f622564435eb22db5334b283dc2cc84410e12"
+  },
+  {
+    "path": "src/com/winkreyes/shops/store/SetupProposal.java",
+    "bytes": 2030,
+    "sha256": "e5b5dfd04f8d6d658d6b13ef96687c79e043d513962a76db5feb4d554e86500e"
+  },
+  {
+    "path": "src/com/winkreyes/shops/store/ShopOffer.java",
+    "bytes": 1066,
+    "sha256": "e82c9b1104dde0476db2e86f2debaf5707faf79e1a3e7624dfc2becea2540a0a"
+  },
+  {
+    "path": "src/com/winkreyes/shops/store/ShopRecord.java",
+    "bytes": 1030,
+    "sha256": "b7f1ff4c4880d7beba4e42db59621d248344bd33c86d57258839b356dee40386"
+  },
+  {
+    "path": "src/com/winkreyes/shops/store/ShopRegistry.java",
+    "bytes": 28225,
+    "sha256": "a82e319e11e9feb8fa6fd33fb9ac31b99291d059bb39a8890f6fe205c2175da9"
+  },
+  {
+    "path": "tests/com/winkreyes/shops/BedrockFormsTest.java",
+    "bytes": 23422,
+    "sha256": "b77764526008f3e661dcadc97c780d13679e187c5a2853baf7be12e0e34c3a83"
+  },
+  {
+    "path": "tests/com/winkreyes/shops/CompassShortcutTest.java",
+    "bytes": 5001,
+    "sha256": "25d129a48a5d35f471d64f23714142d2171ac7c4e79ea209f61299b3e01d9023"
+  },
+  {
+    "path": "tests/com/winkreyes/shops/LegacyDataMigrationTest.java",
+    "bytes": 30064,
+    "sha256": "84a6afcdb9cb905d073334d79d0d8ee3c0c5235864d41af8b8d74ad121e51b4b"
+  },
+  {
+    "path": "tests/com/winkreyes/shops/LegacyShopUiTest.java",
+    "bytes": 15608,
+    "sha256": "ea963e0379a3b34f60dd332b12f8d90048472aa815902e9d7e36a327f338d3cf"
+  },
+  {
+    "path": "tests/com/winkreyes/shops/MobileBridgeRemovalTest.java",
+    "bytes": 6529,
+    "sha256": "4807fc6a674cfa639de34a61f3b89a8815fd8f6f417d54d3bfc9a167c5679537"
+  },
+  {
+    "path": "tests/com/winkreyes/shops/MobileCatalogDerivedTest.java",
+    "bytes": 10592,
+    "sha256": "6bb8e6fbfd90bcd8af5adb11dab60e36a5434b203dcfcd2230730a68e480af77"
+  },
+  {
+    "path": "tests/com/winkreyes/shops/MobileCatalogTest.java",
+    "bytes": 3678,
+    "sha256": "68e50e7855188350beccf0a5cb3576eeb84e9489d59a6d7504a01343144fba5e"
+  },
+  {
+    "path": "tests/com/winkreyes/shops/SessionMutationEventTest.java",
+    "bytes": 5037,
+    "sha256": "5d5f7bb66e7e49dd4d841195aa39f8a0e40935c644bd429ada33bc8982d6635c"
+  },
+  {
+    "path": "tests/com/winkreyes/shops/ShopTextTest.java",
+    "bytes": 6852,
+    "sha256": "2dddf22168ff8d2e342bc879138cba5b511f00354c155210da77a54bce503f47"
+  },
+  {
+    "path": "tests/com/winkreyes/shops/ShopUiTest.java",
+    "bytes": 91788,
+    "sha256": "372285f6664306f6e6f44cc62c0828f880d57e5b9d70377408c65bcf5081d65f"
+  },
+  {
+    "path": "tests/com/winkreyes/shops/SpawnCatalogTest.java",
+    "bytes": 2718,
+    "sha256": "96f32e7449ca03d9fe579195866dc8708ab3412d689aff3662fcf82f19c2c3f6"
+  },
+  {
+    "path": "tests/com/winkreyes/shops/log/ExcelAnalyticsLifecycleTest.java",
+    "bytes": 5382,
+    "sha256": "111791b1457cbf95de74d1db61b6beaaa4112ea130165cff3b74d77bf028e69f"
+  },
+  {
+    "path": "tests/com/winkreyes/shops/log/PurchaseLogTest.java",
+    "bytes": 6475,
+    "sha256": "15bb955c3d99fb780a9c683c52217c949e22c052a069369632f15f39ddddaaee"
+  },
+  {
+    "path": "tests/org/geysermc/api/GeyserApiBase.java",
+    "bytes": 405,
+    "sha256": "6edb3b8a7853c94e4b424226e94830d819053afc07ba4b4c25727fba1d66f46f"
+  },
+  {
+    "path": "tests/org/geysermc/cumulus/form/CustomForm.java",
+    "bytes": 777,
+    "sha256": "41833cbeec4cb4f5796d23ff677e49718556ac8fddccdfd81869a6a3eaa60f14"
+  },
+  {
+    "path": "tests/org/geysermc/cumulus/form/Form.java",
+    "bytes": 265,
+    "sha256": "b5186ef863beafe021c9077b0d5fd6138f0799a3dbb1976f66d5d924c59f9e10"
+  },
+  {
+    "path": "tests/org/geysermc/cumulus/form/SimpleForm.java",
+    "bytes": 680,
+    "sha256": "ad2c6dc7f4dab9538180b633c55ec1fcf67c9a20009269b68885306c8fdce619"
+  },
+  {
+    "path": "tests/org/geysermc/cumulus/form/util/FormBuilder.java",
+    "bytes": 555,
+    "sha256": "65052bc8d05341f887792a016c0bd8e0a3bdc8b8827faffd1b118af3331b9c07"
+  },
+  {
+    "path": "tests/org/geysermc/cumulus/response/CustomFormResponse.java",
+    "bytes": 344,
+    "sha256": "629a4006fa23f7d1b7326cc9b571d2db1e640b9902a923dc4e7e879637a2adc6"
+  },
+  {
+    "path": "tests/org/geysermc/cumulus/response/SimpleFormResponse.java",
+    "bytes": 313,
+    "sha256": "a6c6cd681a5640a8c5d02aa44e91f615205589db8e3822dcb79c2b84d8c8b9fc"
+  },
+  {
+    "path": "tests/org/geysermc/fixtures/FloodgateFixture.java",
+    "bytes": 1012,
+    "sha256": "9b5173c0346db5471e103522aa3f974dfd0232e0fe0c3e5b1308cc04133e95c3"
+  },
+  {
+    "path": "tests/org/geysermc/fixtures/FormFixtures.java",
+    "bytes": 5506,
+    "sha256": "b8587cf4ee8afea6e83627bdcf72a21190282ac35bc2a992867b9bffb0ec622c"
+  },
+  {
+    "path": "tests/org/geysermc/fixtures/GeyserFixture.java",
+    "bytes": 1512,
+    "sha256": "7acaa3a279aa344e311a3c57517fd820a0196ae7eb978245d49cb60ca08a66ae"
+  },
+  {
+    "path": "tests/org/geysermc/floodgate/api/FloodgateApi.java",
+    "bytes": 464,
+    "sha256": "ae133faee113739f89a7e3a9ea6bd4c3d4a6d5536f0f5886808fb3e4d99b0420"
+  },
+  {
+    "path": "tests/org/geysermc/geyser/api/GeyserApi.java",
+    "bytes": 435,
+    "sha256": "0b047c1aadcaf52ff8dc76eece30aa7a426b3623b96c7b351182c1c77c9a6f27"
+  },
+  {
+    "path": "verification/GuardChecks.java",
+    "bytes": 8096,
+    "sha256": "d58b3bd1034034edb12e1569ee4f97d840736595946fcecae500862531fad802"
+  },
+  {
+    "path": "verification/LifecycleCrashChecks.java",
+    "bytes": 4567,
+    "sha256": "9f7aea8c77937a0a1d32c3a979e6b824d7a82c682fc84865788ef071184a73cb"
+  },
+  {
+    "path": "verification/StatsPipeProbe.java",
+    "bytes": 2200,
+    "sha256": "8d746ca46329109714d22bef2bb27cdc5791e85ee651c564d4f24780ef0ea010"
+  }
+]

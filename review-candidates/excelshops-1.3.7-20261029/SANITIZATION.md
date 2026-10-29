@@ -1,0 +1,8 @@
+# Sanitization and attribution review
+Allowlisted current production Java, tests, synthetic verification harnesses, plugin metadata, original packaged default config/catalog/mobile resources and MIT license only. Dependencies and compiled output excluded. Host-specific and obsolete Maven packaging scripts omitted; portable caller-supplied dependency build replaces them. No original files were changed.
+
+Java maintenance signature comments added only when no Excel credit existed near the start. Preserved authorship, SPDX, license and runtime namespace. Synthetic test buyer names replaced by FixtureBuyerA/B, and nil-prefix UUID fixture literals replaced by equivalent numeric UUID construction; expected CSV is composed from that same fixture. These are deliberately changed fixtures and MUST pass fresh tests. The 1.3.7 failed/closed-future assertions are preserved, not replaced by the earlier 1.3.6 tests.
+
+No third-party production implementation copied. Test-only Geyser fixtures remain labeled; dependency projects retain their own identity and licensing. MIT project license is evidence for this project's source only. Private detailed before/after diff is retained outside publication packet because it contains removed fixture strings. Provenance hashes inside packet permit audit without exposing removed values.
+
+Static scan checked private filesystem prefixes, literal UUID patterns, known personal fixture names, forbidden binary extensions, private service links and credential assignments. An absence of matches is not formal proof. Normal UI token comments and Paper's official documentation URL are not secrets.

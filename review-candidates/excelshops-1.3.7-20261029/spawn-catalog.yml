@@ -1,0 +1,98 @@
+# Generated base catalog: prices are PER BUNDLE, retaining the original economy.
+offers:
+  bread:
+    material: BREAD
+    name: 'Bread'
+    bundle-size: 16
+    bundle-price: '40.00'
+  steak:
+    material: COOKED_BEEF
+    name: 'Steak'
+    bundle-size: 16
+    bundle-price: '80.00'
+  gcarrot:
+    material: GOLDEN_CARROT
+    name: 'Golden Carrots'
+    bundle-size: 16
+    bundle-price: '250.00'
+  gapple:
+    material: GOLDEN_APPLE
+    name: 'Golden Apple'
+    bundle-size: 1
+    bundle-price: '300.00'
+  torch:
+    material: TORCH
+    name: 'Torches'
+    bundle-size: 64
+    bundle-price: '60.00'
+  logs:
+    material: OAK_LOG
+    name: 'Oak Logs'
+    bundle-size: 64
+    bundle-price: '150.00'
+  glass:
+    material: GLASS
+    name: 'Glass'
+    bundle-size: 64
+    bundle-price: '180.00'
+  iron:
+    material: IRON_INGOT
+    name: 'Iron Ingots'
+    bundle-size: 16
+    bundle-price: '300.00'
+  water:
+    material: WATER_BUCKET
+    name: 'Water Bucket'
+    bundle-size: 1
+    bundle-price: '100.00'
+  saddle:
+    material: SADDLE
+    name: 'Saddle'
+    bundle-size: 1
+    bundle-price: '400.00'
+  nametag:
+    material: NAME_TAG
+    name: 'Name Tag'
+    bundle-size: 1
+    bundle-price: '350.00'
+  lead:
+    material: LEAD
+    name: 'Leads'
+    bundle-size: 2
+    bundle-price: '150.00'
+  pearl:
+    material: ENDER_PEARL
+    name: 'Ender Pearls'
+    bundle-size: 4
+    bundle-price: '400.00'
+  rocket:
+    material: FIREWORK_ROCKET
+    name: 'Fireworks'
+    bundle-size: 16
+    bundle-price: '200.00'
+  xp:
+    material: EXPERIENCE_BOTTLE
+    name: 'Bottles o'' Enchanting'
+    bundle-size: 16
+    bundle-price: '500.00'
+  mending:
+    material: ENCHANTED_BOOK
+    name: 'Mending Book'
+    bundle-size: 1
+    bundle-price: '600.00'
+    enchantment: mending
+    enchantment-level: 1
+  unbreaking:
+    material: ENCHANTED_BOOK
+    name: 'Unbreaking III Book'
+    bundle-size: 1
+    bundle-price: '450.00'
+    enchantment: unbreaking
+    enchantment-level: 3
+  efficiency:
+    material: ENCHANTED_BOOK
+    name: 'Efficiency IV Book'
+    bundle-size: 1
+    bundle-price: '450.00'
+    enchantment: efficiency
+    enchantment-level: 4
