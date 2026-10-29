@@ -1,0 +1,4 @@
+/* Excel WRV maintained source; original attribution and license preserved. */ import org.junit.platform.launcher.core.*;
+import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
+import static org.junit.platform.engine.discovery.DiscoverySelectors.selectPackage;
+public class TestRunner { public static void main(String[] args) { var l=LauncherFactory.create(); var s=new SummaryGeneratingListener(); l.registerTestExecutionListeners(s); l.execute(LauncherDiscoveryRequestBuilder.request().selectors(selectPackage("com.winkreyes.makersmark")).build()); s.getSummary().printTo(new java.io.PrintWriter(System.out)); s.getSummary().printFailuresTo(new java.io.PrintWriter(System.out)); if(s.getSummary().getTestsFoundCount()==0 || s.getSummary().getTestsFailedCount()!=0)System.exit(1); }}

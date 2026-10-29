@@ -1,0 +1,376 @@
+--- original/TestRunner.java
++++ public/TestRunner.java
+@@ -1,4 +1,4 @@
+-import org.junit.platform.launcher.core.*;
++/* Excel WRV maintained source; original attribution and license preserved. */ import org.junit.platform.launcher.core.*;
+ import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
+ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectPackage;
+ public class TestRunner { public static void main(String[] args) { var l=LauncherFactory.create(); var s=new SummaryGeneratingListener(); l.registerTestExecutionListeners(s); l.execute(LauncherDiscoveryRequestBuilder.request().selectors(selectPackage("com.winkreyes.makersmark")).build()); s.getSummary().printTo(new java.io.PrintWriter(System.out)); s.getSummary().printFailuresTo(new java.io.PrintWriter(System.out)); if(s.getSummary().getTestsFoundCount()==0 || s.getSummary().getTestsFailedCount()!=0)System.exit(1); }}
+--- original/src/com/winkreyes/makersmark/Accomplishments.java
++++ public/src/com/winkreyes/makersmark/Accomplishments.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ import java.util.*;
+ import org.bukkit.entity.*;
+ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+--- original/src/com/winkreyes/makersmark/AcquisitionHooks.java
++++ public/src/com/winkreyes/makersmark/AcquisitionHooks.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ 
+ import com.winkreyes.makersmark.core.Gear;
+ import com.winkreyes.makersmark.core.TransferEvidence;
+--- original/src/com/winkreyes/makersmark/Bedrock.java
++++ public/src/com/winkreyes/makersmark/Bedrock.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ 
+ import org.bukkit.Bukkit;
+ import org.bukkit.entity.Player;
+--- original/src/com/winkreyes/makersmark/CraftHooks.java
++++ public/src/com/winkreyes/makersmark/CraftHooks.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ 
+ import com.winkreyes.makersmark.core.Gear;
+ import org.bukkit.Bukkit;
+--- original/src/com/winkreyes/makersmark/ExcelMakersMark.java
++++ public/src/com/winkreyes/makersmark/ExcelMakersMark.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ 
+ import com.winkreyes.makersmark.core.Gear;
+ import com.winkreyes.makersmark.core.NameClean;
+--- original/src/com/winkreyes/makersmark/FarmCredit.java
++++ public/src/com/winkreyes/makersmark/FarmCredit.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ import com.winkreyes.makersmark.core.KillCredit;
+ import java.lang.reflect.Method;
+ import org.bukkit.NamespacedKey;
+--- original/src/com/winkreyes/makersmark/HistoryOnlyMagicRegistration.java
++++ public/src/com/winkreyes/makersmark/HistoryOnlyMagicRegistration.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ 
+ import java.util.*;
+ import org.bukkit.Bukkit;
+--- original/src/com/winkreyes/makersmark/HistoryRecoveryService.java
++++ public/src/com/winkreyes/makersmark/HistoryRecoveryService.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ import com.winkreyes.makersmark.history.*;
+ import java.util.*;import java.io.*;import java.nio.file.*;
+ import org.bukkit.Bukkit;import org.bukkit.command.CommandSender;import org.bukkit.entity.Player;
+--- original/src/com/winkreyes/makersmark/IdentityProvisioningHooks.java
++++ public/src/com/winkreyes/makersmark/IdentityProvisioningHooks.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ import java.util.*;
+ import org.bukkit.Bukkit;
+ import org.bukkit.entity.Player;
+--- original/src/com/winkreyes/makersmark/MagicPhysicalItems.java
++++ public/src/com/winkreyes/makersmark/MagicPhysicalItems.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ import java.util.*;
+ import org.bukkit.Bukkit;
+ import org.bukkit.entity.Player;
+--- original/src/com/winkreyes/makersmark/MakerMagicBridge.java
++++ public/src/com/winkreyes/makersmark/MakerMagicBridge.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ // Excel WRV: preserve complete identity scans; snapshot only potential Maker-ID matches.
+ import java.util.*;import org.bukkit.*;import org.bukkit.entity.*;import org.bukkit.event.*;import org.bukkit.event.entity.*;import org.bukkit.event.player.*;import org.bukkit.inventory.ItemStack;import org.bukkit.persistence.PersistentDataType;
+ import wrv.magic.evidence.*;import wrv.makersmark.magic.*;import com.elmakers.mine.bukkit.wand.Wand;
+--- original/src/com/winkreyes/makersmark/Marks.java
++++ public/src/com/winkreyes/makersmark/Marks.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ 
+ import com.winkreyes.makersmark.core.Gear;
+ import com.winkreyes.makersmark.core.KillCredit;
+--- original/src/com/winkreyes/makersmark/ObservedGearMergeHooks.java
++++ public/src/com/winkreyes/makersmark/ObservedGearMergeHooks.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ 
+ import com.winkreyes.makersmark.core.TransferEvidence;
+ import com.winkreyes.makersmark.history.*;
+--- original/src/com/winkreyes/makersmark/OrdinaryHistoryRecorder.java
++++ public/src/com/winkreyes/makersmark/OrdinaryHistoryRecorder.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ import com.winkreyes.makersmark.history.*;
+ import java.util.*;import java.util.concurrent.*;import java.nio.charset.StandardCharsets;
+ import org.bukkit.*;import org.bukkit.entity.Player;import org.bukkit.inventory.ItemStack;import org.bukkit.persistence.PersistentDataType;
+--- original/src/com/winkreyes/makersmark/OwnedSlotIdentity.java
++++ public/src/com/winkreyes/makersmark/OwnedSlotIdentity.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ 
+ import java.util.UUID;
+ import java.util.function.Predicate;
+--- original/src/com/winkreyes/makersmark/PapiHook.java
++++ public/src/com/winkreyes/makersmark/PapiHook.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ 
+ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+ import org.bukkit.OfflinePlayer;
+--- original/src/com/winkreyes/makersmark/Prefs.java
++++ public/src/com/winkreyes/makersmark/Prefs.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ 
+ import org.bukkit.Bukkit;
+ import org.bukkit.configuration.ConfigurationSection;
+--- original/src/com/winkreyes/makersmark/SharedHistoryMagicRegistration.java
++++ public/src/com/winkreyes/makersmark/SharedHistoryMagicRegistration.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ import java.util.*;import java.util.function.Supplier;
+ import org.bukkit.Bukkit;import org.bukkit.event.*;import org.bukkit.event.server.PluginDisableEvent;import org.bukkit.plugin.*;
+ import com.elmakers.mine.bukkit.magic.MagicPlugin;import com.elmakers.mine.bukkit.api.event.*;
+--- original/src/com/winkreyes/makersmark/StatsHooks.java
++++ public/src/com/winkreyes/makersmark/StatsHooks.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ 
+ import com.winkreyes.makersmark.core.Gear;
+ import com.winkreyes.makersmark.core.ProjectileIdentity;
+--- original/src/com/winkreyes/makersmark/Tips.java
++++ public/src/com/winkreyes/makersmark/Tips.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ 
+ import net.kyori.adventure.text.Component;
+ import net.kyori.adventure.text.event.ClickEvent;
+--- original/src/com/winkreyes/makersmark/core/Gear.java
++++ public/src/com/winkreyes/makersmark/core/Gear.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.core;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.core;
+ 
+ /** Which non-stackable gear gets a mark or counters, decided by material name. */
+ public final class Gear {
+--- original/src/com/winkreyes/makersmark/core/KillCredit.java
++++ public/src/com/winkreyes/makersmark/core/KillCredit.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.core;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.core;
+ /** Integer fifths for cosmetics only; actual kills remain independent. */
+ public final class KillCredit {
+     private KillCredit() {}
+--- original/src/com/winkreyes/makersmark/core/LoreModel.java
++++ public/src/com/winkreyes/makersmark/core/LoreModel.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.core;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.core;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
+--- original/src/com/winkreyes/makersmark/core/MilestoneColors.java
++++ public/src/com/winkreyes/makersmark/core/MilestoneColors.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.core;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.core;
+ 
+ import java.util.List;
+ import net.kyori.adventure.text.format.NamedTextColor;
+--- original/src/com/winkreyes/makersmark/core/NameClean.java
++++ public/src/com/winkreyes/makersmark/core/NameClean.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.core;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.core;
+ 
+ import java.util.List;
+ 
+--- original/src/com/winkreyes/makersmark/core/ProjectileIdentity.java
++++ public/src/com/winkreyes/makersmark/core/ProjectileIdentity.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.core;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.core;
+ import java.util.*;
+ /** Capture a preexisting identity only; material, slot and later held items are not identity evidence. */
+ public final class ProjectileIdentity {
+--- original/src/com/winkreyes/makersmark/core/TransferEvidence.java
++++ public/src/com/winkreyes/makersmark/core/TransferEvidence.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.core;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.core;
+ 
+ import java.util.List;
+ import java.util.OptionalInt;
+--- original/src/com/winkreyes/makersmark/core/Trophies.java
++++ public/src/com/winkreyes/makersmark/core/Trophies.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.core;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.core;
+ 
+ import java.util.ArrayList;
+ import java.util.LinkedHashMap;
+--- original/src/com/winkreyes/makersmark/history/HistoryItemTokens.java
++++ public/src/com/winkreyes/makersmark/history/HistoryItemTokens.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.history;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.history;
+ import java.util.*;
+ import org.bukkit.NamespacedKey;
+ import org.bukkit.inventory.ItemStack;
+--- original/src/com/winkreyes/makersmark/history/HistoryLedger.java
++++ public/src/com/winkreyes/makersmark/history/HistoryLedger.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.history;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.history;
+ 
+ import java.io.*;
+ import java.nio.*;
+--- original/src/com/winkreyes/makersmark/history/HistoryMergeTransaction.java
++++ public/src/com/winkreyes/makersmark/history/HistoryMergeTransaction.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.history;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.history;
+ import java.io.IOException;
+ import java.util.*;
+ import org.bukkit.inventory.ItemStack;
+--- original/src/com/winkreyes/makersmark/history/HistorySlotTransaction.java
++++ public/src/com/winkreyes/makersmark/history/HistorySlotTransaction.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.history;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.history;
+ import java.io.IOException;
+ import java.util.*;
+ import org.bukkit.inventory.ItemStack;
+--- original/src/com/winkreyes/makersmark/history/HistoryView.java
++++ public/src/com/winkreyes/makersmark/history/HistoryView.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.history;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.history;
+ import java.util.*;
+ /** Plain-text view models. Never pass returned player-authored names to a markup or command parser. */
+ public final class HistoryView {
+--- original/src/com/winkreyes/makersmark/history/MergeEvidence.java
++++ public/src/com/winkreyes/makersmark/history/MergeEvidence.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.history;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.history;
+ import java.util.*;
+ /** Pure post-event proof rule. Inventory/result preview slots must be excluded from ownership counts. */
+ public final class MergeEvidence {
+--- original/src/com/winkreyes/makersmark/history/PendingRecovery.java
++++ public/src/com/winkreyes/makersmark/history/PendingRecovery.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.history;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.history;
+ import java.util.*;import java.io.*;
+ import org.bukkit.NamespacedKey;import org.bukkit.inventory.ItemStack;import org.bukkit.persistence.PersistentDataType;
+ /** Archive-only finalization. Never writes an item or reconstructs consumed ingredients. */
+--- original/src/com/winkreyes/makersmark/history/RecoveryContext.java
++++ public/src/com/winkreyes/makersmark/history/RecoveryContext.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.history;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.history;
+ import java.io.*;import java.util.*;import java.security.*;import org.bukkit.inventory.ItemStack;
+ /** Minimal private recovery context: UUIDs and fingerprints only, no raw item text, location or chat. */
+ public record RecoveryContext(UUID initiator,String workstation,String resultFingerprint,List<Input> inputs) {
+--- original/src/com/winkreyes/makersmark/history/StrictIngress.java
++++ public/src/com/winkreyes/makersmark/history/StrictIngress.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.history;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.history;
+ import java.io.IOException;import java.util.function.LongSupplier;
+ /** Alternative policy: durable acknowledgement before acceptance. A slow/failed call cannot be timed away. */
+ public final class StrictIngress {
+--- original/src/wrv/makersmark/magic/FreshMagicLore.java
++++ public/src/wrv/makersmark/magic/FreshMagicLore.java
+@@ -1,4 +1,4 @@
+-package wrv.makersmark.magic;
++/* Excel WRV maintained source; original attribution and license preserved. */ package wrv.makersmark.magic;
+ import java.util.*;
+ /** One immutable native getLore generation. NEVER construct from stored ItemMeta or a previous decorated result. */
+ public final class FreshMagicLore {
+--- original/src/wrv/makersmark/magic/MagicBossContributors.java
++++ public/src/wrv/makersmark/magic/MagicBossContributors.java
+@@ -1,4 +1,4 @@
+-package wrv.makersmark.magic;
++/* Excel WRV maintained source; original attribution and license preserved. */ package wrv.makersmark.magic;
+ 
+ import java.util.*;
+ import java.util.function.Consumer;
+--- original/src/wrv/makersmark/magic/MagicDeathJoin.java
++++ public/src/wrv/makersmark/magic/MagicDeathJoin.java
+@@ -1,4 +1,4 @@
+-package wrv.makersmark.magic;
++/* Excel WRV maintained source; original attribution and license preserved. */ package wrv.makersmark.magic;
+ import java.util.*;import org.bukkit.Bukkit;import org.bukkit.entity.Player;import org.bukkit.entity.ArmorStand;import org.bukkit.event.entity.*;import wrv.magic.evidence.EffectObserver;
+ /** Read-only join. Output is evidence for later current-item reconciliation, NEVER permission to mutate cached gear. */
+ public final class MagicDeathJoin {
+--- original/tests/AccomplishmentsTest.java
++++ public/tests/AccomplishmentsTest.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ import org.junit.jupiter.api.Test;import static org.junit.jupiter.api.Assertions.*;import java.util.*;
+ class AccomplishmentsTest {
+  @Test void arbitraryNamedMobHasObservedProvenance(){var k=Accomplishments.observed("ZOMBIE","Jester's Guardian",List.of("elitemobs"));assertEquals("Jester's Guardian",k.name());assertEquals("NAMED:ZOMBIE;observed-source=elitemobs",k.kind());}
+--- original/tests/com/winkreyes/makersmark/ColorCreditTest.java
++++ public/tests/com/winkreyes/makersmark/ColorCreditTest.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ import org.junit.jupiter.api.Test;
+ import static org.junit.jupiter.api.Assertions.*;
+ import com.winkreyes.makersmark.core.*;
+--- original/tests/com/winkreyes/makersmark/FinderDataTest.java
++++ public/tests/com/winkreyes/makersmark/FinderDataTest.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark;
+ 
+ import org.junit.jupiter.api.Test;
+ import static org.junit.jupiter.api.Assertions.*;
+--- original/tests/com/winkreyes/makersmark/core/CoreTest.java
++++ public/tests/com/winkreyes/makersmark/core/CoreTest.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.core;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.core;
+ 
+ import org.junit.jupiter.api.Test;
+ 
+--- original/tests/com/winkreyes/makersmark/core/MilestoneColorsTest.java
++++ public/tests/com/winkreyes/makersmark/core/MilestoneColorsTest.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.core;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.core;
+ 
+ import java.util.List;
+ import org.junit.jupiter.api.Test;
+--- original/tests/com/winkreyes/makersmark/core/TransferEvidenceTest.java
++++ public/tests/com/winkreyes/makersmark/core/TransferEvidenceTest.java
+@@ -1,4 +1,4 @@
+-package com.winkreyes.makersmark.core;
++/* Excel WRV maintained source; original attribution and license preserved. */ package com.winkreyes.makersmark.core;
+ 
+ import java.util.Arrays;
+ import java.util.List;

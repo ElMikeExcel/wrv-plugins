@@ -1,0 +1,22 @@
+/* Excel historical lookup method fixture; MIT license applies. */
+ private Slot find(UUID maker,String nativeId,boolean mutationBoundary){
+  if(closed||!Bukkit.isPrimaryThread()||maker==null||nativeId==null)return null;if(plugin.historyRecorder().quarantined(maker)||plugin.historyRecorder().nativeQuarantined(nativeId))return null;Slot found=null;int count=0,nativeCopies=0;Set<UUID> nativeItems=new HashSet<>();
+  boolean malformed=false;List<Slot> physical=new ArrayList<>();
+  for(Player p:players.get()){
+   List<ItemStack> seen=new ArrayList<>(Arrays.asList(p.getInventory().getContents()));seen.add(p.getItemOnCursor());seen.addAll(Arrays.asList(p.getEnderChest().getContents()));
+   for(ItemStack item:seen){
+    if(item==null)continue;
+    try{if(nativeId.equals(Wand.getWandId(item))){nativeCopies+=item.getAmount();try{String id=plugin.marks().read(item).id;if(id!=null)nativeItems.add(UUID.fromString(id));}catch(RuntimeException bad){malformed=true;}}}catch(RuntimeException bad){malformed=true;}
+    try{if(item.hasItemMeta()&&maker.toString().equals(item.getItemMeta().getPersistentDataContainer().get(plugin.marks().kId,PersistentDataType.STRING)))count+=item.getAmount();}catch(RuntimeException bad){malformed=true;}
+   }
+   for(int i=0;i<p.getInventory().getSize();i++){ItemStack item=p.getInventory().getItem(i);if(item!=null)physical.add(new Slot(p,i,item.clone()));}
+  }
+  // Finish all identity counting before malformed-token or eligibility refusal can hide a known duplicate.
+  if(count>1||nativeCopies>1){if(mutationBoundary){plugin.historyRecorder().observeAmbiguity(maker,Math.max(count,nativeCopies));if(nativeCopies>1){plugin.historyRecorder().observeNativeAmbiguity(nativeId,nativeCopies);for(UUID id:nativeItems)plugin.historyRecorder().observeAmbiguity(id,nativeCopies);}}return null;}
+  if(malformed)return null;
+  for(Slot slot:physical){ItemStack item=slot.item;if(!item.hasItemMeta())continue;
+   if(maker.toString().equals(item.getItemMeta().getPersistentDataContainer().get(plugin.marks().kId,PersistentDataType.STRING))&&nativeId.equals(Wand.getWandId(item))&&plugin.historyEligible(slot.owner,slot.index,item))found=slot;
+  }
+  return count==1&&nativeCopies==1?found:null;
+ }
+ @Override public void observe
