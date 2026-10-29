@@ -1,0 +1,96 @@
+--- original/src/com/winkreyes/sealalerts/ExcelSealAlerts.java
++++ public/src/com/winkreyes/sealalerts/ExcelSealAlerts.java
+@@ -1,4 +1,4 @@
+-// Excel — WRV custom plugin source; original identity and credits preserved.
++/* Excel WRV maintained source; original attribution and license preserved. */ // Excel — WRV custom plugin source; original identity and credits preserved.
+ package com.winkreyes.sealalerts;
+ 
+ import org.bukkit.Bukkit;
+--- original/src/com/winkreyes/sealalerts/Json.java
++++ public/src/com/winkreyes/sealalerts/Json.java
+@@ -1,4 +1,4 @@
+-// Excel — WRV custom plugin source; original identity and credits preserved.
++/* Excel WRV maintained source; original attribution and license preserved. */ // Excel — WRV custom plugin source; original identity and credits preserved.
+ package com.winkreyes.sealalerts;
+ 
+ import java.util.*;
+--- original/src/com/winkreyes/sealalerts/Names.java
++++ public/src/com/winkreyes/sealalerts/Names.java
+@@ -1,4 +1,4 @@
+-// Excel — WRV custom plugin source; original identity and credits preserved.
++/* Excel WRV maintained source; original attribution and license preserved. */ // Excel — WRV custom plugin source; original identity and credits preserved.
+ package com.winkreyes.sealalerts;
+ 
+ import java.nio.charset.StandardCharsets;
+--- original/src/com/winkreyes/sealalerts/ResponseDiagnostics.java
++++ public/src/com/winkreyes/sealalerts/ResponseDiagnostics.java
+@@ -1,4 +1,4 @@
+-// Excel — WRV custom plugin source; original identity and credits preserved.
++/* Excel WRV maintained source; original attribution and license preserved. */ // Excel — WRV custom plugin source; original identity and credits preserved.
+ package com.winkreyes.sealalerts;
+ 
+ import java.net.http.HttpResponse;
+--- original/src/com/winkreyes/sealalerts/SealParser.java
++++ public/src/com/winkreyes/sealalerts/SealParser.java
+@@ -1,4 +1,4 @@
+-// Excel — WRV custom plugin source; original identity and credits preserved.
++/* Excel WRV maintained source; original attribution and license preserved. */ // Excel — WRV custom plugin source; original identity and credits preserved.
+ package com.winkreyes.sealalerts;
+ 
+ import java.time.*;
+--- original/src/com/winkreyes/sealalerts/StateWatch.java
++++ public/src/com/winkreyes/sealalerts/StateWatch.java
+@@ -1,4 +1,4 @@
+-// Excel — WRV custom plugin source; original identity and credits preserved.
++/* Excel WRV maintained source; original attribution and license preserved. */ // Excel — WRV custom plugin source; original identity and credits preserved.
+ package com.winkreyes.sealalerts;
+ 
+ import java.time.*;
+--- original/src/com/winkreyes/sealalerts/WebhookSender.java
++++ public/src/com/winkreyes/sealalerts/WebhookSender.java
+@@ -1,4 +1,4 @@
+-// Excel — WRV custom plugin source; original identity and credits preserved.
++/* Excel WRV maintained source; original attribution and license preserved. */ // Excel — WRV custom plugin source; original identity and credits preserved.
+ package com.winkreyes.sealalerts;
+ 
+ import java.io.*;
+--- original/tests/com/winkreyes/sealalerts/ResponseDiagnosticsTest.java
++++ public/tests/com/winkreyes/sealalerts/ResponseDiagnosticsTest.java
+@@ -1,4 +1,4 @@
+-// Excel — WRV custom plugin source; original identity and credits preserved.
++/* Excel WRV maintained source; original attribution and license preserved. */ // Excel — WRV custom plugin source; original identity and credits preserved.
+ package com.winkreyes.sealalerts;
+ import org.junit.jupiter.api.Test;
+ import java.nio.ByteBuffer;
+--- original/tests/com/winkreyes/sealalerts/RuntimeDiagnosticsTest.java
++++ public/tests/com/winkreyes/sealalerts/RuntimeDiagnosticsTest.java
+@@ -1,4 +1,4 @@
+-// Excel — WRV runtime-only diagnostic qualification; synthetic fixtures only.
++/* Excel WRV maintained source; original attribution and license preserved. */ // Excel — WRV runtime-only diagnostic qualification; synthetic fixtures only.
+ package com.winkreyes.sealalerts;
+ import org.junit.jupiter.api.Test;
+ import org.bukkit.command.*;
+--- original/tests/com/winkreyes/sealalerts/SealParserTest.java
++++ public/tests/com/winkreyes/sealalerts/SealParserTest.java
+@@ -1,4 +1,4 @@
+-// Excel — WRV custom plugin source; original identity and credits preserved.
++/* Excel WRV maintained source; original attribution and license preserved. */ // Excel — WRV custom plugin source; original identity and credits preserved.
+ package com.winkreyes.sealalerts;
+ 
+ import org.junit.jupiter.api.Test;
+--- original/tests/com/winkreyes/sealalerts/StateWatchTest.java
++++ public/tests/com/winkreyes/sealalerts/StateWatchTest.java
+@@ -1,4 +1,4 @@
+-// Excel — WRV custom plugin source; original identity and credits preserved.
++/* Excel WRV maintained source; original attribution and license preserved. */ // Excel — WRV custom plugin source; original identity and credits preserved.
+ package com.winkreyes.sealalerts;
+ 
+ import org.junit.jupiter.api.Test;
+--- original/tests/com/winkreyes/sealalerts/WebhookSenderTest.java
++++ public/tests/com/winkreyes/sealalerts/WebhookSenderTest.java
+@@ -1,4 +1,4 @@
+-// Excel — WRV custom plugin source; original identity and credits preserved.
++/* Excel WRV maintained source; original attribution and license preserved. */ // Excel — WRV custom plugin source; original identity and credits preserved.
+ package com.winkreyes.sealalerts;
+ 
+ import com.sun.net.httpserver.HttpServer;

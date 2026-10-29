@@ -1,0 +1,104 @@
+[
+  {
+    "path": "LICENSE",
+    "originalSha256": "6e023bf12e74dcc4d9e3fd614863e7560d32cbbaec6445dff15e08aa34aaca27",
+    "sha256": "6e023bf12e74dcc4d9e3fd614863e7560d32cbbaec6445dff15e08aa34aaca27",
+    "change": "unchanged"
+  },
+  {
+    "path": "config.yml",
+    "originalSha256": "12f3e79641667f8bf137bf4c61273a168e869110f5b9c3a7ee0534fc9ed9e3a3",
+    "sha256": "12f3e79641667f8bf137bf4c61273a168e869110f5b9c3a7ee0534fc9ed9e3a3",
+    "change": "unchanged"
+  },
+  {
+    "path": "plugin.yml",
+    "originalSha256": "498da61e2ebcefaa15b07e906ef4adb5c3edb7e730480ecf5fdf41205fbe709e",
+    "sha256": "498da61e2ebcefaa15b07e906ef4adb5c3edb7e730480ecf5fdf41205fbe709e",
+    "change": "unchanged"
+  },
+  {
+    "path": "src/com/winkreyes/sealalerts/ExcelSealAlerts.java",
+    "originalSha256": "e65ead6132e16608baa807da343b7d076a44bd5bb10742c3d508bd5d0f03943f",
+    "sha256": "5a85559cec4fd1132b880d476c5b73a07242079af41af93cd218fe345a838e03",
+    "change": "Excel same-line comment only"
+  },
+  {
+    "path": "src/com/winkreyes/sealalerts/Json.java",
+    "originalSha256": "d99b7c32018ad9f812507a629a650d131eaa15b644bcc4fbf04d565f988f5925",
+    "sha256": "4d2d82c875278b8f1f94a28455233c5048deffafa0eb5232a401c53abbd1a627",
+    "change": "Excel same-line comment only"
+  },
+  {
+    "path": "src/com/winkreyes/sealalerts/Names.java",
+    "originalSha256": "234e205e1c693cd4aaaafb50d6d0dee9884199c57e87204ba251ed01ab4a7f81",
+    "sha256": "5815e0fa43be7dd771b3559a6c579c955fa53b30b970d4ec594efe49718c7db1",
+    "change": "Excel same-line comment only"
+  },
+  {
+    "path": "src/com/winkreyes/sealalerts/ResponseDiagnostics.java",
+    "originalSha256": "be41638bb59c2cac20956e38e77b99db77c1f009d8327f813b94a4b139183abf",
+    "sha256": "3f63b675d6c8f67ee98dfe5e0fb5032674db452c225da72f782f6fc1650f7671",
+    "change": "Excel same-line comment only"
+  },
+  {
+    "path": "src/com/winkreyes/sealalerts/SealParser.java",
+    "originalSha256": "dc1ab3dcdc49740514880d294f23400bdd10360e91b84e1a972533467c40cd22",
+    "sha256": "ccc4ef6982a0192cf8e9b91742f31f785f80cb429b770502ba2d2c98506860ad",
+    "change": "Excel same-line comment only"
+  },
+  {
+    "path": "src/com/winkreyes/sealalerts/StateWatch.java",
+    "originalSha256": "70f1ae9c5ff1009dcae3a9670d9daa0b18c2f11dac4653bc16388550980fd880",
+    "sha256": "baf04a53cba6e3ec879cb9650e3743302528f8e0c2f7680d4999b7c4f42dba22",
+    "change": "Excel same-line comment only"
+  },
+  {
+    "path": "src/com/winkreyes/sealalerts/WebhookSender.java",
+    "originalSha256": "13a6cb5bdb31d509754dd01a81a9bb040e7845d27b373f191945c7a148a53864",
+    "sha256": "d612a643d219a291f1dbbcb85927a87708543212f5fd400e3205f9cf777db7b2",
+    "change": "Excel same-line comment only"
+  },
+  {
+    "path": "tests/com/winkreyes/sealalerts/ResponseDiagnosticsTest.java",
+    "originalSha256": "8de21c85038c80f575d0a34f18a2d83040ac777a5472a18b93ffbd2e133d7f93",
+    "sha256": "48af47a06f28ce0db78e7b9ccd32f33b523f83fe493e05cf50e2f5f324369f14",
+    "change": "Excel same-line comment only"
+  },
+  {
+    "path": "tests/com/winkreyes/sealalerts/RuntimeDiagnosticsTest.java",
+    "originalSha256": "4459a22f515db0e889989e72dce0859b3abf294949dbf43f500de91fd893829a",
+    "sha256": "d5089cc15f0bb767dc96d2531e41bf9f28c1c04b4da6ac2e78f18cc659f2c0c7",
+    "change": "Excel same-line comment only"
+  },
+  {
+    "path": "tests/com/winkreyes/sealalerts/SealParserTest.java",
+    "originalSha256": "08d42c904d8681d91175afd707ddb7c92c6155abca61ccdf29ab73048ced5805",
+    "sha256": "b01f86ba0a2e4b58fbf9f7ec0b8c188a32e866cc26912db6ac3e30a21bc4fe13",
+    "change": "Excel same-line comment only"
+  },
+  {
+    "path": "tests/com/winkreyes/sealalerts/StateWatchTest.java",
+    "originalSha256": "bbcaa6ce54d92fecdb47c3caabee1d42f6b460be34a072d203420822fbba3ba0",
+    "sha256": "14a0382d9fc31794f5abfa0c49db10803e9632f99ff2bec210db7e8782c1b78c",
+    "change": "Excel same-line comment only"
+  },
+  {
+    "path": "tests/com/winkreyes/sealalerts/WebhookSenderTest.java",
+    "originalSha256": "f621f3f47eeda9db295571a215b02f41908cf587ff89c40e7604e88aeedcd077",
+    "sha256": "b45e47fd5fdec99030c6345ecd8fd368231973b4d4334e2ddf46939109584843",
+    "change": "Excel same-line comment only"
+  },
+  {
+    "path": "tests/fixtures/parity.expected.json",
+    "originalSha256": "790144b675be0cd42f773def0d31241f9ccf5dd8fde0be7ef2880383033ec5cf",
+    "sha256": "790144b675be0cd42f773def0d31241f9ccf5dd8fde0be7ef2880383033ec5cf",
+    "change": "unchanged"
+  },
+  {
+    "path": "tests/fixtures/parity.log",
+    "originalSha256": "0af55e1043145a1965facfc5d8cde56ad5abb52be2e19b34c6be54d3a14a088c",
+    "sha256": "0af55e1043145a1965facfc5d8cde56ad5abb52be2e19b34c6be54d3a14a088c",
+    "change": "unchanged"
+  }
+]
