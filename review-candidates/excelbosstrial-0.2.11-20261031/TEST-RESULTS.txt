@@ -1,0 +1,63 @@
+ExcelBossTrial 0.2.11 source deposit - test results
+Base: SOURCE-0.2.10 (recovered 0.2.10-marker-fix, PR #101 draft, commit e8961f3bde8f063dacff26d8f055d2b2718d6179).
+Full suite run against the final 0.2.11 tree (build-test.sh, JDK 25, exit 0); two consecutive package.sh builds byte-identical, SHA-256 7073aa6b6712adf2a88dda407c82fcdbd6f71f87b71fb5646939d1d0248f9b90.
+
+PASS 49 actual API holder/event checks; no side getInventory calls
+23 reviewed-world resolver checks pass
+PASS snapshot protocol/enabled
+PASS real API apply
+PASS only selected cooldown cleared
+PASS receipt and unrelated deadline committed together
+PASS same receipt replay
+PASS receipt replay blocks coordinator completion during a newer selected fight
+PASS unrelated encounter does not block receipt replay
+PASS disabled plugin blocks receipt replay completion
+PASS normal save preserves receipt
+PASS restart receipt replay across generation
+PASS replay does not clear newer cooldown
+PASS old generation preview refused
+PASS invalid operation refused
+PASS conflicting digest refused
+PASS raid not owned here
+PASS disabled selected chapter blocks receipt replay
+PASS dragon bridge supported without altering battle phase
+PASS off-main API refused
+PASS pending elder blocks recovery
+PASS elder timer/state preserved
+PASS other seal recovery works with unrelated pending elders
+PASS unrelated monuments and signature rewards unchanged in memory
+PASS unrelated pending elder and signature persisted unchanged
+PASS after-rename failure reported
+PASS receipt actually reached disk before injected error
+PASS normal save cannot erase uncertain committed receipt
+PASS uncertain live instance fails closed
+PASS restart reconciles committed receipt
+PASS retained selected encounter marked active without entity lookup
+PASS selected active encounter refuses apply
+PASS unrelated active wither preserved during warden recovery
+PASS reviewed full elder recovery establishes latch without monument reset
+PASS later elder latch revoke not overwritten by receipt replay
+PASS before-rename failure reported
+PASS before-rename keeps old disk state intact
+PASS malformed receipt locks recovery
+PASS normal save preserves corrupt evidence rather than erasing it
+PASS malformed YAML fails closed
+PASS external disk edit after preview refuses owner write
+PASS external edited state left untouched
+PASS normal save cannot overwrite external edit after lock
+PASS normal save independently checks disk fingerprint and locks
+PASS invalid raw protocol locks: 1.5
+PASS invalid protocol evidence preserved: 1.5
+PASS invalid raw protocol locks: '1'
+PASS invalid protocol evidence preserved: '1'
+PASS invalid raw protocol locks: .NaN
+PASS invalid protocol evidence preserved: .NaN
+PASS invalid raw protocol locks: .inf
+PASS invalid protocol evidence preserved: .inf
+PASS invalid raw protocol locks: 2
+PASS invalid protocol evidence preserved: 2
+ClaimSessionTest: 288 checks passed
+InventoryPlanTest: 24906 checks passed (surrogate stacks)
+ComponentTest: 8 checks passed
+PASS 48 checks; actual temp files: /tmp/team-reward-test-9304052635390873641
+PASS: compiled all source and ran all main-method harnesses. Build output: ephemeral local directory.
