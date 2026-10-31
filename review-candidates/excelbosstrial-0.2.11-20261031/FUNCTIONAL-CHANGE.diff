@@ -1,0 +1,2529 @@
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/config.yml SOURCE-0.2.11/config.yml
+--- SOURCE-0.2.10/config.yml	2026-10-31 04:10:56.343261846 +0000
++++ SOURCE-0.2.11/config.yml	2026-10-31 05:53:26.297782239 +0000
+@@ -185,8 +185,12 @@
+     # Signature (0.2.5, spec 4.6 amendment): "First Breath" -
+     # one elytra per champion standing at the fall, on the
+     # credited kill that breaks the dragon seal, once per seal.
+-    # Every credit kill: breath bottles = base + per-champion
+-    # beyond the first, capped; plus a flat pair of end crystals.
++    # Every credit kill (0.2.11, B-3): breath-base bottles and
++    # crystals end crystals PER CHAMPION, stored as personal
++    # claims - never pooled drops. breath-per-champion and
++    # breath-cap are kept for the no-roster fallback only (a
++    # credit kill with nobody on record pays the old pooled
++    # drops: base + per-champion beyond the first, capped).
+     signature:
+       - {material: ELYTRA, count: 1, name: "First Breath", enchants: {unbreaking: 3, mending: 1}, durability: 1.0}
+     breath-base: 4
+@@ -238,3 +242,32 @@
+     # Exact Bukkit loaded-world names only; optional alternative to UUIDs, not aliases.
+     # Do not select the same world in both lists. Guild remains excluded.
+     reviewed-world-names: []
++  # Auto-present (0.2.11, B-2): the rewards menu opens itself once per
++  # earned batch - at the verdict that stored it, and at the first join
++  # that finds it waiting - after these delays. Balance values, not
++  # constants: raise them if the moment feels rushed.
++  presentation:
++    verdict-delay-seconds: 2
++    join-delay-seconds: 3
++    # An AUTO present also applies the Excel invisibility potion:
++    # the plugin's own invisibility effect for the review window
++    # (review-frames.max-seconds), server-side - nothing is taken
++    # from the player's inventory and nothing need be carried.
++    # Manual opens never get it. Set false to present without it.
++    excel-invisibility-potion: true
++  # Immunity frames (0.2.11, B-2): while an AUTO-presented menu is open
++  # the owner can neither take nor deal damage nor interact, for at
++  # most max-seconds; closing early leaves close-grace-seconds of
++  # damage-in-only protection, and dealing damage ends the grace
++  # instantly. Manual opens (/bossrewards, markers) never get frames.
++  review-frames:
++    max-seconds: 60
++    close-grace-seconds: 1
++
++# Console commands (0.2.11): grantclaim throws an owed reward into a
++# player's personal claims (/bosstrial grantclaim <player> <material>
++# <count>) - the remediation path, since claims wait out offline
++# players and full inventories by design. Console or the
++# excelbosstrial.admin node only; every attempt is audit-logged.
++commands:
++  grantclaim-enabled: true
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/plugin.yml SOURCE-0.2.11/plugin.yml
+--- SOURCE-0.2.10/plugin.yml	2026-10-31 04:10:59.711642183 +0000
++++ SOURCE-0.2.11/plugin.yml	2026-10-31 05:53:26.297906806 +0000
+@@ -1,9 +1,9 @@
+ name: ExcelBossTrial
+-version: 0.2.10-marker-fix
++version: 0.2.11
+ author: Argus
+ main: com.winkreyes.excelbosstrial.ExcelBossTrial
+ api-version: "1.21"
+-description: The seal-boss rules of Wink Reyes Valley in one home - damage caps, the 70% player-damage share gate (config share-threshold), the presence rule, 6-hour credit cooldowns, the elder-guardian trio, participant spoils, the two-phase dragon trial (ExcelDragonTrial 0.1.2, ported in), participant growth (the boss rallies), and curated seal loot. 0.2.1 adds the seal-integrity fixes - the wither fought-free (cage) check, the warden horizontal range band, and the dragon share gate. 0.2.2 adds the seal-hardening pair - the warden gives up on a fight that never comes to it, and end crystals and respawn anchors answer to their placer. 0.2.3 adds the announcement window - while it is armed, seal attempts, fails, breaks and running cooldowns are announced in chat, repeated hourly, and rebroadcast to everyone on every join. 0.2.4 adds the XP band governor feed - every governed hit plants its band verdict for the XP listener (ExcelRewardGuard), so out-of-band hits pay 25% mcMMO XP in real time while in-band hits pay full; silent, fail-safe both ways. 0.2.5 makes the rewards mean something (spec 4.6) - the dragon gains a signature - "First Breath", one elytra per champion standing at the fall - and every seal's named signature gear is granted per champion, stamped with its earner's provenance, under the fairness rule. 0.2.6 splits the command gate - the status view is public, so any player can run /bosstrial status to check seal state and cooldowns, while reload and reset stay admin-only, enforced in the handler now that plugin.yml no longer gates the whole command. 0.2.7 keeps a fight when its boss is merely unloaded (the family went home, logged off or wiped) instead of forgetting it, holds the dragon trial while nobody is at the arena, and sets aside damage a lost ledger never saw so an honest finish can still earn the seal.
++description: The seal-boss rules of Wink Reyes Valley in one home - damage caps, the 70% player-damage share gate (config share-threshold), the presence rule, 6-hour credit cooldowns, the elder-guardian trio, participant spoils, the two-phase dragon trial (ExcelDragonTrial 0.1.2, ported in), participant growth (the boss rallies), and curated seal loot. 0.2.1 adds the seal-integrity fixes - the wither fought-free (cage) check, the warden horizontal range band, and the dragon share gate. 0.2.2 adds the seal-hardening pair - the warden gives up on a fight that never comes to it, and end crystals and respawn anchors answer to their placer. 0.2.3 adds the announcement window - while it is armed, seal attempts, fails, breaks and running cooldowns are announced in chat, repeated hourly, and rebroadcast to everyone on every join. 0.2.4 adds the XP band governor feed - every governed hit plants its band verdict for the XP listener (ExcelRewardGuard), so out-of-band hits pay 25% mcMMO XP in real time while in-band hits pay full; silent, fail-safe both ways. 0.2.5 makes the rewards mean something (spec 4.6) - the dragon gains a signature - "First Breath", one elytra per champion standing at the fall - and every seal's named signature gear is granted per champion, stamped with its earner's provenance, under the fairness rule. 0.2.6 splits the command gate - the status view is public, so any player can run /bosstrial status to check seal state and cooldowns, while reload and reset stay admin-only, enforced in the handler now that plugin.yml no longer gates the whole command. 0.2.7 keeps a fight when its boss is merely unloaded (the family went home, logged off or wiped) instead of forgetting it, holds the dragon trial while nobody is at the arena, and sets aside damage a lost ledger never saw so an honest finish can still earn the seal. 0.2.11 hardens the dragon flip with a second, final judgment at HIGHEST plus danger-zone logging, closes a saved trial out on version change instead of restoring it (archived, logged, counters kept), presents earned rewards automatically once per batch - with immunity frames on the auto-open only, never on a manual one - and pays every signature stack plus the dragon's breath and crystals per champion as personal claims, dragon XP included.
+ softdepend: [ExcelGuildGate, Magic, GriefPrevention]
+ commands:
+   bossrewards:
+@@ -11,7 +11,7 @@
+     usage: /bossrewards
+   bosstrial:
+     description: ExcelBossTrial status and admin controls
+-    usage: /bosstrial [status|reload|reset [all]]
++    usage: /bosstrial [status|reload|reset [all]|grantclaim <player> <material> <count>]
+ permissions:
+   excelbosstrial.admin:
+     description: Allows /bosstrial admin commands
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java
+--- SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java	2026-10-31 04:11:03.061868135 +0000
++++ SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java	2026-10-31 05:53:26.302937226 +0000
+@@ -12,6 +12,7 @@
+ import com.winkreyes.excelbosstrial.core.EncounterRetention;
+ import com.winkreyes.excelbosstrial.core.MonumentTracker;
+ import com.winkreyes.excelbosstrial.core.DenialMessage;
++import com.winkreyes.excelbosstrial.core.GrantClaimPlan;
+ import com.winkreyes.excelbosstrial.core.LaunchSnapshotLog;
+ import com.winkreyes.excelbosstrial.core.PlacementRegistry;
+ import com.winkreyes.excelbosstrial.core.ProvenanceLore;
+@@ -1640,6 +1641,17 @@
+         attemptsAnnounced.remove(boss.getUniqueId());
+         DeathOutcome outcome = outcomeFor(kind, boss, ledger);
+         boolean teamVerdictReady = prepareTeamVerdict(boss, kind, outcome);
++        // 0.2.11 (B-3): a CREDIT dragon pays its XP per champion —
++        // the death event carries none, and every online roster
++        // champion receives the full base award directly. The single
++        // multiplied pool, divided by whoever scooped the orbs, is
++        // retired for the dragon; when no roster is on record the
++        // legacy spoils path below still pays, so XP is never voided.
++        boolean dragonXpPaid = false;
++        if (kind == BossKind.ENDER_DRAGON && boss instanceof EnderDragon dragon
++                && outcome.verdict == CreditJudge.Verdict.CREDIT && teamVerdictReady) {
++            dragonXpPaid = applyDragonXpPerChampion(event, dragon);
++        }
+         // Spoils follow the verdict (Mike, Oct 19, 2026): the
+         // multiplier baked into the outcome is already 1 on any
+         // denial, so a refused kill falls through here with plain
+@@ -1647,8 +1659,10 @@
+         // XP stays unscaled.
+         if (cfg.spoilsEnabled && outcome.multiplier > 1) {
+             if (kind == BossKind.ENDER_DRAGON && boss instanceof EnderDragon dragon) {
+-                applyDragonXp(event, dragon, outcome.multiplier);
+-                broadcast(fill(msgSpoilsDragon, kind, outcome));
++                if (!dragonXpPaid) {
++                    applyDragonXp(event, dragon, outcome.multiplier);
++                    broadcast(fill(msgSpoilsDragon, kind, outcome));
++                }
+             } else {
+                 List<ItemStack> extra = new ArrayList<>();
+                 for (ItemStack drop : event.getDrops()) {
+@@ -1675,12 +1689,13 @@
+ 
+     /**
+      * Curated seal loot (spec section 4): the signature pool once
+-     * per seal on the seal-breaking kill - since 0.2.5 its named
+-     * gear is granted per standing champion (the fairness rule),
+-     * its material stacks drop once, shared - one bonus roll per
+-     * extra standing champion (cap +4) on every credit kill, and
+-     * the dragon's breath + crystals on every dragon credit kill.
+-     * Denied kills get none of it - they drop plain vanilla.
++     * per seal on the seal-breaking kill — since 0.2.11 (B-3, Reward
++     * Law variant B) EVERY signature stack is a per-champion claim,
++     * nothing signature drops at the kill — one bonus roll per extra
++     * standing champion (cap +4) on every credit kill, and the
++     * dragon's breath + crystals as per-champion claims on every
++     * dragon credit kill. Denied kills get none of it — they drop
++     * plain vanilla.
+      */
+     private void applySealLoot(BossKind kind, EntityDeathEvent event, DeathOutcome outcome, boolean teamVerdictReady) {
+         if (!lootEnabled || outcome.verdict != CreditJudge.Verdict.CREDIT) {
+@@ -1689,16 +1704,46 @@
+         SealLoot.LootTable table = lootTables.getOrDefault(kind, SealLoot.defaultsFor(kind));
+         boolean signature = SealLoot.paysSignature(outcome.verdict, outcome.elderProgress,
+                 signaturePaid.contains(kind.sealId()));
++        boolean signatureStored = false;
+         if (signature && teamVerdictReady) {
+             try {
+                 grantSignature(kind, table, outcome, event);
+                 signaturePaid.add(kind.sealId());
+                 saveState();
++                signatureStored = true;
+             } catch (Exception signatureFailure) {
+                 getLogger().severe("Signature claim needs owner review; ordinary credit-kill bonuses remain unchanged: " + signatureFailure.getMessage());
+             }
+         }
+         if (kind == BossKind.ENDER_DRAGON) {
++            // On the seal-breaking kill the dragon's materials already
++            // ride the signature distribution (grantSignature — the
++            // ledger finalizes one plan per run). Every other CREDIT
++            // kill stores them on their own. Either way they are
++            // per-champion claims now, never pooled drops.
++            if (signatureStored) {
++                getLogger().info("BossTrial seal loot [Dragon]: breath x" + dragonBreathBase
++                        + ", end crystals x" + dragonCrystals + " per champion ("
++                        + outcome.presentParticipants + " champion(s) standing).");
++                return;
++            }
++            DragonMaterials stored = teamVerdictReady
++                    ? storeDragonMaterials(event) : DragonMaterials.FAILED;
++            if (stored == DragonMaterials.STORED) {
++                getLogger().info("BossTrial seal loot [Dragon]: breath x" + dragonBreathBase
++                        + ", end crystals x" + dragonCrystals + " per champion ("
++                        + outcome.presentParticipants + " champion(s) standing).");
++                return;
++            }
++            if (stored == DragonMaterials.FAILED) {
++                // The store itself reported the failure (uncertain
++                // write or no team claims): no direct payout, exactly
++                // like a failed signature write.
++                return;
++            }
++            // EMPTY_ROSTER: the spec's own fallback — a CREDIT kill
++            // with nobody on record to claim into pays the pre-0.2.11
++            // pooled drops, so the kill's materials are never voided.
+             int breath = Math.min(dragonBreathCapN, dragonBreathBase
+                     + dragonBreathPer * Math.max(0, outcome.presentParticipants - 1));
+             if (breath > 0) {
+@@ -1707,8 +1752,9 @@
+             if (dragonCrystals > 0) {
+                 event.getDrops().add(new ItemStack(Material.END_CRYSTAL, dragonCrystals));
+             }
+-            getLogger().info("BossTrial seal loot [Dragon]: breath x" + breath
+-                    + ", end crystals x" + dragonCrystals + " ("
++            getLogger().warning("BossTrial seal loot [Dragon]: no roster on record for "
++                    + "per-champion material claims; fell back to pooled drops (breath x"
++                    + breath + ", end crystals x" + dragonCrystals + ", "
+                     + outcome.presentParticipants + " champion(s) standing).");
+             return;
+         }
+@@ -1729,17 +1775,32 @@
+         }
+     }
+ 
++    /** Outcome of one dragon-materials store attempt (0.2.11, B-3). */
++    private enum DragonMaterials { STORED, EMPTY_ROSTER, FAILED }
++
++    /** B-3 unit ids for the dragon's per-champion materials. */
++    private static String dragonMaterialUnit(UUID owner, String material) {
++        return switch (material) {
++            case "DRAGON_BREATH" -> "personal:" + owner + ":breath";
++            case "END_CRYSTAL" -> "personal:" + owner + ":crystals";
++            default -> "personal:" + owner + ":mat:" + material;
++        };
++    }
++
+     /**
+-     * Execute the fairness-rule grant plan (0.2.5, spec 4.6) for
+-     * one paying signature kill: each named-gear stack is built
+-     * once per standing champion, provenance-stamped for THAT
+-     * champion and handed straight to them (overflow at their
+-     * feet); each material stack drops once at the kill, shared,
+-     * exactly as before. The plan comes from
+-     * {@link SealLoot#signatureGrants}, so the plan the unit
+-     * tests pin is the plan the server runs - on the config path
+-     * and the code-default path alike, since both arrive here as
+-     * the same LootTable.
++     * Execute the grant plan for one paying signature kill. Since
++     * 0.2.11 (B-3, Reward Law variant B) the plan is
++     * {@link SealLoot#perChampionPlan}: the FULL table stored in
++     * every roster member's personal claim — named gear carrying
++     * its provenance stamp for that champion, material stacks
++     * plain. Nothing signature drops at the kill any more. On the
++     * dragon's seal-breaking kill the per-kill materials ride this
++     * same distribution (the ledger finalizes exactly one plan per
++     * run, so they cannot be a second store); every later CREDIT
++     * kill stores them alone via {@link #storeDragonMaterials}.
++     * The plan the unit tests pin is the plan the server runs — on
++     * the config path and the code-default path alike, since both
++     * arrive here as the same LootTable.
+      */
+     private void grantSignature(BossKind kind, SealLoot.LootTable table,
+                                 DeathOutcome outcome, EntityDeathEvent event) {
+@@ -1748,41 +1809,91 @@
+         String priorScopeOwner = teamClaims.ledger.consumedScopes().get("signature:" + kind.sealId());
+         if (run.equals(priorScopeOwner)) return; // Frozen original plan survives later name/date/config changes.
+         if (priorScopeOwner != null) throw new IllegalStateException("signature already consumed by another run or baseline");
++        java.util.List<SealLoot.PlannedStack> plan = SealLoot.perChampionPlan(table);
+         java.util.Map<UUID,java.util.List<wrv.rewards.TeamRewardLedger.RewardUnit>> distribution = new java.util.TreeMap<>();
+-        java.util.List<ItemStack> shared = new java.util.ArrayList<>();
+         for (UUID owner : teamClaims.ledger.roster(run)) {
+             java.util.List<wrv.rewards.TeamRewardLedger.RewardUnit> units = new java.util.ArrayList<>();
+             int index = 0;
+-            for (SealLoot.SignatureGrant grant : SealLoot.signatureGrants(table)) {
+-                if (grant.perChampion()) {
+-                    ItemStack stack = buildLootStack(grant.item());
+-                    if (stack == null) throw new IllegalStateException("invalid personal signature recipe");
++            for (SealLoot.PlannedStack planned : plan) {
++                ItemStack stack = buildLootStack(planned.item());
++                if (stack == null) throw new IllegalStateException("invalid personal signature recipe");
++                if (planned.provenanceStamped()) {
+                     String name = Bukkit.getOfflinePlayer(owner).getName();
+                     stampProvenance(stack, name != null ? name : owner.toString());
+-                    units.add(new wrv.rewards.TeamRewardLedger.RewardUnit("personal:" + owner + ":" + index, TeamClaims.encode(stack)));
+                 }
++                units.add(new wrv.rewards.TeamRewardLedger.RewardUnit("personal:" + owner + ":" + index, TeamClaims.encode(stack)));
+                 index++;
+             }
++            if (kind == BossKind.ENDER_DRAGON) {
++                for (SealLoot.LootItem mat : SealLoot.dragonMaterials(dragonBreathBase, dragonCrystals)) {
++                    ItemStack stack = buildLootStack(mat);
++                    if (stack == null) throw new IllegalStateException("invalid dragon material recipe");
++                    units.add(new wrv.rewards.TeamRewardLedger.RewardUnit(
++                            dragonMaterialUnit(owner, mat.material()), TeamClaims.encode(stack)));
++                }
++            }
+             distribution.put(owner, java.util.List.copyOf(units));
+         }
+-        for (SealLoot.SignatureGrant grant : SealLoot.signatureGrants(table)) if (!grant.perChampion()) {
+-            ItemStack stack = buildLootStack(grant.item());
+-            if (stack == null) throw new IllegalStateException("invalid shared signature recipe");
+-            shared.add(stack);
+-        }
+-        boolean alreadyStored = run.equals(teamClaims.ledger.consumedScopes().get("signature:" + kind.sealId()));
+         try {
+             teamClaims.ledger.winOnceScope(run, "signature:" + kind.sealId(), "signature-v1", distribution);
+         } catch (java.io.IOException failure) {
+             throw new IllegalStateException("Reward ledger write uncertain; no direct payout", failure);
+         }
+-        // Shared material pool remains exactly one original copy. No per-player multiplication.
+-        if (!alreadyStored) event.getDrops().addAll(shared);
+-        try { teamClaims.offerMarkers(distribution.entrySet().stream().filter(e -> !e.getValue().isEmpty()).map(java.util.Map.Entry::getKey).toList(),event.getEntity().getLocation()); }
++        java.util.List<UUID> paidOwners = distribution.entrySet().stream().filter(e -> !e.getValue().isEmpty()).map(java.util.Map.Entry::getKey).toList();
++        try { teamClaims.offerMarkers(paidOwners,event.getEntity().getLocation()); }
+         catch (RuntimeException markerFailure) { getLogger().warning("Personal chest fallback retained in reward menu."); }
++        // 0.2.11 (B-2): the verdict itself presents the menu, once per batch.
++        try { teamClaims.presentToOwners(paidOwners); }
++        catch (RuntimeException presentFailure) { getLogger().warning("Reward auto-present skipped: " + presentFailure.getMessage()); }
+         getLogger().info("BossTrial personal signature claims stored for " + distribution.size() + " qualified teammate(s).");
+     }
+ 
++    /**
++     * 0.2.11 (B-3): store one dragon CREDIT kill's per-champion
++     * materials (breath + crystals from config, read per-champion)
++     * as personal claims on this run — the non-once ledger path, so
++     * every CREDIT kill pays them again while the signature scope
++     * stays consumed. Never touches the drops.
++     */
++    private DragonMaterials storeDragonMaterials(EntityDeathEvent event) {
++        if (teamClaims == null) {
++            getLogger().severe("Dragon material claims unavailable (team claims not initialised); no direct payout.");
++            return DragonMaterials.FAILED;
++        }
++        String run = teamRun(event.getEntity(), BossKind.ENDER_DRAGON);
++        java.util.Set<UUID> roster = teamClaims.ledger.roster(run);
++        if (roster.isEmpty()) {
++            return DragonMaterials.EMPTY_ROSTER;
++        }
++        java.util.Map<UUID,java.util.List<wrv.rewards.TeamRewardLedger.RewardUnit>> distribution = new java.util.TreeMap<>();
++        for (UUID owner : roster) {
++            java.util.List<wrv.rewards.TeamRewardLedger.RewardUnit> units = new java.util.ArrayList<>();
++            for (SealLoot.LootItem mat : SealLoot.dragonMaterials(dragonBreathBase, dragonCrystals)) {
++                ItemStack stack = buildLootStack(mat);
++                if (stack == null) throw new IllegalStateException("invalid dragon material recipe");
++                units.add(new wrv.rewards.TeamRewardLedger.RewardUnit(
++                        dragonMaterialUnit(owner, mat.material()), TeamClaims.encode(stack)));
++            }
++            distribution.put(owner, java.util.List.copyOf(units));
++        }
++        try {
++            teamClaims.ledger.win(run, "dragon-materials-v1", distribution);
++        } catch (java.io.IOException failure) {
++            getLogger().severe("Dragon material claim write uncertain; no direct payout: " + failure.getMessage());
++            return DragonMaterials.FAILED;
++        } catch (RuntimeException failure) {
++            getLogger().severe("Dragon material claims need owner review; no direct payout: " + failure.getMessage());
++            return DragonMaterials.FAILED;
++        }
++        java.util.List<UUID> paidOwners = distribution.entrySet().stream().filter(e -> !e.getValue().isEmpty()).map(java.util.Map.Entry::getKey).toList();
++        try { teamClaims.offerMarkers(paidOwners,event.getEntity().getLocation()); }
++        catch (RuntimeException markerFailure) { getLogger().warning("Personal chest fallback retained in reward menu."); }
++        try { teamClaims.presentToOwners(paidOwners); }
++        catch (RuntimeException presentFailure) { getLogger().warning("Reward auto-present skipped: " + presentFailure.getMessage()); }
++        getLogger().info("BossTrial dragon material claims stored for " + distribution.size() + " champion(s).");
++        return DragonMaterials.STORED;
++    }
++
+     private String teamRun(LivingEntity boss, BossKind kind) {
+         return kind.sealId() + ":" + boss.getWorld().getUID() + ":" + boss.getUniqueId();
+     }
+@@ -1851,6 +1962,45 @@
+     }
+ 
+     /**
++     * 0.2.11 (B-3): per-champion dragon XP. The death event's XP is
++     * zeroed and every roster champion ONLINE at the kill receives
++     * the full base award (12,000 first kill / 500 repeat, from
++     * SpoilsMath at multiplier 1) straight onto their bar — no orbs,
++     * no scooping race, no divided pool. Offline champions receive
++     * nothing: XP cannot be banked into the claims ledger, which
++     * holds items only, and the old pooled event XP would have
++     * reached only whoever stood at the corpse anyway. Returns
++     * false when no roster is on record, leaving the caller's
++     * legacy spoils path to pay the event XP exactly as before.
++     */
++    private boolean applyDragonXpPerChampion(EntityDeathEvent event, EnderDragon dragon) {
++        if (teamClaims == null) {
++            return false;
++        }
++        java.util.Set<UUID> roster = teamClaims.ledger.roster(teamRun(dragon, BossKind.ENDER_DRAGON));
++        if (roster.isEmpty()) {
++            return false;
++        }
++        DragonBattle battle = dragon.getWorld().getEnderDragonBattle();
++        boolean firstKill = battle == null || !battle.hasBeenPreviouslyKilled();
++        int base = SpoilsMath.dragonXp(firstKill, 1);
++        int vanilla = event.getDroppedExp();
++        event.setDroppedExp(0);
++        int paid = 0;
++        for (UUID owner : roster) {
++            Player champion = Bukkit.getPlayer(owner);
++            if (champion != null && champion.isOnline()) {
++                champion.giveExp(base);
++                paid++;
++            }
++        }
++        getLogger().info("Dragon XP spoils: firstKill=" + firstKill + ", death-event XP="
++                + vanilla + " -> 0, per-champion award=" + base + " to " + paid
++                + " online champion(s) of " + roster.size() + " on the roster.");
++        return true;
++    }
++
++    /**
+      * Dragon XP spoils. The dragon drops no items, so its XP scales:
+      * 12,000 first kill / 500 repeat, times the participant
+      * multiplier. Decided by the rig XP probe (BUILD.md): on Paper
+@@ -2567,6 +2717,10 @@
+             }
+             return true;
+         }
++        if (args[0].equalsIgnoreCase("grantclaim")) {
++            handleGrantClaim(sender, args);
++            return true;
++        }
+         if (args[0].equalsIgnoreCase("reload")) {
+             loadSettings();
+             if (dragonChapter != null) {
+@@ -2593,10 +2747,98 @@
+                             ? " (including monuments + elder approval)" : "") + "."));
+             return true;
+         }
+-        sender.sendMessage(color("&cUsage: /bosstrial [status|reload|reset [all]]"));
++        sender.sendMessage(color("&cUsage: /bosstrial [status|reload|reset [all]|grantclaim <player> <material> <count>]"));
+         return true;
+     }
+ 
++    /**
++     * 0.2.11: /bosstrial grantclaim <player> <material> <count> —
++     * throw an owed reward into a player's personal claims (Mike,
++     * Oct 30, 2026: remediations ride the claims store because it
++     * "waits out full inventories and offline players by design").
++     * Access rides the 0.2.6 split: the call is a non-status
++     * subcommand, so CommandAccess has already refused non-admin
++     * players by the time we get here; the console passes. Offline
++     * players are the primary use — the claim simply waits for
++     * their next join, then presents and delivers like any earned
++     * batch. Every attempt, granted or refused, is audit-logged.
++     */
++    private void handleGrantClaim(CommandSender sender, String[] args) {
++        String joined = String.join(" ", args);
++        if (!getConfig().getBoolean("commands.grantclaim-enabled", true)) {
++            getLogger().warning("BossTrial grantclaim REFUSED (disabled by config) by "
++                    + sender.getName() + ": " + joined);
++            sender.sendMessage(color("&cgrantclaim is disabled by config (commands.grantclaim-enabled)."));
++            return;
++        }
++        if (args.length != 4) {
++            sender.sendMessage(color("&cUsage: /bosstrial grantclaim <player> <material> <count>"));
++            return;
++        }
++        // Resolve the target: a UUID, an online player's exact name,
++        // or an offline player's name (the primary use).
++        UUID target = null;
++        String targetName = null;
++        try {
++            target = UUID.fromString(args[1]);
++            targetName = Bukkit.getOfflinePlayer(target).getName();
++        } catch (IllegalArgumentException notUuid) {
++            Player online = Bukkit.getPlayerExact(args[1]);
++            if (online != null) {
++                target = online.getUniqueId();
++                targetName = online.getName();
++            } else {
++                var offline = Bukkit.getOfflinePlayer(args[1]);
++                target = offline.getUniqueId();
++                targetName = offline.getName();
++            }
++        }
++        if (targetName == null) {
++            targetName = args[1];
++        }
++        GrantClaimPlan.Result parsed = GrantClaimPlan.parse(args[2], args[3]);
++        if (!parsed.ok()) {
++            getLogger().warning("BossTrial grantclaim REFUSED (" + parsed.error() + ") by "
++                    + sender.getName() + ": " + joined);
++            sender.sendMessage(color(parsed.error() == GrantClaimPlan.Error.MATERIAL
++                    ? "&cNo such item material: " + args[2]
++                    : "&cCount must be a whole number from 1 to " + GrantClaimPlan.MAX_COUNT + ": " + args[3]));
++            return;
++        }
++        if (teamClaims == null) {
++            getLogger().severe("BossTrial grantclaim FAILED (team claims unavailable) by "
++                    + sender.getName() + ": " + joined);
++            sender.sendMessage(color("&cTeam claims are unavailable; nothing was stored."));
++            return;
++        }
++        GrantClaimPlan.Plan plan = parsed.plan();
++        if (!plan.material().isItem()) {
++            getLogger().warning("BossTrial grantclaim REFUSED (MATERIAL: not an item) by "
++                    + sender.getName() + ": " + joined);
++            sender.sendMessage(color("&cNot an item material: " + args[2]));
++            return;
++        }
++        List<ItemStack> stacks = new ArrayList<>();
++        for (int size : GrantClaimPlan.split(plan.count(),
++                Math.max(1, plan.material().getMaxStackSize()))) {
++            stacks.add(new ItemStack(plan.material(), size));
++        }
++        try {
++            String run = teamClaims.grantClaim(target, stacks);
++            getLogger().info("BossTrial grantclaim: " + sender.getName() + " granted "
++                    + plan.count() + " x " + plan.material().name() + " to " + targetName
++                    + " (" + target + ") as claim " + run + "/" + target
++                    + " (" + stacks.size() + " stack(s)); it waits in their /bossrewards.");
++            sender.sendMessage(color("&aGranted " + plan.count() + " x " + plan.material().name()
++                    + " to " + targetName + " - it waits in their /bossrewards."));
++        } catch (Exception failure) {
++            getLogger().severe("BossTrial grantclaim FAILED by " + sender.getName() + " for "
++                    + targetName + " (" + target + "), " + plan.count() + " x "
++                    + plan.material().name() + ": " + failure.getMessage());
++            sender.sendMessage(color("&cGrant failed; nothing was stored. See the server log."));
++        }
++    }
++
+     // ------------------------------------------------------------------
+     // Small helpers
+     // ------------------------------------------------------------------
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/TeamClaims.java SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/TeamClaims.java
+--- SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/TeamClaims.java	2026-10-31 04:11:06.081341495 +0000
++++ SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/TeamClaims.java	2026-10-31 05:53:26.303043014 +0000
+@@ -11,13 +11,22 @@
+ import java.util.*;
+ 
+ /** Offline candidate adapter; personal claims only. Does not adjudicate fights or distribute shared drops. */
+-final class TeamClaims implements AutoCloseable {
++final class TeamClaims implements AutoCloseable, org.bukkit.event.Listener {
+  final TeamRewardLedger ledger;
+  private final TeamAdmission admission;
+  private final PersonalClaimsUi ui;
++ private final JavaPlugin plugin;
++ private final ClaimGateway gateway;
++ private final ReviewPresentation presentation;
++ private final ReviewFrames frames;
++ private final long verdictDelayTicks;
++ private final long joinDelayTicks;
++ private final int frameMaxTicks;
++ private final boolean popInvisibilityPotion;
+  private com.winkreyes.teamrewards.marker.MarkerRegistry markerRegistry;
+  private com.winkreyes.teamrewards.marker.PersonalChestMarkers markers;
+  TeamClaims(JavaPlugin plugin,Set<String> alreadyPaid)throws IOException{
++  this.plugin=plugin;
+   ledger=new TeamRewardLedger(plugin.getDataFolder().toPath().resolve("team-rewards.dat"));
+   try{
+    for(String seal:alreadyPaid)ledger.importConsumedScope("signature:"+seal);
+@@ -34,15 +43,31 @@
+     }
+     return items;
+    },TeamClaims::normalInventory);
+-   ui=new PersonalClaimsUi(plugin,new ClaimGateway(){
++   gateway=new ClaimGateway(){
+     public java.util.List<Pending> pending(UUID owner){return delivery.pending(owner);}
+     public Result claim(UUID owner,String id){
+      Result result=delivery.claim(owner,id);
+      if(result==Result.DELIVERED)cleanupClaimedMarker(owner);
+      return result;
+     }
+-   });
++   };
++   ui=new PersonalClaimsUi(plugin,gateway);
+    Bukkit.getPluginManager().registerEvents(ui,plugin);
++   // 0.2.11 (B-2): auto-present + AUTO-session immunity frames. The
++   // delays and frame lengths are balance values, so they are config
++   // keys (team-rewards.*) whose defaults are the settled numbers.
++   presentation=loadPresentation(plugin);
++   ui.setOpenObserver((owner,ids)->{presentation.markPresented(owner,ids);persistPresentation();});
++   int frameSeconds=Math.max(0,plugin.getConfig().getInt("team-rewards.review-frames.max-seconds",ReviewFramesPolicy.DEFAULT_MAX_TICKS/20));
++   int graceSeconds=Math.max(0,plugin.getConfig().getInt("team-rewards.review-frames.close-grace-seconds",ReviewFramesPolicy.DEFAULT_GRACE_TICKS/20));
++   frames=new ReviewFrames(ui,frameSeconds*20,graceSeconds*20);
++   ui.setSessionListener(frames);
++   Bukkit.getPluginManager().registerEvents(frames,plugin);
++   Bukkit.getPluginManager().registerEvents(this,plugin);
++   verdictDelayTicks=Math.max(0,plugin.getConfig().getInt("team-rewards.presentation.verdict-delay-seconds",2))*20L;
++   joinDelayTicks=Math.max(0,plugin.getConfig().getInt("team-rewards.presentation.join-delay-seconds",3))*20L;
++   frameMaxTicks=frameSeconds*20;
++   popInvisibilityPotion=plugin.getConfig().getBoolean("team-rewards.presentation.excel-invisibility-potion",true);
+    var command=plugin.getCommand("bossrewards");
+    if(command==null)throw new IOException("missing owner reward command");
+    command.setExecutor(ui);
+@@ -104,6 +129,87 @@
+    if(!outstanding)for(var marker:markerRegistry.all())if(marker.owner().equals(owner))markers.cleanup(marker.id());
+   }catch(RuntimeException unavailable){/* Never infer safe cleanup from unavailable authoritative records. */}
+  }
++ private static java.nio.file.Path presentedFile(JavaPlugin plugin){return plugin.getDataFolder().toPath().resolve("team-rewards-presented.dat");}
++ private static ReviewPresentation loadPresentation(JavaPlugin plugin){
++  try{var file=presentedFile(plugin);if(java.nio.file.Files.exists(file))return ReviewPresentation.decode(java.nio.file.Files.readString(file));}
++  catch(Exception failure){plugin.getLogger().warning("Presented-rewards record unreadable; starting empty (one auto-present may repeat; no reward is affected): "+failure.getMessage());}
++  return new ReviewPresentation();
++ }
++ private void persistPresentation(){
++  try{com.winkreyes.excelbosstrial.core.AtomicStateFile.write(presentedFile(plugin),presentation.encode());}
++  catch(Exception failure){plugin.getLogger().warning("Could not persist the presented-rewards record: "+failure.getMessage());}
++ }
++ /** 0.2.11 (B-2): after a verdict stores claims, present each owner's
++  *  menu automatically, briefly delayed so the kill moment lands first. */
++ void presentToOwners(Collection<UUID> owners){
++  for(UUID owner:owners)Bukkit.getScheduler().runTaskLater(plugin,()->attemptPresent(owner),verdictDelayTicks);
++ }
++ /** A join presents rewards that were earned while the player was away
++  *  (or never presented), once per batch, after a short settle delay. */
++ @org.bukkit.event.EventHandler(priority=org.bukkit.event.EventPriority.MONITOR,ignoreCancelled=true)
++ public void onJoin(org.bukkit.event.player.PlayerJoinEvent event){
++  UUID owner=event.getPlayer().getUniqueId();
++  Bukkit.getScheduler().runTaskLater(plugin,()->attemptPresent(owner),joinDelayTicks);
++ }
++ /** One presentation attempt. Every precondition is re-checked at fire
++  *  time; anything unmet simply leaves the batch unpresented, and a
++  *  later trigger (the next verdict or join) retries it. */
++ private void attemptPresent(UUID owner){
++  Player player=Bukkit.getPlayer(owner);
++  if(player==null||!player.isOnline()||player.isDead())return;
++  if(player.getGameMode()!=GameMode.SURVIVAL&&player.getGameMode()!=GameMode.ADVENTURE)return;
++  var top=player.getOpenInventory().getTopInventory();
++  if(top!=null&&!(top.getHolder() instanceof Player)&&!ui.isClaimsViewOpen(player))return; // another menu or container is up (our own rewards view re-presents)
++  if(!normalInventory(player))return;
++  java.util.List<ClaimGateway.Pending> pending;
++  try{pending=gateway.pending(owner);}catch(RuntimeException unavailable){return;}
++  if(pending.isEmpty())return;
++  if(!presentation.hasUnpresented(owner,pending.stream().map(ClaimGateway.Pending::id).toList()))return;
++  if(!ui.openAuto(player))return; // a successful open marks the batch presented via the open observer
++  // The Excel invisibility potion rides the presentation itself:
++  // this point is reached at most once per batch (the presented-set
++  // gate above), so a batch can never apply it twice, and manual
++  // opens never reach it at all.
++  if(popInvisibilityPotion&&frameMaxTicks>0)applyReviewInvisibility(player);
++ }
++ /** 0.2.11 (B-2 addition, as corrected by Mike the same night: "Not
++  *  one of their own. It'll use an Excel invisibility potion on the
++  *  player."): the plugin applies its OWN invisibility for the
++  *  review window - server-side, nothing consumed, nothing required
++  *  from the player's inventory, which is never touched. Duration
++  *  is the review-frames cap (the same config value, no second
++  *  literal); the effect shape follows the Excel house style set by
++  *  ExcelMobVeil's veil (amplifier 0, not ambient, no particles,
++  *  icon shown). No sibling plugin defines a reusable invisibility
++  *  potion for this - DeathProtection's premium potion is a
++  *  protection marker, and MobVeil's veil is its own item mechanic
++  *  with a fixed 480 s - so the effect is defined here and recorded
++  *  in SOURCE.md as the Excel invisibility potion. */
++ private void applyReviewInvisibility(Player player){
++  player.addPotionEffect(new org.bukkit.potion.PotionEffect(
++   org.bukkit.potion.PotionEffectType.INVISIBILITY,frameMaxTicks,0,false,false,true));
++  plugin.getLogger().info("BossRewards auto-present applied the Excel invisibility potion to "
++   +player.getName()+" ("+(frameMaxTicks/20)+"s, the review window).");
++ }
++ private long grantSequence;
++ /** 0.2.11: store one console grant as a normal personal claim,
++  *  through the ledger's own fight-shaped path (open encounter,
++  *  qualify the owner, win it) - no raw store edits, so the claim
++  *  persists, presents and delivers exactly like an earned batch,
++  *  and waits out offline players and full inventories by design.
++  *  Each grant is its own encounter, so two grants stack as two
++  *  claim entries. Returns the grant's encounter id. */
++ String grantClaim(UUID owner,List<ItemStack> stacks)throws IOException{
++  String run="console-grant:"+java.time.LocalDateTime.now()
++   .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))+"-"+(++grantSequence);
++  ledger.openEncounter(run);
++  ledger.qualify(run,owner);
++  List<TeamRewardLedger.RewardUnit> units=new ArrayList<>();
++  for(int i=0;i<stacks.size();i++)units.add(new TeamRewardLedger.RewardUnit("grant:"+owner+":"+i,encode(stacks.get(i))));
++  ledger.win(run,"console-grant-v1",Map.of(owner,List.copyOf(units)));
++  presentToOwners(List.of(owner)); // online targets present now; offline ones present at their next join
++  return run;
++ }
+  void offerMarkers(Collection<UUID> owners,Location anchor){
+   for(UUID owner:owners){
+    boolean placed=false;
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/core/GrantClaimPlan.java SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/core/GrantClaimPlan.java
+--- SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/core/GrantClaimPlan.java	1970-01-01 00:00:00.000000000 +0000
++++ SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/core/GrantClaimPlan.java	2026-10-31 05:53:26.311242660 +0000
+@@ -0,0 +1,81 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.ArrayList;
++import java.util.List;
++import org.bukkit.Material;
++
++/**
++ * 0.2.11: the pure half of /bosstrial grantclaim — validate the
++ * console input (material name + count) and the stack-splitting
++ * arithmetic, so garbage is rejected with NO state change before
++ * anything reaches the claims store. The adapter
++ * (ExcelBossTrial.handleGrantClaim) resolves the player, checks
++ * Material.isItem() (registry-bound in Paper 26, so it cannot live
++ * in this Bukkit-free layer), splits with split(), and writes the
++ * claim through TeamClaims.
++ *
++ * The count bound is a sanity bound, not a balance knob: a grant
++ * is a remediation for an owed set, and 64 stacks of 64 is beyond
++ * any plausible one. The command's on/off toggle is the config
++ * key (commands.grantclaim-enabled).
++ */
++public final class GrantClaimPlan {
++
++    /** The largest grant: 64 stacks x 64 items. */
++    public static final int MAX_COUNT = 64 * 64;
++
++    /** Why a parse failed (the adapter words the console error). */
++    public enum Error { MATERIAL, COUNT }
++
++    /** A validated grant: the material and the total count. */
++    public record Plan(Material material, int count) {
++    }
++
++    /** Parse outcome: exactly one of plan / error is non-null. */
++    public record Result(Plan plan, Error error) {
++        public boolean ok() {
++            return plan != null;
++        }
++    }
++
++    private GrantClaimPlan() {
++    }
++
++    /**
++     * Validate a material name and a count. The name must resolve
++     * (Material.matchMaterial) and must not be air. The count must
++     * be a plain integer in 1..MAX_COUNT.
++     */
++    public static Result parse(String materialName, String countText) {
++        Material material = materialName == null
++                ? null : Material.matchMaterial(materialName.strip());
++        if (material == null || material == Material.AIR
++                || material == Material.CAVE_AIR || material == Material.VOID_AIR) {
++            return new Result(null, Error.MATERIAL);
++        }
++        int count;
++        try {
++            count = Integer.parseInt(countText == null ? "" : countText.strip());
++        } catch (NumberFormatException notANumber) {
++            return new Result(null, Error.COUNT);
++        }
++        if (count < 1 || count > MAX_COUNT) {
++            return new Result(null, Error.COUNT);
++        }
++        return new Result(new Plan(material, count), null);
++    }
++
++    /**
++     * Split a validated count into stack sizes of at most maxStack
++     * (the material's own maximum, supplied by the adapter): 130 at
++     * 64 -> [64, 64, 2]; 3 at 1 -> [1, 1, 1].
++     */
++    public static List<Integer> split(int count, int maxStack) {
++        int step = Math.max(1, maxStack);
++        List<Integer> sizes = new ArrayList<>();
++        for (int left = count; left > 0; left -= step) {
++            sizes.add(Math.min(step, left));
++        }
++        return List.copyOf(sizes);
++    }
++}
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/core/SealLoot.java SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/core/SealLoot.java
+--- SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/core/SealLoot.java	2026-10-31 04:11:36.578364323 +0000
++++ SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/core/SealLoot.java	2026-10-31 05:53:26.306305771 +0000
+@@ -83,11 +83,14 @@
+     }
+ 
+     /**
+-     * One signature stack's grant shape (0.2.5, the fairness
+-     * rule): a NAMED item is per-champion gear - it is granted
+-     * once per standing champion, each copy its earner's own.
+-     * An unnamed item is a material stack - it drops once,
+-     * shared, however many champions stood at the fall.
++     * One signature stack's grant shape. 0.2.5's fairness rule paid
++     * only NAMED gear per champion and dropped material stacks once,
++     * shared. 0.2.11 (B-3, Reward Law variant B — Mike's settlement,
++     * Oct 30, 2026) retires that split: EVERY signature stack is
++     * per-champion, so {@link #signatureGrants} marks every grant
++     * perChampion and copies(champions) is the champion count for
++     * every stack. The record keeps the flag because the plan math
++     * (and its tests) are expressed in it.
+      */
+     public record SignatureGrant(LootItem item, boolean perChampion) {
+         /** Copies of this stack the kill produces for the given
+@@ -100,8 +103,14 @@
+     /** Bonus rolls never exceed this many per kill (spec 4.0). */
+     public static final int BONUS_ROLL_CAP = 4;
+ 
+-    // The dragon's per-credit-kill numbers (spec 4.4): breath
+-    // scales mildly with the party; crystals are a flat pair.
++    // The dragon's per-credit-kill numbers (spec 4.4), read as
++    // PER-CHAMPION amounts since 0.2.11 (B-3): each roster champion's
++    // claim carries DRAGON_BREATH_BASE breath and DRAGON_CRYSTALS
++    // crystals on every CREDIT kill. PER_CHAMPION and CAP now serve
++    // only the retired pooled formula in dragonBreath(), which the
++    // adapter still uses for exactly one path: the spec's own
++    // fallback when a CREDIT kill has no roster to claim into (the
++    // pre-0.2.11 drops behaviour, preserved verbatim).
+     public static final int DRAGON_BREATH_BASE = 4;
+     public static final int DRAGON_BREATH_PER_CHAMPION = 2;
+     public static final int DRAGON_BREATH_CAP = 12;
+@@ -155,22 +164,13 @@
+         };
+     }
+ 
+-    /** Named gear is what the fairness rule pays per champion: a
+-     *  signature item with a display name of its own (Gravewhisper,
+-     *  Monument's Answer, Hushwalkers, First Breath). Unnamed
+-     *  signature stacks are materials and curios - they drop
+-     *  once, shared. */
+-    public static boolean isNamedGear(LootItem item) {
+-        return item != null && item.name() != null;
+-    }
+-
+     /**
+-     * The grant plan for one paying signature kill: each stack
+-     * of the table, in table order, marked per-champion (named
+-     * gear) or shared (materials). The adapter executes exactly
+-     * this plan - named copies stamped and granted to their
+-     * champions, shared stacks dropped once at the kill - so the
+-     * plan the tests pin IS the plan the server runs.
++     * The grant plan for one paying signature kill: each stack of
++     * the table, in table order, EVERY one per-champion (0.2.11,
++     * B-3 — the named/shared classification retired). The adapter
++     * executes exactly this plan — one full set stored in every
++     * roster member's personal claim — so the plan the tests pin
++     * IS the plan the server runs.
+      */
+     public static List<SignatureGrant> signatureGrants(LootTable table) {
+         List<SignatureGrant> out = new java.util.ArrayList<>();
+@@ -178,11 +178,53 @@
+             return out;
+         }
+         for (LootItem item : table.signature()) {
+-            out.add(new SignatureGrant(item, isNamedGear(item)));
++            out.add(new SignatureGrant(item, true));
+         }
+         return out;
+     }
+ 
++    /** One stack of the per-champion plan: the item, and whether it
++     *  carries the named-gear provenance stamp. Named gear (a display
++     *  name of its own — Gravewhisper, Monument's Answer, Hushwalkers,
++     *  First Breath) is stamped for its earner; material stacks are
++     *  plain. The stamp is the ONLY distinction the retired
++     *  named/material classification still makes (0.2.11, B-3). */
++    public record PlannedStack(LootItem item, boolean provenanceStamped) {
++    }
++
++    /**
++     * The per-champion signature plan the adapter executes: the full
++     * table, once per roster member, in table order. Pure, so the
++     * distribution tests pin the exact set every champion receives
++     * without a server.
++     */
++    public static List<PlannedStack> perChampionPlan(LootTable table) {
++        List<PlannedStack> out = new java.util.ArrayList<>();
++        for (SignatureGrant grant : signatureGrants(table)) {
++            out.add(new PlannedStack(grant.item(), grant.item().name() != null));
++        }
++        return List.copyOf(out);
++    }
++
++    /**
++     * The dragon's per-champion material set for one CREDIT kill
++     * (0.2.11, B-3): dragon breath and end crystals as personal claim
++     * units, never pooled drops. The amounts are the caller's config
++     * values (loot.dragon breath-base / crystals, read per-champion
++     * since this build); a zero or negative amount drops out so a
++     * config can switch a material off.
++     */
++    public static List<LootItem> dragonMaterials(int breathPerChampion, int crystalsPerChampion) {
++        List<LootItem> out = new java.util.ArrayList<>();
++        if (breathPerChampion > 0) {
++            out.add(LootItem.plain("DRAGON_BREATH", breathPerChampion));
++        }
++        if (crystalsPerChampion > 0) {
++            out.add(LootItem.plain("END_CRYSTAL", crystalsPerChampion));
++        }
++        return List.copyOf(out);
++    }
++
+     /**
+      * The signature-once gate (spec 4.0 rule 1): the signature
+      * pool pays when the kill CREDITS, is not an elder
+@@ -241,8 +283,11 @@
+         return out;
+     }
+ 
+-    /** Dragon's breath bottles for a credit kill: base + per
+-     *  champion beyond the first, capped (spec 4.4). */
++    /** The RETIRED pooled dragon's-breath formula (spec 4.4): base +
++     *  per champion beyond the first, capped. Since 0.2.11 (B-3) the
++     *  main path pays breath per champion from DRAGON_BREATH_BASE;
++     *  this survives verbatim for the adapter's no-roster fallback,
++     *  which reproduces the pre-0.2.11 drops exactly. */
+     public static int dragonBreath(int presentParticipants) {
+         int extra = Math.max(0, presentParticipants - 1);
+         return Math.min(DRAGON_BREATH_CAP, DRAGON_BREATH_BASE + DRAGON_BREATH_PER_CHAMPION * extra);
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/dragon/DragonChapter.java SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/dragon/DragonChapter.java
+--- SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/dragon/DragonChapter.java	2026-10-31 04:11:52.693127385 +0000
++++ SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/dragon/DragonChapter.java	2026-10-31 05:53:26.313382541 +0000
+@@ -107,6 +107,10 @@
+     private ConfigurationSection section;
+ 
+     private final Map<String, WorldTrial> worlds = new HashMap<>();
++    /** 0.2.11 (B-4): worlds whose wiped stale trial carried our
++     *  invulnerable flag; the flag is cleared off the next dragon
++     *  seen there before its fresh battle registers. */
++    private final java.util.Set<String> staleFlagWorlds = new java.util.HashSet<>();
+     private final Random random = new Random();
+     private TrialConfig cfg = TrialConfig.defaults();
+     /** Bed ignitions in the End, for share attribution (0.2.1, FLAG 3). */
+@@ -237,7 +241,26 @@
+             return;
+         }
+         YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
++        String currentBuild = host.getDescription().getVersion();
++        String savedBuild = y.getString("build", null);
+         ConfigurationSection section = y.getConfigurationSection("worlds");
++        // 0.2.11 (B-4): wipe-on-update. First decide from the pure
++        // policy whether this file holds an open battle saved under a
++        // different build; only then touch anything.
++        boolean anyOpen = false;
++        if (section != null) {
++            for (String worldName : section.getKeys(false)) {
++                String base = "worlds." + worldName + ".";
++                if (StaleTrialPolicy.isOpen(parsePhase(y.getString(base + "phase", "NONE")),
++                        y.getString(base + "dragon-uuid", null))) {
++                    anyOpen = true;
++                    break;
++                }
++            }
++        }
++        boolean wipe = StaleTrialPolicy.onLoad(savedBuild, currentBuild, anyOpen)
++                == StaleTrialPolicy.Action.CLOSE_STALE;
++        File archive = wipe ? archiveStateFile(f, savedBuild) : null;
+         if (section == null) {
+             return;
+         }
+@@ -245,27 +268,77 @@
+             String base = "worlds." + worldName + ".";
+             WorldTrial wt = new WorldTrial();
+             wt.completedBattles = y.getInt(base + "completed-battles", 0);
+-            String phaseName = y.getString(base + "phase", "NONE");
+             String uuid = y.getString(base + "dragon-uuid", null);
+-            BattlePhase phase;
+-            try {
+-                phase = BattlePhase.valueOf(phaseName);
+-            } catch (IllegalArgumentException e) {
+-                phase = BattlePhase.NONE;
+-            }
+-            if (uuid != null && phase != BattlePhase.NONE && phase != BattlePhase.DONE) {
+-                wt.machine.restore(phase, uuid, y.getInt(base + "waves-fired", 0),
+-                        y.getBoolean(base + "death-consumed", false),
+-                        y.getBoolean(base + "invulnerable-by-us", false));
+-                getLogger().info("Restored trial state for " + worldName + ": " + wt
+-                        .machine.phase() + ", dragon " + uuid + ".");
++            BattlePhase phase = parsePhase(y.getString(base + "phase", "NONE"));
++            if (StaleTrialPolicy.isOpen(phase, uuid)) {
++                if (wipe) {
++                    // Closed out, NOT restored: the machine stays fresh
++                    // (NONE, no dragon on record); the completed-battles
++                    // counter above is kept, and nothing outside this
++                    // chapter's state is touched.
++                    if (y.getBoolean(base + "invulnerable-by-us", false)) {
++                        staleFlagWorlds.add(worldName);
++                    }
++                    getLogger().warning("Stale trial CLOSED in " + worldName
++                            + ": a " + phase + " battle (dragon " + uuid + ") saved under build "
++                            + (savedBuild == null ? "<unstamped>" : savedBuild)
++                            + " was NOT restored under build " + currentBuild
++                            + " (wipe-on-update, 0.2.11). The next dragon in " + worldName
++                            + " registers fresh; the saved state was archived to "
++                            + (archive == null ? "<archive failed - see warning above>"
++                                    : archive.getName()) + ".");
++                } else {
++                    wt.machine.restore(phase, uuid, y.getInt(base + "waves-fired", 0),
++                            y.getBoolean(base + "death-consumed", false),
++                            y.getBoolean(base + "invulnerable-by-us", false));
++                    getLogger().info("Restored trial state for " + worldName + ": " + wt
++                            .machine.phase() + ", dragon " + uuid + ".");
++                }
+             }
+             worlds.put(worldName, wt);
+         }
++        if (wipe || savedBuild == null || !savedBuild.equals(currentBuild)) {
++            // Persist immediately under the current build stamp: a
++            // crash cannot re-run the wipe, and the closure above is
++            // the state of record from this line on.
++            saveState();
++        }
++    }
++
++    private static BattlePhase parsePhase(String name) {
++        try {
++            return BattlePhase.valueOf(name == null ? "NONE" : name);
++        } catch (IllegalArgumentException e) {
++            return BattlePhase.NONE;
++        }
++    }
++
++    /** Copy the state file beside itself under the archive name; the
++     *  original is never deleted by the wipe (saveState overwrites it
++     *  with the fresh stamped state right after). */
++    private File archiveStateFile(File f, String savedBuild) {
++        String name = StaleTrialPolicy.archiveName(savedBuild);
++        File target = new File(dataDir, name);
++        int n = 2;
++        while (target.exists()) {
++            target = new File(dataDir, name + "-" + n++);
++        }
++        try {
++            java.nio.file.Files.copy(f.toPath(), target.toPath());
++            return target;
++        } catch (IOException ex) {
++            getLogger().warning("Could not archive the stale dragon state.yml to "
++                    + target.getName() + ": " + ex.getMessage()
++                    + " (the wipe still proceeds; the pre-wipe state survives only in this log).");
++            return null;
++        }
+     }
+ 
+     private void saveState() {
+         YamlConfiguration y = new YamlConfiguration();
++        // 0.2.11 (B-4): every save carries the build that wrote it, so
++        // the next boot can tell its own state from a stale one.
++        y.set("build", host.getDescription().getVersion());
+         for (Map.Entry<String, WorldTrial> e : worlds.entrySet()) {
+             String base = "worlds." + e.getKey() + ".";
+             WorldTrial wt = e.getValue();
+@@ -373,6 +446,14 @@
+                 }
+                 return;
+             }
++            if (staleFlagWorlds.remove(world.getName()) && dragon.isInvulnerable()) {
++                // 0.2.11 (B-4): the wiped battle's saved state carried
++                // our invulnerable flag; if that dragon still wears it,
++                // the fresh battle must not inherit it.
++                dragon.setInvulnerable(false);
++                getLogger().info("Cleared an invulnerable flag left by the wiped stale trial in "
++                        + world.getName() + " before registering the fresh battle.");
++            }
+             m.startBattle(uuid);
+             wt.deathSeen = false;
+             wt.ignoreLogged = false;
+@@ -538,13 +619,11 @@
+                     + " -> " + fmt(judged) + " (dragon at " + fmt(dragon.getHealth())
+                     + " HP, phase " + m.phase() + ").");
+         }
++        BattlePhase judgedPhase = m.phase();
+         TrialStateMachine.Verdict verdict = m.onDamage(dragon.getHealth(), judged);
++        dangerLog("high", world, event, rawDamage, judged, dragon.getHealth(), verdict, judgedPhase);
+         switch (verdict) {
+-            case FLIP -> {
+-                event.setCancelled(true);
+-                runFlip(world, dragon, m);
+-                saveState();
+-            }
++            case FLIP -> flipNow(event, world, dragon, m);
+             case ALLOW_DEATH -> saveState();
+             case PASS -> {
+                 if (m.phase() == BattlePhase.PHASE2 && cfg.addsEnabled && cfg.addsPerWave > 0) {
+@@ -565,6 +644,92 @@
+         }
+     }
+ 
++    /**
++     * 0.2.11 (B-1): the FLIP act, shared by the HIGH judgment and the
++     * HIGHEST re-judgment so both passes perform exactly the same
++     * synchronous flip: cancel the blow, run the flip, persist.
++     */
++    private void flipNow(EntityDamageEvent event, World world, EnderDragon dragon,
++            TrialStateMachine m) {
++        event.setCancelled(true);
++        runFlip(world, dragon, m);
++        saveState();
++    }
++
++    /**
++     * 0.2.11 (B-1): the second, final judgment, at HIGHEST — after
++     * every other plugin's damage modifiers have run. The Oct 30,
++     * 2026 kill slipped past the single HIGH verdict: the blow was
++     * judged non-lethal there and grew afterwards (deathConsumed
++     * stayed false on a restored PHASE1 trial, and the dragon died).
++     * This pass re-reads the event's final numbers and re-judges a
++     * still-PHASE1 dragon; a FLIP here cancels the event before any
++     * damage is applied, so no post-HIGH growth can kill a phase-1
++     * dragon. Double judgment is safe by construction: PASS mutates
++     * nothing, and a HIGH FLIP has already moved the machine to
++     * TRANSITION, which this pass only ever cancels, never re-judges.
++     */
++    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
++    public void onDragonDamageFinal(EntityDamageEvent event) {
++        if (event.isCancelled()) {
++            return;
++        }
++        if (!cfg.enabled || !(event.getEntity() instanceof EnderDragon dragon)) {
++            return;
++        }
++        World world = dragon.getWorld();
++        if (world.getEnvironment() != World.Environment.THE_END) {
++            return;
++        }
++        WorldTrial wt = worlds.get(world.getName());
++        if (wt == null) {
++            return;
++        }
++        TrialStateMachine m = wt.machine;
++        if (!m.tracks(dragon.getUniqueId().toString())) {
++            return;
++        }
++        switch (m.phase()) {
++            case TRANSITION -> event.setCancelled(true);
++            case PHASE1 -> {
++                double health = dragon.getHealth();
++                double judged = event.getFinalDamage();
++                TrialStateMachine.Verdict verdict = m.onDamage(health, judged);
++                dangerLog("highest", world, event, judged, judged, health, verdict,
++                        BattlePhase.PHASE1);
++                if (verdict == TrialStateMachine.Verdict.FLIP) {
++                    flipNow(event, world, dragon, m);
++                }
++            }
++            default -> {
++                // PHASE2 (and NONE/DONE): deliberately nothing. The one
++                // real death must stay exactly as vanilla and the HIGH
++                // pass left it — post-HIGH growth of a phase-2 killing
++                // blow changes nothing the seal depends on.
++            }
++        }
++    }
++
++    /**
++     * 0.2.11 (B-1): one log line per judged blow while a PHASE1 dragon
++     * sits in the danger zone (TrialStateMachine.inDangerZone — health
++     * at or below the per-event cap), from EACH pass, so an amplifier
++     * that outruns the HIGH verdict leaves its fingerprints: the same
++     * blow appears twice, the second line carrying the grown number.
++     */
++    private void dangerLog(String pass, World world, EntityDamageEvent event, double raw,
++            double judged, double health, TrialStateMachine.Verdict verdict,
++            BattlePhase judgedPhase) {
++        if (judgedPhase == BattlePhase.PHASE1
++                && TrialStateMachine.inDangerZone(health, cfg)) {
++            getLogger().info("DragonTrial danger [" + pass + "] in " + world.getName()
++                    + ": cause " + event.getCause()
++                    + ", final " + fmt(raw) + ", judged " + fmt(judged)
++                    + ", health " + fmt(health) + ", verdict " + verdict
++                    + ", phase PHASE1.");
++        }
++    }
++
+     /** Synchronous flip: heal onto the phase-2 bar, theatre, schedule the unveil. */
+     private void runFlip(World world, EnderDragon dragon, TrialStateMachine m) {
+         var attr = dragon.getAttribute(Attribute.MAX_HEALTH);
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/dragon/StaleTrialPolicy.java SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/dragon/StaleTrialPolicy.java
+--- SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/dragon/StaleTrialPolicy.java	1970-01-01 00:00:00.000000000 +0000
++++ SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/dragon/StaleTrialPolicy.java	2026-10-31 05:53:26.315818737 +0000
+@@ -0,0 +1,67 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.dragon;
++
++/**
++ * 0.2.11 (B-4 — Mike's decision, Oct 30, 2026: "WIPE the saved fight
++ * on update — start clean"): whether persisted dragon-trial state may
++ * be restored at boot. Pure logic; DragonChapter.loadState owns the
++ * file work (archive, closure log, fresh stamped save).
++ *
++ * The rule: state recorded under a DIFFERENT plugin build than the
++ * one booting is not restored when it holds an OPEN battle — the
++ * battle is closed out instead and the old state file archived. An
++ * absent stamp counts as a different build, so the first boot of a
++ * stamping build over pre-stamp state wipes. The Oct 30 dragon kill
++ * is why: a stale Oct 27 PHASE1 trial restored under a newer build
++ * fought under rules its saved state never anticipated.
++ *
++ * Scope discipline: only the open battle closes. Completed-battle
++ * counters are kept, DONE/NONE worlds load exactly as before, and
++ * everything outside the chapter state — seal credits, reward
++ * claims, signatures paid, monument counts — is never touched here.
++ */
++public final class StaleTrialPolicy {
++
++    /** What boot should do with the loaded state file. */
++    public enum Action {
++        /** Restore the saved state exactly as before this rule existed. */
++        RESTORE,
++        /** Close the open battle(s) out and archive the saved state. */
++        CLOSE_STALE
++    }
++
++    private StaleTrialPolicy() {
++    }
++
++    /** An open battle is a live phase with a dragon on record. */
++    public static boolean isOpen(BattlePhase phase, String dragonUuid) {
++        return dragonUuid != null && phase != null
++                && phase != BattlePhase.NONE && phase != BattlePhase.DONE;
++    }
++
++    /**
++     * Decide the fate of one loaded state file.
++     *
++     * @param savedBuild    the build stamp stored with the state, or
++     *                      null when the state predates stamping
++     * @param currentBuild  the build booting now
++     * @param anyOpenBattle true when any world in the state holds an
++     *                      open battle (see {@link #isOpen})
++     */
++    public static Action onLoad(String savedBuild, String currentBuild, boolean anyOpenBattle) {
++        if (!anyOpenBattle) {
++            return Action.RESTORE;
++        }
++        if (savedBuild != null && savedBuild.equals(currentBuild)) {
++            return Action.RESTORE;
++        }
++        return Action.CLOSE_STALE;
++    }
++
++    /** Archive file name for a wiped state file (name only, no directory). */
++    public static String archiveName(String savedBuild) {
++        String tag = savedBuild == null || savedBuild.isBlank()
++                ? "unstamped"
++                : savedBuild.replaceAll("[^A-Za-z0-9._-]", "_");
++        return "state.yml.archived-" + tag;
++    }
++}
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/dragon/TrialStateMachine.java SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/dragon/TrialStateMachine.java
+--- SOURCE-0.2.10/src/com/winkreyes/excelbosstrial/dragon/TrialStateMachine.java	2026-10-31 04:11:57.268830297 +0000
++++ SOURCE-0.2.11/src/com/winkreyes/excelbosstrial/dragon/TrialStateMachine.java	2026-10-31 05:53:26.313627228 +0000
+@@ -100,6 +100,20 @@
+         }
+     }
+ 
++    /**
++     * 0.2.11 (B-1): the danger zone — a PHASE1 dragon whose health is
++     * at or below the per-event damage cap can die to ONE maximally
++     * capped blow, which is exactly where post-judgment damage growth
++     * (a HIGHEST-priority amplifier) can outrun a single-pass verdict.
++     * The adapter logs every judged blow in this band so a missed flip
++     * is always reconstructable from the log. The bound is the config
++     * per-event cap, never a literal; a disabled cap (0) empties the
++     * zone, matching the governor, which also stops trimming there.
++     */
++    public static boolean inDangerZone(double currentHealth, TrialConfig cfg) {
++        return cfg != null && currentHealth > 0 && currentHealth <= cfg.perEventDamageCap;
++    }
++
+     /** Transition finished: the dragon is fighting on its phase-2 bar. */
+     public void completeTransition() {
+         if (phase == BattlePhase.TRANSITION) {
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/src/com/winkreyes/teamrewards/ui/PersonalClaimsUi.java SOURCE-0.2.11/src/com/winkreyes/teamrewards/ui/PersonalClaimsUi.java
+--- SOURCE-0.2.10/src/com/winkreyes/teamrewards/ui/PersonalClaimsUi.java	2026-10-31 04:12:15.413534383 +0000
++++ SOURCE-0.2.11/src/com/winkreyes/teamrewards/ui/PersonalClaimsUi.java	2026-10-31 05:53:26.318580011 +0000
+@@ -14,27 +14,70 @@
+ /** Register this listener and an owner-only command; compass integrations call open(player).
+  * Virtual chest only. No physical blocks, reward ItemStacks, or unsafe inventory transfer paths. */
+ public final class PersonalClaimsUi implements Listener, CommandExecutor {
++    /** 0.2.11 (B-2): how a view was opened. AUTO is the plugin presenting
++     * the menu itself (verdict / join); MANUAL is every player-initiated
++     * open (command, chest marker, compass). Immunity frames bind to
++     * AUTO only — see ReviewFramesPolicy. */
++    public enum Origin { AUTO, MANUAL }
++    /** Session lifecycle notices for the frames layer. The token identifies
++     * one viewing session: paging/refresh reopens inside a session keep it,
++     * so a close notice for a replaced view is recognisably stale. */
++    public interface SessionListener {
++        void opened(UUID owner, Origin origin, long token);
++        void closed(UUID owner, Origin origin, long token);
++    }
+     private final Plugin plugin;
+     private final ClaimGateway gateway;
+     private final Map<UUID, View> open = new HashMap<>();
++    private SessionListener sessionListener;
++    private java.util.function.BiConsumer<UUID, List<String>> openObserver;
++    private long tokenSequence;
+     private static final class View implements InventoryHolder {
+         final ClaimSession session;
++        final Origin origin;
++        final long token;
+         Inventory inventory;
+-        View(ClaimSession session) { this.session=session; }
++        View(ClaimSession session, Origin origin, long token) { this.session=session; this.origin=origin; this.token=token; }
+         @Override public Inventory getInventory() { return inventory; }
+     }
+     public PersonalClaimsUi(Plugin plugin, ClaimGateway gateway) {
+         this.plugin=Objects.requireNonNull(plugin); this.gateway=Objects.requireNonNull(gateway);
+     }
+-    public boolean open(Player player) { return open(player,0); }
+-    private boolean open(Player player,int page) {
++    public void setSessionListener(SessionListener listener) { this.sessionListener=listener; }
++    /** Called after every successful open with the claim IDs that were
++     * pending at that open (0.2.11 B-2: any open marks them presented). */
++    public void setOpenObserver(java.util.function.BiConsumer<UUID, List<String>> observer) { this.openObserver=observer; }
++    /** True while the player's top inventory is the view of a live AUTO session. */
++    public boolean isAutoViewOpen(Player player) {
++        View view=open.get(player.getUniqueId());
++        return view!=null && view.origin==Origin.AUTO && player.getOpenInventory().getTopInventory()==view.inventory;
++    }
++    /** True while the player's top inventory is one of this UI's own
++     * views (either origin). A fresh batch re-presents over our own
++     * view - it is not a foreign menu (rig find, boot B2: a player
++     * who left the dragon verdict view open was skipped by the
++     * wither verdict's present, because the holder guard treated
++     * our own view as another menu). */
++    public boolean isClaimsViewOpen(Player player) {
++        View view=open.get(player.getUniqueId());
++        return view!=null && player.getOpenInventory().getTopInventory()==view.inventory;
++    }
++    private void notifyOpened(View view) { if(sessionListener!=null) sessionListener.opened(view.session.owner(),view.origin,view.token); }
++    private void notifyClosed(View view) { if(sessionListener!=null) sessionListener.closed(view.session.owner(),view.origin,view.token); }
++    public boolean open(Player player) { return open(player,0,Origin.MANUAL,false); }
++    /** 0.2.11 (B-2): the plugin presents the menu itself. Behaviour is the
++     * manual open's, byte for byte, apart from the AUTO origin it carries. */
++    public boolean openAuto(Player player) { return open(player,0,Origin.AUTO,false); }
++    private boolean open(Player player,int page,Origin origin,boolean continuation) {
+         if (!Bukkit.isPrimaryThread()) throw new IllegalStateException("Main thread required");
+         if (!player.isOnline()) return false;
+         List<ClaimGateway.Pending> pending;
+         try { pending=gateway.pending(player.getUniqueId()); }
+         catch (RuntimeException unavailable) { player.sendMessage("Your rewards are unavailable right now; claims are retained."); return false; }
++        View previous=open.get(player.getUniqueId());
++        long token=continuation && previous!=null ? previous.token : ++tokenSequence;
+         View view;
+-        try { view=new View(new ClaimSession(player.getUniqueId(),pending,page)); }
++        try { view=new View(new ClaimSession(player.getUniqueId(),pending,page),origin,token); }
+         catch (RuntimeException malformed) { player.sendMessage("Reward records need review; nothing was claimed."); return false; }
+         view.inventory=Bukkit.createInventory(view,54,"Your earned rewards");
+         int slot=0;
+@@ -42,9 +85,12 @@
+         view.inventory.setItem(45,icon(Material.ARROW,"Previous page",""));
+         view.inventory.setItem(49,icon(Material.PAPER,"Refresh rewards","Only your own rewards appear here."));
+         view.inventory.setItem(53,icon(Material.ARROW,"Next page",""));
++        if(!continuation && previous!=null) notifyClosed(previous);
+         View old=open.put(player.getUniqueId(),view);
+         if(old!=null) old.session.close();
+         player.openInventory(view.inventory);
++        if(!continuation) notifyOpened(view);
++        if(openObserver!=null) openObserver.accept(player.getUniqueId(),pending.stream().map(ClaimGateway.Pending::id).toList());
+         return true;
+     }
+     private static ItemStack icon(Material material,String label,String hint) {
+@@ -65,7 +111,7 @@
+         int slot=event.getRawSlot();
+         if(slot==45 || slot==49 || slot==53) {
+             int page=view.session.page()+(slot==45?-1:slot==53?1:0); view.session.close();
+-            Bukkit.getScheduler().runTask(plugin,()->{ if(player.isOnline() && open.get(player.getUniqueId())==view) open(player,page); });
++            Bukkit.getScheduler().runTask(plugin,()->{ if(player.isOnline() && open.get(player.getUniqueId())==view) open(player,page,view.origin,true); });
+             return;
+         }
+         var request=view.session.request(player.getUniqueId(),slot,true);
+@@ -86,7 +132,7 @@
+                 case PENDING_REVIEW -> "That claim needs review; it will not be sent again automatically.";
+                 case UNAVAILABLE -> "Claim status is unavailable. No automatic retry was made.";
+             });
+-            open(player,view.session.page());
++            open(player,view.session.page(),view.origin,true);
+         });
+     }
+     @EventHandler(priority=EventPriority.HIGHEST,ignoreCancelled=false)
+@@ -95,15 +141,19 @@
+     }
+     @EventHandler public void close(InventoryCloseEvent event) {
+         if(event.getInventory().getHolder() instanceof View view) {
+-            view.session.close(); open.remove(event.getPlayer().getUniqueId(),view);
++            view.session.close();
++            // Notify only when this view was still the live one: a view
++            // replaced by a reopen fires its close event during the new
++            // open, and that stale close must not end the new session.
++            if(open.remove(event.getPlayer().getUniqueId(),view)) notifyClosed(view);
+         }
+     }
+     @EventHandler public void quit(PlayerQuitEvent event) {
+-        View view=open.remove(event.getPlayer().getUniqueId()); if(view!=null)view.session.close();
++        View view=open.remove(event.getPlayer().getUniqueId()); if(view!=null){view.session.close(); notifyClosed(view);}
+     }
+     public void shutdown() {
+         for(var entry:List.copyOf(open.entrySet())) {
+-            entry.getValue().session.close(); Player player=Bukkit.getPlayer(entry.getKey());
++            entry.getValue().session.close(); notifyClosed(entry.getValue()); Player player=Bukkit.getPlayer(entry.getKey());
+             if(player!=null && player.getOpenInventory().getTopInventory()==entry.getValue().inventory)player.closeInventory();
+         }
+         open.clear();
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/src/com/winkreyes/teamrewards/ui/ReviewFrames.java SOURCE-0.2.11/src/com/winkreyes/teamrewards/ui/ReviewFrames.java
+--- SOURCE-0.2.10/src/com/winkreyes/teamrewards/ui/ReviewFrames.java	1970-01-01 00:00:00.000000000 +0000
++++ SOURCE-0.2.11/src/com/winkreyes/teamrewards/ui/ReviewFrames.java	2026-10-31 05:53:26.320948846 +0000
+@@ -0,0 +1,108 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.teamrewards.ui;
++
++import java.util.*;
++import org.bukkit.Bukkit;
++import org.bukkit.entity.*;
++import org.bukkit.event.*;
++import org.bukkit.event.entity.*;
++import org.bukkit.event.player.PlayerInteractEvent;
++
++/**
++ * 0.2.11 (B-2): the Bukkit half of the AUTO-review immunity frames.
++ * The tick math lives in ReviewFramesPolicy (pure, unit-tested); this
++ * class only moves session notifications from PersonalClaimsUi into
++ * policies and enforces the current state on damage/interact events.
++ *
++ * Frames bind to the LIVE view: a FRAMED policy protects only while
++ * the player's top inventory is still that AUTO session's view (the
++ * PersonalClaimsUi cross-check), so a policy can never outlive the
++ * menu it belongs to. Notifications carry the view's token: a close
++ * notice for a view that has already been replaced is stale and is
++ * ignored, which is what lets paging inside one session keep its
++ * original window.
++ */
++public final class ReviewFrames implements Listener, PersonalClaimsUi.SessionListener {
++    private final PersonalClaimsUi ui;
++    private final int maxTicks;
++    private final int graceTicks;
++    private final Map<UUID, ReviewFramesPolicy> policies = new HashMap<>();
++    private final Map<UUID, Long> liveTokens = new HashMap<>();
++
++    public ReviewFrames(PersonalClaimsUi ui, int maxTicks, int graceTicks) {
++        this.ui = Objects.requireNonNull(ui);
++        this.maxTicks = Math.max(0, maxTicks);
++        this.graceTicks = Math.max(0, graceTicks);
++    }
++
++    // ---- PersonalClaimsUi.SessionListener ----
++
++    @Override public void opened(UUID owner, PersonalClaimsUi.Origin origin, long token) {
++        liveTokens.put(owner, token);
++        policy(owner).sessionOpened(origin == PersonalClaimsUi.Origin.AUTO, Bukkit.getCurrentTick());
++    }
++
++    @Override public void closed(UUID owner, PersonalClaimsUi.Origin origin, long token) {
++        Long live = liveTokens.get(owner);
++        if (live == null || live.longValue() != token) {
++            return; // Stale close for a replaced view; the live session stands.
++        }
++        liveTokens.remove(owner);
++        policy(owner).sessionClosed(Bukkit.getCurrentTick());
++    }
++
++    private ReviewFramesPolicy policy(UUID owner) {
++        return policies.computeIfAbsent(owner, k -> new ReviewFramesPolicy(maxTicks, graceTicks));
++    }
++
++    /** Framed right now: policy inside its window AND the AUTO view still on top. */
++    public boolean framed(Player player) {
++        ReviewFramesPolicy policy = policies.get(player.getUniqueId());
++        return policy != null && policy.framedAt(Bukkit.getCurrentTick()) && ui.isAutoViewOpen(player);
++    }
++
++    /** In the post-close grace: damage-in only, no view required (it is closed). */
++    public boolean inGrace(Player player) {
++        ReviewFramesPolicy policy = policies.get(player.getUniqueId());
++        return policy != null && policy.inGrace(Bukkit.getCurrentTick());
++    }
++
++    // ---- Enforcement ----
++
++    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
++    public void damageIn(EntityDamageEvent event) {
++        if (event.getEntity() instanceof Player player && (framed(player) || inGrace(player))) {
++            event.setCancelled(true);
++        }
++    }
++
++    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
++    public void damageOut(EntityDamageByEntityEvent event) {
++        Player damager = null;
++        if (event.getDamager() instanceof Player player) {
++            damager = player;
++        } else if (event.getDamager() instanceof Projectile projectile
++                && projectile.getShooter() instanceof Player player) {
++            damager = player;
++        }
++        if (damager == null) {
++            return;
++        }
++        if (framed(damager)) {
++            event.setCancelled(true);
++            return;
++        }
++        // Not framed: a hit landed from inside the close grace ends
++        // the grace on the spot (the hit itself stands).
++        ReviewFramesPolicy policy = policies.get(damager.getUniqueId());
++        if (policy != null) {
++            policy.damageDealt(Bukkit.getCurrentTick());
++        }
++    }
++
++    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
++    public void interact(PlayerInteractEvent event) {
++        if (framed(event.getPlayer())) {
++            event.setCancelled(true);
++        }
++    }
++}
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/src/com/winkreyes/teamrewards/ui/ReviewFramesPolicy.java SOURCE-0.2.11/src/com/winkreyes/teamrewards/ui/ReviewFramesPolicy.java
+--- SOURCE-0.2.10/src/com/winkreyes/teamrewards/ui/ReviewFramesPolicy.java	1970-01-01 00:00:00.000000000 +0000
++++ SOURCE-0.2.11/src/com/winkreyes/teamrewards/ui/ReviewFramesPolicy.java	2026-10-31 05:53:26.320882977 +0000
+@@ -0,0 +1,133 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.teamrewards.ui;
++
++/**
++ * 0.2.11 (B-2): the immunity-frame state machine behind an AUTO
++ * rewards review. Pure tick math; ReviewFrames owns the Bukkit
++ * events and the view cross-check.
++ *
++ * Frames bind to AUTO sessions ONLY. A manual open (the /bossrewards
++ * command, a chest marker, the compass) ends frames outright from
++ * any state — that asymmetry is the entire anti-exploit boundary:
++ * protection exists so a champion can read what they earned in the
++ * seconds after a kill or a login, and nobody can summon it on
++ * demand, mid-fight, by opening their own menu.
++ *
++ * States:
++ *   IDLE   — nothing.
++ *   FRAMED — the AUTO view is open: damage in AND out and interact
++ *            are all blocked, until the absolute cap measured from
++ *            the session's first open. Paging or refreshing inside
++ *            the session never extends the window.
++ *   GRACE  — the framed view closed while still inside its window:
++ *            damage-IN stays blocked for the grace ticks only;
++ *            damage-out is free, and dealing damage ends the grace
++ *            instantly (attacking from safety is the one exploit the
++ *            grace must never fund).
++ *
++ * The window/grace lengths are constructor parameters because they
++ * are balance values: TeamClaims reads them from config
++ * (team-rewards.review-frames.*) and the DEFAULT_* constants are the
++ * settled values those keys fall back to.
++ */
++public final class ReviewFramesPolicy {
++    /** Settled default: 60 seconds of framed review. */
++    public static final int DEFAULT_MAX_TICKS = 1200;
++    /** Settled default: 1 second of close grace. */
++    public static final int DEFAULT_GRACE_TICKS = 20;
++
++    public enum State { IDLE, FRAMED, GRACE }
++
++    private final int maxTicks;
++    private final int graceTicks;
++    private State state = State.IDLE;
++    private long windowStart;
++    private long graceStart;
++
++    public ReviewFramesPolicy() {
++        this(DEFAULT_MAX_TICKS, DEFAULT_GRACE_TICKS);
++    }
++
++    public ReviewFramesPolicy(int maxTicks, int graceTicks) {
++        this.maxTicks = Math.max(0, maxTicks);
++        this.graceTicks = Math.max(0, graceTicks);
++    }
++
++    public int maxTicks() {
++        return maxTicks;
++    }
++
++    public int graceTicks() {
++        return graceTicks;
++    }
++
++    /**
++     * A rewards view opened. AUTO starts frames (from IDLE or GRACE)
++     * or continues them (already FRAMED — the original window stands,
++     * so paging can never push the cap out). MANUAL ends frames
++     * outright, from any state.
++     */
++    public synchronized void sessionOpened(boolean auto, long tick) {
++        if (!auto) {
++            state = State.IDLE;
++            return;
++        }
++        if (state == State.FRAMED) {
++            return;
++        }
++        state = State.FRAMED;
++        windowStart = tick;
++    }
++
++    /**
++     * The live view closed. Only a session closed while still inside
++     * its window earns the close grace; a session that already ran
++     * to the cap closes to nothing.
++     */
++    public synchronized void sessionClosed(long tick) {
++        if (state != State.FRAMED) {
++            return;
++        }
++        if (tick - windowStart < maxTicks) {
++            state = State.GRACE;
++            graceStart = tick;
++        } else {
++            state = State.IDLE;
++        }
++    }
++
++    /** Dealing damage ends the grace instantly. No-op otherwise. */
++    public synchronized void damageDealt(long tick) {
++        if (state == State.GRACE) {
++            state = State.IDLE;
++        }
++    }
++
++    /** The state at a tick, with cap/grace expiry applied. */
++    public synchronized State state(long tick) {
++        if (state == State.FRAMED && tick - windowStart >= maxTicks) {
++            return State.IDLE;
++        }
++        if (state == State.GRACE && tick - graceStart >= graceTicks) {
++            return State.IDLE;
++        }
++        return state;
++    }
++
++    public synchronized boolean framedAt(long tick) {
++        return state(tick) == State.FRAMED;
++    }
++
++    public synchronized boolean inGrace(long tick) {
++        return state(tick) == State.GRACE;
++    }
++
++    /** Damage-in is blocked while framed and during the close grace. */
++    public synchronized boolean damageInBlocked(long tick) {
++        return state(tick) != State.IDLE;
++    }
++
++    /** Damage-out and interact are blocked only while framed. */
++    public synchronized boolean actionsBlocked(long tick) {
++        return state(tick) == State.FRAMED;
++    }
++}
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/src/com/winkreyes/teamrewards/ui/ReviewPresentation.java SOURCE-0.2.11/src/com/winkreyes/teamrewards/ui/ReviewPresentation.java
+--- SOURCE-0.2.10/src/com/winkreyes/teamrewards/ui/ReviewPresentation.java	1970-01-01 00:00:00.000000000 +0000
++++ SOURCE-0.2.11/src/com/winkreyes/teamrewards/ui/ReviewPresentation.java	2026-10-31 05:53:26.320806963 +0000
+@@ -0,0 +1,104 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.teamrewards.ui;
++
++import java.util.*;
++
++/**
++ * 0.2.11 (B-2): which claim IDs have already been presented to each
++ * player, so the rewards menu auto-opens for a batch ONCE — at the
++ * verdict that stored it, or at the first join that finds it waiting —
++ * and never nags again for the same batch. Pure state plus the
++ * sidecar text encoding; TeamClaims owns the file
++ * (team-rewards-presented.dat, written through AtomicStateFile).
++ *
++ * Marking rule (spec): ANY open of the menu — auto-present, the
++ * /bossrewards command, or a personal chest marker — marks the
++ * then-pending claim IDs as presented for that player. A batch
++ * triggers an auto-present only while at least one of its IDs is
++ * unpresented; new claims in a later batch trigger again.
++ */
++public final class ReviewPresentation {
++    private final Map<UUID, Set<String>> presented = new HashMap<>();
++
++    /** True when at least one of the pending IDs was never presented. */
++    public synchronized boolean hasUnpresented(UUID owner, Collection<String> pendingIds) {
++        if (owner == null || pendingIds == null || pendingIds.isEmpty()) {
++            return false;
++        }
++        Set<String> seen = presented.getOrDefault(owner, Set.of());
++        for (String id : pendingIds) {
++            if (id != null && !seen.contains(id)) {
++                return true;
++            }
++        }
++        return false;
++    }
++
++    /** Record claim IDs as presented to this player. Idempotent. */
++    public synchronized void markPresented(UUID owner, Collection<String> claimIds) {
++        if (owner == null || claimIds == null || claimIds.isEmpty()) {
++            return;
++        }
++        Set<String> seen = presented.computeIfAbsent(owner, k -> new LinkedHashSet<>());
++        for (String id : claimIds) {
++            if (id != null && !id.isBlank()) {
++                seen.add(id);
++            }
++        }
++    }
++
++    /** The presented IDs on record for one player (never null). */
++    public synchronized Set<String> presented(UUID owner) {
++        return Set.copyOf(presented.getOrDefault(owner, Set.of()));
++    }
++
++    /**
++     * Sidecar text: one "uuid claimId" line per pair, sorted so the
++     * file is stable and diffable. Claim IDs never contain spaces
++     * (they are ledger paths), so the first space is the separator.
++     */
++    public synchronized String encode() {
++        StringBuilder out = new StringBuilder();
++        List<UUID> owners = new ArrayList<>(presented.keySet());
++        owners.sort(Comparator.comparing(UUID::toString));
++        for (UUID owner : owners) {
++            List<String> ids = new ArrayList<>(presented.get(owner));
++            Collections.sort(ids);
++            for (String id : ids) {
++                out.append(owner).append(' ').append(id).append('\n');
++            }
++        }
++        return out.toString();
++    }
++
++    /**
++     * Parse sidecar text. Malformed lines are skipped, never fatal —
++     * a damaged sidecar costs at most one repeated presentation,
++     * never a lost reward (the claims themselves live in the ledger).
++     */
++    public static ReviewPresentation decode(String text) {
++        ReviewPresentation out = new ReviewPresentation();
++        if (text == null) {
++            return out;
++        }
++        for (String line : text.split("\n")) {
++            String trimmed = line.strip();
++            if (trimmed.isEmpty()) {
++                continue;
++            }
++            int split = trimmed.indexOf(' ');
++            if (split <= 0) {
++                continue;
++            }
++            try {
++                UUID owner = UUID.fromString(trimmed.substring(0, split));
++                String id = trimmed.substring(split + 1).strip();
++                if (!id.isEmpty()) {
++                    out.markPresented(owner, List.of(id));
++                }
++            } catch (IllegalArgumentException malformed) {
++                // Skip the line; see the javadoc for why this is safe.
++            }
++        }
++        return out;
++    }
++}
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/tests/com/winkreyes/excelbosstrial/core/GrantClaimPlanTest.java SOURCE-0.2.11/tests/com/winkreyes/excelbosstrial/core/GrantClaimPlanTest.java
+--- SOURCE-0.2.10/tests/com/winkreyes/excelbosstrial/core/GrantClaimPlanTest.java	1970-01-01 00:00:00.000000000 +0000
++++ SOURCE-0.2.11/tests/com/winkreyes/excelbosstrial/core/GrantClaimPlanTest.java	2026-10-31 05:53:26.332305469 +0000
+@@ -0,0 +1,83 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.List;
++import org.bukkit.Material;
++
++/**
++ * 0.2.11: the grantclaim input contract — garbage is refused with
++ * NO state change (the adapter never reaches the store on a failed
++ * parse), and a valid grant splits into legal stack sizes. The
++ * store round-trip itself is pinned by GrantClaimStoreTest; the
++ * end-to-end command is rig-proven.
++ */
++public final class GrantClaimPlanTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    public static void main(String[] args) {
++        // --- Happy paths.
++        var breath = GrantClaimPlan.parse("DRAGON_BREATH", "4");
++        check(breath.ok() && breath.plan().material() == Material.DRAGON_BREATH
++                        && breath.plan().count() == 4,
++                "breath x4 parses");
++        check(GrantClaimPlan.parse("dragon_breath", "130").ok(),
++                "names are case-insensitive");
++        check(GrantClaimPlan.parse("END_CRYSTAL", String.valueOf(GrantClaimPlan.MAX_COUNT)).ok(),
++                "the 64x64 bound itself is allowed");
++
++        // --- Splitting (the adapter supplies the material's own
++        // max stack size; isItem/maxStack are registry-bound in
++        // Paper 26 and stay adapter-side).
++        check(GrantClaimPlan.split(130, 64).equals(List.of(64, 64, 2)), "130 at 64 splits 64+64+2");
++        check(GrantClaimPlan.split(3, 1).equals(List.of(1, 1, 1)), "3 at 1 splits one per stack");
++        check(GrantClaimPlan.split(64, 64).equals(List.of(64)), "64 at 64 is one stack");
++        check(GrantClaimPlan.split(4096, 64).size() == 64, "the bound splits into 64 stacks");
++        check(GrantClaimPlan.split(5, 0).equals(List.of(1, 1, 1, 1, 1)),
++                "a degenerate max stack is floored to 1");
++
++        // --- Materials refused: garbage, air, null. (Non-item
++        // materials like WATER resolve by name and are refused
++        // adapter-side via Material.isItem(); the rig pins that.)
++        check(GrantClaimPlan.parse("NOT_A_MATERIAL", "4").error() == GrantClaimPlan.Error.MATERIAL,
++                "garbage material refused");
++        check(GrantClaimPlan.parse("AIR", "4").error() == GrantClaimPlan.Error.MATERIAL,
++                "air refused");
++        check(GrantClaimPlan.parse(null, "4").error() == GrantClaimPlan.Error.MATERIAL,
++                "null material refused");
++        check(GrantClaimPlan.parse("", "4").error() == GrantClaimPlan.Error.MATERIAL,
++                "empty material refused");
++
++        // --- Counts refused: zero, negative, over the bound, junk.
++        check(GrantClaimPlan.parse("DRAGON_BREATH", "0").error() == GrantClaimPlan.Error.COUNT,
++                "zero refused");
++        check(GrantClaimPlan.parse("DRAGON_BREATH", "-5").error() == GrantClaimPlan.Error.COUNT,
++                "negative refused");
++        check(GrantClaimPlan.parse("DRAGON_BREATH", String.valueOf(GrantClaimPlan.MAX_COUNT + 1))
++                        .error() == GrantClaimPlan.Error.COUNT,
++                "one over the bound refused");
++        check(GrantClaimPlan.parse("DRAGON_BREATH", "abc").error() == GrantClaimPlan.Error.COUNT,
++                "non-numeric refused");
++        check(GrantClaimPlan.parse("DRAGON_BREATH", "4.5").error() == GrantClaimPlan.Error.COUNT,
++                "fractional refused");
++        check(GrantClaimPlan.parse("DRAGON_BREATH", null).error() == GrantClaimPlan.Error.COUNT,
++                "null count refused");
++        check(GrantClaimPlan.parse("DRAGON_BREATH", "99999999999999999999")
++                        .error() == GrantClaimPlan.Error.COUNT,
++                "overflowing count refused, not wrapped");
++
++        System.out.println("GrantClaimPlanTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/tests/com/winkreyes/excelbosstrial/core/SealLootDistributionTest.java SOURCE-0.2.11/tests/com/winkreyes/excelbosstrial/core/SealLootDistributionTest.java
+--- SOURCE-0.2.10/tests/com/winkreyes/excelbosstrial/core/SealLootDistributionTest.java	1970-01-01 00:00:00.000000000 +0000
++++ SOURCE-0.2.11/tests/com/winkreyes/excelbosstrial/core/SealLootDistributionTest.java	2026-10-31 05:53:26.332197216 +0000
+@@ -0,0 +1,118 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.List;
++
++/**
++ * 0.2.11 (B-3): the per-champion distribution the adapter stores.
++ * The ledger half is exercised end-to-end in the rig; this suite
++ * pins the pure plan math the adapter executes: for a roster of N,
++ * EVERY member's claim is the full signature set (gear stamped,
++ * materials plain, counts exact), the elder set pays to the trio
++ * roster exactly like its gear, and the dragon's per-kill materials
++ * are a per-champion set — breath x4 + crystals x2 at the settled
++ * config defaults — on every CREDIT kill.
++ */
++public final class SealLootDistributionTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    /** One champion's full set for a table: plan stacks x copies(N == 1 claim). */
++    private static int setCount(List<SealLoot.PlannedStack> plan, String material) {
++        int total = 0;
++        for (SealLoot.PlannedStack p : plan) {
++            if (p.item().material().equals(material)) {
++                total += p.item().count();
++            }
++        }
++        return total;
++    }
++
++    public static void main(String[] args) {
++        // --- Wither set, per champion: sword 1 (stamped) + roses 2 (plain).
++        List<SealLoot.PlannedStack> wither = SealLoot.perChampionPlan(
++                SealLoot.defaultsFor(BossKind.WITHER));
++        check(wither.size() == 2, "wither set has both stacks");
++        check(setCount(wither, "DIAMOND_SWORD") == 1, "wither set: one Gravewhisper per champion");
++        check(setCount(wither, "WITHER_ROSE") == 2, "wither set: roses x2 per champion");
++        check(wither.stream().filter(p -> p.provenanceStamped()).count() == 1,
++                "wither set: exactly the named gear is stamped");
++
++        // --- Elder set, per champion (the trio roster receives it whole):
++        // trim 1, heart 1, trident 1 (stamped), sponge 4 — all present.
++        List<SealLoot.PlannedStack> elder = SealLoot.perChampionPlan(
++                SealLoot.defaultsFor(BossKind.ELDER_GUARDIAN));
++        check(elder.size() == 4, "elder set has all four stacks");
++        check(setCount(elder, "TIDE_ARMOR_TRIM_SMITHING_TEMPLATE") == 1, "elder set: trim x1");
++        check(setCount(elder, "HEART_OF_THE_SEA") == 1, "elder set: heart x1");
++        check(setCount(elder, "TRIDENT") == 1, "elder set: one Monument's Answer");
++        check(setCount(elder, "WET_SPONGE") == 4, "elder set: sponge x4 per champion");
++        check(elder.stream().anyMatch(p -> p.item().material().equals("TRIDENT")
++                        && p.provenanceStamped()),
++                "elder set: the trident is the stamped piece");
++
++        // --- Warden set, per champion: leggings (stamped), shards 4,
++        // compass 1, disc fragments 3.
++        List<SealLoot.PlannedStack> warden = SealLoot.perChampionPlan(
++                SealLoot.defaultsFor(BossKind.WARDEN));
++        check(warden.size() == 4, "warden set has all four stacks");
++        check(setCount(warden, "DIAMOND_LEGGINGS") == 1, "warden set: Hushwalkers x1");
++        check(setCount(warden, "ECHO_SHARD") == 4, "warden set: shards x4 per champion");
++        check(setCount(warden, "RECOVERY_COMPASS") == 1, "warden set: compass x1");
++        check(setCount(warden, "DISC_FRAGMENT_5") == 3, "warden set: disc fragments x3");
++
++        // --- Dragon signature set: the elytra, stamped, once per champion.
++        List<SealLoot.PlannedStack> dragon = SealLoot.perChampionPlan(
++                SealLoot.defaultsFor(BossKind.ENDER_DRAGON));
++        check(dragon.size() == 1 && setCount(dragon, "ELYTRA") == 1
++                        && dragon.get(0).provenanceStamped(),
++                "dragon set: one stamped First Breath per champion");
++
++        // --- Roster math: a roster of 3 receives 3 full sets (the
++        // adapter stores the plan once per roster member); a roster
++        // of 0 receives nothing — no phantom shared copy survives.
++        for (BossKind kind : BossKind.values()) {
++            List<SealLoot.SignatureGrant> grants = SealLoot.signatureGrants(
++                    SealLoot.defaultsFor(kind));
++            for (SealLoot.SignatureGrant g : grants) {
++                check(g.perChampion(), kind + " " + g.item().material() + " is per-champion");
++                check(g.copies(3) == 3, kind + " " + g.item().material() + ": 3 champions -> 3 sets");
++                check(g.copies(0) == 0, kind + " " + g.item().material() + ": 0 champions -> nothing");
++            }
++        }
++
++        // --- Dragon materials: per-champion set at the settled
++        // defaults, and the config switches behave.
++        List<SealLoot.LootItem> mats = SealLoot.dragonMaterials(
++                SealLoot.DRAGON_BREATH_BASE, SealLoot.DRAGON_CRYSTALS);
++        check(mats.size() == 2, "dragon materials: breath + crystals");
++        check(mats.stream().anyMatch(i -> i.material().equals("DRAGON_BREATH") && i.count() == 4),
++                "dragon materials: breath x4 per champion");
++        check(mats.stream().anyMatch(i -> i.material().equals("END_CRYSTAL") && i.count() == 2),
++                "dragon materials: crystals x2 per champion");
++        check(mats.stream().allMatch(i -> i.name() == null),
++                "dragon materials are plain stacks (never provenance-stamped)");
++        check(SealLoot.dragonMaterials(4, 0).size() == 1
++                        && SealLoot.dragonMaterials(4, 0).get(0).material().equals("DRAGON_BREATH"),
++                "crystals configured to 0 drop out");
++        check(SealLoot.dragonMaterials(0, 2).size() == 1
++                        && SealLoot.dragonMaterials(0, 2).get(0).material().equals("END_CRYSTAL"),
++                "breath configured to 0 drops out");
++        check(SealLoot.dragonMaterials(0, 0).isEmpty(), "both at 0 pay no materials");
++        check(SealLoot.dragonMaterials(-1, -2).isEmpty(), "negative amounts pay no materials");
++
++        System.out.println("SealLootDistributionTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/tests/com/winkreyes/excelbosstrial/core/SignatureGrantTest.java SOURCE-0.2.11/tests/com/winkreyes/excelbosstrial/core/SignatureGrantTest.java
+--- SOURCE-0.2.10/tests/com/winkreyes/excelbosstrial/core/SignatureGrantTest.java	2026-10-31 04:12:49.228424552 +0000
++++ SOURCE-0.2.11/tests/com/winkreyes/excelbosstrial/core/SignatureGrantTest.java	2026-10-31 05:53:26.326693076 +0000
+@@ -3,13 +3,14 @@
+ import java.util.List;
+ 
+ /**
+- * The fairness rule's grant plan (0.2.5, spec 4.6): named
+- * signature gear is granted per champion standing at the fall;
+- * signature material stacks pay exactly once however many
+- * champions stood there. These checks pin the PLAN the adapter
+- * executes (SealLoot.signatureGrants), on the dragon and on a
+- * ground-drop seal (the wither), including the bystander case:
+- * zero champions standing means zero gear copies.
++ * The grant plan under Reward Law variant B (0.2.11, B-3 —
++ * superseding 0.2.5's fairness-rule split): EVERY signature stack
++ * is granted per champion standing at the fall; the named/material
++ * classification survives only as the provenance stamp on named
++ * gear. These checks pin the PLAN the adapter executes
++ * (SealLoot.signatureGrants + perChampionPlan), on the dragon and
++ * on a ground-drop seal (the wither), including the bystander
++ * case: zero champions standing means zero copies of anything.
+  */
+ public final class SignatureGrantTest {
+ 
+@@ -47,13 +48,19 @@
+     }
+ 
+     public static void main(String[] args) {
+-        // --- Named-gear classification: a name of its own makes
+-        // gear; unnamed signature stacks are shared materials.
+-        check(SealLoot.isNamedGear(new SealLoot.LootItem("ELYTRA", 1, "First Breath",
+-                java.util.Map.of(), 1.0)), "a named item is named gear");
+-        check(!SealLoot.isNamedGear(SealLoot.LootItem.plain("WITHER_ROSE", 2)),
+-                "an unnamed stack is not named gear");
+-        check(!SealLoot.isNamedGear(null), "null is not named gear");
++        // --- The stamp classification (all that survives of the
++        // retired named/shared split): named gear is provenance-
++        // stamped per champion; material stacks are plain.
++        var dragonPlan = SealLoot.perChampionPlan(SealLoot.defaultsFor(BossKind.ENDER_DRAGON));
++        check(dragonPlan.size() == 1 && dragonPlan.get(0).provenanceStamped(),
++                "First Breath is provenance-stamped");
++        var witherPlan = SealLoot.perChampionPlan(SealLoot.defaultsFor(BossKind.WITHER));
++        check(witherPlan.stream().anyMatch(p -> p.item().material().equals("DIAMOND_SWORD")
++                        && p.provenanceStamped()),
++                "Gravewhisper is provenance-stamped");
++        check(witherPlan.stream().anyMatch(p -> p.item().material().equals("WITHER_ROSE")
++                        && !p.provenanceStamped()),
++                "wither roses are plain, unstamped");
+ 
+         // --- Dragon: First Breath per champion.
+         List<SealLoot.SignatureGrant> dragon = SealLoot.signatureGrants(
+@@ -67,41 +74,41 @@
+         check(copies(dragon, "ELYTRA", 0) == 0,
+                 "dragon, 0 champions standing (bystanders only) -> 0 elytrae");
+ 
+-        // --- Wither (a ground-drop seal): Gravewhisper per
+-        // champion; the roses pay exactly once at any count.
++        // --- Wither (a ground-drop seal): EVERY stack per
++        // champion under variant B — Gravewhisper AND the roses.
+         List<SealLoot.SignatureGrant> wither = SealLoot.signatureGrants(
+                 SealLoot.defaultsFor(BossKind.WITHER));
+         check(grantFor(wither, "DIAMOND_SWORD") != null
+                         && grantFor(wither, "DIAMOND_SWORD").perChampion(),
+                 "Gravewhisper is a per-champion grant");
+         check(grantFor(wither, "WITHER_ROSE") != null
+-                        && !grantFor(wither, "WITHER_ROSE").perChampion(),
+-                "wither roses are a shared stack, not per-champion");
++                        && grantFor(wither, "WITHER_ROSE").perChampion(),
++                "wither roses are per-champion under variant B");
+         check(copies(wither, "DIAMOND_SWORD", 1) == 1, "wither, 1 champion -> 1 Gravewhisper");
+         check(copies(wither, "DIAMOND_SWORD", 3) == 3, "wither, 3 champions -> 3 Gravewhispers");
+         check(copies(wither, "DIAMOND_SWORD", 0) == 0,
+                 "wither, 0 champions standing -> 0 Gravewhispers");
+         check(copies(wither, "WITHER_ROSE", 1) == 2, "roses pay x2 with one champion");
+-        check(copies(wither, "WITHER_ROSE", 5) == 2,
+-                "roses still pay exactly x2 with five champions (shared, once)");
+-        check(copies(wither, "WITHER_ROSE", 0) == 2,
+-                "roses pay once regardless of champion count");
++        check(copies(wither, "WITHER_ROSE", 5) == 10,
++                "roses pay x2 PER champion with five champions (variant B)");
++        check(copies(wither, "WITHER_ROSE", 0) == 0,
++                "roses pay nothing with zero champions standing");
+ 
+-        // --- Elder + warden: the same shape - one named piece
+-        // per champion, every material stack shared-once.
++        // --- Elder + warden: the same shape — every stack,
++        // gear and material alike, per champion.
+         List<SealLoot.SignatureGrant> elder = SealLoot.signatureGrants(
+                 SealLoot.defaultsFor(BossKind.ELDER_GUARDIAN));
+         check(copies(elder, "TRIDENT", 2) == 2, "elder, 2 champions -> 2 tridents");
+-        check(copies(elder, "WET_SPONGE", 4) == 4,
+-                "elder sponge stays a single x4 stack at any champion count");
+-        check(copies(elder, "HEART_OF_THE_SEA", 4) == 1,
+-                "elder heart stays a single shared stack");
++        check(copies(elder, "WET_SPONGE", 4) == 16,
++                "elder sponge pays its x4 stack per champion (variant B)");
++        check(copies(elder, "HEART_OF_THE_SEA", 4) == 4,
++                "elder heart pays per champion (variant B)");
+         List<SealLoot.SignatureGrant> warden = SealLoot.signatureGrants(
+                 SealLoot.defaultsFor(BossKind.WARDEN));
+         check(copies(warden, "DIAMOND_LEGGINGS", 2) == 2,
+                 "warden, 2 champions -> 2 Hushwalkers");
+-        check(copies(warden, "ECHO_SHARD", 3) == 4,
+-                "warden shards stay a single x4 stack");
++        check(copies(warden, "ECHO_SHARD", 3) == 12,
++                "warden shards pay their x4 stack per champion (variant B)");
+ 
+         // --- Plan completeness: every signature stack appears
+         // in the plan exactly once, in table order.
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/tests/com/winkreyes/excelbosstrial/dragon/StaleTrialPolicyTest.java SOURCE-0.2.11/tests/com/winkreyes/excelbosstrial/dragon/StaleTrialPolicyTest.java
+--- SOURCE-0.2.10/tests/com/winkreyes/excelbosstrial/dragon/StaleTrialPolicyTest.java	1970-01-01 00:00:00.000000000 +0000
++++ SOURCE-0.2.11/tests/com/winkreyes/excelbosstrial/dragon/StaleTrialPolicyTest.java	2026-10-31 05:53:26.336014795 +0000
+@@ -0,0 +1,71 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.dragon;
++
++/**
++ * 0.2.11 (B-4): the wipe-on-update decision table. Mike's rule
++ * (Oct 30, 2026): a saved fight is wiped when the build changes —
++ * closed out and archived, never restored — while same-build state
++ * restores exactly as before, and a state with no open battle is
++ * never the wipe's business (DONE is a record, not a trial).
++ */
++public final class StaleTrialPolicyTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    public static void main(String[] args) {
++        // --- isOpen: a live phase with a dragon on record.
++        check(StaleTrialPolicy.isOpen(BattlePhase.PHASE1, "u"), "PHASE1 with a dragon is open");
++        check(StaleTrialPolicy.isOpen(BattlePhase.PHASE2, "u"), "PHASE2 with a dragon is open");
++        check(StaleTrialPolicy.isOpen(BattlePhase.TRANSITION, "u"), "TRANSITION with a dragon is open");
++        check(!StaleTrialPolicy.isOpen(BattlePhase.NONE, "u"), "NONE is not an open trial");
++        check(!StaleTrialPolicy.isOpen(BattlePhase.DONE, "u"), "DONE is a record, not an open trial");
++        check(!StaleTrialPolicy.isOpen(BattlePhase.PHASE1, null), "a phase with no dragon is not open");
++        check(!StaleTrialPolicy.isOpen(null, "u"), "no phase is not open");
++
++        // --- onLoad: the version gate.
++        check(StaleTrialPolicy.onLoad("0.2.10-marker-fix", "0.2.11", true)
++                        == StaleTrialPolicy.Action.CLOSE_STALE,
++                "open battle + version change closes stale");
++        check(StaleTrialPolicy.onLoad(null, "0.2.11", true)
++                        == StaleTrialPolicy.Action.CLOSE_STALE,
++                "open battle + ABSENT stamp closes stale (the first stamped boot wipes)");
++        check(StaleTrialPolicy.onLoad("0.2.11", "0.2.11", true)
++                        == StaleTrialPolicy.Action.RESTORE,
++                "open battle + same version restores as today");
++        check(StaleTrialPolicy.onLoad("0.2.10-marker-fix", "0.2.11", false)
++                        == StaleTrialPolicy.Action.RESTORE,
++                "no open battle restores even across versions (DONE/counters untouched)");
++        check(StaleTrialPolicy.onLoad(null, "0.2.11", false)
++                        == StaleTrialPolicy.Action.RESTORE,
++                "no open battle + absent stamp restores");
++        check(StaleTrialPolicy.onLoad("0.2.11", "0.2.11", false)
++                        == StaleTrialPolicy.Action.RESTORE,
++                "same version, no open battle restores");
++
++        // --- Archive naming: beside the state file, never a deletion.
++        check(StaleTrialPolicy.archiveName("0.2.10-marker-fix")
++                        .equals("state.yml.archived-0.2.10-marker-fix"),
++                "archive name carries the wiped build");
++        check(StaleTrialPolicy.archiveName(null).equals("state.yml.archived-unstamped"),
++                "unstamped state archives as unstamped");
++        check(StaleTrialPolicy.archiveName("").equals("state.yml.archived-unstamped"),
++                "blank stamp archives as unstamped");
++        check(!StaleTrialPolicy.archiveName("a/b c").contains("/")
++                        && !StaleTrialPolicy.archiveName("a/b c").contains(" "),
++                "archive name is filesystem-safe");
++
++        System.out.println("StaleTrialPolicyTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/tests/com/winkreyes/excelbosstrial/dragon/TrialStateMachineHardeningTest.java SOURCE-0.2.11/tests/com/winkreyes/excelbosstrial/dragon/TrialStateMachineHardeningTest.java
+--- SOURCE-0.2.10/tests/com/winkreyes/excelbosstrial/dragon/TrialStateMachineHardeningTest.java	1970-01-01 00:00:00.000000000 +0000
++++ SOURCE-0.2.11/tests/com/winkreyes/excelbosstrial/dragon/TrialStateMachineHardeningTest.java	2026-10-31 05:53:26.335962166 +0000
+@@ -0,0 +1,110 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.dragon;
++
++/**
++ * 0.2.11 (B-1): the double-judgment contract the HIGHEST re-judgment
++ * pass relies on, plus the danger-zone predicate. The adapter now
++ * judges a PHASE1 blow twice (HIGH with governed numbers, HIGHEST
++ * with the event's final numbers); these checks pin that the second
++ * judgment can only ever escalate a PASS into the FLIP the first
++ * pass missed — never double-flip, never double-consume a death,
++ * and never disturb a PHASE2 death. The amplifier scenario is the
++ * Oct 30, 2026 kill: judged 40 at HIGH against 50 HP (PASS), grown
++ * to 100 by a HIGHEST modifier — the second judgment must FLIP.
++ */
++public final class TrialStateMachineHardeningTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    public static void main(String[] args) {
++        TrialConfig cfg = TrialConfig.defaults(); // per-event cap 60
++
++        // --- Double PASS: two judgments of a non-lethal blow mutate nothing.
++        TrialStateMachine m = new TrialStateMachine();
++        m.startBattle("d1");
++        check(m.onDamage(400, 60) == TrialStateMachine.Verdict.PASS, "first judgment PASS");
++        check(m.onDamage(400, 60) == TrialStateMachine.Verdict.PASS, "second judgment PASS");
++        check(m.phase() == BattlePhase.PHASE1 && !m.deathConsumed(),
++                "double PASS leaves the battle untouched");
++
++        // --- The amplifier reproduction: PASS at HIGH, FLIP at HIGHEST.
++        TrialStateMachine amp = new TrialStateMachine();
++        amp.startBattle("d2");
++        check(amp.onDamage(50, 40) == TrialStateMachine.Verdict.PASS,
++                "amplifier: governed 40 vs 50 HP passes the HIGH judgment");
++        check(amp.onDamage(50, 100) == TrialStateMachine.Verdict.FLIP,
++                "amplifier: grown to 100, the HIGHEST re-judgment FLIPs");
++        check(amp.phase() == BattlePhase.TRANSITION && !amp.deathConsumed(),
++                "amplifier: the flip consumed no death");
++
++        // --- Post-FLIP judgments are inert: TRANSITION never re-judges.
++        check(amp.onDamage(50, 10_000) == TrialStateMachine.Verdict.PASS,
++                "post-FLIP judgment in TRANSITION passes");
++        check(amp.phase() == BattlePhase.TRANSITION && !amp.deathConsumed(),
++                "post-FLIP: still TRANSITION, death still unconsumed");
++
++        // --- A HIGH FLIP is not re-flippable: same lethal numbers twice.
++        TrialStateMachine flip = new TrialStateMachine();
++        flip.startBattle("d3");
++        check(flip.onDamage(30, 45) == TrialStateMachine.Verdict.FLIP, "lethal in PHASE1 flips");
++        check(flip.onDamage(30, 45) == TrialStateMachine.Verdict.PASS,
++                "the same blow judged again does not flip twice");
++
++        // --- PHASE2: the one real death is consumed exactly once,
++        // however many passes judge the blow.
++        TrialStateMachine p2 = new TrialStateMachine();
++        p2.startBattle("d4");
++        p2.onDamage(30, 45); // FLIP -> TRANSITION
++        p2.completeTransition();
++        check(p2.phase() == BattlePhase.PHASE2, "transition completes into PHASE2");
++        check(p2.onDamage(900, 950) == TrialStateMachine.Verdict.ALLOW_DEATH,
++                "PHASE2 lethal allows the one death");
++        check(p2.onDamage(900, 950) == TrialStateMachine.Verdict.PASS,
++                "PHASE2 lethal judged again passes (death already consumed)");
++        check(p2.deathConsumed(), "PHASE2 death consumed exactly once");
++
++        // --- The Oct 30 shape: a restored mid-trial state. A battle
++        // saved in TRANSITION restores as PHASE2 and can die properly;
++        // a battle saved in PHASE1 restores in PHASE1 and the flip
++        // still guards it.
++        TrialStateMachine restored = new TrialStateMachine();
++        restored.restore(BattlePhase.TRANSITION, "d5", 0, false, true);
++        check(restored.phase() == BattlePhase.PHASE2, "saved TRANSITION restores as PHASE2");
++        check(restored.onDamage(900, 950) == TrialStateMachine.Verdict.ALLOW_DEATH,
++                "restored PHASE2 trial can reach its real death");
++        TrialStateMachine stale = new TrialStateMachine();
++        stale.restore(BattlePhase.PHASE1, "d6", 0, false, false);
++        check(stale.onDamage(50, 40) == TrialStateMachine.Verdict.PASS,
++                "restored PHASE1: governed blow passes");
++        check(stale.onDamage(50, 100) == TrialStateMachine.Verdict.FLIP,
++                "restored PHASE1: amplified blow flips on re-judgment");
++
++        // --- Danger zone: health at or below the per-event cap.
++        check(TrialStateMachine.inDangerZone(60, cfg), "health == cap is in the zone");
++        check(TrialStateMachine.inDangerZone(59.5, cfg), "health just below cap is in the zone");
++        check(TrialStateMachine.inDangerZone(1, cfg), "health 1 is in the zone");
++        check(!TrialStateMachine.inDangerZone(60.5, cfg), "health just above cap is outside");
++        check(!TrialStateMachine.inDangerZone(400, cfg), "full phase-1 bar is outside");
++        check(!TrialStateMachine.inDangerZone(0, cfg), "health 0 (already dead) is outside");
++        check(!TrialStateMachine.inDangerZone(-10, cfg), "negative health is outside");
++        check(!TrialStateMachine.inDangerZone(30, null), "no config, no zone");
++        TrialConfig noCap = new TrialConfig(true, true, 250.0, 500.0, 1.5, 3, 7, 0.6,
++                true, 3, 9, 0.0, 75.0, true);
++        check(!TrialStateMachine.inDangerZone(30, noCap),
++                "a disabled cap (0) empties the zone, matching the governor");
++
++        System.out.println("TrialStateMachineHardeningTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/tests/com/winkreyes/teamrewards/GrantClaimStoreTest.java SOURCE-0.2.11/tests/com/winkreyes/teamrewards/GrantClaimStoreTest.java
+--- SOURCE-0.2.10/tests/com/winkreyes/teamrewards/GrantClaimStoreTest.java	1970-01-01 00:00:00.000000000 +0000
++++ SOURCE-0.2.11/tests/com/winkreyes/teamrewards/GrantClaimStoreTest.java	2026-10-31 05:53:26.336606603 +0000
+@@ -0,0 +1,102 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.teamrewards;
++
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.util.List;
++import java.util.Map;
++import java.util.UUID;
++import wrv.rewards.TeamRewardLedger;
++
++/**
++ * 0.2.11: the grantclaim STORE contract, at the ledger level with
++ * opaque payloads (the real ItemStack encoding is Bukkit-bound and
++ * rig-proven end-to-end). The sequence is exactly the one
++ * TeamClaims.grantClaim performs — openEncounter, qualify, win —
++ * so what is pinned here is what the console command stores:
++ * a grant to an OFFLINE player persists across a restart (a fresh
++ * ledger over the same file), delivers exactly once, and two
++ * grants stack as two separate claim entries.
++ */
++public final class GrantClaimStoreTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    /** The store sequence TeamClaims.grantClaim performs. */
++    private static String storeGrant(TeamRewardLedger ledger, UUID owner, String run,
++                                     List<TeamRewardLedger.RewardUnit> units) throws Exception {
++        ledger.openEncounter(run);
++        ledger.qualify(run, owner);
++        ledger.win(run, "console-grant-v1", Map.of(owner, units));
++        return run;
++    }
++
++    public static void main(String[] args) throws Exception {
++        Path file = Files.createTempDirectory("grant-claim-store-").resolve("team-rewards.dat");
++        UUID offline = UUID.randomUUID();
++        List<TeamRewardLedger.RewardUnit> units = List.of(
++                new TeamRewardLedger.RewardUnit("grant:" + offline + ":0", "paper-item-v1:TEST"));
++
++        // --- Grant while the player has never been seen (offline).
++        try (TeamRewardLedger ledger = new TeamRewardLedger(file)) {
++            storeGrant(ledger, offline, "console-grant:test-1", units);
++            var claims = ledger.claims(offline);
++            check(claims.size() == 1 && claims.get(0).state() == TeamRewardLedger.State.OWED
++                            && claims.get(0).units().equals(units),
++                    "the grant is stored as one OWED claim with its units");
++            check(claims.get(0).id().equals("console-grant:test-1/" + offline),
++                    "the claim id is the grant run + owner, like an earned claim");
++        }
++
++        // --- Restart: a fresh ledger over the same file still holds it.
++        try (TeamRewardLedger ledger = new TeamRewardLedger(file)) {
++            var claims = ledger.claims(offline);
++            check(claims.size() == 1 && claims.get(0).state() == TeamRewardLedger.State.OWED,
++                    "the offline grant persists across a restart");
++
++            // --- Delivers exactly once: the second begin is refused.
++            var begun = ledger.beginDelivery(offline, claims.get(0).id());
++            ledger.finishDelivery(offline, claims.get(0).id(), begun.attempt(),
++                    TeamRewardLedger.Outcome.DELIVERED);
++            check(ledger.claims(offline).get(0).state() == TeamRewardLedger.State.DELIVERED,
++                    "the claim delivers");
++            boolean secondDeliveryRefused = false;
++            try {
++                ledger.beginDelivery(offline, claims.get(0).id());
++            } catch (IllegalStateException refused) {
++                secondDeliveryRefused = true;
++            }
++            check(secondDeliveryRefused, "a delivered grant cannot be delivered twice");
++
++            // --- A second grant is a second entry, not a mutation.
++            storeGrant(ledger, offline, "console-grant:test-2", units);
++            var all = ledger.claims(offline);
++            check(all.size() == 2, "two grants stack as separate claim entries");
++            check(all.stream().filter(c -> c.state() == TeamRewardLedger.State.OWED).count() == 1
++                            && all.stream().filter(c -> c.state() == TeamRewardLedger.State.DELIVERED).count() == 1,
++                    "the second grant is OWED; the delivered one is untouched");
++        }
++
++        // --- Read-back through a third open: the store round-trips clean.
++        try (TeamRewardLedger ledger = new TeamRewardLedger(file)) {
++            check(ledger.claims(offline).size() == 2,
++                    "the store round-trips both grants after another restart");
++            check(ledger.roster("console-grant:test-1").equals(java.util.Set.of(offline)),
++                    "the grant roster is exactly the target");
++        }
++
++        System.out.println("GrantClaimStoreTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/tests/com/winkreyes/teamrewards/ui/ReviewFramesPolicyTest.java SOURCE-0.2.11/tests/com/winkreyes/teamrewards/ui/ReviewFramesPolicyTest.java
+--- SOURCE-0.2.10/tests/com/winkreyes/teamrewards/ui/ReviewFramesPolicyTest.java	1970-01-01 00:00:00.000000000 +0000
++++ SOURCE-0.2.11/tests/com/winkreyes/teamrewards/ui/ReviewFramesPolicyTest.java	2026-10-31 05:53:26.336536909 +0000
+@@ -0,0 +1,109 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.teamrewards.ui;
++
++/**
++ * 0.2.11 (B-2): the immunity-frame boundaries. Frames exist for AUTO
++ * sessions only; the manual-open exclusion is the anti-exploit
++ * boundary and is pinned first. Then the window: a hard cap from the
++ * FIRST open (paging cannot extend it), a close grace that blocks
++ * damage-in only, and dealing damage ending the grace instantly.
++ * Defaults: 1200 ticks framed (60 s), 20 ticks grace (1 s).
++ */
++public final class ReviewFramesPolicyTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    public static void main(String[] args) {
++        // --- THE boundary: a manual open never earns frames, ever.
++        ReviewFramesPolicy manual = new ReviewFramesPolicy();
++        manual.sessionOpened(false, 100);
++        check(!manual.framedAt(100) && !manual.damageInBlocked(100) && !manual.actionsBlocked(100),
++                "manual open: no frames at open");
++        check(!manual.damageInBlocked(100 + 10_000), "manual open: no frames ever appear later");
++        manual.sessionClosed(200);
++        check(!manual.inGrace(200) && !manual.damageInBlocked(200),
++                "manual open: closing earns no grace either");
++
++        // --- An AUTO session frames: in, out, and interact blocked.
++        ReviewFramesPolicy auto = new ReviewFramesPolicy();
++        auto.sessionOpened(true, 1_000);
++        check(auto.framedAt(1_000) && auto.damageInBlocked(1_000) && auto.actionsBlocked(1_000),
++                "auto open: framed from the first tick");
++        check(auto.framedAt(1_000 + 1199), "auto open: still framed one tick before the cap");
++        check(!auto.framedAt(1_000 + 1200) && !auto.damageInBlocked(1_000 + 1200),
++                "auto open: the cap is absolute at 1200 ticks");
++
++        // --- Closing after the cap earns NO grace.
++        auto.sessionClosed(1_000 + 1200);
++        check(!auto.inGrace(1_000 + 1200) && !auto.damageInBlocked(1_000 + 1200),
++                "close at the cap: no grace");
++
++        // --- Closing inside the window: damage-in-only grace, 20 ticks.
++        ReviewFramesPolicy closed = new ReviewFramesPolicy();
++        closed.sessionOpened(true, 500);
++        closed.sessionClosed(600);
++        check(closed.inGrace(600) && closed.damageInBlocked(600) && !closed.actionsBlocked(600),
++                "grace: damage-in blocked, actions free");
++        check(closed.inGrace(619) && !closed.inGrace(620) && !closed.damageInBlocked(620),
++                "grace: exactly 20 ticks");
++
++        // --- Dealing damage ends the grace on the spot.
++        ReviewFramesPolicy fighter = new ReviewFramesPolicy();
++        fighter.sessionOpened(true, 0);
++        fighter.sessionClosed(100);
++        check(fighter.inGrace(105), "grace running before the hit");
++        fighter.damageDealt(105);
++        check(!fighter.inGrace(105) && !fighter.damageInBlocked(105),
++                "dealing damage ends the grace instantly");
++
++        // --- Paging inside the session cannot extend the window:
++        // a second AUTO open while FRAMED keeps the original start.
++        ReviewFramesPolicy pager = new ReviewFramesPolicy();
++        pager.sessionOpened(true, 0);
++        pager.sessionOpened(true, 1100);
++        check(pager.framedAt(1199) && !pager.framedAt(1200),
++                "paging at tick 1100 does not move the 1200 cap");
++
++        // --- A manual open ends live frames outright (the player
++        // took the menu into their own hands; protection is over).
++        ReviewFramesPolicy taken = new ReviewFramesPolicy();
++        taken.sessionOpened(true, 0);
++        check(taken.framedAt(10), "framed before the manual open");
++        taken.sessionOpened(false, 10);
++        check(!taken.framedAt(10) && !taken.damageInBlocked(10),
++                "manual open ends frames outright, no grace");
++
++        // --- After a full settle, a NEW auto session frames afresh.
++        ReviewFramesPolicy again = new ReviewFramesPolicy();
++        again.sessionOpened(true, 0);
++        again.sessionClosed(100);          // grace 100..119
++        again.sessionOpened(true, 5_000);  // a later verdict/join batch
++        check(again.framedAt(5_000) && again.framedAt(5_000 + 1199) && !again.framedAt(5_000 + 1200),
++                "a new batch frames a full new window");
++
++        // --- Config-sized windows behave the same at their own scale.
++        ReviewFramesPolicy small = new ReviewFramesPolicy(100, 5);
++        small.sessionOpened(true, 0);
++        check(small.framedAt(99) && !small.framedAt(100), "custom cap honoured");
++        small.sessionClosed(50);
++        check(small.inGrace(54) && !small.inGrace(55), "custom grace honoured");
++        check(small.maxTicks() == 100 && small.graceTicks() == 5, "parameters retained");
++        check(new ReviewFramesPolicy().maxTicks() == 1200
++                        && new ReviewFramesPolicy().graceTicks() == 20,
++                "defaults are the settled 1200 / 20 ticks");
++
++        System.out.println("ReviewFramesPolicyTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}
+diff -ruN '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=SOURCE-PROVENANCE.json' '--exclude=FUNCTIONAL-CHANGE.diff' SOURCE-0.2.10/tests/com/winkreyes/teamrewards/ui/ReviewPresentationTest.java SOURCE-0.2.11/tests/com/winkreyes/teamrewards/ui/ReviewPresentationTest.java
+--- SOURCE-0.2.10/tests/com/winkreyes/teamrewards/ui/ReviewPresentationTest.java	1970-01-01 00:00:00.000000000 +0000
++++ SOURCE-0.2.11/tests/com/winkreyes/teamrewards/ui/ReviewPresentationTest.java	2026-10-31 05:53:26.336479453 +0000
+@@ -0,0 +1,82 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.teamrewards.ui;
++
++import java.util.List;
++import java.util.Set;
++import java.util.UUID;
++
++/**
++ * 0.2.11 (B-2): the presented-set contract — a batch auto-presents
++ * once, any open marks it presented, a later batch with a new claim
++ * presents again, and the sidecar encoding round-trips (a damaged
++ * sidecar degrades to "present once more", never to a lost reward).
++ */
++public final class ReviewPresentationTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    public static void main(String[] args) {
++        UUID ana = UUID.randomUUID();
++        UUID bo = UUID.randomUUID();
++        String run1 = "ender_dragon:world-uuid:boss-uuid";
++        String claimA = run1 + "/" + ana;
++        String claimB = "wither:world-uuid:boss-uuid/" + ana;
++
++        ReviewPresentation p = new ReviewPresentation();
++
++        // --- A fresh batch triggers; an empty pending list never does.
++        check(p.hasUnpresented(ana, List.of(claimA)), "new claim triggers a present");
++        check(!p.hasUnpresented(ana, List.of()), "empty pending never triggers");
++        check(!p.hasUnpresented(ana, null), "null pending never triggers");
++
++        // --- Marking (what ANY open does) makes the same batch quiet.
++        p.markPresented(ana, List.of(claimA));
++        check(!p.hasUnpresented(ana, List.of(claimA)), "the same batch never re-presents");
++        p.markPresented(ana, List.of(claimA));
++        check(!p.hasUnpresented(ana, List.of(claimA)), "marking is idempotent");
++
++        // --- A later batch with one new ID triggers again; the old
++        // ID riding along does not matter.
++        check(p.hasUnpresented(ana, List.of(claimA, claimB)), "a batch with a new claim triggers");
++        p.markPresented(ana, List.of(claimA, claimB));
++        check(!p.hasUnpresented(ana, List.of(claimA, claimB)), "the second batch settles too");
++
++        // --- Players are independent.
++        check(p.hasUnpresented(bo, List.of(claimA)), "another player is unaffected");
++        check(p.presented(bo).isEmpty(), "nothing on record for the other player");
++        check(p.presented(ana).equals(Set.of(claimA, claimB)), "the record holds both claims");
++
++        // --- The sidecar round-trips.
++        ReviewPresentation q = ReviewPresentation.decode(p.encode());
++        check(!q.hasUnpresented(ana, List.of(claimA, claimB)), "round-trip keeps the batch settled");
++        check(q.hasUnpresented(ana, List.of("new:run/" + ana)), "round-trip still spots a new claim");
++        check(q.presented(ana).equals(p.presented(ana)), "round-trip preserves the set exactly");
++
++        // --- Damage tolerance: malformed lines are skipped, valid
++        // lines survive, null/empty text decodes to an empty record.
++        String damaged = "not-a-uuid some:id/x\n"
++                + "\n"
++                + "garbage-line-without-separator\n"
++                + ana + " " + claimA + "\n"
++                + ana + "\n";
++        ReviewPresentation r = ReviewPresentation.decode(damaged);
++        check(r.presented(ana).equals(Set.of(claimA)), "valid lines survive a damaged sidecar");
++        check(ReviewPresentation.decode(null).presented(ana).isEmpty(), "null text decodes empty");
++        check(ReviewPresentation.decode("").presented(ana).isEmpty(), "empty text decodes empty");
++        check(new ReviewPresentation().encode().isEmpty(), "an empty record encodes empty");
++
++        System.out.println("ReviewPresentationTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}
