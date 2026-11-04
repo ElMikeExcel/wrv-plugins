@@ -1,0 +1,45 @@
+Excel public-copy qualification 2026-10-29 UTC
+Fresh full-source compile and all main-method harnesses succeeded.
+An initial runner package-name parser failed after the added same-line header; corrected the runner and reran the entire suite successfully. No production or fixture change for this correction.
+Expected error-path persistence warnings are not test failures. No real player/server test performed.
+
+PASS 49 actual API holder/event checks; no side getInventory calls
+23 reviewed-world resolver checks pass
+AnnouncementsTest: 25 passed, 0 failed
+BossGovernorTest: 26 passed, 0 failed
+BossTrialConfigTest: 28 passed, 0 failed
+CommandAccessTest: 25 passed, 0 failed
+CooldownBookTest: 24 passed, 0 failed
+CreditJudgeTest: 21 passed, 0 failed
+DenialMessageTest: 23 passed, 0 failed
+EncounterLedgerTest: 21 passed, 0 failed
+EncounterRetentionTest: 30 passed, 0 failed
+HeightBandTest: 27 passed, 0 failed
+LedgerGrowthTest: 33 passed, 0 failed
+MonumentTrackerTest: 25 passed, 0 failed
+ProvenanceLoreTest: 11 passed, 0 failed
+ScalingConfigTest: 19 passed, 0 failed
+ScalingRuleTest: 30 passed, 0 failed
+SealHardeningTest: 74 passed, 0 failed
+SealIntegrityFixTest: 104 passed, 0 failed
+SealLootTest: 178 passed, 0 failed
+SignatureGrantTest: 32 passed, 0 failed
+SpoilsMathTest: 20 passed, 0 failed
+SpoilsVerdictTest: 29 passed, 0 failed
+XpBandPlantTest: 25 passed, 0 failed
+XpBandTokensTest: 50 passed, 0 failed
+BedIgnitionLogTest: 12 passed, 0 failed
+CrystalPlacementRuleTest: 11 passed, 0 failed
+DamageGovernorTest: 23 passed, 0 failed
+FlipEffectsTest: 8 passed, 0 failed
+NoFalseCreditTest: 41 passed, 0 failed
+TrialConfigTest: 22 passed, 0 failed
+TrialStateMachineTest: 26 passed, 0 failed
+RecoveryApiTest: 52 passed, 0 failed; proxy server + real temp filesystem, not live gameplay.
+ClaimSessionTest: 288 checks passed
+InventoryPlanTest: 24906 checks passed (surrogate stacks)
+ComponentTest: 8 checks passed
+PASS 48 checks; actual temp files: <temporary-test-directory>
+PASS: compiled all source and ran all main-method harnesses. Build output: ephemeral local directory.
+
+Fresh portable package.sh run also reran all harnesses successfully and produced SHA256 d693f17e29a7bbcf67d80b820d4c173df6026c8982e91e9132ff49ca610a062d. Binary retained only outside the source packet, never offered for publication. This is NOT an installed-artifact identity claim.
