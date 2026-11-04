@@ -1,0 +1,107 @@
+===== Test report (source: wandbars-0.3.7/TEST-REPORT.md) =====
+# ExcelWandBars 0.3.7 — test report
+
+Candidate: `ExcelWandBars-0.3.7.jar`, SHA-256
+`fc77e22f40e4719da86ea639efb91a0e46ddbf3ee02db37b12bf09ae5d770c59`
+(499,456 bytes; built twice, byte-identical).
+Base gate: the unmodified 0.3.6 tree rebuilt **byte-identical** to the shipped
+0.3.6 jar (`8335db03…`, 488,426 bytes) before any change was made.
+
+## Pure suites (no Bukkit) — 245 checks, 0 failed
+
+| Suite | Checks | |
+|---|---|---|
+| BookHoldPlanTest | 51 | 0.3.6 regression |
+| ArrangePlanTest | 25 | regression |
+| HoldReadPlanTest | 11 | regression |
+| BarLoadoutNewTest | 35 | regression |
+| SpellbookNewTest | 13 | regression |
+| UnarmedDragPlanTest | 14 | regression (plan untouched; hook gating only) |
+| ExitSweepPlanTest | 23 | regression |
+| **DragWritePlanTest** | **38** | **new** |
+| **BarPositionTest** | **35** | **new** |
+
+DragWritePlanTest pins the whole intent matrix: off-bar pickup → place on a
+bar slot = PUT (the Ward repro shape), on-bar carry = PUT, carry back to its
+own slot = RETURN, drag off the bar = REMOVE, off-bar place outside = RETURN,
+protected slot = RETURN, place with no lift = NONE, placeWith (cursor already
+holding the icon) = PUT, Q-drop on/off-bar, whole-drag farthest-target
+(on-bar) vs first-target (off-bar), outside-touch drags, dedupe (same spell
+inside 500 ms counts once; a different spell or a later commit still writes),
+cancelLift, per-player independence, forget/clear, the confirmation throttle
+(first due, immediate second not, due after the gap, zero gap always due),
+and the recent-write window.
+
+BarPositionTest pins the formatter and the label surfaces: flat 0 → "Bar 1 ·
+Slot 1" (first slot of bar 1; Mend's true position), flat 6 → "Bar 1 · Slot 7"
+(last slot of a bar), flat 7 → "Bar 2 · Slot 1" (first slot of bar 2), flat 16
+→ "Bar 3 · Slot 3" (the Cure case), width honored at 8 (Sneak bars), custom
+template honored and blank restores the default, plus surface pins —
+SpellbookText bedrock button and Java line for a slot-16 entry contain
+"Bar 3 · Slot 3" and never "bar 17", Mend's button keeps its "(in use)"
+suffix, the legacy page fallback is untouched, and LoadoutText's slot
+button/title, pick buttons/content, picker titles, swap/put result lines and
+the two drag confirmation lines all name bar and slot.
+
+## Bukkit suites (compiled suites run against the candidate jar) — 187 checks, 0 failed
+
+Core 99 (PracticeIdentityJournal 17, LegacyWandBaselinesReview 20,
+FirstObservationCoordinator 25, StoredNativeRanks 18, MigrationTouchGuard 19),
+consumer 74 (CurrentPlayerPracticeProviders 62, ReviewedNativeDefault 12),
+TapWandEcho 14 — the same split as the 0.3.6 record. Resource-failure suite:
+10 exact-production assertions, passed.
+
+## Rig (Paper 26.3-235, Moon's lifecycle fixture, synthetic player) — 78 checks, 0 failed, SEVERE 0
+
+Probe037 (`rig/evidence/probe037-result.txt`, server log
+`rig/evidence/boot4-latest.log`, console `rig/evidence/boot4.console.log`).
+The fixture wand knows 8 spells; the loadout seeds page 1 full (slots 0–6),
+so every target was read live from the model. Proven at the event level:
+
+- **Click-carry, bar → bar:** pickup Mend's icon, place on Heal's slot →
+  both events cancelled, loadout swapped, `loadouts.yml` **on disk** holds
+  Mend at the new slot, and a wand stow/re-draw paints Mend there.
+- **Drag-off removal:** carry Heal's icon to the grid → Heal leaves the
+  loadout, stays learned, removal counter and confirmation fire.
+- **Mike's Ward repro:** Cure granted, taken off the bar, its icon placed in
+  the inventory grid (slot 20) → grid pickup lifts (counter), place on the
+  bar slot writes it back; file on disk agrees.
+- **Mike's Wolf repro (all-spells shape):** the same grid-carry dialect with
+  Feed from grid slot 21 → written to its bar slot. (The fixture's spell set
+  is closed — no wolf/fling exists to grant — so a second known spell stands
+  in; the event dialect is identical, and the off-bar intent matrix is
+  unit-pinned in DragWritePlanTest.)
+- **Real drag event, bar → bar:** an InventoryDragEvent with Mend's icon on
+  the cursor over Boon's slot → cancelled, loadout swapped.
+- **Non-spell protection:** dirt placed onto a spell icon's slot → event
+  cancelled, loadout unchanged, icon-protection counter fired, dirt unharmed.
+- **Confirmation labels:** the action-bar line for the Mend write was captured
+  in the client's packet backlog reading "Bar 1 · Slot 2: mend"; the drag-off
+  line "Heal off your bar" likewise. (Packet flush into the rig's embedded
+  channel lags phases behind, so message verdicts were judged on the
+  session-wide backlog — 120 captured strings — not on per-phase drains;
+  runs 1–3 in `rig/evidence/` show the lag and the probe's corrections. The
+  Bar 2 label could not be staged live: the fixture's page flip does not take
+  through setCurrentHotbar or a synthetic sneak event, so "Bar 2 · Slot 1" is
+  pinned by BarPositionTest instead.)
+- **0.3.6 regression (exit sweep):** foreign item in the exit column is swept
+  to the stored inventory on open and back to the real inventory on close;
+  full-storage open is refused with every seeded item preserved (in this
+  fixture only one page slot was free to seed — the 0.3.6 rig's fuller
+  seeding stands as that suite's record, and ExitSweep itself is
+  byte-identical); a mid-open give survives the close; the sweep's chat line
+  reached the client (backlog).
+- **Kill switch:** `drag-write.enabled: false` written into the rig config +
+  `/wandbars reload` → summary reports "drag-write OFF", and an unarmed icon
+  pickup is cancelled with the 0.3.6 signpost counter at 1 and the signpost
+  line itself in the client backlog. 0.3.6 semantics restored by config alone.
+- Boot: plugin version 0.3.7 confirmed from the running server; **SEVERE 0**
+  across the whole run.
+
+## Not proven here (player proofs owed, in the install packet)
+
+- A real Bedrock client's drag dialects (touch drag, controller) — the rig
+  proves the Bukkit event layer both dialects land in; Geyser's translation
+  of a real touch drag is a client-side behavior only Mike's phone can prove.
+- The Healing category form re-read (Mend's "Bar 1 · Slot 1" line) on a real
+  Bedrock form.
