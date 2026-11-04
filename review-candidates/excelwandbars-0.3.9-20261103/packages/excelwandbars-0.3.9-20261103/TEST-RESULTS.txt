@@ -1,0 +1,88 @@
+===== Build record (source: wandbars-ux-build/build-0.3.9/BUILD-RECORD.md) =====
+# ExcelWandBars 0.3.9 — Build Record
+
+Built Nov 3, 2026 (overnight), from the shipped 0.3.8 tree. **Candidate only — not installed.**
+
+- **Candidate:** `ExcelWandBars-0.3.9.jar` — SHA-256 `6652e6bebb067ae10b423bcf6e730e4a16ec28f3aaee92f90b1f1057154fd70d`, **520,282 bytes, 231 entries**. Built twice, byte-identical both times.
+- **Base gate:** the unmodified 0.3.8 source tree was rebuilt and repacked first and reproduced the shipped 0.3.8 candidate byte-identically — SHA-256 `57b86601a8eafc87e16630cd32e725e9c3d329dd6d5e2cae8976008c0e5a37db`, 511,977 B (reference copy in this folder, hash re-verified at close-out).
+- **Entry diff vs 0.3.8:** 14 changed (ArrangeHook, ArrangeHook$1, ExcelWandBars, MagicHook + $Ctx/$LastForm/$View, PagerHook, core/ArrangePlan, core/DragWritePlan + $1, core/PagerPlan, config.yml, plugin.yml), 3 added (PagerHook$1, PagerPlan$Axis, PagerPlan$SlotFate), 0 removed. Inner-class shifts in MagicHook/ArrangeHook/DragWritePlan are synthetic-accessor renumbering, the same pattern as prior builds.
+- **Tests:** 13 pure suites, **355 checks, 0 failed** (301 at 0.3.8 → 355: +45 in the new SpellbookPager039Test, +9 duplicate-signature checks added after the rig caught the first guard design).
+- **Rig (Paper 26.3-235, Moon's lifecycle fixture, Probe039):** **64 checks, 0 failed, SEVERE 0** — evidence in `rig/evidence/probe039-result-final.txt` + `boot5-final.console.log`. Two earlier rig boots are also preserved and discussed below (boot4: G2 pass with a probe-staging failure in L; the 0.3.8-jar bisect boots).
+
+New config keys (all under `tap-bar.pager-buttons`, defaults = the behavior Mike asked for): `page-target: auto` (auto/bar/list), `displace-icons: true`, `cleanup-leaks: true`.
+
+---
+
+## Defect #1 — Pager buttons on every spellbook page, including the spell list — CONFIRMED, fixed
+
+**What 0.3.8 did (code evidence):** `PagerHook` rendered only when the bar was open in the player's own inventory screen and the wand had ≥2 **bar** pages, and its buttons only ever flipped bar pages (`MagicHook.flipPage` → `cycleHotbar`). That was the wrong axis: the design of record (`../PAGER-BUTTONS-20261102.md`) put the buttons on the **spell inventory's page control** — the wand-click cycle — because the pain case was Jester hunting Wolf at #72 of 95 spells on a later **list** page. Second, independent mechanism: `place()` refused to overwrite any occupied slot, so on a **full** list page (slots 34/35 holding spell icons — the normal case) the buttons never rendered at all.
+
+**The fix:** the pager now tracks two axes (`PagerPlan.Axis {BAR, LIST}`). It learns which surface the player is paging from what changes on screen: a bar-page change teaches BAR; the list grid (slots 9–33) changing while the bar page stands still teaches LIST. Buttons render when **either** axis has ≥2 pages, flip the current axis (LIST → new `MagicHook.flipListPage` → Magic's `cycleInventory`, the same call the wand click makes), and the forward button's lore carries the active axis's state line ("Page X of Y" / "List page X of Y"). Config `page-target` can pin an axis. When a button slot holds a **spell icon**, the button now displaces it: the icon is covered while the button is on screen and restored when the button sweeps (config `displace-icons`); if a repaint changed the grid underneath a covered icon, the wand's page paint is rebuilt from its spell map (which is never touched, so no spell can be lost). Non-spell foreign items still block the button, exactly as in 0.3.8.
+
+**Rig evidence (G2 phase):** with 40 clone spells staged in the rig's Magic config (the fixture's curated set has only ~16 spells — see the rig note below), the wand knew 56 spells with 2 list pages: the player's own wand-click turned the list, the buttons followed to the LIST axis ("List page 1 of 2"), a button click paged the list (verified against Magic's `openInventoryPage`), the buttons rendered on a **full** list page (displacement), and after closing, the wand still knew all 56 spells with its spell map intact.
+
+**Known limitation (honest):** Magic's `openInventoryPage` is private with no getter, so the "List page X of Y" **label** is tracked from bar-open (= page 1) plus button flips. Paging the list with the wand click can desync the label until the next button flip; the flip itself always works (relative cycle, same as the wand click) and the axis follows the wand click correctly.
+
+## Defect #2 — Spell list must show ALL known spells, including ones on a Bar — CONFIRMED for Magic's list; already holds on WandBars' own Spell Book; no overlay shipped
+
+**Code evidence:** Magic's `Wand.spellInventory` is a `Map<String,Integer>` — exactly one global slot per spell. `buildInventory()` distributes each spell into exactly one WandInventory (a bar page or a list page); `saveInventory()` / `updateSlot()` maintain the same one-slot mapping. A spell on a bar therefore **cannot** also appear in Magic's list pages, and painting duplicate icons into the grid is unsafe: `updateSlot` **accepts** spell items and would re-map the spell to the grid slot on the next save, corrupting the layout. So there is no safe WandBars-side overlay for Magic's in-inventory list, and none was shipped.
+
+**Where the requirement already holds:** WandBars' own Spell Book surface is complete — `MagicHook.orderedSpells()` returns bar spells first (with their bar number) then every remaining wand spell, and `LoadoutHook.pickEntries()` lists all known spells with bar marks. The full list Mike asked for exists there today.
+
+**Safe future route (not built):** a WandBars-painted read-only list view with save interception. Flagged for a later version if Mike wants the in-inventory list itself to be the complete one.
+
+## Defect #3 — Pager button leaked into Mike's real hotbar — CONFIRMED, root cause convicted in Magic's save path; fixed in depth
+
+**The report:** Nov 3, 1:38 AM CST, Bedrock — a "◀ Back page" arrow item sat in a live hotbar slot as a real item (screenshot evidence).
+
+**How it happened (bytecode evidence, Magic 11.2.5-baa3d91):** the buttons themselves were never written into WandBars' stored page contents (0.3.8's `place()` only painted the open display inventory and refused occupied slots). The leak is in **Magic's own save**: `Wand.saveInventory()` copies the player's display slots 0–8 into the current bar page and 9–35 into the open list page, calling `updateSlot(globalSlot, item)` per item. `updateSlot` accepts AIR, spell items, and brush items; for anything else it calls `mage.giveItem(item)` and cleanses the wand slot. `Mage.tryGiveItem` → `hasStoredInventory()` → `Wand.addToStoredInventory(item)` — a Bukkit `Inventory.addItem` (first free slot) into the player's **real stored inventory**. So **any** Magic save while buttons were rendered — including WandBars' own pager flip, since `cycleHotbar` saves first — ejected both buttons into the real inventory; on close/restore one surfaced in a live hotbar slot.
+
+**The fix, in depth:**
+1. **Pre-save sweep:** `MagicHook.flipPage`, the sneak-flip branch, and the new `flipListPage` all call `PagerHook.sweepNow(player)` first, so WandBars' own flips never trigger an ejection.
+2. **Standing cleanup** (`cleanup-leaks: true`): `PagerHook.cleanupPlayer` runs on the 10-tick poll for every online player, on join (+20/+60 ticks), and after inventory closes (+1/+10 ticks). While a wand inventory is open it strips the wand's **stored** inventory; otherwise it strips the player's inventory when no wand inventory is open. Only items carrying the PDC `pager_button` marker are removed; the slot is left empty; each strip is counted and logged once per player per session. The open display inventory is never scanned (rendered buttons there are legitimate). The rig caught it working unscripted: during the mass-grant phase a Magic-internal repaint ejected 2 buttons and the cleanup stripped them on its own ("Pager cleanup: removed 2 leaked pager button(s)…" in the boot log; final pager summary: leaks stripped 22 across the run).
+
+**Recovery behavior (what Mike gets back — stated plainly):** no stored spell was ever overwritten. 0.3.8's `place()` never wrote over a foreign-occupied slot, Magic's save **ejects** foreign items instead of recording them, and `addToStoredInventory` uses add-item semantics (first **empty** slot, never a replacement). Removing the marked button therefore restores the exact pre-leak state; nothing else is touched. One caveat: if the stored inventory was completely full at the moment of a save, `giveItem` drops the button at the player's feet instead — an inert arrow item on the ground that the cleanup cannot chase.
+
+**Rig evidence (L phase):** a marked button planted in the wand's stored inventory was stripped with the real item beside it untouched; a **direct `cycleHotbar` call** (a Magic-internal save with no WandBars sweep — the exact 0.3.8 leak path) left no button in the stored inventory after the cleanup window and none in the real inventory after close; a hand-planted straggler in the real inventory was stripped by the standing cleanup.
+
+## Defect #4 — Two-tap replace onto an occupied slot doesn't commit in one flow — CONFIRMED, root causes in WandBars' event layer; fixed
+
+**Mike's repro (Nov 3, 1:40 AM CST, Bedrock, live 0.3.8):** replace requires (1) remove the old spell, (2) close and reopen, (3) lift the new spell from the list, (4) tap it onto the slot — sometimes the whole sequence twice. The 0.3.8 "occupied-slot two-tap sticks first try" proof is treated as **FAILED live**.
+
+**Model layer is innocent:** `BarLoadout.put` already implements displace/swap and `LoadoutHook.dragPut` uses it — proven again by the new tests (an occupied-slot PUT displaces the occupant back to the book in one call).
+
+**Root causes found (all in `ArrangeHook`'s event layer):**
+- **W1 — the duplicate pickup fire.** Bedrock/Geyser can deliver one tap as more than one click event. The second fire hit the `hasLift` branch and resolved as a terminal place onto the grid (OUTSIDE target → inert RETURN for an off-bar spell), consuming the lift. Mike's real place tap then recorded a fresh lift of the **occupant** spell — the "didn't take, tap again" loop, and why remove-first + reopen (a clean, slow sequence) worked around it.
+- **W2 — lift lifetime across the repaint.** `scheduleCloseCheck` forgot the lift when the bar read closed at +1 and +3 ticks after any own-screen close event; a repaint flicker outlasting that window during a slow second tap killed the gesture.
+- **W3 — commit target page.** The terminal target's page came from the wand's momentary `getCurrentHotbar()` at the second-tap instant — 0 while the handle read closed mid-flicker — landing the commit on the wrong page's slot, often the same spell → RETURN, indistinguishable from a dropped place.
+- The stale-list symptom is the same family: the layout is recomputed from the same model a commit just changed, so a landed remove/put repaints in place (rig W4 verifies the model + spell map reflect a remove immediately, no reopen).
+
+**The fix:**
+- Terminal commits in both interpreters (Arrange + drag-write) now build their target from the **lift's recorded page** (`liftPage` map), never the momentary page.
+- A **re-lift guard**: a pickup-action click that is the same gesture delivered twice refreshes the lift instead of resolving as the terminal place. The duplicate signature is **origin + spell**: same bar slot for an on-bar lift, a grid slot for an off-bar (list) lift — `DragWritePlan.isDuplicatePickup`, a pure predicate with its own checks.
+- `scheduleCloseCheck` gains a third judgement at +8 ticks before the lift is forgotten.
+- `liftPage` is cleared on quit, world change, read-form commit, and session clear.
+
+**Rig story worth recording (the guard's first design failed, the rig caught it):** the first 0.3.9 rig boot passed W3 (Mike's repro) but **failed W1** (0.3.8's flicker regression) — the guard initially trusted spell identity alone, and after a flicker-close, Magic's restore can legitimately display the lifted spell's icon on the place target, so a genuine place onto a different slot was eaten as a "duplicate." Bisect boots on the stock 0.3.8 jar reproduced the exact inverse (W1 pass / W3 fail, i.e. Mike's live defect in the rig). The origin-checked predicate passes **both** in the final boot: drag-lifts 3, drag-writes 2, drag-confirms 2, **drag-rescues 0**.
+
+**Rig evidence (final boot):** W1 flicker swap lands with the bar closed mid-gesture; W3 (Mike's exact repro — list pickup fired twice, then one place tap onto boon's occupied slot) commits first try with boon displaced back to the pool, still known; W4 remove is visible in the model and spell map at once; R normal two-tap swap still lands.
+
+**Fixture note:** the rig's Magic config is the WRV-curated set (~16 spells), too few for a multi-page spell list. `rig/prep.sh` stages 40 clone spells (`probe01`–`probe40`, reusing the proven Feed action and `wrv_feed` icon) into the rig copy only, so G2 runs against 56 known spells / 2 list pages. The clones never leave the rig. Separately: under the mass-grant fixture state, `tryOpen` occasionally returns "exit layout repair failed" — reproduced on the **stock 0.3.8 jar** in the same state (2×), so it is a pre-existing fixture artifact of byte-identical TapBarHook code, not a 0.3.9 regression; the probe retries the open after a settle, as a player tapping again would.
+
+---
+
+## What did NOT change
+
+All 0.3.8 behaviors preserved and re-proven: the two-tap commit fix (W1), the join guard (TapBarHook is byte-identical; guard phases were covered in the 0.3.8 rig and the class did not change), pager on bar pages (G), drag-off remove, hard protection of the button slots (drags/places onto them are cancelled, buttons never lift), and the blocked-slot rule for foreign items.
+
+## Player proof owed after install
+
+**Mike (Bedrock):**
+1. Replace a spell on an **occupied** slot in one lift + one tap, first try — including one deliberately slow second tap. No remove-first, no close/reopen.
+2. Pager buttons visible on **every** spell-list page, including a full page; after paging the list with the wand click, the buttons page the **list**; bar pages still flip from the buttons.
+3. His hotbar **and** real inventory contain no pager items on any page after the fix (any 0.3.8 stragglers are stripped automatically on join/poll).
+
+**Jester (Java):**
+1. Reach Wolf on a later list page using the pager buttons.
+2. One-flow occupied-slot replace (lift from list, tap occupied slot, commits first try).
+3. No pager items anywhere in his inventory.
