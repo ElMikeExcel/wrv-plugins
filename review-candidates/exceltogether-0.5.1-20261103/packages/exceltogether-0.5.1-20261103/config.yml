@@ -1,0 +1,141 @@
+# ExcelTogether 0.4.2
+# Multiplier applied to Jobs money and XP when a partner is nearby.
+# 1.25 means +25%. It is applied to the amounts in JobsPrePaymentEvent, and Jobs'
+# own boosts (weekend, etc.) are applied afterward by Jobs, so the two stack.
+multiplier: 1.25
+# Distance in blocks (same world) a partner must be within.
+radius: 50
+# Who counts as a partner:
+#   party  = only a member of your party (default, Mike: the party IS the bonus group)
+#   nearby = any other player close by (the 0.1.0 behavior, no party needed)
+#   either = party member or anyone close by
+bonus-mode: party
+# Range indicator (WRV-068, display only, no settings): while you are in a party, an action bar
+# line re-checked every 2.5 seconds shows whether a party member is within the radius, using the
+# same range test as the bonus itself. A title flashes when the bonus turns on or off (a flip must
+# hold 3 seconds first, so the edge of the range does not strobe), with a soft sound when it turns
+# on. Each player can turn the flashes and sound off for themselves: /excelparty cue off
+# 0.4.1: the range line no longer sits on the action bar all the time (it covered spell names and
+# every other action-bar message). It shows briefly (about 2 seconds) and then leaves room.
+# Restart to apply a change here.
+range-indicator:
+  # changes = (default) show "Party bonus ACTIVE: N in range (x1.25)" or "Party: nobody in range"
+  #           when the bonus turns on or off or a member comes into or leaves range, when you join a
+  #           party or log in, and as a reminder every repeat-seconds.
+  # always  = the 0.3.0/0.4.0 behaviour, re-sent every 2.5 seconds (a constant line).
+  # off     = never (title flashes, /excelparty status and the bonus itself are unchanged).
+  action-bar: changes
+  # Reminder: show the line again after this many seconds with no other party line. 0 = no reminder.
+  repeat-seconds: 30
+  # A new in-range count must hold this long before it is shown (stops strobing at the 50-block edge).
+  change-hold-seconds: 2
+  # "+25% party bonus ..." lines when party bonus Jobs pay / XP or shared party XP is gained: at most
+  # once per this many seconds per player, so fast gains (mining) never make it constant.
+  gain-line-gap-seconds: 5
+# 0.4.2: Bedrock phones and consoles drop a lone "%" in menu text ("+25% Jobs" showed as "+25 Jobs").
+# true (default) sends "%%" in Bedrock menus, which shows as one "%". Only set false if a future Geyser
+# fixes this itself and Bedrock menus start showing "%%". Java players are never affected.
+bedrock-forms-escape-percent: true
+# Most players in one party (2 to 20).
+max-party-size: 5
+# Seconds an invite stays open.
+invite-expiry-seconds: 60
+# Seconds a disconnected member keeps their party seat before being removed.
+offline-grace-seconds: 300
+# Right-click another player while holding a compass to invite them (they still must accept).
+compass-click-invite: true
+# Also mirror ExcelTogether parties into the mcMMO party system, if mcMMO is installed (soft link).
+# Invite sets an mcMMO invite, accept joins the mcMMO party, leave and kick mirror too. ExcelTogether
+# stays in charge: if mcMMO is full, locked or the other player is in a different mcMMO party, only ours is made.
+mcmmo-party-link: true
+# Sharing (Mike's spec): when a party member earns Jobs money/XP, every OTHER party member within the
+# radius (same world, online, not idle) gets share-percent of that boosted gain too, in the SAME job
+# (skipped if they do not have that job). Shared gains never trigger more sharing.
+#   full = 100% of the earner's boosted gain (default)    off = no sharing, only the +25% bonus
+share-mode: full
+share-percent: 100
+# Anti-leech: a member who has not moved a block, clicked or broken a block for this many seconds gets
+# no shared gains (0 = check off). The earner is never affected.
+share-idle-seconds: 120
+# Also copy mcMMO skill XP (same skill, final amount) to nearby party members. Skipped automatically for
+# an mcMMO party whose leader turned on mcMMO XP share (mode EQUAL) so XP is never paid twice.
+share-mcmmo-xp: true
+
+# ---------------------------------------------------------------- 0.5.1
+# Magic party repair (soft link): when Magic is installed, ExcelTogether registers two Magic
+# actions (ExcelPartyRepair + ExcelRepairItem) so the Repair Equipment spell repairs the worn
+# armor and main-hand item of the caster's whole party at once. Registration happens at load
+# time (it must beat Magic's spell load); turning this off unbinds the party roster from the
+# actions, so a cast then reaches the caster alone. The spell's own balance (its 4-hour
+# cooldown) lives in Magic's spells.yml, not here. Restart to apply a change here.
+magic-party-repair: true
+
+# ---------------------------------------------------------------- 0.4.0
+# Party friendly fire. PvP stays on for everyone else; members of the same ExcelTogether party
+# cannot hurt each other: melee, arrows, tridents, fireworks, TNT they lit, Magic spell damage that
+# names the caster, and fire from flame arrows. (mcMMO's own Party.FriendlyFire: false only covers
+# players who are also in the same mcMMO party; this covers every ExcelTogether party.)
+friendly-fire:
+  block-party-damage: true
+  # Also protect a party member's tamed pets (wolves, cats, parrots, horses) from the rest of the party,
+  # and stop party members' pets from biting each other.
+  protect-party-pets: true
+  # Harmful splash and lingering potions (harming, poison, slowness, weakness...) skip party members.
+  # Healing and buff potions still land on them.
+  block-harmful-potions: true
+
+# Party drops (Mike, Oct 23, 2026): when a player kills a normal mob while min-together members of
+# their party (counting the killer) are alive within radius blocks in the same world, the mob's plain
+# loot is multiplied. Never boosted: EliteMobs mobs (ExcelPartyDrops handles elites), spawner mobs,
+# bred/egg/command/plugin-spawned mobs (allow list below), bosses, villagers, golems, pets, players,
+# anything the mob was carrying (picked-up items, chests, saddles, armor), and named/enchanted/unstackable
+# items. Dropped XP, Jobs pay and mcMMO XP are untouched.
+party-drops:
+  enabled: true
+  multiplier: 2.0
+  min-together: 3
+  # -1 = use the party bonus radius above (50).
+  radius: -1
+  # Anti mob-farm: at most this many boosted kills per player per rolling hour (0 = no cap).
+  max-boosted-kills-per-hour: 150
+  # One short gold chat line to the party when a boosted drop lands, at most once per this many seconds.
+  notice-cooldown-seconds: 600
+  allowed-spawn-reasons: [NATURAL, CHUNK_GEN, DEFAULT, JOCKEY, MOUNT, PATROL, REINFORCEMENTS, VILLAGE_INVASION, SLIME_SPLIT, LIGHTNING, DROWNED, INFECTION, TRAP, SILVERFISH_BLOCK, ENDER_PEARL, PIGLIN_ZOMBIFIED, FROZEN, METAMORPHOSIS]
+  excluded-mobs: [PLAYER, ARMOR_STAND, WITHER, ENDER_DRAGON, WARDEN, ELDER_GUARDIAN, VILLAGER, WANDERING_TRADER, IRON_GOLEM, SNOW_GOLEM, COPPER_GOLEM]
+  # Console line for every 1x kill by a player and why (noisy, for testing).
+  debug: false
+
+# The vanilla health scoreboard objective (below_name / tab list). A player shows 0 until their health
+# changes once; ExcelTogether sets their score to their real health shortly after they join.
+# Blank = off. Does nothing if the objective does not exist.
+hp-refresh-objective: hp
+
+# ------------------------------------------------------------ 0.5.0
+# The party mesh: /party (mcMMO), /excelparty and /em party (EliteMobs) are ONE party.
+# EliteMobs is the face (its sidebar, menus and invite popups); membership is kept in
+# step by ExcelTogether. Turning an adapter off returns to the systems working alone.
+mesh:
+  em:
+    # Master switch for the EliteMobs leg. false = exactly the pre-0.5.0 behaviour
+    # (mcMMO <-> ExcelTogether only). EliteMobs itself is never modified either way.
+    enabled: true
+    # How often the mesh reconciles the EliteMobs roster, in mesh ticks (the mesh
+    # ticks about once a second; 2 = about every 2 seconds, matching the mcMMO poll).
+    poll-every-ticks: 2
+    # On login, rebuild the player's EliteMobs party from the party of record.
+    login-materialize: true
+    # Invites made with /excelparty also appear as EliteMobs invites (its popup and
+    # [ACCEPT] button). false = invites stay ExcelTogether-only; EliteMobs membership
+    # still syncs when an invite is accepted.
+    mirror-invites: true
+    # When the party leader changes, re-form the EliteMobs party so its leader matches
+    # at once. Costs a visible sidebar flicker and drops pending EliteMobs invites.
+    leader-reform: false
+    # After any EliteMobs party change is refused, wait this long before trying again
+    # for that party (covers a dungeon ready check: EM cancels it if the roster moves).
+    ready-check-quiet-seconds: 45
+    # A deferred EliteMobs party update older than this is dropped (and logged once).
+    # Reconciliation is state-based, so anything still needed is simply retried fresh.
+    defer-max-seconds: 300
+  # true = log every mesh reconciliation decision (noisy, for testing).
+  debug: false
