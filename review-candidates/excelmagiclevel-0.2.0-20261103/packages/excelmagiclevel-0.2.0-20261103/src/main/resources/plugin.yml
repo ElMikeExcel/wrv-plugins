@@ -1,0 +1,17 @@
+name: ExcelMagicLevel
+version: 0.2.0
+main: com.winkreyesvalley.excelmagiclevel.ExcelMagicLevelPlugin
+api-version: '1.21'
+author: Excel (Wink Reyes Valley)
+description: Casts earn magic XP; Magic Levels grant soft-power boosts (mana pool, regen, cast cost) through Magic's own modifiers. Path/seals decide what you can cast; Magic Level decides how strong it is.
+depend: [Magic]
+softdepend: [ExcelTogether, PlaceholderAPI]
+commands:
+  magiclevel:
+    description: Your Magic Level — status, leaderboard, feedback toggle, and admin tools
+    usage: /magiclevel [quiet|top|admin <export|strip <player>|strip-all>]
+    aliases: [mlevel, magicxp]
+permissions:
+  excelmagiclevel.admin:
+    description: Export mcMMO-shaped rows and strip boosts (uninstall tooling)
+    default: op

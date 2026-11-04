@@ -1,0 +1,242 @@
+{
+  "plugin": "ExcelMagicLevel",
+  "version": "0.2.0",
+  "local_build_folder": "magic-level/build",
+  "jar": {
+    "file": "ExcelMagicLevel-0.2.0.jar",
+    "path": "magic-level/build/ExcelMagicLevel-0.2.0.jar",
+    "bytes": 63270,
+    "sha256": "892e05fc5d4176b82fd30117098f8c037cb4e3e56325b9cdc0d1f70cd80231c3"
+  },
+  "install": {
+    "status": "installed live",
+    "date": "Nov 1, 2026"
+  },
+  "notes": [],
+  "record": {
+    "assembled": "2026-11-03",
+    "assembler": "records catch-up packaging pass (local only; upload by parent)",
+    "files": {
+      "DEPENDENCIES.md": {
+        "sha256": "9c00e2622a1ae8a3cb9e5f14e164c760486520f787fb50a431230543fc158148",
+        "bytes": 426
+      },
+      "DEPENDENCIES.sha256": {
+        "sha256": "c97d3d625126351371df2949ba0a37a6f02c82804e4f261b83524f9fb486fe66",
+        "bytes": 136
+      },
+      "FUNCTIONAL-CHANGE.diff": {
+        "sha256": "e63a44d5ff5216805211ddcd107c336266ef7fac66ce9e380ff4d93a56e1f565",
+        "bytes": 286
+      },
+      "README.md": {
+        "sha256": "631c5460c0c797086f235afbd583e028bb59f394d7aa0b1357de2e7d4be21019",
+        "bytes": 1445
+      },
+      "SANITIZATION.diff": {
+        "sha256": "b0494285f2006077a8dfd42e1e715033dc2c7c8ea81afb9851522d35c3d57dda",
+        "bytes": 436
+      },
+      "SOURCE.md": {
+        "sha256": "140bc18664682cfc4c165613568388fc5707cabef60aad58064099174798c994",
+        "bytes": 4618
+      },
+      "TEST-RESULTS.txt": {
+        "sha256": "e017f689273783ba8b4916c8de93590a4e920b72e78e7acd1cd592c7eb06b44f",
+        "bytes": 15824
+      },
+      "build.sh": {
+        "sha256": "c6bd3847d33e520bf1628aeb35f14b4388a21dccae2a552fd31ec1f8f26287c4",
+        "bytes": 4011
+      },
+      "config.yml": {
+        "sha256": "0fd16534efe2f423f34ccf79d2187172d0fc48de7de1114b705d043c10163720",
+        "bytes": 5922
+      },
+      "plugin.yml": {
+        "sha256": "af36bd31f969bc427437df6fdea57c3b7087a70cbc203d0528878300f0083b3a",
+        "bytes": 777
+      },
+      "src/gen/java/com/winkreyesvalley/excelmagiclevel/gen/TemplateGenMain.java": {
+        "sha256": "482dc884fda8e3f3f1d4fe10ea8ceee82c146a51fcafb825f3a34691e596a9d9",
+        "bytes": 3308
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/AwardService.java": {
+        "sha256": "951180778565abc0809655c7d5faf9053c2418c177103df4171cc39fbc9a3b36",
+        "bytes": 9151
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/ExcelMagicLevelPlugin.java": {
+        "sha256": "faf00c590915f6c7ed1902e775a3f73106af15e83cd4cf6e0b7fd0ad9cc22fb3",
+        "bytes": 15232
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/magic/BoostApplier.java": {
+        "sha256": "2e5e87789e136fd206448edfc811839e3b318e123c940f5850abf73abb74d56c",
+        "bytes": 3151
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/magic/CastXpListener.java": {
+        "sha256": "95a453c4e95ae0c8ef8f430d4cfc32dd2de085a9937a3d1bfbd682c521b015ca",
+        "bytes": 4367
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/magic/MageLoadListener.java": {
+        "sha256": "373a77294841fd9895d216e4b269ece2f4bd76ec65363d26cb25a9ea556da851",
+        "bytes": 2729
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/magic/MagicBridge.java": {
+        "sha256": "fa1e9046ce14de39b22dd9021271786d530bdf115b64760b44da1b721e71e594",
+        "bytes": 1905
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/magic/ResultPolicy.java": {
+        "sha256": "159d53b3b711fcd2959068fd6f4e8ed1fa79f55bf738faced52dff2dcad3d715",
+        "bytes": 1054
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/magic/TemplateDriftCheck.java": {
+        "sha256": "a29cafc46c52b83b612a526d233bc69942c73ae81c249528501bcb92b9dbfd47",
+        "bytes": 2730
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/mcmmo/McmmoBridge.java": {
+        "sha256": "0d566c78caff296bbb0610411186e3b1f942705375e3390c1e8d6fc1a0e5684c",
+        "bytes": 746
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/mcmmo/NoOpMcmmoBridge.java": {
+        "sha256": "0b489ded548661542aca1646549d457e5564fa0d741f35609ab3021e2058ca9c",
+        "bytes": 603
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/papi/MagicLevelExpansion.java": {
+        "sha256": "c5bf9f4b95e33d28548dbce114b3df453d29735d1567307e7c8b54eacdcb58d3",
+        "bytes": 2931
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/together/BukkitServicePartyLookup.java": {
+        "sha256": "8955a5ea1ad17a035f1632633f20a32a13583d870ca7042def98b874bbbb8d60",
+        "bytes": 2721
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/together/NoOpPartyLookup.java": {
+        "sha256": "bcd3e8e60a324f4aaa2408349e784a5f3cbd02a9883ae59710242b13c5d328fd",
+        "bytes": 459
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/together/PartyLookup.java": {
+        "sha256": "b6e559cf08bea9b31821e7fa24a4aa87a2154f3ea7c00cf2b41f595734ba6aab",
+        "bytes": 780
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/together/ProximityPartyLookup.java": {
+        "sha256": "9e593149ff1dd7b8cf5e4f7284249497d5fd4840d11aa17c5f967f40dc948f38",
+        "bytes": 1811
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/weekend/ClockWeekendSignal.java": {
+        "sha256": "f8d124547181741d046765634d599d9e929c5a5fb45c64f9893303b861c2c60a",
+        "bytes": 974
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/adapter/weekend/WeekendSignal.java": {
+        "sha256": "a9e5a4be043171065a9c0487eb53f0e780ee35be2d854685d14c221cb03ffbcb",
+        "bytes": 379
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/core/AntiAbuseWindows.java": {
+        "sha256": "7b3a9eb4951ec0218cd11164498954a038e6a36b3688ac1167d092e3f8373ce5",
+        "bytes": 2535
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/core/Boost.java": {
+        "sha256": "c6ce5683b4911e2f6cee93dad3209ba369c36106a6662dfce2c37df540b9243a",
+        "bytes": 663
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/core/Curve.java": {
+        "sha256": "c5587819b31948bfb22e1e5c0f88ee237d744f5542f8fcecd4e88ad7b5bcf1c5",
+        "bytes": 4104
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/core/ExportRows.java": {
+        "sha256": "47cf477a859230eb84bff7aef25a90ba877fb4281a7e9c0b04947233c49300f9",
+        "bytes": 1871
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/core/ModifierTemplates.java": {
+        "sha256": "b89c3bd31bc1121c2678a6f18d7ce67fa012f8c6e7562ffce67cf85635c4d5f8",
+        "bytes": 3751
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/core/Percents.java": {
+        "sha256": "17600f0d0441e2d23500227a7f48aae63d008977f9f5305c834d3e54fae94fc6",
+        "bytes": 624
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/core/RewardTable.java": {
+        "sha256": "02632440b3db445869049c4625a1777884d171963c5182d433a3544283b8d287",
+        "bytes": 1138
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/core/ShareDistribution.java": {
+        "sha256": "0084d2b690b13598201fd21eceb23e381ed0328c49344f0fd07dd1ffdded0f7f",
+        "bytes": 2645
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/core/ShareMath.java": {
+        "sha256": "b6e26d058004019ec30c94265aa60f94d12f92954a9105d6b02e68c815966995",
+        "bytes": 738
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/core/WeightTable.java": {
+        "sha256": "cb6abd802912b0997845394e9b88b1b911516737971c94eae0da27c55396d184",
+        "bytes": 1330
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/core/XpMath.java": {
+        "sha256": "7bd206d563f9b21326e3afb152bf0e9ec0488428d5dd91429267ca1cdd15e441",
+        "bytes": 1894
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/store/PlayerRecord.java": {
+        "sha256": "b5dd44d28e7353cc0c82b768ed7f7f390fbe6251a74595c54e9c42c767d04d8d",
+        "bytes": 1124
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/store/PlayerStore.java": {
+        "sha256": "ccaa1e7e812b398b24beff34517691b76af31c249643b36a7aef0fcfc82c4453",
+        "bytes": 7262
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/surface/FeedbackService.java": {
+        "sha256": "629e5025b27abeab2eaa04df6857ad14a92152df4b98f3bf60e47435ff40502d",
+        "bytes": 2760
+      },
+      "src/main/java/com/winkreyesvalley/excelmagiclevel/surface/MagicLevelCommand.java": {
+        "sha256": "ecdaab09b0a79e418f6530aad19e195766a443dfd9118d65da6abedc6ee25b99",
+        "bytes": 11500
+      },
+      "src/main/resources/config.yml": {
+        "sha256": "0fd16534efe2f423f34ccf79d2187172d0fc48de7de1114b705d043c10163720",
+        "bytes": 5922
+      },
+      "src/main/resources/plugin.yml": {
+        "sha256": "af36bd31f969bc427437df6fdea57c3b7087a70cbc203d0528878300f0083b3a",
+        "bytes": 777
+      },
+      "src/test/java/com/winkreyesvalley/excelmagiclevel/PackageDependencyTest.java": {
+        "sha256": "66a666fc79d302a76f6485d80cf84548eb58ba247a120bf5aadf676e85773653",
+        "bytes": 2258
+      },
+      "src/test/java/com/winkreyesvalley/excelmagiclevel/adapter/magic/ResultPolicyTest.java": {
+        "sha256": "9346ab77c2cc0d2cf145b4db7d59641ca310c8b5fd556beb0f3ddd6409acd8aa",
+        "bytes": 1813
+      },
+      "src/test/java/com/winkreyesvalley/excelmagiclevel/core/AntiAbuseWindowsTest.java": {
+        "sha256": "9e35630e22c64056e5f6c4a2710aa17ee005bcd59e2bb71736c02610b0f4b383",
+        "bytes": 2475
+      },
+      "src/test/java/com/winkreyesvalley/excelmagiclevel/core/CurveTest.java": {
+        "sha256": "fe362527e66a8fee2fdd251c04499e7583de4a4d1c6da944bca775b4f586540d",
+        "bytes": 5933
+      },
+      "src/test/java/com/winkreyesvalley/excelmagiclevel/core/ExportRowsTest.java": {
+        "sha256": "abd75af2ee8bb2592020ada0845b66a6ca6c96e0b1b7730efe3f02fe0dccc79a",
+        "bytes": 1308
+      },
+      "src/test/java/com/winkreyesvalley/excelmagiclevel/core/ModifierTemplatesTest.java": {
+        "sha256": "b0781cac9341ff51b75bfbd32df045ced26fae938bd147d970dbf8882bea94de",
+        "bytes": 4235
+      },
+      "src/test/java/com/winkreyesvalley/excelmagiclevel/core/ShareDistributionTest.java": {
+        "sha256": "7a0b9559fa379df248ff558145239204ac687396dc3a458720325e32e8b139b8",
+        "bytes": 4334
+      },
+      "src/test/java/com/winkreyesvalley/excelmagiclevel/core/TablesTest.java": {
+        "sha256": "1f0cf4cb9d0830a62e91c4970c6d12105488b77fbf97778c3b339f519d862713",
+        "bytes": 4096
+      },
+      "src/test/java/com/winkreyesvalley/excelmagiclevel/core/XpMathTest.java": {
+        "sha256": "3b4d65aaf4ec9ec211f972116efe78c5825bdb91ffef26d49b5683c37e4700d1",
+        "bytes": 2177
+      },
+      "src/test/java/com/winkreyesvalley/excelmagiclevel/store/PlayerStoreTest.java": {
+        "sha256": "a2443880d34e7c377b447b0bd809a9880d50d7b090e6c0818d2ac05d4d80288e",
+        "bytes": 5371
+      }
+    }
+  }
+}

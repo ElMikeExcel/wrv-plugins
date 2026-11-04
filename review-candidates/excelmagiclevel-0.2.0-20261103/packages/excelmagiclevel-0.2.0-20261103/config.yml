@@ -1,0 +1,141 @@
+# ExcelMagicLevel — every balance value lives here (adjustability law).
+# Mechanics change in code; balance changes in this file. Excel — Wink Reyes Valley.
+#
+# Level count, curve, and the reward table are DATA end to end: Magic's
+# per-level modifier templates are GENERATED from these tables (see
+# modifiers-magiclevel-fragment.yml, produced by the build's generator),
+# never hand-written. Rescaling the level count is a config edit plus a
+# regeneration, not a rebuild.
+
+curve:
+  # Levels run 1..max-level. Level is DERIVED from lifetime XP, never stored.
+  # SCALE: 1000 levels (Mike, Oct 31, 2026, 8:16 PM CDT — "Match mcMMO"),
+  # read as the same grind + same cap totals re-sliced into 999 steps.
+  max-level: 1000
+  # xp-to-next(L) = round-to(base * L^exponent), here with round-to 1:
+  #   xp-to-next(1) = 11, xp-to-next(999) = 87, monotonic non-decreasing,
+  #   total XP to cap = 67,168 — the specced Standard total (67,140)
+  #   carried over as the invariant (+28 XP, +0.04%). Level 100 at 3,346
+  #   XP, level 500 at 27,260 XP. Early levels come fast and later ones
+  #   slow — the mcMMO shape Mike picked (Oct 31, 8:21 PM, even spread).
+  base: 11.0
+  exponent: 0.30
+  round-to: 1
+  # Optional per-level overrides of xp-to-next, keyed by the FROM level.
+  # An override wins over the formula for that step.
+  overrides: {}
+
+rewards:
+  # The boost AT a level is per-level * (level - 1) — an EVEN spread over
+  # the 999 steps (Mike, Oct 31, 2026, 8:21 PM CDT: even spread, picked
+  # with the truncation cost stated — early levels are mostly symbolic on
+  # low paths because Magic truncates mana to whole numbers; that is the
+  # chosen mcMMO feel, NOT a bug to redesign around).
+  # Per-level increments are the settled cap totals divided by 999:
+  #   mana pool  0.2375 / 999 = 0.000237737737...
+  #   mana regen 0.2375 / 999 = 0.000237737737...
+  #   cast cost  0.095  / 999 = 0.000095095095...
+  # Cap (level 1000): mana pool +23.75%, regen +23.75%, cast cost -9.5%
+  # (Mike's slate, SPEC 10). Palette is only what Magic's modifiers
+  # support — there is no damage knob, deliberately (SPEC 0.2/5.3).
+  # cooldown_reduction is excluded by design (SPEC 7.4).
+  per-level:
+    mana-max-boost: 0.00023773773773773774
+    mana-regeneration-boost: 0.00023773773773773774
+    cost-reduction: 0.0000950950950950951
+  # Presentation only (title + sound on level-up). No stat bumps.
+  milestones: [25, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+
+weights:
+  # XP weight per spell key, seeded from live spells.yml earns: values
+  # (SPEC 4.1). Lookup: full key (heal|2) -> base key (heal) -> default.
+  # This table is OURS: a Magic update or MagicGate stage swap can never
+  # silently change XP values. Zero any spell here to stop it paying.
+  default: 4
+  heal: 2
+  mend: 2
+  shell: 2
+  backflip: 2
+  blink: 2
+  fling: 2
+  gasp: 2
+  torch: 2
+  flashheal: 3
+  ward: 3
+  extinguish: 4
+  greaterheal: 4
+  recall: 5
+  lift: 5
+  bubble: 5
+  boon: 6
+  stormshackle: 6
+  wrv_frostbite: 6
+  blessing: 8
+  dash: 8
+  peek: 8
+  cure: 20
+  superheal: 20
+  counterspell: 20
+  disposal: 1
+  stash: 1
+
+xp:
+  # Per-spell diminishing window (seconds): a repeat cast pays
+  # floor(weight * min(1, elapsed / window)) — Magic's own SP earn shape,
+  # 3x faster because level XP is not spendable (SPEC 4.2).
+  earn-window-seconds: 300
+  # Per-target window: a paying cast against a target already paid against
+  # inside this window is scaled by target-repeat-scale (SPEC 4.3).
+  target-window-seconds: 30
+  target-repeat-scale: 0.5
+  # Boss fights pay XP (a seal fight is the realest play there is, SPEC 4.3).
+  # NOTE: setting this false is not enforceable until a BossTrial adapter
+  # exists to detect a trial — the plugin warns at enable and pays normally.
+  bosstrial-enabled: true
+
+share:
+  # Party share (SPEC 4.5). Values are Mike's settled slate: on, full copy
+  # of the earner's FINAL amount, 50 blocks, same world; copies never
+  # re-share and the weekend rate never applies to copies (SPEC 4.6).
+  enabled: true
+  percent: 100
+  radius: 50.0
+  # PARTY SOURCE — read this before wondering why mode says PROXIMITY:
+  # share reads party membership through a PartyLookup service that a
+  # future ExcelTogether registers with Bukkit's ServicesManager (the
+  # ~50-line addition designed in TOGETHER-API-NOTE.md, shipped with this
+  # plugin's source deposit). ExcelTogether 0.4.3 — the live version —
+  # publishes NO party API (verified against its jar: no API class, no
+  # service registration, PartyManager behind a private field), so until
+  # that addition lands, NO party service exists to read.
+  # fallback-proximity is the labelled degraded mode for exactly that
+  # gap: copies go to EVERY player within radius in the same world, party
+  # or not. The active mode is printed in the awake line and in
+  # /magiclevel — it is never silent. Set this false to turn share fully
+  # OFF instead of degrading when no party service is registered.
+  fallback-proximity: true
+
+bonuses:
+  # Weekend rhythm joins mcMMO's rate (Mike's slate, SPEC 10), applied to
+  # the earner's own gain only — never to share copies. The window mirrors
+  # ExcelWeekendXP's actual behaviour (verified from its source):
+  # Saturday + Sunday, America/Chicago.
+  weekend-rate: 1.2
+  weekend-zone: America/Chicago
+  weekend-days: [SATURDAY, SUNDAY]
+
+feedback:
+  # Action-bar gain ticks fire when the un-shown total crosses this much XP.
+  chunk: 10
+
+modifiers:
+  # Prefix of the generated Magic modifier templates (wrv_magiclevel_0002 ...).
+  key-prefix: wrv_magiclevel_
+
+debug:
+  # Log every cast evaluation + every reconcile (rig/diagnostics only).
+  verbose: false
+  # Rig-only probe: if set to a spell key, the cast listener deliberately
+  # throws while evaluating that spell — proving a listener failure can
+  # never break a cast. Leave empty in production.
+  throw-on-spell-key: ""

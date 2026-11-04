@@ -1,0 +1,212 @@
+===== Phase tests (source: magic-level/build/TEST-RESULTS.md) =====
+# ExcelMagicLevel 0.1.0 — TEST RESULTS (Phases 0–1)
+
+Date: Oct 31, 2026 (evening CDT). Jar SHA-256
+`bb2e9d8fd8c60c7075dfe968018eb7e5a38b80a8ca9028aade7794fc33735516`
+(the exact jar the rig boots ran — verified byte-identical to the rig
+copy after the fact). Build is reproducible: consecutive `./build.sh`
+runs produce byte-identical jar + fragment.
+
+## Unit tests — 39/39 PASS (JUnit 4.13.2, `OK (39 tests)`)
+
+| Suite | Tests | Covers |
+|---|---|---|
+| CurveTest | 6 | SPEC §5.1 table verbatim (all 19 steps + cumulatives + 67,140 total); exact level thresholds (99→1, 100→2, 67,139→19, 67,140→20, past-cap clamps); into/remaining; per-level overrides win; a 100-level rescale derives consistently (config-only change); invalid curves rejected |
+| XpMathTest | 6 | Full/no window pays weight; ramp = floor(weight × elapsed/window); spam asymptotes to 0; target repeat halves AFTER the window; weekend multiplier applies before the single floor (§4.6 order); zero/negative weight pays 0 |
+| AntiAbuseWindowsTest | 5 | First cast has no elapsed; recordPay starts per-spell/per-player clocks; target repeat inside window only; targetless casts still record the spell window; forget() is per-player |
+| TablesTest | 4 | Weight lookup full key → base key → default, config-zeroed spells; reward straight line incl. the settled cap (+0.2375/+0.2375/−0.095 at 20); share copy math (100% slate, floor); percent formatting |
+| ModifierTemplatesTest | 5 | Key padding follows level count (20→`02`, 100→`007`, 1000→`0007`); fragment carries the SPEC §5.2 rows (L2 0.0125/0.0125/0.005, L5 0.05/0.05/0.02, L20 0.2375/0.2375/0.095, no float dust); generation deterministic; a 100-level rescale regenerates 99 templates incl. L100 = 1.2375; ownership predicate never matches house reserves |
+| ExportRowsTest | 2 | mcMMO-shaped rows (uuid/skill/total-xp/derived-level) sorted desc, levels derived from the curve; empty store |
+| PlayerStoreTest | 7 | Round-trip; .bak holds the pre-save state after rotation; corrupt file preserved under a dated `.corrupt-` name + loud warning + empty start; missing file + surviving .bak recovers loudly; malformed entries skipped individually (bad UUID, negative XP) without losing good rows; debounce window respected; find() never creates |
+| ResultPolicyTest | 2 | The paying set over EVERY SpellResult value is exactly {CAST, CAST_SELF, CAST_TARGET, ALTERNATE×9}; DEACTIVATE/REACTIVATE/STOP/PENDING/CANCELLED (all isSuccess()=true traps) pay nothing |
+| PackageDependencyTest | 2 | core+store contain zero `com.gmail.nossr50` references (SPEC §9.1, enforced); core additionally imports no Bukkit/Magic/Adventure |
+
+## Rig — Paper 26.3-231 (extracted) + REAL Magic 11.2.5 + fake-player driver
+
+Rig: `rig/` in this folder; boots 1–6, logs `rig/boot*.log`. The driver
+(EmlRigDriver, rig-only) places a Carpet-style ServerPlayer that casts
+through the real `/cast` path with a real wand, so CastEvent,
+MageLoadEvent, and Magic's mage save path all run as they do for a human.
+The generated fragment was appended to the rig's Magic modifiers.yml;
+the plugin's enable-time drift check passed against it ("modifier
+templates in sync"). Seeded state: caster at 90 lifetime XP (level 1,
+10 XP short of level 2); a rig-only zero-cost self spell `eml_probe`
+(weight 20 in the rig's copy of our config) drives exact payments.
+
+| # | Proof (SPEC §8) | Result | Evidence |
+|---|---|---|---|
+| 1 | Boost applies on level-up | ✅ PASS | Boot 1: probe cast paid 24 XP (20 × 1.2 weekend — see #8), 90→114, level 2; mage state shows `wrv_magiclevel_02` [pool=0.0125, regen=0.0125, cost=0.005, dur=0] |
+| 2 | Boost survives RELOG | ✅ PASS | Boot 1: after a real quit+re-place, state shows `_02` present and our reconcile logged "modifier state already correct — nothing applied by us (boost present, restored by Magic)" — Magic restored it; we applied nothing |
+| 3 | Boost survives FULL RESTART (§0.2's central claim) | ✅ PASS — strongest form | Boot 2 (same stage, fresh JVM): mage loads with `_02`, reconcile again "already correct/restored by Magic". Boot 2b: **with ExcelMagicLevel's jar removed from the server entirely**, the mage STILL loads with `_02` active — persistence is Magic-native with zero companion code, exactly as §0.2 claims. On-disk corroboration: the mage `.dat` contains the strings `transient_modifiers` and `wrv_magiclevel_02` |
+| 4 | Level-up does NOT change current mana | ✅ PASS | Boot 1: mana set to 5.0 at T+0; the level-up cast (cost 0) landed at T+2; state at T+7 reads mana=40.0 = 5 + 7 s × 5/s regen, exactly. The cap rose (modifier applied) without granting a single point of mana |
+| 5 | Beginner-path regen truncation MEASURED | ✅ MEASURED — see table below | Boot 1 probelevels: direct read of Magic's effective (boosted, int-truncated) max/regen at levels 2/3/5/9/10/15/20 on the rig beginner path |
+| 6a | Wandless casts pay 0 | ✅ PASS | Boot 1: probe cast with no wand in hand logged "-> CAST (wandless: pays 0)"; XP/casts unchanged |
+| 6b | Toggle DEACTIVATE pays 0 | ✅ PASS (mechanism sharper than specced) | Boot 1: stormshackle activation paid 7 XP (6 × 1.2 floored); the re-cast that deactivates produced NO CastEvent and NO XP (totals close exactly: 90 + 24 + 7 = 121). Source check: in 11.2.5 the toggle path returns from `prepareCast()` via `processResult(DEACTIVATE)` and never reaches `finish()`/CastEvent — and ResultPolicy excludes DEACTIVATE anyway (unit-pinned), so both layers hold |
+| 6c | Passive casts pay 0 | ⚠️ NOT PRODUCIBLE on the rig | No passive spell produced a CastEvent in any boot. The policy layer is pinned by ResultPolicyTest over the whole enum, and any offender can be zero-weighted by config key. Named as rig-unproven, not assumed |
+| 7 | A listener exception cannot break a cast | ✅ PASS | Boot 5: with `debug.throw-on-spell-key: heal`, the caster (hurt to hp 10) cast heal; our listener threw deliberately, caught it, logged one WARNING — and the heal LANDED (hp 10 → 18). The thrown cast paid 0 XP and the next cast paid normally. Boot 3 corroborates with missile. By construction the listener is MONITOR + post-cast + fully wrapped; Bukkit isolates handler exceptions as a second layer |
+| 8 | Bonus: weekend rate live end-to-end | ✅ PASS | Rig ran on a Saturday (America/Chicago): payments were 24 (20 × 1.2) and 7 (floor(6 × 1.2)) — the §10 weekend decision working through the real clock adapter |
+| 9 | Bonus: admin tooling (SPEC §7.3) | ✅ PASS | Boot 6: `admin strip` removed the modifier (state mods=[]); `admin strip-all` ran clean; `admin export` wrote correct mcMMO-shaped rows (197 XP → derived level 2); a relog after strip re-applied via reconcile — the documented self-heal that makes strip an uninstall-time tool. `/magiclevel quiet` toggled and persisted (players.yml round-trip) |
+| 10 | Bonus: drift check + weight fallback | ✅ PASS | Awake line: "modifier templates in sync" against the generated fragment. Unlisted spell `lightning` paid the default weight 4 (boot 4) |
+
+### #5 — the truncation measurement (the number Mike asked this rig for)
+
+Mechanism (Magic source, CasterProperties.updateMaxMana): effective max
+and regen are `(int)(base × (1 + boost))` — **truncated to whole numbers**.
+Measured on the rig beginner path (base pool 50, base regen 5; read via
+`getEffectiveManaMax()` / `getEffectiveManaRegeneration()`):
+
+| Magic Level | Boost | Eff. pool (of 50) | Eff. regen (of 5) |
+|---|---|---|---|
+| 2 | +1.25% | **50 (+0)** | **5 (+0)** |
+| 3 | +2.5% | 51 (+1) | 5 (+0) |
+| 5 | +5% | 52 (+2) | 5 (+0) |
+| 9 | +10% | 55 (+5) | 5 (+0) |
+| 10 | +11.25% | 55 (+5) | 5 (+0) |
+| 15 | +17.5% | 58 (+8) | 5 (+0) |
+| 20 | +23.75% | 61 (+11) | **6 (+1)** |
+
+Derived for the LIVE beginner path (base 60/5, same proven formula):
+pool 60 → L2 **60 (+0)**, L3 61, L5 63, L10 66, L20 74; regen identical
+to the rig column (base 5): **zero regen gain until level 20 itself**.
+Student path (100/15) for contrast: regen 15 → 15 (L5), 16 (L10), 18
+(L20) — regen becomes real from student up, as SPEC §7.4 predicted. The
+sharper finding the spec did NOT predict: **at level 2 — the first
+level-up a new player ever sees — a beginner-path player gains literally
+nothing measurable** (pool truncates to the same integer, regen
+truncates, only the −0.5% cost reduction is real). The fix shape is the
+one §7.4 names (front-load the table), and it is a CONFIG decision —
+which is exactly why it goes to Mike with the level-count question
+rather than being silently redesigned here.
+
+===== Phase 2 tests (source: magic-level/build/TEST-RESULTS-2.md) =====
+# ExcelMagicLevel 0.2.0 — Phase 2 test results
+
+Environment: JDK 25 (workspace-pinned), offline build (`./build.sh`),
+Paper 26.3 + Magic 11.2.5 rig (`rig2/`), PlaceholderAPI 2.12.3,
+Jobs 5.2.6.3 + CMILib, ExcelTogether 0.4.3 (boots A2–D).
+Build date: 2026-10-31. Excel — Wink Reyes Valley.
+
+## Unit tests — 53/53 PASS (`./build.sh`, JUnit 4.13.2)
+
+Phase 0–1 ran 39; Phase 2 runs 53 (10 test classes). New/changed:
+
+- **CurveTest (8)** — the 1000-level pin: xpToNext(1) = 11,
+  xpToNext(999) = 87, cumulative anchors L100 = 3,346 / L500 = 27,260 /
+  L999 = 67,081, **totalToCap = 67,168**; monotonic non-decreasing +
+  strictly increasing cumulative + exact level boundaries across all 999
+  steps; cap behaviour (levelFor(Long.MAX_VALUE/4) = 1000,
+  xpToNextLevel at/past cap = 0); the legacy §5.1 20-level table kept
+  verbatim as the invariant regression (its 67,140 total is what the
+  rescale was derived against).
+- **TablesTest (6)** — the even-spread reward line: boostAt(L) =
+  (L−1)/999 of (+0.2375, +0.2375, −0.095) pinned at levels 2/500/999/1000;
+  milestones [25,50,…,1000]; share copy math incl. the
+  weekend-final-amount case (a boosted final of 24 copies as 24 — the
+  multiplier is inside the final, never applied twice) and the
+  Integer.MAX_VALUE no-overflow case.
+- **ModifierTemplatesTest (5)** — the generated fragment carries exactly
+  999 templates (levels 2..1000, 4-digit keys) with spot rows exact:
+  L2 0.000238/0.000238/0.000095, L100 0.023536/0.023536/0.009414,
+  L500 0.118631/0.118631/0.047452, L1000 0.2375/0.2375/0.095.
+- **ShareDistributionTest (11, new)** — the share gates as pure logic:
+  earner solo → empty; in-range pays; **distance exactly 50.0 pays**
+  (30-40-50 triangle); 50.1 does not; vertical distance counts;
+  cross-world excluded; earner excluded when listed; NaN/null views
+  never pay; zero radius pays nobody; deterministic order.
+- PackageDependencyTest still guards the §9.1 boundary (core/store
+  import no mcMMO; core imports no Bukkit/Magic) — the new core class
+  passes.
+
+Reproducibility: two consecutive `./build.sh` runs byte-identical —
+jar SHA-256 `892e05fc5d4176b82fd30117098f8c037cb4e3e56325b9cdc0d1f70cd80231c3`,
+fragment SHA-256 `f41553d72d92ee28fe18e45a50760da887fb88ab16ea5467c8c0b38dc7732140`.
+
+## Rig — boot A (proximity share + PAPI + level 500; Together failed to load, missing CMILib)
+
+Plugins: Paper 26.3, Magic 11.2.5, ExcelMagicLevel 0.2.0, PlaceholderAPI
+2.12.3, EmlRigDriver (extended: second fake player RigBuddy). Rig config
+determinism: weekend-rate 1.0, earn-window 1 s (target window kept 30 s).
+Caster seeded at 27,260 lifetime XP (= cumulativeFor(500)).
+
+- **Drift check over all 999 templates: PASS** — awake line ends
+  "modifier templates in sync." (zero drift warnings) and reads
+  "1000 Magic Levels, 67168 XP to cap, cap boosts mana pool +23.75% /
+  regen +23.75% / cast cost -9.5%; share: proximity".
+- **Level derivation at 500: PASS** — MageLoad reconcile applied exactly
+  `wrv_magiclevel_0500` [pool 0.118631, regen 0.118631, cost 0.047452,
+  duration 0]; effective mana max 55 on the beginner path
+  (trunc(50 × 1.118631)) — the truncation behaviour matches §5.2's
+  analysis at the new slicing.
+- **PlaceholderAPI: PASS** — console `papi parse RigCaster` returned
+  level `500`, next `71` (= xpToNext(500)), total_xp `27260`,
+  mana_boost `11.8631`.
+- **Share sequence (4 probe casts, weight 20):** payments were
+  20 / 10 / 10 / 10 — casts 2–4 halved by the 30 s per-target window
+  (Phase 1 behaviour, unchanged). The copies tracked the earner's FINAL
+  amount per cast, which is the stronger proof:
+  - cast 1, buddy 5 blocks away, same world → **buddy +20** (full copy),
+    levelled to 2, reconcile applied `wrv_magiclevel_0002`
+    [2.38E-4 / 2.38E-4 / 9.5E-5] — the exact L2 row;
+  - cast 2, buddy ~69 blocks away → **buddy +0** (out of range);
+  - cast 3, buddy in world_the_end → **buddy +0** (cross-world);
+  - cast 4, buddy back in range → **buddy +10** (the diminished final),
+    levelling to 3 (`wrv_magiclevel_0003`).
+  Final store: caster 27,310 XP / 4 casts; buddy 30 XP / **0 casts**
+  (copies are not casts). **No re-share**: the caster's total is exactly
+  his own four payments — the buddy's receipts never paid him back.
+
+## Rig — boot A2 (Together 0.4.3 ENABLED — the production condition)
+
+CMILib added; Jobs 5.2.6.3 and ExcelTogether 0.4.3 both enabled. EML
+still found **no PartyLookup service** and selected the proximity
+fallback with its warning; awake line "share: proximity". One in-range
+cast: caster +20 (27,280), buddy +20 copy, buddy applied `_0002`,
+buddy casts 0. The Phase 2 surface verdict is now proven at runtime,
+not just from the jar: 0.4.3 registers nothing for anyone to read.
+
+## Rig — boot B (restart persistence + strip-all, new table)
+
+Full stop/start on boot A2's state: reconcile re-applied
+`wrv_magiclevel_0500` (caster) and `wrv_magiclevel_0002` (buddy) with
+exact values. `magiclevel admin strip-all` removed 2 modifiers from 2
+online players; both post-strip states mods=[] and the caster's
+effective mana max returned 55 → 50. **Strip-all complete on the new
+table.**
+
+## Rig — boot C (the cap)
+
+Caster seeded at 67,168 XP: reconcile applied `wrv_magiclevel_1000`
+[0.2375 / 0.2375 / 0.095, duration 0]; effective values on beginner —
+mana max 61 (trunc(50 × 1.2375)), regen 6 (trunc(5 × 1.2375) — the
+only visible regen step on this path, first reached at level 843).
+A paying cast past the cap accrued (67,168 → 67,188) and
+the level/key stayed 1000.
+
+## Rig — boot D3 (the party-service branch)
+
+Rig-only stub plugin (rig2-stub/, never ships) registering a solo
+PartyLookup (every player party-of-one) in onLoad: EML's awake line
+flipped to **"share: party"** with no proximity warning, and a cast with
+the buddy 5 blocks away paid the buddy **nothing** (no store record
+created) while the caster earned +20 — the service was honoured over
+proximity. This is the exact branch that goes live when ExcelTogether
+ships the TOGETHER-API-NOTE addition.
+
+(Two earlier D boots are kept for the record: the first stub build
+failed on a rig classpath miss, and the second registered in onEnable
+behind EML's softdepend ordering — both superseded by D3; the ordering
+lesson is written into TOGETHER-API-NOTE §4.)
+
+## Not covered (owned, not hidden)
+
+- Real-party semantics with actual Together parties: impossible until
+  the API addition lands; the service branch is proven against the
+  contract, and the core gates (range/world/final-amount/no-re-share)
+  are mode-independent and proven in both modes.
+- Bedrock-client rendering of feedback/leaderboard: the command is a
+  plain Bukkit command (parity by construction, SPEC §6.1); a Bedrock
+  player proof rides the Phase 3 / install review.
+- Truncation feel at low levels is the chosen even-spread shape (Mike,
+  Oct 31, 8:21 PM) — measured, not a defect: on the beginner path the
+  pool first moves at level 86 and regen at level 843 (computed
+  exactly; rig values at 500 and 1000 agree).
