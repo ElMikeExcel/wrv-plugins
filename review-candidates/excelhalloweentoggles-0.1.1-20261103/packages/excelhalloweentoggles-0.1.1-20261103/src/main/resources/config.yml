@@ -1,0 +1,127 @@
+# ExcelHalloweenToggles — companion config
+# Excel signature plugin (Wink Reyes Valley). Per-player Halloween scare
+# toggles for Halloween_Softici 3.4.0; design: ~/workspace/halloween-toggles/DESIGN.md
+#
+# HOW IT WORKS: this companion takes over the SCHEDULING of the seven
+# toggleable scares. That only works once the Halloween config surgery
+# in the install packet has set the seven enabled flags below to false
+# (events.pumpkin/slenderman/fire/lightning/darkness/herobrine.enabled
+# and login_pumpkin.enabled) — the plugin's own chains then die, and
+# this companion re-drives the same scares through the plugin's public
+# triggerEvent / eventDelayTicks / isEligible surface, per player,
+# gated on that player's toggles. Intervals are read LIVE from the
+# Halloween config (the min-path/max-path keys below), so balancing a
+# scare is still a Halloween config edit — nothing is copied here
+# except fallbacks, used only if a path ever goes missing.
+#
+# Every balance-touchable value is a key in this file (adjustability
+# law). The feature list itself is data (modularity law): the code has
+# no per-scare paths.
+
+# Auto-retirement: the companion is active THROUGH this date (inclusive,
+# in this timezone) and stops scheduling from the next local midnight.
+# Settled: the Halloween season ends after Nov 5, 2026.
+event:
+  end-date: '2026-11-05'
+  timezone: 'America/Chicago'
+
+scheduler:
+  # Master switch for the takeover chains. false = toggles still store
+  # and display, but nothing is scheduled or fired by the companion.
+  enabled: true
+  # A chain blocked at fire time (Halloween globally off, or the player
+  # momentarily ineligible) retries on this cadence instead of dying.
+  retry-seconds: 60
+  # How often the sweep re-ensures chains for online players (this is
+  # what resumes scares after a global /halloween on).
+  sweep-seconds: 60
+  # Ticks to wait after join before the login-pumpkin re-drive runs.
+  join-delay-ticks: 40
+
+# Verbose scheduling/firing logs (rig + proof seam).
+debug: false
+
+# The toggle registry. key = what players type after /scares and what
+# the menu buttons run. Order here is the order in /scares and the menu.
+features:
+  login_pumpkin:
+    display: 'Login Pumpkin'
+    kind: login
+    enabled-path: 'login_pumpkin.enabled'
+    cooldown-path: 'login_pumpkin.cooldown_minutes'
+    fallback-cooldown-minutes: 30
+  pumpkin_curse:
+    display: 'Pumpkin Curse'
+    kind: ambient
+    event: 'pumpkin'
+    enabled-path: 'events.pumpkin.enabled'
+    min-path: 'events.pumpkin.min'
+    max-path: 'events.pumpkin.max'
+    fallback-min: 5
+    fallback-max: 20
+  slenderman:
+    display: 'Slenderman'
+    kind: ambient
+    event: 'slenderman'
+    enabled-path: 'events.slenderman.enabled'
+    min-path: 'events.slenderman.min'
+    max-path: 'events.slenderman.max'
+    fallback-min: 15
+    fallback-max: 40
+  darkness:
+    display: 'Darkness'
+    kind: ambient
+    event: 'darkness'
+    enabled-path: 'events.darkness.enabled'
+    min-path: 'events.darkness.min'
+    max-path: 'events.darkness.max'
+    fallback-min: 10
+    fallback-max: 50
+  lightning:
+    display: 'Harmless Lightning'
+    kind: ambient
+    event: 'lightning'
+    enabled-path: 'events.lightning.enabled'
+    min-path: 'events.lightning.min'
+    max-path: 'events.lightning.max'
+    fallback-min: 20
+    fallback-max: 35
+  fire:
+    display: 'Harmless Fire'
+    kind: ambient
+    event: 'fire'
+    enabled-path: 'events.fire.enabled'
+    min-path: 'events.fire.min'
+    max-path: 'events.fire.max'
+    fallback-min: 30
+    fallback-max: 60
+  herobrine:
+    display: 'Herobrine'
+    kind: ambient
+    event: 'herobrine'
+    enabled-path: 'events.herobrine.enabled'
+    min-path: 'events.herobrine.min'
+    max-path: 'events.herobrine.max'
+    fallback-min: 40
+    fallback-max: 80
+
+messages:
+  player-only: '&6[Scares] &7Scare toggles are per-player — run &e/scares &7in game. Admins: &e/halloween trigger &7fires events directly.'
+  retired: '&6[Scares] &7The Halloween event has ended — scare toggles are retired. 🎃'
+  list-header: '&6&l🎃 Your Halloween scares &7— tap one with &e/scares&7, or flip with &e/scares <name>'
+  list-line: '&7- &e%feature%&7: %state%'
+  list-footer: '&7Turning one off stops it for you only — everyone else keeps the full event.'
+  flipped: '&6[Scares] &e%feature% &7is now %state%&7.'
+  unknown-feature: '&6[Scares] &cNo scare called ''&e%token%&c''. Type &e/scares &cfor the list.'
+  no-permission: '&6[Scares] &cYou don''t have permission for test fires.'
+  test-usage: '&6[Scares] &7Usage: &e/scares test <feature>'
+  test-login: '&6[Scares] &7Test login pumpkin: &e%result% &7(gate passed; the plugin itself still declines on a full inventory, by its design).'
+  test-blocked: '&6[Scares] &cTest fire blocked: &e%reason%'
+  test-fired: '&6[Scares] &7Test-fired &e%feature% &7through the real path — plugin accepted: &e%result%&7. (Test fires bypass your toggle on purpose.)'
+  # 0.1.1 tappable surfaces. NOTE for upgrades: the live config.yml
+  # predates these keys; Bukkit resolves them from this jar default
+  # until the key is copied into the live file — no live edit needed.
+  form-title: '🎃 Halloween Scares'
+  form-content: 'Tap a scare to flip it. ON means the scare can find you; OFF means it never will. Your switches are yours only.'
+  gui-title: '&6&lHalloween Scares'
+  gui-close: '&7&lClose'

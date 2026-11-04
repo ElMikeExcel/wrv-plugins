@@ -1,0 +1,592 @@
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/0.1.0-java/com/winkreyesvalley/excelhalloweentoggles/ExcelHalloweenToggles.java b/0.1.1-java/com/winkreyesvalley/excelhalloweentoggles/ExcelHalloweenToggles.java
+--- a/0.1.0-java/com/winkreyesvalley/excelhalloweentoggles/ExcelHalloweenToggles.java	2026-10-31 22:53:18.134778836 +0000
++++ b/0.1.1-java/com/winkreyesvalley/excelhalloweentoggles/ExcelHalloweenToggles.java	2026-11-01 23:41:04.762852096 +0000
+@@ -105,6 +105,12 @@
+         ScaresCommand executor = new ScaresCommand(this, halloween, registry, store, scheduler, loginDriver);
+         cmd.setExecutor(executor);
+         cmd.setTabCompleter(executor);
++        // 0.1.1: the tappable surfaces (Bedrock form + Java chest GUI).
++        // The GUI flips through the command's own flip path; the form
++        // is driven from the command via the mirrored GeyserForms helper.
++        ScaresGui scaresGui = new ScaresGui(this, registry, store, executor::flipFeature);
++        executor.setGui(scaresGui);
++        Bukkit.getPluginManager().registerEvents(scaresGui, this);
+ 
+         checkTriggerableSurface();
+         checkSurgeryState();
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/0.1.0-java/com/winkreyesvalley/excelhalloweentoggles/GeyserForms.java b/0.1.1-java/com/winkreyesvalley/excelhalloweentoggles/GeyserForms.java
+--- a/0.1.0-java/com/winkreyesvalley/excelhalloweentoggles/GeyserForms.java	1970-01-01 00:00:00.000000000 +0000
++++ b/0.1.1-java/com/winkreyesvalley/excelhalloweentoggles/GeyserForms.java	2026-11-01 23:40:37.107851023 +0000
+@@ -0,0 +1,151 @@
++package com.winkreyesvalley.excelhalloweentoggles;
++
++import org.bukkit.Bukkit;
++import org.bukkit.entity.Player;
++import org.bukkit.plugin.Plugin;
++
++import java.lang.reflect.Method;
++import java.lang.reflect.Proxy;
++import java.util.UUID;
++import java.util.function.IntConsumer;
++import java.util.logging.Logger;
++
++/**
++ * ExcelHalloweenToggles — reflection-based Geyser form helpers.
++ *
++ * Mirrors the proven helper in ExcelBedrockMenu 1.5.27/1.5.28
++ * (com.winkreyes.excelbedrockmenu.GeyserForms): Geyser's own
++ * classloader is used so this plugin never defines Geyser API types
++ * itself and needs no compile-time Geyser dependency. Fail-soft by
++ * construction: no Geyser, no Bedrock session, or any reflection
++ * mismatch returns false and the caller falls back to the chest GUI /
++ * chat list — a form failure can never break /scares.
++ */
++final class GeyserForms {
++
++    private GeyserForms() {}
++
++    /** True if the player is connected via Geyser (Bedrock). */
++    static boolean isBedrockPlayer(Player player, Logger log) {
++        try {
++            Plugin geyser = Bukkit.getPluginManager().getPlugin("Geyser-Spigot");
++            if (geyser == null || !geyser.isEnabled()) {
++                return false;
++            }
++            ClassLoader loader = geyser.getClass().getClassLoader();
++            Class<?> apiClass = Class.forName("org.geysermc.geyser.api.GeyserApi",
++                    true, loader);
++            Object api = apiClass.getMethod("api").invoke(null);
++            Object result = apiClass.getMethod("isBedrockPlayer", UUID.class)
++                    .invoke(api, player.getUniqueId());
++            return Boolean.TRUE.equals(result);
++        } catch (Exception e) {
++            return false;
++        }
++    }
++
++    /**
++     * Sends a SimpleForm list dialog. onSelect receives the clicked
++     * button id (-1 if the form was closed without a choice). Returns
++     * true if the form was sent. The handler may fire off the main
++     * thread — callers must hop threads before touching game state.
++     */
++    static boolean sendSimpleForm(Player player, String title, String content,
++                                  String[] buttons, IntConsumer onSelect, Logger log) {
++        String step = "start";
++        try {
++            Plugin geyserPlugin = Bukkit.getPluginManager().getPlugin("Geyser-Spigot");
++            if (geyserPlugin == null || !geyserPlugin.isEnabled()) {
++                return false;
++            }
++            ClassLoader loader = geyserPlugin.getClass().getClassLoader();
++            UUID uuid = player.getUniqueId();
++
++            step = "GeyserApi.api()";
++            Class<?> apiClass = Class.forName("org.geysermc.geyser.api.GeyserApi",
++                    true, loader);
++            Object api = apiClass.getMethod("api").invoke(null);
++
++            step = "connectionByUuid";
++            Object connection = apiClass.getMethod("connectionByUuid", UUID.class)
++                    .invoke(api, uuid);
++            if (connection == null) {
++                return false;
++            }
++
++            step = "SimpleForm.builder()";
++            Class<?> formClass = Class.forName("org.geysermc.cumulus.form.SimpleForm",
++                    true, loader);
++            Object builder = formClass.getMethod("builder").invoke(null);
++            Class<?> builderClass = builder.getClass();
++
++            step = "title/content/buttons";
++            builderClass.getMethod("title", String.class).invoke(builder, title);
++            builderClass.getMethod("content", String.class).invoke(builder, content);
++            Method buttonMethod = builderClass.getMethod("button", String.class);
++            for (String b : buttons) {
++                buttonMethod.invoke(builder, b);
++            }
++
++            step = "validResultHandler";
++            Class<?> responseClass = Class.forName(
++                    "org.geysermc.cumulus.response.SimpleFormResponse", true, loader);
++            Class<?> biConsumerClass = Class.forName("java.util.function.BiConsumer",
++                    true, loader);
++            Object handler = Proxy.newProxyInstance(loader,
++                    new Class<?>[]{biConsumerClass},
++                    (proxy, method, methodArgs) -> {
++                        if (method.getName().equals("accept") && methodArgs.length == 2) {
++                            Object response = methodArgs[1];
++                            int id = (int) responseClass.getMethod("clickedButtonId")
++                                    .invoke(response);
++                            onSelect.accept(id);
++                        }
++                        return null;
++                    });
++            Method vrh = findHandler(builderClass, "validResultHandler", handler);
++            if (vrh == null) {
++                log.warning("GeyserForms: no compatible validResultHandler (SimpleForm)");
++                return false;
++            }
++            vrh.invoke(builder, handler);
++
++            step = "build+send";
++            Object form = builderClass.getMethod("build").invoke(builder);
++            Method sendForm = findSendForm(connection.getClass(), form.getClass());
++            if (sendForm == null) {
++                log.warning("GeyserForms: no compatible sendForm (SimpleForm)");
++                return false;
++            }
++            return (boolean) sendForm.invoke(connection, form);
++        } catch (Exception e) {
++            log.warning("GeyserForms SimpleForm '" + title + "' failed at [" + step + "]: "
++                    + e.getClass().getSimpleName() + ": " + e.getMessage());
++            return false;
++        }
++    }
++
++    private static Method findHandler(Class<?> builderClass, String name, Object handler) {
++        for (Method m : builderClass.getMethods()) {
++            if (m.getName().equals(name) && m.getParameterCount() == 1) {
++                Class<?> pt = m.getParameterTypes()[0];
++                if (pt.isAssignableFrom(handler.getClass())) {
++                    return m;
++                }
++            }
++        }
++        return null;
++    }
++
++    private static Method findSendForm(Class<?> connectionClass, Class<?> formClass) {
++        for (Method m : connectionClass.getMethods()) {
++            if (m.getName().equals("sendForm") && m.getParameterCount() == 1) {
++                Class<?> pt = m.getParameterTypes()[0];
++                if (pt.isAssignableFrom(formClass)) {
++                    return m;
++                }
++            }
++        }
++        return null;
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/0.1.0-java/com/winkreyesvalley/excelhalloweentoggles/ScareView.java b/0.1.1-java/com/winkreyesvalley/excelhalloweentoggles/ScareView.java
+--- a/0.1.0-java/com/winkreyesvalley/excelhalloweentoggles/ScareView.java	1970-01-01 00:00:00.000000000 +0000
++++ b/0.1.1-java/com/winkreyesvalley/excelhalloweentoggles/ScareView.java	2026-11-01 23:40:17.582850265 +0000
+@@ -0,0 +1,151 @@
++package com.winkreyesvalley.excelhalloweentoggles;
++
++import org.bukkit.Material;
++
++import java.util.ArrayList;
++import java.util.LinkedHashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.function.Function;
++
++/**
++ * ExcelHalloweenToggles — the /scares surface view model (0.1.1).
++ *
++ * Pure render logic for the two tappable surfaces Mike required on
++ * Nov 1, 2026: the Bedrock GeyserForms list and the Java chest GUI.
++ * Both surfaces are built from THIS one model — button labels, GUI
++ * slots, icons, names and lore — so the two platforms can never drift
++ * apart in wording or state display (house build style: one
++ * implementation, thin per-platform renderers). No Bukkit player or
++ * inventory state lives here; a surface is a pure function of the
++ * registry plus a state lookup, which is what the unit tests pin.
++ *
++ * Icon and wording choices mirror the ExcelMenu 2.0 halloween_scares
++ * definition (packet-files/halloween_scares.yml) exactly: same
++ * materials, same state marks (✔ ON green / ✘ OFF gray), same
++ * one-line descriptions, so /scares feels like the menu it replaces.
++ */
++public final class ScareView {
++
++    /** Chest GUI geometry: 27 slots, scares in the middle row from
++     *  slot 10 (the ExcelMenu definition's layout), Close at 22. */
++    public static final int GUI_SIZE = 27;
++    public static final int FIRST_SLOT = 10;
++    public static final int CLOSE_SLOT = 22;
++
++    /** Label of the form's final button — tapping it (id == feature
++     *  count) ends the form instead of flipping anything. */
++    public static final String CLOSE_LABEL = "Close";
++
++    private ScareView() {}
++
++    public static String stateWord(boolean on) {
++        return on ? "ON" : "OFF";
++    }
++
++    /** One Bedrock form button: "Slenderman: ✔ ON". */
++    public static String formButton(FeatureDef feature, boolean on) {
++        return feature.displayName() + ": " + (on ? "✔ ON" : "✘ OFF");
++    }
++
++    /** The full Bedrock form payload: one button per scare in registry
++     *  order, then Close. Button ids are indexes into this array. */
++    public static String[] formButtons(FeatureRegistry registry, Function<String, Boolean> state) {
++        List<FeatureDef> all = registry.all();
++        String[] out = new String[all.size() + 1];
++        for (int i = 0; i < all.size(); i++) {
++            FeatureDef f = all.get(i);
++            out[i] = formButton(f, Boolean.TRUE.equals(state.apply(f.key())));
++        }
++        out[all.size()] = CLOSE_LABEL;
++        return out;
++    }
++
++    /** Feature key behind a form button id, or null when the id is
++     *  Close (== feature count), a dismissal (-1), or out of range. */
++    public static String buttonKey(FeatureRegistry registry, int buttonId) {
++        List<FeatureDef> all = registry.all();
++        if (buttonId < 0 || buttonId >= all.size()) {
++            return null;
++        }
++        return all.get(buttonId).key();
++    }
++
++    /** The icon the ExcelMenu definition uses for this scare. */
++    public static Material icon(FeatureDef feature) {
++        return switch (feature.key()) {
++            case "login_pumpkin" -> Material.CARVED_PUMPKIN;
++            case "pumpkin_curse" -> Material.JACK_O_LANTERN;
++            case "slenderman" -> Material.ENDER_EYE;
++            case "darkness" -> Material.INK_SAC;
++            case "lightning" -> Material.LIGHTNING_ROD;
++            case "fire" -> Material.CAMPFIRE;
++            case "herobrine" -> Material.SKELETON_SKULL;
++            default -> Material.PUMPKIN;
++        };
++    }
++
++    /** The one-line description the ExcelMenu definition shows. */
++    public static List<String> loreLines(FeatureDef feature) {
++        return switch (feature.key()) {
++            case "login_pumpkin" -> List.of("§7A pumpkin lands on your head when you join");
++            case "pumpkin_curse" -> List.of("§7A pumpkin lands on your head every so often");
++            case "slenderman" -> List.of("§7A tall stranger flashes in front of you");
++            case "darkness" -> List.of("§7Your screen goes dark for a moment");
++            case "lightning" -> List.of("§7Lightning strikes near you — looks only, no damage");
++            case "fire" -> List.of("§7You catch fire for show — no damage");
++            case "herobrine" -> List.of("§7He watches from the dark at night,",
++                    "§7a little closer every time");
++            default -> List.of();
++        };
++    }
++
++    /** Full lore for one GUI item: description + the flip instruction
++     *  for the CURRENT state (the ExcelMenu ON/OFF variant wording). */
++    public static List<String> guiLore(FeatureDef feature, boolean on) {
++        List<String> out = new ArrayList<>(loreLines(feature));
++        out.add(on ? "§7Click to turn it OFF" : "§7Click to turn it ON");
++        return out;
++    }
++
++    /** Item display name: green "Name: ✔ ON" / gray "Name: ✘ OFF" —
++     *  identical wording to the ExcelMenu state variants. */
++    public static String guiName(FeatureDef feature, boolean on) {
++        return (on ? "§a§l" : "§7§l") + feature.displayName() + ": " + (on ? "✔ ON" : "✘ OFF");
++    }
++
++    /** One rendered GUI item. */
++    public record GuiItem(int slot, String key, Material material, String name, List<String> lore) {}
++
++    /** The chest-GUI model: items in registry order at slots 10..,
++     *  plus the slot → key map the click handler resolves against. */
++    public static final class GuiModel {
++        private final List<GuiItem> items;
++        private final Map<Integer, String> keyBySlot;
++
++        private GuiModel(List<GuiItem> items, Map<Integer, String> keyBySlot) {
++            this.items = items;
++            this.keyBySlot = keyBySlot;
++        }
++
++        public List<GuiItem> items() { return items; }
++
++        /** Feature key at a GUI slot, or null (Close / filler / the
++         *  player's own inventory slots are never resolved here). */
++        public String keyAt(int slot) { return keyBySlot.get(slot); }
++    }
++
++    public static GuiModel gui(FeatureRegistry registry, Function<String, Boolean> state) {
++        List<GuiItem> items = new ArrayList<>();
++        Map<Integer, String> bySlot = new LinkedHashMap<>();
++        List<FeatureDef> all = registry.all();
++        for (int i = 0; i < all.size(); i++) {
++            FeatureDef f = all.get(i);
++            boolean on = Boolean.TRUE.equals(state.apply(f.key()));
++            int slot = FIRST_SLOT + i;
++            items.add(new GuiItem(slot, f.key(), icon(f), guiName(f, on), guiLore(f, on)));
++            bySlot.put(slot, f.key());
++        }
++        return new GuiModel(List.copyOf(items), Map.copyOf(bySlot));
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/0.1.0-java/com/winkreyesvalley/excelhalloweentoggles/ScaresCommand.java b/0.1.1-java/com/winkreyesvalley/excelhalloweentoggles/ScaresCommand.java
+--- a/0.1.0-java/com/winkreyesvalley/excelhalloweentoggles/ScaresCommand.java	2026-10-31 22:53:31.942778729 +0000
++++ b/0.1.1-java/com/winkreyesvalley/excelhalloweentoggles/ScaresCommand.java	2026-11-01 23:41:04.733852095 +0000
+@@ -13,14 +13,18 @@
+ import java.util.Locale;
+ 
+ /**
+- * ExcelHalloweenToggles — /scares, the both-platforms floor.
++ * ExcelHalloweenToggles — /scares.
+  *
+- * Chat is identical on Java and Bedrock, so this command is the
+- * guaranteed surface from the first minute; the Server Menu rows ride
+- * on top of it (every menu button simply runs /scares &lt;feature&gt;
+- * as the player).
++ * 0.1.1 (Mike, Nov 1, 2026): bare /scares opens the TAPPABLE surface —
++ * a GeyserForms list on Bedrock, a chest GUI on Java — because the
++ * house style is surfaces players can see and tap, and the old chat
++ * list is not tappable on Bedrock at all. The chat list survives as
++ * /scares list (console guidance + anyone who prefers it); a direct
++ * /scares &lt;feature&gt; flip keeps its chat confirmation, and every
++ * menu button on both platforms still lands here unchanged.
+  *
+- *   /scares                  list your seven switches
++ *   /scares                  open your switches (form on Bedrock, GUI on Java)
++ *   /scares list             print the seven switches in chat
+  *   /scares &lt;feature&gt;      flip one (key or Halloween event name)
+  *   /scares test &lt;feature&gt; op-only: fire one at yourself through the real
+  *                            gate + fire path (bypasses only your own
+@@ -39,6 +43,7 @@
+     private final ToggleStore store;
+     private final ScareScheduler scheduler;
+     private final JoinPumpkinDriver loginDriver;
++    private ScaresGui gui;
+ 
+     public ScaresCommand(ExcelHalloweenToggles plugin, HalloweenPlugin halloween,
+                          FeatureRegistry registry, ToggleStore store,
+@@ -51,6 +56,12 @@
+         this.loginDriver = loginDriver;
+     }
+ 
++    /** Wired by the plugin after construction (the GUI flips through
++     *  this command's flipFeature, so it cannot be a constructor arg). */
++    void setGui(ScaresGui gui) {
++        this.gui = gui;
++    }
++
+     @Override
+     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+         if (!(sender instanceof Player player)) {
+@@ -64,7 +75,11 @@
+                     "&6[Scares] &7The Halloween event has ended — scare toggles are retired. 🎃"));
+             return true;
+         }
+-        if (args.length == 0 || args[0].equalsIgnoreCase("list")) {
++        if (args.length == 0) {
++            openSurface(player);
++            return true;
++        }
++        if (args[0].equalsIgnoreCase("list")) {
+             sendList(player);
+             return true;
+         }
+@@ -78,10 +93,7 @@
+                     .replace("%token%", args[0]));
+             return true;
+         }
+-        boolean now = store.toggle(player.getUniqueId(), feature.key());
+-        if (!feature.isLogin()) {
+-            scheduler.ensureFeature(player, feature);
+-        }
++        boolean now = flipFeature(player, feature);
+         player.sendMessage(plugin.text("messages.flipped",
+                 "&6[Scares] &e%feature% &7is now %state%&7.")
+                 .replace("%feature%", feature.displayName())
+@@ -89,9 +101,74 @@
+         return true;
+     }
+ 
++    /**
++     * THE flip path — the one and only place a toggle changes outside
++     * /scares test. The command branch, the Bedrock form and the Java
++     * GUI all call this, so storage, the scheduler re-ensure and the
++     * returned NEW state can never disagree between surfaces.
++     */
++    boolean flipFeature(Player player, FeatureDef feature) {
++        boolean now = store.toggle(player.getUniqueId(), feature.key());
++        if (!feature.isLogin()) {
++            scheduler.ensureFeature(player, feature);
++        }
++        return now;
++    }
++
++    /**
++     * Open the tappable surface: Bedrock players get the GeyserForms
++     * list; everyone else gets the chest GUI. Any failure along the
++     * way degrades to the chat list — /scares can never dead-end.
++     */
++    void openSurface(Player player) {
++        if (gui == null) {
++            sendList(player);
++            return;
++        }
++        if (GeyserForms.isBedrockPlayer(player, plugin.getLogger()) && sendScareForm(player)) {
++            return;
++        }
++        gui.open(player);
++    }
++
++    /**
++     * Build the form from the player's CURRENT states and send it.
++     * A tap flips through flipFeature and RE-OPENS the form with the
++     * updated states; Close (or dismissing the form) ends it. The
++     * Cumulus callback can fire off the main thread, so the work hops
++     * onto the server thread first. Returns false when the form could
++     * not be sent at all (caller falls back to the GUI).
++     */
++    private boolean sendScareForm(Player player) {
++        String[] buttons = ScareView.formButtons(registry,
++                key -> store.isEnabled(player.getUniqueId(), key));
++        return GeyserForms.sendSimpleForm(player,
++                plugin.text("messages.form-title", "🎃 Halloween Scares"),
++                plugin.text("messages.form-content",
++                        "Tap a scare to flip it. ON means the scare can find you; "
++                                + "OFF means it never will. Your switches are yours only."),
++                buttons,
++                buttonId -> Bukkit.getScheduler().runTask(plugin, () -> {
++                    if (!player.isOnline()) {
++                        return;
++                    }
++                    String key = ScareView.buttonKey(registry, buttonId);
++                    if (key == null) {
++                        return; // Close or dismissed — done
++                    }
++                    FeatureDef feature = registry.byKey(key);
++                    if (feature == null) {
++                        return;
++                    }
++                    flipFeature(player, feature);
++                    sendScareForm(player); // re-open showing the new states
++                }),
++                plugin.getLogger());
++    }
++
+     private void sendList(Player player) {
+         player.sendMessage(plugin.text("messages.list-header",
+-                "&6&l🎃 Your Halloween scares &7— tap one in the Server Menu, or &e/scares <name>"));
++                "&6&l🎃 Your Halloween scares &7— tap one with &e/scares&7, or flip with &e/scares <name>"));
+         for (FeatureDef f : registry.all()) {
+             boolean on = store.isEnabled(player.getUniqueId(), f.key());
+             player.sendMessage(plugin.text("messages.list-line",
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/0.1.0-java/com/winkreyesvalley/excelhalloweentoggles/ScaresGui.java b/0.1.1-java/com/winkreyesvalley/excelhalloweentoggles/ScaresGui.java
+--- a/0.1.0-java/com/winkreyesvalley/excelhalloweentoggles/ScaresGui.java	1970-01-01 00:00:00.000000000 +0000
++++ b/0.1.1-java/com/winkreyesvalley/excelhalloweentoggles/ScaresGui.java	2026-11-01 23:40:37.106851023 +0000
+@@ -0,0 +1,112 @@
++package com.winkreyesvalley.excelhalloweentoggles;
++
++import org.bukkit.Bukkit;
++import org.bukkit.Material;
++import org.bukkit.entity.Player;
++import org.bukkit.event.EventHandler;
++import org.bukkit.event.Listener;
++import org.bukkit.event.inventory.InventoryClickEvent;
++import org.bukkit.inventory.Inventory;
++import org.bukkit.inventory.InventoryHolder;
++import org.bukkit.inventory.ItemStack;
++import org.bukkit.inventory.meta.ItemMeta;
++
++import java.util.function.BiFunction;
++
++/**
++ * ExcelHalloweenToggles — the Java /scares chest GUI (0.1.1).
++ *
++ * A 27-slot chest in the ExcelMenu state style: one item per scare,
++ * its material/name/lore driven by the player's CURRENT state (the
++ * ScareView model — identical wording and icons to the ExcelMenu
++ * halloween_scares definition), so ON/OFF reads at a glance. A click
++ * flips through the exact same path /scares &lt;feature&gt; uses (the
++ * BiFunction handed in by ScaresCommand) and the GUI re-renders in
++ * place, so the player watches the state change.
++ *
++ * Ownership is proven by a marker InventoryHolder, never by title —
++ * titles are display text, holders are identity.
++ */
++public final class ScaresGui implements Listener {
++
++    /** Marker holder: an inventory whose holder is this class is ours. */
++    static final class Holder implements InventoryHolder {
++        @Override
++        public Inventory getInventory() {
++            return null; // identity marker only; Bukkit tracks the real inventory
++        }
++    }
++
++    private final ExcelHalloweenToggles plugin;
++    private final FeatureRegistry registry;
++    private final ToggleStore store;
++    private final BiFunction<Player, FeatureDef, Boolean> flipper;
++
++    public ScaresGui(ExcelHalloweenToggles plugin, FeatureRegistry registry, ToggleStore store,
++                     BiFunction<Player, FeatureDef, Boolean> flipper) {
++        this.plugin = plugin;
++        this.registry = registry;
++        this.store = store;
++        this.flipper = flipper;
++    }
++
++    /** Open (or re-open, after a flip) the GUI with fresh states. */
++    public void open(Player player) {
++        ScareView.GuiModel model = ScareView.gui(registry,
++                key -> store.isEnabled(player.getUniqueId(), key));
++        Inventory inv = Bukkit.createInventory(new Holder(), ScareView.GUI_SIZE,
++                plugin.text("messages.gui-title", "&6&lHalloween Scares"));
++        for (ScareView.GuiItem item : model.items()) {
++            ItemStack stack = new ItemStack(item.material());
++            ItemMeta meta = stack.getItemMeta();
++            if (meta != null) {
++                meta.setDisplayName(item.name());
++                meta.setLore(item.lore());
++                stack.setItemMeta(meta);
++            }
++            inv.setItem(item.slot(), stack);
++        }
++        ItemStack close = new ItemStack(Material.BARRIER);
++        ItemMeta closeMeta = close.getItemMeta();
++        if (closeMeta != null) {
++            closeMeta.setDisplayName(plugin.text("messages.gui-close", "&7&lClose"));
++            close.setItemMeta(closeMeta);
++        }
++        inv.setItem(ScareView.CLOSE_SLOT, close);
++        player.openInventory(inv);
++    }
++
++    @EventHandler
++    public void onClick(InventoryClickEvent event) {
++        if (!(event.getView().getTopInventory().getHolder() instanceof Holder)) {
++            return;
++        }
++        // Ours: nothing may move while the switch panel is open.
++        event.setCancelled(true);
++        if (!(event.getWhoClicked() instanceof Player player)) {
++            return;
++        }
++        if (event.getClickedInventory() != event.getView().getTopInventory()) {
++            return; // a click in the player's own inventory — cancelled, not a switch
++        }
++        int slot = event.getSlot();
++        if (slot == ScareView.CLOSE_SLOT) {
++            player.closeInventory();
++            return;
++        }
++        ScareView.GuiModel model = ScareView.gui(registry,
++                key -> store.isEnabled(player.getUniqueId(), key));
++        String key = model.keyAt(slot);
++        if (key == null) {
++            return;
++        }
++        FeatureDef feature = registry.byKey(key);
++        if (feature == null) {
++            return;
++        }
++        flipper.apply(player, feature);
++        if (player.isOnline()) {
++            open(player); // re-render in place with the new state
++        }
++    }
++}
