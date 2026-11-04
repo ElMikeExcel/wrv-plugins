@@ -1,0 +1,16 @@
+name: ExcelHalloweenToggles
+version: 0.1.0
+main: com.winkreyesvalley.excelhalloweentoggles.ExcelHalloweenToggles
+api-version: '1.21'
+author: Excel (Wink Reyes Valley)
+description: Per-player Halloween scare toggles — companion to Halloween_Softici 3.4.0. Each player picks their own scares.
+softdepend: [Halloween_Softici, PlaceholderAPI]
+commands:
+  scares:
+    description: Your Halloween scare switches — list them, or flip one
+    usage: /scares [list|<feature>|test <feature>]
+    aliases: [halloweentoggles]
+permissions:
+  excelhalloweentoggles.test:
+    description: Fire a scare at yourself through the real gate + fire path (proof seam)
+    default: op
