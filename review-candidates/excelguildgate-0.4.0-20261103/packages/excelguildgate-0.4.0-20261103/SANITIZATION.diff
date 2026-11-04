@@ -1,0 +1,8 @@
+SANITIZATION SCAN — REVIEWED, NO SENSITIVE CONTENT
+Package: excelguildgate-0.4.0-20261103
+
+Scanned every file for IPv4 addresses (excluding loopback/broadcast literals), email addresses, private-key blocks, and credential assignments. All pattern hits were reviewed by hand:
+
+The 1 IPv4-pattern hit is the dotted version string 25.0.4.1 (Temurin JDK) in SOURCE.md — not a network address.
+
+No redactions were needed.
