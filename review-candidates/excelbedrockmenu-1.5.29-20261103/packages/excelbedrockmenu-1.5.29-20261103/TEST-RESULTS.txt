@@ -1,0 +1,147 @@
+===== Test report (source: excelbedrockmenu-1.5.29/TEST-REPORT.md) =====
+# TEST REPORT — ExcelBedrockMenu 1.5.29 (teleport direction choice)
+
+Nov 2, 2026. All checks are local: unit-style logic tests, build
+determinism, jar-scope diffing, and a Paper 26.3-235 rig boot smoke.
+In-game form proofs are player-owed and are named in the install packet —
+they are NOT claimed here.
+
+## 1. Base gate — PASS
+
+Unmodified 1.5.28 source rebuilt byte-identical to the shipped 1.5.28 jar
+(`b9a8abd4…`, 41,839 B). See BUILD-RECORD.md. The delta was applied only
+after this passed. Baseline suite on base classes: 185 checks, PASS.
+
+## 2. AdapterLogicTest — PASS, 193 checks
+
+`ADAPTER_LOGIC_PASS checks=193` — the full 185 checks carried from 1.5.28
+(Silk Touch + Aim Assist guard matrices, the 26-label menu sequence, the
+scares-button checks) all still pass, plus 8 new v1.5.29 checks:
+
+- `LABEL_TELEPORT_TO` is byte-exact `"Teleport to player"`.
+- `LABEL_COME_TO_ME` is byte-exact `"Ask player to come to me"`.
+- `CHOICE_BODY` is byte-exact `"What do you want to do?"`.
+- Exactly two `Direction` values exist.
+- `requestCommand(TELEPORT_TO, "Jester_Turtle")` = `"tpa Jester_Turtle"`.
+- `requestCommand(COME_TO_ME, "Jester_Turtle")` = `"tpahere Jester_Turtle"`.
+- `promptText(TELEPORT_TO, "Mike")` = `"Mike wants to teleport to you."`
+- `promptText(COME_TO_ME, "Mike")` = `"Mike is asking you to teleport to them."`
+
+The direction→command mapping and both prompt strings are pure static
+helpers on `TeleportMenu` in the same shape the suite already uses for
+`ExcelBedrockMenu`'s helpers, so the values players will actually see are
+the values under test.
+
+## 3. Build determinism — PASS
+
+Three builds from the filed tree, three fresh output directories, one
+SHA-256: `15c3ed773c2867c90a5ecd36cdf9aa6587e4d1fd1de800edecb46ec2e6366ae0`
+(44,735 B). See BUILD-RECORD.md.
+
+## 4. Change scope (jar-entry diff vs the base-proven 1.5.28 jar)
+
+Exactly the intended blast radius:
+
+- CHANGED: `com/winkreyes/excelbedrockmenu/TeleportMenu.class`,
+  `plugin.yml` (diff = the version line only, 1.5.28 → 1.5.29).
+- NEW: `TeleportMenu$Direction.class`, `TeleportMenu$ChoiceHolder.class`.
+- `TeleportMenu$PickHolder.class` differs in bytes but its disassembled
+  code is identical (`javap -p -c` diff clean) — the byte delta is the
+  InnerClasses metadata listing the two new sibling classes. No behavior
+  change.
+- Every other entry — including `ExcelBedrockMenu.class` and the bundled
+  `config.yml` — is byte-identical to 1.5.28.
+
+Source diff vs the 1.5.28 tree tells the same story: only
+`TeleportMenu.java` (the delta), `plugin.yml` (version), `build-offline.sh`
+(jar name/date), and `AdapterLogicTest.java` (test-only, not in the jar)
+differ; `config.yml` and all other sources are byte-identical.
+
+## 5. Rig boot smoke — Paper 26.3-235, PASS
+
+A plain boot check (the 1.5.28 packet ran no rig; per the build brief a
+plain boot check is the fallback pattern). Rig: the pre-resolved Paper
+26.3-235 skeleton from `~/workspace/seal-tuning/rig-test-20261101/work/`
+with ONLY `ExcelBedrockMenu-1.5.29.jar` in `plugins/` (softdepends absent),
+offline mode, port 25599. Evidence kept in `rig-235/` (`latest.log`,
+`boot-console.txt`); the bulky server copy was deleted after capture.
+
+Quoted from `rig-235/latest.log`:
+
+- `This server is running Paper version 26.3-235-main@bb10cf0 (2026-10-31T14:17:37Z)`
+- Plugin list: `- ExcelBedrockMenu (1.5.29)`
+- `[ExcelBedrockMenu] Loading server plugin ExcelBedrockMenu v1.5.29`
+- `[ExcelBedrockMenu] Enabling ExcelBedrockMenu v1.5.29`
+- `[ExcelBedrockMenu] ExcelBedrockMenu enabled: /menu uses native Bedrock dialogs.` (the exact live enable line)
+- `Done (31.790s)!`
+- Clean disable on `stop`: `[ExcelBedrockMenu] Disabling ExcelBedrockMenu v1.5.29`
+- **SEVERE count for the whole log: 0.** No WARN/ERROR names
+  ExcelBedrockMenu. The only stack traces in the log are Mojang
+  authlib/session-service SSL failures from the sandbox's blocked network
+  (pre-plugin noise, identical on any offline boot here).
+
+## 6. Not proven here (player-owed, named in INSTALL-PACKET.md §6)
+
+- Bedrock: the choice form rendering + both directions end-to-end,
+  including the target's new come-to-me prompt wording and the
+  close-form-sends-nothing case.
+- Java: the choice chest rendering + both items dispatching, and the
+  close-chest-sends-nothing case.
+- The Essentials interplay itself (/tpahere registration, /tpaccept
+  answering a tpahere request) is live-proven separately: the /tpahere
+  permission was granted to all players Nov 2, 2026 and Jester/Marvin were
+  asked to try the typed command in-session; the menu path dispatches the
+  identical command as the player.
+
+— Excel (Iris), for Wink Reyes Valley
+
+===== Build record (source: excelbedrockmenu-1.5.29/BUILD-RECORD.md) =====
+# BUILD RECORD — ExcelBedrockMenu 1.5.29
+
+Built Nov 2, 2026 (Iris, local work only — no live-server contact, nothing
+installed, nothing published, no Drive deposit).
+
+## Toolchain (identical to the 1.5.28 base proof)
+
+- JDK: Temurin 25.0.4.1 at `~/workspace/.jdk25` (the JDK of record).
+- Paper libraries: `~/workspace/paper231-rerun/bootstrap/libraries`.
+- Build: `build-offline.sh` in this folder; jar `--date` pinned
+  2026-11-02T00:00:00Z for reproducibility.
+
+## Base gate (mandatory, delta-build law) — PASS
+
+The UNMODIFIED 1.5.28 source tree (`~/workspace/excelbedrockmenu-1.5.28/`)
+was rebuilt with its own `build-offline.sh` before any edit:
+
+- Rebuild SHA-256: `b9a8abd44fbb82b4a05923e362df6d8e0e9cc8b80a9fdf1d6dcbd47808cb1dc9`, 41,839 B
+- Shipped 1.5.28 jar of record: same SHA-256, 41,839 B — **byte-identical.**
+
+Baseline tests on the unmodified base classes: `ADAPTER_LOGIC_PASS
+checks=185` (matches SOURCE.md of 1.5.28).
+
+## Candidate builds — deterministic
+
+The 1.5.29 tree was built three times into three fresh output directories
+(builds 1 and 2 for the determinism proof; build 3 after a whitespace-only
+source tidy, confirming the jar is unaffected):
+
+| Build | SHA-256 | Size |
+|---|---|---|
+| 1 | `15c3ed773c2867c90a5ecd36cdf9aa6587e4d1fd1de800edecb46ec2e6366ae0` | 44,735 B |
+| 2 | `15c3ed773c2867c90a5ecd36cdf9aa6587e4d1fd1de800edecb46ec2e6366ae0` | 44,735 B |
+| 3 | `15c3ed773c2867c90a5ecd36cdf9aa6587e4d1fd1de800edecb46ec2e6366ae0` | 44,735 B |
+
+`cmp` clean between builds 1 and 2. The filed jar is build 1 (all three are
+the same bytes).
+
+## Artifacts in this folder
+
+| Artifact | Size | SHA-256 |
+|---|---|---|
+| `ExcelBedrockMenu-1.5.29.jar` | 44,735 B | `15c3ed773c2867c90a5ecd36cdf9aa6587e4d1fd1de800edecb46ec2e6366ae0` |
+| `ExcelBedrockMenu-1.5.29-source.zip` | 35,989 B | `e28fc51f979f9cf18dad783a9dbbad01dbc04dced2e974298fb1eca414b5d7c1` |
+
+The source zip mirrors the 1.5.28 zip's membership: `src/**`, `plugin.yml`,
+`config.yml`, `build-offline.sh`, `AdapterLogicTest.java`.
+
+— Excel (Iris), for Wink Reyes Valley
