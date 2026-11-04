@@ -1,0 +1,7 @@
+name: ExcelAutoSortBridge
+version: 0.1.0
+main: com.winkreyes.excelautosortbridge.ExcelAutoSortBridge
+api-version: '1.13'
+author: WinkReyesValley
+description: 'ExcelAutoSortBridge — status feed for the Server Menu Auto-sort toggle: registers the %autosort_status% PlaceholderAPI expansion (ON/OFF) by reading AutoSort''s own state (live actives set, state file fallback). Read-only adapter; toggling stays with AutoSort''s /autosort command.'
+softdepend: [AutoSort, PlaceholderAPI]

@@ -1,0 +1,75 @@
+===== Entry validation (menu resolver run) (source: menu-toggle-fix-20261103/entry-validation-20261103.txt) =====
+ExcelMenu Phase 2 core (fresh-compiled from phase-2 src, 2026-11-03) EntryLoader + EntryResolver
+run against merged entries dir = phase-2 registry (84 files) with staging autosort.yml + autojoin.yml swapped in.
+
+loaded=84 failed={}
+ON-case:  autosort | Auto-sort my chests: ON   (state ON selected)
+OFF-case: autosort | Auto-sort my chests: OFF  (state OFF selected)
+nobridge-case: autosort | Auto-sort my chests: unavailable | GUARDED: state unresolvable for %autosort_status%
+Bedrock settings order: wandstyle, autosort, makersmark_settings, silkwarnings, aimassist, autojoin (LAST)
+JAVA settings order: autosort, makersmark_settings, wandstyle, silkwarnings, aimassist, autojoin (LAST)
+
+===== Toggle audit (source: menu-toggle-fix-20261103/TOGGLE-AUDIT.md) =====
+# Menu toggle compliance audit — Nov 3, 2026
+
+Scope: all 84 entries of the live ExcelMenu 2.0 Phase 2 registry
+(`menu-2.0/phase-2/src/main/resources/entries/`, byte-identical to the
+live data folder per the Phase 2 install record), plus the definition
+menus under `menus/` in the same tree. Mike's standing rule (Nov 3,
+2026): **every on/off switch in the menus shows the player's actual
+current state in its label** — the `Silk Touch Warnings: ON` style
+(ExcelMenu `states:` pattern driven by a status placeholder, or an
+equivalent state-driven mechanism).
+
+## Result
+
+**One non-compliant toggle in the entire fleet: `autosort`.** It is
+fixed by this packet. Everything else that reads as a switch is
+already state-driven; everything else is not a switch at all.
+
+## State-driven toggles (the compliant set)
+
+| Entry | Switch owner | Status feed | Mechanism | Verdict |
+|---|---|---|---|---|
+| `silkwarnings` | ExcelSilkWatch | `%silkwarnings_status%` | states ON/OFF/default | ✅ compliant (the reference style) |
+| `aimassist` | ExcelAimAssist 0.1.4 | `%aimassist_status%` | states ON/OFF/default | ✅ compliant |
+| `autojoin` | ExcelMenuJoin | `%menujoin_status%` | states ON/OFF/default (owner's own expansion) | ✅ compliant — REORDERED by this packet (order 30→70, order-bedrock 220→250: last in Settings on both platforms) |
+| `autosort` | AutoSort 0.1.17 (third-party, nothub) | **none existed** | was a plain static entry, label literally "Auto-sort my chests: on/off" | ❌ **FIXED by this packet**: converted to states ON/OFF/default + new ExcelAutoSortBridge 0.1.0 supplies `%autosort_status%` |
+
+## Switches that live in definition menus (not registry entries)
+
+| Menu | Toggles | Mechanism | Verdict |
+|---|---|---|---|
+| `menus/makersmark_settings.yml` (opened by the `makersmark_settings` registry entry) | "Maker's mark" (wearer's name on gear), "Gear stats" (stat lore lines) | per-state items selected by view-requirements comparing `%makersmark_mark%` / `%makersmark_stats%` (owner's own expansion; the menu file's `%.._status%` comment is stale, the placeholder names are `mark`/`stats`) | ✅ state-driven — compliant. (Its "OFFLINE PROPOSAL ONLY — NOT INSTALLED" header comment is also stale; the menu is live in Phase 2. Cosmetic only; noted for a future records pass, not touched here.) |
+
+## State displays that are NOT on/off switches (checked, out of rule scope)
+
+| Entry | What it shows | Verdict |
+|---|---|---|
+| `guild` | states keyed on `%guildgate_unlocked%` (true/false) — a seal-progress lock state, not a player switch | state-driven; not a toggle |
+| `magiclevel` | states keyed on `%excelmagiclevel_level%` — a level number display | state-driven; not a toggle |
+| `halloween_scares` | a door opening the Halloween plugin's **own** `/scares` Bedrock form (owner-rendered UI) | not a menu toggle entry; the owner's own form. Retires with the Nov 6 Halloween cleanup regardless. |
+| `wandstyle` | opens the `/wandstyle` style chooser (a picker, not an on/off switch) | not a toggle |
+
+## Everything else
+
+The remaining 76 registry entries are navigation / command / info
+cards (travel, shops, claims, jobs, skills, info, utility) with no
+on/off state to display. Each was inspected for `states:` /
+`status-placeholder` and for switch-shaped labels; none carries a
+static on/off label. The only static "on/off" string in the whole
+registry was the autosort label this packet removes.
+
+## Method
+
+- Grepped all 84 entry files + all definition menus for
+  `status-placeholder`, `states:`, and switch-shaped labels.
+- Verified each feed exists in its owner: SilkWatch and AimAssist
+  expansions in their packets; MenuJoin's in its jar; Maker's Mark's
+  in the live fork source + plugin.yml `expansions` declaration.
+- Verified AutoSort has NO feed: upstream source at tag `v0.1.17`
+  (commit `5349a479…`) and bytecode of the shipped jar
+  (`SHA-1 0a385f05…`, matching Modrinth's published file hash exactly)
+  — no PlaceholderAPI anywhere in the plugin.
+
+— Excel (Iris), Nov 3, 2026
