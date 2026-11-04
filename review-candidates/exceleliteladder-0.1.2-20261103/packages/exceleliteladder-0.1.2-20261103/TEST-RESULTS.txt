@@ -1,0 +1,18 @@
+===== Rig test results (source: excel-eliteladder-0.1.2/build-0.1.2/RIG-TEST-RESULTS-0.1.2.md) =====
+# ExcelEliteLadder 0.1.2 - rig test results (Nov 1, 2026)
+
+Rig: Paper 26.3-235, EliteMobs 10.9.12, ExcelGuildGate 0.4.0, ExcelEliteLadder 0.1.2
+(jar sha 7ea61276a543820351cae016c8ece4f927b8d430ae4cf71a4987b6d4cecbd7fb), Temurin 25.0.5+8.
+Seeded with the LIVE state pulled Nov 1, 2026: EliteLadder state.yml (appliedStep 3,
+lastKnownSeals 3, lastResult "OK S2 -> S3 (sha 983fa757...)"), the live MobCombatSettings.yml
+(sha 983fa757d5c4d075d3f69444739081f395ad559de9bde1c209346d520554f5c4), and a GuildGate
+state.yml with dragon/elder/raid broken (3 of 5). Rig folder: ~/workspace/excel-eliteladder-0.1.2/rig/server.
+
+| # | Test | Result |
+|---|---|---|
+| 1 | Boot on the live state (3 seals, applied S3) | PASS. "ExcelEliteLadder enabled: applied step S3, watching ExcelGuildGate seals every 30s"; Done (35.608s); SEVERE 0; MobCombatSettings.yml untouched (sha 983fa757...); state.yml carried over unchanged; clean disable. |
+| 2 | Wither break simulated (GuildGate state -> wither broken, 4 seals), 0 online | PASS. "GuildGate seals observed: 4 of 5 (was 3)" -> "EliteLadder applied S4 (from S3, seals 4, 0 online): spawn 0.11, cap 150, toElite 0.4, toPlayer 2.35, dungeon toElite/toPlayer 0.5/2.0. Backup MobCombatSettings.yml.20261101-210753-from-S3.bak. File sha 4708f3c3d924a61d2038ad17b338f10d5d101dcb9e1a07d73cf3d7b58f6c418d. Running 'em reload'." Post-reload check S4: values match, sha unchanged by EliteMobs. File lines: spawn 0.11 / cap 150 / norm 0.5 / norm 2.0 / scaled 0.4 / scaled 2.35. state.yml -> appliedStep 4. SEVERE 0. |
+| 3 | Warden break simulated (5 seals), 0 online | PASS. "GuildGate seals observed: 5 of 5 (was 4)" -> "EliteLadder applied S5 (from S4, seals 5, 0 online): spawn 0.11, cap 150, toElite 0.4, toPlayer 2.35 ... Backup none (file already had S5 values). File sha 4708f3c3... (identical)". state.yml -> appliedStep 5, lastResult "OK S4 -> S5". The Seal 5 trigger is a safe no-op. SEVERE 0. |
+
+Plain-JVM suite (same day): 77 passed, 0 failed. Base proof: unmodified 0.1.1 tree rebuilds
+byte-identical to the shipped jar f7ec4c1f... and passes 63/63 before the change.
