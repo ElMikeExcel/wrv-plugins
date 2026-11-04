@@ -1,0 +1,69 @@
+===== Test report (source: exceltrainingwheels/build-0.1.3/TEST-REPORT.md) =====
+# ExcelTrainingWheels 0.1.3 — TEST REPORT
+
+Build under test: `ExcelTrainingWheels-0.1.3.jar`, 39,077 B, SHA-256 `81e76017ef14040845c050b908192bc319d08b642cc8ee37041620d5fc7ee189`.
+Spec of record: `~/workspace/seal-audit/TW-PRESSURE-CHECK-20261102.md` (fix shapes 2 and 3).
+
+## Base verification (before any edit)
+
+The 0.1.2 source tree was rebuilt clean-room and matched the shipped 0.1.2 jar byte-identically (SHA-256 `55af9b383eb7400eb0e3060b9b73aec1369ba3037020c58895547e678b92ff1c`, 34,878 B). 0.1.3 is a true delta on the live base. The live-pulled TW config (Nov 1, 2026 capture) confirms Rylie's factor 0.25 (Floodgate UUID `00000000-0000-0000-0009-01f05d0d739d`).
+
+## Unit tests — 280/280 PASS
+
+`run-tests.sh` in the 0.1.3 tree (re-run and confirmed at delivery time: `TOTAL: 280 passed, 0 failed`). 225 checks carried from 0.1.2 (all green — EliteMobs ladder compensation, raid-buff division, door hold, copper tier, siege suites regression-clean) + 55 new/changed for 0.1.3:
+
+- **Seam math:** 0.25 ÷ 2.5 = 0.1 (Wither/Warden ramp cap), 0.25 ÷ 1.25 = 0.2 (fight start), ÷ 1.5 mid-ramp, ÷ 1.0 = bit-exact no-op; composed take = 0.25 × vanilla at scales 1.0 / 1.25 / 1.5 / 2.0 / 2.5.
+- **Sanitizer:** sub-1.0, NaN, and infinite scales collapse to 1.0 (a bad read can never strengthen or weaken the shield past the flat factor); factor outside [0,1] rejected.
+- **Shape table:** only DIRECT_BOSS divides; DRAGON_PROJECTILE / DRAGON_BREATH / DRAGON_PART / WITHER_PROJECTILE / NON_BOSS never divide (the axis rule from the 0.3.7 contract, §3.1 of its DESIGN).
+- **Skull arm:** ENTITY_EXPLOSION admitted when the damager is a projectile with a hostile-mob shooter (composed takes pinned: raw 9 → 2.25, raw 13 → 3.25, undivided); creeper arm unchanged; non-projectile and non-hostile-shooter explosions unchanged.
+- **Boss admissions:** SONIC_BOOM and DRAGON_BREATH admitted on boss attribution only; the same causes from non-boss sources stay unadmitted.
+
+## Deterministic build
+
+`build.sh` run twice → byte-identical jar (fixed jar timestamp `2026-11-02T00:00:00-06:00`).
+
+## Rig pass — Paper 26.3-235 + Geyser + contract stub of the 0.3.7 API
+
+**What the rig ran against, stated plainly:** the real ExcelBossTrial 0.3.7 jar was still scaffold-stage at build time (its DESIGN + API source exist; no candidate jar), so Boot A ran against a **contract stub**: a plugin named ExcelBossTrial exposing `com.winkreyes.excelbosstrial.api.ExcelBossTrialAPI.outgoingScaleFor(LivingEntity)` with the contract's exact semantics (PDC-stamped pressure scale, 1.0 unstamped) plus a HIGH-priority pressure handler multiplying direct boss-damager events by that scale — the two halves of the 0.3.7 contract TW composes with. The rig therefore proves **TW's side of the composition against the published contract**, not the real 0.3.7 jar; the real-jar composition proof rides the emergency window's post-install checks (see INSTALL-PACKET.md). Geyser co-loaded on the rig (the local Geyser jar reports 2.11.3-SNAPSHOT; live runs 2.12.1-b1280 — a local-copy version note, not a TW factor: TW has no Geyser interaction). Rig victims: two fake ServerPlayers — PROT = `.RylieDSunflower` (Rylie UUID, factor 0.25, debug on, `compensate.bosstrial: true`), VET = unprotected control, both 200 max HP. Evidence logs: `rig/boot-a-final.log`, `rig/boot-b-final.log` in this build folder. Both boots: **zero SEVERE**.
+
+### Boot A (stub present) — ALL PASS
+
+Enable line: `boss compensation: ExcelBossTrial seam BOUND - seal-boss takes are divided by the boss's current outgoing scale`.
+
+| Case | What | Verdict |
+|---|---|---|
+| B1 | Constructed wither melee, raw 8.0, at stub scales 2.5 / 1.25 / 1.0 | **PASS** — PROT 2.0 at every scale (VET 20.0 / 10.0 / 8.0). SHIELD lines show `boss x2.5 DIRECT_BOSS` factor 0.1 and `boss x1.25` factor 0.2. The absolute line holds end-to-end. |
+| B2 | **Real** elder guardian laser (real mob AI, stamped scale 2.5) | **PASS** — laser damage arrives as ENTITY_ATTACK with the elder as damager (this also settles the pressure check's one inference about laser classification). Clean hits only (beam ticks landing inside the vanilla hurt window trim final < base and are excluded by the driver): PROT final 1.875, VET final 18.75, same implied raw 7.5 → ratio exactly **0.1 = 0.25 / 2.5**, composed through stub pressure + TW division. |
+| B3 | Wither skull blast, matched point-blank blasts (see staging note) | **PASS** — PROT final 5.625 vs VET final 22.5, ratio exactly **0.25**, damager WITHER_SKULL for both. TW's SHIELD line for the protected blast: `ENTITY_EXPLOSION from WITHER_SKULL 22.5 -> 5.625 (factor 0.25, …, boss x1.0 WITHER_PROJECTILE)` — admitted, flat factor, **not divided** (correct: no BossTrial scaler touches skulls). |
+| B4 | Constructed warden sonic boom 10 @ scale 2.5 | **PASS** — PROT 2.5 (10 × 2.5 × 0.1), VET 25.0; zombie-source sonic boom: PROT 10.0, unadmitted. |
+| B5 | Dragon breath 6.0 via AreaEffectCloud (source = dragon) | **PASS** — PROT 1.5 (flat quarter, admitted via cloud source, NOT divided), VET 6.0; zombie-source breath: PROT 6.0, unadmitted. |
+| B6 | EnderDragonPart contact 8.0 (part damager, stamped dragon) | **PASS** — PROT 2.0 (admitted via parent dragon, flat factor, NOT divided), VET 8.0. |
+
+B3 staging note (honest): natural skull detonations on this rig proved unreliable to stage — three spawn geometries produced either no event or unmatched exposures (a real impact detonation WAS captured for the unprotected control: ENTITY_EXPLOSION, damager WITHER_SKULL, base 1.5 — proving the natural event shape). The passing run detonates matched point-blank blasts via `world.createExplosion` with the real skull entity (shooter = the stamped wither) as source — the identical Bukkit event shape (same event class, cause, and damager entity) — after a 60-tick victim settle delay; same-tick/20-tick detonations after a revive produced no event for the protected victim (a fresh-spawn staging window, not a shield effect: the unprotected control, staged identically later in the sequence, landed at every delay).
+
+### Boot B (no BossTrial at all) — fail-soft PASS
+
+Enable line: `boss compensation: ExcelBossTrial seam UNBOUND (plugin not present) - boss divisor 1.0; nothing is pressure-scaled, so the flat shield is exact.` Constructed wither melee 8.0: PROT 2.0 (flat quarter), VET 8.0 — exactly 0.1.2 behavior. Boss cases skip by design in this mode. Zero SEVERE.
+
+## Coverage table — boss damage paths after 0.1.3 + BossTrial 0.3.7
+
+| Boss damage path | Covered? | How / result |
+|---|---|---|
+| Wither melee / sweep | ✅ | DIRECT_BOSS division → factor × unscaled at any ramp point |
+| Elder guardian melee + **laser** | ✅ | DIRECT_BOSS division (laser = ENTITY_ATTACK, elder as damager — rig-proven) |
+| Warden melee | ✅ | DIRECT_BOSS division |
+| Warden **sonic boom** | ✅ | Admitted on boss attribution only; DIRECT_BOSS division |
+| Dragon melee (direct) | ✅ (pressure axis) | DIRECT_BOSS division; phase-2 contact buff residual below |
+| **Wither skull direct hit** (projectile) | ✅ | PROJECTILE arm (pre-existing), flat factor, never divided (no scaler touches it) |
+| **Wither skull blast** (ENTITY_EXPLOSION) | ✅ NEW | Skull arm (0.1.3): admitted on hostile-shooter projectile damager, flat factor, never divided |
+| Dragon fireball (projectile) | ✅ | PROJECTILE arm, flat factor (phase-2 axis only — see residual) |
+| **Dragon breath** (DRAGON_BREATH cloud) | ✅ NEW | Admitted when the cloud's source is the dragon; flat factor |
+| **Dragon body-part contact** (EnderDragonPart) | ✅ NEW | Glue resolves part → parent dragon; admitted, flat factor |
+| **Pressure pulse** (source-less MAGIC) | ✅ — by BossTrial 0.3.7, not TW | TW never sees the event; 0.3.7's pulse honors the protected factor via its own seam (its build's proof obligation) |
+| **Wither effect ticks** (wither status) | ❌ **Uncovered — stated plainly** | Plain `EntityDamageEvent`, no damager entity: unattributable by construction. Not forced. |
+| Dragon phase-2 ×1.5 axis (parts / fireball / breath, and the contact buff stacked on direct hits) | ⚠️ **Bounded residual** | These shapes are admitted at the flat factor and never divided by the pressure scale (the 0.3.7 API reports pressure only; dividing by it would break the guarantee in phase 1). Exact factor × vanilla outside phase 2; **0.375× vanilla during dragon phase 2 only**. Closing it needs a future phase-aware BossTrial getter. |
+
+## What is NOT proven here
+
+- Composition against the **real** BossTrial 0.3.7 jar (rig used its contract stub — see above). Owed in the emergency window: a verdict-reaching fight with a protected account present, per INSTALL-PACKET.md.
+- Bedrock-client-side behavior: TW is a server-side damage scaler with no client surface; the rig's Geyser co-load is the extent of the platform check, and the protected account's proof is the same live proof owed above.
