@@ -1,0 +1,4055 @@
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/AskScreen.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/AskScreen.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/AskScreen.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/AskScreen.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,72 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.bukkit;
++
++import com.winkreyes.excelmenu.core.screens.AskCore;
++import org.bukkit.Bukkit;
++import org.bukkit.entity.Player;
++import org.bukkit.plugin.java.JavaPlugin;
++
++/**
++ * The Ask the Guide text box (DESIGN-2.0 §2.4; the D7 screen port).
++ * Java's compass button prints the hint; Bedrock gets the same
++ * thing as a form: one text box, and Send runs /ask <question> as
++ * the player — the exact command Java players type. Reached from
++ * the registry form layer via ScreenHooks; the entry's own
++ * [message] action remains the Java behaviour and the fallback
++ * wording if the box cannot open.
++ *
++ * Ported from ExcelBedrockMenu 1.5.28's openAskGuide, including its
++ * guard: ExcelGuide's /ask has no permission on the command itself
++ * (it checks excelguide.ask inside), so the guard checks that node
++ * too — no text box for a player the Guide would refuse.
++ */
++final class AskScreen {
++
++    private final JavaPlugin plugin;
++    private final PlatformBridge bridge;
++
++    AskScreen(JavaPlugin plugin, PlatformBridge bridge) {
++        this.plugin = plugin;
++        this.bridge = bridge;
++    }
++
++    /** Open the text box (or speak the guard/hint line). Always
++     *  handles the tap: callers must not also run the entry action. */
++    void open(Player player) {
++        org.bukkit.command.PluginCommand cmd = Bukkit.getPluginCommand("ask");
++        int outcome = AskCore.guardOutcome(cmd != null, cmd == null
++                || (cmd.testPermissionSilent(player)
++                        && player.hasPermission(AskCore.ASK_PERMISSION)));
++        if (outcome == 0) {
++            player.sendMessage(AskCore.GUIDE_MISSING_MESSAGE);
++            return;
++        }
++        if (outcome == 1) {
++            player.sendMessage(AskCore.GUIDE_DENIED_MESSAGE);
++            return;
++        }
++        boolean sent = bridge.sendInputForm(player, AskCore.ASK_TITLE,
++                AskCore.ASK_PROMPT, AskCore.ASK_PLACEHOLDER,
++                new PlatformBridge.InputHandler() {
++                    @Override
++                    public void onText(String typed) {
++                        if (!player.isOnline()) return;
++                        String line = AskCore.askCommandFor(typed);
++                        if (line == null) {
++                            player.sendMessage(AskCore.ASK_EMPTY);
++                        } else {
++                            player.performCommand(line);
++                        }
++                    }
++
++                    @Override
++                    public void onClosedOrInvalid() {
++                        // Closed = cancelled: nothing is asked.
++                    }
++                });
++        if (!sent) {
++            player.sendMessage(AskCore.ASK_HINT);
++        }
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/ChildproofScreen.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/ChildproofScreen.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/ChildproofScreen.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/ChildproofScreen.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,250 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.bukkit;
++
++import com.winkreyes.excelmenu.core.platform.Detection;
++import com.winkreyes.excelmenu.core.screens.ChildproofCore;
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.event.ClickEvent;
++import net.kyori.adventure.text.event.HoverEvent;
++import net.kyori.adventure.text.format.NamedTextColor;
++import org.bukkit.Bukkit;
++import org.bukkit.Location;
++import org.bukkit.command.Command;
++import org.bukkit.command.CommandExecutor;
++import org.bukkit.command.CommandSender;
++import org.bukkit.entity.Player;
++import org.bukkit.plugin.Plugin;
++import org.bukkit.plugin.java.JavaPlugin;
++
++import java.lang.reflect.Field;
++import java.lang.reflect.Method;
++import java.util.ArrayList;
++import java.util.Comparator;
++import java.util.List;
++import java.util.Locale;
++import java.util.UUID;
++
++/**
++ * /childproofmenu — the tap-to-pick front end for the server's
++ * /childproof alias, ported from ExcelBedrockMenu 1.5.28's
++ * ChildproofMenu (DESIGN-2.0 §2.4). Nothing here changes trust
++ * itself: after the player picks a name and taps "Yes, childproof",
++ * the screen runs "/childproof <name>" AS the player, so
++ * GriefPrevention does all permission checks and prints its own
++ * confirmations. The commands.yml aliases keep calling
++ * "/childproofmenu done|undone <name>" as their last line — that
++ * argument contract is preserved verbatim.
++ *
++ * Extra guard the typed alias cannot have: the picker is only
++ * offered while the player stands inside a claim (GriefPrevention,
++ * read by reflection, no compile-time dependency), because GP
++ * applies untrust/accesstrust to ALL of the player's claims when
++ * they stand outside one.
++ */
++final class ChildproofScreen implements CommandExecutor {
++
++    private final JavaPlugin plugin;
++    private final PlatformBridge bridge;
++
++    ChildproofScreen(JavaPlugin plugin, PlatformBridge bridge) {
++        this.plugin = plugin;
++        this.bridge = bridge;
++    }
++
++    @Override
++    public boolean onCommand(CommandSender sender, Command command, String label,
++                             String[] args) {
++        if (!(sender instanceof Player)) {
++            sender.sendMessage("Only players can use this.");
++            return true;
++        }
++        Player p = (Player) sender;
++        if (args.length >= 1) {
++            String sub = args[0].toLowerCase(Locale.ROOT);
++            if (sub.equals("help")) {
++                for (String l : ChildproofCore.helpLines()) p.sendMessage(l);
++                return true;
++            }
++            if ((sub.equals("done") || sub.equals("undone")) && args.length >= 2) {
++                p.sendMessage(ChildproofCore.resultLine(
++                        sub.equals("done"), args[1], verify(p, args[1])));
++                return true;
++            }
++        }
++        open(p);
++        return true;
++    }
++
++    // ---------- the picker ----------
++
++    void open(Player player) {
++        if (Bukkit.getCommandMap().getCommand("childproof") == null) {
++            player.sendMessage(ChildproofCore.NOT_SET_UP_MESSAGE);
++            return;
++        }
++        Boolean here = inClaim(player);
++        if (Boolean.FALSE.equals(here)) {
++            player.sendMessage(ChildproofCore.OUTSIDE_CLAIM_MESSAGE);
++            return;
++        }
++        List<Player> others = new ArrayList<>();
++        for (Player o : Bukkit.getOnlinePlayers()) {
++            if (!o.equals(player) && player.canSee(o)) others.add(o);
++        }
++        others.sort(Comparator.comparing(
++                o -> ScreenItems.stripColor(ScreenItems.displayName(o))
++                        .toLowerCase(Locale.ROOT)));
++        if (others.isEmpty()) {
++            player.sendMessage(ChildproofCore.NOBODY_MESSAGE);
++            return;
++        }
++        if (bridge.detect(player) == Detection.State.BEDROCK) {
++            try {
++                if (bedrockList(player, others)) return;
++            } catch (Throwable t) {
++                plugin.getLogger().warning("ExcelMenu: childproof form failed for "
++                        + player.getName() + ": " + t);
++            }
++        }
++        javaList(player, others);
++    }
++
++    private boolean bedrockList(Player player, List<Player> others) {
++        List<UUID> ids = new ArrayList<>();
++        List<String> buttons = new ArrayList<>();
++        for (Player o : others) {
++            buttons.add(ChildproofCore.label(
++                    ScreenItems.stripColor(ScreenItems.displayName(o)), o.getName()));
++            ids.add(o.getUniqueId());
++        }
++        return bridge.sendSimpleForm(player, ChildproofCore.TITLE,
++                ChildproofCore.LIST_BODY, buttons,
++                new PlatformBridge.FormHandler() {
++                    @Override
++                    public void onSelect(int index) {
++                        if (index < 0 || index >= ids.size()) return;
++                        confirm(player, ids.get(index));
++                    }
++
++                    @Override
++                    public void onClosedOrInvalid() {
++                        // Closed = cancelled: nothing is changed.
++                    }
++                });
++    }
++
++    private void confirm(Player player, UUID targetId) {
++        Player target = Bukkit.getPlayer(targetId);
++        if (target == null || !player.isOnline()) {
++            if (player.isOnline()) {
++                player.sendMessage(ChildproofCore.TARGET_LEFT_MESSAGE);
++            }
++            return;
++        }
++        String name = target.getName();
++        boolean sent = bridge.sendModalForm(player, ChildproofCore.confirmTitle(name),
++                ChildproofCore.confirmContent(name),
++                ChildproofCore.YES, ChildproofCore.NO,
++                new PlatformBridge.ModalHandler() {
++                    @Override
++                    public void onResult(boolean first) {
++                        if (first && player.isOnline()) {
++                            player.performCommand(
++                                    ChildproofCore.childproofCommand(name));
++                        }
++                    }
++
++                    @Override
++                    public void onClosedOrInvalid() {
++                        // Closed = cancelled: nothing is changed.
++                    }
++                });
++        if (!sent) {
++            player.sendMessage(ChildproofCore.typeItMessage(name));
++        }
++    }
++
++    /** Java (or form failure): clickable names in chat that fill in
++     *  the command; the player presses Enter to run it. */
++    private void javaList(Player player, List<Player> others) {
++        player.sendMessage(ChildproofCore.JAVA_LIST_HEADER);
++        for (Player o : others) {
++            String label = ChildproofCore.label(
++                    ScreenItems.stripColor(ScreenItems.displayName(o)), o.getName());
++            Component line = Component.text(" » ", NamedTextColor.AQUA)
++                    .append(Component.text(label, NamedTextColor.GREEN)
++                            .clickEvent(ClickEvent.suggestCommand(
++                                    "/" + ChildproofCore.childproofCommand(o.getName())))
++                            .hoverEvent(HoverEvent.showText(
++                                    Component.text("/childproof " + o.getName()))));
++            player.sendMessage(line);
++        }
++    }
++
++    // ---------- GriefPrevention reads (reflection, fail-soft) ----------
++
++    /** Tri-state: TRUE in a claim, FALSE not in one, null when
++     *  GriefPrevention can't be read. */
++    static Boolean inClaim(Player player) {
++        try {
++            Plugin gp = Bukkit.getPluginManager().getPlugin("GriefPrevention");
++            if (gp == null || !gp.isEnabled()) return null;
++            Field ds = gp.getClass().getField("dataStore");
++            Object store = ds.get(gp);
++            Method at = null;
++            for (Method m : store.getClass().getMethods()) {
++                Class<?>[] p = m.getParameterTypes();
++                if (m.getName().equals("getClaimAt") && p.length == 3
++                        && p[0] == Location.class && p[1] == boolean.class) {
++                    at = m;
++                    break;
++                }
++            }
++            if (at == null) return null;
++            return at.invoke(store, player.getLocation(), true, null) != null;
++        } catch (Throwable t) {
++            return null;
++        }
++    }
++
++    /** Verified state after the alias ran: "access", "none",
++     *  "other:<level>", "outside", "unknown". */
++    static String verify(Player owner, String name) {
++        try {
++            Plugin gp = Bukkit.getPluginManager().getPlugin("GriefPrevention");
++            if (gp == null || !gp.isEnabled()) return "unknown";
++            org.bukkit.OfflinePlayer t = Bukkit.getPlayerExact(name);
++            if (t == null) t = Bukkit.getOfflinePlayerIfCached(name);
++            if (t == null) return "unknown";
++            Object store = gp.getClass().getField("dataStore").get(gp);
++            Object claim = null;
++            for (Method m : store.getClass().getMethods()) {
++                Class<?>[] pt = m.getParameterTypes();
++                if (m.getName().equals("getClaimAt") && pt.length == 3
++                        && pt[0] == Location.class && pt[1] == boolean.class) {
++                    claim = m.invoke(store, owner.getLocation(), true, null);
++                    break;
++                }
++            }
++            if (claim == null) return "outside";
++            @SuppressWarnings({"unchecked", "rawtypes"})
++            Class<Enum> perm = (Class<Enum>) Class.forName(
++                    "me.ryanhamshire.GriefPrevention.ClaimPermission", true,
++                    gp.getClass().getClassLoader());
++            Method check = claim.getClass().getMethod("checkPermission",
++                    UUID.class, perm, org.bukkit.event.Event.class);
++            boolean build = check.invoke(claim, t.getUniqueId(),
++                    Enum.valueOf(perm, "Build"), null) == null;
++            boolean cont = check.invoke(claim, t.getUniqueId(),
++                    Enum.valueOf(perm, "Container"), null) == null;
++            boolean access = check.invoke(claim, t.getUniqueId(),
++                    Enum.valueOf(perm, "Access"), null) == null;
++            if (build) return "other:build";
++            if (cont) return "other:containers";
++            return access ? "access" : "none";
++        } catch (Throwable e) {
++            return "unknown";
++        }
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/ConfirmService.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/ConfirmService.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/ConfirmService.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/ConfirmService.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,204 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.bukkit;
++
++import com.winkreyes.excelmenu.core.platform.Detection;
++import com.winkreyes.excelmenu.core.screens.ConfirmTargets;
++import com.winkreyes.excelmenu.core.screens.TeleportConfirmationGate;
++import org.bukkit.Bukkit;
++import org.bukkit.Material;
++import org.bukkit.entity.Player;
++import org.bukkit.event.EventHandler;
++import org.bukkit.event.Listener;
++import org.bukkit.event.inventory.InventoryClickEvent;
++import org.bukkit.event.inventory.InventoryDragEvent;
++import org.bukkit.event.player.PlayerChangedWorldEvent;
++import org.bukkit.event.player.PlayerQuitEvent;
++import org.bukkit.inventory.Inventory;
++import org.bukkit.inventory.InventoryHolder;
++import org.bukkit.plugin.java.JavaPlugin;
++
++/**
++ * The teleport-confirmation gate as a core service (DESIGN-2.0
++ * §2.4 forced change 2): the four retired teleport_confirm_*
++ * definition ids route here from MenuService.openMenu — the single
++ * choke point every renderer passes through — and render as the
++ * platform's own prompt: Bedrock gets the modal form (the
++ * ExcelBedrockMenu gate screen, wording unchanged), Java gets a
++ * chest built from the retired definition's own items.
++ *
++ * The discipline is the gate's: a prompt is single-use, bound to
++ * the player instance, the world and a 60-second TTL; opening any
++ * menu invalidates it (MenuService calls invalidate on open, as
++ * BedrockMenu did); a closed modal cancels it; a failed modal send
++ * cancels it and tells the player they have NOT been teleported —
++ * a failed confirmation transport never performs an unconfirmed
++ * teleport.
++ */
++final class ConfirmService implements Listener {
++
++    static final String SEND_FAILED_MESSAGE =
++            "§eThe teleport confirmation could not open. You have not been teleported. Please try again.";
++    static final String EXPIRED_MESSAGE =
++            "§eThat teleport confirmation has expired. Nothing happened.";
++
++    private final JavaPlugin plugin;
++    private final PlatformBridge bridge;
++    private final SpawnTeleporter spawnTeleporter;
++    private final TeleportConfirmationGate gate = new TeleportConfirmationGate();
++
++    ConfirmService(JavaPlugin plugin, PlatformBridge bridge,
++                          SpawnTeleporter spawnTeleporter) {
++        this.plugin = plugin;
++        this.bridge = bridge;
++        this.spawnTeleporter = spawnTeleporter;
++    }
++
++    /** True when a menu id is one of the retired confirm definitions. */
++    boolean handles(String menuId) {
++        return ConfirmTargets.isConfirmation(menuId);
++    }
++
++    /** Open the confirmation for a retired definition id. */
++    void open(Player player, String menuId) {
++        ConfirmTargets.Target target = ConfirmTargets.byDefinitionId(menuId);
++        if (target == null) return;
++        if (bridge.detect(player) == Detection.State.BEDROCK) {
++            openModal(player, target);
++        } else {
++            openChest(player, target);
++        }
++    }
++
++    /** Drop the player's prompt because the menu session advanced. */
++    void invalidate(Player player) {
++        gate.invalidate(player.getUniqueId());
++    }
++
++    void retire() {
++        gate.clear();
++    }
++
++    // ---------- Bedrock: the modal gate ----------
++
++    private void openModal(Player player, ConfirmTargets.Target target) {
++        if (!player.isOnline() || !plugin.isEnabled()) return;
++        TeleportConfirmationGate.Ticket ticket = gate.begin(player.getUniqueId(),
++                player, player.getWorld().getUID(), System.nanoTime());
++        boolean sent;
++        try {
++            sent = bridge.sendModalForm(player, target.modalTitle(), target.modalContent(),
++                    ConfirmTargets.YES_LABEL, ConfirmTargets.NO_LABEL,
++                    new PlatformBridge.ModalHandler() {
++                        @Override
++                        public void onResult(boolean first) {
++                            boolean accepted = gate.answer(ticket, player,
++                                    player.getWorld().getUID(), System.nanoTime(),
++                                    player.isOnline() && plugin.isEnabled(),
++                                    TeleportConfirmationGate.confirmChoiceTeleports(first));
++                            if (accepted) run(player, target);
++                        }
++
++                        @Override
++                        public void onClosedOrInvalid() {
++                            gate.cancel(ticket);
++                        }
++                    });
++        } catch (Throwable t) {
++            plugin.getLogger().warning("ExcelMenu: teleport confirm form failed for "
++                    + player.getName() + ": " + t);
++            sent = false;
++        }
++        if (!sent) {
++            gate.cancel(ticket);
++            if (player.isOnline()) player.sendMessage(SEND_FAILED_MESSAGE);
++        }
++    }
++
++    // ---------- Java: the definition's own chest ----------
++
++    /** Marks our confirmation chest so clicks route here. */
++    private static final class ConfirmHolder implements InventoryHolder {
++        final TeleportConfirmationGate.Ticket ticket;
++        final ConfirmTargets.Target target;
++        Inventory inv;
++
++        ConfirmHolder(TeleportConfirmationGate.Ticket ticket,
++                      ConfirmTargets.Target target) {
++            this.ticket = ticket;
++            this.target = target;
++        }
++
++        @Override
++        public Inventory getInventory() {
++            return inv;
++        }
++    }
++
++    private void openChest(Player player, ConfirmTargets.Target target) {
++        TeleportConfirmationGate.Ticket ticket = gate.begin(player.getUniqueId(),
++                player, player.getWorld().getUID(), System.nanoTime());
++        ConfirmHolder holder = new ConfirmHolder(ticket, target);
++        Inventory inv = Bukkit.createInventory(holder, 9,
++                ScreenItems.legacy(target.chestTitle()));
++        holder.inv = inv;
++        inv.setItem(3, ScreenItems.item(Material.LIME_DYE,
++                "&a&l" + ConfirmTargets.YES_LABEL, target.yesLore()));
++        inv.setItem(4, ScreenItems.item(Material.valueOf(target.icon()),
++                target.infoName(), target.infoLore().toArray(new String[0])));
++        inv.setItem(5, ScreenItems.item(Material.RED_DYE,
++                "&c&l" + ConfirmTargets.NO_LABEL, ConfirmTargets.CANCEL_LORE));
++        player.openInventory(inv);
++    }
++
++    @EventHandler
++    public void onClick(InventoryClickEvent e) {
++        if (!(e.getInventory().getHolder() instanceof ConfirmHolder h)) return;
++        e.setCancelled(true); // never let the prompt items be taken out
++        if (!(e.getWhoClicked() instanceof Player p)) return;
++        if (e.getClickedInventory() != e.getInventory()) return;
++        if (e.getRawSlot() == 3) {
++            boolean accepted = gate.answer(h.ticket, p, p.getWorld().getUID(),
++                    System.nanoTime(), p.isOnline() && plugin.isEnabled(), true);
++            Bukkit.getScheduler().runTask(plugin, () -> {
++                p.closeInventory();
++                if (accepted) {
++                    run(p, h.target);
++                } else {
++                    p.sendMessage(EXPIRED_MESSAGE);
++                }
++            });
++        } else if (e.getRawSlot() == 5) {
++            gate.cancel(h.ticket);
++            Bukkit.getScheduler().runTask(plugin, () -> p.closeInventory());
++        }
++    }
++
++    @EventHandler
++    public void onDrag(InventoryDragEvent e) {
++        if (e.getInventory().getHolder() instanceof ConfirmHolder) {
++            e.setCancelled(true);
++        }
++    }
++
++    // ---------- the confirmed action ----------
++
++    private void run(Player player, ConfirmTargets.Target target) {
++        switch (target.kind()) {
++            case SPAWN_FALLBACK -> spawnTeleporter.teleportToSpawn(player);
++            case PLAYER_COMMAND -> player.performCommand(target.command());
++        }
++    }
++
++    // ---------- gate invalidation (§2.5 discipline) ----------
++
++    @EventHandler
++    public void onQuit(PlayerQuitEvent event) {
++        gate.invalidate(event.getPlayer().getUniqueId());
++    }
++
++    @EventHandler
++    public void onWorldChange(PlayerChangedWorldEvent event) {
++        gate.invalidate(event.getPlayer().getUniqueId());
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/ExcelMenu.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/ExcelMenu.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/ExcelMenu.java	2026-11-01 09:23:28.203458815 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/ExcelMenu.java	2026-10-31 00:00:00.000000000 +0000
+@@ -26,9 +26,8 @@
+ /**
+  * ExcelMenu 2.0 — ONE menu plugin for Java + Bedrock (DESIGN-2.0).
+  *
+- * This is the Phase 1 build: it replaces ExcelMenu 0.1.8 in its own
+- * slot (same plugin name, same data folder) and carries BOTH menu
+- * systems during the switchover:
++ * This is the Phase 2 build — the unification (DESIGN-2.0 §3.3):
++ * ExcelBedrockMenu is retired and everything it owned lives here.
+  *
+  * <ul>
+  *   <li><b>The registry</b> (Phase 0's core): entry files + layout
+@@ -36,33 +35,42 @@
+  *       the two thin renderers — the Java chest GUI and the Bedrock
+  *       Cumulus form (flat = the native compass form's shape;
+  *       grouped = the commands catalogue's shape). server_menu and
+- *       commands_menu are registry-owned from this build on.</li>
++ *       commands_menu are registry-owned.</li>
+  *   <li><b>The definition engine</b> (0.1.8, ported): every
+- *       unconverted menu (shops, skills, teleport confirms, basics)
+- *       keeps loading and rendering exactly as before, Bedrock forms
+- *       included — now through the same unified platform bridge.</li>
++ *       unconverted menu (shops, skills, basics) keeps loading and
++ *       rendering exactly as before, Bedrock forms included —
++ *       through the same unified platform bridge. The four
++ *       teleport_confirm_* definitions retired in this phase: their
++ *       ids route to the confirmation-gate service instead.</li>
++ *   <li><b>The /menu family</b> (ported from ExcelBedrockMenu
++ *       1.5.28/1.5.29 as a shared core + thin renderers): /menu,
++ *       /servercommands (alias /cmds), /serverwebsite, /tpmenu and
++ *       /childproofmenu are registered here, and the dynamic
++ *       screens — the teleport picker with its direction choice,
++ *       the childproof picker, the Ask text box, Skills & Perks,
++ *       the website screen — live in the screens classes beside
++ *       this one, their pure logic in core.screens.</li>
+  * </ul>
+  *
+- * What it deliberately does NOT do, per the switchover sequence
+- * (DESIGN-2.0 §3.3): it does not register /menu, /servercommands,
+- * /serverwebsite, /tpmenu or /childproofmenu — those stay with
+- * ExcelBedrockMenu 1.5.27 until the Phase 2 unification window, so
+- * ExcelBedrockMenu's Java routing ("dm open server_menu") lands on
+- * this build's registry renderer without knowing anything changed,
+- * and its Bedrock native form is still the hardcoded one. The /menu
+- * contract ExcelMenuJoin depends on (one player command, no args,
+- * opens the Server Menu) is preserved by not touching it.
++ * The /menu contract ExcelMenuJoin depends on (one player command,
++ * no args, opens the Server Menu) is preserved letter-for-letter:
++ * ExcelMenuJoin still funnels through performCommand("menu"), which
++ * now lands on MenuFamilyCommands and opens server_menu through
++ * MenuService, exactly as ExcelBedrockMenu's /menu did.
+  */
+ public final class ExcelMenu extends JavaPlugin {
+ 
+     /** Registry entries extracted on first run (fill-missing). */
+     static final String[] BUNDLED_ENTRIES = {
+-            // server_menu (27 — halloween_scares added Nov 1, 2026: it was
++            // server_menu (28 — halloween_scares added Nov 1, 2026: it was
+             // in the jar's entries/ resources but missing from this extraction
+-            // list, so first boot extracted 82 of 83 and the registry read 82)
++            // list, so first boot extracted 82 of 83 and the registry read 82;
++            // magiclevel folded in at the Phase 2 baseline, Nov 2, 2026: it
++            // was placed live as a data file Nov 1 and never bundled.
++            // BundledEntriesTest pins this list to the resources tree.)
+             "aimassist", "ask", "autojoin", "autosort", "boss_rewards", "commands",
+             "cosmetics", "guild", "halloween", "halloween_scares", "info", "jobs", "leaderboard",
+-            "lostfound", "makersmark_settings", "party", "shop", "silkwarnings",
++            "lostfound", "magiclevel", "makersmark_settings", "party", "shop", "silkwarnings",
+             "skills", "spawn", "spellbook", "tpmenu", "trash", "utility_pouch",
+             "wandstyle", "website", "whatsnew",
+             // commands_menu catalogue (56)
+@@ -89,15 +97,17 @@
+     /** Unconverted definitions extracted on first run (fill-missing).
+      *  server_menu / commands_menu / commands_menu_page2 are NOT
+      *  here: the first two are registry-owned now, the third is
+-     *  retired by the catalogue conversion. */
++     *  retired by the catalogue conversion. The four
++     *  teleport_confirm_* definitions are NOT here either since
++     *  Phase 2: they retired into the confirmation-gate service
++     *  (DESIGN-2.0 §2.4); the bundled config's retired-definitions
++     *  list keeps any on-disk copies inert. */
+     static final String[] BUNDLED_MENUS = {
+             "basics_menu", "makersmark_settings", "skills_perks",
+             "spawnshop", "spawnshop_building", "spawnshop_cosmetics_colors",
+             "spawnshop_cosmetics_sets", "spawnshop_enchanting", "spawnshop_food",
+             "spawnshop_potions_protection", "spawnshop_safe_blocks",
+-            "spawnshop_travel_animals", "teleport_confirm_guild",
+-            "teleport_confirm_home", "teleport_confirm_spawn",
+-            "teleport_confirm_spawncmd",
++            "spawnshop_travel_animals",
+     };
+ 
+     private EntryService entryService;
+@@ -105,6 +115,7 @@
+     private MenuService menuService;
+     private RegistryMenus registryMenus;
+     private FormService formService;
++    private ConfirmService confirmService;
+     private Map<String, List<String>> lastMenuFailures = Map.of();
+     private final List<String> registeredCommands = new ArrayList<>();
+ 
+@@ -124,6 +135,18 @@
+         formService.setTtlSeconds(getConfig().getLong("forms.session-ttl-seconds", 300L));
+         menuService.setRegistryMenus(registryMenus);
+ 
++        // Phase 2: the unified /menu family and the ported screens.
++        ConfirmService confirmService = new ConfirmService(this, bridge,
++                new SpawnTeleporter(this));
++        menuService.setConfirmService(confirmService);
++        this.confirmService = confirmService;
++        formService.setScreenHook(new ScreenHooks(
++                new AskScreen(this, bridge), new SkillsPerksScreen(this, bridge)));
++        TeleportScreen teleportScreen = new TeleportScreen(this, bridge);
++        ChildproofScreen childproofScreen = new ChildproofScreen(this, bridge);
++        MenuFamilyCommands familyCommands = new MenuFamilyCommands(menuService,
++                entryService, registryMenus, bridge, new WebsiteScreen(this, bridge));
++
+         extractBundled("entries", BUNDLED_ENTRIES);
+         extractBundled("layouts", BUNDLED_LAYOUTS);
+         extractBundled("menus", BUNDLED_MENUS);
+@@ -137,29 +160,42 @@
+         getServer().getPluginManager().registerEvents(
+                 registryMenus.new ClickListener(), this);
+         getServer().getPluginManager().registerEvents(formService, this);
++        getServer().getPluginManager().registerEvents(confirmService, this);
++        getServer().getPluginManager().registerEvents(teleportScreen, this);
+ 
+         MenuCommands commands = new MenuCommands(this, menuService, entryService,
+                 registryMenus, bridge);
+         if (getCommand("excelmenu") != null) getCommand("excelmenu").setExecutor(commands);
+         if (getCommand("dm") != null) getCommand("dm").setExecutor(commands);
++        if (getCommand("menu") != null) getCommand("menu").setExecutor(familyCommands);
++        if (getCommand("servercommands") != null) {
++            getCommand("servercommands").setExecutor(familyCommands);
++        }
++        if (getCommand("serverwebsite") != null) {
++            getCommand("serverwebsite").setExecutor(familyCommands);
++        }
++        if (getCommand("tpmenu") != null) getCommand("tpmenu").setExecutor(teleportScreen);
++        if (getCommand("childproofmenu") != null) {
++            getCommand("childproofmenu").setExecutor(childproofScreen);
++        }
+         getServer().getServicesManager().register(ExcelMenuApi.class, entryService, this,
+                 ServicePriority.Normal);
+         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+         getServer().getScheduler().runTaskTimer(this, this::refreshTick, 20L, 20L);
+ 
+-        getLogger().info("ExcelMenu " + getPluginMeta().getVersion() + " enabled (Phase 1:"
+-                + " registry + definitions in the ExcelMenu slot). "
++        getLogger().info("ExcelMenu " + getPluginMeta().getVersion() + " enabled (Phase 2:"
++                + " unified — registry, definitions and the /menu family in one"
++                + " plugin; ExcelBedrockMenu is retired). "
+                 + entryService.entries().size() + " entries, "
+                 + registryMenus.layoutIds().size() + " registry menus, "
+-                + menuService.menus().size() + " definition menus live. "
+-                + "/menu and the /menu family remain with ExcelBedrockMenu"
+-                + " until the Phase 2 unification (DESIGN-2.0 §3.3).");
++                + menuService.menus().size() + " definition menus live.");
+     }
+ 
+     @Override
+     public void onDisable() {
+         if (menuService != null) menuService.retire();
+         if (formService != null) formService.retire();
++        if (confirmService != null) confirmService.retire();
+         if (entryService != null) {
+             getServer().getServicesManager().unregister(ExcelMenuApi.class, entryService);
+         }
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/FormService.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/FormService.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/FormService.java	2026-11-01 00:25:53.101157754 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/FormService.java	2026-10-31 00:00:00.000000000 +0000
+@@ -42,6 +42,18 @@
+     private volatile long ttlMillis = 300_000L;
+     /** (player, menuId) -> chest open; set by RegistryMenus. */
+     private BiFunction<Player, String, Boolean> chestFallback;
++    /** Form-layer screen hooks (Phase 2, DESIGN-2.0 §2.4); set by
++     *  ExcelMenu once the screens exist. */
++    private ScreenHook screenHook;
++
++    /**
++     * A bespoke screen living behind a registry entry's form tap
++     * (the D6/D7 ports). Returns true when the tap was handled —
++     * the entry's actions must then NOT also run.
++     */
++    interface ScreenHook {
++        boolean tryOpen(Player player, String menuId, ResolvedEntry entry);
++    }
+ 
+     FormService(JavaPlugin plugin, PlatformBridge bridge, EntryService entries,
+                 ActionDispatcher dispatcher) {
+@@ -55,6 +67,10 @@
+         this.chestFallback = chestFallback;
+     }
+ 
++    void setScreenHook(ScreenHook screenHook) {
++        this.screenHook = screenHook;
++    }
++
+     void setTtlSeconds(long seconds) {
+         this.ttlMillis = Math.max(30L, seconds) * 1000L;
+     }
+@@ -151,6 +167,12 @@
+             }
+             if (entry == null) return;
+             StatsSink.tap(player, layout.id(), entry.id(), index, "bedrock");
++            // Phase 2 screen port: a bespoke screen behind this door
++            // (Ask text box, Skills & Perks form, Maker's Mark) takes
++            // the tap instead of the entry's actions when it fires.
++            if (screenHook != null && screenHook.tryOpen(player, layout.id(), entry)) {
++                return;
++            }
+             dispatcher.runAll(player, layout.id() + ":" + entry.id(), entry.action(),
+                     session(player, layout, token.group(), generation));
+         }
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/GuardedRuns.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/GuardedRuns.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/GuardedRuns.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/GuardedRuns.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,40 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.bukkit;
++
++import com.winkreyes.excelmenu.core.screens.AskCore;
++import org.bukkit.Bukkit;
++import org.bukkit.entity.Player;
++
++/**
++ * The guarded run, ported from ExcelBedrockMenu 1.5.28's runGuarded:
++ * run a command owned by another plugin as the player. Missing
++ * command: the "missing" message. Player lacks the command's own
++ * permission node: the "denied" message. Otherwise performCommand —
++ * the same path the Java menu's [player] click line uses. In 2.0
++ * the registry guard (Amendment A) already covers absence for
++ * guarded entries; this remains for the screen ports whose owner
++ * renders its own form behind the command (Maker's Mark).
++ */
++final class GuardedRuns {
++
++    private GuardedRuns() {}
++
++    static void runGuarded(Player player, String label, String missing, String denied) {
++        org.bukkit.command.PluginCommand cmd = Bukkit.getPluginCommand(label);
++        switch (AskCore.guardOutcome(cmd != null,
++                cmd == null || cmd.testPermissionSilent(player))) {
++            case 0 -> player.sendMessage(missing);
++            case 1 -> player.sendMessage(denied);
++            default -> player.performCommand(label);
++        }
++    }
++
++    /** The Maker's Mark door (D6): bare /mark on Bedrock opens the
++     *  owner's own two-switch form (Maker's mark, Gear stats). */
++    static void runMark(Player player) {
++        runGuarded(player, "mark",
++                "§eMaker's mark isn't available right now. Ask an adult to check the server.",
++                "§eYou can't use Maker's mark right now. Ask an adult to check the server.");
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/GuildGateReads.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/GuildGateReads.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/GuildGateReads.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/GuildGateReads.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,58 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.bukkit;
++
++import org.bukkit.Bukkit;
++import org.bukkit.plugin.Plugin;
++
++/**
++ * Live GuildGate reads for the ported screens, ported from
++ * ExcelBedrockMenu 1.5.28: reflection against GuildGateAPI in the
++ * GuildGate plugin's own classloader (no hard dependency). Every
++ * failure reads fail-soft, exactly as the original: an unreadable
++ * guild is "not locked", and an unreadable seal count falls back to
++ * the lock state (5 once the guild stands open, 0 while sealed or
++ * unknown), so a screen never claims seals that have not fallen.
++ */
++final class GuildGateReads {
++
++    private GuildGateReads() {}
++
++    /** Live count of broken guild seals, for the Skills & Perks
++     *  Magic line ("N of 5 today"). */
++    static int sealsBrokenCount() {
++        try {
++            Plugin guildGate = Bukkit.getPluginManager().getPlugin("ExcelGuildGate");
++            if (guildGate == null || !guildGate.isEnabled()) {
++                return 0;
++            }
++            ClassLoader loader = guildGate.getClass().getClassLoader();
++            Class<?> apiClass = Class.forName("com.winkreyes.guildgate.api.GuildGateAPI",
++                    true, loader);
++            Object count = apiClass.getMethod("sealsBrokenCount").invoke(null);
++            if (count instanceof Number) {
++                return ((Number) count).intValue();
++            }
++            return 0;
++        } catch (Exception e) {
++            return isGuildLocked() ? 0 : 5;
++        }
++    }
++
++    /** True while ExcelGuildGate is installed and reports the guild locked. */
++    static boolean isGuildLocked() {
++        try {
++            Plugin guildGate = Bukkit.getPluginManager().getPlugin("ExcelGuildGate");
++            if (guildGate == null || !guildGate.isEnabled()) {
++                return false;
++            }
++            ClassLoader loader = guildGate.getClass().getClassLoader();
++            Class<?> apiClass = Class.forName("com.winkreyes.guildgate.api.GuildGateAPI",
++                    true, loader);
++            Object unlocked = apiClass.getMethod("isUnlocked").invoke(null);
++            return !Boolean.TRUE.equals(unlocked);
++        } catch (Exception e) {
++            return false;
++        }
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/MenuFamilyCommands.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/MenuFamilyCommands.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/MenuFamilyCommands.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/MenuFamilyCommands.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,125 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.bukkit;
++
++import com.winkreyes.excelmenu.core.registry.EntryResolver;
++import com.winkreyes.excelmenu.core.registry.ResolvedEntry;
++import com.winkreyes.excelmenu.core.render.LayoutDef;
++import com.winkreyes.excelmenu.core.screens.CommandsPanel;
++import org.bukkit.command.Command;
++import org.bukkit.command.CommandExecutor;
++import org.bukkit.command.CommandSender;
++import org.bukkit.entity.Player;
++
++import java.util.ArrayList;
++import java.util.LinkedHashMap;
++import java.util.List;
++import java.util.Locale;
++import java.util.Map;
++
++/**
++ * The /menu family, in-house at last (DESIGN-2.0 §1.5 + §3.3):
++ *
++ *   /menu           opens the Server Menu through MenuService —
++ *                   the exact contract ExcelMenuJoin depends on
++ *                   (one player command, no args; it funnels its
++ *                   join taps through performCommand("menu")).
++ *   /servercommands (alias /cmds) renders the commands_menu
++ *                   registry like any other menu; with a group
++ *                   argument (number or name prefix) it prints
++ *                   that group's chat panel, built from the same
++ *                   registry rows the viewer resolves.
++ *   /serverwebsite  the WebsiteScreen.
++ *
++ * The player-only rejections are ExcelBedrockMenu's own lines.
++ */
++final class MenuFamilyCommands implements CommandExecutor {
++
++    private final MenuService menuService;
++    private final EntryService entries;
++    private final RegistryMenus registryMenus;
++    private final PlatformBridge bridge;
++    private final WebsiteScreen website;
++
++    MenuFamilyCommands(MenuService menuService, EntryService entries,
++                       RegistryMenus registryMenus, PlatformBridge bridge,
++                       WebsiteScreen website) {
++        this.menuService = menuService;
++        this.entries = entries;
++        this.registryMenus = registryMenus;
++        this.bridge = bridge;
++        this.website = website;
++    }
++
++    @Override
++    public boolean onCommand(CommandSender sender, Command cmd, String label,
++                             String[] args) {
++        String name = cmd.getName().toLowerCase(Locale.ROOT);
++        switch (name) {
++            case "servercommands" -> {
++                if (!(sender instanceof Player player)) {
++                    sender.sendMessage("Only players can use /servercommands.");
++                    return true;
++                }
++                if (args.length > 0) {
++                    sendCommandsPanel(player, args[0]);
++                } else {
++                    menuService.openMenu(player, "commands_menu");
++                }
++                return true;
++            }
++            case "serverwebsite" -> {
++                if (!(sender instanceof Player player)) {
++                    sender.sendMessage("Only players can use /serverwebsite.");
++                    return true;
++                }
++                website.show(player);
++                return true;
++            }
++            default -> { // "menu"
++                if (!(sender instanceof Player player)) {
++                    sender.sendMessage("Only players can use /menu.");
++                    return true;
++                }
++                menuService.openMenu(player, "server_menu");
++                return true;
++            }
++        }
++    }
++
++    // ---------- the group panel (registry rows, BedrockMenu shape) ----------
++
++    private void sendCommandsPanel(Player player, String arg) {
++        LayoutDef layout = registryMenus.layout("commands_menu");
++        if (layout == null) {
++            player.sendMessage("§eThat isn't available right now.");
++            return;
++        }
++        List<String> groupNames = new ArrayList<>(layout.groups().values());
++        int g = CommandsPanel.groupIndexFor(arg, groupNames);
++        if (g < 0) {
++            player.sendMessage("§cUnknown group '" + arg
++                    + "'.§7 Groups: " + String.join(", ", groupNames));
++            return;
++        }
++        List<ResolvedEntry> resolved = entries.entriesFor("commands_menu",
++                new BukkitViewerContext(player, bridge));
++        Map<String, List<CommandsPanel.Row>> byGroup = new LinkedHashMap<>();
++        for (String groupId : layout.groups().keySet()) {
++            byGroup.put(groupId, new ArrayList<>());
++        }
++        for (ResolvedEntry r : resolved) {
++            List<CommandsPanel.Row> rows = byGroup.get(r.entry().group());
++            if (rows == null) continue;
++            String desc = r.lore().isEmpty() ? ""
++                    : EntryResolver.stripLegacy(r.lore().get(0));
++            rows.add(new CommandsPanel.Row(
++                    EntryResolver.stripLegacy(r.label()), desc));
++        }
++        List<List<CommandsPanel.Row>> rowsByGroup =
++                new ArrayList<>(byGroup.values());
++        for (String line : CommandsPanel.panelLines(g, groupNames, rowsByGroup)) {
++            player.sendMessage(line);
++        }
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/MenuService.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/MenuService.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/MenuService.java	2026-11-01 00:26:20.345429516 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/MenuService.java	2026-10-31 00:00:00.000000000 +0000
+@@ -52,6 +52,8 @@
+     private volatile Map<String, MenuDef> menus = Map.of();
+     /** Registry-owned menus (Phase 1): ids with a layout route here. */
+     private RegistryMenus registryMenus;
++    /** The teleport-confirmation gate service (Phase 2). */
++    private ConfirmService confirmService;
+ 
+     MenuService(JavaPlugin plugin, PlatformBridge bridge) {
+         this.plugin = plugin;
+@@ -63,6 +65,12 @@
+         this.registryMenus = registryMenus;
+     }
+ 
++    /** Phase 2: the teleport-confirmation gate service, consulted
++     *  for the retired teleport_confirm_* ids before definitions. */
++    void setConfirmService(ConfirmService confirmService) {
++        this.confirmService = confirmService;
++    }
++
+     // Excel: an old service must never regain authority when the plugin is re-enabled.
+     boolean active() { return !retired && plugin.isEnabled(); }
+ 
+@@ -186,9 +194,21 @@
+     boolean openMenu(Player player, String menuId) {
+         if (!active()) return false;
+         bedrock.invalidate(player);
++        // Opening any menu advances the session: a pending teleport
++        // confirmation dies here (ExcelBedrockMenu invalidated on
++        // every open; the gate service keeps that discipline).
++        if (confirmService != null) confirmService.invalidate(player);
+         if (registryMenus != null && registryMenus.handles(menuId)) {
+             return registryMenus.openMenu(player, menuId);
+         }
++        // The retired teleport_confirm_* definitions route to the
++        // confirmation-gate service (Phase 2, DESIGN-2.0 §2.4) —
++        // before the definition lookup, so the gate wins even if a
++        // stale definition file is still being served.
++        if (confirmService != null && confirmService.handles(menuId)) {
++            confirmService.open(player, menuId);
++            return true;
++        }
+         MenuDef def = menus.get(menuId);
+         if (def == null) {
+             plugin.getLogger().warning("ExcelMenu: open requested for unknown menu '"
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/PlatformBridge.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/PlatformBridge.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/PlatformBridge.java	2026-11-01 00:38:05.981705042 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/PlatformBridge.java	2026-10-31 00:00:00.000000000 +0000
+@@ -53,6 +53,21 @@
+         void onClosedOrInvalid();
+     }
+ 
++    /** A two-button (ModalForm) answer channel — Phase 2, for the
++     *  ported screens (teleport confirms, direction choice, target
++     *  prompt, childproof confirm). Same discipline as FormHandler. */
++    interface ModalHandler {
++        void onResult(boolean firstButton);
++        void onClosedOrInvalid();
++    }
++
++    /** A one-text-box (CustomForm) answer channel — Phase 2, for the
++     *  Ask the Guide screen. The typed text is never logged. */
++    interface InputHandler {
++        void onText(String text);
++        void onClosedOrInvalid();
++    }
++
+     private final JavaPlugin plugin;
+ 
+     PlatformBridge(JavaPlugin plugin) {
+@@ -184,6 +199,161 @@
+                     + "]: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+             return false;
+         }
++    }
++
++    /**
++     * Send one Cumulus ModalForm (Phase 2; the GeyserForms pattern,
++     * ported). Returns true when the form was actually sent.
++     */
++    boolean sendModalForm(Player player, String title, String content,
++                          String button1, String button2, ModalHandler handler) {
++        String step = "start";
++        try {
++            Plugin geyserPlugin = geyserPlugin();
++            if (geyserPlugin == null) return false;
++            ClassLoader loader = geyserPlugin.getClass().getClassLoader();
++            UUID uuid = player.getUniqueId();
++
++            step = "GeyserApi.api()";
++            Class<?> apiClass = Class.forName("org.geysermc.geyser.api.GeyserApi", true, loader);
++            Object api = apiClass.getMethod("api").invoke(null);
++            if (api == null) return false;
++
++            step = "connectionByUuid";
++            Object connection = apiClass.getMethod("connectionByUuid", UUID.class).invoke(api, uuid);
++            if (connection == null) return false;
++
++            step = "ModalForm.builder()";
++            Class<?> formClass = Class.forName("org.geysermc.cumulus.form.ModalForm", true, loader);
++            Object builder = formClass.getMethod("builder").invoke(null);
++            Class<?> builderClass = builder.getClass();
++
++            step = "title/content/buttons";
++            builderClass.getMethod("title", String.class).invoke(builder, title);
++            builderClass.getMethod("content", String.class).invoke(builder,
++                    content == null ? "" : content);
++            builderClass.getMethod("button1", String.class).invoke(builder, button1);
++            builderClass.getMethod("button2", String.class).invoke(builder, button2);
++
++            step = "validResultHandler";
++            Class<?> responseClass = Class.forName(
++                    "org.geysermc.cumulus.response.ModalFormResponse", true, loader);
++            Class<?> biConsumerClass = Class.forName("java.util.function.BiConsumer", true, loader);
++            Object proxy = Proxy.newProxyInstance(loader,
++                    new Class<?>[]{biConsumerClass},
++                    (p, method, methodArgs) -> {
++                        if (method.getName().equals("accept") && methodArgs != null
++                                && methodArgs.length == 2 && methodArgs[1] != null) {
++                            boolean first = (boolean) responseClass
++                                    .getMethod("clickedFirst").invoke(methodArgs[1]);
++                            schedule(() -> handler.onResult(first));
++                        }
++                        return null;
++                    });
++            Method vrh = findHandler(builderClass, "validResultHandler", proxy);
++            if (vrh == null) {
++                plugin.getLogger().warning("ExcelMenu: no compatible validResultHandler"
++                        + " (ModalForm) — Bedrock forms unavailable this boot.");
++                return false;
++            }
++            vrh.invoke(builder, proxy);
++            builderClass.getMethod("closedOrInvalidResultHandler",
++                            java.util.function.Consumer.class)
++                    .invoke(builder, (java.util.function.Consumer<Object>) ignored ->
++                            schedule(handler::onClosedOrInvalid));
++
++            step = "build+send";
++            Object form = builderClass.getMethod("build").invoke(builder);
++            Method sendForm = findSendForm(connection.getClass(), form.getClass());
++            if (sendForm == null) {
++                plugin.getLogger().warning("ExcelMenu: no compatible sendForm (ModalForm)"
++                        + " — Bedrock forms unavailable this boot.");
++                return false;
++            }
++            return (boolean) sendForm.invoke(connection, form);
++        } catch (Exception e) {
++            plugin.getLogger().warning("ExcelMenu modal form '" + title + "' failed at [" + step
++                    + "]: " + e.getClass().getSimpleName() + ": " + e.getMessage());
++            return false;
++        }
++    }
++
++    /**
++     * Send one Cumulus CustomForm with a single text box (Phase 2;
++     * the GeyserForms pattern, ported). One component only (index
++     * 0), so the response index never depends on whether a Cumulus
++     * version counts labels. Returns true when actually sent.
++     */
++    boolean sendInputForm(Player player, String title, String prompt,
++                          String placeholder, InputHandler handler) {
++        String step = "start";
++        try {
++            Plugin geyserPlugin = geyserPlugin();
++            if (geyserPlugin == null) return false;
++            ClassLoader loader = geyserPlugin.getClass().getClassLoader();
++            UUID uuid = player.getUniqueId();
++
++            step = "GeyserApi.api()";
++            Class<?> apiClass = Class.forName("org.geysermc.geyser.api.GeyserApi", true, loader);
++            Object api = apiClass.getMethod("api").invoke(null);
++            if (api == null) return false;
++
++            step = "connectionByUuid";
++            Object connection = apiClass.getMethod("connectionByUuid", UUID.class).invoke(api, uuid);
++            if (connection == null) return false;
++
++            step = "CustomForm.builder()";
++            Class<?> formClass = Class.forName("org.geysermc.cumulus.form.CustomForm", true, loader);
++            Object builder = formClass.getMethod("builder").invoke(null);
++            Class<?> builderClass = builder.getClass();
++
++            step = "title/input";
++            builderClass.getMethod("title", String.class).invoke(builder, title);
++            builderClass.getMethod("input", String.class, String.class)
++                    .invoke(builder, prompt, placeholder);
++
++            step = "validResultHandler";
++            Class<?> responseClass = Class.forName(
++                    "org.geysermc.cumulus.response.CustomFormResponse", true, loader);
++            Class<?> biConsumerClass = Class.forName("java.util.function.BiConsumer", true, loader);
++            Object proxy = Proxy.newProxyInstance(loader,
++                    new Class<?>[]{biConsumerClass},
++                    (p, method, methodArgs) -> {
++                        if (method.getName().equals("accept") && methodArgs != null
++                                && methodArgs.length == 2 && methodArgs[1] != null) {
++                            Object typed = responseClass.getMethod("asInput", int.class)
++                                    .invoke(methodArgs[1], 0);
++                            String text = typed == null ? "" : typed.toString();
++                            schedule(() -> handler.onText(text));
++                        }
++                        return null;
++                    });
++            Method vrh = findHandler(builderClass, "validResultHandler", proxy);
++            if (vrh == null) {
++                plugin.getLogger().warning("ExcelMenu: no compatible validResultHandler"
++                        + " (CustomForm) — Bedrock forms unavailable this boot.");
++                return false;
++            }
++            vrh.invoke(builder, proxy);
++            builderClass.getMethod("closedOrInvalidResultHandler",
++                            java.util.function.Consumer.class)
++                    .invoke(builder, (java.util.function.Consumer<Object>) ignored ->
++                            schedule(handler::onClosedOrInvalid));
++
++            step = "build+send";
++            Object form = builderClass.getMethod("build").invoke(builder);
++            Method sendForm = findSendForm(connection.getClass(), form.getClass());
++            if (sendForm == null) {
++                plugin.getLogger().warning("ExcelMenu: no compatible sendForm (CustomForm)"
++                        + " — Bedrock forms unavailable this boot.");
++                return false;
++            }
++            return (boolean) sendForm.invoke(connection, form);
++        } catch (Exception e) {
++            plugin.getLogger().warning("ExcelMenu input form '" + title + "' failed at [" + step
++                    + "]: " + e.getClass().getSimpleName() + ": " + e.getMessage());
++            return false;
++        }
+     }
+ 
+     /** Form callbacks arrive off-thread; menu work belongs on the
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/ScreenHooks.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/ScreenHooks.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/ScreenHooks.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/ScreenHooks.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,63 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.bukkit;
++
++import com.winkreyes.excelmenu.core.registry.ResolvedEntry;
++import org.bukkit.entity.Player;
++
++/**
++ * The form-layer screen hooks (DESIGN-2.0 §2.4): three compass
++ * doors keep a bespoke Bedrock screen BEHIND their registry entry,
++ * exactly where ExcelBedrockMenu had them — the D6/D7 acceptances
++ * recorded the definition/[message] dispatch as the interim state
++ * "until the Phase 2 screen port"; this is that port. FormService
++ * asks here before running a form-tapped entry's actions:
++ *
++ *   ask                 -> the Guide text box (AskScreen); the
++ *                          entry's [message] hint stays the Java
++ *                          behaviour and the box's own fallback.
++ *   skills              -> the Skills & Perks form (SkillsPerksScreen);
++ *                          the skills_perks definition stays the
++ *                          Java surface and the form's fallback.
++ *   makersmark_settings -> the owner's own /mark form, through the
++ *                          guarded run (GuardedRuns); the
++ *                          makersmark_settings definition stays the
++ *                          Java surface.
++ *
++ * Java chest taps never come here (the hook lives in the form
++ * service), so the Java column is untouched. A hook that fires
++ * always handles the tap — each screen speaks its own guard,
++ * fallback or screen, and the entry action must not also run.
++ */
++final class ScreenHooks implements FormService.ScreenHook {
++
++    private final AskScreen ask;
++    private final SkillsPerksScreen skillsPerks;
++
++    ScreenHooks(AskScreen ask, SkillsPerksScreen skillsPerks) {
++        this.ask = ask;
++        this.skillsPerks = skillsPerks;
++    }
++
++    @Override
++    public boolean tryOpen(Player player, String menuId, ResolvedEntry entry) {
++        if (!"server_menu".equals(menuId)) return false;
++        switch (entry.id()) {
++            case "ask" -> {
++                ask.open(player);
++                return true;
++            }
++            case "skills" -> {
++                skillsPerks.open(player);
++                return true;
++            }
++            case "makersmark_settings" -> {
++                GuardedRuns.runMark(player);
++                return true;
++            }
++            default -> {
++                return false;
++            }
++        }
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/ScreenItems.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/ScreenItems.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/ScreenItems.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/ScreenItems.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,59 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.bukkit;
++
++import com.winkreyes.excelmenu.core.Text;
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
++import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
++import org.bukkit.Material;
++import org.bukkit.entity.Player;
++import org.bukkit.inventory.ItemStack;
++import org.bukkit.inventory.meta.ItemMeta;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * Small shared builders for the ported screens (DESIGN-2.0 §2.4):
++ * item stacks in the house style (legacy-section components over
++ * Text.colorize, exactly as MenuService.buildStack), and player
++ * display names as plain text — the visible name (Essentials nick
++ * included), colour codes stripped, which is what the old screens
++ * computed with ChatColor.stripColor(getDisplayName()).
++ */
++final class ScreenItems {
++
++    private ScreenItems() {}
++
++    static Component legacy(String raw) {
++        return LegacyComponentSerializer.legacySection().deserialize(Text.colorize(raw));
++    }
++
++    static ItemStack item(Material material, String name, String... loreLines) {
++        ItemStack stack = new ItemStack(material);
++        ItemMeta meta = stack.getItemMeta();
++        if (meta != null) {
++            if (name != null) meta.displayName(legacy(name));
++            if (loreLines.length > 0) {
++                List<Component> lore = new ArrayList<>();
++                for (String line : loreLines) lore.add(legacy(line));
++                meta.lore(lore);
++            }
++            stack.setItemMeta(meta);
++        }
++        return stack;
++    }
++
++    /** The player's visible name as plain text (nick when set). */
++    static String displayName(Player player) {
++        String s = PlainTextComponentSerializer.plainText()
++                .serialize(player.displayName());
++        return s == null || s.isEmpty() ? player.getName() : s;
++    }
++
++    /** Plain-text form of a display name (already plain in 2.0). */
++    static String stripColor(String s) {
++        return s == null ? "" : s.replaceAll("§.", "");
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/SkillsPerksScreen.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/SkillsPerksScreen.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/SkillsPerksScreen.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/SkillsPerksScreen.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,87 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.bukkit;
++
++import com.winkreyes.excelmenu.core.screens.SkillsPerksCore;
++import org.bukkit.Bukkit;
++import org.bukkit.entity.Player;
++import org.bukkit.plugin.java.JavaPlugin;
++
++import java.util.List;
++
++/**
++ * The Skills & Perks form (DESIGN-2.0 §2.4; the D6 screen port),
++ * ported from ExcelBedrockMenu 1.5.28's openSkillsPerks: the
++ * MENU-SPEC section 2 copy with the live seal count in the Magic
++ * line, "My mcMMO stats" first (it runs /mcstats, like the Java
++ * Skills & Perks menu's items), then the Skill Trees website
++ * follow-on. If the form cannot be sent at all, the same copy goes
++ * to chat so the button never dead-ends. Reached from the registry
++ * form layer via ScreenHooks; the skills_perks definition menu
++ * remains the Java surface and the fallback.
++ */
++final class SkillsPerksScreen {
++
++    private final JavaPlugin plugin;
++    private final PlatformBridge bridge;
++
++    SkillsPerksScreen(JavaPlugin plugin, PlatformBridge bridge) {
++        this.plugin = plugin;
++        this.bridge = bridge;
++    }
++
++    /** Open the form (or speak the copy). Always handles the tap. */
++    void open(Player player) {
++        boolean sent = bridge.sendSimpleForm(player, SkillsPerksCore.TITLE,
++                SkillsPerksCore.skillsPerksContent(GuildGateReads.sealsBrokenCount()),
++                List.of(SkillsPerksCore.BUTTONS),
++                new PlatformBridge.FormHandler() {
++                    @Override
++                    public void onSelect(int index) {
++                        if (!player.isOnline()) return;
++                        if (index == SkillsPerksCore.MCSTATS) {
++                            // Same command as the Java Skills & Perks items.
++                            Bukkit.getScheduler().runTask(plugin,
++                                    () -> player.performCommand("mcstats"));
++                        } else if (index == SkillsPerksCore.WEBSITE) {
++                            Bukkit.getScheduler().runTask(plugin,
++                                    () -> openWebsiteFollowOn(player));
++                        }
++                        // "Close", or the form was closed: nothing to do
++                    }
++
++                    @Override
++                    public void onClosedOrInvalid() {
++                        // Closed = cancelled: nothing to do.
++                    }
++                });
++        if (!sent) {
++            for (String line : SkillsPerksCore
++                    .skillsPerksContent(GuildGateReads.sealsBrokenCount())
++                    .split("\n")) {
++                player.sendMessage(line);
++            }
++        }
++    }
++
++    /** The follow-on form: the website address as plain text. */
++    private void openWebsiteFollowOn(Player player) {
++        boolean sent = bridge.sendSimpleForm(player, SkillsPerksCore.WEBSITE_FORM_TITLE,
++                SkillsPerksCore.skillsPerksWebsiteContent(),
++                List.of("Close"),
++                new PlatformBridge.FormHandler() {
++                    @Override
++                    public void onSelect(int index) {
++                        // Close: nothing to do
++                    }
++
++                    @Override
++                    public void onClosedOrInvalid() {
++                        // Closed: nothing to do.
++                    }
++                });
++        if (!sent) {
++            player.sendMessage(SkillsPerksCore.skillsPerksWebsiteContent());
++        }
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/SpawnTeleporter.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/SpawnTeleporter.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/SpawnTeleporter.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/SpawnTeleporter.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,69 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.bukkit;
++
++import com.winkreyes.excelmenu.core.screens.SpawnFallback;
++import org.bukkit.Bukkit;
++import org.bukkit.Location;
++import org.bukkit.World;
++import org.bukkit.entity.Player;
++import org.bukkit.plugin.java.JavaPlugin;
++
++/**
++ * The confirmed Spawn action, ported from ExcelBedrockMenu 1.5.28
++ * (teleportToSpawn / villageFallback): run the real EssentialsX
++ * spawn for the player from the console; if the command is
++ * unavailable, or one tick later the player is still in the guild
++ * world, fall back to the village coordinates (config spawn.x /
++ * spawn.z — the same keys BedrockMenu used, now in ExcelMenu's
++ * config.yml) in the overworld, landing on the highest block.
++ */
++final class SpawnTeleporter {
++
++    private final JavaPlugin plugin;
++
++    SpawnTeleporter(JavaPlugin plugin) {
++        this.plugin = plugin;
++    }
++
++    void teleportToSpawn(Player player) {
++        boolean ok = false;
++        try {
++            ok = Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
++                    "spawn " + player.getName());
++        } catch (Exception ignored) {
++            ok = false;
++        }
++        final boolean dispatched = ok;
++        if (!dispatched) {
++            villageFallback(player);
++            return;
++        }
++        Bukkit.getScheduler().runTask(plugin, () -> {
++            if (player.isOnline() && SpawnFallback.needsSpawnFallback(
++                    true, player.getWorld().getName())) {
++                villageFallback(player);
++            }
++        });
++    }
++
++    private void villageFallback(Player player) {
++        World overworld = null;
++        for (World w : Bukkit.getWorlds()) {
++            if (SpawnFallback.isSpawnWorld(
++                    w.getEnvironment() == World.Environment.NORMAL, w.getName())) {
++                overworld = w;
++                break;
++            }
++        }
++        if (overworld == null) {
++            player.sendMessage(SpawnFallback.UNAVAILABLE_MESSAGE);
++            return;
++        }
++        double vx = plugin.getConfig().getDouble("spawn.x", SpawnFallback.DEFAULT_X);
++        double vz = plugin.getConfig().getDouble("spawn.z", SpawnFallback.DEFAULT_Z);
++        Location village = new Location(overworld, vx, SpawnFallback.PLACEHOLDER_Y, vz);
++        village.setY(overworld.getHighestBlockYAt((int) vx, (int) vz) + 1);
++        player.teleport(village);
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/TeleportScreen.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/TeleportScreen.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/TeleportScreen.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/TeleportScreen.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,357 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.bukkit;
++
++import com.winkreyes.excelmenu.core.platform.Detection;
++import com.winkreyes.excelmenu.core.screens.TeleportCore;
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.event.ClickEvent;
++import net.kyori.adventure.text.event.HoverEvent;
++import net.kyori.adventure.text.format.NamedTextColor;
++import org.bukkit.Bukkit;
++import org.bukkit.Material;
++import org.bukkit.command.Command;
++import org.bukkit.command.CommandExecutor;
++import org.bukkit.command.CommandSender;
++import org.bukkit.entity.Player;
++import org.bukkit.event.EventHandler;
++import org.bukkit.event.Listener;
++import org.bukkit.event.inventory.InventoryClickEvent;
++import org.bukkit.event.inventory.InventoryDragEvent;
++import org.bukkit.inventory.Inventory;
++import org.bukkit.inventory.InventoryHolder;
++import org.bukkit.inventory.ItemStack;
++import org.bukkit.inventory.meta.SkullMeta;
++import org.bukkit.plugin.Plugin;
++import org.bukkit.plugin.java.JavaPlugin;
++
++import java.util.ArrayList;
++import java.util.Comparator;
++import java.util.List;
++import java.util.UUID;
++
++/**
++ * "Teleport to a player" — no typing needed (DESIGN-2.0 §2.4: the
++ * /tpmenu screen, ported from ExcelBedrockMenu 1.5.29's TeleportMenu
++ * as a shared core + thin renderers):
++ *
++ *   1) Pick a name from a list (Bedrock: form buttons, Java: chest
++ *      of heads).
++ *   2) Pick a direction: "Teleport to player" (we go to them) or
++ *      "Ask player to come to me" (they come to us) — Mike's labels,
++ *      Nov 2, 2026. Bedrock: a two-button form titled with the
++ *      picked player's name. Java: a small choice chest. Closing
++ *      either one sends nothing.
++ *   3) The request runs through EssentialsX ("/tpa <name>" or
++ *      "/tpahere <name>") AS the picker, so Essentials' cooldowns,
++ *      safe-teleport checks, warmups and timeouts all still apply.
++ *   4) The target gets a tap-to-answer prompt worded for the
++ *      direction (Bedrock: Accept/Decline popup, Java: clickable
++ *      [Accept] [Decline] in chat) which runs /tpaccept or /tpdeny.
++ *      Essentials answers both request directions with the same pair.
++ *
++ * The wording lives in TeleportCore (pinned by tests); this class
++ * is transport and Bukkit reads only.
++ */
++final class TeleportScreen implements CommandExecutor, Listener {
++
++    private final JavaPlugin plugin;
++    private final PlatformBridge bridge;
++
++    TeleportScreen(JavaPlugin plugin, PlatformBridge bridge) {
++        this.plugin = plugin;
++        this.bridge = bridge;
++    }
++
++    @Override
++    public boolean onCommand(CommandSender sender, Command command, String label,
++                             String[] args) {
++        if (!(sender instanceof Player)) {
++            sender.sendMessage("Only players can use this.");
++            return true;
++        }
++        open((Player) sender);
++        return true;
++    }
++
++    // ---------- step 1: the player list ----------
++
++    void open(Player player) {
++        List<Player> others = new ArrayList<>();
++        for (Player o : Bukkit.getOnlinePlayers()) {
++            if (o.equals(player)) continue;
++            // Hide vanished players
++            if (!player.canSee(o)) continue;
++            others.add(o);
++        }
++        others.sort(Comparator.comparing(
++                o -> ScreenItems.displayName(o).toLowerCase()));
++
++        if (others.isEmpty()) {
++            player.sendMessage("§e" + TeleportCore.NOBODY_MESSAGE);
++            return;
++        }
++        if (bridge.detect(player) == Detection.State.BEDROCK) {
++            try {
++                if (bedrockList(player, others)) return;
++            } catch (Throwable t) {
++                plugin.getLogger().warning("ExcelMenu: teleport form failed for "
++                        + player.getName() + ": " + t);
++            }
++        }
++        javaList(player, others);
++    }
++
++    private boolean bedrockList(Player player, List<Player> others) {
++        List<UUID> ids = new ArrayList<>();
++        List<String> buttons = new ArrayList<>();
++        for (Player o : others) {
++            buttons.add(ScreenItems.stripColor(ScreenItems.displayName(o)));
++            ids.add(o.getUniqueId());
++        }
++        return bridge.sendSimpleForm(player, TeleportCore.LIST_TITLE,
++                TeleportCore.LIST_BODY, buttons,
++                new PlatformBridge.FormHandler() {
++                    @Override
++                    public void onSelect(int index) {
++                        if (index < 0 || index >= ids.size()) return;
++                        UUID target = ids.get(index);
++                        String targetLabel = buttons.get(index);
++                        bedrockChoice(player, target, targetLabel);
++                    }
++
++                    @Override
++                    public void onClosedOrInvalid() {
++                        // Closed = cancelled: nothing is sent.
++                    }
++                });
++    }
++
++    /** Marks our chest GUI so we only react to clicks in it. Keeps
++     *  the player list in slot order. */
++    private static final class PickHolder implements InventoryHolder {
++        final List<UUID> slots = new ArrayList<>();
++        Inventory inv;
++
++        @Override
++        public Inventory getInventory() {
++            return inv;
++        }
++    }
++
++    /** Marks our direction-choice chest so we only react to clicks in it. */
++    private static final class ChoiceHolder implements InventoryHolder {
++        final UUID target;
++        Inventory inv;
++
++        ChoiceHolder(UUID target) {
++            this.target = target;
++        }
++
++        @Override
++        public Inventory getInventory() {
++            return inv;
++        }
++    }
++
++    private static final int CHOICE_SLOT_TELEPORT_TO = 2;
++    private static final int CHOICE_SLOT_COME_TO_ME = 6;
++
++    private void javaList(Player player, List<Player> others) {
++        PickHolder h = new PickHolder();
++        int size = Math.min(54, Math.max(9, ((others.size() + 8) / 9) * 9));
++        h.inv = Bukkit.createInventory(h, size, TeleportCore.LIST_TITLE);
++        for (Player o : others) {
++            if (h.slots.size() >= size) break;
++            ItemStack head = new ItemStack(Material.PLAYER_HEAD);
++            SkullMeta m = (SkullMeta) head.getItemMeta();
++            if (m != null) {
++                m.setOwningPlayer(o);
++                m.displayName(ScreenItems.legacy("&a"
++                        + ScreenItems.stripColor(ScreenItems.displayName(o))));
++                m.lore(List.of(ScreenItems.legacy("&7" + TeleportCore.HEAD_LORE)));
++                head.setItemMeta(m);
++            }
++            h.inv.setItem(h.slots.size(), head);
++            h.slots.add(o.getUniqueId());
++        }
++        player.openInventory(h.inv);
++    }
++
++    @EventHandler
++    public void onClick(InventoryClickEvent e) {
++        if (e.getInventory().getHolder() instanceof ChoiceHolder h) {
++            e.setCancelled(true); // never let the choice items be taken out
++            if (!(e.getWhoClicked() instanceof Player p)) return;
++            if (e.getClickedInventory() != e.getInventory()) return;
++            TeleportCore.Direction direction;
++            if (e.getRawSlot() == CHOICE_SLOT_TELEPORT_TO) {
++                direction = TeleportCore.Direction.TELEPORT_TO;
++            } else if (e.getRawSlot() == CHOICE_SLOT_COME_TO_ME) {
++                direction = TeleportCore.Direction.COME_TO_ME;
++            } else {
++                return;
++            }
++            UUID target = h.target;
++            Bukkit.getScheduler().runTask(plugin, () -> {
++                p.closeInventory();
++                sendRequest(p, target, direction);
++            });
++            return;
++        }
++        if (!(e.getInventory().getHolder() instanceof PickHolder h)) return;
++        e.setCancelled(true); // never let heads be taken out
++        if (!(e.getWhoClicked() instanceof Player p)) return;
++        if (e.getClickedInventory() != e.getInventory()) return;
++        int slot = e.getRawSlot();
++        if (slot < 0 || slot >= h.slots.size()) return;
++        UUID target = h.slots.get(slot);
++        Bukkit.getScheduler().runTask(plugin, () -> {
++            p.closeInventory();
++            Player to = Bukkit.getPlayer(target);
++            if (to == null || !to.isOnline()) {
++                // sendRequest owns the "just left the game" message.
++                sendRequest(p, target, TeleportCore.Direction.TELEPORT_TO);
++                return;
++            }
++            javaChoice(p, to);
++        });
++    }
++
++    @EventHandler
++    public void onDrag(InventoryDragEvent e) {
++        Object holder = e.getInventory().getHolder();
++        if (holder instanceof PickHolder || holder instanceof ChoiceHolder) {
++            e.setCancelled(true);
++        }
++    }
++
++    // ---------- step 2: pick a direction ----------
++
++    private void bedrockChoice(Player player, UUID target, String targetLabel) {
++        if (!player.isOnline()) return;
++        boolean sent = false;
++        try {
++            sent = bridge.sendModalForm(player, targetLabel, TeleportCore.CHOICE_BODY,
++                    TeleportCore.LABEL_TELEPORT_TO, TeleportCore.LABEL_COME_TO_ME,
++                    new PlatformBridge.ModalHandler() {
++                        @Override
++                        public void onResult(boolean first) {
++                            sendRequest(player, target, first
++                                    ? TeleportCore.Direction.TELEPORT_TO
++                                    : TeleportCore.Direction.COME_TO_ME);
++                        }
++
++                        @Override
++                        public void onClosedOrInvalid() {
++                            // Closed = cancelled: nothing is sent.
++                        }
++                    });
++        } catch (Throwable t) {
++            plugin.getLogger().warning("ExcelMenu: teleport choice form failed for "
++                    + player.getName() + ": " + t);
++        }
++        if (!sent) {
++            // Fail soft to the pre-1.5.29 behavior: a plain /tpa request.
++            // (A closed form never reaches here — closing calls nothing.)
++            sendRequest(player, target, TeleportCore.Direction.TELEPORT_TO);
++        }
++    }
++
++    private void javaChoice(Player player, Player target) {
++        String name = ScreenItems.stripColor(ScreenItems.displayName(target));
++        ChoiceHolder h = new ChoiceHolder(target.getUniqueId());
++        h.inv = Bukkit.createInventory(h, 9, name);
++        h.inv.setItem(CHOICE_SLOT_TELEPORT_TO, ScreenItems.item(Material.ENDER_PEARL,
++                "&a" + TeleportCore.LABEL_TELEPORT_TO,
++                "&7" + TeleportCore.choiceLoreTo(name)));
++        h.inv.setItem(CHOICE_SLOT_COME_TO_ME, ScreenItems.item(Material.ENDER_EYE,
++                "&b" + TeleportCore.LABEL_COME_TO_ME,
++                "&7" + TeleportCore.choiceLoreHere(name)));
++        player.openInventory(h.inv);
++    }
++
++    // ---------- step 3: send the request through EssentialsX ----------
++
++    private void sendRequest(Player from, UUID targetId,
++                             TeleportCore.Direction direction) {
++        Player to = Bukkit.getPlayer(targetId);
++        if (!from.isOnline()) return;
++        if (to == null || !to.isOnline()) {
++            from.sendMessage("§e" + TeleportCore.LEFT_MESSAGE);
++            return;
++        }
++        Plugin ess = Bukkit.getPluginManager().getPlugin("Essentials");
++        if (ess == null || !ess.isEnabled()) {
++            from.sendMessage("§c" + TeleportCore.ESSENTIALS_MISSING_MESSAGE);
++            return;
++        }
++        // Real username (not nickname) so it always matches. Essentials
++        // prints its own messages (incl. cooldown). If the command is
++        // rejected we skip the popup.
++        boolean ok = from.performCommand(TeleportCore.requestCommand(direction, to.getName()));
++        if (!ok) return;
++        // Give Essentials a tick to register the request, then show
++        // the answer prompt.
++        final String fromName = from.getName();
++        final UUID fromId = from.getUniqueId();
++        Bukkit.getScheduler().runTaskLater(plugin,
++                () -> askTarget(fromId, fromName, targetId, direction), 2L);
++    }
++
++    // ---------- step 4: tap-to-answer prompt for the target ----------
++
++    private void askTarget(UUID fromId, String fromName, UUID targetId,
++                           TeleportCore.Direction direction) {
++        Player to = Bukkit.getPlayer(targetId);
++        if (to == null) return;
++        Player from = Bukkit.getPlayer(fromId);
++        String who = from != null
++                ? ScreenItems.stripColor(ScreenItems.displayName(from)) : fromName;
++        String prompt = TeleportCore.promptText(direction, who);
++
++        if (bridge.detect(to) == Detection.State.BEDROCK) {
++            try {
++                boolean sent = bridge.sendModalForm(to, TeleportCore.PROMPT_TITLE,
++                        prompt, TeleportCore.ACCEPT_LABEL, TeleportCore.DECLINE_LABEL,
++                        new PlatformBridge.ModalHandler() {
++                            @Override
++                            public void onResult(boolean first) {
++                                answer(to, fromId, fromName, first);
++                            }
++
++                            @Override
++                            public void onClosedOrInvalid() {
++                                // Closed = no answer; the request times
++                                // out in Essentials, as before.
++                            }
++                        });
++                if (sent) return;
++            } catch (Throwable t) {
++                plugin.getLogger().warning("ExcelMenu: teleport popup failed for "
++                        + to.getName() + ": " + t);
++            }
++        }
++        // Java (or fallback): clickable chat buttons
++        Component msg = Component.text(prompt + " ", NamedTextColor.GOLD)
++                .append(Component.text("[Accept]", NamedTextColor.GREEN)
++                        .clickEvent(ClickEvent.runCommand("/tpaccept " + fromName))
++                        .hoverEvent(HoverEvent.showText(
++                                Component.text(TeleportCore.acceptHover(direction)))))
++                .append(Component.text(" "))
++                .append(Component.text("[Decline]", NamedTextColor.RED)
++                        .clickEvent(ClickEvent.runCommand("/tpdeny " + fromName))
++                        .hoverEvent(HoverEvent.showText(
++                                Component.text(TeleportCore.DECLINE_HOVER))));
++        to.sendMessage(msg);
++    }
++
++    private void answer(Player to, UUID fromId, String fromName, boolean accept) {
++        if (!to.isOnline()) return;
++        if (Bukkit.getPlayer(fromId) == null) {
++            to.sendMessage("§e" + TeleportCore.answererLeftMessage(fromName));
++            return;
++        }
++        to.performCommand((accept ? "tpaccept " : "tpdeny ") + fromName);
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/WebsiteScreen.java b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/WebsiteScreen.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/bukkit/WebsiteScreen.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/bukkit/WebsiteScreen.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,70 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.bukkit;
++
++import com.winkreyes.excelmenu.core.platform.Detection;
++import com.winkreyes.excelmenu.core.screens.WebsiteCore;
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.event.ClickEvent;
++import net.kyori.adventure.text.event.HoverEvent;
++import net.kyori.adventure.text.format.NamedTextColor;
++import net.kyori.adventure.text.format.TextDecoration;
++import org.bukkit.entity.Player;
++import org.bukkit.plugin.java.JavaPlugin;
++
++import java.util.List;
++
++/**
++ * /serverwebsite (DESIGN-2.0 §2.4), ported from ExcelBedrockMenu
++ * 1.5.28's showWebsite: Bedrock players get a form spelling the
++ * addresses out (Bedrock cannot open a browser from in game) and
++ * both addresses as a plain chat copy; Java players get both
++ * addresses as clickable chat links.
++ */
++final class WebsiteScreen {
++
++    private final JavaPlugin plugin;
++    private final PlatformBridge bridge;
++
++    WebsiteScreen(JavaPlugin plugin, PlatformBridge bridge) {
++        this.plugin = plugin;
++        this.bridge = bridge;
++    }
++
++    void show(Player player) {
++        if (bridge.detect(player) == Detection.State.BEDROCK) {
++            bridge.sendSimpleForm(player, WebsiteCore.FORM_TITLE,
++                    WebsiteCore.websiteFormContent(),
++                    List.of(WebsiteCore.CLOSE_LABEL),
++                    new PlatformBridge.FormHandler() {
++                        @Override
++                        public void onSelect(int index) {
++                            // Close: nothing to do
++                        }
++
++                        @Override
++                        public void onClosedOrInvalid() {
++                            // Closed: nothing to do.
++                        }
++                    });
++            for (String line : WebsiteCore.websiteChatLines()) {
++                player.sendMessage(line);
++            }
++            // Sent or not, the chat copy above is in hand either way.
++            return;
++        }
++        player.sendMessage(Component.text("» Server Website: ", NamedTextColor.AQUA)
++                .append(Component.text(WebsiteCore.WEBSITE_DISPLAY, NamedTextColor.AQUA,
++                                TextDecoration.UNDERLINED)
++                        .clickEvent(ClickEvent.openUrl(WebsiteCore.WEBSITE_URL))
++                        .hoverEvent(HoverEvent.showText(
++                                Component.text(WebsiteCore.LINK_HOVER)))));
++        player.sendMessage(Component.text("» Short link: ", NamedTextColor.AQUA)
++                .append(Component.text(WebsiteCore.WEBSITE_SHORT_DISPLAY,
++                                NamedTextColor.AQUA, TextDecoration.UNDERLINED)
++                        .clickEvent(ClickEvent.openUrl(WebsiteCore.WEBSITE_SHORT_URL))
++                        .hoverEvent(HoverEvent.showText(
++                                Component.text(WebsiteCore.LINK_HOVER)))));
++        player.sendMessage(WebsiteCore.JAVA_FOOTER);
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/AskCore.java b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/AskCore.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/AskCore.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/AskCore.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,62 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.core.screens;
++
++/**
++ * Ask the Guide's pure logic, ported verbatim from ExcelBedrockMenu
++ * 1.5.28. Java's button prints a hint; Bedrock gets the same thing as
++ * a form: one text box, and Send runs /ask <question> as the player
++ * (the exact command Java players type).
++ */
++public final class AskCore {
++
++    public static final String ASK_TITLE = "Ask the Guide";
++    public static final String ASK_PROMPT =
++            "Type your question. The Guide answers from the server's own pages.";
++    public static final String ASK_PLACEHOLDER = "How do I claim land?";
++    public static final String ASK_HINT =
++            "§7Type §e/ask §7and your question in chat, or start a message with §eGuide,";
++    public static final String ASK_EMPTY =
++            "§eNo question typed. Tap Ask the Guide again, or type /ask and your question in chat.";
++    public static final int ASK_MAX = 200;
++    public static final String ASK_PERMISSION = "excelguide.ask";
++    public static final String GUIDE_MISSING_MESSAGE =
++            "§eThe Guide isn't available right now. Ask an adult to check the server.";
++    public static final String GUIDE_DENIED_MESSAGE =
++            "§eYou can't ask the Guide right now. Ask an adult to check the server.";
++
++    /**
++     * The command line Send runs, or null when nothing usable was
++     * typed. Section codes and control characters are removed,
++     * spaces collapsed, a leading slash dropped (so a typed command
++     * never runs as itself; it is only ever asked as a question),
++     * and the length capped at ASK_MAX.
++     */
++    public static String askCommandFor(String typed) {
++        if (typed == null) return null;
++        String q = stripCodes(typed).replaceAll("[\\p{Cntrl}]", " ")
++                .replaceAll("\\s+", " ").trim();
++        while (q.startsWith("/")) q = q.substring(1).trim();
++        if (q.isEmpty()) return null;
++        if (q.length() > ASK_MAX) q = q.substring(0, ASK_MAX).trim();
++        return "ask " + q;
++    }
++
++    /** ExcelBedrockMenu's stripCodes: section-sign pairs removed. */
++    public static String stripCodes(String s) {
++        return s == null ? null : s.replaceAll("§.", "");
++    }
++
++    /**
++     * The guarded-run outcome (ExcelBedrockMenu's guardOutcome):
++     * 0 = the command doesn't exist, 1 = the player may not run it,
++     * 2 = run it.
++     */
++    public static int guardOutcome(boolean commandExists, boolean hasPermission) {
++        if (!commandExists) return 0;
++        if (!hasPermission) return 1;
++        return 2;
++    }
++
++    private AskCore() {}
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/ChildproofCore.java b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/ChildproofCore.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/ChildproofCore.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/ChildproofCore.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,92 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.core.screens;
++
++/**
++ * The childproof picker's pure text logic, ported verbatim from
++ * ExcelBedrockMenu 1.5.28's ChildproofMenu (its Bukkit/GriefPrevention
++ * reads stay in the Bukkit screen; the words live here so the tests
++ * pin them). Nothing here changes trust itself: the screen runs
++ * "/childproof <name>" AS the player, so GriefPrevention does all
++ * permission checks and prints its own confirmations.
++ */
++public final class ChildproofCore {
++
++    public static final String TITLE = "Childproof a player";
++    public static final String YES = "Yes, childproof";
++    public static final String NO = "Cancel";
++    public static final String LIST_BODY =
++            "Tap who should only use doors and buttons in this claim (no building, breaking or chests).";
++    public static final String NOT_SET_UP_MESSAGE =
++            "§eChildproof isn't set up on this server yet. Ask an adult to check the server.";
++    public static final String OUTSIDE_CLAIM_MESSAGE =
++            "§eStand inside your claim first, then try again (or type it, like /childproof Alex). It only changes the claim you're standing in.";
++    public static final String NOBODY_MESSAGE =
++            "§eNobody else is online right now. You can also type the name, like /childproof Alex (example).";
++    public static final String TARGET_LEFT_MESSAGE = "§eThat player left. Nothing was changed.";
++    public static final String JAVA_LIST_HEADER =
++            "§6Childproof: click a name, then press Enter. Doors and buttons only, in this claim.";
++
++    /** Help text, always with a concrete example. */
++    public static String[] helpLines() {
++        return new String[]{
++            "§6Childproof §7- let little ones use doors, buttons and beds in your claim without breaking stuff.",
++            "§eStand in your claim and type §a/childproof Alex §7(example - type the player's name, not a nickname)",
++            "§eUndo it: §a/unchildproof Alex§7. Full trust again: §a/trust Alex",
++            "§eOn a phone? Tap §a/childproofmenu§e and pick the player from a list.",
++        };
++    }
++
++    /**
++     * The one confirmation line after the alias ran, given the
++     * verified state: "access", "none", "other:<level>", "outside"
++     * or "unknown" (the Bukkit screen's GriefPrevention read).
++     */
++    public static String resultLine(boolean childproof, String name, String state) {
++        if (state.equals("outside"))
++            return "§eYou weren't standing in a claim, so this changed ALL your claims. To change just one, stand in it and type §a/" + (childproof ? "childproof " : "unchildproof ") + name;
++        if (childproof && state.equals("access"))
++            return "§aDone! " + name + " can open doors, press buttons and use beds in this claim, but can't build, break things or open chests. Undo: §e/unchildproof " + name;
++        if (!childproof && state.equals("none"))
++            return "§aDone! " + name + " has no access to this claim now. Childproof again: §e/childproof " + name;
++        if (state.startsWith("other:"))
++            return "§e" + name + " still has " + state.substring(6) + " access here (maybe from public or a group trust). Check §a/trustlist§e.";
++        return "§eCheck the messages above. Type the player's exact name, like §a/" + (childproof ? "childproof " : "unchildproof ") + "Alex§e, while standing in your claim.";
++    }
++
++    /** Body text of the confirm form for a picked name. */
++    public static String confirmContent(String name) {
++        return name + " will only be able to use doors, buttons, levers and beds in this claim. "
++                + "They can't build, break things or open chests here. "
++                + "Undo: /unchildproof " + name + ". Full trust again: /trust " + name + ".";
++    }
++
++    /** The modal title for a picked name. */
++    public static String confirmTitle(String name) {
++        return "Childproof " + name + "?";
++    }
++
++    /** The fallback line when the confirm form cannot be sent. */
++    public static String typeItMessage(String name) {
++        return "§eType /childproof " + name + " to do it.";
++    }
++
++    /** The exact command run as the player for a picked name. */
++    public static String childproofCommand(String name) {
++        return "childproof " + name;
++    }
++
++    /**
++     * Button label: nickname plus the real name when they differ
++     * (".KidPlayer" shows as "Alex (.KidPlayer)"). The display name
++     * arrives already colour-stripped.
++     */
++    public static String label(String strippedDisplay, String name) {
++        String d = strippedDisplay == null ? "" : strippedDisplay.trim();
++        String core = d.startsWith("~") ? d.substring(1) : d; // Essentials nick prefix
++        if (core.isEmpty() || core.equalsIgnoreCase(name)) return name;
++        return core + " (" + name + ")";
++    }
++
++    private ChildproofCore() {}
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/CommandsPanel.java b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/CommandsPanel.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/CommandsPanel.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/CommandsPanel.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,78 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.core.screens;
++
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Locale;
++
++/**
++ * The /servercommands chat panel, ported from ExcelBedrockMenu
++ * 1.5.28's commandsPanelLines / catalogGroupIndexFor — same design
++ * language (gold headers, aqua markers, yellow commands, gray
++ * descriptions), but the rows now come from the commands_menu
++ * registry (the Bukkit screen resolves them per viewer) instead of
++ * the retired hand-kept catalogue. Group order and names are the
++ * layout's; the registry has nine groups where the old catalogue
++ * had eight (the conversion's Fixes & Help split).
++ */
++public final class CommandsPanel {
++
++    /** One panel row: the command as displayed, and its description. */
++    public record Row(String display, String description) {}
++
++    /**
++     * Resolves a /servercommands argument to a group index: a
++     * 1-based group number, or a case-insensitive prefix of the
++     * group name ("claims" for Claims & Land). -1 when nothing
++     * matches.
++     */
++    public static int groupIndexFor(String arg, List<String> groupNames) {
++        if (arg == null) return -1;
++        String wanted = arg.trim().toLowerCase(Locale.ROOT);
++        if (wanted.isEmpty()) return -1;
++        try {
++            int n = Integer.parseInt(wanted);
++            return (n >= 1 && n <= groupNames.size()) ? n - 1 : -1;
++        } catch (NumberFormatException ignored) {
++            // not a number; fall through to name matching
++        }
++        for (int g = 0; g < groupNames.size(); g++) {
++            if (groupNames.get(g).toLowerCase(Locale.ROOT).startsWith(wanted)) {
++                return g;
++            }
++        }
++        return -1;
++    }
++
++    /**
++     * The panel lines. group -1 prints every group; otherwise just
++     * the one group, with the pointer back to the whole list.
++     */
++    public static List<String> panelLines(int group, List<String> groupNames,
++                                          List<List<Row>> rowsByGroup) {
++        List<String> lines = new ArrayList<>();
++        if (group >= 0) {
++            lines.add("§6— Server Commands: " + groupNames.get(group) + " —");
++            addGroup(lines, groupNames.get(group), rowsByGroup.get(group));
++            lines.add("§7/servercommands shows every group.");
++            return lines;
++        }
++        lines.add("§6— Server Commands —");
++        for (int g = 0; g < groupNames.size(); g++) {
++            addGroup(lines, groupNames.get(g), rowsByGroup.get(g));
++        }
++        lines.add("§7That is the whole list. In the menu, tap Server Commands "
++                + "for tap-to-run buttons.");
++        return lines;
++    }
++
++    private static void addGroup(List<String> lines, String name, List<Row> rows) {
++        lines.add("§6" + name);
++        for (Row r : rows) {
++            lines.add("§b» §e" + r.display() + " §7- " + r.description());
++        }
++    }
++
++    private CommandsPanel() {}
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/ConfirmTargets.java b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/ConfirmTargets.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/ConfirmTargets.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/ConfirmTargets.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,100 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.core.screens;
++
++import java.util.List;
++
++/**
++ * The four teleport-confirmation targets (DESIGN-2.0 §2.4 forced
++ * change 2): the doors that used to open the teleport_confirm_*
++ * definition menus now route to the confirmation-gate service. Each
++ * target carries BOTH old columns' presentation verbatim — the Java
++ * definition's chest (title, icon, info name/lore, Yes/Cancel lore)
++ * and the Bedrock modal's title/content (ExcelBedrockMenu's
++ * teleportConfirmTitle/Content) — and the Yes action its columns ran:
++ *
++ *   spawn     the compass Spawn door. Java: [console] spawn (the
++ *             EssentialsX spawn, per the definition's own 2026-10-24
++ *             note). Bedrock: the village-fallback path (console
++ *             spawn, then the configured village point if the player
++ *             is still in the guild world). Union: the fallback path
++ *             — it differs from the plain command only where that
++ *             command would strand the player in the guild world.
++ *   spawncmd  the catalogue /spawn row. Both columns: [player] spawn.
++ *   guild     the Adventurers Guild doors. Both columns: [player] ag.
++ *   home      Both columns: [player] home. (The Java definition
++ *             existed; the Bedrock gate carried the same target; no
++ *             registry entry dispatches here — the target completes
++ *             the retired set.)
++ */
++public final class ConfirmTargets {
++
++    public enum Kind { SPAWN_FALLBACK, PLAYER_COMMAND }
++
++    public record Target(String definitionId,
++                         String modalTitle, String modalContent,
++                         String chestTitle, String icon, String infoName,
++                         List<String> infoLore, String yesLore,
++                         Kind kind, String command) {}
++
++    public static final String YES_LABEL = "Yes, teleport";
++    public static final String NO_LABEL = "Cancel";
++    public static final String CANCEL_LORE = "&7Stay where I am";
++
++    private static final Target SPAWN = new Target(
++            "teleport_confirm_spawn",
++            "Teleport to spawn?",
++            "This takes you back to the village spawn right away.",
++            "&6&lTeleport to Spawn?", "COMPASS", "&e&lSpawn",
++            List.of("&7Teleport back to the village"),
++            "&7Take me to spawn",
++            Kind.SPAWN_FALLBACK, null);
++
++    private static final Target SPAWNCMD = new Target(
++            "teleport_confirm_spawncmd",
++            "Teleport to spawn?",
++            "This takes you back to the village spawn right away.",
++            "&6&lTeleport to Spawn?", "LODESTONE", "&e&lSpawn",
++            List.of("&7Teleport back to the village spawn"),
++            "&7Take me to spawn",
++            Kind.PLAYER_COMMAND, "spawn");
++
++    private static final Target GUILD = new Target(
++            "teleport_confirm_guild",
++            "Teleport to the Adventurers Guild?",
++            "This takes you to the Adventurers Guild right away.",
++            "&6&lTeleport to the Guild?", "BELL", "&e&lAdventurers Guild",
++            List.of("&7Teleport to the EliteMobs", "&7guild hall"),
++            "&7Take me to the guild hall",
++            Kind.PLAYER_COMMAND, "ag");
++
++    private static final Target HOME = new Target(
++            "teleport_confirm_home",
++            "Teleport home?",
++            "This takes you home right away.",
++            "&6&lTeleport Home?", "RED_BED", "&e&lHome",
++            List.of("&7Teleport to your home"),
++            "&7Take me home",
++            Kind.PLAYER_COMMAND, "home");
++
++    private static final List<Target> ALL = List.of(SPAWN, SPAWNCMD, GUILD, HOME);
++
++    /** The target a retired definition id routes to, or null. */
++    public static Target byDefinitionId(String menuId) {
++        if (menuId == null) return null;
++        for (Target t : ALL) {
++            if (t.definitionId().equals(menuId)) return t;
++        }
++        return null;
++    }
++
++    public static boolean isConfirmation(String menuId) {
++        return byDefinitionId(menuId) != null;
++    }
++
++    public static List<Target> all() {
++        return ALL;
++    }
++
++    private ConfirmTargets() {}
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/SkillsPerksCore.java b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/SkillsPerksCore.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/SkillsPerksCore.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/SkillsPerksCore.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,56 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.core.screens;
++
++/**
++ * The Skills & Perks screen copy and the Server Website copy, ported
++ * verbatim from ExcelBedrockMenu 1.5.28. The Skills & Perks body is
++ * the skills-perks MENU-SPEC section 2 copy; only the seal count is
++ * live data (read reflectively from ExcelGuildGate by the Bukkit
++ * screen at open time). The numbers in the copy (19 skills, 83
++ * perks, levels 1-1000) are copy, not a live mcMMO integration.
++ */
++public final class SkillsPerksCore {
++
++    public static final String TITLE = "Skills & Perks";
++    public static final String[] BUTTONS =
++            {"My mcMMO stats", "Skill Trees on the Website", "Close"};
++    public static final int MCSTATS = 0;
++    public static final int WEBSITE = 1;
++    public static final String WEBSITE_FORM_TITLE = "Skill Trees on the Website";
++
++    /** Skills & Perks form body, with the live broken-seal count in
++     *  the Magic line (never a hard-coded number). */
++    public static String skillsPerksContent(int sealsBroken) {
++        return "mcMMO skills are live now: 19 skills and 83 perks, and levels run from "
++                + "1 to 1,000. The game announces each new perk in chat the moment you "
++                + "unlock it.\n\nCheck yours any time:\n/mcstats shows all your levels.\n"
++                + "Typing a skill's name (like /smelting) shows that skill's own page.\n"
++                + "/mctop shows the leaderboards.\n\n" + skillsPerksMagicLine(sealsBroken);
++    }
++
++    /**
++     * The Magic line. "Sealed" only while no seal has broken (the
++     * spec copy, unchanged); from Seal 1 on Magic is live, so the
++     * line says so, with the live count and where the first wand
++     * comes from.
++     */
++    public static String skillsPerksMagicLine(int sealsBroken) {
++        if (sealsBroken <= 0) {
++            return "Magic is sealed for now. It arrives as the Adventurers Guild seals fall (0 of 5 today).";
++        }
++        int n = Math.min(sealsBroken, 5);
++        return "Magic is awake: " + n + " of 5 seals broken. Get your first wand from the Old "
++                + "Quartermaster in the spawn village. More spells open as each seal falls. "
++                + "Tap Spellbook in the menu to see your wand's spells.";
++    }
++
++    /** Follow-on form body behind "Skill Trees on the Website": the
++     *  address as plain text (Bedrock cannot open links). */
++    public static String skillsPerksWebsiteContent() {
++        return WebsiteCore.WEBSITE_DISPLAY
++                + "\n\nOpen it and tap Skill Trees — every ladder is there.";
++    }
++
++    private SkillsPerksCore() {}
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/SpawnFallback.java b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/SpawnFallback.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/SpawnFallback.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/SpawnFallback.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,40 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.core.screens;
++
++/**
++ * The Spawn door's fallback rules, ported from ExcelBedrockMenu
++ * 1.5.28 (teleportToSpawn / villageFallback): the confirmed Spawn
++ * runs the real EssentialsX spawn from the console; if that command
++ * is unavailable, or one tick later the player is still in the guild
++ * world, the player is taken to the configured village point in the
++ * overworld instead. The coordinates are config keys in ExcelMenu's
++ * config.yml (spawn.x / spawn.z — the same keys BedrockMenu used),
++ * with these settled defaults.
++ */
++public final class SpawnFallback {
++
++    public static final String GUILD_WORLD = "em_adventurers_guild";
++    public static final double DEFAULT_X = -784;
++    public static final double DEFAULT_Z = -272;
++    /** Placeholder Y only — the fallback always lands on the highest
++     *  block, like the original. */
++    public static final double PLACEHOLDER_Y = 70;
++    public static final String UNAVAILABLE_MESSAGE =
++            "Spawn is unavailable right now. Ask an admin.";
++
++    /** True when the console /spawn did not work and the village
++     *  fallback must run. */
++    public static boolean needsSpawnFallback(boolean commandDispatched,
++                                             String worldNameAfter) {
++        return !commandDispatched || GUILD_WORLD.equals(worldNameAfter);
++    }
++
++    /** True if a world may be used as the fallback target: a normal
++     *  overworld that is not the guild world. */
++    public static boolean isSpawnWorld(boolean normalEnvironment, String name) {
++        return normalEnvironment && !GUILD_WORLD.equals(name);
++    }
++
++    private SpawnFallback() {}
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/TeleportConfirmationGate.java b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/TeleportConfirmationGate.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/TeleportConfirmationGate.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/TeleportConfirmationGate.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,79 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.core.screens;
++
++import java.util.HashMap;
++import java.util.Map;
++import java.util.UUID;
++
++/**
++ * One-time state for teleport confirmation prompts (DESIGN-2.0 §2.4:
++ * the gate ExcelBedrockMenu carried becomes a core service of the
++ * unified plugin). Ported from ExcelBedrockMenu 1.5.28's
++ * TeleportConfirmationGate with its semantics unchanged:
++ *
++ *   - a ticket is bound to the player (its id IS the player's UUID),
++ *     the exact session object, and the world it was opened in;
++ *   - begin() first purges expired tickets, then replaces any live
++ *     ticket for the player;
++ *   - answer() consumes the ticket either way (single-use even when
++ *     a check fails) and teleports only when the choice was Yes, the
++ *     player is online, the session and world still match, and the
++ *     age is inside [0, TTL);
++ *   - main-thread only, like the original (no synchronization).
++ */
++public final class TeleportConfirmationGate {
++
++    public static final long TTL_NANOS = 60_000_000_000L;
++
++    /** One issued prompt. The session is compared by identity. */
++    public record Ticket(UUID id, Object session, UUID world, long created) {}
++
++    private final Map<UUID, Ticket> pending = new HashMap<>();
++
++    /** Issue a prompt for a player, purging expired tickets first.
++     *  Any previous live prompt for the player is replaced. */
++    public Ticket begin(UUID id, Object session, UUID world, long now) {
++        pending.values().removeIf(t -> now - t.created() >= TTL_NANOS);
++        Ticket ticket = new Ticket(id, session, world, now);
++        pending.put(id, ticket);
++        return ticket;
++    }
++
++    /** Consume the ticket and say whether the teleport may run. */
++    public boolean answer(Ticket ticket, Object session, UUID world, long now,
++                          boolean online, boolean yes) {
++        if (ticket == null || pending.get(ticket.id()) != ticket) return false;
++        pending.remove(ticket.id());
++        return yes && online && ticket.session() == session
++                && ticket.world().equals(world)
++                && now - ticket.created() >= 0 && now - ticket.created() < TTL_NANOS;
++    }
++
++    /** Drop the ticket if it is still the live one (form closed,
++     *  or the transport failed before the prompt could open). */
++    public void cancel(Ticket ticket) {
++        if (ticket != null && pending.get(ticket.id()) == ticket) {
++            pending.remove(ticket.id());
++        }
++    }
++
++    /** Drop a player's prompt because the menu session advanced. */
++    public void invalidate(UUID id) {
++        pending.remove(id);
++    }
++
++    public void clear() {
++        pending.clear();
++    }
++
++    /**
++     * Confirm outcome: only an explicit first-button choice
++     * teleports. A null choice (the form was closed without
++     * choosing) never does. (ExcelBedrockMenu's confirmChoiceTeleports,
++     * kept beside the gate it feeds.)
++     */
++    public static boolean confirmChoiceTeleports(Boolean firstButtonClicked) {
++        return Boolean.TRUE.equals(firstButtonClicked);
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/TeleportCore.java b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/TeleportCore.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/TeleportCore.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/TeleportCore.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,75 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.core.screens;
++
++/**
++ * The teleport picker's pure logic, ported verbatim from
++ * ExcelBedrockMenu 1.5.29's TeleportMenu: which Essentials request a
++ * direction sends, and the exact words every step shows. The two
++ * direction labels are Mike's (Nov 2, 2026), pinned byte-exact by
++ * TeleportCoreTest.
++ */
++public final class TeleportCore {
++
++    /** Which way the teleport goes once the target accepts. */
++    public enum Direction {
++        /** The picker travels to the picked player: Essentials /tpa. */
++        TELEPORT_TO,
++        /** The picked player travels to the picker: Essentials /tpahere. */
++        COME_TO_ME
++    }
++
++    // Settled wording (Mike, Nov 2, 2026) — pinned byte-exact by tests.
++    public static final String LABEL_TELEPORT_TO = "Teleport to player";
++    public static final String LABEL_COME_TO_ME = "Ask player to come to me";
++    public static final String CHOICE_BODY = "What do you want to do?";
++
++    public static final String LIST_TITLE = "Teleport to a player";
++    public static final String LIST_BODY =
++            "Tap who you want to visit. They'll get a request to accept.";
++    public static final String HEAD_LORE = "Click to ask to teleport";
++    public static final String NOBODY_MESSAGE =
++            "Nobody else is online right now. Try again when family joins!";
++    public static final String LEFT_MESSAGE =
++            "Looks like they just left the game. Try someone else!";
++    public static final String ESSENTIALS_MISSING_MESSAGE =
++            "Teleport requests aren't working right now. Ask an adult to check the server.";
++    public static final String PROMPT_TITLE = "Teleport request";
++    public static final String ACCEPT_LABEL = "Accept";
++    public static final String DECLINE_LABEL = "Decline";
++    public static final String DECLINE_HOVER = "Say no thanks";
++
++    /** The Essentials request command for a direction, run AS the picker. */
++    public static String requestCommand(Direction direction, String targetName) {
++        return (direction == Direction.COME_TO_ME ? "tpahere " : "tpa ") + targetName;
++    }
++
++    /** The sentence the target reads in their answer prompt. */
++    public static String promptText(Direction direction, String who) {
++        return direction == Direction.COME_TO_ME
++                ? who + " is asking you to teleport to them."
++                : who + " wants to teleport to you.";
++    }
++
++    /** Java choice-chest lore (the name is the picked player's). */
++    public static String choiceLoreTo(String name) {
++        return "You go to " + name + ". They can accept or decline.";
++    }
++
++    public static String choiceLoreHere(String name) {
++        return name + " comes to you. They can accept or decline.";
++    }
++
++    /** Hover text on the target's [Accept] button. */
++    public static String acceptHover(Direction direction) {
++        return direction == Direction.COME_TO_ME
++                ? "Teleport to them" : "Let them come to you";
++    }
++
++    /** The target's answer when the picker has already left. */
++    public static String answererLeftMessage(String fromName) {
++        return fromName + " left the game, so there's nothing to answer.";
++    }
++
++    private TeleportCore() {}
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/WebsiteCore.java b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/WebsiteCore.java
+--- a/phase-1-src/main/java/com/winkreyes/excelmenu/core/screens/WebsiteCore.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/java/com/winkreyes/excelmenu/core/screens/WebsiteCore.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,44 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++// Excel signature - WRV maintained source; existing authorship notices preserved.
++package com.winkreyes.excelmenu.core.screens;
++
++/**
++ * The Server Website screen copy, ported verbatim from
++ * ExcelBedrockMenu 1.5.28. Bedrock players get a form spelling the
++ * addresses out (Bedrock cannot open a browser from in game) plus
++ * both addresses as a plain chat copy; Java players get clickable
++ * chat links (the Bukkit screen builds those from these constants).
++ */
++public final class WebsiteCore {
++
++    public static final String WEBSITE_URL = "https://elmikeexcel.github.io/winkreyesvalley/";
++    public static final String WEBSITE_DISPLAY = "elmikeexcel.github.io/winkreyesvalley";
++    public static final String WEBSITE_SHORT_URL = "https://tinyurl.com/winkreyesvalley";
++    public static final String WEBSITE_SHORT_DISPLAY = "tinyurl.com/winkreyesvalley";
++    public static final String FORM_TITLE = "Server Website";
++    public static final String CLOSE_LABEL = "Close";
++    public static final String JAVA_FOOTER =
++            "§7The guide, the command list and server news live there.";
++    public static final String LINK_HOVER = "Open the server website";
++
++    /** Bedrock website form body: the short link first (easy to
++     *  remember and to type on a phone), the full address under it. */
++    public static String websiteFormContent() {
++        return "The server website has the guide, the full command list and "
++                + "server news.\n\nType one of these into your phone or computer "
++                + "browser:\n\nShort and easy to type:\n" + WEBSITE_SHORT_DISPLAY
++                + "\n\nFull address:\n" + WEBSITE_DISPLAY + "\n\nBedrock cannot "
++                + "open a browser from in game, so both addresses are in your "
++                + "chat too.";
++    }
++
++    /** The chat copy that mirrors the form: short link, then full address. */
++    public static String[] websiteChatLines() {
++        return new String[]{
++            "§aServer Website: §b" + WEBSITE_SHORT_URL,
++            "§7Full address: §b" + WEBSITE_URL
++        };
++    }
++
++    private WebsiteCore() {}
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/resources/config.yml b/phase-2-src/main/resources/config.yml
+--- a/phase-1-src/main/resources/config.yml	2026-11-01 00:27:13.609155696 +0000
++++ b/phase-2-src/main/resources/config.yml	2026-10-31 00:00:00.000000000 +0000
+@@ -15,6 +15,14 @@
+   # disk it is skipped with a log line, not served as a stale copy.
+   retired-definitions:
+     - commands_menu_page2
++    # Phase 2: the teleport confirmations are a gate service now,
++    # not definition menus (DESIGN-2.0 §2.4). On-disk copies of these
++    # files are skipped with a log line; their ids route to the
++    # confirmation gate in MenuService.
++    - teleport_confirm_spawn
++    - teleport_confirm_spawncmd
++    - teleport_confirm_guild
++    - teleport_confirm_home
+ 
+ forms:
+   # How long a registry form's session token stays answerable
+@@ -22,6 +30,15 @@
+   # a newer form replaced it is dropped (DESIGN-2.0 §2.5).
+   session-ttl-seconds: 300
+ 
++# Village fallback for the Spawn door (overworld): if the console
++# /spawn is unavailable, or the player is still in the guild world a
++# tick later, the confirmed Spawn lands here instead (Y is found
++# automatically — the highest block). The same keys ExcelBedrockMenu
++# used, so the operator's tuned values carry over by copying them.
++spawn:
++  x: -784
++  z: -272
++
+ # Row sequence per menu: Java packing follows this order, and entries
+ # whose group is not listed sort after the listed ones.
+ groups:
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/resources/entries/halloween_scares.yml b/phase-2-src/main/resources/entries/halloween_scares.yml
+--- a/phase-1-src/main/resources/entries/halloween_scares.yml	2026-11-01 05:28:51.255146723 +0000
++++ b/phase-2-src/main/resources/entries/halloween_scares.yml	2026-10-31 00:00:00.000000000 +0000
+@@ -1,5 +1,12 @@
+ # ExcelMenu 2.0 registry entry — production data converted from the live
+ # server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
++# Phase 2 repair (Nov 2, 2026): the action no longer opens a
++# 'halloween_scares' menu — that definition lived only in the live
++# data folder and was renamed aside at the Phase 1 install, so the
++# door opened nothing. It now runs the owner's own /scares command
++# (the screen ExcelBedrockMenu's guarded dispatch opened), guarded
++# by requires-plugin like every other owner-backed entry. The
++# Nov 6 cleanup retires this entry with the season.
+ id: halloween_scares
+ menu: server_menu
+ group: help
+@@ -12,6 +19,7 @@
+   - '&7pumpkin hat, Slenderman, Herobrine and more'
+   - '&7The event runs through Nov 5'
+ action:
+-  - '[openguimenu] halloween_scares'
++  - '[player] scares'
++requires-plugin: ExcelHalloweenToggles
+ visible-from: 2026-10-31
+ visible-until: 2026-11-05
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/resources/entries/magiclevel.yml b/phase-2-src/main/resources/entries/magiclevel.yml
+--- a/phase-1-src/main/resources/entries/magiclevel.yml	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/main/resources/entries/magiclevel.yml	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,47 @@
++# ExcelMenu 2.0 registry entry — Magic Level (ExcelMagicLevel), authored
++# for ExcelMagicLevel Phase 3 (SPEC section 6.2) against the Phase 0/1
++# registry schema (EntryLoader ENTRY_KEYS / VARIANT_KEYS verbatim) and
++# validated with the Phase 0 EntryLoader — see ENTRY-VALIDATION.md in
++# this folder.
++#
++# PLACEMENT: plugins/ExcelMenu/entries/magiclevel.yml, then
++# /excelmenu reload. Requires ExcelMenu 2.0 Phase 1 live (the registry);
++# ExcelMagicLevel itself may install before or after — the
++# requires-plugin guard resolves this entry to its default variant
++# with the standard message while ExcelMagicLevel is absent.
++#
++# GROUP NOTE: SPEC 6.2 names group "character"; the shipped registry
++# has no such group (server_menu groups: travel, me, shops, help,
++# settings). The spec's own intent is "sits with Skills & Perks / the
++# mcMMO doors" — those live in group "me" (skills: order 10,
++# order-bedrock 90). This entry therefore uses group "me", ordered
++# immediately after Skills & Perks on both platforms (order 15,
++# order-bedrock 95), which is the spec's placement in the schema that
++# actually shipped.
++id: magiclevel
++menu: server_menu
++group: me
++order: 15
++order-bedrock: 95
++icon: EXPERIENCE_BOTTLE
++label: '&d&lMagic Level'
++lore:
++  - '&7Your path and the seals decide what'
++  - '&7you can cast. Your Magic Level decides'
++  - '&7how strong your casting is.'
++  - '&7Tap to see your Magic Level.'
++action:
++  - '[player] magiclevel'
++requires-plugin: ExcelMagicLevel
++status-placeholder: '%excelmagiclevel_level%'
++states:
++  'default':
++    icon: EXPERIENCE_BOTTLE
++    label: '&d&lMagic Level'
++    lore:
++      - '&7Your path and the seals decide what'
++      - '&7you can cast. Your Magic Level decides'
++      - '&7how strong your casting is.'
++      - '&7Tap to see your Magic Level.'
++    action:
++      - '[player] magiclevel'
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/resources/layouts/server_menu.yml b/phase-2-src/main/resources/layouts/server_menu.yml
+--- a/phase-1-src/main/resources/layouts/server_menu.yml	2026-11-01 05:30:57.187653265 +0000
++++ b/phase-2-src/main/resources/layouts/server_menu.yml	2026-10-31 00:00:00.000000000 +0000
+@@ -9,13 +9,28 @@
+ # the Settings row (autojoin sits at 40 today; the slot list simply
+ # does not offer 39). The Help slot list already offered slot 34, so
+ # the re-based halloween_scares entry needed no layout change.
++#
++# FIX — Nov 1, 2026 (me-group-fix): the 'me' group outgrew its row.
++# The live registry carries NINE 'me' doors — the Phase 1 eight plus
++# magiclevel (order 15, placed live the morning of Nov 1, 2026) —
++# against eight slots, so the chest renderer refused the whole menu
++# for Java players ("group 'me' has 8 slot(s) but entry
++# 'boss_rewards' (and possibly more) resolved"). The page grows
++# 45 -> 54 and 'me' wraps onto a second row in the commands_menu
++# idiom (header pane once, the group's slots flow across rows):
++# 10-17 plus 18-25, so boss_rewards renders at 18, directly under
++# the Me header. Shops / Help / Settings shift down exactly one row
++# with their internal layout unchanged — the Settings hole moves
++# with its row (39 -> 48; autojoin now sits at 49). Travel and the
++# first Me row keep their exact slots. No entry file changes, and
++# Bedrock forms never read slot lists, so Bedrock is untouched.
+ id: server_menu
+ title: '&6&lServer Menu'
+ form: flat
+ form-title: 'Server Menu'
+ form-content: 'What would you like to do?'
+ pages:
+-  - size: 45
++  - size: 54
+     fixed:
+       - slot: 0
+         material: LIGHT_BLUE_STAINED_GLASS_PANE
+@@ -25,23 +40,23 @@
+         material: LIME_STAINED_GLASS_PANE
+         name: '&a&lMe'
+         lore: ['&7Your skills, magic, money and stuff']
+-      - slot: 18
++      - slot: 27
+         material: YELLOW_STAINED_GLASS_PANE
+         name: '&e&lShops'
+         lore: ['&7Spend your Jobs money']
+-      - slot: 27
++      - slot: 36
+         material: ORANGE_STAINED_GLASS_PANE
+         name: '&6&lHelp'
+         lore: ['&7News, answers and commands']
+-      - slot: 36
++      - slot: 45
+         material: GRAY_STAINED_GLASS_PANE
+         name: '&7&lSettings'
+         lore: ['&7Your on/off switches']
+     slots:
+       travel: [1, 2, 3, 4, 5, 6, 7, 8]
+-      me: [10, 11, 12, 13, 14, 15, 16, 17]
+-      shops: [19, 20, 21, 22, 23, 24, 25, 26]
+-      help: [28, 29, 30, 31, 32, 33, 34, 35]
+-      settings: [37, 38, 40, 41, 42, 43, 44]
++      me: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
++      shops: [28, 29, 30, 31, 32, 33, 34, 35]
++      help: [37, 38, 39, 40, 41, 42, 43, 44]
++      settings: [46, 47, 49, 50, 51, 52, 53]
+ 
+ # ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/resources/menus/teleport_confirm_guild.yml b/phase-2-src/main/resources/menus/teleport_confirm_guild.yml
+--- a/phase-1-src/main/resources/menus/teleport_confirm_guild.yml	2026-11-01 00:27:00.446467029 +0000
++++ b/phase-2-src/main/resources/menus/teleport_confirm_guild.yml	1970-01-01 00:00:00.000000000 +0000
+@@ -1,33 +0,0 @@
+-# ExcelMenu definition: teleport_confirm_guild
+-# Migrated 2026-10-20 from DeluxeMenus gui_menus/teleport_confirm_guild.yml
+-# (source SHA-256 6d58aa848f4ed3224e9abeeb08c2ca8652abd2b88a188a2e8b2bb064fe901708; provenance in ~/workspace/excelmenu/dm-source/PROVENANCE.md)
+-format: 1
+-title: '&6&lTeleport to the Guild?'
+-size: 9
+-items:
+-  'yes':
+-    material: LIME_DYE
+-    slot: 3
+-    name: '&a&lYes, teleport'
+-    lore:
+-    - '&7Take me to the guild hall'
+-    clicks:
+-      left:
+-      - '[player] ag'
+-      - '[close]'
+-  info:
+-    material: BELL
+-    slot: 4
+-    name: '&e&lAdventurers Guild'
+-    lore:
+-    - '&7Teleport to the EliteMobs'
+-    - '&7guild hall'
+-  cancel:
+-    material: RED_DYE
+-    slot: 5
+-    name: '&c&lCancel'
+-    lore:
+-    - '&7Stay where I am'
+-    clicks:
+-      left:
+-      - '[close]'
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/resources/menus/teleport_confirm_home.yml b/phase-2-src/main/resources/menus/teleport_confirm_home.yml
+--- a/phase-1-src/main/resources/menus/teleport_confirm_home.yml	2026-11-01 00:27:00.449180029 +0000
++++ b/phase-2-src/main/resources/menus/teleport_confirm_home.yml	1970-01-01 00:00:00.000000000 +0000
+@@ -1,32 +0,0 @@
+-# ExcelMenu definition: teleport_confirm_home
+-# Migrated 2026-10-20 from DeluxeMenus gui_menus/teleport_confirm_home.yml
+-# (source SHA-256 bb127a0bfa05c604f71c0fecbb9c39004ab274058b6b2943194c671d92daec61; provenance in ~/workspace/excelmenu/dm-source/PROVENANCE.md)
+-format: 1
+-title: '&6&lTeleport Home?'
+-size: 9
+-items:
+-  'yes':
+-    material: LIME_DYE
+-    slot: 3
+-    name: '&a&lYes, teleport'
+-    lore:
+-    - '&7Take me home'
+-    clicks:
+-      left:
+-      - '[player] home'
+-      - '[close]'
+-  info:
+-    material: RED_BED
+-    slot: 4
+-    name: '&e&lHome'
+-    lore:
+-    - '&7Teleport to your home'
+-  cancel:
+-    material: RED_DYE
+-    slot: 5
+-    name: '&c&lCancel'
+-    lore:
+-    - '&7Stay where I am'
+-    clicks:
+-      left:
+-      - '[close]'
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/resources/menus/teleport_confirm_spawn.yml b/phase-2-src/main/resources/menus/teleport_confirm_spawn.yml
+--- a/phase-1-src/main/resources/menus/teleport_confirm_spawn.yml	2026-11-01 00:27:00.451927480 +0000
++++ b/phase-2-src/main/resources/menus/teleport_confirm_spawn.yml	1970-01-01 00:00:00.000000000 +0000
+@@ -1,34 +0,0 @@
+-# ExcelMenu definition: teleport_confirm_spawn
+-# Migrated 2026-10-20 from DeluxeMenus gui_menus/teleport_confirm_spawn.yml
+-# (source SHA-256 3dcefe46c3767ac46770d7d69c4e0cbdcba6638d104e12ea50e0572584453f9f; provenance in ~/workspace/excelmenu/dm-source/PROVENANCE.md)
+-# 2026-10-24: Yes now runs the EssentialsX spawn for the player (same spot as
+-# /spawn and the Bedrock Spawn button), so it follows /setspawn. No fixed coordinates.
+-format: 1
+-title: '&6&lTeleport to Spawn?'
+-size: 9
+-items:
+-  'yes':
+-    material: LIME_DYE
+-    slot: 3
+-    name: '&a&lYes, teleport'
+-    lore:
+-    - '&7Take me to spawn'
+-    clicks:
+-      left:
+-      - '[console] spawn %player_name%'
+-      - '[close]'
+-  info:
+-    material: COMPASS
+-    slot: 4
+-    name: '&e&lSpawn'
+-    lore:
+-    - '&7Teleport back to the village'
+-  cancel:
+-    material: RED_DYE
+-    slot: 5
+-    name: '&c&lCancel'
+-    lore:
+-    - '&7Stay where I am'
+-    clicks:
+-      left:
+-      - '[close]'
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/resources/menus/teleport_confirm_spawncmd.yml b/phase-2-src/main/resources/menus/teleport_confirm_spawncmd.yml
+--- a/phase-1-src/main/resources/menus/teleport_confirm_spawncmd.yml	2026-11-01 00:27:00.457914821 +0000
++++ b/phase-2-src/main/resources/menus/teleport_confirm_spawncmd.yml	1970-01-01 00:00:00.000000000 +0000
+@@ -1,32 +0,0 @@
+-# ExcelMenu definition: teleport_confirm_spawncmd
+-# Migrated 2026-10-20 from DeluxeMenus gui_menus/teleport_confirm_spawncmd.yml
+-# (source SHA-256 ea1cc44de7e98ba5f6ef901a5778ac3ebc831063a9dc881c12bacdf784d753f4; provenance in ~/workspace/excelmenu/dm-source/PROVENANCE.md)
+-format: 1
+-title: '&6&lTeleport to Spawn?'
+-size: 9
+-items:
+-  'yes':
+-    material: LIME_DYE
+-    slot: 3
+-    name: '&a&lYes, teleport'
+-    lore:
+-    - '&7Take me to spawn'
+-    clicks:
+-      left:
+-      - '[player] spawn'
+-      - '[close]'
+-  info:
+-    material: LODESTONE
+-    slot: 4
+-    name: '&e&lSpawn'
+-    lore:
+-    - '&7Teleport back to the village spawn'
+-  cancel:
+-    material: RED_DYE
+-    slot: 5
+-    name: '&c&lCancel'
+-    lore:
+-    - '&7Stay where I am'
+-    clicks:
+-      left:
+-      - '[close]'
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/main/resources/plugin.yml b/phase-2-src/main/resources/plugin.yml
+--- a/phase-1-src/main/resources/plugin.yml	2026-11-01 00:27:06.463155879 +0000
++++ b/phase-2-src/main/resources/plugin.yml	2026-10-31 00:00:00.000000000 +0000
+@@ -3,8 +3,8 @@
+ main: com.winkreyes.excelmenu.bukkit.ExcelMenu
+ api-version: '1.13'
+ author: WinkReyesValley
+-description: ExcelMenu 2.0 (Phase 1) — one menu plugin for Java + Bedrock. The Server Menu and the commands catalogue are registry data (entries/ + layouts/ under plugins/ExcelMenu/), resolved per viewer and rendered as a Java chest GUI or a Bedrock Cumulus form through the unified platform bridge; the remaining menus still load as definitions (menus/) and render the same way. Phase 1 registers /excelmenu and /dm only; /menu and its family stay with ExcelBedrockMenu until the Phase 2 unification (DESIGN-2.0 §3.3).
+-softdepend: [PlaceholderAPI, Vault, Geyser-Spigot, floodgate]
++description: 'ExcelMenu 2.0 (Phase 2) — ONE menu plugin for Java + Bedrock. The Server Menu and the commands catalogue are registry data (entries/ + layouts/ under plugins/ExcelMenu/), resolved per viewer and rendered as a Java chest GUI or a Bedrock Cumulus form through the unified platform bridge; the remaining menus load as definitions (menus/) and render the same way. Phase 2 unifies the fleet: /menu, /servercommands, /serverwebsite, /tpmenu and /childproofmenu are registered here, the BedrockMenu dynamic screens (teleport picker with direction choice, childproof picker, Ask text box, Skills & Perks, website) are ported in, and the teleport_confirm_* definitions retired into the confirmation-gate service. ExcelBedrockMenu is no longer used.'
++softdepend: [PlaceholderAPI, Vault, Geyser-Spigot, floodgate, Essentials]
+ commands:
+   excelmenu:
+     description: ExcelMenu 2.0 admin — list menus and registry entries, open a menu, resolve entries for yourself, reload everything.
+@@ -12,6 +12,22 @@
+   dm:
+     description: DeluxeMenus compatibility alias (list/open/reload) so the fleet's existing "dm open ..." dispatches keep working.
+     usage: /dm list|open <menu> [player]|reload
++  menu:
++    description: Open the Server Menu.
++    usage: /menu
++  servercommands:
++    description: Open the Server Commands catalogue, or print one group in chat.
++    usage: /servercommands [group]
++    aliases: [cmds]
++  serverwebsite:
++    description: Show the server website address (clickable links on Java, spelled out on Bedrock).
++    usage: /serverwebsite
++  tpmenu:
++    description: Pick a player to teleport to — or ask them to come to you.
++    usage: /tpmenu
++  childproofmenu:
++    description: Pick a player to childproof in the claim you are standing in (doors and buttons only).
++    usage: /childproofmenu [help]
+ permissions:
+   excelmenu.admin:
+     default: op
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/bukkit/BundledEntriesTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/bukkit/BundledEntriesTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/bukkit/BundledEntriesTest.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/bukkit/BundledEntriesTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,78 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++package com.winkreyes.excelmenu.bukkit;
++
++import org.junit.Test;
++
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.util.HashSet;
++import java.util.Set;
++import java.util.stream.Stream;
++
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.assertTrue;
++
++/**
++ * The regression guard owed since the Nov 1, 2026 registry incident
++ * (ROOT-CAUSE-20261101.md): ExcelMenu's hand-maintained BUNDLED_*
++ * extraction lists must equal the resources tree, exactly — the
++ * incident was an entry file (halloween_scares) present in the jar
++ * but missing from the list, so first boot extracted 82 of 83 and
++ * the registry read 82. magiclevel joined the same way at the
++ * Phase 2 baseline; this test is what makes the class of bug fail
++ * the build instead of a boot.
++ */
++public class BundledEntriesTest {
++
++    private static Set<String> stems(Path dir) throws Exception {
++        Set<String> out = new HashSet<>();
++        try (Stream<Path> s = Files.list(dir)) {
++            s.filter(p -> p.getFileName().toString().endsWith(".yml"))
++                    .forEach(p -> out.add(p.getFileName().toString()
++                            .replaceFirst("\\.yml$", "")));
++        }
++        return out;
++    }
++
++    private static void assertListEqualsTree(String what, String[] bundled,
++                                             Path dir) throws Exception {
++        Set<String> listed = new HashSet<>();
++        for (String name : bundled) {
++            assertTrue(what + ": duplicate in BUNDLED list: " + name,
++                    listed.add(name));
++        }
++        assertEquals(what + ": BUNDLED list must equal the resources tree",
++                stems(dir), listed);
++    }
++
++    /**
++     * The jar's own YAML must parse (the Phase 2 rig caught an
++     * unquoted ": " inside plugin.yml's long description — the jar
++     * built and tested green and Paper refused to load it).
++     */
++    @Test
++    public void jarYamlParses() throws Exception {
++        Path resources = Path.of(System.getProperty(
++                "harness.entries", "src/main/resources/entries")).getParent();
++        org.yaml.snakeyaml.Yaml yaml = new org.yaml.snakeyaml.Yaml();
++        for (String name : new String[]{"plugin.yml", "config.yml"}) {
++            try (java.io.InputStream in = Files.newInputStream(resources.resolve(name))) {
++                Object parsed = yaml.load(in);
++                assertTrue(name + " must parse to a map", parsed instanceof java.util.Map);
++            }
++        }
++    }
++
++    @Test
++    public void bundledListsEqualTheResourcesTree() throws Exception {
++        assertListEqualsTree("entries", ExcelMenu.BUNDLED_ENTRIES,
++                Path.of(System.getProperty(
++                        "harness.entries", "src/main/resources/entries")));
++        assertListEqualsTree("layouts", ExcelMenu.BUNDLED_LAYOUTS,
++                Path.of(System.getProperty(
++                        "harness.layouts", "src/main/resources/layouts")));
++        assertListEqualsTree("menus", ExcelMenu.BUNDLED_MENUS,
++                Path.of(System.getProperty(
++                        "harness.menus", "src/main/resources/menus")));
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/core/render/ChestModelTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/core/render/ChestModelTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/core/render/ChestModelTest.java	2026-11-01 05:30:37.197653419 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/core/render/ChestModelTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -38,30 +38,37 @@
+         ChestModel.Result r = ChestModel.build(layout, resolved, 0);
+         assertTrue(String.valueOf(r.error()), r.ok());
+         Map<Integer, String> slots = entrySlots(r.page());
++        // The expected map is the LIVE layout: the Nov 1, 2026
++        // 'me'-group fix (54 slots; 'me' widened to two rows so
++        // magiclevel fits), folded into the bundled layout at the
++        // Phase 2 baseline — before the fold-in this test pinned the
++        // pre-fix bundled layout the live server no longer carries.
+         Map<Integer, String> expected = Map.ofEntries(
+                 Map.entry(1, "spawn"), Map.entry(2, "guild"),
+                 Map.entry(3, "tpmenu"), Map.entry(4, "party"),
+-                Map.entry(10, "skills"), Map.entry(11, "spellbook"),
+-                Map.entry(12, "jobs"), Map.entry(13, "leaderboard"),
+-                Map.entry(14, "lostfound"), Map.entry(15, "utility_pouch"),
+-                Map.entry(16, "trash"), Map.entry(17, "boss_rewards"),
+-                Map.entry(19, "shop"), Map.entry(20, "cosmetics"),
+-                Map.entry(28, "whatsnew"), Map.entry(29, "ask"),
+-                Map.entry(30, "commands"), Map.entry(31, "info"),
+-                Map.entry(32, "website"), Map.entry(33, "halloween"),
+-                Map.entry(34, "halloween_scares"),
+-                Map.entry(37, "autosort"), Map.entry(38, "makersmark_settings"),
+-                Map.entry(40, "autojoin"), Map.entry(41, "wandstyle"),
+-                Map.entry(42, "silkwarnings"), Map.entry(43, "aimassist"));
++                Map.entry(10, "skills"), Map.entry(11, "magiclevel"),
++                Map.entry(12, "spellbook"), Map.entry(13, "jobs"),
++                Map.entry(14, "leaderboard"), Map.entry(15, "lostfound"),
++                Map.entry(16, "utility_pouch"), Map.entry(17, "trash"),
++                Map.entry(18, "boss_rewards"),
++                Map.entry(28, "shop"), Map.entry(29, "cosmetics"),
++                Map.entry(37, "whatsnew"), Map.entry(38, "ask"),
++                Map.entry(39, "commands"), Map.entry(40, "info"),
++                Map.entry(41, "website"), Map.entry(42, "halloween"),
++                Map.entry(43, "halloween_scares"),
++                Map.entry(46, "autosort"), Map.entry(47, "makersmark_settings"),
++                Map.entry(49, "autojoin"), Map.entry(50, "wandstyle"),
++                Map.entry(51, "silkwarnings"), Map.entry(52, "aimassist"));
+         assertEquals(expected, slots);
+-        // The hole: nothing at 39 (or 44), exactly like the live menu.
+-        assertFalse(slots.containsKey(39));
+-        assertFalse(slots.containsKey(44));
+-        // Chrome: 5 header panes. (27 entries + 5 chrome since the
+-        // Nov 1, 2026 re-base added halloween_scares at slot 34.)
+-        assertEquals(32, r.page().slots().size());
++        // The hole: nothing at 48 (the SCREEN settings slot) or 53
++        // (the settings row's spare), exactly like the live menu.
++        assertFalse(slots.containsKey(48));
++        assertFalse(slots.containsKey(53));
++        // Chrome: 5 header panes. (28 entries + 5 chrome: the 27 of
++        // the Nov 1, 2026 re-base plus magiclevel at slot 11.)
++        assertEquals(33, r.page().slots().size());
+         assertEquals("&6&lServer Menu", r.page().title());
+-        assertEquals(45, r.page().size());
++        assertEquals(54, r.page().size());
+     }
+ 
+     @Test
+@@ -73,7 +80,7 @@
+         assertTrue(r.ok());
+         assertFalse(entrySlots(r.page()).containsValue("halloween"));
+         assertFalse(entrySlots(r.page()).containsValue("halloween_scares"));
+-        assertEquals(30, r.page().slots().size());
++        assertEquals(31, r.page().slots().size());
+     }
+ 
+     @Test
+@@ -87,7 +94,7 @@
+                         RenderFixtures.IN_WINDOW, RenderFixtures.CONFIG);
+         ChestModel.Result r = ChestModel.build(layout, resolved, 0);
+         assertTrue(r.ok());
+-        ChestModel.Placed placed = r.page().slots().get(42);
++        ChestModel.Placed placed = r.page().slots().get(51);
+         assertTrue(placed instanceof ChestModel.Placed.EntryItem);
+         ResolvedEntry e = ((ChestModel.Placed.EntryItem) placed).entry();
+         assertEquals("silkwarnings", e.id());
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/core/render/FormModelTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/core/render/FormModelTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/core/render/FormModelTest.java	2026-11-01 05:30:46.971653343 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/core/render/FormModelTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -27,29 +27,33 @@
+         FormModel.FormPage form = FormModel.flat(layout, resolved, RenderFixtures.CONFIG);
+         assertEquals("Server Menu", form.title());
+         assertEquals("What would you like to do?", form.content());
+-        assertEquals(27, form.buttons().size());
++        // 28 buttons since the Phase 2 baseline folded magiclevel in
++        // (order-bedrock 95, between skills and leaderboard) — the
++        // 1.5.27 sequence plus that one live door.
++        assertEquals(28, form.buttons().size());
+         List<String> ids = form.buttons().stream()
+                 .map(b -> ((FormModel.Target.EntryTarget) b.target()).entryId())
+                 .toList();
+         assertEquals(List.of(
+                 "spawn", "tpmenu", "party", "utility_pouch", "spellbook", "shop",
+-                "cosmetics", "guild", "jobs", "skills", "leaderboard", "lostfound",
++                "cosmetics", "guild", "jobs", "skills", "magiclevel", "leaderboard",
++                "lostfound",
+                 "trash", "boss_rewards", "info", "commands", "website", "whatsnew",
+                 "ask", "halloween", "halloween_scares", "wandstyle", "autosort",
+                 "makersmark_settings",
+                 "autojoin", "silkwarnings", "aimassist"), ids);
+         // Group colour + stripped label (1.5.27's colouring rule).
+         assertEquals("§1Spawn", form.buttons().get(0).label());
+-        assertEquals("§8Aim Assist: ON", form.buttons().get(26).label());
++        assertEquals("§8Aim Assist: ON", form.buttons().get(27).label());
+     }
+ 
+     @Test
+-    public void flatFormOutOfWindowHas25Buttons() throws Exception {
++    public void flatFormOutOfWindowHas26Buttons() throws Exception {
+         LayoutDef layout = RenderFixtures.layout("server_menu");
+         List<ResolvedEntry> resolved = RenderFixtures.resolve(
+                 "server_menu", Platform.BEDROCK, RenderFixtures.OUT_WINDOW);
+         FormModel.FormPage form = FormModel.flat(layout, resolved, RenderFixtures.CONFIG);
+-        assertEquals(25, form.buttons().size());
++        assertEquals(26, form.buttons().size());
+     }
+ 
+     @Test
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/core/render/LayoutLoaderTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/core/render/LayoutLoaderTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/core/render/LayoutLoaderTest.java	2026-11-01 00:27:57.743154568 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/core/render/LayoutLoaderTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -19,7 +19,10 @@
+         assertEquals("server_menu", server.id());
+         assertEquals(LayoutDef.Form.FLAT, server.form());
+         assertEquals(1, server.pages().size());
+-        assertEquals(45, server.pages().get(0).size());
++        // 54 since the Phase 2 baseline folded the live 'me'-group fix
++        // into the bundled layout (Nov 1, 2026 fix; the 45-slot layout
++        // could not hold the nine 'me' doors once magiclevel landed).
++        assertEquals(54, server.pages().get(0).size());
+         assertEquals(5, server.pages().get(0).fixed().size());
+ 
+         LayoutDef commands = RenderFixtures.layout("commands_menu");
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/AskCoreTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/AskCoreTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/AskCoreTest.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/AskCoreTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,70 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++package com.winkreyes.excelmenu.core.screens;
++
++import org.junit.Test;
++
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.assertNull;
++import static org.junit.Assert.assertTrue;
++
++/**
++ * The Ask text box's sanitizer, pinned to the 1.5.28 port: a typed
++ * command never runs as itself (leading slashes dropped), codes and
++ * control characters are removed, whitespace collapses, and the
++ * question caps at ASK_MAX before the "ask " prefix is added.
++ */
++public class AskCoreTest {
++
++    @Test
++    public void plainQuestionPassesThrough() {
++        assertEquals("ask How do I claim land?",
++                AskCore.askCommandFor("How do I claim land?"));
++    }
++
++    @Test
++    public void nothingUsableIsNull() {
++        assertNull(AskCore.askCommandFor(null));
++        assertNull(AskCore.askCommandFor(""));
++        assertNull(AskCore.askCommandFor("   "));
++        assertNull(AskCore.askCommandFor("///"));
++        assertNull(AskCore.askCommandFor("§a§b"));
++    }
++
++    @Test
++    public void leadingSlashesAreDropped() {
++        assertEquals("ask spawn", AskCore.askCommandFor("/spawn"));
++        assertEquals("ask spawn", AskCore.askCommandFor("  //  spawn"));
++    }
++
++    @Test
++    public void codesAndControlsAreRemovedAndSpacesCollapse() {
++        assertEquals("ask what is this?",
++                AskCore.askCommandFor("§ewhat   is\n\tthis?§7"));
++    }
++
++    @Test
++    public void lengthCapsAtAskMax() {
++        String typed = "x".repeat(AskCore.ASK_MAX + 50);
++        String line = AskCore.askCommandFor(typed);
++        assertTrue(line.startsWith("ask "));
++        assertEquals(AskCore.ASK_MAX, line.length() - "ask ".length());
++    }
++
++    @Test
++    public void guardOutcomeMatrix() {
++        assertEquals(0, AskCore.guardOutcome(false, false));
++        assertEquals(0, AskCore.guardOutcome(false, true));
++        assertEquals(1, AskCore.guardOutcome(true, false));
++        assertEquals(2, AskCore.guardOutcome(true, true));
++    }
++
++    @Test
++    public void askCopyIsThePortedCopy() {
++        assertEquals("Ask the Guide", AskCore.ASK_TITLE);
++        assertEquals("Type your question. The Guide answers from the server's own pages.",
++                AskCore.ASK_PROMPT);
++        assertEquals("How do I claim land?", AskCore.ASK_PLACEHOLDER);
++        assertEquals(200, AskCore.ASK_MAX);
++        assertEquals("excelguide.ask", AskCore.ASK_PERMISSION);
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/ChildproofCoreTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/ChildproofCoreTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/ChildproofCoreTest.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/ChildproofCoreTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,64 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++package com.winkreyes.excelmenu.core.screens;
++
++import org.junit.Test;
++
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.assertTrue;
++
++/**
++ * The childproof picker's pure helpers, pinned to the 1.5.28 port:
++ * the label shape (nick + real name), the confirm body, the exact
++ * command, and every resultLine branch.
++ */
++public class ChildproofCoreTest {
++
++    @Test
++    public void labelShowsNickPlusRealName() {
++        assertEquals("KidPlayer (.KidPlayer)",
++                ChildproofCore.label("KidPlayer", ".KidPlayer"));
++        assertEquals("Alex", ChildproofCore.label("Alex", "Alex"));
++        assertEquals("Alex", ChildproofCore.label("~Alex", "Alex"));
++        assertEquals("Alex", ChildproofCore.label("", "Alex"));
++        assertEquals("Alex", ChildproofCore.label(null, "Alex"));
++        assertEquals("Kid (Alex)", ChildproofCore.label("~Kid", "Alex"));
++    }
++
++    @Test
++    public void commandAndConfirmCopy() {
++        assertEquals("childproof Alex", ChildproofCore.childproofCommand("Alex"));
++        assertEquals("Childproof Alex?", ChildproofCore.confirmTitle("Alex"));
++        assertEquals("Alex will only be able to use doors, buttons, levers and beds "
++                + "in this claim. They can't build, break things or open chests here. "
++                + "Undo: /unchildproof Alex. Full trust again: /trust Alex.",
++                ChildproofCore.confirmContent("Alex"));
++        assertEquals("Childproof a player", ChildproofCore.TITLE);
++        assertEquals("Yes, childproof", ChildproofCore.YES);
++        assertEquals("Cancel", ChildproofCore.NO);
++    }
++
++    @Test
++    public void resultLineBranches() {
++        assertTrue(ChildproofCore.resultLine(true, "Alex", "outside")
++                .contains("changed ALL your claims"));
++        assertTrue(ChildproofCore.resultLine(true, "Alex", "access")
++                .startsWith("§aDone! Alex can open doors"));
++        assertTrue(ChildproofCore.resultLine(false, "Alex", "none")
++                .startsWith("§aDone! Alex has no access"));
++        assertTrue(ChildproofCore.resultLine(true, "Alex", "other:build")
++                .contains("still has build access"));
++        assertTrue(ChildproofCore.resultLine(true, "Alex", "unknown")
++                .contains("Check the messages above"));
++        // The childproof success line must not fire for an unchildproof.
++        assertTrue(ChildproofCore.resultLine(false, "Alex", "access")
++                .contains("Check the messages above"));
++    }
++
++    @Test
++    public void helpLinesCarryTheNeutralExample() {
++        String[] lines = ChildproofCore.helpLines();
++        assertEquals(4, lines.length);
++        assertTrue(lines[1].contains("/childproof Alex"));
++        assertTrue(lines[3].contains("/childproofmenu"));
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/CommandsPanelTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/CommandsPanelTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/CommandsPanelTest.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/CommandsPanelTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,61 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++package com.winkreyes.excelmenu.core.screens;
++
++import org.junit.Test;
++
++import java.util.List;
++
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.assertTrue;
++
++/**
++ * The /servercommands panel logic, pinned to the 1.5.28 port's
++ * shapes over registry-shaped data: group resolution (number,
++ * prefix, no match) and the panel lines for one group and for all.
++ */
++public class CommandsPanelTest {
++
++    private static final List<String> GROUPS = List.of(
++            "Getting Around", "Money & Jobs", "Skills & Levels", "Shops & Trading",
++            "Claims & Land", "Guild & Quests", "Server Info", "Fixes & Help",
++            "Your Items & Help");
++
++    private static final List<List<CommandsPanel.Row>> ROWS = List.of(
++            List.of(new CommandsPanel.Row("/spawn", "Teleport back to the village spawn")),
++            List.of(), List.of(), List.of(), List.of(), List.of(), List.of(),
++            List.of(), List.of());
++
++    @Test
++    public void groupResolution() {
++        assertEquals(0, CommandsPanel.groupIndexFor("1", GROUPS));
++        assertEquals(8, CommandsPanel.groupIndexFor("9", GROUPS));
++        assertEquals(-1, CommandsPanel.groupIndexFor("10", GROUPS));
++        assertEquals(-1, CommandsPanel.groupIndexFor("0", GROUPS));
++        assertEquals(4, CommandsPanel.groupIndexFor("claims", GROUPS));
++        assertEquals(4, CommandsPanel.groupIndexFor("CLAIMS", GROUPS));
++        assertEquals(6, CommandsPanel.groupIndexFor("server", GROUPS));
++        assertEquals(-1, CommandsPanel.groupIndexFor("nope", GROUPS));
++        assertEquals(-1, CommandsPanel.groupIndexFor("", GROUPS));
++        assertEquals(-1, CommandsPanel.groupIndexFor(null, GROUPS));
++    }
++
++    @Test
++    public void singleGroupPanel() {
++        List<String> lines = CommandsPanel.panelLines(0, GROUPS, ROWS);
++        assertEquals("§6— Server Commands: Getting Around —", lines.get(0));
++        assertEquals("§6Getting Around", lines.get(1));
++        assertEquals("§b» §e/spawn §7- Teleport back to the village spawn",
++                lines.get(2));
++        assertEquals("§7/servercommands shows every group.",
++                lines.get(lines.size() - 1));
++    }
++
++    @Test
++    public void allGroupsPanel() {
++        List<String> lines = CommandsPanel.panelLines(-1, GROUPS, ROWS);
++        assertEquals("§6— Server Commands —", lines.get(0));
++        assertTrue(lines.contains("§6Your Items & Help"));
++        assertEquals("§7That is the whole list. In the menu, tap Server Commands "
++                + "for tap-to-run buttons.", lines.get(lines.size() - 1));
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/ConfirmTargetsTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/ConfirmTargetsTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/ConfirmTargetsTest.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/ConfirmTargetsTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,79 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++package com.winkreyes.excelmenu.core.screens;
++
++import org.junit.Test;
++
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.assertNull;
++import static org.junit.Assert.assertTrue;
++
++/**
++ * The four confirmation targets, pinned to the union of the retired
++ * Java definitions and the Bedrock modal copy, with the Yes action
++ * each column ran.
++ */
++public class ConfirmTargetsTest {
++
++    @Test
++    public void allFourTargetsExist() {
++        assertEquals(4, ConfirmTargets.all().size());
++        for (String id : new String[]{"teleport_confirm_spawn",
++                "teleport_confirm_spawncmd", "teleport_confirm_guild",
++                "teleport_confirm_home"}) {
++            assertTrue(id, ConfirmTargets.isConfirmation(id));
++        }
++        assertNull(ConfirmTargets.byDefinitionId("server_menu"));
++        assertNull(ConfirmTargets.byDefinitionId(null));
++    }
++
++    @Test
++    public void spawnUsesTheFallbackPath() {
++        ConfirmTargets.Target t = ConfirmTargets.byDefinitionId("teleport_confirm_spawn");
++        assertEquals(ConfirmTargets.Kind.SPAWN_FALLBACK, t.kind());
++        assertEquals("Teleport to spawn?", t.modalTitle());
++        assertEquals("This takes you back to the village spawn right away.",
++                t.modalContent());
++        assertEquals("&6&lTeleport to Spawn?", t.chestTitle());
++        assertEquals("COMPASS", t.icon());
++    }
++
++    @Test
++    public void playerCommandTargets() {
++        ConfirmTargets.Target spawncmd =
++                ConfirmTargets.byDefinitionId("teleport_confirm_spawncmd");
++        assertEquals(ConfirmTargets.Kind.PLAYER_COMMAND, spawncmd.kind());
++        assertEquals("spawn", spawncmd.command());
++        assertEquals("LODESTONE", spawncmd.icon());
++
++        ConfirmTargets.Target guild =
++                ConfirmTargets.byDefinitionId("teleport_confirm_guild");
++        assertEquals("ag", guild.command());
++        assertEquals("Teleport to the Adventurers Guild?", guild.modalTitle());
++        assertEquals("&6&lTeleport to the Guild?", guild.chestTitle());
++        assertEquals("BELL", guild.icon());
++
++        ConfirmTargets.Target home =
++                ConfirmTargets.byDefinitionId("teleport_confirm_home");
++        assertEquals("home", home.command());
++        assertEquals("Teleport home?", home.modalTitle());
++        assertEquals("RED_BED", home.icon());
++    }
++
++    @Test
++    public void settledButtonLabels() {
++        assertEquals("Yes, teleport", ConfirmTargets.YES_LABEL);
++        assertEquals("Cancel", ConfirmTargets.NO_LABEL);
++    }
++
++    @Test
++    public void spawnFallbackRules() {
++        assertTrue(SpawnFallback.needsSpawnFallback(false, "world"));
++        assertTrue(SpawnFallback.needsSpawnFallback(true, "em_adventurers_guild"));
++        assertEquals(false, SpawnFallback.needsSpawnFallback(true, "world"));
++        assertTrue(SpawnFallback.isSpawnWorld(true, "world"));
++        assertEquals(false, SpawnFallback.isSpawnWorld(true, "em_adventurers_guild"));
++        assertEquals(false, SpawnFallback.isSpawnWorld(false, "world"));
++        assertEquals(-784.0, SpawnFallback.DEFAULT_X, 0.0);
++        assertEquals(-272.0, SpawnFallback.DEFAULT_Z, 0.0);
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/SkillsPerksCoreTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/SkillsPerksCoreTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/SkillsPerksCoreTest.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/SkillsPerksCoreTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,54 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++package com.winkreyes.excelmenu.core.screens;
++
++import org.junit.Test;
++
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.assertTrue;
++
++/**
++ * The Skills & Perks copy, pinned to the 1.5.28 port: the Magic line
++ * is the sealed text only at zero broken seals, carries the live
++ * count (capped at 5) after that, and the body keeps the spec's
++ * numbers and commands.
++ */
++public class SkillsPerksCoreTest {
++
++    @Test
++    public void magicLineSealedAtZero() {
++        assertEquals("Magic is sealed for now. It arrives as the Adventurers Guild "
++                + "seals fall (0 of 5 today).", SkillsPerksCore.skillsPerksMagicLine(0));
++        assertEquals(SkillsPerksCore.skillsPerksMagicLine(0),
++                SkillsPerksCore.skillsPerksMagicLine(-3));
++    }
++
++    @Test
++    public void magicLineCountsAndCaps() {
++        assertTrue(SkillsPerksCore.skillsPerksMagicLine(1)
++                .startsWith("Magic is awake: 1 of 5 seals broken."));
++        assertTrue(SkillsPerksCore.skillsPerksMagicLine(3)
++                .startsWith("Magic is awake: 3 of 5 seals broken."));
++        assertTrue(SkillsPerksCore.skillsPerksMagicLine(9)
++                .startsWith("Magic is awake: 5 of 5 seals broken."));
++    }
++
++    @Test
++    public void contentCarriesTheSpecCopy() {
++        String content = SkillsPerksCore.skillsPerksContent(2);
++        assertTrue(content.contains("19 skills and 83 perks"));
++        assertTrue(content.contains("1 to 1,000"));
++        assertTrue(content.contains("/mcstats shows all your levels."));
++        assertTrue(content.contains("/mctop shows the leaderboards."));
++        assertTrue(content.endsWith(SkillsPerksCore.skillsPerksMagicLine(2)));
++    }
++
++    @Test
++    public void buttonsAndFollowOn() {
++        assertEquals("My mcMMO stats", SkillsPerksCore.BUTTONS[SkillsPerksCore.MCSTATS]);
++        assertEquals("Skill Trees on the Website",
++                SkillsPerksCore.BUTTONS[SkillsPerksCore.WEBSITE]);
++        assertEquals("Close", SkillsPerksCore.BUTTONS[2]);
++        assertTrue(SkillsPerksCore.skillsPerksWebsiteContent()
++                .startsWith("elmikeexcel.github.io/winkreyesvalley"));
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/TeleportConfirmationGateTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/TeleportConfirmationGateTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/TeleportConfirmationGateTest.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/TeleportConfirmationGateTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,140 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++package com.winkreyes.excelmenu.core.screens;
++
++import org.junit.Test;
++
++import java.util.UUID;
++
++import static org.junit.Assert.assertFalse;
++import static org.junit.Assert.assertTrue;
++
++/**
++ * The confirmation gate's fail-closed matrix (DESIGN-2.0 §2.4): the
++ * ported TeleportConfirmationGate must refuse every stale, foreign,
++ * late, offline or "No" answer, consume tickets single-use, and let
++ * exactly one shape through — the live ticket, same session, same
++ * world, online, Yes, inside the TTL.
++ */
++public class TeleportConfirmationGateTest {
++
++    private static final UUID PLAYER = UUID.randomUUID();
++    private static final UUID WORLD = UUID.randomUUID();
++    private static final Object SESSION = new Object();
++    private static final long T0 = 1_000_000_000L;
++
++    private TeleportConfirmationGate gate;
++    private TeleportConfirmationGate.Ticket ticket;
++
++    private void begin() {
++        gate = new TeleportConfirmationGate();
++        ticket = gate.begin(PLAYER, SESSION, WORLD, T0);
++    }
++
++    @Test
++    public void theOneGoodAnswerTeleports() {
++        begin();
++        assertTrue(gate.answer(ticket, SESSION, WORLD, T0 + 1, true, true));
++    }
++
++    @Test
++    public void noMeansNo() {
++        begin();
++        assertFalse(gate.answer(ticket, SESSION, WORLD, T0 + 1, true, false));
++    }
++
++    @Test
++    public void nullChoiceNeverTeleports() {
++        // A closed form reports no choice; only an explicit Yes runs.
++        assertFalse(TeleportConfirmationGate.confirmChoiceTeleports(null));
++        assertFalse(TeleportConfirmationGate.confirmChoiceTeleports(Boolean.FALSE));
++        assertTrue(TeleportConfirmationGate.confirmChoiceTeleports(Boolean.TRUE));
++    }
++
++    @Test
++    public void singleUseEvenOnSuccess() {
++        begin();
++        assertTrue(gate.answer(ticket, SESSION, WORLD, T0 + 1, true, true));
++        assertFalse(gate.answer(ticket, SESSION, WORLD, T0 + 2, true, true));
++    }
++
++    @Test
++    public void singleUseEvenOnFailure() {
++        // The ported semantics: answer() consumes the ticket either
++        // way — a wrong-world answer cannot be retried in-world.
++        begin();
++        assertFalse(gate.answer(ticket, SESSION, UUID.randomUUID(), T0 + 1, true, true));
++        assertFalse(gate.answer(ticket, SESSION, WORLD, T0 + 2, true, true));
++    }
++
++    @Test
++    public void wrongSessionRefused() {
++        begin();
++        assertFalse(gate.answer(ticket, new Object(), WORLD, T0 + 1, true, true));
++    }
++
++    @Test
++    public void offlineRefused() {
++        begin();
++        assertFalse(gate.answer(ticket, SESSION, WORLD, T0 + 1, false, true));
++    }
++
++    @Test
++    public void expiryRefused() {
++        begin();
++        long atTtl = T0 + TeleportConfirmationGate.TTL_NANOS;
++        assertFalse(gate.answer(ticket, SESSION, WORLD, atTtl, true, true));
++    }
++
++    @Test
++    public void justInsideTtlAccepted() {
++        begin();
++        long justInside = T0 + TeleportConfirmationGate.TTL_NANOS - 1;
++        assertTrue(gate.answer(ticket, SESSION, WORLD, justInside, true, true));
++    }
++
++    @Test
++    public void clockBackwardsRefused() {
++        begin();
++        assertFalse(gate.answer(ticket, SESSION, WORLD, T0 - 1, true, true));
++    }
++
++    @Test
++    public void aNewerPromptReplacesTheTicket() {
++        begin();
++        TeleportConfirmationGate.Ticket newer =
++                gate.begin(PLAYER, SESSION, WORLD, T0 + 10);
++        assertFalse(gate.answer(ticket, SESSION, WORLD, T0 + 11, true, true));
++        assertTrue(gate.answer(newer, SESSION, WORLD, T0 + 12, true, true));
++    }
++
++    @Test
++    public void cancelDropsOnlyTheLiveTicket() {
++        begin();
++        TeleportConfirmationGate.Ticket newer =
++                gate.begin(PLAYER, SESSION, WORLD, T0 + 10);
++        gate.cancel(ticket); // stale ticket: must not drop the live one
++        assertTrue(gate.answer(newer, SESSION, WORLD, T0 + 11, true, true));
++    }
++
++    @Test
++    public void cancelThenAnswerRefused() {
++        begin();
++        gate.cancel(ticket);
++        assertFalse(gate.answer(ticket, SESSION, WORLD, T0 + 1, true, true));
++    }
++
++    @Test
++    public void invalidateDropsThePrompt() {
++        begin();
++        gate.invalidate(PLAYER);
++        assertFalse(gate.answer(ticket, SESSION, WORLD, T0 + 1, true, true));
++    }
++
++    @Test
++    public void unknownTicketRefused() {
++        begin();
++        TeleportConfirmationGate.Ticket foreign = new TeleportConfirmationGate.Ticket(
++                PLAYER, SESSION, WORLD, T0);
++        assertFalse(gate.answer(foreign, SESSION, WORLD, T0 + 1, true, true));
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/TeleportCoreTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/TeleportCoreTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/core/screens/TeleportCoreTest.java	1970-01-01 00:00:00.000000000 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/core/screens/TeleportCoreTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -0,0 +1,72 @@
++// ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
++package com.winkreyes.excelmenu.core.screens;
++
++import org.junit.Test;
++
++import static org.junit.Assert.assertEquals;
++
++/**
++ * The teleport picker's direction mapping and prompt bytes, pinned
++ * (the 1.5.29 AdapterLogicTest's role, carried into the unified
++ * plugin): Mike's labels byte for byte, the Essentials command per
++ * direction, and the target-facing sentence per direction.
++ */
++public class TeleportCoreTest {
++
++    @Test
++    public void settledLabelsAreByteExact() {
++        assertEquals("Teleport to player", TeleportCore.LABEL_TELEPORT_TO);
++        assertEquals("Ask player to come to me", TeleportCore.LABEL_COME_TO_ME);
++        assertEquals("What do you want to do?", TeleportCore.CHOICE_BODY);
++    }
++
++    @Test
++    public void directionMapsToEssentialsCommand() {
++        assertEquals("tpa Alex",
++                TeleportCore.requestCommand(TeleportCore.Direction.TELEPORT_TO, "Alex"));
++        assertEquals("tpahere Alex",
++                TeleportCore.requestCommand(TeleportCore.Direction.COME_TO_ME, "Alex"));
++    }
++
++    @Test
++    public void promptTextIsDirectionAware() {
++        assertEquals("Sam wants to teleport to you.",
++                TeleportCore.promptText(TeleportCore.Direction.TELEPORT_TO, "Sam"));
++        assertEquals("Sam is asking you to teleport to them.",
++                TeleportCore.promptText(TeleportCore.Direction.COME_TO_ME, "Sam"));
++    }
++
++    @Test
++    public void choiceLoreNamesTheTarget() {
++        assertEquals("You go to Alex. They can accept or decline.",
++                TeleportCore.choiceLoreTo("Alex"));
++        assertEquals("Alex comes to you. They can accept or decline.",
++                TeleportCore.choiceLoreHere("Alex"));
++    }
++
++    @Test
++    public void acceptHoverMatchesDirection() {
++        assertEquals("Let them come to you",
++                TeleportCore.acceptHover(TeleportCore.Direction.TELEPORT_TO));
++        assertEquals("Teleport to them",
++                TeleportCore.acceptHover(TeleportCore.Direction.COME_TO_ME));
++        assertEquals("Say no thanks", TeleportCore.DECLINE_HOVER);
++    }
++
++    @Test
++    public void staticCopyIsThePortedCopy() {
++        assertEquals("Teleport to a player", TeleportCore.LIST_TITLE);
++        assertEquals("Tap who you want to visit. They'll get a request to accept.",
++                TeleportCore.LIST_BODY);
++        assertEquals("Click to ask to teleport", TeleportCore.HEAD_LORE);
++        assertEquals("Nobody else is online right now. Try again when family joins!",
++                TeleportCore.NOBODY_MESSAGE);
++        assertEquals("Looks like they just left the game. Try someone else!",
++                TeleportCore.LEFT_MESSAGE);
++        assertEquals("Teleport request", TeleportCore.PROMPT_TITLE);
++        assertEquals("Accept", TeleportCore.ACCEPT_LABEL);
++        assertEquals("Decline", TeleportCore.DECLINE_LABEL);
++        assertEquals("Alex left the game, so there's nothing to answer.",
++                TeleportCore.answererLeftMessage("Alex"));
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/harness/CatalogueConversionTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/harness/CatalogueConversionTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/harness/CatalogueConversionTest.java	2026-11-01 05:30:18.820653560 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/harness/CatalogueConversionTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -20,14 +20,19 @@
+  * pages. Old Bedrock: 50 rows in 8 groups. Union: 56 entries in 9
+  * groups (6 rows were Java-only, 3 were Bedrock-only).
+  *
+- * Verbatim means verbatim — with exactly two NAMED exceptions, the
+- * settled text fixes of INSTALL-PACKET §7 (Mike's decisions, Oct 31,
+- * 2026; baked into the conversion at the Nov 1, 2026 re-base):
+- * st_shop's lore carries "Open the Excel Shop" (Bedrock's wording,
+- * adopted) and yi_lostfound's lore carries "last 14 days" (the live
+- * Lost & Found rule). Each exception must actually fire — if the old
+- * text stops matching, the exception fails loudly instead of going
+- * stale (the harness's no-stale-acceptances rule).
++ * Verbatim means verbatim — with NAMED exceptions only: the settled
++ * text fixes of INSTALL-PACKET §7 (Mike's decisions, Oct 31, 2026;
++ * baked into the conversion at the Nov 1, 2026 re-base) — st_shop's
++ * lore carries "Open the Excel Shop" (Bedrock's wording, adopted) and
++ * yi_lostfound's lore carries "last 14 days" (the live Lost & Found
++ * rule) — plus, since the Phase 2 baseline remediation (Nov 2, 2026),
++ * the two party rows sl_party and gq_em_party, whose lore gained the
++ * same-party line in the Nov 1, 2026 party-mesh surfaces pass (the
++ * entries were placed into the live data folder that day and are live
++ * truth; both fixture columns predate the pass). Each exception must
++ * actually fire — if the old text stops matching, the exception fails
++ * loudly instead of going stale (the harness's no-stale-acceptances
++ * rule).
+  */
+ public class CatalogueConversionTest {
+ 
+@@ -38,7 +43,18 @@
+                             "&7Open the Excel Shop"),
+                     "yi_lostfound", Map.entry(
+                             "&7the void or a despawn in the last 7 days",
+-                            "&7the void or a despawn in the last 14 days"));
++                            "&7the void or a despawn in the last 14 days"),
++                    // Party-mesh surfaces wording, Nov 1, 2026 (Phase 2
++                    // baseline remediation): each key is the row's whole
++                    // fixture lore line; the value is the live line.
++                    "sl_party", Map.entry(
++                            "&7Your mcMMO party: members, chat and invites",
++                            "&7Your mcMMO party: members, chat and invites"
++                                    + " — the same party as /excelparty and /em party"),
++                    "gq_em_party", Map.entry(
++                            "&7Dungeon parties: add create, invite or ready",
++                            "&7Dungeon parties: add create, invite or ready (EliteMobs)"
++                                    + " — the same party as /party and /excelparty"));
+ 
+     @Test
+     public void everyOldRowIsAnEntry() throws Exception {
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/harness/CatalogueHarnessTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/harness/CatalogueHarnessTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/harness/CatalogueHarnessTest.java	2026-11-01 00:29:35.875152060 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/harness/CatalogueHarnessTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -66,11 +66,27 @@
+  *      instead of last-but-one as the old Java two-page arrangement
+  *      had it. Every other group's common-row relative order matches
+  *      BOTH old columns exactly (asserted, no acceptance).
++ *   C8 Party-mesh surfaces wording (Nov 1, 2026; classified at the
++ *      Phase 2 baseline remediation, Nov 2, 2026): the /party and
++ *      /em party descriptions carry the same-party line the Nov 1
++ *      party-mesh surfaces pass placed into the live data folder.
++ *      The entry text is live truth, newer than BOTH old columns
++ *      (which agree with each other on the shorter line). The new
++ *      text is PINNED below, byte for byte, so this acceptance can
++ *      never mask a future wording drift on those rows.
+  */
+ public class CatalogueHarnessTest {
+ 
+     private static final Set<String> REQUIRED =
+-            Set.of("C1", "C2", "C3", "C4", "C5", "C6", "C7");
++            Set.of("C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8");
++
++    /** C8: the party-mesh live text, pinned byte for byte (display ->
++     *  the description the entry must carry, legacy codes stripped). */
++    private static final Map<String, String> PARTY_MESH_LIVE_TEXT = Map.of(
++            "/party", "Your mcMMO party: members, chat and invites"
++                    + " — the same party as /excelparty and /em party",
++            "/em party", "Dungeon parties: add create, invite or ready (EliteMobs)"
++                    + " — the same party as /party and /excelparty");
+ 
+     private final Set<String> occurred = new HashSet<>();
+     private final List<String> failures = new ArrayList<>();
+@@ -173,12 +189,20 @@
+             String newDesc = n.lore().isEmpty() ? ""
+                     : EntryResolver.stripLegacy(n.lore().get(0));
+             if (!newDesc.equals(b.description())) {
+-                occurred.add("C3");
+-                if (!Set.of("/shop", "/deathprotection status", "/mobveil status",
+-                        "/lostfound", "/trash", "/mark").contains(display)) {
+-                    failures.add("row '" + display + "': description drift not in"
+-                            + " the C3 row list (old '" + b.description()
+-                            + "', new '" + newDesc + "')");
++                String pinned = PARTY_MESH_LIVE_TEXT.get(display);
++                if (pinned != null && pinned.equals(newDesc)) {
++                    // C8: party-mesh surfaces wording, Nov 1, 2026 —
++                    // the entry is live truth; both old columns carry
++                    // the shorter pre-pass line.
++                    occurred.add("C8");
++                } else {
++                    occurred.add("C3");
++                    if (!Set.of("/shop", "/deathprotection status", "/mobveil status",
++                            "/lostfound", "/trash", "/mark").contains(display)) {
++                        failures.add("row '" + display + "': description drift not in"
++                                + " the C3 row list (old '" + b.description()
++                                + "', new '" + newDesc + "')");
++                    }
+                 }
+             }
+         }
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/harness/GoldenHarnessTest.java b/phase-2-src/test/java/com/winkreyes/excelmenu/harness/GoldenHarnessTest.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/harness/GoldenHarnessTest.java	2026-11-01 05:30:00.590653701 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/harness/GoldenHarnessTest.java	2026-10-31 00:00:00.000000000 +0000
+@@ -28,7 +28,9 @@
+  * THE GOLDEN-RENDER GATE (DESIGN-2.0 §4): three columns over the
+  * viewer-state matrix — the OLD Java visible set (from the live
+  * server_menu.yml, computed by an independent model), the OLD Bedrock
+- * visible set (from 1.5.27's BUTTONS/COMMANDS, machine-extracted),
++ * visible set (from 1.5.28's BUTTONS/COMMANDS, machine-extracted —
++ * the live predecessor, re-based at Phase 2; 1.5.29's arrays are
++ * byte-identical to 1.5.28's, so the column covers both),
+  * and 2.0's resolved set from the converted entry fixtures.
+  *
+  * The gate is exact: visible sets (id, label, order, dispatch) must
+@@ -44,22 +46,31 @@
+  *      standard message — which is what 1.5.27 already did on Bedrock.
+  *   D3 Bedrock halloween presence, in-window: the recorded parity gap
+  *      (Java-only button) closing by construction (DESIGN-2.0 §3.1).
+- *      Covers both seasonal entries — 'halloween' and, since the
+- *      Nov 1, 2026 re-base, 'halloween_scares' (the slot-34 toggles
+- *      door the live menu gained after the original conversion).
+- *   D4 Java halloween absence, out-of-window: the dated mechanism
+- *      retiring the entry at render time; the old system had no dates
+- *      and would keep showing it until a manual removal pass. Covers
+- *      'halloween_scares' on the same mechanism (Nov 1, 2026 re-base).
++ *      Since the Phase 2 fixture re-base (the old Bedrock column is
++ *      1.5.28, the live predecessor), this covers 'halloween' only —
++ *      1.5.28 itself shipped the 'halloween_scares' button, so that
++ *      half of the gap closed before the unification.
++ *   D4 Halloween absence, out-of-window: the dated mechanism
++ *      retiring the entries at render time; the old system had no
++ *      dates and would keep showing them until a manual removal
++ *      pass. Covers 'halloween' + 'halloween_scares' on Java, and
++ *      'halloween_scares' on Bedrock (the only seasonal row the
++ *      1.5.28 column carries).
+  *   D5 Bedrock makersmark label: one label for both platforms —
+  *      "Maker's Mark settings" (the Java wording) replaces
+  *      "Maker's mark and Gear stats"; same door, same feature.
+- *   D6 Bedrock skills/makersmark dispatch: bespoke form/screen today,
+- *      menu-definition dispatch in 2.0 until the Phase 2 screen port
+- *      (§2.4); the Java column matches exactly.
+- *   D7 Bedrock ask dispatch: text-box screen today; 2.0 runs the
+- *      entry's [message] hint action (the Java behaviour). Both reach
+- *      /ask; the text box is a Phase 2 form-layer screen.
++ *   D6 Bedrock skills/makersmark dispatch: bespoke form/screen in
++ *      the old column; the entry's dispatch key stays the
++ *      menu-definition dispatch, which is now the FALLBACK — since
++ *      the Phase 2 screen port (§2.4) the form layer opens the
++ *      ported screen (Skills & Perks form / the owner's /mark form)
++ *      before the entry's actions run. The Java column matches
++ *      exactly, as before.
++ *   D7 Bedrock ask dispatch: text-box screen in the old column; the
++ *      entry's dispatch key stays the [message] hint (the Java
++ *      behaviour), which is now the FALLBACK — since the Phase 2
++ *      screen port the form layer opens the Ask text box first.
++ *      Both reach /ask.
+  *   D8 Bedrock commands dispatch: /servercommands (BedrockMenu's own
+  *      catalogue) today; the 2.0 entry opens commands_menu. They
+  *      converge when the catalogue converts to registry entries
+@@ -69,6 +80,24 @@
+  *      shows the default variant with the standard message, on both
+  *      platforms — a guarded door explains itself instead of
+  *      vanishing (the ExcelMenu founding lesson).
++ *   D10 Live-data fold-in (Nov 1, 2026; bundled at the Phase 2
++ *      baseline, Nov 2, 2026): 'magiclevel' — placed into the live
++ *      registry as a data file on Nov 1, 2026 with the ExcelMagicLevel
++ *      ship; absent from both old columns because both predate the
++ *      placement. Guarded by requires-plugin ExcelMagicLevel; the
++ *      harness viewer lacks that plugin, so the row resolves to its
++ *      default variant on both platforms in every state.
++ *   D11 Scares-door repair (Phase 2, Nov 2, 2026): on Java
++ *      in-window, 'halloween_scares' changes dispatch from
++ *      [openguimenu] halloween_scares — a definition that lived
++ *      only in the live data folder and was renamed aside at the
++ *      Phase 1 install, so the door opened nothing — to
++ *      [player] scares, the owner's own command (the screen
++ *      BedrockMenu's guarded dispatch opened; on Bedrock the keys
++ *      now match exactly, no delta). The entry also gained the
++ *      requires-plugin guard its Phase 1 conversion omitted; the
++ *      harness viewer models the owner plugin present, as the live
++ *      server has it through the season.
+  */
+ public class GoldenHarnessTest {
+ 
+@@ -80,7 +109,7 @@
+                     "settings", "&8"));
+ 
+     private static final Set<String> REQUIRED_DELTAS =
+-            Set.of("D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9");
++            Set.of("D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11");
+ 
+     private final Set<String> occurredDeltas = new HashSet<>();
+     private final List<String> failures = new ArrayList<>();
+@@ -150,7 +179,7 @@
+             }
+             @Override public boolean pluginPresent(String name) {
+                 return Set.of("ExcelGuildGate", "ExcelSilkWatch", "ExcelAimAssist",
+-                        "ExcelMenuJoin").contains(name);
++                        "ExcelMenuJoin", "ExcelHalloweenToggles").contains(name);
+             }
+             @Override public String resolvePlaceholder(String token) {
+                 return switch (token) {
+@@ -254,8 +283,9 @@
+ 
+     private static String classifyPresenceNew(Platform p, HarnessSupport.ViewerState s,
+                                               String id) {
++        if (id.equals("magiclevel")) return "D10";
+         if (p == Platform.BEDROCK && s.inWindow()
+-                && (id.equals("halloween") || id.equals("halloween_scares"))) return "D3";
++                && id.equals("halloween")) return "D3";
+         if (p == Platform.JAVA && s.autojoin().equals("UNKNOWN")
+                 && id.equals("autojoin")) return "D9";
+         return null;
+@@ -263,8 +293,10 @@
+ 
+     private static String classifyPresenceOld(Platform p, HarnessSupport.ViewerState s,
+                                               String id) {
+-        if (p == Platform.JAVA && !s.inWindow()
++        if (!s.inWindow() && p == Platform.JAVA
+                 && (id.equals("halloween") || id.equals("halloween_scares"))) return "D4";
++        if (!s.inWindow() && p == Platform.BEDROCK
++                && id.equals("halloween_scares")) return "D4";
+         return null;
+     }
+ 
+@@ -288,6 +320,8 @@
+         if (p == Platform.BEDROCK && id.equals("commands")) return "D8";
+         if (p == Platform.BEDROCK && id.equals("autojoin")
+                 && s.autojoin().equals("UNKNOWN")) return "D9";
++        if (p == Platform.JAVA && id.equals("halloween_scares")
++                && s.inWindow()) return "D11";
+         return null;
+     }
+ }
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/harness/HarnessSupport.java b/phase-2-src/test/java/com/winkreyes/excelmenu/harness/HarnessSupport.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/harness/HarnessSupport.java	2026-11-01 00:21:29.963641154 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/harness/HarnessSupport.java	2026-10-31 00:00:00.000000000 +0000
+@@ -51,6 +51,7 @@
+             Map.entry("serverwebsite", "website"),
+             Map.entry("whatsnew", "whatsnew"),
+             Map.entry("ask", "ask"),
++            Map.entry("scares", "halloween_scares"),
+             Map.entry("wandstyle", "wandstyle"),
+             Map.entry("autosort", "autosort"),
+             Map.entry("mark", "makersmark_settings"),
+@@ -96,14 +97,17 @@
+         return "none";
+     }
+ 
+-    /** Bedrock group colour table, transcribed from 1.5.27 groupColor(). */
++    /** Bedrock group colour table, transcribed from groupColor()
++     *  (unchanged between 1.5.27 and 1.5.28; 1.5.28 adds "scares"
++     *  to the help group). */
+     static String bedrockGroupColor(String command) {
+         return switch (command) {
+             case "spawn", "tpmenu", "excelparty", "ag" -> "§1";
+             case "pouch", "spellinfo", "jobs browse", "skillsperks", "leaderboard",
+                     "lostfound", "trash", "bossrewards" -> "§5";
+             case "shop", "cosmetics" -> "§2";
+-            case "motd", "servercommands", "serverwebsite", "whatsnew", "ask" -> "§n";
++            case "motd", "servercommands", "serverwebsite", "whatsnew", "ask",
++                    "scares" -> "§n";
+             case "wandstyle", "autosort", "mark", "menujoin", "silkwarnings",
+                     "aimassist" -> "§8";
+             default -> "";
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/phase-1-src/test/java/com/winkreyes/excelmenu/harness/OldBedrockModel.java b/phase-2-src/test/java/com/winkreyes/excelmenu/harness/OldBedrockModel.java
+--- a/phase-1-src/test/java/com/winkreyes/excelmenu/harness/OldBedrockModel.java	2026-11-01 00:21:29.963824760 +0000
++++ b/phase-2-src/test/java/com/winkreyes/excelmenu/harness/OldBedrockModel.java	2026-10-31 00:00:00.000000000 +0000
+@@ -11,11 +11,14 @@
+ 
+ /**
+  * The OLD Bedrock column, computed independently of the 2.0 code:
+- * ExcelBedrockMenu 1.5.27's BUTTONS/COMMANDS arrays (machine-extracted
++ * ExcelBedrockMenu 1.5.28's BUTTONS/COMMANDS arrays (machine-extracted
+  * to fixtures/bedrock-arrays.json by tools/extract_bedrock_arrays.py —
+- * no hand transcription), with the labels the class actually computes
+- * (group colour prefix, state-bearing Silk/Aim labels, guild label
+- * unchanged while locked — lockedLabel() returns the base string).
++ * no hand transcription; re-based from 1.5.27 at Phase 2, the only
++ * delta being the 'Halloween Scares — your switches' button 1.5.28
++ * added; 1.5.29's arrays are identical), with the labels the class
++ * actually computes (group colour prefix, state-bearing Silk/Aim
++ * labels, guild label unchanged while locked — lockedLabel() returns
++ * the base string).
+  * YAML is a superset of JSON, so SnakeYAML reads the fixture directly.
+  */
+ final class OldBedrockModel {

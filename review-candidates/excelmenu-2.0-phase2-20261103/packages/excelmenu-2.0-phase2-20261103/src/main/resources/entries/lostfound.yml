@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: lostfound
+menu: server_menu
+group: me
+order: 50
+order-bedrock: 110
+icon: BUNDLE
+label: '&a&lLost & Found'
+lore:
+  - '&7Bring back something you lost'
+  - '&7to lava, fire, the void or despawning'
+  - '&7Shows the price before you pay'
+action:
+  - '[close]'
+  - '[player] lostfound'

@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: ga_tpmenu
+menu: commands_menu
+group: getting_around
+order: 30
+order-bedrock: 20
+icon: ENDER_PEARL
+label: '&a&l/tpmenu'
+lore:
+  - '&7Pick a player to send a teleport request to'
+  - '&8Getting Around'
+action:
+  - '[player] tpmenu'

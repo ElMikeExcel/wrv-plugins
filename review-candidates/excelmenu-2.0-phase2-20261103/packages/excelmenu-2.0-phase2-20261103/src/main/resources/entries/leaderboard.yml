@@ -1,0 +1,14 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: leaderboard
+menu: server_menu
+group: me
+order: 40
+order-bedrock: 100
+icon: BEACON
+label: '&a&lLeaderboard'
+lore:
+  - '&7Who is on top in the valley'
+action:
+  - '[close]'
+  - '[player] leaderboard'

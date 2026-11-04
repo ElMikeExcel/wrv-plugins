@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: st_shop
+menu: commands_menu
+group: shops_trading
+order: 10
+order-bedrock: 170
+icon: EMERALD
+label: '&a&l/shop'
+lore:
+  - '&7Open the Excel Shop'
+  - '&8Shops & Trading'
+action:
+  - '[player] shop'

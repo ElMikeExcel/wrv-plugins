@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: si_emotes
+menu: commands_menu
+group: server_info
+order: 110
+order-bedrock: 470
+icon: PLAYER_HEAD
+label: '&a&lEmotes'
+lore:
+  - '&7Wave, hug, shrug and more, right in chat'
+  - '&8Server Info'
+action:
+  - '[message] &7Type them in chat: &e/wave&7, &e/hug&7, &e/shrug&7, &e/tableflip&7, &e/highfive'

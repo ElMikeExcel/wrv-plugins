@@ -1,0 +1,15 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: trash
+menu: server_menu
+group: me
+order: 70
+order-bedrock: 120
+icon: CAULDRON
+label: '&a&lTrash Bin'
+lore:
+  - '&7Throw items away.'
+  - '&7Changed your mind? Recover within 5 min.'
+action:
+  - '[close]'
+  - '[player] trash'

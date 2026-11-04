@@ -1,0 +1,156 @@
+===== Phase 2 test report (source: menu-2.0/phase-2/TEST-REPORT.md) =====
+# ExcelMenu 2.0.0 — Phase 2 TEST REPORT
+
+Nov 2, 2026. Artifact under test: `ExcelMenu-2.0.0.jar` SHA-256
+`d1c6e77100d3a6f3ae342789d58b848922911f31142759c372fc50e70cd0bdf2`
+(286,829 B), built twice byte-identical. Baseline jar (remediation
+record): `72c9ff0a…` / 225,617 B, suite 81/81 at the baseline step.
+
+## Unit + harness suite — OK (127 tests)
+
+81 carried tests (all Phase 1 suites, with the six fold-in pin
+updates recorded in BUILD-RECORD.md) + 46 new:
+
+- `TeleportConfirmationGateTest` (15) — the fail-closed matrix:
+  the one good answer; No; null choice; single-use on success AND
+  on failure (the ported consume-either-way semantics); wrong
+  session; wrong world; offline; expiry at exactly TTL; just-inside
+  TTL; clock-backwards; newer prompt replaces; cancel drops only
+  the live ticket; invalidate; foreign ticket.
+- `TeleportCoreTest` (6) — Mike's labels byte-exact
+  ("Teleport to player" / "Ask player to come to me"); tpa vs
+  tpahere mapping; direction-aware prompt sentences; choice lore;
+  accept hovers; the ported static copy.
+- `ChildproofCoreTest` (4) — label shapes (nick + real name, "~"
+  nick prefix, empty/null), command + confirm copy, every
+  resultLine branch, help lines.
+- `AskCoreTest` (7) — sanitizer (slashes dropped, codes/controls
+  stripped, collapse, 200 cap), null cases, guard-outcome matrix,
+  ported constants.
+- `SkillsPerksCoreTest` (4) — Magic line sealed at 0, live count,
+  cap at 5, negative-safe; spec copy; buttons; website follow-on.
+- `ConfirmTargetsTest` (5) — all four targets, kinds/commands,
+  modal + chest copy, settled labels; SpawnFallback rules and the
+  settled default coordinates (-784 / -272).
+- `CommandsPanelTest` (3) — group resolution (number, prefix,
+  case, no-match), single-group and all-groups panel shapes.
+- `BundledEntriesTest` (2) — BUNDLED_ENTRIES / BUNDLED_LAYOUTS /
+  BUNDLED_MENUS equal the resources tree exactly (the owed
+  regression guard for the Nov 1 registry incident), and
+  plugin.yml + config.yml parse as YAML (the rig catch, below).
+
+## Golden harness — zero unclassified
+
+108 viewer states × 2 platforms, **5,526 rows compared**, deltas
+occurred: D1–D11 (all REQUIRED, none stale). The old Bedrock
+column is the re-based 1.5.28 fixture (1.5.29's arrays verified
+identical). Classified differences, complete list:
+
+- D1 Bedrock autojoin state label; D2 Java unavailable-toggle tap
+  answers with the standard message; D3 Bedrock 'halloween'
+  in-window presence (narrowed at the re-base — 1.5.28 closed the
+  scares half itself); D4 dated retirement out-of-window (Java:
+  both seasonal entries; Bedrock: scares); D5 one makersmark label;
+  D6 Bedrock skills/makersmark dispatch key = definition dispatch,
+  now the fallback behind the ported screens; D7 Bedrock ask
+  dispatch key = the [message] hint, now the fallback behind the
+  Ask text box; D8 Bedrock commands dispatch; D9 autojoin unknown
+  state; D10 magiclevel fold-in presence; **D11 scares-door repair**
+  (Java in-window key menu:halloween_scares → cmd:scares; on
+  Bedrock the keys now match exactly).
+
+## Catalogue harness — zero unclassified
+
+56 rows compared, acceptances C1–C8 all occurred (C8 = the
+party-mesh wording classification from the baseline remediation,
+pinned byte-exact; see BUILD-RECORD.md).
+
+## Rig — Paper 26.3-235 + Geyser, WITHOUT ExcelBedrockMenu
+
+Rig: `phase-2/rig/` (Paper 26.3-235 skeleton, Geyser-Spigot
+2.12.1-b1277 — the phase-1 rig's jar; live runs b1280 — plus
+PlaceholderAPI 2.12.3; **no ExcelBedrockMenu jar**). Data folder
+seeded to the live END state the packet produces: 84 entries,
+2 layouts, 16 menu files on disk (incl. the 4 confirm files),
+merged config. Boot log: `rig/boot-console.txt`. Verified:
+
+- `This server is running Paper version 26.3-235` — Done (37.6s).
+- `ExcelMenu registry: 84 entries live` — diff +84 / -0 / ~0,
+  magiclevel and halloween_scares among them.
+- `ExcelMenu self-check: loaded 12 menus` — and four skip lines,
+  one per teleport_confirm_* file ("not loaded — registry-owned
+  or retired … the file is inert").
+- Enable line: "ExcelMenu 2.0.0 enabled (Phase 2: unified …)
+  84 entries, 2 registry menus, 12 definition menus live."
+- `ExcelMenu platform bridge self-check: Geyser reflection surface
+  PRESENT — Bedrock detection live`.
+- Console proofs that /menu is answered by ExcelMenu with
+  BedrockMenu absent: `menu` → "Only players can use /menu.";
+  `servercommands` → "Only players can use /servercommands.";
+  `serverwebsite` → "Only players can use /serverwebsite.";
+  `tpmenu` and `childproofmenu` → "Only players can use this."
+  (their executors' own line). `excelmenu list` enumerates the
+  12 definitions + both registry menus + 84 entries.
+- **SEVERE: 0.** ERROR lines present are sandbox-network noise
+  (PlaceholderAPI hash-list download, Paper version fetcher, Geyser
+  discovery/encryption — Geyser's network start fails in this
+  sandbox exactly as it did in the accepted 1.5.29 rig; its API
+  surface, which the bridge reflects against, loads fine).
+
+The rig also caught a real defect: the first candidate's
+plugin.yml was invalid YAML (unquoted ": " in the description) and
+Paper refused the jar. Fixed + guarded in-suite (above). The
+candidate hash history is in BUILD-RECORD.md.
+
+## Judgment calls (for the record)
+
+1. **Confirm-target union for `teleport_confirm_spawn`**: the gate
+   runs BedrockMenu's village-fallback path for BOTH platforms
+   (Java's definition ran plain `[console] spawn`). The fallback
+   differs only where the plain command leaves the player in the
+   guild world. The other three targets keep their exact per-column
+   actions.
+2. **Java confirm chest expiry line** ("That teleport confirmation
+   has expired. Nothing happened.") is new — the old Java column
+   had no gate, so there was no line to port; silence was rejected
+   (a guarded door explains itself). The Bedrock failure line is
+   BedrockMenu's own, verbatim.
+3. **/servercommands with no argument** opens the unified
+   commands_menu on both platforms (DESIGN-2.0 §1.5). Old Java got
+   the all-groups chat panel; the panel survives per-group via the
+   group argument. Classified here, not in the harness (the harness
+   compares menu rows, not this command's framing).
+4. **Screens and StatsSink**: registry + definition dispatches tap
+   StatsSink as before; the ported screens' opens are not tapped
+   (StatsSink is internal to the registry/definition renderers;
+   BedrockMenu's screen taps were form-title/label-keyed and do not
+   carry by design, §1.3).
+5. **Ask/Skills/MakersMark hooks fire only on Bedrock form taps**
+   (FormService). Java chest taps keep the Phase 1 behaviour
+   (hint / definitions), matching both old Java columns.
+6. The catalogue section of the golden fixture (the conversion
+   record CatalogueModels reads) was NOT re-derived from 1.5.28 —
+   only the BUTTONS/COMMANDS arrays were re-based. The catalogue
+   harness's old column remains the conversion record Phase 1
+   proved.
+
+## Player proofs owed post-install (named, NOT claimed here)
+
+- **Bedrock**: compass + /menu opens the Server Menu form; Spawn
+  door → modal confirm (Yes teleports, Cancel doesn't, closing
+  doesn't); /tpmenu full flow — pick a player → direction form
+  (both labels, both directions) → target's Accept/Decline popup;
+  Ask the Guide → text box sends a question and the Guide answers;
+  Skills & Perks → form, mcMMO stats button, Skill Trees follow-on;
+  Halloween Scares → the switches open; childproof picker inside a
+  claim.
+- **Java**: /menu chest; Spawn door → confirm chest (Yes/Cancel);
+  /tpmenu pick → choice chest both directions; the target's
+  clickable [Accept]/[Decline] in chat; /servercommands (menu),
+  /servercommands claims (panel), bad group name (error line);
+  Halloween Scares → the switches open.
+- **Joint**: a /tpahere request sent from the menu is accepted via
+  the prompt and moves the target; guild door confirm while the
+  guild is open; a confirm left open >60s does nothing.
+
+# ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)

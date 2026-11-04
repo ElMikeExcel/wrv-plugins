@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: cl_unchildproof_player
+menu: commands_menu
+group: claims_land
+order: 50
+order-bedrock: 280
+icon: OAK_DOOR
+label: '&a&l/unchildproof <player>'
+lore:
+  - '&7Remove that player from the claim you stand in'
+  - '&8Claims & Land'
+action:
+  - '[message] &7Type it in chat: &e/unchildproof <player>'

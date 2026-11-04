@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: si_compass
+menu: commands_menu
+group: server_info
+order: 50
+order-bedrock: 410
+icon: COMPASS
+label: '&a&l/compass'
+lore:
+  - '&7Get a new server menu compass'
+  - '&8Server Info'
+action:
+  - '[player] compass'
