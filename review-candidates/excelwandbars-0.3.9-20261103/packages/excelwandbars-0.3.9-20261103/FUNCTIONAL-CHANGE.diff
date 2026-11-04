@@ -1,0 +1,890 @@
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/ArrangeHook.java b/src/com/winkreyes/excelwandbars/ArrangeHook.java
+--- a/prev-src/com/winkreyes/excelwandbars/ArrangeHook.java	2026-11-02 19:15:05.844902281 +0000
++++ b/src/com/winkreyes/excelwandbars/ArrangeHook.java	2026-11-03 07:58:21.850382636 +0000
+@@ -84,6 +84,16 @@
+     private boolean dragConfirmEnabled = true;
+     private long dragConfirmGapMs = 1200;
+     private final Map<UUID, Integer> armSerial = new HashMap<>();
++    /**
++     * 0.3.9 (defect #4): the wand page a lift STARTED on, per player. A
++     * terminal commit's target slot is derived from this page, never from
++     * the wand's momentary page at the instant of the second tap — during
++     * the repaint flicker the 0.3.8 report documents, the wand handle can
++     * read as closed (page 0), which sent slow second taps to the wrong
++     * page's slot, where the same spell often sits: the place resolved as
++     * "same slot" and looked exactly like a dropped commit.
++     */
++    private final Map<UUID, Integer> liftPage = new HashMap<>();
+     private long armSessions = 0, removes = 0, moves = 0, ignored = 0, readsShown = 0, readsCancelled = 0;
+     private long unarmedCancelled = 0, signposts = 0;
+     private long dragLifts = 0, dragWrites = 0, dragRemoves = 0, dragConfirms = 0, dragIconStays = 0, dragRescues = 0;
+@@ -123,7 +133,7 @@
+                 + " drag-confirms " + dragConfirms + " drag-icon-stays " + dragIconStays + " drag-rescues " + dragRescues;
+     }
+ 
+-    void clearAll() { plan.clear(); holdRead.clear(); dragPlan.clear(); dragWrite.clear(); armSerial.clear(); }
++    void clearAll() { plan.clear(); holdRead.clear(); dragPlan.clear(); dragWrite.clear(); armSerial.clear(); liftPage.clear(); }
+ 
+     // ------------------------------------------------------------------ arming
+ 
+@@ -183,15 +193,24 @@
+         return hotbarSlot < held ? hotbarSlot : hotbarSlot - 1;
+     }
+ 
++    /** The wand's current page (0 when the handle is momentarily closed mid-flicker). */
++    private int pageOf(Wand w) {
++        return w instanceof com.elmakers.mine.bukkit.wand.Wand impl ? Math.max(0, impl.getCurrentHotbar()) : 0;
++    }
++
+     /** Loadout slot behind a hotbar slot on the current page, or -1 when it is not a spell column. */
+     private int loadoutSlotOf(Player p, Wand w, int hotbarSlot) {
++        return loadoutSlotOf(p, hotbarSlot, pageOf(w));
++    }
++
++    /** As above, on an explicit page (0.3.9: a terminal commit uses the page its lift started on). */
++    private int loadoutSlotOf(Player p, int hotbarSlot, int page) {
+         int col = columnOf(p, hotbarSlot);
+         if (col < 0) return -1;
+         StyleHook s = plugin.styleHook();
+         int perPage = s == null ? 7 : s.perPageFor(WandStyle.TAPBAR);
+         if (col >= perPage) return -1; // the exit column (and anything past it)
+-        int page = w instanceof com.elmakers.mine.bukkit.wand.Wand impl ? Math.max(0, impl.getCurrentHotbar()) : 0;
+-        return page * perPage + col;
++        return Math.max(0, page) * perPage + col;
+     }
+ 
+     private String iconAt(Player p, int hotbarSlot) {
+@@ -203,10 +222,15 @@
+     }
+ 
+     private ArrangePlan.Target targetOf(Player p, Wand w, Inventory clicked, int slot) {
++        return targetOf(p, clicked, slot, pageOf(w));
++    }
++
++    /** As above, deriving bar targets from an explicit page (0.3.9: the lift's page for terminal commits). */
++    private ArrangePlan.Target targetOf(Player p, Inventory clicked, int slot, int page) {
+         if (clicked == null) return ArrangePlan.Target.outside(); // clicked outside the window
+         if (clicked.equals(p.getInventory())) {
+             if (slot >= 0 && slot < 9) {
+-                int ls = loadoutSlotOf(p, w, slot);
++                int ls = loadoutSlotOf(p, slot, page);
+                 return ls >= 0 ? ArrangePlan.Target.bar(ls) : ArrangePlan.Target.protectedSlot();
+             }
+             return ArrangePlan.Target.outside(); // main inventory, armor, offhand: the remove zone
+@@ -278,10 +302,26 @@
+         boolean dropAction = a == InventoryAction.DROP_ALL_SLOT || a == InventoryAction.DROP_ONE_SLOT;
+ 
+         if (plan.hasLift(id)) {
++            // 0.3.9 (defect #4): a second fire of the SAME pickup gesture (a
++            // Bedrock tap can arrive as more than one click event) is a
++            // re-lift, not the terminal place — resolving it as a place ate
++            // the lift and the replace "didn't take". Refresh the lift. The
++            // duplicate must land on the lift's ORIGIN slot (see
++            // DragWritePlan.isDuplicatePickup): spell identity alone would
++            // eat a genuine place whose target happens to display the same
++            // spell after a flicker-restore.
++            if (pickupAction(a) && DragWritePlan.isDuplicatePickup(plan.liftedFrom(id), true,
++                    loadoutSlotOf(p, slot, liftPage.getOrDefault(id, pageOf(w))), icon, plan.liftedSpell(id))) {
++                e.setCancelled(true);
++                int from = loadoutSlotOf(p, w, slot);
++                if (from >= 0) { plan.pickup(id, icon, from, System.currentTimeMillis()); liftPage.put(id, pageOf(w)); }
++                return;
++            }
+             // The next click is the terminal commit, classified by where it lands.
+-            if (dropAction) { e.setCancelled(true); execute(p, plan.drop(id, System.currentTimeMillis())); return; }
++            if (dropAction) { e.setCancelled(true); execute(p, plan.drop(id, System.currentTimeMillis())); liftPage.remove(id); return; }
+             e.setCancelled(true);
+-            execute(p, plan.place(id, targetOf(p, w, clicked, slot), System.currentTimeMillis()));
++            execute(p, plan.place(id, targetOf(p, clicked, slot, liftPage.getOrDefault(id, pageOf(w))), System.currentTimeMillis()));
++            liftPage.remove(id);
+             return;
+         }
+         if (icon == null) return; // not an icon: today's protections keep their meaning
+@@ -295,6 +335,7 @@
+             if (from < 0) { e.setCancelled(true); ignored++; return; } // exit-column icons are not spells
+             e.setCancelled(true);
+             plan.pickup(id, icon, from, System.currentTimeMillis());
++            liftPage.put(id, pageOf(w));
+             return;
+         }
+         // Any other gesture on an icon (swap, shift-click, number key, collect): the icon
+@@ -473,10 +514,43 @@
+         String icon = inPlayer && slot >= 0 && slot < 36 ? iconAt(p, slot) : null;
+ 
+         if (dragWrite.hasLift(id)) {
++            // 0.3.9 (defect #4): a second fire of the SAME pickup gesture is
++            // a re-lift, not the terminal place. On Bedrock a tap on a list
++            // icon can arrive twice; 0.3.8 resolved the duplicate as a place
++            // back onto the grid (an inert RETURN that consumed the lift),
++            // so Mike's real place tap landed with no lift recorded and
++            // started a fresh lift of the OCCUPANT — the replace needed a
++            // remove, a reopen, and sometimes a whole second attempt.
++            // Refresh the lift (and its page) and keep waiting for the tap
++            // that is actually the place. The duplicate must land on the
++            // lift's ORIGIN (same bar slot, or the grid for a list lift):
++            // spell identity alone would eat a genuine place whose target
++            // happens to display the same spell after a flicker-restore —
++            // the first 0.3.9 rig pass proved that trade on the W1 case.
++            int liftFrom = dragWrite.liftedFrom(id);
++            boolean barRow = inPlayer && slot >= 0 && slot < 9;
++            int clickedLoadout = barRow ? loadoutSlotOf(p, slot, liftPage.getOrDefault(id, pageOf(w))) : -1;
++            if (pickupAction(a) && inPlayer && slot >= 0 && slot < 36
++                    && DragWritePlan.isDuplicatePickup(liftFrom, barRow, clickedLoadout, icon, dragWrite.liftedSpell(id))) {
++                e.setCancelled(true);
++                int from;
++                if (slot < 9) {
++                    from = loadoutSlotOf(p, w, slot);
++                    if (from < 0) from = -1;
++                } else {
++                    LoadoutHook lo = plugin.loadouts();
++                    from = lo == null ? -1 : lo.slotOf(p, icon);
++                }
++                dragWrite.pickup(id, icon, from, now);
++                liftPage.put(id, pageOf(w));
++                dragLifts++;
++                return;
++            }
+             // The next click is the terminal commit, classified by where it lands.
+-            if (dropAction) { e.setCancelled(true); executeDrag(p, dragWrite.drop(id, now)); return; }
++            if (dropAction) { e.setCancelled(true); executeDrag(p, dragWrite.drop(id, now)); liftPage.remove(id); return; }
+             e.setCancelled(true);
+-            executeDrag(p, dragWrite.place(id, targetOf(p, w, clicked, slot), now));
++            executeDrag(p, dragWrite.place(id, targetOf(p, clicked, slot, liftPage.getOrDefault(id, pageOf(w))), now));
++            liftPage.remove(id);
+             return;
+         }
+         // No recorded lift, but the cursor already holds an icon (the screen
+@@ -520,6 +594,7 @@
+             }
+             e.setCancelled(true);
+             dragWrite.pickup(id, icon, from, now);
++            liftPage.put(id, pageOf(w));
+             dragLifts++;
+             rescueLift(p);
+             return;
+@@ -727,6 +802,7 @@
+             // and the player's second tap — exactly where it was.
+             plan.cancelLift(id);
+             dragWrite.cancelLift(id); // 0.3.7: the read form owns the gesture now, same rule
++            liftPage.remove(id);
+             readsShown++;
+         }
+     }
+@@ -796,9 +872,16 @@
+             if (!p.isOnline()) return;
+             if (barOpen(p)) return;
+             if (attempt == 0) { scheduleCloseCheck(p, 1); return; }
++            // 0.3.9 (defect #4): one more settle judgement before the lift
++            // dies. A slow second tap (Mike's exact repro) can outlive the
++            // 0.3.8 window when a repaint's reopen lands late through
++            // Geyser; the lift IS the gesture, so it is forgotten only when
++            // the bar is still gone at the third judgement (+8 ticks).
++            if (attempt == 1) { scheduleCloseCheck(p, 2); return; }
+             disarm(p, true);
+             dragWrite.forget(p.getUniqueId()); // 0.3.7: the session is over; no lift survives it
+-        }, attempt == 0 ? 1L : 3L);
++            liftPage.remove(p.getUniqueId());
++        }, attempt == 0 ? 1L : attempt == 1 ? 3L : 8L);
+     }
+ 
+     @EventHandler
+@@ -809,6 +892,7 @@
+         dragPlan.forget(id);
+         dragWrite.forget(id);
+         armSerial.remove(id);
++        liftPage.remove(id);
+     }
+ 
+     @EventHandler
+@@ -816,5 +900,6 @@
+         disarm(e.getPlayer(), true);
+         holdRead.barClosed(e.getPlayer().getUniqueId());
+         dragWrite.forget(e.getPlayer().getUniqueId());
++        liftPage.remove(e.getPlayer().getUniqueId());
+     }
+ }
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/ExcelWandBars.java b/src/com/winkreyes/excelwandbars/ExcelWandBars.java
+--- a/prev-src/com/winkreyes/excelwandbars/ExcelWandBars.java	2026-11-02 19:14:02.922899839 +0000
++++ b/src/com/winkreyes/excelwandbars/ExcelWandBars.java	2026-11-03 07:46:54.527385350 +0000
+@@ -431,6 +431,7 @@
+         }catch(Throwable t){geyserHold="off";getLogger().warning("Tap bar crouch hold unavailable: "+t.getClass().getSimpleName());}
+     }
+     MagicHook magicHook() { return hook; }
++    PagerHook pager() { return pager; }
+     StyleHook styleHook() { return style; }
+     TipHook tips() { return tips; }
+     SpellTipHook spellTip() { return spellTip; }
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/MagicHook.java b/src/com/winkreyes/excelwandbars/MagicHook.java
+--- a/prev-src/com/winkreyes/excelwandbars/MagicHook.java	2026-11-02 19:12:58.938897356 +0000
++++ b/src/com/winkreyes/excelwandbars/MagicHook.java	2026-11-03 07:46:50.760385365 +0000
+@@ -111,6 +111,7 @@
+             player.sendActionBar(Component.text(com.winkreyes.excelwandbars.core.LoadoutText.onePage(on, n), NamedTextColor.AQUA));
+         }
+         if (r != FlipGate.Result.FLIP) return r;
++        sweepPager(player); // 0.3.9: a Magic save must never see the pager buttons (defect #3)
+         wand.cycleHotbar();
+         flips++;
+         if (plugin.showBarLine() && wand instanceof com.elmakers.mine.bukkit.wand.Wand w) {
+@@ -139,6 +140,7 @@
+         if (!(wand instanceof com.elmakers.mine.bukkit.wand.Wand w) || !w.isInventoryOpen()) return false;
+         int count = w.getHotbars() == null ? 0 : w.getHotbars().size();
+         if (count < 2) return false;
++        sweepPager(player); // 0.3.9: cycleHotbar saves the open inventory first — buttons out before it (defect #3)
+         w.cycleHotbar(dir < 0 ? -1 : 1);
+         flips++;
+         if (plugin.showBarLine()) {
+@@ -156,6 +158,77 @@
+         return true;
+     }
+ 
++    /**
++     * 0.3.9: take the pager buttons out of the player's inventory before any
++     * Magic operation that saves the open inventory (defect #3: Magic's save
++     * ejects foreign items into the player's real inventory — a rendered
++     * button still on screen at a save became a real item in Mike's hotbar).
++     * No-op when the pager is off.
++     */
++    void sweepPager(Player player) {
++        PagerHook pg = plugin.pager();
++        if (pg != null) pg.sweepNow(player);
++    }
++
++    /**
++     * 0.3.9: pages in the wand's spell list (the grid above the bar row):
++     * every spell the wand knows that is not on any hotbar page, 27 to a
++     * page. 1 when the list fits on one page (or there is no wand).
++     */
++    int listPageCount(Player player) {
++        Mage mage = api.getMage(player);
++        Wand wand = mage == null ? null : mage.getActiveWand();
++        if (!(wand instanceof com.elmakers.mine.bukkit.wand.Wand w)) return 1;
++        java.util.Collection<String> all = w.getSpells();
++        int total = all == null ? 0 : all.size();
++        java.util.Set<String> onBar = new java.util.HashSet<>();
++        if (w.getHotbars() != null) {
++            for (com.elmakers.mine.bukkit.wand.WandInventory bar : w.getHotbars()) {
++                for (ItemStack it : bar.getContents()) {
++                    String k = keyOf(it);
++                    if (k != null) onBar.add(base(k));
++                }
++            }
++        }
++        return com.winkreyes.excelwandbars.core.PagerPlan.listPages(total - onBar.size());
++    }
++
++    /**
++     * 0.3.9: a directional flip of the SPELL LIST page (Magic's own
++     * cycleInventory — the same control the wand click uses), for the pager
++     * buttons while they page the list. Returns false when the list has a
++     * single page or the inventory is closed.
++     */
++    boolean flipListPage(Player player, int dir) {
++        Mage mage = api.getMage(player);
++        Wand wand = mage == null ? null : mage.getActiveWand();
++        if (!(wand instanceof com.elmakers.mine.bukkit.wand.Wand w) || !w.isInventoryOpen()) return false;
++        if (listPageCount(player) < 2) return false;
++        sweepPager(player); // cycleInventory saves before it turns, like cycleHotbar
++        w.cycleInventory(dir < 0 ? -1 : 1);
++        flips++;
++        return true;
++    }
++
++    /**
++     * 0.3.9: rebuild the wand's inventory paint from its spell map. Used
++     * after the pager displaced list icons on a page that has since been
++     * saved: a save can leave a hole in a page's painted contents, but the
++     * spell map — the record Magic rebuilds from — never loses an entry it
++     * did not read, so repainting from the map restores every icon.
++     */
++    void repairInventoryPaint(Player player) {
++        try {
++            Mage mage = api.getMage(player);
++            Wand wand = mage == null ? null : mage.getActiveWand();
++            if (!(wand instanceof com.elmakers.mine.bukkit.wand.Wand w)) return;
++            java.util.Map<String, Integer> map = w.getSpellInventory();
++            if (map != null) w.updateSpellInventory(new java.util.HashMap<>(map));
++        } catch (Throwable t) {
++            if (plugin.debug()) plugin.getLogger().info("pager paint repair: " + t);
++        }
++    }
++
+     /** 0.2.5: Tap bar and Tap to pick (original) call them pages; Sneak bars keeps "Bar". */
+     private boolean pagesWord(Player p) {
+         StyleHook s = plugin.styleHook();
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/PagerHook.java b/src/com/winkreyes/excelwandbars/PagerHook.java
+--- a/prev-src/com/winkreyes/excelwandbars/PagerHook.java	2026-11-02 19:42:08.455965255 +0000
++++ b/src/com/winkreyes/excelwandbars/PagerHook.java	2026-11-03 07:48:02.505385082 +0000
+@@ -17,18 +17,19 @@
+ import org.bukkit.event.Listener;
+ import org.bukkit.event.inventory.ClickType;
+ import org.bukkit.event.inventory.InventoryClickEvent;
++import org.bukkit.event.inventory.InventoryCloseEvent;
+ import org.bukkit.event.inventory.InventoryDragEvent;
+ import org.bukkit.event.inventory.InventoryType;
++import org.bukkit.event.player.PlayerJoinEvent;
+ import org.bukkit.event.player.PlayerQuitEvent;
++import org.bukkit.inventory.Inventory;
+ import org.bukkit.inventory.ItemStack;
+ import org.bukkit.inventory.meta.ItemMeta;
+ import org.bukkit.persistence.PersistentDataType;
+ import org.bukkit.scheduler.BukkitTask;
+ 
+-import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.HashSet;
+-import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
+ import java.util.UUID;
+@@ -61,16 +62,57 @@
+  *    real items changes.
+  *  - Fail-soft: any error disables the pager for that player for the session
+  *    and logs once; the wand click cycle always remains.
++ *
++ * 0.3.9 changes (live reports from Mike, Nov 3 2026):
++ *  - EVERY PAGE (defect #1): the buttons now also page the SPELL LIST (the
++ *    grid's own pages — the Nov 2 design's original target; 0.3.8 flipped
++ *    only hotbar pages). The axis follows the paging the player last used
++ *    (config tap-bar.pager-buttons.page-target: auto / bar / list), and a
++ *    button whose slot is covered by a list spell icon DISPLACES the icon
++ *    for as long as that page is on screen (the design always priced the
++ *    two slots against page capacity) — the icon is restored when the
++ *    button leaves, and the wand's paint is rebuilt from its spell map
++ *    afterward, so no spell can be lost by being covered. Non-spell items
++ *    still block a button exactly as in 0.3.8.
++ *  - OVERLAYS ONLY (defect #3): a rendered button that was still on screen
++ *    when Magic saved the open inventory (any page cycle, any close) was
++ *    ejected by Magic into the player's REAL inventory — Mike found a
++ *    "◀ Back page" arrow sitting in a live hotbar slot. Two defenses:
++ *    every WandBars-driven cycle sweeps the buttons BEFORE Magic saves
++ *    (MagicHook.sweepPager), and this hook runs a standing cleanup: any
++ *    item carrying the pager marker found in a player's real inventory
++ *    (or in the wand's stored inventory while the bar is open) is removed
++ *    on sight — on join, after closes, and on the render poll. A button
++ *    never overwrote a stored spell: it only ever sat in display slots
++ *    Magic itself refuses to record (Magic's save ejects foreign items
++ *    rather than storing them), and its landing slot in the real inventory
++ *    was chosen by add-item semantics (first free slot), so removing the
++ *    button restores the exact pre-leak state; nothing else is touched.
+  */
+ public class PagerHook implements Listener {
+     private final ExcelWandBars plugin;
+     private final MagicAPI api;
+     private final NamespacedKey markerKey, pageKey, pagesKey;
+     private boolean enabled = true;
++    private String pageTarget = "auto";
++    private boolean displace = true;
++    private boolean cleanup = true;
+     private BukkitTask task;
+-    private final Map<UUID, Long> renderedState = new HashMap<>();
++    private final Map<UUID, String> renderedState = new HashMap<>();
+     private final Set<UUID> disabledFor = new HashSet<>();
++    // 0.3.9 axis tracking: the axis each player's buttons currently page,
++    // the last hotbar page seen, a fingerprint of the list page on screen,
++    // and the list page the buttons believe is showing.
++    private final Map<UUID, PagerPlan.Axis> axisOf = new HashMap<>();
++    private final Map<UUID, Integer> lastBarPage = new HashMap<>();
++    private final Map<UUID, Long> lastGridPrint = new HashMap<>();
++    private final Map<UUID, Integer> listPageOf = new HashMap<>();
++    // 0.3.9 displacement: grid slot -> the list icon a button is covering.
++    private final Map<UUID, Map<Integer, ItemStack>> displaced = new HashMap<>();
++    private final Set<UUID> repairNeeded = new HashSet<>();
++    private final Set<UUID> cleanupNotified = new HashSet<>();
+     private long renders, flips, protectedEvents, cleanups, blockedRenders, cursorClears;
++    private long displacements, restores, repairs, leaksStripped;
+ 
+     PagerHook(ExcelWandBars plugin, MagicAPI api) {
+         this.plugin = plugin;
+@@ -82,19 +124,26 @@
+ 
+     void loadSettings(ConfigurationSection tapBar) {
+         enabled = tapBar == null || tapBar.getBoolean("pager-buttons.enabled", true);
++        ConfigurationSection pb = tapBar == null ? null : tapBar.getConfigurationSection("pager-buttons");
++        String target = pb == null ? null : pb.getString("page-target", "auto");
++        pageTarget = target == null ? "auto" : target.trim().toLowerCase(java.util.Locale.ROOT);
++        if (!pageTarget.equals("bar") && !pageTarget.equals("list")) pageTarget = "auto";
++        displace = pb == null || pb.getBoolean("displace-icons", true);
++        cleanup = pb == null || pb.getBoolean("cleanup-leaks", true);
+     }
+ 
+     void start() {
+         if (task != null) task.cancel();
+-        if (!enabled) return;
++        if (!enabled && !cleanup) return;
+         task = Bukkit.getScheduler().runTaskTimer(plugin, this::poll, 20L, 10L);
+     }
+ 
+     String summary() {
+         return enabled
+                 ? "ON (grid slots " + PagerPlan.BACK_SLOT + "/" + PagerPlan.FORWARD_SLOT
+-                + ", flips " + flips + ", protected " + protectedEvents + ", sweeps " + cleanups + ")"
+-                : "OFF";
++                + ", target " + pageTarget + ", flips " + flips + ", protected " + protectedEvents
++                + ", sweeps " + cleanups + ", displaced " + displacements + ", leaks stripped " + leaksStripped + ")"
++                : "OFF (leak cleanup " + (cleanup ? "ON, stripped " + leaksStripped : "OFF") + ")";
+     }
+ 
+     // ------------------------------------------------------------------ context
+@@ -125,16 +174,17 @@
+ 
+     // ------------------------------------------------------------------ buttons
+ 
+-    private ItemStack button(PagerPlan.Button which, int page, int pages) {
++    private ItemStack button(PagerPlan.Button which, PagerPlan.Axis axis, int page, int pages) {
+         boolean forward = which == PagerPlan.Button.FORWARD;
+         ItemStack it = new ItemStack(forward ? Material.SPECTRAL_ARROW : Material.ARROW);
+         ItemMeta meta = it.getItemMeta();
+         if (meta == null) return it;
+         meta.displayName(Component.text(forward ? PagerPlan.forwardName() : PagerPlan.backName(),
+                 NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false));
+-        List<Component> lore = new ArrayList<>();
+-        lore.add(Component.text(PagerPlan.stateLine(page, pages), NamedTextColor.GRAY)
+-                .decoration(TextDecoration.ITALIC, false));
++        java.util.List<Component> lore = new java.util.ArrayList<>();
++        lore.add(Component.text(axis == PagerPlan.Axis.LIST
++                        ? PagerPlan.listStateLine(page, pages) : PagerPlan.stateLine(page, pages),
++                NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+         lore.add(Component.text("Tap to turn the page.", NamedTextColor.DARK_GRAY)
+                 .decoration(TextDecoration.ITALIC, false));
+         meta.lore(lore);
+@@ -148,7 +198,7 @@
+     /** "back" / "forward" when the item is one of our buttons, else null. */
+     private String ours(ItemStack it) {
+         if (it == null || it.getType().isAir() || !it.hasItemMeta()) return null;
+-        return it.getItemMeta().getPersistentDataContainer().get(markerKey, PersistentDataType.STRING);
++        return it.getPersistentDataContainer().get(markerKey, PersistentDataType.STRING);
+     }
+ 
+     private boolean stateMatches(ItemStack it, String which, int page, int pages) {
+@@ -159,11 +209,56 @@
+         return pg != null && ps != null && pg == page && ps == pages;
+     }
+ 
++    /** Is this item a spell icon of the open presentation? (Only those may be displaced.) */
++    private boolean spellIcon(ItemStack it) {
++        MagicHook mh = plugin.magicHook();
++        return mh != null && it != null && mh.spellKeyOf(it) != null;
++    }
++
++    // ------------------------------------------------------------------ axis tracking
++
++    /** A cheap fingerprint of the list page on screen (spell keys in the grid, button slots excluded). */
++    private long gridPrint(Player p) {
++        MagicHook mh = plugin.magicHook();
++        if (mh == null) return 0L;
++        long h = 1125899906842597L;
++        for (int slot = 9; slot <= 33; slot++) {
++            ItemStack it = p.getInventory().getItem(slot);
++            String k = it == null ? null : mh.spellKeyOf(it);
++            h = 31 * h + (k == null ? 0 : k.hashCode());
++        }
++        return h;
++    }
++
++    /**
++     * Learn the axis from the player's own paging: a hotbar page change means
++     * they are paging the bar; a list-page fingerprint change with the bar
++     * page standing still means they are paging the list (the wand click).
++     */
++    private void trackAxis(Player p, int barPage) {
++        UUID id = p.getUniqueId();
++        Integer lastBar = lastBarPage.put(id, barPage);
++        long print = gridPrint(p);
++        Long lastPrint = lastGridPrint.put(id, print);
++        if (lastBar != null && lastBar != barPage) {
++            axisOf.put(id, PagerPlan.Axis.BAR);
++        } else if (lastPrint != null && lastPrint != print && lastBar != null) {
++            axisOf.put(id, PagerPlan.Axis.LIST);
++        }
++    }
++
++    private PagerPlan.Axis axisFor(Player p, int barPages, int listPages) {
++        if (pageTarget.equals("bar")) return PagerPlan.Axis.BAR;
++        if (pageTarget.equals("list")) return PagerPlan.Axis.LIST;
++        return PagerPlan.autoAxis(axisOf.get(p.getUniqueId()), barPages, listPages);
++    }
++
+     // ------------------------------------------------------------------ render / sweep
+ 
+     private void poll() {
+         for (Player p : Bukkit.getOnlinePlayers()) {
+             try {
++                if (cleanup) cleanupPlayer(p);
+                 if (active(p)) render(p);
+                 else sweepIfBarDown(p);
+             } catch (Throwable t) {
+@@ -177,33 +272,98 @@
+     private void render(Player p) {
+         com.elmakers.mine.bukkit.wand.Wand w = implWand(p);
+         if (w == null) return;
+-        int pages = w.getHotbars() == null ? 0 : w.getHotbars().size();
+-        if (!PagerPlan.shows(pages)) { sweep(p); return; }
+-        int page = PagerPlan.clamp(w.getCurrentHotbar(), pages);
+-        long state = ((long) page << 32) | (pages & 0xffffffffL);
+-        boolean fresh = renderedState.getOrDefault(p.getUniqueId(), -1L) != state;
+-        place(p, PagerPlan.BACK_SLOT, PagerPlan.Button.BACK, page, pages, fresh);
+-        place(p, PagerPlan.FORWARD_SLOT, PagerPlan.Button.FORWARD, page, pages, fresh);
++        int barPages = w.getHotbars() == null ? 0 : w.getHotbars().size();
++        MagicHook mh = plugin.magicHook();
++        int listPages = mh == null ? 1 : mh.listPageCount(p);
++        if (!PagerPlan.shows(barPages, listPages)) { sweep(p); return; }
++        int barPage = PagerPlan.clamp(w.getCurrentHotbar(), barPages);
++        // Stale displacement: the list page turned under the buttons (a
++        // repaint or a wand-click cycle — our own flips restore first, in
++        // sweep). The covered icons belong to a page no longer on screen;
++        // their spells are safe in the wand's map, so drop the memory and
++        // rebuild the paint from the map instead of restoring wrongly.
++        Long prevPrint = lastGridPrint.get(p.getUniqueId());
++        if (prevPrint != null && prevPrint != gridPrint(p) && displaced.containsKey(p.getUniqueId())) {
++            displaced.remove(p.getUniqueId());
++            repairNeeded.add(p.getUniqueId());
++            repairIfNeeded(p);
++        }
++        trackAxis(p, barPage);
++        PagerPlan.Axis axis = axisFor(p, barPages, listPages);
++        axisOf.put(p.getUniqueId(), axis);
++        int page = axis == PagerPlan.Axis.LIST
++                ? PagerPlan.clamp(listPageOf.getOrDefault(p.getUniqueId(), 0), listPages) : barPage;
++        int pages = axis == PagerPlan.Axis.LIST ? listPages : barPages;
++        if (axis == PagerPlan.Axis.LIST) listPageOf.put(p.getUniqueId(), page);
++        String state = axis + ":" + page + "/" + pages;
++        boolean fresh = !state.equals(renderedState.get(p.getUniqueId()));
++        place(p, PagerPlan.BACK_SLOT, PagerPlan.Button.BACK, axis, page, pages, fresh);
++        place(p, PagerPlan.FORWARD_SLOT, PagerPlan.Button.FORWARD, axis, page, pages, fresh);
+         renderedState.put(p.getUniqueId(), state);
+     }
+ 
+-    private void place(Player p, int slot, PagerPlan.Button which, int page, int pages, boolean fresh) {
++    private void place(Player p, int slot, PagerPlan.Button which, PagerPlan.Axis axis, int page, int pages, boolean fresh) {
+         ItemStack cur = p.getInventory().getItem(slot);
+         String want = which == PagerPlan.Button.FORWARD ? "forward" : "back";
+         if (stateMatches(cur, want, page, pages)) return;
+-        if (cur == null || cur.getType().isAir() || ours(cur) != null) {
+-            p.getInventory().setItem(slot, button(which, page, pages));
+-            if (fresh) renders++;
+-            return;
++        boolean empty = cur == null || cur.getType().isAir();
++        boolean our = ours(cur) != null;
++        PagerPlan.SlotFate fate = PagerPlan.classify(empty, our, !empty && !our && spellIcon(cur));
++        switch (fate) {
++            case FREE -> {
++                p.getInventory().setItem(slot, button(which, axis, page, pages));
++                if (fresh) renders++;
++            }
++            case DISPLACE -> {
++                if (!displace) { blockedRenders++; return; }
++                // Cover the list icon for as long as this page is on screen;
++                // it is restored when the button leaves (sweep), and the
++                // wand's paint is rebuilt from its spell map afterward.
++                displaced.computeIfAbsent(p.getUniqueId(), k -> new HashMap<>()).put(slot, cur.clone());
++                displacements++;
++                p.getInventory().setItem(slot, button(which, axis, page, pages));
++                if (fresh) renders++;
++            }
++            case BLOCKED -> {
++                // A foreign (non-spell) item sits in the button's slot: never
++                // overwrite it. The button simply does not render (counted).
++                blockedRenders++;
++                if (plugin.debug()) plugin.getLogger().info("Pager: slot " + slot + " occupied for " + p.getName() + "; button not rendered.");
++            }
++        }
++    }
++
++    /**
++     * Put back any list icons the buttons are covering. An icon whose button
++     * is still on screen is restored in place; one whose button a repaint
++     * already wiped cannot be (the display no longer shows its page) — the
++     * spell itself is safe in Magic's spell map, and the paint is rebuilt
++     * from the map (repairInventoryPaint) so the icon returns.
++     */
++    private void restoreDisplaced(Player p) {
++        Map<Integer, ItemStack> mine = displaced.remove(p.getUniqueId());
++        if (mine == null || mine.isEmpty()) return;
++        for (Map.Entry<Integer, ItemStack> e : mine.entrySet()) {
++            if (ours(p.getInventory().getItem(e.getKey())) != null) {
++                p.getInventory().setItem(e.getKey(), e.getValue());
++                restores++;
++            } else {
++                repairNeeded.add(p.getUniqueId());
++            }
+         }
+-        // A foreign item sits in the button's slot: never overwrite it. The
+-        // button for this page state simply does not render (counted, not silent).
+-        blockedRenders++;
+-        if (plugin.debug()) plugin.getLogger().info("Pager: slot " + slot + " occupied for " + p.getName() + "; button not rendered.");
++    }
++
++    private void repairIfNeeded(Player p) {
++        if (!repairNeeded.remove(p.getUniqueId())) return;
++        MagicHook mh = plugin.magicHook();
++        if (mh == null) return;
++        repairs++;
++        Bukkit.getScheduler().runTask(plugin, () -> { if (p.isOnline()) mh.repairInventoryPaint(p); });
+     }
+ 
+     /** Remove our buttons (marker-checked only) — used when the bar closes or pages drop below two. */
+     private void sweep(Player p) {
++        restoreDisplaced(p);
+         boolean any = false;
+         for (int slot : new int[]{PagerPlan.BACK_SLOT, PagerPlan.FORWARD_SLOT}) {
+             if (ours(p.getInventory().getItem(slot)) != null) {
+@@ -213,13 +373,90 @@
+         }
+         if (any) cleanups++;
+         renderedState.remove(p.getUniqueId());
++        repairIfNeeded(p);
++    }
++
++    /**
++     * 0.3.9: sweep NOW — called before every WandBars-driven Magic cycle, so
++     * Magic's save never sees a button (defect #3). Safe to call at any
++     * time; the poll re-renders on the next pass.
++     */
++    void sweepNow(Player p) {
++        if (p != null) sweep(p);
+     }
+ 
+     private void sweepIfBarDown(Player p) {
+         TapBarHook tb = plugin.tapBar();
+         if (tb != null && tb.barOpen(p)) return; // bar up: render context decides, never sweep mid-session
+         if (ours(p.getInventory().getItem(PagerPlan.BACK_SLOT)) != null
+-                || ours(p.getInventory().getItem(PagerPlan.FORWARD_SLOT)) != null) sweep(p);
++                || ours(p.getInventory().getItem(PagerPlan.FORWARD_SLOT)) != null
++                || displaced.containsKey(p.getUniqueId())) sweep(p);
++        // Bar down and no buttons on screen: forget the session's axis state,
++        // so the next open starts on page 1 of the list like Magic does.
++        axisOf.remove(p.getUniqueId());
++        lastBarPage.remove(p.getUniqueId());
++        lastGridPrint.remove(p.getUniqueId());
++        listPageOf.remove(p.getUniqueId());
++    }
++
++    // ------------------------------------------------------------------ leak cleanup (0.3.9, defect #3)
++
++    /**
++     * Remove pager-marker items from a player's REAL inventory: the wand's
++     * stored inventory while the bar is open (where Magic's save ejects
++     * them), or the player's own inventory when no wand inventory is open.
++     * Only marker-carrying items are touched; the slot is left empty. The
++     * display inventory of an open bar is NOT scanned (the buttons showing
++     * there are the legitimate render, owned by render/sweep).
++     */
++    int cleanupPlayer(Player p) {
++        int removed = 0;
++        com.elmakers.mine.bukkit.wand.Wand w = implWand(p);
++        if (w != null && w.hasStoredInventory()) {
++            Inventory stored = w.getStoredInventory();
++            if (stored != null) removed += strip(stored);
++        } else if (w == null || !w.isInventoryOpen()) {
++            removed += strip(p.getInventory());
++        }
++        if (removed > 0) {
++            leaksStripped += removed;
++            if (cleanupNotified.add(p.getUniqueId())) {
++                plugin.getLogger().info("Pager cleanup: removed " + removed + " leaked pager button(s) from " + p.getName()
++                        + "'s real inventory (0.3.8 leak; buttons are screen-only now).");
++            } else if (plugin.debug()) {
++                plugin.getLogger().info("Pager cleanup: removed " + removed + " more leaked button(s) from " + p.getName() + ".");
++            }
++        }
++        return removed;
++    }
++
++    private int strip(Inventory inv) {
++        int n = 0;
++        for (int i = 0; i < inv.getSize(); i++) {
++            if (ours(inv.getItem(i)) != null) {
++                inv.setItem(i, null);
++                n++;
++            }
++        }
++        return n;
++    }
++
++    @EventHandler
++    public void onJoin(PlayerJoinEvent e) {
++        Player p = e.getPlayer();
++        if (!cleanup) return;
++        Bukkit.getScheduler().runTaskLater(plugin, () -> { if (p.isOnline()) cleanupPlayer(p); }, 20L);
++        Bukkit.getScheduler().runTaskLater(plugin, () -> { if (p.isOnline()) cleanupPlayer(p); }, 60L);
++    }
++
++    @EventHandler(priority = EventPriority.MONITOR)
++    public void onClose(InventoryCloseEvent e) {
++        if (!cleanup || !(e.getPlayer() instanceof Player p)) return;
++        // A close is a save point: anything ejected lands in the real
++        // inventory as it is restored — strip it a tick later (and again
++        // once the restore has fully settled).
++        Bukkit.getScheduler().runTaskLater(plugin, () -> { if (p.isOnline()) cleanupPlayer(p); }, 1L);
++        Bukkit.getScheduler().runTaskLater(plugin, () -> { if (p.isOnline()) cleanupPlayer(p); }, 10L);
+     }
+ 
+     // ------------------------------------------------------------------ interception
+@@ -275,15 +512,37 @@
+         if (which == PagerPlan.Button.NONE) return;
+         MagicHook mh = plugin.magicHook();
+         if (mh == null) return;
+-        if (mh.flipPage(p, which == PagerPlan.Button.FORWARD ? 1 : -1)) {
++        int dir = which == PagerPlan.Button.FORWARD ? 1 : -1;
++        PagerPlan.Axis axis = axisOf.getOrDefault(p.getUniqueId(), PagerPlan.Axis.BAR);
++        boolean flipped;
++        if (axis == PagerPlan.Axis.LIST) {
++            int pages = mh.listPageCount(p);
++            flipped = mh.flipListPage(p, dir);
++            if (flipped) {
++                listPageOf.put(p.getUniqueId(),
++                        PagerPlan.target(listPageOf.getOrDefault(p.getUniqueId(), 0), pages, dir));
++            }
++        } else {
++            flipped = mh.flipPage(p, dir);
++        }
++        if (flipped) {
+             flips++;
+             renderedState.remove(p.getUniqueId()); // force a state refresh next poll
++            lastGridPrint.remove(p.getUniqueId()); // our own flip is not the player paging by hand
+         }
+     }
+ 
+     @EventHandler
+     public void onQuit(PlayerQuitEvent e) {
+-        renderedState.remove(e.getPlayer().getUniqueId());
+-        disabledFor.remove(e.getPlayer().getUniqueId());
++        UUID id = e.getPlayer().getUniqueId();
++        renderedState.remove(id);
++        disabledFor.remove(id);
++        axisOf.remove(id);
++        lastBarPage.remove(id);
++        lastGridPrint.remove(id);
++        listPageOf.remove(id);
++        displaced.remove(id);
++        repairNeeded.remove(id);
++        cleanupNotified.remove(id);
+     }
+ }
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/core/ArrangePlan.java b/src/com/winkreyes/excelwandbars/core/ArrangePlan.java
+--- a/prev-src/com/winkreyes/excelwandbars/core/ArrangePlan.java	2026-11-02 19:06:18.063086901 +0000
++++ b/src/com/winkreyes/excelwandbars/core/ArrangePlan.java	2026-11-03 07:58:10.418382681 +0000
+@@ -76,6 +76,18 @@
+     public synchronized boolean isArmed(UUID id) { return id != null && armed.containsKey(id); }
+     public synchronized boolean hasLift(UUID id) { return id != null && lifts.containsKey(id); }
+ 
++    /** The lifted spell, or null (0.3.9: the hook's re-lift guard reads it, mirroring DragWritePlan). */
++    public synchronized String liftedSpell(UUID id) {
++        Lift l = id == null ? null : lifts.get(id);
++        return l == null ? null : l.spell;
++    }
++
++    /** The loadout slot the lift started from (0.3.9: the re-lift guard's origin check). */
++    public synchronized int liftedFrom(UUID id) {
++        Lift l = id == null ? null : lifts.get(id);
++        return l == null ? Integer.MIN_VALUE : l.from;
++    }
++
+     /** The player lifted a bar icon (a second lift replaces the first). */
+     public synchronized void pickup(UUID id, String spell, int fromLoadoutSlot, long now) {
+         if (!isArmed(id) || spell == null) return;
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/core/DragWritePlan.java b/src/com/winkreyes/excelwandbars/core/DragWritePlan.java
+--- a/prev-src/com/winkreyes/excelwandbars/core/DragWritePlan.java	2026-11-02 19:06:18.069454767 +0000
++++ b/src/com/winkreyes/excelwandbars/core/DragWritePlan.java	2026-11-03 07:58:08.237382690 +0000
+@@ -70,6 +70,33 @@
+         return l == null ? null : l.spell;
+     }
+ 
++    /** The loadout slot the lift started from, or -1 when it came from off the bar (0.3.9). */
++    public synchronized int liftedFrom(UUID id) {
++        Lift l = id == null ? null : lifts.get(id);
++        return l == null ? Integer.MIN_VALUE : l.from;
++    }
++
++    /**
++     * 0.3.9 (defect #4): is this click the SAME pickup gesture delivered
++     * twice? A Bedrock tap can arrive as more than one click event; the
++     * duplicate lands on the lift's ORIGIN — the same bar slot for an on-bar
++     * lift, a grid slot for an off-bar (list) lift — showing the same spell.
++     * Spell identity alone is NOT the signature: after a repaint flicker the
++     * restored inventory can legitimately display the lifted spell's icon on
++     * the place target, and eating that click as a "duplicate" drops the
++     * commit (the first 0.3.9 rig pass proved exactly that trade).
++     *
++     * @param liftFrom          the lift's origin loadout slot, -1 = off-bar
++     * @param clickedBarRow     the click landed in the hotbar row
++     * @param clickedLoadoutSlot the click's loadout slot on the lift's page (-1 = not a spell column)
++     */
++    public static boolean isDuplicatePickup(int liftFrom, boolean clickedBarRow,
++            int clickedLoadoutSlot, String clickedSpell, String liftedSpell) {
++        if (clickedSpell == null || liftedSpell == null || !clickedSpell.equals(liftedSpell)) return false;
++        if (liftFrom >= 0) return clickedBarRow && clickedLoadoutSlot == liftFrom;
++        return !clickedBarRow; // an off-bar lift's duplicate re-fires on the grid, never on the bar row
++    }
++
+     /** The player lifted a spell icon. fromLoadoutSlot is its bar slot, or -1 when it is not on the bar. */
+     public synchronized void pickup(UUID id, String spell, int fromLoadoutSlot, long now) {
+         if (id == null || spell == null) return;
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/core/PagerPlan.java b/src/com/winkreyes/excelwandbars/core/PagerPlan.java
+--- a/prev-src/com/winkreyes/excelwandbars/core/PagerPlan.java	2026-11-02 19:12:55.751897232 +0000
++++ b/src/com/winkreyes/excelwandbars/core/PagerPlan.java	2026-11-03 07:46:42.123385399 +0000
+@@ -65,4 +65,64 @@
+ 
+     public static String backName() { return "◀ Back page"; }
+     public static String forwardName() { return "Next page ▶"; }
++
++    // ------------------------------------------------------------ 0.3.9: the spell-list axis
++
++    /**
++     * 0.3.9: the buttons page TWO things in this screen — the wand's hotbar
++     * (Bar) pages (0.3.8) and the spell list's own pages (Mike, Nov 3 2026:
++     * the buttons belong on every part of the spellbook, the spell list
++     * included — which was the Nov 2 design's original target: Jester's wolf
++     * sat on a later LIST page). In "auto" the axis follows the paging the
++     * player last used; the config can pin it to one axis.
++     */
++    public enum Axis { BAR, LIST }
++
++    /** Slots on one spell-list page (the grid above the bar row). */
++    public static final int LIST_PAGE_SIZE = 27;
++
++    /** Pages in the spell list for this many parked (not-on-a-bar) spells; always at least one. */
++    public static int listPages(int parkedSpells) {
++        if (parkedSpells <= 0) return 1;
++        return (parkedSpells + LIST_PAGE_SIZE - 1) / LIST_PAGE_SIZE;
++    }
++
++    /** "List page 2 of 3" — the state line while the buttons page the spell list. */
++    public static String listStateLine(int page, int pages) {
++        int p = clamp(page, pages);
++        return "List page " + (p + 1) + " of " + Math.max(1, pages);
++    }
++
++    /** Buttons render when EITHER axis has somewhere to flip to. */
++    public static boolean shows(int barPages, int listPages) {
++        return shows(barPages) || shows(listPages);
++    }
++
++    /** The axis a flip goes to under "auto": the pinned one wins; a single-page axis never takes it. */
++    public static Axis autoAxis(Axis lastUsed, int barPages, int listPages) {
++        boolean bar = shows(barPages), list = shows(listPages);
++        if (bar && !list) return Axis.BAR;
++        if (list && !bar) return Axis.LIST;
++        return lastUsed == null ? Axis.BAR : lastUsed;
++    }
++
++    // ------------------------------------------------------------ 0.3.9: displacing a list icon
++
++    /**
++     * What may happen when a pager button wants a grid slot. FREE: the slot
++     * is empty or already ours — write the button. DISPLACE: the slot holds
++     * a spell icon of the open list page; the icon is a presentation of a
++     * spell Magic keeps in its spell map (a save never deletes a map entry
++     * it did not read), so the button may cover it for as long as this page
++     * is on screen, provided the icon is restored when the button leaves
++     * and the wand's paint is rebuilt from the map afterward. BLOCKED: the
++     * slot holds anything else (a brush icon, a foreign item) — never
++     * overwrite it; the button simply does not render (0.3.8 behavior).
++     */
++    public enum SlotFate { FREE, DISPLACE, BLOCKED }
++
++    public static SlotFate classify(boolean empty, boolean ours, boolean spellIcon) {
++        if (empty || ours) return SlotFate.FREE;
++        return spellIcon ? SlotFate.DISPLACE : SlotFate.BLOCKED;
++    }
+ }
