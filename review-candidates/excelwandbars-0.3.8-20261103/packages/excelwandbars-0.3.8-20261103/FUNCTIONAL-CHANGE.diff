@@ -1,0 +1,792 @@
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/ArrangeHook.java b/src/com/winkreyes/excelwandbars/ArrangeHook.java
+--- a/prev-src/com/winkreyes/excelwandbars/ArrangeHook.java	2026-11-02 01:39:31.878127925 +0000
++++ b/src/com/winkreyes/excelwandbars/ArrangeHook.java	2026-11-02 19:15:05.844902281 +0000
+@@ -86,7 +86,7 @@
+     private final Map<UUID, Integer> armSerial = new HashMap<>();
+     private long armSessions = 0, removes = 0, moves = 0, ignored = 0, readsShown = 0, readsCancelled = 0;
+     private long unarmedCancelled = 0, signposts = 0;
+-    private long dragLifts = 0, dragWrites = 0, dragRemoves = 0, dragConfirms = 0, dragIconStays = 0;
++    private long dragLifts = 0, dragWrites = 0, dragRemoves = 0, dragConfirms = 0, dragIconStays = 0, dragRescues = 0;
+ 
+     ArrangeHook(ExcelWandBars plugin, MagicAPI api) {
+         this.plugin = plugin;
+@@ -120,7 +120,7 @@
+                 + " hold-reads shown " + readsShown + " cancelled " + readsCancelled
+                 + " unarmed-cancelled " + unarmedCancelled + " signposts " + signposts
+                 + " drag-lifts " + dragLifts + " drag-writes " + dragWrites + " drag-removes " + dragRemoves
+-                + " drag-confirms " + dragConfirms + " drag-icon-stays " + dragIconStays;
++                + " drag-confirms " + dragConfirms + " drag-icon-stays " + dragIconStays + " drag-rescues " + dragRescues;
+     }
+ 
+     void clearAll() { plan.clear(); holdRead.clear(); dragPlan.clear(); dragWrite.clear(); armSerial.clear(); }
+@@ -261,6 +261,8 @@
+     @EventHandler(priority = EventPriority.LOWEST)
+     public void onClickArrange(InventoryClickEvent e) {
+         if (!(e.getWhoClicked() instanceof Player p)) return;
++        // 0.3.8: pager buttons are hard-protected; PagerHook owns those slots.
++        if (PagerHook.touchesButton(e)) return;
+         UUID id = p.getUniqueId();
+         if (!plan.isArmed(id)) return;
+         // Style changed under an armed player: the mode belongs to Tap bar only.
+@@ -304,6 +306,8 @@
+     @EventHandler(priority = EventPriority.LOWEST)
+     public void onDragArrange(InventoryDragEvent e) {
+         if (!(e.getWhoClicked() instanceof Player p)) return;
++        // 0.3.8: a drag touching a pager button slot is PagerHook's, never a write.
++        if (PagerHook.touchesButton(e)) return;
+         UUID id = p.getUniqueId();
+         if (!plan.isArmed(id) || !screenActive(p)) return;
+         Wand w = openWand(p);
+@@ -355,6 +359,26 @@
+         return screenActive(p);
+     }
+ 
++    /**
++     * 0.3.8 (the two-tap write fix): the context for a gesture ALREADY in
++     * flight. A pickup is one tap and its place is the second; between them a
++     * repaint (a commit's, a cooldown icon's, a page flip's) can close the
++     * bar's screen state for a beat, and 0.3.7 judged the terminal click
++     * against the full drag context — so the place fell through to vanilla,
++     * the virtual icon physically moved, and the next repaint snapped it
++     * back: puts onto occupied slots "sometimes didn't take" while removes
++     * (a single gesture) always landed. A terminal commit therefore needs
++     * only the durable facts — drag-write on, unarmed, Tap bar style, still
++     * in the player's own screen — never the bar's momentary open state.
++     */
++    private boolean commitContext(Player p) {
++        if (!dragWriteEnabled) return false;
++        if (plan.isArmed(p.getUniqueId())) return false;
++        StyleHook sh = plugin.styleHook();
++        if (sh == null || sh.styleOf(p) != WandStyle.TAPBAR) return false;
++        return ownScreen(p);
++    }
++
+     /** The spell an item stack is the icon of, or null (any inventory slot, not just the bar row). */
+     private String spellOf(ItemStack it) {
+         MagicHook mh = plugin.magicHook();
+@@ -427,7 +451,15 @@
+     @EventHandler(priority = EventPriority.LOWEST)
+     public void onClickDragWrite(InventoryClickEvent e) {
+         if (!(e.getWhoClicked() instanceof Player p)) return;
+-        if (!dragContext(p)) return;
++        // 0.3.8: pager buttons are hard-protected; PagerHook owns those slots.
++        if (PagerHook.touchesButton(e)) return;
++        if (!dragContext(p)) {
++            // 0.3.8 two-tap fix: a gesture already in flight (a recorded lift,
++            // or an icon riding the cursor) keeps its terminal commit under
++            // the commit context even when the bar's screen state flickered.
++            if (!commitContext(p)) return;
++            if (!dragWrite.hasLift(p.getUniqueId()) && spellOf(e.getCursor()) == null) return;
++        }
+         Wand w = openWand(p);
+         UUID id = p.getUniqueId();
+         long now = System.currentTimeMillis();
+@@ -489,6 +521,7 @@
+             e.setCancelled(true);
+             dragWrite.pickup(id, icon, from, now);
+             dragLifts++;
++            rescueLift(p);
+             return;
+         }
+         // Any other gesture on an icon (swap with a real item, shift-click,
+@@ -497,10 +530,34 @@
+         dragIconStays++;
+     }
+ 
++    /**
++     * 0.3.8 two-tap fix, second half: if a repaint flicker closed the bar
++     * between the pickup and the place, reopen it at once (same session rules
++     * as keepScreenDrag) so the place lands in a live presentation. The
++     * relaxed commit gate above covers the write either way; this keeps what
++     * the player SEES honest while their finger is still down.
++     */
++    private void rescueLift(Player p) {
++        UUID id = p.getUniqueId();
++        Bukkit.getScheduler().runTaskLater(plugin, () -> {
++            if (!p.isOnline() || !dragWrite.hasLift(id) || plan.isArmed(id) || barOpen(p) || !ownScreen(p)) return;
++            TapBarHook tb = plugin.tapBar();
++            if (tb != null && tb.tryOpen(p, "drag-write gesture").equals("opened")) dragRescues++;
++        }, 2L);
++    }
++
+     @EventHandler(priority = EventPriority.LOWEST)
+     public void onDragDragWrite(InventoryDragEvent e) {
+         if (!(e.getWhoClicked() instanceof Player p)) return;
+-        if (!dragContext(p)) return;
++        // 0.3.8: a drag touching a pager button slot is PagerHook's, never a write.
++        if (PagerHook.touchesButton(e)) return;
++        if (!dragContext(p)) {
++            // 0.3.8: same in-flight rule as clicks — an icon already on the
++            // cursor keeps its drag commit through a screen-state flicker.
++            if (!commitContext(p)) return;
++            MagicHook mh0 = plugin.magicHook();
++            if (mh0 == null || e.getOldCursor() == null || mh0.spellKeyOf(e.getOldCursor()) == null) return;
++        }
+         Wand w = openWand(p);
+         MagicHook mh = plugin.magicHook();
+         if (mh == null) return;
+@@ -604,6 +661,7 @@
+     @EventHandler(priority = EventPriority.LOWEST)
+     public void onClickUnarmed(InventoryClickEvent e) {
+         if (!(e.getWhoClicked() instanceof Player p)) return;
++        if (PagerHook.touchesButton(e)) return; // 0.3.8: PagerHook owns those slots
+         if (!unarmedContext(p)) return;
+         if (clickTouchesIcon(p, e)) applyDragVerdict(p, e);
+     }
+@@ -611,6 +669,7 @@
+     @EventHandler(priority = EventPriority.LOWEST)
+     public void onDragUnarmed(InventoryDragEvent e) {
+         if (!(e.getWhoClicked() instanceof Player p)) return;
++        if (PagerHook.touchesButton(e)) return; // 0.3.8: PagerHook owns those slots
+         if (!unarmedContext(p)) return;
+         MagicHook mh = plugin.magicHook();
+         if (mh == null) return;
+@@ -657,11 +716,19 @@
+         if (!plugin.isBedrock(p) || !screenActive(p)) return;
+         MagicHook mh = plugin.magicHook();
+         if (mh == null) return;
+-        // The form opening forgets any pending arrange lift for this icon (design 3.4).
+-        plan.cancelLift(id);
+-        dragWrite.cancelLift(id); // 0.3.7: the read form owns the gesture now, same rule
+         String r = mh.showSpellInfo(p, spell);
+-        if (r != null && r.startsWith("detail")) readsShown++;
++        if (r != null && r.startsWith("detail")) {
++            // The form opening forgets any pending arrange lift for this icon
++            // (design 3.4) — but only when the form actually opened. 0.3.8
++            // (two-tap write fix): 0.3.7 cancelled the pending drag-write lift
++            // unconditionally, so a hold of 800 ms+ between the pickup tap and
++            // the place tap silently killed the gesture whenever the read
++            // could not open its page; now a failed read leaves the lift —
++            // and the player's second tap — exactly where it was.
++            plan.cancelLift(id);
++            dragWrite.cancelLift(id); // 0.3.7: the read form owns the gesture now, same rule
++            readsShown++;
++        }
+     }
+ 
+     private void holdReadCommit(Player p) {
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/CompassGuard.java b/src/com/winkreyes/excelwandbars/CompassGuard.java
+--- a/prev-src/com/winkreyes/excelwandbars/CompassGuard.java	2026-11-02 01:28:10.970160777 +0000
++++ b/src/com/winkreyes/excelwandbars/CompassGuard.java	2026-11-02 19:13:16.546898039 +0000
+@@ -78,6 +78,9 @@
+     }
+ 
+     /** Check soon (coalesced per player). */
++    /** 0.3.8: schedule a compass tidy (the join guard calls this once the bar is closed). */
++    void checkLater(Player p, long ticks) { later(p, ticks); }
++
+     void later(Player p, long ticks) {
+         if (p == null || !pending.add(p.getUniqueId())) return;
+         UUID id = p.getUniqueId();
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/ExcelWandBars.java b/src/com/winkreyes/excelwandbars/ExcelWandBars.java
+--- a/prev-src/com/winkreyes/excelwandbars/ExcelWandBars.java	2026-11-02 01:28:10.970306706 +0000
++++ b/src/com/winkreyes/excelwandbars/ExcelWandBars.java	2026-11-02 19:14:02.922899839 +0000
+@@ -36,6 +36,8 @@
+     private LoadoutHook loadouts;
+     /** 0.3.5: Arrange mode + in-screen hold-to-read (the shared inventory-screen hook). */
+     private ArrangeHook arrange;
++    /** 0.3.8: pager buttons in the spell inventory (grid slots 34/35). */
++    private PagerHook pager;
+     private String geyserTap = "off";
+     private String geyserHold = "off";
+     /** Admin test aid (/wandbars simbedrock): treat these online Java players as Bedrock. Memory only, cleared on quit. */
+@@ -152,6 +154,19 @@
+                 getLogger().warning("Arrange mode off (" + t + ").");
+             }
+             try {
++                // 0.3.8: pager buttons in the spell inventory. Needs only the tap bar.
++                if (tapBar != null) {
++                    pager = new PagerHook(this, (com.elmakers.mine.bukkit.api.magic.MagicAPI) magic);
++                    pager.loadSettings(getConfig().getConfigurationSection("tap-bar"));
++                    getServer().getPluginManager().registerEvents(pager, this);
++                    pager.start();
++                    getLogger().info("Spell inventory pager buttons " + pager.summary() + ".");
++                }
++            } catch (Throwable t) {
++                pager = null;
++                getLogger().warning("Pager buttons off (" + t + ").");
++            }
++            try {
+                 // Rank-up by casting (2026-10-26): off until rank-up-casting.enabled is true (reloadable).
+                 rankUp = new RankUpHook(this, (com.elmakers.mine.bukkit.api.magic.MagicAPI) magic);
+                 rankUp.loadSettings(getConfig().getConfigurationSection("rank-up-casting"));
+@@ -342,6 +357,7 @@
+         return s.styleOf(p).inventory();
+     }
+     TapBarHook tapBar() { return tapBar; }
++    CompassGuard compassGuard() { return compassGuard; }
+     RankUpHook rankUp() { return rankUp; }
+     LoadoutHook loadouts() { return loadouts; }
+     ArrangeHook arrange() { return arrange; }
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/MagicHook.java b/src/com/winkreyes/excelwandbars/MagicHook.java
+--- a/prev-src/com/winkreyes/excelwandbars/MagicHook.java	2026-11-02 01:37:23.300122935 +0000
++++ b/src/com/winkreyes/excelwandbars/MagicHook.java	2026-11-02 19:12:58.938897356 +0000
+@@ -128,6 +128,34 @@
+         return r;
+     }
+ 
++    /**
++     * 0.3.8: a directional page flip for the pager buttons — the same wraparound
++     * as the sneak flip and the wand click, either direction. Returns false when
++     * there is nothing to flip (bar closed, or a single page).
++     */
++    boolean flipPage(Player player, int dir) {
++        Mage mage = api.getMage(player);
++        Wand wand = mage == null ? null : mage.getActiveWand();
++        if (!(wand instanceof com.elmakers.mine.bukkit.wand.Wand w) || !w.isInventoryOpen()) return false;
++        int count = w.getHotbars() == null ? 0 : w.getHotbars().size();
++        if (count < 2) return false;
++        w.cycleHotbar(dir < 0 ? -1 : 1);
++        flips++;
++        if (plugin.showBarLine()) {
++            // Next tick, so this line lands after Magic's own action-bar update.
++            Bukkit.getScheduler().runTask(plugin, () -> {
++                if (!player.isOnline()) return;
++                Wand now = mage.getActiveWand();
++                if (now != wand || !now.isInventoryOpen()) return;
++                String line = pagesWord(player)
++                        ? com.winkreyes.excelwandbars.core.PageLayout.pageLine(w.getCurrentHotbar(), w.getHotbars().size(), barNames(w, mage, w.getCurrentHotbar()))
++                        : BarText.line(w.getCurrentHotbar(), w.getHotbars().size(), barNames(w, mage, w.getCurrentHotbar()));
++                player.sendActionBar(Component.text(line, NamedTextColor.AQUA));
++            });
++        }
++        return true;
++    }
++
+     /** 0.2.5: Tap bar and Tap to pick (original) call them pages; Sneak bars keeps "Bar". */
+     private boolean pagesWord(Player p) {
+         StyleHook s = plugin.styleHook();
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/PagerHook.java b/src/com/winkreyes/excelwandbars/PagerHook.java
+--- a/prev-src/com/winkreyes/excelwandbars/PagerHook.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/excelwandbars/PagerHook.java	2026-11-02 19:42:08.455965255 +0000
+@@ -0,0 +1,289 @@
++package com.winkreyes.excelwandbars;
++
++import com.elmakers.mine.bukkit.api.magic.MagicAPI;
++import com.elmakers.mine.bukkit.api.magic.Mage;
++import com.elmakers.mine.bukkit.api.wand.Wand;
++import com.winkreyes.excelwandbars.core.PagerPlan;
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.format.NamedTextColor;
++import net.kyori.adventure.text.format.TextDecoration;
++import org.bukkit.Bukkit;
++import org.bukkit.Material;
++import org.bukkit.NamespacedKey;
++import org.bukkit.configuration.ConfigurationSection;
++import org.bukkit.entity.Player;
++import org.bukkit.event.EventHandler;
++import org.bukkit.event.EventPriority;
++import org.bukkit.event.Listener;
++import org.bukkit.event.inventory.ClickType;
++import org.bukkit.event.inventory.InventoryClickEvent;
++import org.bukkit.event.inventory.InventoryDragEvent;
++import org.bukkit.event.inventory.InventoryType;
++import org.bukkit.event.player.PlayerQuitEvent;
++import org.bukkit.inventory.ItemStack;
++import org.bukkit.inventory.meta.ItemMeta;
++import org.bukkit.persistence.PersistentDataType;
++import org.bukkit.scheduler.BukkitTask;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.List;
++import java.util.Map;
++import java.util.Set;
++import java.util.UUID;
++
++/**
++ * 0.3.8: pager buttons in the spell inventory (Mike's settled design, Nov 2
++ * 2026 — the buttons AND the wand-click page cycle both stay).
++ *
++ * While a Tap bar / Tap to pick player's spell bar is open in their own
++ * inventory screen, the last two slots of the grid's bottom row (player
++ * inventory slots 34 and 35, bottom-right) hold a Back page and a Next page
++ * button. The forward button's lore carries the "Page X of Y" state. The
++ * buttons flip the wand's page with the same wraparound as the wand click
++ * (MagicHook.flipPage), so paging works the same on Java and Bedrock from
++ * this one implementation.
++ *
++ * Safety contract:
++ *  - Buttons are OURS: each carries a PDC marker (pager_button = back /
++ *    forward, plus the page state it was rendered for). Nothing else is ever
++ *    written or removed by this hook: a foreign item found in a button slot
++ *    is left exactly where it is and that button simply does not render.
++ *  - Hard-protected from the write paths: ArrangeHook's interpreters return
++ *    early on any event touching a button slot, and this hook cancels every
++ *    click or drag that touches one, so a button can never be lifted,
++ *    carried, counted as a spell or written into the loadout. A plain tap on
++ *    a button flips the page; every other click type on it is just stopped.
++ *  - Presentation only: the buttons exist while the bar is open and the
++ *    screen is up, and are swept out (marker-checked) when the bar closes.
++ *    Nothing about the loadout model, the wand's spell map or the player's
++ *    real items changes.
++ *  - Fail-soft: any error disables the pager for that player for the session
++ *    and logs once; the wand click cycle always remains.
++ */
++public class PagerHook implements Listener {
++    private final ExcelWandBars plugin;
++    private final MagicAPI api;
++    private final NamespacedKey markerKey, pageKey, pagesKey;
++    private boolean enabled = true;
++    private BukkitTask task;
++    private final Map<UUID, Long> renderedState = new HashMap<>();
++    private final Set<UUID> disabledFor = new HashSet<>();
++    private long renders, flips, protectedEvents, cleanups, blockedRenders, cursorClears;
++
++    PagerHook(ExcelWandBars plugin, MagicAPI api) {
++        this.plugin = plugin;
++        this.api = api;
++        this.markerKey = new NamespacedKey(plugin, "pager_button");
++        this.pageKey = new NamespacedKey(plugin, "pager_page");
++        this.pagesKey = new NamespacedKey(plugin, "pager_pages");
++    }
++
++    void loadSettings(ConfigurationSection tapBar) {
++        enabled = tapBar == null || tapBar.getBoolean("pager-buttons.enabled", true);
++    }
++
++    void start() {
++        if (task != null) task.cancel();
++        if (!enabled) return;
++        task = Bukkit.getScheduler().runTaskTimer(plugin, this::poll, 20L, 10L);
++    }
++
++    String summary() {
++        return enabled
++                ? "ON (grid slots " + PagerPlan.BACK_SLOT + "/" + PagerPlan.FORWARD_SLOT
++                + ", flips " + flips + ", protected " + protectedEvents + ", sweeps " + cleanups + ")"
++                : "OFF";
++    }
++
++    // ------------------------------------------------------------------ context
++
++    private boolean uses(Player p) {
++        StyleHook s = plugin.styleHook();
++        return s != null && s.enabled() && s.styleOf(p).opensOnHold();
++    }
++
++    private com.elmakers.mine.bukkit.wand.Wand implWand(Player p) {
++        Mage m = api.getMage(p);
++        Wand w = m == null ? null : m.getActiveWand();
++        return w instanceof com.elmakers.mine.bukkit.wand.Wand impl ? impl : null;
++    }
++
++    private boolean ownScreen(Player p) {
++        InventoryType t = p.getOpenInventory().getTopInventory().getType();
++        return t == InventoryType.CRAFTING || t == InventoryType.PLAYER || t == InventoryType.CREATIVE;
++    }
++
++    /** Full render context: pager on, style pages on hold, bar open, own screen up. */
++    private boolean active(Player p) {
++        if (!enabled || disabledFor.contains(p.getUniqueId())) return false;
++        if (plugin.skipWorld(p.getWorld()) || !uses(p)) return false;
++        TapBarHook tb = plugin.tapBar();
++        return tb != null && tb.barOpen(p) && ownScreen(p);
++    }
++
++    // ------------------------------------------------------------------ buttons
++
++    private ItemStack button(PagerPlan.Button which, int page, int pages) {
++        boolean forward = which == PagerPlan.Button.FORWARD;
++        ItemStack it = new ItemStack(forward ? Material.SPECTRAL_ARROW : Material.ARROW);
++        ItemMeta meta = it.getItemMeta();
++        if (meta == null) return it;
++        meta.displayName(Component.text(forward ? PagerPlan.forwardName() : PagerPlan.backName(),
++                NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false));
++        List<Component> lore = new ArrayList<>();
++        lore.add(Component.text(PagerPlan.stateLine(page, pages), NamedTextColor.GRAY)
++                .decoration(TextDecoration.ITALIC, false));
++        lore.add(Component.text("Tap to turn the page.", NamedTextColor.DARK_GRAY)
++                .decoration(TextDecoration.ITALIC, false));
++        meta.lore(lore);
++        meta.getPersistentDataContainer().set(markerKey, PersistentDataType.STRING, forward ? "forward" : "back");
++        meta.getPersistentDataContainer().set(pageKey, PersistentDataType.INTEGER, page);
++        meta.getPersistentDataContainer().set(pagesKey, PersistentDataType.INTEGER, pages);
++        it.setItemMeta(meta);
++        return it;
++    }
++
++    /** "back" / "forward" when the item is one of our buttons, else null. */
++    private String ours(ItemStack it) {
++        if (it == null || it.getType().isAir() || !it.hasItemMeta()) return null;
++        return it.getItemMeta().getPersistentDataContainer().get(markerKey, PersistentDataType.STRING);
++    }
++
++    private boolean stateMatches(ItemStack it, String which, int page, int pages) {
++        if (!which.equals(ours(it))) return false;
++        ItemMeta meta = it.getItemMeta();
++        Integer pg = meta.getPersistentDataContainer().get(pageKey, PersistentDataType.INTEGER);
++        Integer ps = meta.getPersistentDataContainer().get(pagesKey, PersistentDataType.INTEGER);
++        return pg != null && ps != null && pg == page && ps == pages;
++    }
++
++    // ------------------------------------------------------------------ render / sweep
++
++    private void poll() {
++        for (Player p : Bukkit.getOnlinePlayers()) {
++            try {
++                if (active(p)) render(p);
++                else sweepIfBarDown(p);
++            } catch (Throwable t) {
++                if (disabledFor.add(p.getUniqueId())) {
++                    plugin.getLogger().warning("Pager buttons off for " + p.getName() + " this session (" + t + "); the wand click still flips pages.");
++                }
++            }
++        }
++    }
++
++    private void render(Player p) {
++        com.elmakers.mine.bukkit.wand.Wand w = implWand(p);
++        if (w == null) return;
++        int pages = w.getHotbars() == null ? 0 : w.getHotbars().size();
++        if (!PagerPlan.shows(pages)) { sweep(p); return; }
++        int page = PagerPlan.clamp(w.getCurrentHotbar(), pages);
++        long state = ((long) page << 32) | (pages & 0xffffffffL);
++        boolean fresh = renderedState.getOrDefault(p.getUniqueId(), -1L) != state;
++        place(p, PagerPlan.BACK_SLOT, PagerPlan.Button.BACK, page, pages, fresh);
++        place(p, PagerPlan.FORWARD_SLOT, PagerPlan.Button.FORWARD, page, pages, fresh);
++        renderedState.put(p.getUniqueId(), state);
++    }
++
++    private void place(Player p, int slot, PagerPlan.Button which, int page, int pages, boolean fresh) {
++        ItemStack cur = p.getInventory().getItem(slot);
++        String want = which == PagerPlan.Button.FORWARD ? "forward" : "back";
++        if (stateMatches(cur, want, page, pages)) return;
++        if (cur == null || cur.getType().isAir() || ours(cur) != null) {
++            p.getInventory().setItem(slot, button(which, page, pages));
++            if (fresh) renders++;
++            return;
++        }
++        // A foreign item sits in the button's slot: never overwrite it. The
++        // button for this page state simply does not render (counted, not silent).
++        blockedRenders++;
++        if (plugin.debug()) plugin.getLogger().info("Pager: slot " + slot + " occupied for " + p.getName() + "; button not rendered.");
++    }
++
++    /** Remove our buttons (marker-checked only) — used when the bar closes or pages drop below two. */
++    private void sweep(Player p) {
++        boolean any = false;
++        for (int slot : new int[]{PagerPlan.BACK_SLOT, PagerPlan.FORWARD_SLOT}) {
++            if (ours(p.getInventory().getItem(slot)) != null) {
++                p.getInventory().setItem(slot, null);
++                any = true;
++            }
++        }
++        if (any) cleanups++;
++        renderedState.remove(p.getUniqueId());
++    }
++
++    private void sweepIfBarDown(Player p) {
++        TapBarHook tb = plugin.tapBar();
++        if (tb != null && tb.barOpen(p)) return; // bar up: render context decides, never sweep mid-session
++        if (ours(p.getInventory().getItem(PagerPlan.BACK_SLOT)) != null
++                || ours(p.getInventory().getItem(PagerPlan.FORWARD_SLOT)) != null) sweep(p);
++    }
++
++    // ------------------------------------------------------------------ interception
++
++    /** True when this click touches a button slot of the player's own inventory. */
++    static boolean touchesButton(InventoryClickEvent e) {
++        return e.getClickedInventory() != null
++                && e.getClickedInventory().getType() == InventoryType.PLAYER
++                && PagerPlan.isButtonSlot(e.getSlot());
++    }
++
++    static boolean touchesButton(InventoryDragEvent e) {
++        int topSize = e.getView().getTopInventory().getSize();
++        for (int raw : e.getRawSlots()) {
++            if (raw < topSize) continue;
++            if (PagerPlan.isButtonSlot(e.getView().convertSlot(raw))) return true;
++        }
++        return false;
++    }
++
++    @EventHandler(priority = EventPriority.LOWEST)
++    public void onClick(InventoryClickEvent e) {
++        if (!enabled || !(e.getWhoClicked() instanceof Player p)) return;
++        boolean onButton = touchesButton(e);
++        boolean cursorOurs = ours(e.getCursor()) != null;
++        if (!onButton && !cursorOurs) return;
++        if (!active(p)) return;
++        e.setCancelled(true);
++        protectedEvents++;
++        if (cursorOurs && !onButton) {
++            // A button should never be on a cursor (every touch is cancelled);
++            // if one ever gets there, take it back rather than let it travel.
++            Bukkit.getScheduler().runTask(plugin, () -> { if (p.isOnline()) { p.setItemOnCursor(null); cursorClears++; } });
++            return;
++        }
++        if (e.getClick() == ClickType.LEFT || e.getClick() == ClickType.RIGHT) {
++            // A bare tap flips. A tap carrying an icon is a place attempt that
++            // landed on a protected slot: stopped above, never a page flip.
++            ItemStack cursor = e.getCursor();
++            if (cursor == null || cursor.getType().isAir()) flip(p, PagerPlan.buttonAt(e.getSlot()));
++        }
++    }
++
++    @EventHandler(priority = EventPriority.LOWEST)
++    public void onDrag(InventoryDragEvent e) {
++        if (!enabled || !(e.getWhoClicked() instanceof Player p)) return;
++        if (!touchesButton(e) || !active(p)) return;
++        e.setCancelled(true);
++        protectedEvents++;
++    }
++
++    private void flip(Player p, PagerPlan.Button which) {
++        if (which == PagerPlan.Button.NONE) return;
++        MagicHook mh = plugin.magicHook();
++        if (mh == null) return;
++        if (mh.flipPage(p, which == PagerPlan.Button.FORWARD ? 1 : -1)) {
++            flips++;
++            renderedState.remove(p.getUniqueId()); // force a state refresh next poll
++        }
++    }
++
++    @EventHandler
++    public void onQuit(PlayerQuitEvent e) {
++        renderedState.remove(e.getPlayer().getUniqueId());
++        disabledFor.remove(e.getPlayer().getUniqueId());
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/TapBarHook.java b/src/com/winkreyes/excelwandbars/TapBarHook.java
+--- a/prev-src/com/winkreyes/excelwandbars/TapBarHook.java	2026-11-02 01:28:10.977908063 +0000
++++ b/src/com/winkreyes/excelwandbars/TapBarHook.java	2026-11-02 19:13:11.985897862 +0000
+@@ -137,6 +137,18 @@
+     /** 0.3.6: the exit-slot relocation sweep runs in tryOpen's tap-bar branch (ExitSweep). */
+     private boolean exitSweepEnabled = true;
+     private long exitSweeps, exitMoved, exitLeft;
++    /**
++     * 0.3.8: the login wand-mode trap fix (JoinGuardPlan). A bar found open inside
++     * the join grace window with no deliberate engagement since the join is a bar
++     * Magic restored from the last session, not one the player chose: close it so
++     * the join lands on the normal hotbar. The page is never slot-dependent, so a
++     * compass (or anything else) sitting in the exit slot cannot block it.
++     */
++    private boolean joinStartsOnItems = true;
++    private long joinGraceMs = 8000;
++    private final Map<UUID, Long> joinedAt = new HashMap<>();
++    private final Map<UUID, Long> openedSinceJoin = new HashMap<>();
++    private long joinGuardCloses, joinGuardBlocked;
+ 
+     TapBarHook(ExcelWandBars plugin, MagicAPI api) { this.plugin = plugin; this.api = api; }
+ 
+@@ -163,6 +175,8 @@
+         bookHoldMs = Math.max(100, c == null ? BookHoldPlan.DEFAULT_HOLD_MS : c.getLong("book-hold-ms", BookHoldPlan.DEFAULT_HOLD_MS));
+         bookHoldJava = c != null && c.getBoolean("book-hold-java", false);
+         exitSweepEnabled = c == null || c.getBoolean("exit-sweep", true);
++        joinStartsOnItems = c == null || c.getBoolean("join-starts-on-items", true);
++        joinGraceMs = Math.max(2000, Math.min(30000, c == null ? 8000 : c.getLong("join-grace-ms", 8000)));
+     }
+ 
+     boolean tapWandWanted() { return !"off".equals(tapWand); }
+@@ -414,7 +428,8 @@
+             + " pick-hold-swing-cast " + origHoldSwingCast + " pick-right-repeats " + origRightRepeats
+             + " wand-tap seen " + wandTapSeen + " closes " + wandTapCloses + " opens " + wandTapOpens + " guarded " + wandTapGuarded + " ignored " + wandTapIgnored + " echo " + wandTapEcho
+             + " book-hold bukkit " + bookBukkit + " protocol " + bookProtocol + " fallbacks " + bookFallbacks + " claims " + bookClaims + " world-reads " + worldReads
+-            + " exit-sweeps " + exitSweeps + " exit-moved " + exitMoved + " exit-left " + exitLeft; }
++            + " exit-sweeps " + exitSweeps + " exit-moved " + exitMoved + " exit-left " + exitLeft
++            + " join-guard closes " + joinGuardCloses + " blocked " + joinGuardBlocked; }
+     String lastHold(Player p) { return lastHold.getOrDefault(p.getUniqueId(), "-"); }
+     String lastCast(Player p) { return lastCast.getOrDefault(p.getUniqueId(), "-") + " x" + casts.getOrDefault(p.getUniqueId(), 0); }
+ 
+@@ -501,6 +516,7 @@
+         w.openInventory();
+         if (!w.isInventoryOpen()) return "open failed";
+         opened++;
++        openedSinceJoin.put(p.getUniqueId(), System.currentTimeMillis());
+         noteServerChange(p);
+         scheduleLore(p, 2L);
+         lastUse.put(p.getUniqueId(), System.currentTimeMillis());
+@@ -508,6 +524,57 @@
+         return "opened";
+     }
+ 
++    /** Whether this player's spell bar is open right now (PagerHook's render gate). */
++    boolean barOpen(Player p) { return p != null && openWand(p) != null; }
++
++    // ------------------------------------------------------------------ 0.3.8 join guard
++
++    /** Stamp a join for the guard (also the rig probe's entry point). */
++    void stampJoin(Player p, long when) { if (p != null) joinedAt.put(p.getUniqueId(), when); }
++
++    @EventHandler
++    public void onJoin(org.bukkit.event.player.PlayerJoinEvent event) {
++        Player p = event.getPlayer();
++        stampJoin(p, System.currentTimeMillis());
++        if (!joinStartsOnItems) return;
++        // Magic restores the wand's open state as the session settles, so judge
++        // more than once inside the grace window; any one CLOSE ends the matter.
++        for (long ticks : new long[]{30L, 80L, 160L}) {
++            Bukkit.getScheduler().runTaskLater(plugin, () -> joinGuardCheck(p), ticks);
++        }
++    }
++
++    /**
++     * One join-guard judgement for a player. Package-private: the rig probe
++     * drives it directly against a staged "restored" bar. Returns a result word
++     * for the log/probe; the CLOSE path logs at info and tells the player once.
++     */
++    String joinGuardCheck(Player p) {
++        if (p == null || !p.isOnline()) return "offline";
++        UUID id = p.getUniqueId();
++        Long joined = joinedAt.get(id);
++        Wand w = openWand(p);
++        long activity = Math.max(lastSlotPick.getOrDefault(id, 0L), openedSinceJoin.getOrDefault(id, 0L));
++        com.winkreyes.excelwandbars.core.JoinGuardPlan.Decision d =
++                com.winkreyes.excelwandbars.core.JoinGuardPlan.decide(
++                        joinStartsOnItems, uses(p), w != null,
++                        joined == null ? 0L : joined, System.currentTimeMillis(), activity, joinGraceMs);
++        if (d != com.winkreyes.excelwandbars.core.JoinGuardPlan.Decision.CLOSE) {
++            return w == null ? "leave (bar down)" : "leave (engaged or window over)";
++        }
++        w.closeInventory();
++        if (w.isInventoryOpen()) { joinGuardBlocked++; return "close blocked"; }
++        joinGuardCloses++;
++        joinedAt.remove(id);
++        plugin.getLogger().info("Join guard: " + p.getName() + " logged in with the spell bar open; items restored (joins start on your items).");
++        p.sendMessage(Component.text("Your items are back — joining starts on your items, not the spell bar.", NamedTextColor.GRAY));
++        // A compass handed out at join may have landed in the stored inventory
++        // while the bar was up; with the bar closed the tidy can see it now.
++        CompassGuard cg = plugin.compassGuard();
++        if (cg != null) cg.checkLater(p, 5L);
++        return "closed";
++    }
++
+     @EventHandler(priority = EventPriority.MONITOR)
+     public void onWandActivated(WandActivatedEvent event) {
+         if (!openOnHold) return;
+@@ -989,6 +1056,7 @@
+         cancelCrouchHold(event.getPlayer());
+         UUID id = event.getPlayer().getUniqueId();
+         lastHoldSignal.remove(id); lastRight.remove(id); lastUse.remove(id); lastSwing.remove(id); lastTapKey.remove(id); lastTapAt.remove(id); lastHold.remove(id); lastUseClick.remove(id); lastSlotPick.remove(id); lastCastStart.remove(id); lastServerChange.remove(id); lastWandTapPrime.remove(id);
++        joinedAt.remove(id); openedSinceJoin.remove(id);
+         sneakDownAt.remove(id); bookPressStart.remove(id); bookLastSignal.remove(id); lastBookFire.remove(id); bookHold.cancel(id);
+     }
+ 
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/core/JoinGuardPlan.java b/src/com/winkreyes/excelwandbars/core/JoinGuardPlan.java
+--- a/prev-src/com/winkreyes/excelwandbars/core/JoinGuardPlan.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/excelwandbars/core/JoinGuardPlan.java	2026-11-02 19:12:55.751897232 +0000
+@@ -0,0 +1,50 @@
++package com.winkreyes.excelwandbars.core;
++
++/**
++ * 0.3.8: the login wand-mode trap fix (Mike, Nov 2 2026: joins must land on
++ * the normal hotbar). Pure (no Bukkit/Magic types), unit-tested on the plain
++ * JVM.
++ *
++ * The defect: Magic restores a wand whose spell bar was open at logout with
++ * the bar open again at the next join, so the player lands in wand mode —
++ * and the exit paths are slot-dependent (tap the empty slot) or echo-guarded
++ * (the wand tap), while the menu compass other plugins hand out at join can
++ * sit in the very slot the exit needs. The guard's rule: a bar that is open
++ * inside the join grace window, with no sign the player has deliberately
++ * engaged since joining, is a RESTORED bar, not a chosen one — close it
++ * (Magic's own close, real items restored) so the join lands on the normal
++ * hotbar.
++ *
++ * "Deliberate engagement" is a slot pick or a bar open stamped after the
++ * join churn window ({@link #CHURN_MS}): in the first moments after a join
++ * the server itself stamps picks (the wand-slot sweep moving the wand into
++ * place), so stamps inside that window prove nothing and never exempt.
++ * Past the grace window the guard stops policing entirely: whatever the
++ * player has open then is their own session.
++ */
++public final class JoinGuardPlan {
++    private JoinGuardPlan() {}
++
++    /** Server-side join churn (wand move/select stamps) inside this window is not engagement. */
++    public static final long CHURN_MS = 1000;
++
++    public enum Decision { CLOSE, LEAVE }
++
++    /**
++     * @param enabled        the feature's config switch
++     * @param usesTapBar     the player's style opens a spell bar on hold (Tap bar / Tap to pick)
++     * @param barOpen        the wand's spell bar is open right now
++     * @param joinedAt       when this join was stamped (0 = never stamped, e.g. plugin reload)
++     * @param now            current time, same clock as joinedAt
++     * @param lastActivityAt last slot pick / deliberate bar open stamp (0 = none)
++     * @param graceMs        the join grace window
++     */
++    public static Decision decide(boolean enabled, boolean usesTapBar, boolean barOpen,
++                                  long joinedAt, long now, long lastActivityAt, long graceMs) {
++        if (!enabled || !usesTapBar || !barOpen) return Decision.LEAVE;
++        if (joinedAt <= 0) return Decision.LEAVE;
++        if (now - joinedAt > Math.max(0, graceMs)) return Decision.LEAVE;
++        if (lastActivityAt > joinedAt + CHURN_MS) return Decision.LEAVE;
++        return Decision.CLOSE;
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/core/PagerPlan.java b/src/com/winkreyes/excelwandbars/core/PagerPlan.java
+--- a/prev-src/com/winkreyes/excelwandbars/core/PagerPlan.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/excelwandbars/core/PagerPlan.java	2026-11-02 19:12:55.751897232 +0000
+@@ -0,0 +1,68 @@
++package com.winkreyes.excelwandbars.core;
++
++/**
++ * 0.3.8: the spell inventory's pager buttons (Mike's settled design, Nov 2 2026:
++ * "We can keep both" — the buttons AND the wand-click page cycle). Pure (no
++ * Bukkit/Magic types), unit-tested on the plain JVM.
++ *
++ * While the Tap bar spell inventory is open in the player's own inventory
++ * screen, the LAST TWO slots of the bottom row of the main grid — Bukkit
++ * player-inventory slots {@link #BACK_SLOT} (34) and {@link #FORWARD_SLOT}
++ * (35), the bottom-right pair — are pager buttons: back a page, forward a
++ * page, with the same wraparound as the wand-click / sneak cycle. The forward
++ * button carries the "Page X of Y" state in its lore. The buttons are
++ * presentation only: they are hard-protected from the drag-write and Arrange
++ * interpreters (the pager hook cancels every click or drag that touches
++ * them before those interpreters run, so a button can never be lifted,
++ * carried, written or counted as a spell), and they are removed again when
++ * the bar closes. The cost is the two grid slots while the bar is up.
++ *
++ * Buttons show only when the wand actually has more than one page: with one
++ * page there is nowhere to flip to.
++ */
++public final class PagerPlan {
++    private PagerPlan() {}
++
++    /** Bottom-right pair of the inventory grid: back is the left of the pair. */
++    public static final int BACK_SLOT = 34;
++    public static final int FORWARD_SLOT = 35;
++
++    public enum Button { NONE, BACK, FORWARD }
++
++    public static Button buttonAt(int playerInventorySlot) {
++        if (playerInventorySlot == BACK_SLOT) return Button.BACK;
++        if (playerInventorySlot == FORWARD_SLOT) return Button.FORWARD;
++        return Button.NONE;
++    }
++
++    public static boolean isButtonSlot(int playerInventorySlot) {
++        return buttonAt(playerInventorySlot) != Button.NONE;
++    }
++
++    /** Buttons only earn their two slots when there is somewhere to flip to. */
++    public static boolean shows(int pages) { return pages >= 2; }
++
++    /** Current page clamped into range (a wand can shrink under the open bar). */
++    public static int clamp(int page, int pages) {
++        if (pages < 1) return 0;
++        if (page < 0) return 0;
++        return Math.min(page, pages - 1);
++    }
++
++    /** The page a flip lands on, wrapping at both ends exactly like cycleHotbar. */
++    public static int target(int page, int pages, int dir) {
++        if (pages < 1) return 0;
++        int p = clamp(page, pages);
++        int step = dir < 0 ? -1 : 1;
++        return ((p + step) % pages + pages) % pages;
++    }
++
++    /** "Page 2 of 3" — the state line both buttons carry; the forward one leads with it. */
++    public static String stateLine(int page, int pages) {
++        int p = clamp(page, pages);
++        return "Page " + (p + 1) + " of " + Math.max(1, pages);
++    }
++
++    public static String backName() { return "◀ Back page"; }
++    public static String forwardName() { return "Next page ▶"; }
++}

@@ -1,0 +1,198 @@
+===== Test report (source: wandbars-ux-build/build-0.3.8/TEST-REPORT.md) =====
+# ExcelWandBars 0.3.8 — test report
+
+Candidate: `ExcelWandBars-0.3.8.jar`, SHA-256
+`57b86601a8eafc87e16630cd32e725e9c3d329dd6d5e2cae8976008c0e5a37db`
+(511,977 bytes, 228 entries; built twice, byte-identical — the rebuild after
+the final PagerHook cursor refinement reproduced exactly).
+Base gate: the unmodified 0.3.7 tree rebuilt **byte-identical** to the
+shipped 0.3.7 jar (`fc77e22f…`, 499,456 bytes) before any change was made.
+Delta vs 0.3.7: 12 changed + 5 added entries, 0 removed — exactly the
+intended surface (ArrangeHook, TapBarHook, MagicHook, CompassGuard,
+ExcelWandBars, PagerHook + PagerPlan/JoinGuardPlan, plugin.yml, config.yml;
+inner-class byte shifts are synthetic-accessor renumbering, as in 0.3.7).
+
+## Pure suites (no Bukkit) — 301 checks, 0 failed
+
+| Suite | Checks | |
+|---|---|---|
+| BookHoldPlanTest | 51 | regression |
+| ArrangePlanTest | 25 | regression |
+| HoldReadPlanTest | 11 | regression |
+| BarLoadoutNewTest | 35 | regression |
+| SpellbookNewTest | 13 | regression |
+| UnarmedDragPlanTest | 14 | regression |
+| ExitSweepPlanTest | 23 | regression |
+| DragWritePlanTest | 38 | regression |
+| BarPositionTest | 35 | regression |
+| **PagerPlanTest** | **29** | **new: button slots 34/35, show only at 2+ pages, clamp, wraparound targets both directions, "Page X of Y" state line, names** |
+| **JoinGuardPlanTest** | **14** | **new: restored bar inside grace closes; churn-window stamps never exempt; post-churn engagement exempts; grace edge; off/style/no-stamp/bar-down all LEAVE** |
+| **DragWriteTwoTapTest** | **13** | **new: two-tap put onto an occupied slot; the same with a 9 s pause between taps (lift never expires); mid-carry placeWith onto an occupied slot; a duplicated terminal commit inside the dedupe window counts once (the "swaps back" shape); swap both directions; drag-off clear by place-outside and by whole-drag** |
+
+The nine regression suites total 245 — the exact 0.3.7 baseline. The Bukkit
+practice/consumer suites (187) and the resource-close suite (10) from the
+0.3.7 record exercise classes that are **byte-identical** in this candidate
+(proven by the entry diff above), so their 0.3.7 results carry over; they
+were not re-run.
+
+## Rig (Paper 26.3-235, Moon's lifecycle fixture, synthetic player) — 57 checks, 0 failed, SEVERE 0
+
+Probe038 (`rig/evidence/probe038-result.txt`, console
+`rig/evidence/boot12.console.log`, log `rig/evidence/boot12-latest.log`).
+The fixture wand was granted the fixture's full spell set so the loadout
+fills 3 pages. Proven at the event level:
+
+- **W (two-tap write fix):** pickup a bar icon, then close the wand
+  inventory outright mid-gesture (the repaint flicker at its worst) — the
+  place click is still interpreted and **the PUT lands** (mend/heal swap in
+  the model). Control: a steady-screen grid-carry put onto an **occupied**
+  slot lands first try.
+- **G (pager buttons):** buttons render at grid slots 34/35 with the PDC
+  marks and the forward lore reading "Page 1 of 3"; a bare tap on 35 flips
+  to page 2 (lore re-renders "Page 2 of 3"), a bare tap on 34 flips back;
+  a drag touching a button slot and a place attempt onto one are both
+  cancelled, the loadout is untouched, no drag-write lift is recorded, and
+  the buttons never move; a real item (dirt) placed in slot 34 is **not**
+  overwritten (the back button simply doesn't render) and the button
+  returns when the slot frees; closing the bar sweeps both buttons.
+- **J (join guard):** staged restored bar → `joinGuardCheck` returns
+  "closed", bar down. A post-churn engagement stamp → "leave", bar stays.
+  **Unscripted evidence:** the guard also fired on its own twice during
+  setup joins (`Join guard: ExcelSynthetic logged in with the spell bar
+  open; items restored` in the boot log, join-guard closes counter ≥ 1
+  before any staged phase ran).
+- **R (regression):** a normal two-tap swap still lands; the 0.3.6 exit
+  sweep still clears a foreign item from the exit column into the stored
+  inventory on open.
+
+## Desk-only / not rig-provable (player-owed, in the install packet)
+
+- **Item restoration after a guard close, for a real client.** The
+  fixture wand's activation consumes the synthetic player's loose items
+  before any open (proven by the probe's DIAG chain: 3 diamonds present
+  after setup, 0 in player *and* stored while the bar is open, before any
+  close), so the synthetic player cannot prove item return. The guard's
+  close is Magic's own `closeInventory()` — the same call as every Tap bar
+  exit since 0.2.4 — and Mike's proof #1 checks items + single compass
+  after a real join.
+- **Hold-read lift survival (Bedrock).** The failed-read fix (lifts are
+  cancelled only when the detail form actually opens) sits behind
+  `isBedrock`; the synthetic player is Java, so that branch is desk-proven
+  (code + plan tests) and covered by Mike's slow two-tap proof on Bedrock.
+- **The compass seam end-to-end** (ExcelBedrockMenu/MenuJoin giving into a
+  restored bar) needs the real join sequence of three plugins; the guard
+  closing the bar inside the grace window plus the scheduled compass tidy
+  is the mechanism, and Mike's proof #1 exercises it live.
+
+===== Build report (source: wandbars-ux-build/build-0.3.8/BUILD-REPORT.md) =====
+# ExcelWandBars 0.3.8 — BUILD report
+
+**Status: BUILT, desk- and rig-verified, ready for the install packet's
+gates.** Nothing was installed; the panel, the live server and MANIFEST.md
+were not touched.
+
+## Base verification (the STOP gate — PASSED)
+The 0.3.7 source tree (from `~/workspace/wandbars-0.3.7/work/`) was copied
+to `build-0.3.8/work/`, compiled unmodified with the tree's own classpath
+and repack rules (Temurin 25, base = 0.3.6 jar, 5 Geyser classes pinned),
+and produced a jar **byte-identical** to the shipped 0.3.7:
+`fc77e22f40e4719da86ea639efb91a0e46ddbf3ee02db37b12bf09ae5d770c59`.
+Only then was the delta written.
+
+## Candidate
+`ExcelWandBars-0.3.8.jar` — SHA-256
+`57b86601a8eafc87e16630cd32e725e9c3d329dd6d5e2cae8976008c0e5a37db`,
+511,977 bytes, 228 entries, built twice byte-identical.
+Tests: **301 pure checks, 0 failed** (245 regression = the 0.3.7 baseline,
+56 new). Rig on Paper 26.3-235: **57 checks, 0 failed, SEVERE 0**
+(`TEST-REPORT.md` has the full breakdown and the honest desk-only list).
+
+## What was built, per defect
+
+### 1. Pager buttons (new `PagerHook` + `core/PagerPlan`)
+While a Tap bar / Tap to pick player's spell bar is open in their own
+inventory screen, grid slots **34 (Back) and 35 (Next)** hold pager buttons
+— the settled design's "last two bottom-right slots". The forward button's
+lore carries **"Page X of Y"**; a bare tap flips via `MagicHook.flipPage`
+(the same wraparound as the wand click, which is untouched and stays).
+Buttons are PDC-marked with their page state, render only when the wand
+has 2+ pages, and are swept (marker-checked only) when the bar closes.
+Hard protection, two layers: ArrangeHook's four interpreters return early
+on any event touching a button slot, and PagerHook cancels every such
+click/drag itself — a button can never be lifted, carried, counted as a
+spell, or written. A place attempt carrying an icon is stopped but does
+**not** flip (only a bare tap flips). A foreign item in a button slot is
+never overwritten — that button simply doesn't render (counted in the
+pager summary). Poll-based rendering (10 ticks) re-renders after any page
+change, including Magic's own repaints wiping the slots mid-flip.
+
+### 2. Two-tap write fix (`ArrangeHook`, plan pinned by DragWritePlan)
+Root cause, from the code: a put is a two-gesture sequence whose terminal
+click was judged against the *full* drag context — including the bar being
+open at that instant. A repaint (a commit's, a cooldown icon's) can close
+the bar's screen state between the taps; the place then fell through to
+vanilla, the virtual icon physically moved, and the next repaint snapped
+it back. Removes are a single gesture, so they always landed — exactly
+Mike's report. Three changes:
+- **Commit context:** a gesture already in flight (recorded lift, or an
+  icon on the cursor) keeps its terminal commit under a lighter context —
+  drag-write on, unarmed, Tap bar style, still in the player's own screen —
+  never the bar's momentary open state.
+- **Lift rescue:** two ticks after a pickup, if the bar died mid-gesture,
+  it is reopened at once so the place lands in a live presentation.
+- **Hold-read:** a pending lift is cancelled only when the read form
+  actually opens (0.3.7 cancelled unconditionally, so a ≥800 ms pause
+  between taps on Bedrock silently killed the gesture whenever the read
+  couldn't open its page).
+Drag-off-to-remove is unchanged (layout only, spell stays learned).
+
+### 3. Login wand-mode trap (`TapBarHook` join guard + `core/JoinGuardPlan`)
+On join, checks run at 30/80/160 ticks: a spell bar open inside the grace
+window with no deliberate engagement since the join is a *restored* bar —
+the guard closes it with Magic's own close (items restored) and logs
+`Join guard: <name> logged in with the spell bar open; items restored
+(joins start on your items)`, tells the player one gray line, and
+schedules a CompassGuard tidy (a compass handed out at join can now be
+deduped against the restored inventory — WandBars never gives, eats, or
+duplicates compasses; CompassGuard's existing dedupe does the tidy).
+Engagement = a slot pick or a bar open stamped after the first-second
+churn window (the wand-slot sweep stamps picks server-side at join, so
+stamps inside that window prove nothing). The exit is hotbar-level and
+slot-independent by construction, so nothing parked in the exit slot can
+block it.
+
+## Design decisions made inside the brief's latitude
+1. **"Spell inventory" = the player's own inventory screen while the bar
+   is open** (the surface drag-write and Arrange already own), and the
+   buttons flip **wand hotbar pages** — the pages Mike paged through in
+   the report ("Page 2 of 3"). Grid slots 34/35 are the bottom-right pair
+   of that screen, as the design note specifies.
+2. **Buttons render only at 2+ pages** (one page = nowhere to flip; the
+   two slots stay the player's).
+3. **Flip gesture = a bare tap** (empty cursor). Carrying taps are treated
+   as (blocked) place attempts, not page flips.
+4. **Join grace = 8 s** with checks at 1.5 s / 4 s / 8 s, and the
+   engagement exemption uses a 1 s post-join churn window. All three
+   values are config keys (`tap-bar.join-starts-on-items`,
+   `tap-bar.join-grace-ms`, `tap-bar.pager-buttons.enabled`), honored from
+   code defaults — the live config does not need the keys added.
+5. The join guard covers the **Tap bar / Tap to pick** styles (the
+   opens-on-hold family the trap was reported on); Classic/Sneak bars
+   joins are untouched.
+
+## One mid-build catch worth recording
+The first candidate's `plugin.yml` was invalid YAML (a `": "` inside the
+new description sentence) and Paper refused the plugin on the first rig
+boot. Fixed by rephrasing; both shipped YAML files are now parser-verified
+in the build steps. The final candidate hash above is the fixed one.
+
+## Files in this folder
+- `ExcelWandBars-0.3.8.jar` — the candidate.
+- `SOURCE.md` — source state and provenance (the full 0.3.8 tree is in
+  `work/`; base jars kept alongside).
+- `TEST-REPORT.md` — suites, rig, desk-only list.
+- `INSTALL-PACKET.md` — gate hash, backup name, swap steps, boot-verify
+  lines, rollback, player proofs.
+- `tests/` — the twelve pure suites (9 regression + 3 new).
+- `rig/` — Probe038 source, prep script, probe jar, evidence
+  (`probe038-result.txt`, `boot12.console.log`, `boot12-latest.log`).
