@@ -1,0 +1,90 @@
+===== Test report (source: party-mesh/build-0.5.1/TEST-REPORT.md) =====
+# ExcelTogether 0.5.1 — TEST REPORT
+
+Build: `bash build.sh` in this folder. Everything below ran against the candidate jar
+`f2e5b7d3284474c250852dabde708efe3fea2f1dc1109ad6c763e564de2f517f` (159,821 bytes),
+which build.sh assembles twice and hash-asserts.
+
+## Base proof (before any delta)
+
+Unmodified 0.5.0 tree rebuilt in this folder:
+`f4490814a9d4ec2e33540126adf6b418a0b58a50b27172119e45950d67353529` (149,568 bytes) —
+**byte-identical to the shipped live 0.5.0 jar**, reproducible across two builds.
+
+## Unit suite (headless, run by build.sh)
+
+**791 checks, 0 failures** = the full inherited 0.5.0 suite (764: PartyTest 18,
+PartyFeatureTest 196, RangeIndicatorTest 61, McmmoLinkTest 79, McmmoSyncTest 86,
+ShareTest 30, XpShareTest 22, BaseRulesTest 100, EmSyncTest 93, EmLinkMappingTest 73,
+PartyLookupTest 6) plus the new **PartyRepairTest: 27 checks**:
+
+- Slot scope mirrors stock exactly: armor+held = HEAD, CHEST, LEGS, FEET, HAND —
+  **OFF_HAND never in the list** (armor-only / held-only / neither also checked).
+- The write-back proof: a fake EntityEquipment records every `setItem` with the stack's
+  damage at the moment of the call. A full damaged kit repairs exactly the 3 damaged
+  covered items (undamaged chestplate and empty boots skipped), each write-back lands
+  with damage already 0 (zero-before-set ordering), and the damaged OFFHAND shield
+  (300) is neither zeroed nor written.
+- Wand exclusion (predicate-identified wand in hand is skipped), non-damageable worn
+  item skipped, all-pristine equipment repairs 0 (the unit-level whiff), null
+  equipment repairs 0.
+- Roster selection: solo caster = himself; caster first, roster order kept, duplicates
+  collapsed; cross-world member excluded; unresolvable (offline) and not-online
+  (grace) members excluded; no-cap reaches a 100-block member, a 10-block cap drops
+  him and keeps the near one; the bridge degrades to {self} while unbound.
+- Note on method: Paper 26 `new ItemStack(Material)` needs a live server registry, so
+  the test allocates stacks constructor-free (`Unsafe.allocateInstance`, the ShareTest
+  pattern) and the fake DamageModel answers by identity — no ItemStack method is ever
+  invoked headless. The production META model (real Damageable meta) is proven on the
+  rig below, by durability deltas.
+
+## Rig proof (Paper 26.3-235, Magic 11.2.5, Jobs + CMILib + Vault; log: rig/boot-L1-console.log)
+
+Driver: `rig/driver/` (PartyRepairRig, rig-only, never shipped) — five fake players
+(RigDriver2's NMS pattern) on one platform, same damaged kit (helmet 100, chestplate
+150, leggings 120, boots 80, sword 200, offhand shield 90). Party formed through the
+real PartyManager (`adopt`). **All verdicts are DURABILITY DELTAS**, per the study's
+warning — not cast results.
+
+Registration timing (the open design risk) resolved in favor of onLoad: the boot log
+shows `[ExcelTogether] ExcelTogether: party-repair Magic actions registered
+(ExcelPartyRepair, ExcelRepairItem).` in the load phase, the awake line ends
+`Magic party repair: ON (ExcelPartyRepair + ExcelRepairItem registered).`, and Magic
+loads the Flavor B spell with no error.
+
+- **PARTY-CASTER-REPAIRED PASS** — caster 100/150/120/80/200 -> 0/0/0/0/0, offhand stays 90.
+- **PARTY-ALLY-REPAIRED PASS** — ally identical deltas to 0, offhand stays 90.
+- **STRANGER-UNTOUCHED PASS** — non-party player in the same spot: all six values unchanged.
+- Together's own cast summary in the log: `ExcelTogether party repair: RigCaster
+  repaired 10 item(s) across 2 party member(s).`
+- **RECAST-REFUSED PASS** — immediate recast returned false; remaining cooldown
+  **14,395,119 ms** (the 4-hour cooldown, engine-enforced).
+- **SOLO-REPAIRED PASS** — a party-less caster's cast repairs his own 5 items
+  (`repaired 5 item(s) across 1 party member(s)`), offhand untouched.
+- **WHIFF finding** — RigWhiff (pristine kit) cast: the action repaired nothing and
+  said so (`ExcelTogether party repair: RigWhiff cast Repair Equipment - nothing in
+  the party needed repair.`), the cast itself returned true, and the recast probe
+  shows **remaining 14,397,975 ms — a total whiff burns the full 4-hour cooldown.**
+  This matches the study's boot-4 result for the stock spell and is structural:
+  Magic charges the cooldown when the spell casts, the spell casts because its
+  target set (the party) is non-empty, and the action API offers no post-hoc veto.
+  Reported plainly, per the brief; no engine hack attempted.
+
+## Fail-soft legs
+
+- **L2 — no Magic** (log: rig/boot-L2-console.log): ExcelTogether 0.5.1 enables fully;
+  awake line ends `Magic party repair: OFF (Magic not installed).`; server reaches
+  Done; no Together errors. (The only ERROR lines are Jobs' own "Vault economy
+  missing" rig noise — no economy plugin exists in the rig; unrelated to 0.5.1.)
+- **L3 — Magic + Flavor B spells, no Together jar** (log: rig/boot-L3-console.log):
+  Magic logs exactly one scoped WARN — `Error loading class ExcelPartyRepair for
+  spell Repair Equipment` / `Failed to resolve class: ExcelPartyRepair` — loads its
+  spells and reaches Done. So a spells-before-jar order degrades one spell with one
+  warning, never the server. The packets still sequence jar-first.
+
+## Not covered here (player proof, per the study §7)
+
+On live, with real clients: two+ party members in damaged gear cast and verify the
+repair **in the inventory screen**, a non-party bystander control, the caster's
+recast refusal, and relog persistence of the cooldown (the cooldown lives in Magic's
+per-player mage data; the rig proves refusal + remaining-ms within a session).

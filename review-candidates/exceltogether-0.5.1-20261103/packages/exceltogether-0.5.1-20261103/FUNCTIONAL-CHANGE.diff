@@ -1,0 +1,569 @@
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceltogether/EquipmentRepair.java b/src/com/winkreyes/exceltogether/EquipmentRepair.java
+--- a/prev-src/com/winkreyes/exceltogether/EquipmentRepair.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/exceltogether/EquipmentRepair.java	2026-11-02 02:13:24.137206798 +0000
+@@ -0,0 +1,115 @@
++package com.winkreyes.exceltogether;
++
++import org.bukkit.Material;
++import org.bukkit.inventory.EntityEquipment;
++import org.bukkit.inventory.EquipmentSlot;
++import org.bukkit.inventory.ItemStack;
++import org.bukkit.inventory.meta.Damageable;
++import org.bukkit.inventory.meta.ItemMeta;
++
++import java.util.ArrayList;
++import java.util.List;
++import java.util.function.Predicate;
++
++/**
++ * ExcelTogether 0.5.1 - the write-back equipment repair behind the Magic
++ * party-repair actions (ExcelPartyRepairAction / ExcelRepairItemAction).
++ *
++ * Why this exists: Magic's stock RepairItemAction cannot repair WORN gear
++ * on Paper 26.3. EntityEquipment getters hand out copies
++ * (CraftEntityEquipment returns asBukkitCopy), so the stock action zeroes
++ * the damage on a throwaway and reports CAST while nothing in the world
++ * changes (proven in ~/workspace/spell-audit/REPAIREQUIP-REDESIGN.md §4).
++ * The fix is one discipline: get -> zero the damage -> SET BACK through
++ * the equipment setter, which writes through (asNMSCopy -> setItemSlot).
++ *
++ * Slot scope mirrors the stock action exactly: with armor, helmet /
++ * chestplate / leggings / boots; with held_item, the MAIN hand only.
++ * The offhand is never read and never written. Wands are excluded via
++ * the caller's predicate (MagicAPI.isWand in production).
++ *
++ * The damage reads/writes go through a DamageModel seam so the decision
++ * logic and the write-back ordering are unit-testable headless; the
++ * production model uses the Damageable item meta. Excel - Wink Reyes Valley.
++ */
++public final class EquipmentRepair {
++    private EquipmentRepair() {}
++
++    /** Reads and zeroes an item's damage. META is the in-game model. */
++    public interface DamageModel {
++        /** True for an empty (air) stack, which is never repairable. */
++        boolean isAir(ItemStack stack);
++        /** Max durability of the item; 0 (or less) means not damageable. */
++        int maxDamage(ItemStack stack);
++        /** Current damage; 0 when the item carries none or is not damageable. */
++        int damage(ItemStack stack);
++        /** Set the item's damage to 0, on the given stack instance. */
++        void zeroDamage(ItemStack stack);
++    }
++
++    /** Production model: the Damageable item meta, the modern Bukkit path. */
++    public static final DamageModel META = new DamageModel() {
++        @Override public boolean isAir(ItemStack stack) {
++            return stack.getType() == Material.AIR;
++        }
++        @Override public int maxDamage(ItemStack stack) {
++            return stack.getType().getMaxDurability();
++        }
++        @Override public int damage(ItemStack stack) {
++            ItemMeta meta = stack.getItemMeta();
++            return meta instanceof Damageable d ? d.getDamage() : 0;
++        }
++        @Override public void zeroDamage(ItemStack stack) {
++            ItemMeta meta = stack.getItemMeta();
++            if (meta instanceof Damageable d) {
++                d.setDamage(0);
++                stack.setItemMeta(meta);
++            }
++        }
++    };
++
++    /**
++     * The slots a repair covers, in stock order. The offhand is absent by
++     * design: stock RepairItemAction never touches it, and 0.5.1 mirrors
++     * stock semantics exactly.
++     */
++    public static List<EquipmentSlot> slots(boolean armor, boolean heldItem) {
++        List<EquipmentSlot> out = new ArrayList<>(5);
++        if (armor) {
++            out.add(EquipmentSlot.HEAD);
++            out.add(EquipmentSlot.CHEST);
++            out.add(EquipmentSlot.LEGS);
++            out.add(EquipmentSlot.FEET);
++        }
++        if (heldItem) out.add(EquipmentSlot.HAND);
++        return out;
++    }
++
++    /** True when the stack is a real, damaged, repairable non-wand item. */
++    public static boolean repairable(ItemStack stack, Predicate<ItemStack> isWand, DamageModel model) {
++        return stack != null
++                && !model.isAir(stack)
++                && !isWand.test(stack)
++                && model.maxDamage(stack) > 0
++                && model.damage(stack) > 0;
++    }
++
++    /**
++     * Repair every covered slot of the given equipment. Each repaired item
++     * is read, zeroed, and SET BACK through the equipment setter - the
++     * write-back Paper 26.3 requires. Returns the number of items repaired.
++     */
++    public static int repair(EntityEquipment equipment, boolean armor, boolean heldItem,
++                             Predicate<ItemStack> isWand, DamageModel model) {
++        if (equipment == null) return 0;
++        int repaired = 0;
++        for (EquipmentSlot slot : slots(armor, heldItem)) {
++            ItemStack stack = equipment.getItem(slot);
++            if (!repairable(stack, isWand, model)) continue;
++            model.zeroDamage(stack);
++            equipment.setItem(slot, stack);
++            repaired++;
++        }
++        return repaired;
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceltogether/ExcelPartyRepairAction.java b/src/com/winkreyes/exceltogether/ExcelPartyRepairAction.java
+--- a/prev-src/com/winkreyes/exceltogether/ExcelPartyRepairAction.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/exceltogether/ExcelPartyRepairAction.java	2026-11-02 02:08:27.651195291 +0000
+@@ -0,0 +1,62 @@
++package com.winkreyes.exceltogether;
++
++import com.elmakers.mine.bukkit.action.CompoundEntityAction;
++import com.elmakers.mine.bukkit.api.action.CastContext;
++import com.elmakers.mine.bukkit.api.spell.Spell;
++
++import org.bukkit.Bukkit;
++import org.bukkit.configuration.ConfigurationSection;
++import org.bukkit.entity.Entity;
++import org.bukkit.entity.Player;
++
++import java.lang.ref.WeakReference;
++import java.util.Collection;
++import java.util.List;
++import java.util.UUID;
++
++/**
++ * ExcelTogether 0.5.1 - Magic action "ExcelPartyRepair": a compound
++ * entity action whose entity set is the caster's ExcelTogether party -
++ * the true-party variant of the Repair Equipment redesign
++ * (REPAIREQUIP-REDESIGN.md §6, Flavor B). Where AreaOfEffect collects
++ * whoever stands near the caster (strangers in, absent members out),
++ * this collects exactly the roster of record: the caster's party
++ * members, online and in the caster's world, the caster included. A
++ * solo caster's set is himself, so the spell still repairs him alone.
++ *
++ * The per-entity step is CompoundEntityAction's own: each collected
++ * member is installed as the target in turn and the child actions run
++ * (in the shipped spell block, ExcelRepairItem). An optional max_range
++ * parameter (blocks, default 0 = no cap) can bound how far a member
++ * may be and still be included.
++ *
++ * Registered with Magic by ReflectMagicLink when Magic is present;
++ * this class is only ever loaded in that case. Excel - Wink Reyes Valley.
++ */
++public class ExcelPartyRepairAction extends CompoundEntityAction {
++    private double maxRange;
++
++    @Override
++    public void prepare(CastContext context, ConfigurationSection parameters) {
++        super.prepare(context, parameters);
++        maxRange = parameters.getDouble("max_range", 0);
++        if (maxRange < 0) maxRange = 0;
++    }
++
++    @Override
++    public void addEntities(CastContext context, List<WeakReference<Entity>> entities) {
++        Player caster = context.getMage() == null ? null : context.getMage().getPlayer();
++        if (caster == null && context.getTargetEntity() instanceof Player p) caster = p;
++        if (caster == null) return;
++        List<UUID> members = PartyRepairBridge.partyMembersOf(caster.getUniqueId());
++        for (Player member : PartyRoster.select(caster, members, maxRange, Bukkit::getPlayer)) {
++            entities.add(new WeakReference<>(member));
++        }
++    }
++
++    @Override
++    public void getParameterNames(Spell spell, Collection<String> parameters) {
++        super.getParameterNames(spell, parameters);
++        parameters.add("max_range");
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceltogether/ExcelRepairItemAction.java b/src/com/winkreyes/exceltogether/ExcelRepairItemAction.java
+--- a/prev-src/com/winkreyes/exceltogether/ExcelRepairItemAction.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/exceltogether/ExcelRepairItemAction.java	2026-11-02 02:08:27.651195291 +0000
+@@ -0,0 +1,99 @@
++package com.winkreyes.exceltogether;
++
++import com.elmakers.mine.bukkit.action.BaseSpellAction;
++import com.elmakers.mine.bukkit.api.action.CastContext;
++import com.elmakers.mine.bukkit.api.magic.MagicAPI;
++import com.elmakers.mine.bukkit.api.spell.Spell;
++import com.elmakers.mine.bukkit.api.spell.SpellResult;
++
++import org.bukkit.Bukkit;
++import org.bukkit.configuration.ConfigurationSection;
++import org.bukkit.entity.Entity;
++import org.bukkit.entity.LivingEntity;
++import org.bukkit.inventory.EntityEquipment;
++import org.bukkit.inventory.ItemStack;
++import org.bukkit.plugin.Plugin;
++
++import java.util.Collection;
++import java.util.function.Predicate;
++import java.util.logging.Logger;
++
++/**
++ * ExcelTogether 0.5.1 - Magic action "ExcelRepairItem": the write-back
++ * twin of Magic's stock RepairItemAction. Same parameters (armor /
++ * held_item), same slot scope (four armor slots + main hand, never the
++ * offhand), same wand exclusion - but where the stock action mutates
++ * the copies Paper 26.3 equipment getters hand out and so repairs
++ * nothing at all (REPAIREQUIP-REDESIGN.md §4), this one sets each
++ * repaired item back through the equipment setter via EquipmentRepair.
++ *
++ * Registered with Magic by ReflectMagicLink when Magic is present;
++ * this class is only ever loaded in that case. Per cast it tallies
++ * what it repaired and reports once, from finish(): a summary line in
++ * the server log, and - when a whole cast repaired nothing - an honest
++ * note to the caster in game. Excel - Wink Reyes Valley.
++ */
++public class ExcelRepairItemAction extends BaseSpellAction {
++    private boolean armor;
++    private boolean heldItem;
++    private int castItems;
++    private int castMembers;
++
++    private static final Predicate<ItemStack> IS_WAND = stack -> {
++        Plugin magic = Bukkit.getPluginManager().getPlugin("Magic");
++        return magic instanceof MagicAPI api && api.isWand(stack);
++    };
++
++    @Override
++    public void prepare(CastContext context, ConfigurationSection parameters) {
++        super.prepare(context, parameters);
++        armor = parameters.getBoolean("armor", false);
++        heldItem = parameters.getBoolean("held_item", false);
++        castItems = 0;
++        castMembers = 0;
++    }
++
++    @Override
++    public SpellResult perform(CastContext context) {
++        Entity target = context.getTargetEntity();
++        if (!(target instanceof LivingEntity living)) return SpellResult.NO_TARGET;
++        EntityEquipment equipment = living.getEquipment();
++        if (equipment == null) return SpellResult.NO_TARGET;
++        int repaired = EquipmentRepair.repair(equipment, armor, heldItem, IS_WAND, EquipmentRepair.META);
++        if (repaired <= 0) return SpellResult.NO_TARGET;
++        castItems += repaired;
++        castMembers++;
++        return SpellResult.CAST;
++    }
++
++    @Override
++    public void finish(CastContext context) {
++        super.finish(context);
++        Logger log = PartyRepairBridge.logger();
++        String caster = context.getMage() == null ? "?" : context.getMage().getName();
++        if (castItems > 0) {
++            if (log != null) {
++                log.info("ExcelTogether party repair: " + caster + " repaired " + castItems
++                        + " item(s) across " + castMembers + " party member(s).");
++            }
++        } else {
++            if (log != null) {
++                log.info("ExcelTogether party repair: " + caster
++                        + " cast Repair Equipment - nothing in the party needed repair.");
++            }
++            context.sendMessage("Repair Equipment: nobody in your party needed repairs.");
++        }
++    }
++
++    @Override
++    public boolean requiresTargetEntity() {
++        return true;
++    }
++
++    @Override
++    public void getParameterNames(Spell spell, Collection<String> parameters) {
++        super.getParameterNames(spell, parameters);
++        parameters.add("armor");
++        parameters.add("held_item");
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceltogether/ExcelTogether.java b/src/com/winkreyes/exceltogether/ExcelTogether.java
+--- a/prev-src/com/winkreyes/exceltogether/ExcelTogether.java	2026-11-01 18:40:42.181142537 +0000
++++ b/src/com/winkreyes/exceltogether/ExcelTogether.java	2026-11-02 02:08:47.434196059 +0000
+@@ -29,6 +29,9 @@
+  * share grants through ExcelRewardGuard's observed path when it is present.
+  * 0.5.0 is the party mesh: /party, /excelparty and /em party are one party (EmSync + EmLink, with the
+  * EliteMobs party as its face), and the PartyLookup service is published for party-share consumers.
++ * 0.5.1 registers two Magic actions (ExcelPartyRepair + ExcelRepairItem) so the Repair Equipment spell
++ * repairs the whole party's worn gear at once - the roster bridge is PartyRepairBridge, the reflective
++ * registration is ReflectMagicLink, the write-back repair itself is EquipmentRepair.
+  * The command is /excelparty (aliases /eparty, /together) because mcMMO owns /party on this server.
+  */
+ public final class ExcelTogether extends JavaPlugin implements Listener, Env {
+@@ -39,6 +42,8 @@
+     private BarPolicy barPolicy;
+     private BarPolicy.Gap gainGap;
+     private boolean compassClick;
++    /** 0.5.1: set in onLoad when the party-repair Magic actions were registered there. */
++    private boolean partyRepairRegistered;
+     private long idleMs; private double bonusMult = PartyBonus.DEFAULT_MULTIPLIER;
+     private final Map<UUID, Long> lastActive = new HashMap<>();
+     long rangeLines = 0L;
+@@ -58,6 +63,21 @@
+     @EventHandler(priority = EventPriority.MONITOR) public void onClick(org.bukkit.event.player.PlayerInteractEvent e) { touch(e.getPlayer().getUniqueId()); }
+     @EventHandler(priority = EventPriority.MONITOR) public void onBreak(org.bukkit.event.block.BlockBreakEvent e) { touch(e.getPlayer().getUniqueId()); }
+ 
++    /**
++     * 0.5.1: register the party-repair Magic actions as early as Bukkit allows. Magic resolves
++     * spell action classes in its own onEnable, and every plugin's onLoad runs before any
++     * onEnable, so registering here beats Magic's spell load. Fail-soft: a missing Magic (or an
++     * API that differs) just leaves the actions unregistered; setupMagicLink reports the state
++     * in the awake line, and ExcelTogether works exactly as before either way.
++     */
++    @Override public void onLoad() {
++        if (Bukkit.getPluginManager().getPlugin("Magic") == null) return;
++        partyRepairRegistered = new ReflectMagicLink().register();
++        if (partyRepairRegistered) {
++            getLogger().info("ExcelTogether: party-repair Magic actions registered (ExcelPartyRepair, ExcelRepairItem).");
++        }
++    }
++
+     @Override public void onEnable() {
+         saveDefaultConfig();
+         PartyBonus bonus = new PartyBonus(getConfig().getDouble("multiplier", PartyBonus.DEFAULT_MULTIPLIER),
+@@ -94,6 +114,7 @@
+         ctl.setLogSink(getLogger()::info);
+         String linkNote = setupMcmmoLink();
+         String emNote = setupEmLink();
++        String magicNote = setupMagicLink();
+         ctl.setStatus(v -> { Player pl = Bukkit.getPlayer(v.id()); return pl == null ? List.of() : finder.status(pl); });
+         ShareSink sink = sharePct > 0 ? new JobsShareSink() : null;
+         getServer().getPluginManager().registerEvents(new PartyListener(bonus, finder, sink, sharePct,
+@@ -106,7 +127,7 @@
+         for (Player pl : Bukkit.getOnlinePlayers()) combatDrops.refreshHp(pl.getUniqueId());
+         Bukkit.getScheduler().runTaskTimer(this, () -> ctl.tick(), 20L, 20L);
+         Bukkit.getScheduler().runTaskTimer(this, this::tickIndicator, 60L, 50L);   // WRV-068: range line every 2.5s
+-        getLogger().info("ExcelTogether 0.5.0 enabled: x" + bonus.multiplier() + " money and XP, bonus-mode " + mode
++        getLogger().info("ExcelTogether 0.5.1 enabled: x" + bonus.multiplier() + " money and XP, bonus-mode " + mode
+                 + ", radius " + bonus.radius() + " blocks, parties up to " + mgr.maxSize() + ", invites last "
+                 + (mgr.ttlMs() / 1000) + "s, compass click invite " + (compassClick ? "ON" : "off") + ". Bedrock forms: "
+                 + (Bukkit.getPluginManager().getPlugin("Geyser-Spigot") != null ? "Geyser found" : "no Geyser, chat menu only")
+@@ -115,7 +136,7 @@
+                 + ". Range indicator: action bar " + barPolicy.mode().name().toLowerCase()
+                 + (barPolicy.mode() == BarPolicy.Mode.CHANGES ? " (hold " + barPolicy.holdMs() + " ms, reminder " + (barPolicy.repeatMs() > 0 ? barPolicy.repeatMs() / 1000 + "s" : "off") + ")" : "")
+                 + ", gain lines at most every " + (gainGap.gapMs() / 1000) + "s, cue hysteresis 3s. " + combatDrops.summary()
+-                + ". EliteMobs mesh: " + emNote + ". PartyLookup service: published.");
++                + ". EliteMobs mesh: " + emNote + ". PartyLookup service: published. Magic party repair: " + magicNote + ".");
+     }
+ 
+     /**
+@@ -159,9 +180,36 @@
+ 
+     /** 0.5.0: the only job of onDisable is dropping our service registrations (0.4.x had no onDisable). */
+     @Override public void onDisable() {
++        PartyRepairBridge.unbind();
+         getServer().getServicesManager().unregisterAll(this);
+     }
+ 
++    /**
++     * 0.5.1 soft link to Magic: binds the roster bridge the party-repair actions read, and
++     * reports the registration state from onLoad. Registration itself is an onLoad job (it
++     * must beat Magic's spell load); the retry here exists only for a load order where
++     * onLoad could not see Magic - a late registration still serves a later spells reload.
++     * Any problem just leaves the link off; ExcelTogether works exactly as before.
++     */
++    private String setupMagicLink() {
++        if (!getConfig().getBoolean("magic-party-repair", true)) return "OFF (config)";
++        org.bukkit.plugin.Plugin magic = Bukkit.getPluginManager().getPlugin("Magic");
++        if (magic == null) return "OFF (Magic not installed)";
++        if (partyRepairRegistered) {
++            PartyRepairBridge.bind(mgr, getLogger());
++            return "ON (ExcelPartyRepair + ExcelRepairItem registered)";
++        }
++        ReflectMagicLink link = new ReflectMagicLink();
++        if (link.register()) {
++            partyRepairRegistered = true;
++            PartyRepairBridge.bind(mgr, getLogger());
++            getLogger().warning("Magic party repair registered late (onEnable, not onLoad) - a Magic spells reload may be needed before Repair Equipment can use it.");
++            return "ON (registered late - spells reload may be needed)";
++        }
++        getLogger().warning("Magic party repair OFF: " + link.failure());
++        return "OFF (Magic API differs)";
++    }
++
+     /** Gain lines (Jobs + mcMMO share) share one throttle: the BarPolicy gap, and nothing at all when the bar is off. */
+     private BiConsumer<OfflinePlayer, String> gainBar() {
+         return (op, t) -> {
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceltogether/PartyRepairBridge.java b/src/com/winkreyes/exceltogether/PartyRepairBridge.java
+--- a/prev-src/com/winkreyes/exceltogether/PartyRepairBridge.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/exceltogether/PartyRepairBridge.java	2026-11-02 02:08:07.685194516 +0000
+@@ -0,0 +1,52 @@
++package com.winkreyes.exceltogether;
++
++import java.util.List;
++import java.util.UUID;
++import java.util.logging.Logger;
++
++/**
++ * ExcelTogether 0.5.1 - the bridge between the plugin and its two Magic
++ * action classes (ExcelPartyRepairAction / ExcelRepairItemAction).
++ *
++ * Magic instantiates action classes itself (no-arg, via ActionFactory),
++ * so the actions cannot receive the PartyManager by constructor. The
++ * plugin binds it here at enable time instead - the same roster of
++ * record MagicLevelPartyLookup publishes - and unbinds at disable.
++ * Unbound (Magic link off, or any time outside enable), the roster of
++ * any player degrades to {self}: the actions then repair the caster
++ * alone rather than failing. Excel - Wink Reyes Valley.
++ */
++public final class PartyRepairBridge {
++    private PartyRepairBridge() {}
++
++    private static volatile PartyManager parties;
++    private static volatile Logger logger;
++
++    public static void bind(PartyManager partyManager, Logger log) {
++        parties = partyManager;
++        logger = log;
++    }
++
++    public static void unbind() {
++        parties = null;
++        logger = null;
++    }
++
++    public static boolean bound() { return parties != null; }
++
++    public static Logger logger() { return logger; }
++
++    /**
++     * The party roster for a player, leader first, the player included -
++     * or a list of just the player when he is solo or the bridge is
++     * unbound. Mirrors MagicLevelPartyLookup.partyMembers, in roster
++     * order. Offline-grace members are included here; the caller's
++     * selection (PartyRoster) gates on online / same-world.
++     */
++    public static List<UUID> partyMembersOf(UUID player) {
++        PartyManager pm = parties;
++        if (pm == null) return List.of(player);
++        PartyManager.Party party = pm.partyOf(player);
++        return party == null ? List.of(player) : party.members;
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceltogether/PartyRoster.java b/src/com/winkreyes/exceltogether/PartyRoster.java
+--- a/prev-src/com/winkreyes/exceltogether/PartyRoster.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/exceltogether/PartyRoster.java	2026-11-02 02:08:07.625194514 +0000
+@@ -0,0 +1,59 @@
++package com.winkreyes.exceltogether;
++
++import org.bukkit.Location;
++import org.bukkit.World;
++import org.bukkit.entity.Player;
++
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.LinkedHashSet;
++import java.util.List;
++import java.util.UUID;
++import java.util.function.Function;
++
++/**
++ * ExcelTogether 0.5.1 - turns a party's member UUIDs into the players a
++ * party-wide effect may touch: online, in the caster's world, and (when
++ * maxRange > 0) within maxRange blocks of the caster. The caster is
++ * always first and always included - a solo caster's roster is himself,
++ * so a party spell cast alone still repairs the caster.
++ *
++ * Cross-world members are skipped: the roster is the targeting decision
++ * for the party-repair action (see REPAIREQUIP-REDESIGN.md §6-B, which
++ * specifies online + same-world), and Magic's per-entity step works in
++ * the caster's world context.
++ *
++ * Pure Bukkit-interface logic (Player / World are interfaces), so the
++ * selection rules are unit-testable headless. Excel - Wink Reyes Valley.
++ */
++public final class PartyRoster {
++    private PartyRoster() {}
++
++    /**
++     * @param caster       the casting player (always included)
++     * @param memberIds    the party roster including the caster; may be null
++     * @param maxRange     distance cap in blocks; 0 or negative means no cap
++     * @param onlinePlayer resolves a UUID to the online Player, or null
++     * @return the selected players, caster first, then roster order
++     */
++    public static List<Player> select(Player caster, Collection<UUID> memberIds, double maxRange,
++                                      Function<UUID, Player> onlinePlayer) {
++        LinkedHashSet<UUID> ids = new LinkedHashSet<>();
++        ids.add(caster.getUniqueId());
++        if (memberIds != null) ids.addAll(memberIds);
++        World world = caster.getWorld();
++        Location origin = caster.getLocation();
++        double capSquared = maxRange * maxRange;
++        List<Player> out = new ArrayList<>(ids.size());
++        for (UUID id : ids) {
++            boolean self = id.equals(caster.getUniqueId());
++            Player p = self ? caster : onlinePlayer.apply(id);
++            if (p == null || !p.isOnline()) continue;
++            if (!world.equals(p.getWorld())) continue;
++            if (!self && maxRange > 0
++                    && p.getLocation().distanceSquared(origin) > capSquared) continue;
++            out.add(p);
++        }
++        return out;
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceltogether/ReflectMagicLink.java b/src/com/winkreyes/exceltogether/ReflectMagicLink.java
+--- a/prev-src/com/winkreyes/exceltogether/ReflectMagicLink.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/exceltogether/ReflectMagicLink.java	2026-11-02 02:08:27.626195290 +0000
+@@ -0,0 +1,51 @@
++package com.winkreyes.exceltogether;
++
++import org.bukkit.Bukkit;
++import org.bukkit.plugin.Plugin;
++
++import java.lang.reflect.Method;
++
++/**
++ * ExcelTogether 0.5.1 - registers the two party-repair action classes
++ * with Magic, reflectively, in the house style of ReflectMcmmoLink /
++ * ReflectEmLink: no Magic type is named outside the action classes
++ * themselves, and the action classes are named only as strings here,
++ * so nothing in this path can fail to load when Magic is absent.
++ *
++ * Registration happens in ExcelTogether.onLoad, before any plugin's
++ * onEnable: Magic loads its spells (and resolves their action classes)
++ * in its own onEnable, so the classes must be in ActionFactory's
++ * registry by then. ActionFactory.registerActionClass is a static
++ * registry call that needs nothing from Magic's enable lifecycle.
++ * Excel - Wink Reyes Valley.
++ */
++public final class ReflectMagicLink {
++    private String failure;
++
++    /** The outcome of the last register() attempt, for the awake line / log. */
++    public String failure() { return failure; }
++
++    /**
++     * Register ExcelPartyRepair + ExcelRepairItem with Magic's
++     * ActionFactory. Returns false (with failure() set) when Magic is
++     * absent or its API differs; the caller leaves the link off and
++     * ExcelTogether runs exactly as before.
++     */
++    public boolean register() {
++        try {
++            Plugin magic = Bukkit.getPluginManager().getPlugin("Magic");
++            if (magic == null) { failure = "Magic not installed"; return false; }
++            Class<?> factory = Class.forName("com.elmakers.mine.bukkit.action.ActionFactory",
++                    true, magic.getClass().getClassLoader());
++            Method register = factory.getMethod("registerActionClass", String.class, Class.class);
++            register.invoke(null, "ExcelPartyRepair",
++                    Class.forName("com.winkreyes.exceltogether.ExcelPartyRepairAction"));
++            register.invoke(null, "ExcelRepairItem",
++                    Class.forName("com.winkreyes.exceltogether.ExcelRepairItemAction"));
++            return true;
++        } catch (Throwable t) {
++            failure = t.toString();
++            return false;
++        }
++    }
++}

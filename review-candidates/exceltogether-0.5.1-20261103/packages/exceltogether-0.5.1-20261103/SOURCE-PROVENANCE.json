@@ -1,0 +1,302 @@
+{
+  "plugin": "ExcelTogether",
+  "version": "0.5.1",
+  "local_build_folder": "party-mesh/build-0.5.1",
+  "jar": {
+    "file": "ExcelTogether-0.5.1.jar",
+    "path": "party-mesh/build-0.5.1/ExcelTogether-0.5.1.jar",
+    "bytes": 159821,
+    "sha256": "f2e5b7d3284474c250852dabde708efe3fea2f1dc1109ad6c763e564de2f517f"
+  },
+  "install": {
+    "status": "installed live",
+    "note": "Built and filed Nov 1, 2026; deposited to Drive Nov 2."
+  },
+  "notes": [],
+  "record": {
+    "assembled": "2026-11-03",
+    "assembler": "records catch-up packaging pass (local only; upload by parent)",
+    "files": {
+      "DEPENDENCIES.md": {
+        "sha256": "72534512a8d85cbe58537a14a6984e7925baf00e462c503ff58173611c6c3811",
+        "bytes": 352
+      },
+      "DEPENDENCIES.sha256": {
+        "sha256": "c97d3d625126351371df2949ba0a37a6f02c82804e4f261b83524f9fb486fe66",
+        "bytes": 136
+      },
+      "FUNCTIONAL-CHANGE.diff": {
+        "sha256": "79778b0e2350e49eed6fb4bf9db4291a2e3f1c56c39af0a12695539e90352dea",
+        "bytes": 27556
+      },
+      "README.md": {
+        "sha256": "e32a8111567707f3fecb635c64932315de379659403f19fbf22c66156adfcd8c",
+        "bytes": 1318
+      },
+      "SANITIZATION.diff": {
+        "sha256": "faa2a5b4941c6b2397e24e7ae39f855a1697b39e46dcf548fea4f2522a81b9d0",
+        "bytes": 413
+      },
+      "SOURCE.md": {
+        "sha256": "05c18e8b249a1db73b426641584f2b1810c50dfaec9a309a429a4f09c47f96d8",
+        "bytes": 4706
+      },
+      "TEST-RESULTS.txt": {
+        "sha256": "8bf110e09fc439c84720ee79fc297ad566f86e21af4d1e62dae6269c57344e6c",
+        "bytes": 5688
+      },
+      "build.sh": {
+        "sha256": "216eedfc55099067cc0aad9c63e86a8997031b21f9f8e87d1804c8fb5f4f5f76",
+        "bytes": 6134
+      },
+      "config.yml": {
+        "sha256": "979135127a981987bc42e7b5cda89ff10f3d201cff4ff5a03a6ea1369511d4bc",
+        "bytes": 9080
+      },
+      "plugin.yml": {
+        "sha256": "f507814ec4b0a3c59812fd54f539da1de3a784e2d4e9f6eba93ef9d70b27c549",
+        "bytes": 1110
+      },
+      "src/com/winkreyes/exceltogether/BarPolicy.java": {
+        "sha256": "640846828d986b1b196e838b812b3f992b0eb66ae3bcae34491ae8db26994d8b",
+        "bytes": 3534
+      },
+      "src/com/winkreyes/exceltogether/BonusMode.java": {
+        "sha256": "4d4c79f89fd39ae3de6e701d4afe3c86d9c1757189ec2355a3573eaf3cd668bd",
+        "bytes": 853
+      },
+      "src/com/winkreyes/exceltogether/BukkitPlayer.java": {
+        "sha256": "45098f100887ecfe79f7de69d43f31b42c65b551648d0535899ccece39c1ab9e",
+        "bytes": 2885
+      },
+      "src/com/winkreyes/exceltogether/Controller.java": {
+        "sha256": "7ce7704feba4ee8b48ed4e09c9c80ee893dd6a4d0158702088145c7d7e5f4ed0",
+        "bytes": 33238
+      },
+      "src/com/winkreyes/exceltogether/EmLink.java": {
+        "sha256": "0c1dfc89ba9c154f41792f6a27768008cf2fb14d9a5325c54e14c9fe4ae35de7",
+        "bytes": 3821
+      },
+      "src/com/winkreyes/exceltogether/EmSync.java": {
+        "sha256": "1837aa3c8c37f4358502e8271038c2c4faf46479b089a6f1ca52b453734d26b2",
+        "bytes": 29084
+      },
+      "src/com/winkreyes/exceltogether/Env.java": {
+        "sha256": "41b7067fe5bff32edcf43891dfd99b87590e6d85f8add2a9c4867d90ff91f707",
+        "bytes": 349
+      },
+      "src/com/winkreyes/exceltogether/EquipmentRepair.java": {
+        "sha256": "d8c499d26874f45e0b44e8257658a693f249909d3d08c468f99806482fde729a",
+        "bytes": 4797
+      },
+      "src/com/winkreyes/exceltogether/ExcelPartyRepairAction.java": {
+        "sha256": "b1a42fae8da17aa6109ab22d4b5615e1cd17d601ccd184209e279b52fb592a6b",
+        "bytes": 2585
+      },
+      "src/com/winkreyes/exceltogether/ExcelRepairItemAction.java": {
+        "sha256": "f6a7cc90a35f0cb86216f16046a5450cbe993731113499e05070bd002ecc685a",
+        "bytes": 3902
+      },
+      "src/com/winkreyes/exceltogether/ExcelTogether.java": {
+        "sha256": "1d17946221a75d8ca48c043ef091f8f955f4adbe88456d35ddcb285e0880644b",
+        "bytes": 27645
+      },
+      "src/com/winkreyes/exceltogether/Forms.java": {
+        "sha256": "1a4d6b29fa9745c41425938a19d3b06ca116c4ba2d7ce9c42d36d194b3c89f29",
+        "bytes": 1310
+      },
+      "src/com/winkreyes/exceltogether/GeyserForms.java": {
+        "sha256": "7a4a9a7bc8932fc911960382d34bccaebb2467e80c02dd541553f48656fee61d",
+        "bytes": 9390
+      },
+      "src/com/winkreyes/exceltogether/JobsShareSink.java": {
+        "sha256": "ef3954ed07a094bf49a0f31f64387ceee6559189bfc4cc9d1cf3b9b819223e90",
+        "bytes": 2072
+      },
+      "src/com/winkreyes/exceltogether/MagicLevelPartyLookup.java": {
+        "sha256": "efc11aaf32e3447098e5115729cc561b72ecdc75783a259bf9c1b797a85d6ba0",
+        "bytes": 1019
+      },
+      "src/com/winkreyes/exceltogether/McmmoLink.java": {
+        "sha256": "eafe60a526d420a7a19807e2398fb9dad9d37d5fa55bb5b6a92b377c261135fe",
+        "bytes": 3552
+      },
+      "src/com/winkreyes/exceltogether/McmmoSync.java": {
+        "sha256": "27443a501a6dd2131b9330e64b1b8807e572f6f4007f3410afa213a41a000b5c",
+        "bytes": 13651
+      },
+      "src/com/winkreyes/exceltogether/McmmoXpShare.java": {
+        "sha256": "ceb7d62b35a5438be02653aacda454fc99386eb078b4544324a8d45e0df819b1",
+        "bytes": 9776
+      },
+      "src/com/winkreyes/exceltogether/NameMatch.java": {
+        "sha256": "b3aed8880f0e7b28871c101ab84875b2d4008af0f41c62d903a0932d27f438ee",
+        "bytes": 2656
+      },
+      "src/com/winkreyes/exceltogether/NearbyPartyFinder.java": {
+        "sha256": "6a25ac246983352df6b7dffd4c2802ace633e269c6828d6d794ed7a73290ce60",
+        "bytes": 1175
+      },
+      "src/com/winkreyes/exceltogether/Panel.java": {
+        "sha256": "54766704edfcdab2bb3af979618e3d01b8c25fc9fc0b353c09471e91cd951d20",
+        "bytes": 1788
+      },
+      "src/com/winkreyes/exceltogether/PartyBonus.java": {
+        "sha256": "68730cb86cb63ba9f2f64f93e512b291077e95d89bdf35af85938158883468e0",
+        "bytes": 1165
+      },
+      "src/com/winkreyes/exceltogether/PartyCombatDrops.java": {
+        "sha256": "72897a7a59ec8e82cc0d007b9dbe5938b6191af3e862995ec1069970ebc99a0c",
+        "bytes": 16408
+      },
+      "src/com/winkreyes/exceltogether/PartyFinder.java": {
+        "sha256": "9a8a2f4279365afea2c34437bf40f82fe671409905803214db90a431f3cd68cd",
+        "bytes": 661
+      },
+      "src/com/winkreyes/exceltogether/PartyListener.java": {
+        "sha256": "b0471918c101966624c31a4c177e15c91c7f785da57d724868184714ab820ca4",
+        "bytes": 4509
+      },
+      "src/com/winkreyes/exceltogether/PartyManager.java": {
+        "sha256": "3818e5dea92a0ff5c07d2839847bae69c35d08ba532fc218cea4067167588690",
+        "bytes": 14052
+      },
+      "src/com/winkreyes/exceltogether/PartyMemberFinder.java": {
+        "sha256": "e456a4a930d4ba64947ec01231d6e01b174d557e44d352fa733f8719d177b1c8",
+        "bytes": 5955
+      },
+      "src/com/winkreyes/exceltogether/PartyRepairBridge.java": {
+        "sha256": "2a1ec69acecae1d1550cc55bb2af7b187fdaebd7acc67b4ac050fa32c372c4ca",
+        "bytes": 1877
+      },
+      "src/com/winkreyes/exceltogether/PartyRoster.java": {
+        "sha256": "9c277ba6ae9100fea166e5bb3df4c4a7d9c67214178b9f1cfbb9643d012e8bcc",
+        "bytes": 2459
+      },
+      "src/com/winkreyes/exceltogether/PartyRules.java": {
+        "sha256": "c58095f9d91cc6eefc523332d9d26ef700952b9dde4f9bcb6dee621b7544b9ba",
+        "bytes": 5632
+      },
+      "src/com/winkreyes/exceltogether/PartyText.java": {
+        "sha256": "cdd9febd2db96ccedb58ecf3a46eff388a4c115d1442ad7ca2cfd0438c71bfec",
+        "bytes": 692
+      },
+      "src/com/winkreyes/exceltogether/PlayerView.java": {
+        "sha256": "4479a11c74856f6443a0eae65efff021cbdd1579e35616fc085ddef198dfcd36",
+        "bytes": 943
+      },
+      "src/com/winkreyes/exceltogether/RangeIndicator.java": {
+        "sha256": "19ed1a4a9902ccab82e6396bf93ed28445c89b95bf7b21e179dc89dba2fd41e1",
+        "bytes": 3932
+      },
+      "src/com/winkreyes/exceltogether/ReflectEmLink.java": {
+        "sha256": "13e6cb4a59d9df112a6d855ef617a03c4f717e773a1d4cb0e88709e8d4a041a2",
+        "bytes": 13644
+      },
+      "src/com/winkreyes/exceltogether/ReflectMagicLink.java": {
+        "sha256": "834c29fb3d38787d8204bc1d13b9fa3a09c15712b55dd264619132d3a210d3a8",
+        "bytes": 2200
+      },
+      "src/com/winkreyes/exceltogether/ReflectMcmmoLink.java": {
+        "sha256": "879e1bb15a57399d07749ad75db0326497785763629b64200c4852ed741a13c2",
+        "bytes": 14654
+      },
+      "src/com/winkreyes/exceltogether/ShareSink.java": {
+        "sha256": "b52f47f95f52736b51303ca17ff01d481bbeb1be09aab23e08172b804c472c93",
+        "bytes": 450
+      },
+      "src/com/winkreyes/exceltogether/SyncForms.java": {
+        "sha256": "9e2d97bc7f2cd0ede24f84622bb606e31ed97f9955616b446709bb0d241ef854",
+        "bytes": 1015
+      },
+      "src/com/winkreyes/exceltogether/XpShareCore.java": {
+        "sha256": "70602f8e476865d1150f60b58899fee1c3d90463eb74cd2b4204818331027c20",
+        "bytes": 2458
+      },
+      "src/com/winkreyesvalley/excelmagiclevel/adapter/together/PartyLookup.java": {
+        "sha256": "2b952d367011188b5edc2b2607e762b5170c4697618cd50136203a0374068808",
+        "bytes": 394
+      },
+      "tests/com/gmail/nossr50/config/GeneralConfig.java": {
+        "sha256": "6b1b3f9a72a272596eb272af23772e6529e8eedf69021ad5e46369f59915044c",
+        "bytes": 139
+      },
+      "tests/com/gmail/nossr50/config/party/PartyConfig.java": {
+        "sha256": "3f6b0ae4776bfad9cd40c71df442759b4ee0b0206da75e8bd6980deeff52bd2a",
+        "bytes": 152
+      },
+      "tests/com/gmail/nossr50/datatypes/party/Party.java": {
+        "sha256": "ebcb71d18a4e2eeb47c03b9305c8c088ac26cec52b6c781048380335092eb0e3",
+        "bytes": 668
+      },
+      "tests/com/gmail/nossr50/datatypes/party/PartyLeader.java": {
+        "sha256": "da82af108dfaf8b452fe03ca6e587924c10945ad8f13a7a0144d89282103d82c",
+        "bytes": 304
+      },
+      "tests/com/gmail/nossr50/datatypes/player/McMMOPlayer.java": {
+        "sha256": "5cccf58d557b830209275ce12e357401c9d8add8a02cf2d32d80742f566da735",
+        "bytes": 620
+      },
+      "tests/com/gmail/nossr50/mcMMO.java": {
+        "sha256": "6d693e98e2e2b44baaae402de63b928b694b60b7ae337a721e6daa38592e1644",
+        "bytes": 711
+      },
+      "tests/com/gmail/nossr50/party/PartyManager.java": {
+        "sha256": "1270337ca5b711af94becff8d2e156754c3712cf002cdbf438022718c82a038a",
+        "bytes": 2682
+      },
+      "tests/com/gmail/nossr50/util/player/UserManager.java": {
+        "sha256": "b79d6ec41fd4ca265a023e951961bf4305808f732fdb7f37a88b45ce9c1687d1",
+        "bytes": 347
+      },
+      "tests/com/winkreyes/exceltogether/BaseRulesTest.java": {
+        "sha256": "317f86212165c90a9bf9a2a4ef0afb5387f165054f0b56f22fdbbb617cfee4f5",
+        "bytes": 12327
+      },
+      "tests/com/winkreyes/exceltogether/EmLinkMappingTest.java": {
+        "sha256": "735bd7f798a8ad31cae6a3afbf140b604e715f4ec275f1c4a3b8a50c6618ac76",
+        "bytes": 5708
+      },
+      "tests/com/winkreyes/exceltogether/EmSyncTest.java": {
+        "sha256": "5cd9cbaa007f67cccba91a4067d845ae08aaba8cc24de37f744025728b51479d",
+        "bytes": 23121
+      },
+      "tests/com/winkreyes/exceltogether/McmmoLinkTest.java": {
+        "sha256": "6fcfc77de19d6bf8f9ceb2cacbe05929110fd9f0e04483163da97ca15102798c",
+        "bytes": 24904
+      },
+      "tests/com/winkreyes/exceltogether/McmmoSyncTest.java": {
+        "sha256": "623ca80db304d80279fc5a618d1c819441dd50fa71c1bf469db3501dff05381a",
+        "bytes": 29161
+      },
+      "tests/com/winkreyes/exceltogether/PartyFeatureTest.java": {
+        "sha256": "fadd4e251f431c105f3e9f1cb07dfd900797c41ed0a4841b89bffde6cf952262",
+        "bytes": 43334
+      },
+      "tests/com/winkreyes/exceltogether/PartyLookupTest.java": {
+        "sha256": "c7ec74494c6f63e7e45d128f83a998561880e4157918b8d0180a71be8a124c90",
+        "bytes": 2211
+      },
+      "tests/com/winkreyes/exceltogether/PartyRepairTest.java": {
+        "sha256": "bc7989d0993fc11c310f53175598b21ca40750310e5273f81b98eb46a930f897",
+        "bytes": 13045
+      },
+      "tests/com/winkreyes/exceltogether/PartyTest.java": {
+        "sha256": "6d3ecd2016c434617f8a7d03f3d97debd0bf8c4314e3c808a7619ab86f3f1a11",
+        "bytes": 3328
+      },
+      "tests/com/winkreyes/exceltogether/RangeIndicatorTest.java": {
+        "sha256": "95a2658b6c3bf3c8b733bf0054e3413ba8232beed90ef16dab9b5273fc4cc140",
+        "bytes": 13094
+      },
+      "tests/com/winkreyes/exceltogether/ShareTest.java": {
+        "sha256": "a76c0587193845500f4cb20988daaa3d997ab2ded9eebf5edec2074f68250c71",
+        "bytes": 9272
+      },
+      "tests/com/winkreyes/exceltogether/XpShareTest.java": {
+        "sha256": "1e3ea4e1d5346b2f8bc7e71bf84106a84d18a5fef2d1c48e7303176dda8d026b",
+        "bytes": 4972
+      }
+    }
+  }
+}
