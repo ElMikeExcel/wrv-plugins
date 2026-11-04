@@ -1,0 +1,28 @@
+name: ExcelProtect
+version: '0.1.0'
+main: com.winkreyes.excelprotect.ExcelProtect
+api-version: '1.21'
+author: Excel (Wink Reyes Valley)
+license: MIT
+description: 'ExcelProtect — the all-in-one record + recovery system: append-only daily JSONL per stream (blocks, containers, entities, items, players, economy, audit, combat, deaths), byte-exact item payloads, rollback, death restores and Lost & Found. Query with /excelprotect export — no database, no player-standing-anywhere lookups.'
+softdepend: [GriefPrevention, Vault, mcMMO, Magic]
+commands:
+  excelprotect:
+    description: Export, inspect, rollback, restores, import, status
+    usage: /excelprotect export|inspect|rollback|restore-stand|deaths|import|status ...
+    permission: excelprotect.admin
+  lostfound:
+    description: Recover your own destroyed items from the ledger
+    usage: /lostfound [claim <number>]
+    aliases: [recover]
+  deathrecord:
+    description: Staff lookup of death snapshots and the burn ledger
+    usage: /deathrecord <player>
+    permission: excelprotect.admin
+permissions:
+  excelprotect.admin:
+    description: Export, rollback, restores, import, status, /deathrecord
+    default: op
+  excelprotect.lostfound:
+    description: Use /lostfound
+    default: true
