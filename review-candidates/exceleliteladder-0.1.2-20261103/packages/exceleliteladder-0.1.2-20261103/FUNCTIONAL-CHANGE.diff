@@ -1,0 +1,28 @@
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceleliteladder/core/LadderTable.java b/src/com/winkreyes/exceleliteladder/core/LadderTable.java
+--- a/prev-src/com/winkreyes/exceleliteladder/core/LadderTable.java	2026-11-01 20:52:00.407047627 +0000
++++ b/src/com/winkreyes/exceleliteladder/core/LadderTable.java	2026-11-01 20:54:30.267192633 +0000
+@@ -8,6 +8,13 @@
+  * The approved Elite Seal Ladder (Oct 25, 2026; Seal 5 spawn 0.12 picked 11:40 PM CDT), with the Seal 5 dungeon values
+  * (normalized 0.5 / 2.0) already in from S1. Hardcoded on purpose: the table is not
+  * editable in config, so a typo in a config file can never change live combat.
++ *
++ * 0.1.2 (Nov 1, 2026): Mike re-decided the ladder - it TOPS OUT AT SEAL 4, COMPRESSED
++ * (2:30 PM CST, superseding the Oct 21 S5-parity final and the Oct 25 Seal 5 picks).
++ * S4 now carries the full end-state values (spawn 0.11, dealt x2.35, taken x0.40,
++ * level cap 150); the S5 row is IDENTICAL to S4, so a Seal 5 trigger is a safe no-op:
++ * at 5 of 5 the players transfer to the EliteMobs guild world and an overworld step
++ * landing then would never be felt. ExcelEliteLadder - Excel
+  */
+ public final class LadderTable {
+     public static final int MIN_STEP = 1;
+@@ -18,8 +25,8 @@
+         new LadderStep(1, 0.07, 120, 0.5, 2.0, 0.55, 1.75),
+         new LadderStep(2, 0.08, 120, 0.5, 2.0, 0.50, 1.90),
+         new LadderStep(3, 0.09, 120, 0.5, 2.0, 0.50, 2.05),
+-        new LadderStep(4, 0.10, 120, 0.5, 2.0, 0.45, 2.20),
+-        new LadderStep(5, 0.12, 120, 0.5, 2.0, 0.45, 2.20),
++        new LadderStep(4, 0.11, 150, 0.5, 2.0, 0.40, 2.35),
++        new LadderStep(5, 0.11, 150, 0.5, 2.0, 0.40, 2.35),
+     };
+ 
+     /** Known pre-ladder files, so a refusal can say exactly what live is. */

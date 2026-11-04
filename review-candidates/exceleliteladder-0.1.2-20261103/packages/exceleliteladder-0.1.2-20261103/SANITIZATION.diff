@@ -1,0 +1,8 @@
+SANITIZATION SCAN — REVIEWED, NO SENSITIVE CONTENT
+Package: exceleliteladder-0.1.2-20261103
+
+Scanned every file for IPv4 addresses (excluding loopback/broadcast literals), email addresses, private-key blocks, and credential assignments. All pattern hits were reviewed by hand:
+
+FALSE POSITIVE (reviewed, not sensitive): the single IPv4-pattern hit is the dotted software version string 25.0.4.1 (Temurin JDK) in SOURCE.md — not a network address. No email addresses, private keys, or credential values were found.
+
+No redactions were needed.
