@@ -1,0 +1,65 @@
+### stage3: packet-3 -> familiar-cat-cd
+--- /home/hatch/workspace/spell-logic-fixes/install-20261102-packet3/stage-s3/spells.yml	2026-11-02 18:00:59.925353257 +0000
++++ /home/hatch/workspace/spell-familiar-cd-20261103/stage3-spells.yml	2026-11-03 15:40:37.276663459 +0000
+@@ -4457,7 +4457,7 @@
+       iron_golem: 2
+     target_type: LivingEntity
+     allow_max_range: false
+-    cooldown: 300000
++    cooldown: 240000
+     range: 32
+     undo: 20000
+     loot: false
+@@ -4571,7 +4571,7 @@
+     target_type: LivingEntity
+     allow_max_range: false
+     range: 32
+-    cooldown: 300000
++    cooldown: 240000
+     type: cat
+     tamed: true
+   costs:
+
+### stage4: packet-3 -> familiar-cat-cd
+--- /home/hatch/workspace/spell-logic-fixes/install-20261102-packet3/stage-s4/spells.yml	2026-11-02 18:00:59.933353257 +0000
++++ /home/hatch/workspace/spell-familiar-cd-20261103/stage4-spells.yml	2026-11-03 15:40:37.288762788 +0000
+@@ -4457,7 +4457,7 @@
+       iron_golem: 2
+     target_type: LivingEntity
+     allow_max_range: false
+-    cooldown: 300000
++    cooldown: 240000
+     range: 32
+     undo: 20000
+     loot: false
+@@ -4571,7 +4571,7 @@
+     target_type: LivingEntity
+     allow_max_range: false
+     range: 32
+-    cooldown: 300000
++    cooldown: 240000
+     type: cat
+     tamed: true
+   costs:
+
+### stage5: packet-3 -> familiar-cat-cd
+--- /home/hatch/workspace/spell-logic-fixes/install-20261102-packet3/stage-s5/spells.yml	2026-11-02 18:00:59.934353257 +0000
++++ /home/hatch/workspace/spell-familiar-cd-20261103/stage5-spells.yml	2026-11-03 15:40:37.296628797 +0000
+@@ -4545,7 +4545,7 @@
+       iron_golem: 2
+     target_type: LivingEntity
+     allow_max_range: false
+-    cooldown: 300000
++    cooldown: 240000
+     range: 32
+     undo: 20000
+     loot: false
+@@ -4659,7 +4659,7 @@
+     target_type: LivingEntity
+     allow_max_range: false
+     range: 32
+-    cooldown: 300000
++    cooldown: 240000
+     type: cat
+     tamed: true
+   costs:
