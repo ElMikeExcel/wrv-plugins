@@ -1,0 +1,17 @@
+name: ExcelTogether
+version: 0.5.2
+author: Steve
+main: com.winkreyes.exceltogether.ExcelTogether
+api-version: "1.21"
+description: 'Party for Jobs Reborn - invite, accept, leave, and a plus 25 percent money and XP bonus for party members who are close together. Includes an on-screen party range indicator with on/off cues. 0.4.0 adds friendly fire blocking between party members and bonus mob drops for groups of 3. 0.4.1 shows the party range line only when it changes. 0.4.2 fixes the missing percent signs in Bedrock menus. 0.5.0: one party everywhere — /party, /excelparty and /em party are the same party, with the EliteMobs party as its face. 0.5.1: registers Magic actions so Repair Equipment repairs the whole party at once. 0.5.2: Repair Equipment asks first - the first cast only shows what would be repaired, casting again confirms and starts the cooldown.'
+depend: [Jobs]
+softdepend: [Geyser-Spigot, floodgate, mcMMO, EliteMobs, Magic]
+commands:
+  excelparty:
+    description: Open the party menu, invite players, accept or leave
+    usage: /excelparty [invite|accept|decline|leave|list|kick|cue|help]
+    aliases: [eparty, together]
+permissions:
+  excelparty.use:
+    description: Use parties and the party menu
+    default: true

@@ -1,0 +1,603 @@
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceltogether/ExcelPartyRepairAction.java b/src/com/winkreyes/exceltogether/ExcelPartyRepairAction.java
+--- a/prev-src/com/winkreyes/exceltogether/ExcelPartyRepairAction.java	2026-11-02 02:08:27.651195291 +0000
++++ b/src/com/winkreyes/exceltogether/ExcelPartyRepairAction.java	2026-11-02 02:37:14.658262317 +0000
+@@ -3,16 +3,20 @@
+ import com.elmakers.mine.bukkit.action.CompoundEntityAction;
+ import com.elmakers.mine.bukkit.api.action.CastContext;
+ import com.elmakers.mine.bukkit.api.spell.Spell;
++import com.elmakers.mine.bukkit.api.spell.SpellResult;
+ 
+ import org.bukkit.Bukkit;
+ import org.bukkit.configuration.ConfigurationSection;
+ import org.bukkit.entity.Entity;
+ import org.bukkit.entity.Player;
++import org.bukkit.inventory.EntityEquipment;
++import org.bukkit.inventory.EquipmentSlot;
+ 
+ import java.lang.ref.WeakReference;
+ import java.util.Collection;
+ import java.util.List;
+ import java.util.UUID;
++import java.util.logging.Logger;
+ 
+ /**
+  * ExcelTogether 0.5.1 - Magic action "ExcelPartyRepair": a compound
+@@ -30,17 +34,138 @@
+  * parameter (blocks, default 0 = no cap) can bound how far a member
+  * may be and still be included.
+  *
++ * 0.5.2 - the CONFIRMATION GATE (Mike, Nov 1, 2026: "add a confirmation
++ * screen pop up for this spell to combat using it when not wanted").
++ * Magic 11.2.5 has no cast-confirmation facility and charges its spell
++ * cooldown on any cast, so the spell's Magic cooldown is now a 1-second
++ * anti-bounce and the real 4-hour cooldown is RepairGate's persisted
++ * lockout, consulted here before the compound runs:
++ *   ARM     - the cast repairs NOTHING; the caster gets the prompt with
++ *             the live damaged-item count and the window opens.
++ *   CONFIRM - a recast inside the window starts the lockout (persisted
++ *             at once) and the compound runs exactly as in 0.5.1.
++ *   LOCKED  - the cast is refused with the remaining time.
++ * The verdict is reached once per cast and cached: whether the engine
++ * drives this action through perform() or start(), a confirmed cast is
++ * never re-judged mid-flight. With no gate bound (config off, Magic
++ * link down), the gate steps aside and the cast repairs at once, the
++ * 0.5.1 behaviour.
++ *
+  * Registered with Magic by ReflectMagicLink when Magic is present;
+  * this class is only ever loaded in that case. Excel - Wink Reyes Valley.
+  */
+ public class ExcelPartyRepairAction extends CompoundEntityAction {
+     private double maxRange;
++    private boolean countArmor;
++    private boolean countHeldItem;
++    private boolean gateDecided;
++    private SpellResult gateBlock;
+ 
+     @Override
+     public void prepare(CastContext context, ConfigurationSection parameters) {
+         super.prepare(context, parameters);
+         maxRange = parameters.getDouble("max_range", 0);
+         if (maxRange < 0) maxRange = 0;
++        // The gate's damaged-item count uses the spell's own scope (the
++        // shipped block carries armor / held_item at spell level too).
++        countArmor = parameters.getBoolean("armor", true);
++        countHeldItem = parameters.getBoolean("held_item", true);
++        gateDecided = false;
++        gateBlock = null;
++    }
++
++    @Override
++    public SpellResult perform(CastContext context) {
++        SpellResult block = gateBlock(context);
++        if (block != null) return block;
++        return super.perform(context);
++    }
++
++    @Override
++    public SpellResult start(CastContext context) {
++        SpellResult block = gateBlock(context);
++        if (block != null) return block;
++        return super.start(context);
++    }
++
++    /**
++     * The gate, consulted at most once per cast. Returns the result the
++     * cast should end with WITHOUT running the repair, or null when the
++     * repair may proceed (confirmed - or no gate bound at all).
++     */
++    private SpellResult gateBlock(CastContext context) {
++        if (gateDecided) return gateBlock;
++        gateDecided = true;
++        RepairGate gate = PartyRepairBridge.gate();
++        if (gate == null) return null;
++        Player caster = context.getMage() == null ? null : context.getMage().getPlayer();
++        if (caster == null && context.getTargetEntity() instanceof Player p) caster = p;
++        if (caster == null) return null;
++        UUID id = caster.getUniqueId();
++        long now = System.currentTimeMillis();
++        Logger log = PartyRepairBridge.logger();
++        RepairGate.Verdict verdict = gate.verdict(id, now);
++        switch (verdict.decision) {
++            case LOCKED -> {
++                context.sendMessage(gate.refusedText(verdict.remainingMs));
++                if (log != null) {
++                    log.info("ExcelTogether party repair: " + caster.getName()
++                            + " cast Repair Equipment during the confirmation-gate lockout - refused, "
++                            + RepairGate.formatDuration(verdict.remainingMs) + " remaining.");
++                }
++                gateBlock = SpellResult.NO_TARGET;
++            }
++            case ARM -> {
++                int[] counts = countDamaged(caster);
++                gate.arm(id, now);
++                context.sendMessage(gate.promptText(counts[0], counts[1], counts[2]));
++                if (log != null) {
++                    log.info("ExcelTogether party repair: " + caster.getName()
++                            + " armed Repair Equipment - " + counts[0] + " damaged item(s) across "
++                            + counts[1] + " of " + counts[2] + " party member(s); awaiting confirmation.");
++                }
++                gateBlock = SpellResult.NO_TARGET;
++            }
++            case CONFIRM -> {
++                gate.confirm(id, now);
++                PartyRepairBridge.persistCooldowns();
++                if (log != null) {
++                    log.info("ExcelTogether party repair: " + caster.getName()
++                            + " confirmed Repair Equipment - " + RepairGate.formatDuration(gate.cooldownMs())
++                            + " lockout started.");
++                }
++                gateBlock = null;
++            }
++        }
++        return gateBlock;
++    }
++
++    /**
++     * The prompt's live count: {repairable items, members owning at least
++     * one, members checked} over exactly the roster the repair would
++     * touch, judged by EquipmentRepair's own repairable test (wand
++     * exclusion included) - so the count the caster confirms against is
++     * the repair that will actually happen.
++     */
++    private int[] countDamaged(Player caster) {
++        List<UUID> members = PartyRepairBridge.partyMembersOf(caster.getUniqueId());
++        List<Player> selected = PartyRoster.select(caster, members, maxRange, Bukkit::getPlayer);
++        int items = 0;
++        int withDamage = 0;
++        for (Player member : selected) {
++            EntityEquipment equipment = member.getEquipment();
++            if (equipment == null) continue;
++            int mine = 0;
++            for (EquipmentSlot slot : EquipmentRepair.slots(countArmor, countHeldItem)) {
++                if (EquipmentRepair.repairable(equipment.getItem(slot),
++                        ExcelRepairItemAction.IS_WAND, EquipmentRepair.META)) {
++                    mine++;
++                }
++            }
++            if (mine > 0) withDamage++;
++            items += mine;
++        }
++        return new int[]{items, withDamage, selected.size()};
+     }
+ 
+     @Override
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceltogether/ExcelRepairItemAction.java b/src/com/winkreyes/exceltogether/ExcelRepairItemAction.java
+--- a/prev-src/com/winkreyes/exceltogether/ExcelRepairItemAction.java	2026-11-02 02:08:27.651195291 +0000
++++ b/src/com/winkreyes/exceltogether/ExcelRepairItemAction.java	2026-11-02 02:36:40.266260982 +0000
+@@ -39,7 +39,8 @@
+     private int castItems;
+     private int castMembers;
+ 
+-    private static final Predicate<ItemStack> IS_WAND = stack -> {
++    /** Shared with ExcelPartyRepairAction's confirmation-gate count (0.5.2). */
++    static final Predicate<ItemStack> IS_WAND = stack -> {
+         Plugin magic = Bukkit.getPluginManager().getPlugin("Magic");
+         return magic instanceof MagicAPI api && api.isWand(stack);
+     };
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceltogether/ExcelTogether.java b/src/com/winkreyes/exceltogether/ExcelTogether.java
+--- a/prev-src/com/winkreyes/exceltogether/ExcelTogether.java	2026-11-02 02:08:47.434196059 +0000
++++ b/src/com/winkreyes/exceltogether/ExcelTogether.java	2026-11-02 02:41:14.541271627 +0000
+@@ -12,12 +12,14 @@
+ import org.bukkit.event.player.PlayerInteractEntityEvent;
+ import org.bukkit.event.player.PlayerJoinEvent;
+ import org.bukkit.event.player.PlayerQuitEvent;
++import org.bukkit.configuration.ConfigurationSection;
+ import org.bukkit.inventory.EquipmentSlot;
+ import org.bukkit.plugin.ServicePriority;
+ import org.bukkit.plugin.java.JavaPlugin;
+ 
+ import com.winkreyesvalley.excelmagiclevel.adapter.together.PartyLookup;
+ 
++import java.io.File;
+ import java.util.*;
+ import java.util.function.BiConsumer;
+ 
+@@ -32,6 +34,10 @@
+  * 0.5.1 registers two Magic actions (ExcelPartyRepair + ExcelRepairItem) so the Repair Equipment spell
+  * repairs the whole party's worn gear at once - the roster bridge is PartyRepairBridge, the reflective
+  * registration is ReflectMagicLink, the write-back repair itself is EquipmentRepair.
++ * 0.5.2 puts a confirmation gate in front of that spell (RepairGate): the first cast only arms it and
++ * prompts with the live damaged-item count; casting again inside the window confirms, and the 4-hour
++ * cooldown then lives in the gate's persisted lockout, not in Magic (Magic 11.2.5 charges its cooldown
++ * on any cast and has no confirmation facility - see RepairGate's javadoc).
+  * The command is /excelparty (aliases /eparty, /together) because mcMMO owns /party on this server.
+  */
+ public final class ExcelTogether extends JavaPlugin implements Listener, Env {
+@@ -127,7 +133,7 @@
+         for (Player pl : Bukkit.getOnlinePlayers()) combatDrops.refreshHp(pl.getUniqueId());
+         Bukkit.getScheduler().runTaskTimer(this, () -> ctl.tick(), 20L, 20L);
+         Bukkit.getScheduler().runTaskTimer(this, this::tickIndicator, 60L, 50L);   // WRV-068: range line every 2.5s
+-        getLogger().info("ExcelTogether 0.5.1 enabled: x" + bonus.multiplier() + " money and XP, bonus-mode " + mode
++        getLogger().info("ExcelTogether 0.5.2 enabled: x" + bonus.multiplier() + " money and XP, bonus-mode " + mode
+                 + ", radius " + bonus.radius() + " blocks, parties up to " + mgr.maxSize() + ", invites last "
+                 + (mgr.ttlMs() / 1000) + "s, compass click invite " + (compassClick ? "ON" : "off") + ". Bedrock forms: "
+                 + (Bukkit.getPluginManager().getPlugin("Geyser-Spigot") != null ? "Geyser found" : "no Geyser, chat menu only")
+@@ -178,8 +184,10 @@
+         getLogger().info("ExcelTogether: PartyLookup service published (party share consumers can connect).");
+     }
+ 
+-    /** 0.5.0: the only job of onDisable is dropping our service registrations (0.4.x had no onDisable). */
++    /** 0.5.0: the only job of onDisable is dropping our service registrations (0.4.x had no onDisable).
++     *  0.5.2: persist the confirmation-gate lockouts first, so a restart never refunds the cooldown. */
+     @Override public void onDisable() {
++        PartyRepairBridge.persistCooldowns();
+         PartyRepairBridge.unbind();
+         getServer().getServicesManager().unregisterAll(this);
+     }
+@@ -197,19 +205,59 @@
+         if (magic == null) return "OFF (Magic not installed)";
+         if (partyRepairRegistered) {
+             PartyRepairBridge.bind(mgr, getLogger());
+-            return "ON (ExcelPartyRepair + ExcelRepairItem registered)";
++            return "ON (ExcelPartyRepair + ExcelRepairItem registered)" + enableRepairGate();
+         }
+         ReflectMagicLink link = new ReflectMagicLink();
+         if (link.register()) {
+             partyRepairRegistered = true;
+             PartyRepairBridge.bind(mgr, getLogger());
+             getLogger().warning("Magic party repair registered late (onEnable, not onLoad) - a Magic spells reload may be needed before Repair Equipment can use it.");
+-            return "ON (registered late - spells reload may be needed)";
++            return "ON (registered late - spells reload may be needed)" + enableRepairGate();
+         }
+         getLogger().warning("Magic party repair OFF: " + link.failure());
+         return "OFF (Magic API differs)";
+     }
+ 
++    /**
++     * 0.5.2 - build and bind the Repair Equipment confirmation gate (config section
++     * party-repair-confirm) and load its persisted lockouts. Returns the awake-line
++     * segment describing the gate. Disabled in config: no gate is bound, the action
++     * repairs on the first cast (0.5.1 behaviour) and the spell's own Magic cooldown
++     * is the only throttle - said loudly in the log, because the staged spells carry
++     * a 1-second anti-bounce cooldown there.
++     */
++    private String enableRepairGate() {
++        ConfigurationSection section = getConfig().getConfigurationSection("party-repair-confirm");
++        if (section != null && !section.getBoolean("enabled", true)) {
++            getLogger().warning("ExcelTogether: party-repair confirmation gate is OFF (party-repair-confirm.enabled) - "
++                    + "Repair Equipment repairs on first cast and its Magic spell cooldown governs. The staged spells "
++                    + "carry a 1-second anti-bounce cooldown there, so leave the gate ON unless a real Magic cooldown "
++                    + "is restored on the spell.");
++            return ", repair confirm OFF (casts repair at once)";
++        }
++        RepairGate gate = repairGateFromConfig();
++        File file = new File(getDataFolder(), "party-repair-cooldowns.yml");
++        RepairCooldownStore store = new RepairCooldownStore();
++        gate.restoreConfirmed(store.load(file, getLogger()));
++        PartyRepairBridge.bindGate(gate, store, file);
++        return ", repair confirm ON (" + Math.max(1, (gate.confirmWindowMs() + 999) / 1000) + "s window, "
++                + RepairGate.formatDuration(gate.cooldownMs()) + " lockout)";
++    }
++
++    /** The gate as a pure value from config (defaults = the settled 0.5.2 values). */
++    RepairGate repairGateFromConfig() {
++        ConfigurationSection section = getConfig().getConfigurationSection("party-repair-confirm");
++        if (section == null) return new RepairGate(10_000L, 14400000L, RepairGate.Texts.defaults());
++        RepairGate.Texts texts = new RepairGate.Texts(
++                section.getString("messages.prompt", RepairGate.Texts.DEFAULT_PROMPT),
++                section.getString("messages.prompt-none", RepairGate.Texts.DEFAULT_PROMPT_NONE),
++                section.getString("messages.refused", RepairGate.Texts.DEFAULT_REFUSED));
++        return new RepairGate(
++                section.getLong("window-seconds", 10) * 1000L,
++                section.getLong("cooldown-ms", 14400000L),
++                texts);
++    }
++
+     /** Gain lines (Jobs + mcMMO share) share one throttle: the BarPolicy gap, and nothing at all when the bar is off. */
+     private BiConsumer<OfflinePlayer, String> gainBar() {
+         return (op, t) -> {
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceltogether/PartyRepairBridge.java b/src/com/winkreyes/exceltogether/PartyRepairBridge.java
+--- a/prev-src/com/winkreyes/exceltogether/PartyRepairBridge.java	2026-11-02 02:08:07.685194516 +0000
++++ b/src/com/winkreyes/exceltogether/PartyRepairBridge.java	2026-11-02 02:36:40.247260981 +0000
+@@ -1,5 +1,6 @@
+ package com.winkreyes.exceltogether;
+ 
++import java.io.File;
+ import java.util.List;
+ import java.util.UUID;
+ import java.util.logging.Logger;
+@@ -14,28 +15,58 @@
+  * record MagicLevelPartyLookup publishes - and unbinds at disable.
+  * Unbound (Magic link off, or any time outside enable), the roster of
+  * any player degrades to {self}: the actions then repair the caster
+- * alone rather than failing. Excel - Wink Reyes Valley.
++ * alone rather than failing.
++ *
++ * 0.5.2: the bridge also carries the RepairGate (the confirmation gate
++ * in front of the repair) with its cooldown store. Unbound, there is no
++ * gate and ExcelPartyRepairAction falls back to the 0.5.1 behaviour -
++ * the cast repairs at once. Excel - Wink Reyes Valley.
+  */
+ public final class PartyRepairBridge {
+     private PartyRepairBridge() {}
+ 
+     private static volatile PartyManager parties;
+     private static volatile Logger logger;
++    private static volatile RepairGate repairGate;
++    private static volatile RepairCooldownStore cooldownStore;
++    private static volatile File cooldownFile;
+ 
+     public static void bind(PartyManager partyManager, Logger log) {
+         parties = partyManager;
+         logger = log;
+     }
+ 
++    /** 0.5.2: bind the confirmation gate and where its lockouts persist. */
++    public static void bindGate(RepairGate gate, RepairCooldownStore store, File file) {
++        repairGate = gate;
++        cooldownStore = store;
++        cooldownFile = file;
++    }
++
+     public static void unbind() {
+         parties = null;
+         logger = null;
++        repairGate = null;
++        cooldownStore = null;
++        cooldownFile = null;
+     }
+ 
+     public static boolean bound() { return parties != null; }
+ 
+     public static Logger logger() { return logger; }
+ 
++    /** 0.5.2: the confirmation gate, or null when it is off / unbound. */
++    public static RepairGate gate() { return repairGate; }
++
++    /** 0.5.2: write the gate's live lockouts to disk (no-op when unbound). */
++    public static void persistCooldowns() {
++        RepairGate gate = repairGate;
++        RepairCooldownStore store = cooldownStore;
++        File file = cooldownFile;
++        if (gate == null || store == null || file == null) return;
++        store.save(file, gate.snapshotConfirmed(System.currentTimeMillis()), logger);
++    }
++
+     /**
+      * The party roster for a player, leader first, the player included -
+      * or a list of just the player when he is solo or the bridge is
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceltogether/RepairCooldownStore.java b/src/com/winkreyes/exceltogether/RepairCooldownStore.java
+--- a/prev-src/com/winkreyes/exceltogether/RepairCooldownStore.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/exceltogether/RepairCooldownStore.java	2026-11-02 02:36:31.510260642 +0000
+@@ -0,0 +1,67 @@
++package com.winkreyes.exceltogether;
++
++import org.bukkit.configuration.ConfigurationSection;
++import org.bukkit.configuration.file.YamlConfiguration;
++
++import java.io.File;
++import java.util.HashMap;
++import java.util.Map;
++import java.util.UUID;
++import java.util.logging.Logger;
++
++/**
++ * ExcelTogether 0.5.2 - the on-disk half of RepairGate: the confirmed-cast
++ * timestamps, one per caster, in `party-repair-cooldowns.yml` inside the
++ * plugin's data folder. Written the moment a cast confirms (and again at
++ * disable), read once at enable - that is what makes Repair Equipment's
++ * 4-hour lockout survive both restarts and relogs. Deleting the file
++ * clears every lockout; nothing else reads or writes it.
++ *
++ * Fail-soft by construction: a missing or unreadable file is a clean
++ * slate (one warning, never an exception), and a failed save only logs -
++ * the in-memory gate keeps enforcing until the process ends.
++ * Excel - Wink Reyes Valley.
++ */
++public final class RepairCooldownStore {
++
++    /** Load the confirmed-cast map; empty when the file is absent or unreadable. */
++    public Map<UUID, Long> load(File file, Logger log) {
++        Map<UUID, Long> out = new HashMap<>();
++        if (file == null || !file.isFile()) return out;
++        try {
++            YamlConfiguration yml = YamlConfiguration.loadConfiguration(file);
++            ConfigurationSection sec = yml.getConfigurationSection("cooldowns");
++            if (sec == null) return out;
++            for (String key : sec.getKeys(false)) {
++                try {
++                    out.put(UUID.fromString(key), sec.getLong(key));
++                } catch (IllegalArgumentException bad) {
++                    if (log != null) log.warning("ExcelTogether: skipping a malformed party-repair cooldown entry ('" + key + "').");
++                }
++            }
++        } catch (Throwable t) {
++            if (log != null) log.warning("ExcelTogether: could not read " + file.getName()
++                    + " (" + t.getClass().getSimpleName() + ") - party-repair lockouts start clean.");
++            return new HashMap<>();
++        }
++        return out;
++    }
++
++    /** Persist the confirmed-cast map (already pruned by the gate). */
++    public void save(File file, Map<UUID, Long> confirmed, Logger log) {
++        if (file == null) return;
++        try {
++            YamlConfiguration yml = new YamlConfiguration();
++            ConfigurationSection sec = yml.createSection("cooldowns");
++            for (Map.Entry<UUID, Long> e : confirmed.entrySet()) {
++                sec.set(e.getKey().toString(), e.getValue());
++            }
++            File parent = file.getParentFile();
++            if (parent != null) parent.mkdirs();
++            yml.save(file);
++        } catch (Throwable t) {
++            if (log != null) log.warning("ExcelTogether: could not write " + file.getName()
++                    + " (" + t.getClass().getSimpleName() + ") - party-repair lockouts hold until restart only.");
++        }
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/exceltogether/RepairGate.java b/src/com/winkreyes/exceltogether/RepairGate.java
+--- a/prev-src/com/winkreyes/exceltogether/RepairGate.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/exceltogether/RepairGate.java	2026-11-02 02:36:31.501260642 +0000
+@@ -0,0 +1,170 @@
++package com.winkreyes.exceltogether;
++
++import java.util.HashMap;
++import java.util.Map;
++import java.util.UUID;
++
++/**
++ * ExcelTogether 0.5.2 - the confirmation gate in front of the party-repair
++ * actions (ExcelPartyRepair / ExcelRepairItem). Mike's call, Nov 1, 2026:
++ * Repair Equipment must not be usable by accident - "add a confirmation
++ * screen pop up for this spell to combat using it when not wanted."
++ *
++ * Why the gate lives here and not in Magic: Magic 11.2.5 has NO spell-cast
++ * confirmation facility (verified in the jar - every "confirm" in it is a
++ * selector/shop GUI option or a recall-marker flag, and BaseSpell charges
++ * the spell's cooldown the moment a cast runs, whatever the actions do).
++ * So the spell's own Magic cooldown drops to a 1-second anti-bounce and
++ * the real 4-hour cooldown is THIS gate's lockout, enforced per caster:
++ *
++ *   cast 1 (ARM)     - nothing repairs. The caster is told what a confirm
++ *                      would do, with the live damaged-item count, and
++ *                      that confirming starts the lockout. No lockout is
++ *                      started, ever, by an arming cast.
++ *   cast 2 (CONFIRM) - within the confirm window: the lockout starts NOW
++ *                      (persisted, so it survives restarts and relogs) and
++ *                      the 0.5.1 repair runs exactly as proven - including
++ *                      when the count was 0, per Mike's settled design.
++ *   cast while locked - refused, with the remaining time. An expired arm
++ *                      simply re-arms: a lapsed confirmation costs nothing.
++ *
++ * Pure time-and-state logic (no Bukkit), so the whole state machine is
++ * unit-testable headless; the persistence hand-off is snapshot/restore of
++ * the confirmed-cast map (RepairCooldownStore owns the file). Arms are
++ * deliberately NOT persisted: a restart between arm and confirm just
++ * means the next cast arms again - nothing repaired, nothing burned.
++ * Excel - Wink Reyes Valley.
++ */
++public final class RepairGate {
++
++    public enum Decision { ARM, CONFIRM, LOCKED }
++
++    /** The answer to one cast attempt; remainingMs is set for LOCKED. */
++    public static final class Verdict {
++        public final Decision decision;
++        public final long remainingMs;
++        Verdict(Decision decision, long remainingMs) {
++            this.decision = decision;
++            this.remainingMs = remainingMs;
++        }
++    }
++
++    /** The three player-facing strings, config-owned (see config.yml). */
++    public static final class Texts {
++        public static final String DEFAULT_PROMPT =
++                "Repair Equipment: cast again within {seconds} seconds to fully repair {items} damaged item(s) "
++                + "across {members} party member(s) - armor + main hand, FULL repair. "
++                + "Confirming starts your {cooldown} cooldown.";
++        public static final String DEFAULT_PROMPT_NONE =
++                "Repair Equipment: no damaged gear found across {members} party member(s). "
++                + "Cast again within {seconds} seconds to cast it anyway - it still starts your {cooldown} cooldown.";
++        public static final String DEFAULT_REFUSED =
++                "Repair Equipment is on cooldown: {remaining} remaining.";
++
++        public final String prompt;
++        public final String promptNone;
++        public final String refused;
++
++        public Texts(String prompt, String promptNone, String refused) {
++            this.prompt = prompt == null || prompt.isBlank() ? DEFAULT_PROMPT : prompt;
++            this.promptNone = promptNone == null || promptNone.isBlank() ? DEFAULT_PROMPT_NONE : promptNone;
++            this.refused = refused == null || refused.isBlank() ? DEFAULT_REFUSED : refused;
++        }
++
++        public static Texts defaults() { return new Texts(null, null, null); }
++    }
++
++    private final long confirmWindowMs;
++    private final long cooldownMs;
++    private final Texts texts;
++    private final Map<UUID, Long> armedUntil = new HashMap<>();
++    private final Map<UUID, Long> lastConfirmed = new HashMap<>();
++
++    public RepairGate(long confirmWindowMs, long cooldownMs, Texts texts) {
++        this.confirmWindowMs = Math.max(1L, confirmWindowMs);
++        this.cooldownMs = Math.max(0L, cooldownMs);
++        this.texts = texts == null ? Texts.defaults() : texts;
++    }
++
++    public long confirmWindowMs() { return confirmWindowMs; }
++    public long cooldownMs() { return cooldownMs; }
++    public Texts texts() { return texts; }
++
++    /**
++     * What one cast attempt means right now. The lockout is judged first:
++     * nothing (including a fresh arm) outruns a live lockout.
++     */
++    public synchronized Verdict verdict(UUID caster, long now) {
++        Long last = lastConfirmed.get(caster);
++        if (last != null) {
++            long remaining = cooldownMs - (now - last);
++            if (remaining > 0) return new Verdict(Decision.LOCKED, remaining);
++            lastConfirmed.remove(caster);
++        }
++        Long until = armedUntil.get(caster);
++        if (until != null && now < until) return new Verdict(Decision.CONFIRM, 0);
++        return new Verdict(Decision.ARM, 0);
++    }
++
++    /** Open (or refresh) the confirmation window for a caster. */
++    public synchronized void arm(UUID caster, long now) {
++        armedUntil.put(caster, now + confirmWindowMs);
++    }
++
++    /** Consume the arm and start the lockout. */
++    public synchronized void confirm(UUID caster, long now) {
++        armedUntil.remove(caster);
++        lastConfirmed.put(caster, now);
++    }
++
++    /** Milliseconds of lockout left for a caster (0 when not locked). */
++    public synchronized long remainingMs(UUID caster, long now) {
++        Long last = lastConfirmed.get(caster);
++        if (last == null) return 0;
++        return Math.max(0, cooldownMs - (now - last));
++    }
++
++    /** Confirmed-cast timestamps for persistence; expired entries pruned. */
++    public synchronized Map<UUID, Long> snapshotConfirmed(long now) {
++        lastConfirmed.values().removeIf(t -> now - t >= cooldownMs);
++        return new HashMap<>(lastConfirmed);
++    }
++
++    /** Restore confirmed-cast timestamps loaded from disk. */
++    public synchronized void restoreConfirmed(Map<UUID, Long> loaded) {
++        lastConfirmed.clear();
++        if (loaded != null) lastConfirmed.putAll(loaded);
++    }
++
++    // ------------------------------------------------------------ messages
++
++    /** The arming prompt: the live count, or the honest zero-count text. */
++    public String promptText(int items, int membersWithDamage, int membersChecked) {
++        if (items <= 0) return fill(texts.promptNone, 0, membersChecked, 0);
++        return fill(texts.prompt, items, membersWithDamage, 0);
++    }
++
++    /** The lockout refusal, with the remaining time. */
++    public String refusedText(long remainingMs) {
++        return fill(texts.refused, 0, 0, remainingMs);
++    }
++
++    private String fill(String template, int items, int members, long remainingMs) {
++        return template
++                .replace("{items}", Integer.toString(items))
++                .replace("{members}", Integer.toString(members))
++                .replace("{seconds}", Long.toString(Math.max(1, (confirmWindowMs + 999) / 1000)))
++                .replace("{cooldown}", formatDuration(cooldownMs))
++                .replace("{remaining}", formatDuration(remainingMs));
++    }
++
++    /** "4h 0m" / "3h 12m" / "10m" / "59s" / "0s" - minutes round up. */
++    public static String formatDuration(long ms) {
++        if (ms <= 0) return "0s";
++        if (ms < 60_000L) return ((ms + 999) / 1000) + "s";
++        long totalMinutes = (ms + 59_999L) / 60_000L;
++        long hours = totalMinutes / 60;
++        long minutes = totalMinutes % 60;
++        return hours > 0 ? hours + "h " + minutes + "m" : minutes + "m";
++    }
++}

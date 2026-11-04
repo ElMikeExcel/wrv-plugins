@@ -1,0 +1,125 @@
+===== Test report (source: party-mesh/build-0.5.2/TEST-REPORT.md) =====
+# ExcelTogether 0.5.2 — TEST REPORT
+
+Build: `bash build.sh` in this folder. Everything below ran against the candidate jar
+`cb0cb309d81b5d5dd8400688f4ff83f7d815cb7b675fdb679e985c096bb91d2a` (171,337 bytes),
+which build.sh assembles twice and hash-asserts; a third independent run reproduced
+the same hash.
+
+## Base proof (before any delta)
+
+Unmodified 0.5.1 tree rebuilt (in `/tmp/basecheck-051`):
+`f2e5b7d3284474c250852dabde708efe3fea2f1dc1109ad6c763e564de2f517f` (159,821 bytes) —
+**byte-identical to build-0.5.1's shipped candidate**, reproducible across two builds.
+Re-verified again after the delta work (the file still hashes to `f2e5b7d3…`).
+
+## Mechanism verification (the design's load-bearing fact)
+
+Magic 11.2.5 (`work/magic-11.2.5.jar`, sha256 `79e49fe3…`) was extracted and scanned
+for a cast-confirmation facility: every "confirm" occurrence is a SelectorAction/shop
+GUI option or RecallAction's `confirm_marker`; BaseSpell/Spell expose cooldown
+accessors but no confirm deferral, and the cooldown is charged when a cast runs. **No
+native facility exists** — hence the Together-gated lockout design (SOURCE.md).
+
+## Unit suite (headless, run by build.sh)
+
+**826 checks, 0 failures** = the full inherited suite (791: PartyTest 18,
+PartyFeatureTest 196, RangeIndicatorTest 61, McmmoLinkTest 79, McmmoSyncTest 86,
+ShareTest 30, XpShareTest 22, BaseRulesTest 100, EmSyncTest 93, EmLinkMappingTest 73,
+PartyLookupTest 6, PartyRepairTest 27) plus the new **RepairGateTest: 35 checks**:
+
+- State machine: fresh caster → ARM; verdict alone never arms or locks; arm → CONFIRM
+  inside the window (verdict is read-only — still confirmable on a second read);
+  confirm → LOCKED with the full cooldown remaining, counting down; per-caster
+  independence; lockout ends exactly at the cooldown boundary.
+- A lapsed arm costs nothing: window-edge confirm still works, one tick past it the
+  verdict is ARM again with zero remaining, and re-arm + confirm works after a lapse.
+- Persistence format: snapshot keeps live lockouts and prunes expired ones; restore
+  reproduces the lock on a fresh gate with the same remaining time; the store's file
+  round-trip is exact; missing file = clean slate; malformed keys skipped, good keys
+  kept; an unreadable file loads as a clean slate without throwing.
+- Texts: the prompt carries the live count, the window, and the formatted cooldown
+  with no placeholders left; the zero-count prompt names the member count and states
+  the burn plainly; the refusal carries the formatted remaining time; custom texts
+  and values flow through; blank texts fall back to the defaults.
+- `formatDuration` pins: 0 → "0s", 59s → "59s", 59.5s → "60s", 60s → "1m",
+  10 min → "10m", 4h → "4h 0m", 3h12m → "3h 12m".
+
+## Staging diffs (the spells half)
+
+- 0.5.2 staging vs 0.5.1 staging: **exactly 2 changed lines per file** — `repairitem`
+  cooldown 10000 → 1800000, `repairequipment` cooldown 14400000 → 1000. Nothing else.
+- 0.5.2 staging vs the Fling bases (`~/workspace/fling-retune/stage/`): per file,
+  exactly (a) the 0.5.1 `repairequipment` block replacement, (b) the `repairitem`
+  cooldown line, (c) the `repairequipment` cooldown line at 1000. **No third
+  difference in any file** (full diffs run and read, all four stages).
+- New staged hashes: s2 `91240009…`, s3 `29dfe0dc…`, s4 `4594b882…`, s5 `fa31fa20…`
+  (full hashes in INSTALL-PACKET-REPAIREQUIP.md).
+
+## Rig proof (Paper 26.3-235, Magic 11.2.5, Jobs + CMILib + Vault)
+
+Driver: `rig/driver/` (PartyRepairRig 0.5.2 edition, rig-only, never shipped) — the
+0.5.1 fake-player rig; verdicts on **durability deltas**, staged spells carrying the
+0.5.2 blocks (repairequipment cooldown 1000, repairitem 1800000). Three boots,
+selected by `-Drig.mode`:
+
+- **Boot A** (log `rig/boot-A-console.log`) — the gate chain, **9/9 PASS**:
+  SETUP-PARTY (real PartyManager roster of 2); **ARM-NO-REPAIR** (caster, ally AND
+  stranger durability fully unchanged after the first cast); **ARM-NO-LOCKOUT** (the
+  spell's own Magic remaining cooldown after the arm: 0 ms — the 1 s anti-bounce
+  only); **CONFIRM-REPAIRS** (recast ~3 s later: caster + ally 100/150/120/80/200 →
+  0/0/0/0/0, offhands stay 90, stranger untouched); **CONFIRM-PERSISTED** (the
+  cooldowns file lists the caster); **LOCKED-NO-REPAIR** (kit re-damaged, cast under
+  the lockout: unchanged); **LAPSE-REARMS-FREE** (solo: arm, 13 s lapse, recast
+  re-arms — still fully damaged, nothing spent); **LAPSE-THEN-CONFIRM-REPAIRS**
+  (immediate recast confirms and repairs solo); **WHIFF-CONFIRM-LOCKS** (pristine
+  kit: arm + confirm at zero count still writes the lockout).
+  Together's own lines in the log are the prompt evidence: `RigCaster armed Repair
+  Equipment - 10 damaged item(s) across 2 of 2 party member(s); awaiting
+  confirmation.` / `RigCaster confirmed Repair Equipment - 4h 0m lockout started.` /
+  `RigCaster cast Repair Equipment during the confirmation-gate lockout - refused,
+  4h 0m remaining.` / whiff: `0 damaged item(s) across 0 of 1 party member(s)`.
+  The awake line ends: `Magic party repair: ON (ExcelPartyRepair + ExcelRepairItem
+  registered), repair confirm ON (10s window, 4h 0m lockout).`
+- **Boot B** (log `rig/boot-B-console.log`) — **RESTART-LOCKOUT-HELD PASS**: a fresh
+  server process on boot A's data folder; the caster's first cast is refused from
+  the restored file (`refused, 3h 59m remaining` — the clock ran across the restart),
+  kit unchanged.
+- **Boot C** (log `rig/boot-C-console.log`) — the harness aged the file's timestamps
+  by 5 h: **EXPIRED-ARM-NO-REPAIR PASS** (first cast arms again, repairs nothing) and
+  **EXPIRED-CONFIRM-REPAIRS PASS** (confirm inside the fresh window repairs). An
+  expired lockout never bricks the spell.
+
+### Honest rig notes (two false starts, both mine, both fixed before the passes above)
+
+1. The first boot-A attempt reported ARM/CONFIRM failures — root cause was **rig
+   contamination, not the build**: the rig server was cloned from build-0.5.1's rig
+   including Magic's per-mage data, so the fake players carried a live 4-hour Magic
+   cooldown from the 0.5.1 runs (remaining 12,380,535 ms at first read) and Magic
+   refused every cast before the gate ever saw it (no gate lines in that log at
+   all). Cleared `plugins/Magic/data/players/*.dat*` and re-ran clean — the passes
+   above are from the clean run.
+2. The first driver draft fetched each mage's spell during setup; `getSpell`
+   returned null that early (the 0.5.1 driver fetched inside its phases for this
+   reason). Fixed to lazy per-phase fetch before the clean run.
+
+## Fail-soft legs (inherited from 0.5.1, re-run on the 0.5.2 jar)
+
+- **L2 — no Magic** (log `rig/boot-L2-console.log`): ExcelTogether 0.5.2 enables
+  fully; awake line ends `Magic party repair: OFF (Magic not installed).`; no
+  Together errors (the only ERROR lines are the rig's known environmental noise:
+  Jobs' missing-economy notice and offline version-fetch SSL failures).
+- **L3 — Magic + 0.5.2 spells, no Together jar** (log `rig/boot-L3-console.log`):
+  Magic logs exactly one scoped WARN — `Error loading class ExcelPartyRepair for
+  spell Repair Equipment` / `Failed to resolve class: ExcelPartyRepair` — loads its
+  spells and reaches Done. A spells-before-jar order degrades one spell with one
+  warning, never the server. The packets still sequence jar-first.
+
+## Not covered here (player proof, in the packets)
+
+On live with real clients, Jester's list: the arm prompt READS correctly in game
+(Java chat/actionbar rendering of the cast message; the **Bedrock read of the same
+prompt is a named player proof** — the prompt rides Magic's standard cast messaging,
+but no rig client can show it), arm repairs nothing, confirm repairs, an unconfirmed
+lapse costs nothing, **Repair Item shows its 30-minute cooldown after one cast**, and
+the caster relogs mid-lockout and is still refused.
