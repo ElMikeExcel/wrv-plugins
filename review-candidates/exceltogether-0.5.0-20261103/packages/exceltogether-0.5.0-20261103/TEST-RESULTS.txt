@@ -1,0 +1,60 @@
+===== Test report (source: party-mesh/build-0.5.0/TEST-REPORT.md) =====
+# ExcelTogether 0.5.0 — TEST-REPORT.md
+
+Build under test: `ExcelTogether-0.5.0.jar`, SHA-256 `f4490814a9d4ec2e33540126adf6b418a0b58a50b27172119e45950d67353529`, 149,568 B.
+Rebuild reproduction: `build.sh` assembles the jar twice and asserts identical hashes; verified across three separate runs.
+
+## 1. Base proof (before any 0.5.0 change)
+
+- §7 gate on the live-pulled 0.4.3 jar: SHA-256 `2bd4d998…` (121,494 B); 62 classes; all 62 per-class MD5s match BASE-RECOVERY Appendix A; bundled plugin.yml/config.yml MD5s match; javap spot checks pass (`McmmoXpShare` observed-grant hook, `ExcelTogether` barPolicy/gainGap, `PartyRules$Verdict` 11 constants, combat-drops handlers). Pulled live `Party.yml`: `enabled: true`, values identical to the staged 10.9.12 defaults.
+- 0.3.0 source anchor rebuilds byte-identical to its shipped jar, twice: `55a6b3ea…`.
+- Reconstructed 0.4.3 tree assembles byte-identical to the shipped jar, twice (proof in `work/build-base.sh`): 48/62 classes byte-identical from source, 12 instruction-identical (debug layout only), 2 instruction-identical modulo a branch trampoline.
+- §7 items 6/7/8b (a live config pull, boot log, live EM jar identity) were not in the pull set; the install packet carries the live config pull + diff as an in-window step instead. Expected live values of record: multiplier 1.25, radius 50, bonus-mode party, max-party-size 5.
+
+## 2. Harness results (all green, `build.sh` runs every suite before assembling)
+
+| Suite | Checks | Result |
+|---|---|---|
+| PartyTest (inherited) | 18 | pass |
+| PartyFeatureTest (inherited; version stamp updated to 0.5.0, the only inherited-test change) | 196 | pass |
+| RangeIndicatorTest (inherited) | 61 | pass |
+| McmmoLinkTest (inherited) | 79 | pass |
+| McmmoSyncTest (inherited) | 86 | pass |
+| ShareTest (inherited) | 30 | pass |
+| XpShareTest (inherited) | 22 | pass |
+| BaseRulesTest (new §11A: BarPolicy, PartyRules judge order + all 11 verdicts, KillCap edges, friendly-fire matrix, GeyserForms % escaping, bonusNote table — run against the reconstructed base) | 100 | pass |
+| EmSyncTest (new §11B/§11C/§11D, scripted fake EliteMobs; at-rest silence — zero drives, zero messages — asserted inside every scenario) | 93 | pass |
+| EmLinkMappingTest (new §11B B12: all 13 PartyOperationResult values × every op through the §1.4 mapping, idempotent-OK trio, conservative unlisted combos, ledger 60 s edges, EmParty sentinels, EmLink.NONE) | 73 | pass |
+| PartyLookupTest (new §11B B13 unit half: solo/unknown → {self}, full set from any member, offline-grace member included, defensive copy) | 6 | pass |
+| **Total** | **764** | **0 failures** |
+
+Coverage notes: B1–B11 all present (adoption, materialisation with the exact drive sequence, Case B/C/D/E, suppression through kick + EM leader change, UNKNOWN watch expiry, the two-full-parties B8 no-churn case, leader cases L1/L3/L4, dungeon freeze + 45 s quiet window + 300 s deferred-op expiry with exactly one log line, neighbor-absent B11, the 7-player overflow B6 with waiting set and freed-seat adoption). Deficiency pass (§11D): two solo players never gain membership; two different EM parties never merge; a floodgate-style UUID round-trips unchanged; offline-grace leader defers materialisation until return.
+
+## 3. Rig results (Paper 26.3-231, EliteMobs 10.9.12, mcMMO 2.3.003, Jobs 5.2.6.3, Magic 11.2.5, ExcelMagicLevel 0.2.0; rig kept at `work/rig/`, logs `boot-A.log` / `boot-B3.log`)
+
+- **Boot A (control, Together 0.4.3):** enables clean; ExcelMagicLevel awake: `share: proximity` with the labelled no-service warning. 0 SEVERE.
+- **Boot B3 (Together 0.5.0):** enables clean, 0 SEVERE, no Together warnings. Awake line verbatim:
+  `ExcelTogether 0.5.0 enabled: … hp refresh: objective 'hp'. EliteMobs mesh: ON (poll ~2s, login materialize ON, invites mirrored). PartyLookup service: published.`
+  Publication line present: `ExcelTogether: PartyLookup service published (party share consumers can connect).`
+  **ExcelMagicLevel awake flips: `share: party`** — no proximity warning anywhere in the log. The 30 s parties-enabled recheck fired during the run and stayed silent (parties enabled), as designed.
+- Rig noise, not product defects: ExcelMagicLevel prints 999 Magic-modifier drift warnings because the bare rig lacks the live server's Magic config fragments; Jobs needed Vault added to the rig before it would enable (rig composition, fixed in the rig only).
+
+## 4. Defects found and fixed (all during this build; none shipped)
+
+1. **plugin.yml invalid YAML (rig boot B, first candidate run):** the mandated description sentence's `0.5.0: ` colon-space breaks an unquoted YAML scalar; Paper refused the plugin (`Invalid plugin.yml`). Fixed by single-quoting the description (parsed text identical) + a YAML-parse gate in `build.sh`.
+2. **PartyLookup publication could not connect (rig boot B):** §3b's plain registration is invisible to ExcelMagicLevel because Bukkit keys services by Class object and each plugin loads its own copy of the interface (paper-api bytecode verified; MagicLevel's Phase-2 stub shared the classloader and masked it). Fixed with a bridge registration under ExcelMagicLevel's Class object alongside the specified one; contract, provider, and log line unchanged. Boot B3 proves the flip. Full evidence in SOURCE.md, interpretation call 1.
+3. **Parties-enabled probe race (rig boot B):** EliteMobs 10.9.12 loads configs seconds after its onEnable; the enable-time probe read `false` under a Party.yml that says `enabled: true`, and the first build refused the mesh on it. Fixed: false-at-enable never refuses; a 30 s recheck (or a DISABLED drive result) delivers the verdict. Boot B3: mesh ON, recheck silent.
+4. **Waiting-set leak:** `EmSync.markEm` now also removes the player from the EM waiting set, so an adopted waiter cannot linger as "waiting" forever.
+5. **Reconstruction defects (base phase, caught against shipped bytecode):** the CFR decompile mis-rendered `PartyCombatDrops` in several places (notify loop shape, combust/splash responsible-player logic, an `n += n3` ordering in onDeath) and §4.5 of BASE-RECOVERY says "all LOW" where onDeath is in fact HIGH — the shipped bytecode arbitrated every conflict and the reconstruction follows it. Java shape fixes for byte parity: `instanceof` pattern variables vs explicit casts in four places, `HashSet` locals in `upperSet`/`enumNames`, one inlined `getEntity()`. `GeyserForms` form-input defaults are NOT %-escaped in the shipped code (labels/hints are) — first reconstruction escaped them; fixed.
+6. **Build hygiene:** `build.sh` read the shipped jar from `/tmp`, which a VM restart wiped mid-task — assembly failed *after* the tests and a stale jar masked it for one cycle. The shipped jar now lives at `work/pulled-0.4.3.jar`, and `build.sh` deletes the target jar before assembling.
+
+## 5. Cold review pass (own diff, after the green run)
+
+Re-read the 0.5.0 diff hunting overshoot / undershoot / regression. Findings: items 2, 3, 4 above (found by rig + review combined). Also checked and cleared: McmmoSync's class ships as shipped bytes (its behavior cannot regress); Controller's new EM drive sites sit strictly beside the existing mcMMO ones and are inert when the EM leg is off (B11); `EmSync.poll()` early-returns when the link is unavailable, leaving Together-only behavior identical to 0.4.3; materialise hands back (never merges) when EM's party holds strangers; deferred-op expiry is checked before the freeze test, so a permanently frozen party cannot pin an op forever; the `PartyLookup` registration happens before any code that could fail enable, and `onDisable` unregisters.
+
+## 6. Not proven here (stated plainly)
+
+- **In-game mesh behavior with real clients** (§11E player proofs, carried in the install packet): /em-door party shows in `/excelparty list` + sidebar; Bedrock accept through EM's [ACCEPT] popup; a 6-player mcMMO party's waiting note in game; a dungeon ready check with a mesh-formed party; R-2/R-3/R-5/R-6 from §12.
+- **Service behavior under a live cast** with real Together parties (MagicLevel's Phase-2 report owns the same caveat): the flip is proven at boot; share *amounts* follow MagicLevel's own gates.
+- **The live config diff** (§7 items 6/7): the packet does the pull + diff in-window; if live values differ from the values of record, the merge follows the live file.
+- Seal governance is untouched by this build: no BossTrial/GuildGate/Paper change, so no acceptance rows re-open; GuildGate stays LOCKED at 3 of 5 whenever this installs.
