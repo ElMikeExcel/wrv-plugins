@@ -1,0 +1,272 @@
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/1.5.28-src/com/winkreyes/excelbedrockmenu/TeleportMenu.java b/1.5.29-src/com/winkreyes/excelbedrockmenu/TeleportMenu.java
+--- a/1.5.28-src/com/winkreyes/excelbedrockmenu/TeleportMenu.java	2026-11-01 21:31:40.793776600 +0000
++++ b/1.5.29-src/com/winkreyes/excelbedrockmenu/TeleportMenu.java	2026-11-02 23:13:24.386779484 +0000
+@@ -18,6 +18,7 @@
+ import org.bukkit.inventory.Inventory;
+ import org.bukkit.inventory.InventoryHolder;
+ import org.bukkit.inventory.ItemStack;
++import org.bukkit.inventory.meta.ItemMeta;
+ import org.bukkit.inventory.meta.SkullMeta;
+ import org.bukkit.plugin.Plugin;
+ 
+@@ -29,10 +30,26 @@
+ /**
+  * "Teleport to a player" - no typing needed.
+  * 1) Player picks a name from a list (Bedrock: form buttons, Java: chest of heads).
+- * 2) We run EssentialsX "/tpa <name>" AS that player, so Essentials' cooldowns,
+- *    safe-teleport checks, warmups and timeouts all still apply.
+- * 3) The target gets a tap-to-answer prompt (Bedrock: Accept/Decline popup,
+- *    Java: clickable [Accept] [Decline] in chat) which runs /tpaccept or /tpdeny.
++ * 2) Player picks a direction: "Teleport to player" (we go to them) or
++ *    "Ask player to come to me" (they come to us). Bedrock: a two-button form
++ *    titled with the picked player's name. Java: a small choice chest.
++ *    Closing either one sends nothing.
++ * 3) We run EssentialsX "/tpa <name>" or "/tpahere <name>" AS that player, so
++ *    Essentials' cooldowns, safe-teleport checks, warmups and timeouts all
++ *    still apply.
++ * 4) The target gets a tap-to-answer prompt worded for the direction
++ *    (Bedrock: Accept/Decline popup, Java: clickable [Accept] [Decline] in
++ *    chat) which runs /tpaccept or /tpdeny. Essentials answers both request
++ *    directions with the same /tpaccept + /tpdeny pair.
++ *
++ * v1.5.29 (Nov 2, 2026): the direction choice (step 2). Before, a pick fired
++ * /tpa immediately, and there was no way to ask a player to come to you from
++ * the menu - even though Essentials has /tpahere for exactly that (Jester's
++ * request; the permission went live for all players the same day). The
++ * settled labels live in the LABEL_* constants below, pinned byte-exact by
++ * AdapterLogicTest. Strings stay hardcoded like every other string in this
++ * class: the class has no config pattern (the bundled config.yml carries
++ * only the Spawn fallback coordinates).
+  *
+  * Ported from Steve's 1.3.0 TeleportMenu; Geyser calls go through the
+  * reflection-based GeyserForms helper so there is no compile-time Geyser
+@@ -40,6 +57,29 @@
+  */
+ public class TeleportMenu implements CommandExecutor, Listener {
+ 
++    /** Which way the teleport goes once the target accepts. */
++    enum Direction {
++        TELEPORT_TO,   // the picker travels to the picked player: Essentials /tpa
++        COME_TO_ME     // the picked player travels to the picker: Essentials /tpahere
++    }
++
++    // Settled wording (Mike, Nov 2, 2026) - pinned byte-exact by AdapterLogicTest.
++    static final String LABEL_TELEPORT_TO = "Teleport to player";
++    static final String LABEL_COME_TO_ME = "Ask player to come to me";
++    static final String CHOICE_BODY = "What do you want to do?";
++
++    /** The Essentials request command for a direction, run AS the picker. */
++    static String requestCommand(Direction direction, String targetName) {
++        return (direction == Direction.COME_TO_ME ? "tpahere " : "tpa ") + targetName;
++    }
++
++    /** The sentence the target reads in their answer prompt. */
++    static String promptText(Direction direction, String who) {
++        return direction == Direction.COME_TO_ME
++                ? who + " is asking you to teleport to them."
++                : who + " wants to teleport to you.";
++    }
++
+     private final ExcelBedrockMenu plugin;
+ 
+     public TeleportMenu(ExcelBedrockMenu plugin) {
+@@ -56,6 +96,22 @@
+         }
+     }
+ 
++    /** Marks our direction-choice chest so we only react to clicks in it. */
++    private static final class ChoiceHolder implements InventoryHolder {
++        final UUID target;
++        Inventory inv;
++        ChoiceHolder(UUID target) {
++            this.target = target;
++        }
++        @Override
++        public Inventory getInventory() {
++            return inv;
++        }
++    }
++
++    private static final int CHOICE_SLOT_TELEPORT_TO = 2;
++    private static final int CHOICE_SLOT_COME_TO_ME = 6;
++
+     @Override
+     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+         if (!(sender instanceof Player)) {
+@@ -114,8 +170,9 @@
+                         return;
+                     }
+                     UUID target = ids.get(clicked);
++                    String targetLabel = buttons[clicked];
+                     Bukkit.getScheduler().runTask(plugin,
+-                            () -> sendRequest(plugin, player, target));
++                            () -> bedrockChoice(plugin, player, target, targetLabel));
+                 },
+                 plugin.getLogger());
+     }
+@@ -146,6 +203,29 @@
+ 
+     @EventHandler
+     public void onClick(InventoryClickEvent e) {
++        if (e.getInventory().getHolder() instanceof ChoiceHolder h) {
++            e.setCancelled(true); // never let the choice items be taken out
++            if (!(e.getWhoClicked() instanceof Player p)) {
++                return;
++            }
++            if (e.getClickedInventory() != e.getInventory()) {
++                return;
++            }
++            Direction direction;
++            if (e.getRawSlot() == CHOICE_SLOT_TELEPORT_TO) {
++                direction = Direction.TELEPORT_TO;
++            } else if (e.getRawSlot() == CHOICE_SLOT_COME_TO_ME) {
++                direction = Direction.COME_TO_ME;
++            } else {
++                return;
++            }
++            UUID target = h.target;
++            Bukkit.getScheduler().runTask(plugin, () -> {
++                p.closeInventory();
++                sendRequest(plugin, p, target, direction);
++            });
++            return;
++        }
+         if (!(e.getInventory().getHolder() instanceof PickHolder h)) {
+             return;
+         }
+@@ -163,20 +243,77 @@
+         UUID target = h.slots.get(slot);
+         Bukkit.getScheduler().runTask(plugin, () -> {
+             p.closeInventory();
+-            sendRequest(plugin, p, target);
++            Player to = Bukkit.getPlayer(target);
++            if (to == null || !to.isOnline()) {
++                // sendRequest owns the "just left the game" message.
++                sendRequest(plugin, p, target, Direction.TELEPORT_TO);
++                return;
++            }
++            javaChoice(p, to);
+         });
+     }
+ 
+     @EventHandler
+     public void onDrag(InventoryDragEvent e) {
+-        if (e.getInventory().getHolder() instanceof PickHolder) {
++        Object holder = e.getInventory().getHolder();
++        if (holder instanceof PickHolder || holder instanceof ChoiceHolder) {
+             e.setCancelled(true);
+         }
+     }
+ 
+-    // ---------- step 2: send the request through EssentialsX ----------
++    // ---------- step 2: pick a direction ----------
++
++    private static void bedrockChoice(ExcelBedrockMenu plugin, Player player, UUID target, String targetLabel) {
++        if (!player.isOnline()) {
++            return;
++        }
++        boolean sent = false;
++        try {
++            sent = GeyserForms.sendModalForm(player, targetLabel, CHOICE_BODY,
++                    LABEL_TELEPORT_TO, LABEL_COME_TO_ME,
++                    first -> Bukkit.getScheduler().runTask(plugin,
++                            () -> sendRequest(plugin, player, target,
++                                    first ? Direction.TELEPORT_TO : Direction.COME_TO_ME)),
++                    plugin.getLogger());
++        } catch (Throwable t) {
++            plugin.getLogger().warning("Teleport choice form failed for " + player.getName() + ": " + t);
++        }
++        if (!sent) {
++            // Fail soft to the pre-1.5.29 behavior: a plain /tpa request.
++            // (A closed form never reaches here - closing calls nothing.)
++            sendRequest(plugin, player, target, Direction.TELEPORT_TO);
++        }
++    }
++
++    private static void javaChoice(Player player, Player target) {
++        String name = stripColor(displayName(target));
++        ChoiceHolder h = new ChoiceHolder(target.getUniqueId());
++        h.inv = Bukkit.createInventory(h, 9, name);
++        h.inv.setItem(CHOICE_SLOT_TELEPORT_TO, choiceItem(Material.ENDER_PEARL,
++                ChatColor.GREEN + LABEL_TELEPORT_TO,
++                "You go to " + name + ". They can accept or decline."));
++        h.inv.setItem(CHOICE_SLOT_COME_TO_ME, choiceItem(Material.ENDER_EYE,
++                ChatColor.AQUA + LABEL_COME_TO_ME,
++                name + " comes to you. They can accept or decline."));
++        player.openInventory(h.inv);
++    }
++
++    private static ItemStack choiceItem(Material material, String label, String loreLine) {
++        ItemStack item = new ItemStack(material);
++        ItemMeta m = item.getItemMeta();
++        if (m != null) {
++            m.setDisplayName(label);
++            List<String> lore = new ArrayList<>();
++            lore.add(ChatColor.GRAY + loreLine);
++            m.setLore(lore);
++            item.setItemMeta(m);
++        }
++        return item;
++    }
++
++    // ---------- step 3: send the request through EssentialsX ----------
+ 
+-    private static void sendRequest(ExcelBedrockMenu plugin, Player from, UUID targetId) {
++    private static void sendRequest(ExcelBedrockMenu plugin, Player from, UUID targetId, Direction direction) {
+         Player to = Bukkit.getPlayer(targetId);
+         if (!from.isOnline()) {
+             return;
+@@ -192,7 +329,7 @@
+         }
+         // Real username (not nickname) so it always matches. Essentials prints its own
+         // messages (incl. cooldown). If the command is rejected we skip the popup.
+-        boolean ok = from.performCommand("tpa " + to.getName());
++        boolean ok = from.performCommand(requestCommand(direction, to.getName()));
+         if (!ok) {
+             return;
+         }
+@@ -200,23 +337,24 @@
+         final String fromName = from.getName();
+         final UUID fromId = from.getUniqueId();
+         Bukkit.getScheduler().runTaskLater(plugin,
+-                () -> askTarget(plugin, fromId, fromName, targetId), 2L);
++                () -> askTarget(plugin, fromId, fromName, targetId, direction), 2L);
+     }
+ 
+-    // ---------- step 3: tap-to-answer prompt for the target ----------
++    // ---------- step 4: tap-to-answer prompt for the target ----------
+ 
+-    private static void askTarget(ExcelBedrockMenu plugin, UUID fromId, String fromName, UUID targetId) {
++    private static void askTarget(ExcelBedrockMenu plugin, UUID fromId, String fromName, UUID targetId, Direction direction) {
+         Player to = Bukkit.getPlayer(targetId);
+         if (to == null) {
+             return;
+         }
+         Player from = Bukkit.getPlayer(fromId);
+         String who = from != null ? stripColor(displayName(from)) : fromName;
++        String prompt = promptText(direction, who);
+ 
+         if (GeyserForms.isBedrockPlayer(to, plugin.getLogger())) {
+             try {
+                 boolean sent = GeyserForms.sendModalForm(to, "Teleport request",
+-                        who + " wants to teleport to you.",
++                        prompt,
+                         "Accept", "Decline",
+                         accept -> Bukkit.getScheduler().runTask(plugin,
+                                 () -> answer(to, fromId, fromName, accept)),
+@@ -229,12 +367,13 @@
+             }
+         }
+         // Java (or fallback): clickable chat buttons
+-        TextComponent msg = new TextComponent(who + " wants to teleport to you. ");
++        TextComponent msg = new TextComponent(prompt + " ");
+         msg.setColor(ChatColor.GOLD);
+         TextComponent accept = new TextComponent("[Accept]");
+         accept.setColor(ChatColor.GREEN);
+         accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + fromName));
+-        accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("Let them come to you")));
++        accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
++                new Text(direction == Direction.COME_TO_ME ? "Teleport to them" : "Let them come to you")));
+         TextComponent space = new TextComponent(" ");
+         TextComponent decline = new TextComponent("[Decline]");
+         decline.setColor(ChatColor.RED);
