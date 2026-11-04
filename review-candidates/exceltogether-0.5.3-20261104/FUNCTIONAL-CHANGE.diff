@@ -1,0 +1,843 @@
+diff -ruN '--exclude=*.jar' /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/src/com/winkreyes/exceltogether/Controller.java /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/src/com/winkreyes/exceltogether/Controller.java
+--- /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/src/com/winkreyes/exceltogether/Controller.java	2026-11-02 02:34:55.286149269 +0000
++++ /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/src/com/winkreyes/exceltogether/Controller.java	2026-11-04 05:53:56.433128877 +0000
+@@ -37,6 +37,10 @@
+     /** Plugin supplies the live bonus status lines (needs Bukkit). */
+     public void setStatus(java.util.function.Function<PlayerView, List<String>> f) { this.statusFn = f == null ? v -> List.of() : f; }
+ 
++    private java.util.function.Supplier<List<PlayerView>> directory = List::of;
++    /** Plugin supplies the online-player directory used to resolve names in admin commands (0.5.3). */
++    public void setPlayerDirectory(java.util.function.Supplier<List<PlayerView>> d) { this.directory = d == null ? List::of : d; }
++
+     private RangeIndicator indicator = new RangeIndicator();
+     /** Plugin supplies the shared WRV-068 range indicator, so the ticker and the cue command see the same per-player toggles. */
+     public void setIndicator(RangeIndicator i) { if (i != null) this.indicator = i; }
+@@ -551,7 +555,9 @@
+             safeRun(() -> { if (c.removed != null) emLink.leave(c.removed); if (c.disbanded) for (UUID u : c.remaining) emLink.leave(u); });
+             // we removed them from ours on purpose: a leftover mcMMO membership must not pull them back in
+             safeRun(() -> { if (c.removed != null) sync.suppress(c.removed); if (c.disbanded) for (UUID u : c.remaining) sync.suppress(u); });
+-            safeRun(() -> { if (c.removed != null) emSync.suppress(c.removed); if (c.disbanded) for (UUID u : c.remaining) emSync.suppress(u); });
++            // 0.5.3: the EmSync hold is roster-keyed - hand it the roster this change removed them from
++            Set<UUID> roster = new HashSet<>(c.remaining); if (c.removed != null) roster.add(c.removed);
++            safeRun(() -> { if (c.removed != null) emSync.suppress(c.removed, roster); if (c.disbanded) for (UUID u : c.remaining) emSync.suppress(u, roster); });
+         }
+         if (c.disbanded) {
+             for (UUID u : c.remaining) tell(u, who + what + " The party ended because only one member is left.");
+@@ -564,6 +570,145 @@
+         }
+     }
+ 
++    /**
++     * 0.5.3: a removal that started at the mcMMO door (McmmoSync's quietLeave: a hand quit,
++     * kick or disband) still ends the party in the EliteMobs face. Drives the EM leaves and
++     * records the removal in EmSync (roster-keyed), so EmSync Case B cannot resurrect the
++     * party from the untouched EM roster. The mcMMO leg is never driven here (it is the
++     * origin) and nobody is told anything twice. Controller.tick runs the mcMMO poll before
++     * the EM poll, so the suppression lands before Case B can see the torn-down roster.
++     */
++    void cascadeEmRemoval(PartyManager.Change ch) {
++        Set<UUID> roster = new HashSet<>(ch.remaining);
++        if (ch.removed != null) roster.add(ch.removed);
++        List<UUID> targets = new ArrayList<>();
++        if (ch.removed != null) targets.add(ch.removed);
++        if (ch.disbanded) targets.addAll(ch.remaining);
++        for (UUID u : targets) {
++            safeRun(() -> emLink.leave(u));
++            safeRun(() -> emSync.suppress(u, roster));
++        }
++    }
++
++    // ---------- console / permission admin (0.5.3) ----------
++    /**
++     * The /excelparty admin branch: usable from the server console and by a player holding
++     * excelparty.admin (Mike's standing rule, Nov 3, 2026: "We should always have a way to help
++     * the players"). remove and disband go through the SAME removal semantics as a voluntary
++     * leave - PartyManager.leave/announce with mirror=true: both links' leave drives plus
++     * suppression in both syncs, so an admin removal sticks exactly like a player's own leave.
++     * a[0] is "admin"; replies go to the caller (the console log for a console sender).
++     */
++    public void adminCommand(java.util.function.Consumer<String> reply, String[] a) {
++        String usage = "Usage: /" + CMD + " admin status <player> | remove <player> | disband <player>";
++        if (a.length < 2) { reply.accept(usage); return; }
++        switch (a[1].toLowerCase(Locale.ROOT)) {
++            case "status" -> { if (a.length < 3) { reply.accept("Usage: /" + CMD + " admin status <player>"); return; } adminStatus(reply, String.join(" ", Arrays.copyOfRange(a, 2, a.length))); }
++            case "remove" -> { if (a.length < 3) { reply.accept("Usage: /" + CMD + " admin remove <player>"); return; } adminRemove(reply, String.join(" ", Arrays.copyOfRange(a, 2, a.length))); }
++            case "disband" -> { if (a.length < 3) { reply.accept("Usage: /" + CMD + " admin disband <player>"); return; } adminDisband(reply, String.join(" ", Arrays.copyOfRange(a, 2, a.length))); }
++            default -> reply.accept(usage);
++        }
++    }
++
++    /** Resolves a typed name over online players plus everyone in a Together party (offline members included). */
++    private NameMatch.Result adminResolve(String query) {
++        Map<UUID, NameMatch.Cand> byId = new LinkedHashMap<>();
++        try { for (PlayerView v : directory.get()) byId.put(v.id(), new NameMatch.Cand(v.id(), v.realName(), v.displayName())); } catch (Throwable ignored) { }
++        for (UUID u : mgr.allMembers()) if (!byId.containsKey(u)) byId.put(u, new NameMatch.Cand(u, nameOf(u), nameOf(u)));
++        return NameMatch.find(query, new ArrayList<>(byId.values()));
++    }
++
++    /** @return the resolved id, or null after replying with the not-found / ambiguous message */
++    private UUID adminTarget(java.util.function.Consumer<String> reply, String query) {
++        NameMatch.Result r = adminResolve(query);
++        if (r.isAmbiguous()) {
++            StringBuilder sb = new StringBuilder("That name matches more than one player: ");
++            List<String> ns = new ArrayList<>();
++            for (NameMatch.Cand cand : r.ambiguous) ns.add(cand.real);
++            sb.append(String.join(", ", ns)).append(". Use the full name.");
++            reply.accept(sb.toString());
++            return null;
++        }
++        if (!r.isFound()) { reply.accept("No online or partied player matches '" + query + "'."); return null; }
++        return r.found.id;
++    }
++
++    void adminStatus(java.util.function.Consumer<String> reply, String query) {
++        UUID id = adminTarget(reply, query);
++        if (id == null) return;
++        String name = nameOf(id);
++        reply.accept("Party status for " + name + ":");
++        PartyManager.Party pt = mgr.partyOf(id);
++        if (pt == null) {
++            reply.accept("  ExcelTogether: not in a party.");
++        } else {
++            List<String> names = new ArrayList<>();
++            for (UUID u : pt.members) {
++                String s = nameOf(u);
++                if (u.equals(pt.leader)) s += " (leader)";
++                if (env.online(u) == null) s += " (offline)";
++                names.add(s);
++            }
++            reply.accept("  ExcelTogether: in a party of " + pt.size() + "/" + mgr.maxSize() + ", leader " + nameOf(pt.leader) + ". Members: " + String.join(", ", names) + ".");
++        }
++        if (!link.available()) reply.accept("  mcMMO: link off.");
++        else {
++            McmmoLink.McParty mc;
++            try { mc = link.partyOf(id); } catch (Throwable t) { mc = McmmoLink.McParty.UNKNOWN; }
++            if (mc == McmmoLink.McParty.UNKNOWN) reply.accept("  mcMMO: could not be read right now.");
++            else if (!mc.real()) reply.accept("  mcMMO: not in a party.");
++            else reply.accept("  mcMMO: in party '" + mc.name + "' (leader " + nameOf(mc.leader) + ", " + mc.members.size() + " members).");
++        }
++        if (!emLink.available()) reply.accept("  EliteMobs: link off.");
++        else {
++            EmLink.EmParty em;
++            try { em = emLink.partyOf(id); } catch (Throwable t) { em = EmLink.EmParty.UNKNOWN; }
++            if (em == EmLink.EmParty.UNKNOWN) reply.accept("  EliteMobs: could not be read right now.");
++            else if (!em.real()) reply.accept("  EliteMobs: not in a party.");
++            else reply.accept("  EliteMobs: in a party (leader " + nameOf(em.leader) + ", " + em.members.size() + " members).");
++        }
++        reply.accept("  Suppressed (will not be auto-rejoined): mcMMO " + (sync.isSuppressed(id) ? "yes" : "no") + ", EliteMobs " + (emSync.isSuppressed(id) ? "yes" : "no") + ".");
++    }
++
++    void adminRemove(java.util.function.Consumer<String> reply, String query) {
++        UUID id = adminTarget(reply, query);
++        if (id == null) return;
++        String name = nameOf(id);
++        PartyManager.Party pt = mgr.partyOf(id);
++        if (pt == null) { reply.accept(name + " is not in a party."); return; }
++        int wasSize = pt.size();
++        String wasLeader = nameOf(pt.leader);
++        PartyManager.Change ch = new PartyManager.Change();
++        PartyManager.LeaveResult r = mgr.leave(id, ch);
++        if (r == PartyManager.LeaveResult.NOT_IN_PARTY) { reply.accept(name + " is not in a party."); return; }
++        tell(id, "You were removed from the party by an admin.");
++        announce(ch, name, " was removed from the party by an admin.");
++        logInfo("ExcelTogether admin: removed " + name + " from the party (was " + wasSize + ", leader " + wasLeader + ").");
++        reply.accept("Removed " + name + " from the party (was " + wasSize + "/" + mgr.maxSize() + ", leader " + wasLeader + "). The mirrors were told; " + name + " will not be auto-rejoined.");
++    }
++
++    void adminDisband(java.util.function.Consumer<String> reply, String query) {
++        UUID id = adminTarget(reply, query);
++        if (id == null) return;
++        PartyManager.Party pt = mgr.partyOf(id);
++        if (pt == null) { reply.accept(nameOf(id) + " is not in a party."); return; }
++        List<UUID> members = new ArrayList<>(pt.members);
++        List<String> names = new ArrayList<>();
++        for (UUID u : members) names.add(nameOf(u));
++        String leaderName = nameOf(pt.leader);
++        for (UUID u : members) mgr.leave(u, new PartyManager.Change());   // husk members return NOT_IN_PARTY: safe
++        Set<UUID> roster = new HashSet<>(members);
++        for (UUID u : members) {
++            safeRun(() -> link.leave(u));
++            safeRun(() -> emLink.leave(u));
++            safeRun(() -> sync.suppress(u));
++            safeRun(() -> emSync.suppress(u, roster));
++            tell(u, "Your party was disbanded by an admin.");
++        }
++        logInfo("ExcelTogether admin: disbanded the party of " + members.size() + " (leader " + leaderName + "): " + String.join(", ", names) + ".");
++        reply.accept("Disbanded the party of " + members.size() + " (leader " + leaderName + "): " + String.join(", ", names) + ". The mirrors were told; members will not be auto-rejoined.");
++    }
++
+     // ---------- time and connection events ----------
+     /** About once a second: expire invites, drop members who stayed offline too long. */
+     public void tick() {
+diff -ruN '--exclude=*.jar' /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/src/com/winkreyes/exceltogether/EmSync.java /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/src/com/winkreyes/exceltogether/EmSync.java
+--- /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/src/com/winkreyes/exceltogether/EmSync.java	2026-11-02 02:34:55.291260079 +0000
++++ /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/src/com/winkreyes/exceltogether/EmSync.java	2026-11-04 05:55:32.023259512 +0000
+@@ -17,6 +17,18 @@
+  * leave drives are the leader-reform (§4) and enforcement for a player Together deliberately
+  * removed (suppressed) who still sits in the EM twin - the §2.3 removal sentence read together
+  * with test B8 (two different full parties sharing one member must not churn).
++ *
++ * 0.5.3 (BUG-VERDICT.md, Mike's ruling Nov 3, 2026 - a voluntary leave sticks): two changes.
++ * (1) The EM door is a real door: a settled, mirrored, online member whose EM picture goes NONE
++ * while their EM twin survives without them has LEFT the party - the hub leave runs with the
++ * full mirror cascade, exactly like a Together-door leave. This replaces the §4 L4 rule for
++ * deliberate leaves; quits and relogs are guarded out (offline players are never detected, and
++ * the login watch must settle first), so materialise-on-login is unchanged. The config key
++ * mesh.em.door-leave-ends-party (default true) restores the view-only semantics when off.
++ * (2) Suppression is roster-keyed, not partyKey-keyed: a removed player is held out while EM
++ * lists them in any party made only of the people they were removed from (a re-created twin
++ * under a fresh Party UUID included), and the hold clears only when EM shows them partyless
++ * or grouped with someone new.
+  */
+ final class EmSync {
+     static final int EM_WATCH_MAX_POLLS = 30;               // about a minute at the default cadence
+@@ -26,15 +38,18 @@
+     // knobs, set from config by the plugin (adjustability law; defaults are the settled values)
+     private boolean loginMaterialize = true;
+     private boolean leaderReform = false;
++    private boolean doorLeaveEndsParty = true;
+     private long quietMs = 45_000L;
+     private long deferMaxMs = 300_000L;
+     private boolean debug = false;
+ 
+     /** players known to be in both systems together: id -> EM partyKey */
+     private final Map<UUID, Object> emMirrored = new HashMap<>();
+-    /** removed from ours on purpose; do not re-adopt while EM still lists them in the same party */
++    /** removed from ours on purpose; do not re-adopt while EM still lists them with the same people */
+     private final Set<UUID> emSuppressed = new HashSet<>();
+     private final Map<UUID, Object> emSuppressedKey = new HashMap<>();
++    /** who a suppressed player was removed from (0.5.3): the hold is roster-based, not key-based */
++    private final Map<UUID, Set<UUID>> emSuppressedRoster = new HashMap<>();
+     /** told once that a party was full */
+     private final Set<UUID> emFullNoted = new HashSet<>();
+     /** in one system but did not fit in the other; retried on every poll until a seat frees */
+@@ -66,6 +81,8 @@
+ 
+     void setLoginMaterialize(boolean v) { loginMaterialize = v; }
+     void setLeaderReform(boolean v) { leaderReform = v; }
++    void setDoorLeaveEndsParty(boolean v) { doorLeaveEndsParty = v; }
++    boolean doorLeaveEndsParty() { return doorLeaveEndsParty; }
+     void setQuietSeconds(long s) { quietMs = Math.max(0L, s) * 1000L; }
+     void setDeferMaxSeconds(long s) { deferMaxMs = Math.max(0L, s) * 1000L; }
+     void setDebug(boolean v) { debug = v; }
+@@ -78,18 +95,47 @@
+     boolean isSuppressed(UUID id) { return emSuppressed.contains(id); }
+ 
+     /** Together removed this player on purpose (leave/kick/disband): hold them out of re-adoption. */
+-    void suppress(UUID id) {
++    void suppress(UUID id) { suppress(id, null); }
++
++    /**
++     * As {@link #suppress(UUID)}, with the roster the player was removed from (the leaver plus
++     * everyone who was in their party at the removal, from the PartyManager.Change). The roster
++     * is what the hold compares against (0.5.3): an EM party re-created under a new partyKey
++     * around the same people must not defeat the hold, while a group containing anyone new is a
++     * deliberate fresh join and clears it. A null/empty hint falls back to the current EM picture.
++     */
++    void suppress(UUID id, Set<UUID> rosterHint) {
+         if (id == null) return;
+         Object key = emMirrored.get(id);
+         if (key == null) {
+             try { EmLink.EmParty cur = c.emLink().partyOf(id); if (cur.real()) key = cur.partyKey; } catch (Throwable ignored) { }
+         }
++        Set<UUID> roster = new HashSet<>();
++        if (rosterHint != null) roster.addAll(rosterHint);
++        if (roster.isEmpty()) {
++            try { EmLink.EmParty cur = c.emLink().partyOf(id); if (cur.real()) roster.addAll(cur.members); } catch (Throwable ignored) { }
++        }
++        roster.add(id);
+         emSuppressed.add(id);
+         emSuppressedKey.put(id, key);
++        emSuppressedRoster.put(id, roster);
+         emMirrored.remove(id);
+     }
+     /** A Together accept undoes a suppression for the accepter (mirrors McmmoSync.clear). */
+-    void clear(UUID id) { emSuppressed.remove(id); emSuppressedKey.remove(id); }
++    void clear(UUID id) { emSuppressed.remove(id); emSuppressedKey.remove(id); emSuppressedRoster.remove(id); }
++
++    /**
++     * Does id's removal hold against this EM party? Roster-based (0.5.3): every member of the EM
++     * party must be someone id was removed alongside. With no roster on record (a suppression
++     * from before 0.5.3 semantics) the partyKey comparison is the fallback.
++     */
++    boolean suppressionApplies(UUID id, EmLink.EmParty em) {
++        if (!emSuppressed.contains(id) || em == null || !em.real()) return false;
++        Set<UUID> roster = emSuppressedRoster.get(id);
++        if (roster == null || roster.isEmpty()) return Objects.equals(emSuppressedKey.get(id), em.partyKey);
++        for (UUID m : em.members) if (!roster.contains(m)) return false;
++        return true;
++    }
+ 
+     private void dbg(String line) { if (debug) c.logInfo("ExcelTogether mesh debug: " + line); }
+ 
+@@ -160,17 +206,26 @@
+         if (emSuppressed.contains(id)) {
+             if (!em.real()) {
+                 clear(id);                            // EM agrees they are out: the suppression is spent
+-            } else if (emSuppressedKey.containsKey(id) && Objects.equals(emSuppressedKey.get(id), key)) {
++            } else if (suppressionApplies(id, em)) {
+                 lastEmPartyKey.put(id, key);
+-                return;                               // still in the party we removed them from: hold
++                return;                               // still grouped only with the people they were removed from: hold
+             } else {
+-                clear(id);                            // a different EM party = a deliberate fresh join: proceed
++                clear(id);                            // their EM party includes someone new: a deliberate fresh join, proceed
+             }
+         }
+-        boolean wasWatching = emWatching.remove(id) != null;
+-        if (emWaiting.contains(id) && c.env().online(id) == null) emWaiting.remove(id);
+         PartyManager mgr = c.mgr();
+         PartyManager.Party ours = mgr.partyOf(id);
++        boolean wasWatching = emWatching.containsKey(id);
++        if (em.real() || ours == null) emWatching.remove(id);   // a settled picture ends the watch; Case C keeps it until materialise marks them (markEm clears it), so a relog is never mistaken for an EM-door leave
++        if (emWaiting.contains(id) && c.env().online(id) == null) emWaiting.remove(id);
++
++        // 0.5.3: a settled member who stepped out at the EM door has left the party (see the
++        // class header). Runs before the cases: Case C would otherwise materialise them back in.
++        if (doorLeaveEndsParty && !em.real() && ours != null && !wasWatching && emDoorLeft(link, id, ours)) {
++            leaveFromEmDoor(id);
++            lastEmPartyKey.put(id, null);
++            return;
++        }
+ 
+         if (!em.real() && ours == null) {             // Case A - both agree: partyless
+             emMirrored.remove(id); emFullNoted.remove(id); emWaiting.remove(id); emKeptNoted.remove(id);
+@@ -183,8 +238,10 @@
+             return;
+         }
+         if (!em.real()) {                             // Case C - Together only: materialise
+-            // (§4 L4: leaving EM alone never leaves the party - EM is a view, so a member who
+-            // left at the EM door is simply driven back in by materialisation/convergence.)
++            // (0.5.3: a settled member's EM-door leave was already honoured above. Whoever
++            // reaches here was never settled in EM - logging in, returning, or never faced -
++            // so materialisation/convergence rebuilds their face, as before. With
++            // doorLeaveEndsParty off, EM-door leavers land here too: the 0.5.x view semantics.)
+             materialise(link, ours, false);
+             lastEmPartyKey.put(id, null);
+             return;
+@@ -236,7 +293,7 @@
+             for (UUID m : group) {
+                 PartyManager.Party mp = mgr.partyOf(m);
+                 if (mp != null) { if (mp.id == anchor.id) markEm(m, em.partyKey); continue; }
+-                if (emSuppressed.contains(m) || c.env().online(m) == null) continue;
++                if (suppressionApplies(m, em) || c.env().online(m) == null) continue;
+                 PartyManager.AdoptOutcome o = mgr.adopt(m, anchor.leader);
+                 if (o.result == PartyManager.AdoptResult.FULL) { emWaiting.add(m); fullNoteTogether(m); continue; }
+                 if (o.result == PartyManager.AdoptResult.JOINED) {
+@@ -250,11 +307,11 @@
+         } else {
+             UUID first = null;
+             for (UUID m : group) {
+-                if (c.env().online(m) != null && !mgr.inParty(m) && !emSuppressed.contains(m)) { first = m; break; }
++                if (c.env().online(m) != null && !mgr.inParty(m) && !suppressionApplies(m, em)) { first = m; break; }
+             }
+             if (first == null) return;
+             for (UUID m : group) {
+-                if (m.equals(first) || mgr.inParty(m) || c.env().online(m) == null || emSuppressed.contains(m)) continue;
++                if (m.equals(first) || mgr.inParty(m) || c.env().online(m) == null || suppressionApplies(m, em)) continue;
+                 PartyManager.AdoptOutcome o = mgr.adopt(m, first);
+                 if (o.result == PartyManager.AdoptResult.FULL) { emWaiting.add(m); fullNoteTogether(m); continue; }
+                 if (o.party != null) {
+@@ -286,7 +343,7 @@
+         for (UUID m : em.members) {
+             PartyManager.Party mp = mgr.partyOf(m);
+             if (mp != null) { if (mp.id == ours.id) markEm(m, em.partyKey); continue; }
+-            if (emSuppressed.contains(m) && Objects.equals(emSuppressedKey.get(m), em.partyKey)) { driveRemove(link, ours, m); continue; }   // a deliberate removal the EM leg still shows: enforce it
++            if (suppressionApplies(m, em)) { driveRemove(link, ours, m); continue; }   // a deliberate removal the EM leg still shows: enforce it
+             if (c.env().online(m) == null) continue;
+             PartyManager.AdoptOutcome o = mgr.adopt(m, ours.leader);
+             if (o.result == PartyManager.AdoptResult.FULL) { emWaiting.add(m); fullNoteTogether(m); continue; }
+@@ -381,6 +438,12 @@
+ 
+     /** One invite+accept drive, invited by an EM insider. False = a refusal that quiets the party (caller stops this cycle). */
+     private boolean addOne(EmLink link, PartyManager.Party ours, UUID inviter, UUID m) {
++        // 0.5.3: every drive back into EM funnels through here (converge, materialise, the
++        // deferred queue). A settled member who stepped out at the EM door is NEVER driven
++        // back in, whichever party-mate's reconcile gets here first - their leave is honoured
++        // instead. (one() checks the same condition; this guard closes the race where a mate
++        // is reconciled before the leaver in the same poll.)
++        if (doorLeaveEndsParty && emDoorLeft(link, m, ours)) { leaveFromEmDoor(m); return true; }
+         EmLink.EmMirror r = link.invite(inviter, m);
+         if (r == EmLink.EmMirror.FULL) { emWaiting.add(m); fullNoteEm(m); return true; }
+         if (r == EmLink.EmMirror.TARGET_IN_OTHER_PARTY) return true;              // their own Case E handles them
+@@ -476,8 +539,41 @@
+         }
+     }
+ 
++    // ---------- the EM-door leave (0.5.3) ----------
++    /**
++     * True when id stepped out of the EliteMobs party alone: at the previous settled poll they
++     * were mirrored into EM party K, EM now shows them in no party, and K still exists - still
++     * listing a Together party-mate, under the same key. When the whole twin is gone (the EM
++     * party itself ended, or everyone quit) this is false and the ordinary cases decide. A
++     * player who is offline is never detected: EM drops quitters itself, and a quit is not a
++     * leave - on return, materialise rebuilds their face as before.
++     */
++    private boolean emDoorLeft(EmLink link, UUID id, PartyManager.Party ours) {
++        Object key = emMirrored.get(id);
++        if (key == null || !Objects.equals(key, lastEmPartyKey.get(id))) return false;
++        if (c.env().online(id) == null) return false;
++        for (UUID m : ours.members) {
++            if (m.equals(id)) continue;
++            EmLink.EmParty twin = link.partyOf(m);
++            if (twin.real() && Objects.equals(twin.partyKey, key)) return true;
++        }
++        return false;
++    }
++
++    /** The EM-door leave lands in the hub with the full mirror cascade, like a Together-door leave. */
++    private void leaveFromEmDoor(UUID id) {
++        PartyManager.Change ch = new PartyManager.Change();
++        PartyManager.LeaveResult r = c.mgr().leave(id, ch);
++        emMirrored.remove(id);
++        if (ch.disbanded) for (UUID u : ch.remaining) emMirrored.remove(u);
++        if (r == PartyManager.LeaveResult.NOT_IN_PARTY) return;
++        c.tell(id, "You left the party.");
++        c.announce(ch, c.nameOf(id), " left the party.");
++        dbg("EM-door leave honoured for " + c.nameOf(id));
++    }
++
+     // ---------- shared helpers ----------
+-    private void markEm(UUID id, Object partyKey) { emMirrored.put(id, partyKey); lastEmPartyKey.put(id, partyKey); emWaiting.remove(id); }
++    private void markEm(UUID id, Object partyKey) { emMirrored.put(id, partyKey); lastEmPartyKey.put(id, partyKey); emWaiting.remove(id); emWatching.remove(id); }
+     private void fullNoteTogether(UUID id) {
+         if (emFullNoted.add(id)) c.tell(id, "Note: your EliteMobs party joined, but the ExcelTogether party is full (" + c.mgr().maxSize() + "/" + c.mgr().maxSize() + "), so you stay in EliteMobs only. Your Jobs bonus won't include them.");
+     }
+diff -ruN '--exclude=*.jar' /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/src/com/winkreyes/exceltogether/ExcelTogether.java /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/src/com/winkreyes/exceltogether/ExcelTogether.java
+--- /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/src/com/winkreyes/exceltogether/ExcelTogether.java	2026-11-02 02:41:14.541271627 +0000
++++ /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/src/com/winkreyes/exceltogether/ExcelTogether.java	2026-11-04 05:51:24.827260284 +0000
+@@ -38,6 +38,15 @@
+  * prompts with the live damaged-item count; casting again inside the window confirms, and the 4-hour
+  * cooldown then lives in the gate's persisted lockout, not in Magic (Magic 11.2.5 charges its cooldown
+  * on any cast and has no confirmation facility - see RepairGate's javadoc).
++ * 0.5.3 (Nov 3, 2026, Mike's ruling after the Jester party-leave bug - see BUG-VERDICT.md): a
++ * voluntary leave sticks. Leaving at ANY door (/excelparty, mcMMO /party, /em party) ends the
++ * party for the leaver everywhere: EmSync honours a settled member's EM-door leave with the
++ * full hub cascade (mesh.em.door-leave-ends-party, default on), mcMMO-door removals cascade
++ * into the EM leg, and EmSync suppression is roster-keyed so a re-created EM twin under a new
++ * party UUID cannot resurrect a removed player. And /excelparty gains a console admin branch
++ * (status / remove / disband, permission excelparty.admin) routed BEFORE the player-only
++ * check - the console can always help a stuck player (Mike: "We should always have a way to
++ * help the players").
+  * The command is /excelparty (aliases /eparty, /together) because mcMMO owns /party on this server.
+  */
+ public final class ExcelTogether extends JavaPlugin implements Listener, Env {
+@@ -118,6 +127,7 @@
+         ctl = new Controller(mgr, this, forms, note);
+         ctl.setIndicator(indicator);
+         ctl.setLogSink(getLogger()::info);
++        ctl.setPlayerDirectory(() -> { List<PlayerView> out = new ArrayList<>(); for (Player pl : Bukkit.getOnlinePlayers()) out.add(new BukkitPlayer(pl)); return out; });
+         String linkNote = setupMcmmoLink();
+         String emNote = setupEmLink();
+         String magicNote = setupMagicLink();
+@@ -133,7 +143,7 @@
+         for (Player pl : Bukkit.getOnlinePlayers()) combatDrops.refreshHp(pl.getUniqueId());
+         Bukkit.getScheduler().runTaskTimer(this, () -> ctl.tick(), 20L, 20L);
+         Bukkit.getScheduler().runTaskTimer(this, this::tickIndicator, 60L, 50L);   // WRV-068: range line every 2.5s
+-        getLogger().info("ExcelTogether 0.5.2 enabled: x" + bonus.multiplier() + " money and XP, bonus-mode " + mode
++        getLogger().info("ExcelTogether 0.5.3 enabled: x" + bonus.multiplier() + " money and XP, bonus-mode " + mode
+                 + ", radius " + bonus.radius() + " blocks, parties up to " + mgr.maxSize() + ", invites last "
+                 + (mgr.ttlMs() / 1000) + "s, compass click invite " + (compassClick ? "ON" : "off") + ". Bedrock forms: "
+                 + (Bukkit.getPluginManager().getPlugin("Geyser-Spigot") != null ? "Geyser found" : "no Geyser, chat menu only")
+@@ -347,11 +357,13 @@
+             boolean loginMat = getConfig().getBoolean("mesh.em.login-materialize", true);
+             boolean mirrorInvites = getConfig().getBoolean("mesh.em.mirror-invites", true);
+             boolean reform = getConfig().getBoolean("mesh.em.leader-reform", false);
++            boolean doorLeave = getConfig().getBoolean("mesh.em.door-leave-ends-party", true);
+             ctl.setEmLink(l);
+             ctl.setEmPollEvery(pollEvery);
+             ctl.setEmMirrorInvites(mirrorInvites);
+             ctl.emSync().setLoginMaterialize(loginMat);
+             ctl.emSync().setLeaderReform(reform);
++            ctl.emSync().setDoorLeaveEndsParty(doorLeave);
+             ctl.emSync().setQuietSeconds(getConfig().getLong("mesh.em.ready-check-quiet-seconds", 45));
+             ctl.emSync().setDeferMaxSeconds(getConfig().getLong("mesh.em.defer-max-seconds", 300));
+             ctl.emSync().setDebug(getConfig().getBoolean("mesh.debug", false));
+@@ -364,7 +376,7 @@
+             List<UUID> here = new ArrayList<>(); for (Player op : Bukkit.getOnlinePlayers()) here.add(op.getUniqueId());
+             if (!here.isEmpty()) Bukkit.getScheduler().runTask(this, () -> ctl.emWatch(here));      // reload: reconcile players already online
+             return "ON (poll ~" + pollEvery + "s, login materialize " + (loginMat ? "ON" : "off") + ", invites " + (mirrorInvites ? "mirrored" : "not mirrored")
+-                    + (reform ? ", leader reform ON" : "") + ")"
++                    + (reform ? ", leader reform ON" : "") + ", EM-door leave " + (doorLeave ? "ends the party" : "is view-only") + ")"
+                     + (mgr.maxSize() > 5 ? " (party size capped at 5 by EliteMobs)" : "");
+         } catch (Throwable t) { getLogger().warning("EliteMobs mesh OFF: " + t); return "OFF (error)"; }
+     }
+@@ -444,17 +456,39 @@
+ 
+     // ---- command ----
+     @Override public boolean onCommand(CommandSender s, Command c, String label, String[] a) {
++        // 0.5.3: the admin branch routes BEFORE the player-only check. The console can always
++        // help a stuck player (Mike's standing rule, Nov 3, 2026); a player needs excelparty.admin.
++        if (a.length > 0 && a[0].equalsIgnoreCase("admin")) {
++            if (s instanceof Player pl && !pl.hasPermission("excelparty.admin")) {
++                pl.sendMessage("You need the excelparty.admin permission for that.");
++                return true;
++            }
++            ctl.adminCommand(s::sendMessage, a);
++            return true;
++        }
+         if (!(s instanceof Player pl)) { s.sendMessage("Players only."); return true; }
+         if (!pl.hasPermission("excelparty.use")) { pl.sendMessage("You can't use parties."); return true; }
+         ctl.command(new BukkitPlayer(pl), a);
+         return true;
+     }
+     @Override public List<String> onTabComplete(CommandSender s, Command c, String l, String[] a) {
++        boolean admin = !(s instanceof Player) || s.hasPermission("excelparty.admin");
+         if (a.length == 1) {
+             List<String> o = new ArrayList<>(List.of("invite", "accept", "decline", "confirm", "cancel", "leave", "list", "status", "kick", "invites", "cue", "help"));
++            if (admin) o.add("admin");
+             o.removeIf(x -> !x.startsWith(a[0].toLowerCase(Locale.ROOT)));
+             return o;
+         }
++        if (a.length == 2 && a[0].equalsIgnoreCase("admin") && admin) {
++            List<String> o = new ArrayList<>(List.of("status", "remove", "disband"));
++            o.removeIf(x -> !x.startsWith(a[1].toLowerCase(Locale.ROOT)));
++            return o;
++        }
++        if (a.length == 3 && a[0].equalsIgnoreCase("admin") && admin) {
++            List<String> o = new ArrayList<>();
++            for (Player p : Bukkit.getOnlinePlayers()) if (p.getName().toLowerCase(Locale.ROOT).startsWith(a[2].toLowerCase(Locale.ROOT))) o.add(p.getName());
++            return o;
++        }
+         if (a.length == 2 && a[0].equalsIgnoreCase("cue")) {
+             List<String> o = new ArrayList<>(List.of("on", "off"));
+             o.removeIf(x -> !x.startsWith(a[1].toLowerCase(Locale.ROOT)));
+diff -ruN '--exclude=*.jar' /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/src/com/winkreyes/exceltogether/McmmoSync.java /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/src/com/winkreyes/exceltogether/McmmoSync.java
+--- /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/src/com/winkreyes/exceltogether/McmmoSync.java	2026-11-02 02:34:55.288589261 +0000
++++ /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/src/com/winkreyes/exceltogether/McmmoSync.java	2026-11-04 05:49:31.641260638 +0000
+@@ -214,6 +214,11 @@
+         if (r == PartyManager.LeaveResult.NOT_IN_PARTY) return;
+         c.tell(id, "You left the ExcelTogether party because you " + why + ".");
+         c.announce(ch, c.nameOf(id), others, false);
++        // 0.5.3 (BUG-VERDICT.md Path 2): mirror=false only means "never push back into mcMMO,
++        // the origin". The removal is still a mesh-wide fact: cascade it into the EliteMobs leg
++        // (leave drives + EmSync suppression), or EmSync Case B resurrects the party from the
++        // untouched EM roster at the next poll - the Nov 3, 2026 disband that would not die.
++        c.cascadeEmRemoval(ch);
+     }
+ 
+     /** mcMMO is the source for the leader when it was changed by hand (/party owner). One way only: ours never pushes a leader back. */
+diff -ruN '--exclude=*.jar' /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/tests/com/winkreyes/exceltogether/AdminCommandTest.java /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/tests/com/winkreyes/exceltogether/AdminCommandTest.java
+--- /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/tests/com/winkreyes/exceltogether/AdminCommandTest.java	1970-01-01 00:00:00.000000000 +0000
++++ /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/tests/com/winkreyes/exceltogether/AdminCommandTest.java	2026-11-04 05:53:56.461259810 +0000
+@@ -0,0 +1,104 @@
++package com.winkreyes.exceltogether;
++
++import java.util.*;
++
++/**
++ * 0.5.3: the /excelparty admin branch - the console admin surface Mike's standing rule
++ * requires ("We should always have a way to help the players", Nov 3, 2026). The routing
++ * (console accepted, player needs excelparty.admin) lives in ExcelTogether.onCommand and is
++ * proven on the rig; what is proven HERE is Controller.adminCommand itself: status reports
++ * the hub party and both mirrors accurately, remove lands through the same leave semantics
++ * as a voluntary leave (mirror leave drives + suppression in both syncs, so it sticks),
++ * disband cascades the same way, and bad input answers with usage instead of throwing.
++ *
++ * Run: java -cp <classes> com.winkreyes.exceltogether.AdminCommandTest
++ */
++public class AdminCommandTest {
++    static int pass = 0, fail = 0;
++    static void check(String n, boolean ok) { if (ok) pass++; else { fail++; System.out.println("FAIL " + n); } }
++
++    static final class W {
++        final PartyFeatureTest.Rig r; final EmSyncTest.Em em = new EmSyncTest.Em(); final McmmoSyncTest.Mc mc = new McmmoSyncTest.Mc();
++        W(int cap) {
++            r = new PartyFeatureTest.Rig(cap); r.ctl.setEmLink(em); r.ctl.setLink(mc);
++            r.ctl.setPlayerDirectory(() -> { List<PlayerView> out = new ArrayList<>(); out.addAll(r.env.on.values()); return out; });
++        }
++        PartyFeatureTest.FP j(String n) { PartyFeatureTest.FP p = r.java(n); em.names.put(p.id, n); mc.names.put(p.id, n); return p; }
++        void tick(int n) { for (int i = 0; i < n; i++) { r.env.t += 2000; r.ctl.tick(); } }
++        void emPolls(int n) { for (int i = 0; i < n; i++) { r.env.t += 2000; r.ctl.emSync().poll(); } }
++        boolean ours(PartyFeatureTest.FP a, PartyFeatureTest.FP b) { return r.mgr.sameParty(a.id, b.id); }
++        void meshed(PartyFeatureTest.FP a, PartyFeatureTest.FP b) {
++            r.mgr.adopt(b.id, a.id);
++            mc.make("mesh", a.id); mc.join(b.id, "mesh");
++            r.ctl.mcmmoChanged(List.of(a.id, b.id), List.of());
++            tick(2); emPolls(1);
++        }
++        List<String> admin(String... a) { List<String> out = new ArrayList<>(); r.ctl.adminCommand(out::add, a); return out; }
++        static boolean said(List<String> out, String sub) { for (String s : out) if (s.contains(sub)) return true; return false; }
++    }
++
++    public static void main(String[] args) { tests(); System.out.println("AdminCommandTest: " + pass + " passed, " + fail + " failed"); if (fail > 0) System.exit(1); }
++
++    static void tests() {
++        // ---------- A1: status reports the hub party and both mirrors ----------
++        {
++            W w = new W(5);
++            var marvin = w.j("Marvin"); var jester = w.j("Jester"); var solo = w.j("Solo");
++            w.meshed(marvin, jester);
++            List<String> out = w.admin("admin", "status", "Jester");
++            check("A1 status names the player", W.said(out, "Party status for Jester"));
++            check("A1 status reports the Together party and leader", W.said(out, "ExcelTogether: in a party of 2/5, leader Marvin"));
++            check("A1 status lists both members", W.said(out, "Members: Marvin (leader), Jester"));
++            check("A1 status reports the mcMMO mirror", W.said(out, "mcMMO: in party 'mesh' (leader Marvin, 2 members)"));
++            check("A1 status reports the EliteMobs mirror", W.said(out, "EliteMobs: in a party (leader Marvin, 2 members)"));
++            check("A1 status reports no suppression", W.said(out, "Suppressed (will not be auto-rejoined): mcMMO no, EliteMobs no"));
++            List<String> soloOut = w.admin("admin", "status", "Solo");
++            check("A1 status for a partyless player", W.said(soloOut, "ExcelTogether: not in a party."));
++            List<String> none = w.admin("admin", "status", "Nobody");
++            check("A1 status for an unknown name", W.said(none, "No online or partied player matches 'Nobody'."));
++        }
++        // ---------- A2: remove lands like a voluntary leave and sticks ----------
++        {
++            W w = new W(5);
++            var marvin = w.j("Marvin"); var jester = w.j("Jester");
++            w.meshed(marvin, jester);
++            List<String> out = w.admin("admin", "remove", "Jester");
++            check("A2 remove replies with the removal", !out.isEmpty() && out.get(0).startsWith("Removed Jester from the party"));
++            check("A2 Jester is out of the Together party", !w.r.mgr.inParty(jester.id));
++            check("A2 the two-man party ended for Marvin too", w.r.mgr.partyOf(marvin.id) == null);
++            check("A2 the mcMMO mirror was driven out", w.mc.of(jester.id) == null && w.mc.of(marvin.id) == null);
++            check("A2 the EliteMobs mirror was driven out", w.em.of(jester.id) == null);
++            check("A2 suppression recorded in both syncs at once", w.r.ctl.emSync().isSuppressed(jester.id)
++                    && W.said(w.admin("admin", "status", "Jester"), "Suppressed (will not be auto-rejoined): mcMMO yes, EliteMobs yes"));
++            check("A2 Jester was told", jester.heard("removed from the party by an admin"));
++            check("A2 Marvin heard the admin wording", marvin.heard("Jester was removed from the party by an admin"));
++            w.tick(4); w.emPolls(2);
++            check("A2 polls do not resurrect the removed player", !w.r.mgr.inParty(jester.id) && w.em.of(jester.id) == null && w.mc.of(jester.id) == null);
++        }
++        // ---------- A3: disband cascades and sticks ----------
++        {
++            W w = new W(5);
++            var marvin = w.j("Marvin"); var jester = w.j("Jester");
++            w.meshed(marvin, jester);
++            List<String> out = w.admin("admin", "disband", "Marvin");
++            check("A3 disband replies with the disband", !out.isEmpty() && out.get(0).startsWith("Disbanded the party of 2 (leader Marvin)"));
++            check("A3 both are out of Together", w.r.mgr.partyOf(marvin.id) == null && w.r.mgr.partyOf(jester.id) == null);
++            check("A3 both mirrors are torn down", w.mc.of(jester.id) == null && w.em.of(jester.id) == null && w.em.of(marvin.id) == null);
++            check("A3 suppression recorded for both", w.r.ctl.emSync().isSuppressed(marvin.id) && w.r.ctl.emSync().isSuppressed(jester.id));
++            check("A3 both were told", marvin.heard("Your party was disbanded by an admin") && jester.heard("Your party was disbanded by an admin"));
++            w.tick(4); w.emPolls(2);
++            check("A3 polls do not resurrect the disbanded party", w.r.mgr.partyOf(marvin.id) == null && w.em.of(jester.id) == null);
++        }
++        // ---------- A4: edges answer cleanly ----------
++        {
++            W w = new W(5);
++            var solo = w.j("Solo"); var ari = w.j("Ari"); var aria = w.j("Aria");
++            check("A4 remove a partyless player", W.said(w.admin("admin", "remove", "Solo"), "Solo is not in a party."));
++            check("A4 disband a partyless player", W.said(w.admin("admin", "disband", "Solo"), "Solo is not in a party."));
++            check("A4 bare admin shows usage", W.said(w.admin("admin"), "Usage: /excelparty admin status <player> | remove <player> | disband <player>"));
++            check("A4 unknown subcommand shows usage", W.said(w.admin("admin", "bogus", "Solo"), "Usage: /excelparty admin"));
++            check("A4 missing target shows usage", W.said(w.admin("admin", "status"), "Usage: /excelparty admin status <player>"));
++            check("A4 ambiguous name is refused with the candidates", W.said(w.admin("admin", "status", "Ar"), "matches more than one player"));
++        }
++    }
++}
+diff -ruN '--exclude=*.jar' /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/tests/com/winkreyes/exceltogether/EmSyncTest.java /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/tests/com/winkreyes/exceltogether/EmSyncTest.java
+--- /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/tests/com/winkreyes/exceltogether/EmSyncTest.java	2026-11-02 02:34:55.298097049 +0000
++++ /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/tests/com/winkreyes/exceltogether/EmSyncTest.java	2026-11-04 05:51:50.463260204 +0000
+@@ -232,7 +232,10 @@
+             w.rest("B9a", a, b);
+         }
+         {
+-            // L4 + L3 (reform off): the EM leader leaves EM only; the record stands, EM keeps its new leader, member is driven back in
++            // L4 + L3 (reform off) - REWRITTEN for 0.5.3 (BUG-VERDICT.md): the EM leader leaves
++            // EM only. 0.5.2 expected the record to stand and L to be driven back in - that was
++            // the convicted party-leave bug. A settled member's EM-door leave now ends the party
++            // for them everywhere; the rest of the party and EM's promoted leader stand.
+             W w = new W(5);
+             var l = w.j("Lia"); var a = w.j("Ari"); var b = w.j("Bia");
+             w.together(l, b, a);                        // Together join order: L, B, A (Together would promote B)
+@@ -243,9 +246,11 @@
+             w.em.emLeaveRaw(l.id);                      // EM promotes A (display order); L only left EM
+             int drivesBefore = w.em.drives.size();
+             w.poll();
+-            check("B9 L4 Together record unchanged", w.r.mgr.partyOf(a.id).leader.equals(l.id) && w.inOurs(l, a) && w.inOurs(l, b));
+-            check("B9 L4 L is driven back into EM", w.em.inEm(a.id, l.id));
+-            check("B9 L3 EM keeps its promoted leader (no reform)", twin.leader.equals(a.id));
++            check("B9 L4 (0.5.3): an EM-door leave ends the Together membership too", !w.inOurs(l, a) && !w.inOurs(l, b));
++            check("B9 L4 (0.5.3): the rest of the party stays together under the next leader", w.r.mgr.partyOf(a.id).leader.equals(b.id) && w.inOurs(a, b));
++            check("B9 L4 (0.5.3): L is NOT driven back into EM - a voluntary leave sticks", !w.em.inEm(a.id, l.id));
++            check("B9 L3 (0.5.3): EM keeps its promoted leader (no reform)", twin.leader.equals(a.id));
++            check("B9 L4 (0.5.3): L heard he left", l.heard("You left the party"));
+             w.rest("B9b", l, a, b);
+         }
+         {
+diff -ruN '--exclude=*.jar' /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/tests/com/winkreyes/exceltogether/LeaveSticksTest.java /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/tests/com/winkreyes/exceltogether/LeaveSticksTest.java
+--- /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/tests/com/winkreyes/exceltogether/LeaveSticksTest.java	1970-01-01 00:00:00.000000000 +0000
++++ /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/tests/com/winkreyes/exceltogether/LeaveSticksTest.java	2026-11-04 05:47:35.180261002 +0000
+@@ -0,0 +1,170 @@
++package com.winkreyes.exceltogether;
++
++import java.util.*;
++
++/**
++ * 0.5.3 regression suite for the Nov 3, 2026 party-leave bug (BUG-VERDICT.md): a voluntary
++ * leave at ANY door of the one party must stick. Scenarios L1-L5 exercise the convicted
++ * paths - the EliteMobs door (EmSync Case C materialise resurrected the leaver), the mcMMO
++ * door (a hand disband dissolved Together with mirror=false, so EmSync Case B rebuilt the
++ * party from the untouched EliteMobs roster), the relog amplifier, and the partyKey-keyed
++ * suppression a re-created EM party defeats. L6 is the no-regression guard: a disconnect is
++ * NOT a leave and must keep materialising exactly as 0.5.2 did.
++ *
++ * Against the 0.5.2 tree L1-L5 fail and L6 passes; against 0.5.3 all pass.
++ * Run: java -cp <classes> com.winkreyes.exceltogether.LeaveSticksTest
++ */
++public class LeaveSticksTest {
++    static int pass = 0, fail = 0;
++    static void check(String n, boolean ok) { if (ok) pass++; else { fail++; System.out.println("FAIL " + n); } }
++
++    /** One rig, both mesh fakes (the EmSyncTest fake EliteMobs + the McmmoSyncTest fake mcMMO). */
++    static final class W {
++        final PartyFeatureTest.Rig r; final EmSyncTest.Em em = new EmSyncTest.Em(); final McmmoSyncTest.Mc mc = new McmmoSyncTest.Mc();
++        W(int cap) { r = new PartyFeatureTest.Rig(cap); r.ctl.setEmLink(em); r.ctl.setLink(mc); }
++        PartyFeatureTest.FP j(String n) { PartyFeatureTest.FP p = r.java(n); em.names.put(p.id, n); mc.names.put(p.id, n); return p; }
++        void tick(int n) { for (int i = 0; i < n; i++) { r.env.t += 2000; r.ctl.tick(); } }
++        void emPolls(int n) { for (int i = 0; i < n; i++) { r.env.t += 2000; r.ctl.emSync().poll(); } }
++        boolean ours(PartyFeatureTest.FP a, PartyFeatureTest.FP b) { return r.mgr.sameParty(a.id, b.id); }
++        /** A fully meshed pair: Together party (a leads), mcMMO party, EliteMobs twin, both syncs settled. */
++        void meshed(PartyFeatureTest.FP a, PartyFeatureTest.FP b) {
++            r.mgr.adopt(b.id, a.id);
++            mc.make("mesh", a.id); mc.join(b.id, "mesh");
++            r.ctl.mcmmoChanged(List.of(a.id, b.id), List.of());
++            tick(2); emPolls(1);
++        }
++        /** A fully meshed trio under leader a. */
++        void meshed3(PartyFeatureTest.FP a, PartyFeatureTest.FP b, PartyFeatureTest.FP c) {
++            r.mgr.adopt(b.id, a.id); r.mgr.adopt(c.id, a.id);
++            mc.make("mesh", a.id); mc.join(b.id, "mesh"); mc.join(c.id, "mesh");
++            r.ctl.mcmmoChanged(List.of(a.id, b.id, c.id), List.of());
++            tick(2); emPolls(1);
++        }
++        void rest(String label, PartyFeatureTest.FP... ps) {
++            // §11C convention (as in EmSyncTest): at rest the mesh drives nothing into EM and
++            // says nothing. The mcMMO leg is excluded on purpose - McmmoSync re-marks its
++            // mirrored bookkeeping on every reconcile in 0.5.2 and 0.5.3 alike.
++            int d = em.drives.size();
++            int[] counts = new int[ps.length];
++            for (int i = 0; i < ps.length; i++) counts[i] = ps[i].said.size();
++            tick(2); emPolls(2);
++            check(label + " [rest: no EM drives]", em.drives.size() == d);
++            boolean quiet = true;
++            for (int i = 0; i < ps.length; i++) if (ps[i].said.size() != counts[i]) quiet = false;
++            check(label + " [rest: silent]", quiet);
++        }
++    }
++
++    public static void main(String[] args) { tests(); System.out.println("LeaveSticksTest: " + pass + " passed, " + fail + " failed"); if (fail > 0) System.exit(1); }
++
++    static void tests() {
++        // ---------- L1: the EM-door leave sticks (Jester's door) ----------
++        {
++            W w = new W(5);
++            var marvin = w.j("Marvin"); var jester = w.j("Jester");
++            w.meshed(marvin, jester);
++            check("L1 setup meshed everywhere", w.ours(marvin, jester) && w.em.inEm(marvin.id, jester.id) && w.mc.of(jester.id) != null);
++            w.em.emLeaveRaw(jester.id);                       // Jester: /em party leave (EM state only)
++            w.tick(4); w.emPolls(2);
++            check("L1 Jester is out of the Together party", !w.r.mgr.inParty(jester.id));
++            check("L1 the two-man party ended for Marvin too", w.r.mgr.partyOf(marvin.id) == null);
++            check("L1 Jester was NOT driven back into EliteMobs", w.em.of(jester.id) == null);
++            check("L1 the mcMMO mirror was told (leave cascade)", w.mc.of(jester.id) == null && w.mc.of(marvin.id) == null);
++            check("L1 Jester heard he left", jester.heard("left the party"));
++            w.rest("L1", marvin, jester);
++        }
++        // ---------- L2: an mcMMO-door disband sticks (Marvin's door) ----------
++        {
++            W w = new W(5);
++            var marvin = w.j("Marvin"); var jester = w.j("Jester");
++            w.meshed(marvin, jester);
++            check("L2 setup meshed everywhere", w.ours(marvin, jester) && w.em.inEm(marvin.id, jester.id));
++            List<UUID> ids = w.r.ctl.mcmmoEventIds(marvin.id, "mesh", null);   // what the plugin collects on the event
++            w.mc.quit(jester.id); w.mc.quit(marvin.id);                        // Marvin: /party DISBAND (mcMMO state only)
++            w.r.ctl.mcmmoChanged(ids, List.of());
++            w.tick(4); w.emPolls(2);
++            check("L2 the Together party stayed disbanded", w.r.mgr.partyOf(marvin.id) == null && w.r.mgr.partyOf(jester.id) == null);
++            check("L2 the EliteMobs face was torn down too", w.em.of(jester.id) == null && w.em.of(marvin.id) == null);
++            w.rest("L2", marvin, jester);
++        }
++        // ---------- L3: EM-door leave, then both relog - no resurrection ----------
++        {
++            W w = new W(5);
++            var marvin = w.j("Marvin"); var jester = w.j("Jester");
++            w.meshed(marvin, jester);
++            w.em.emLeaveRaw(jester.id);
++            w.tick(4); w.emPolls(2);
++            check("L3 leave landed before the relogs", !w.r.mgr.inParty(jester.id));
++            // both disconnect and return (EM drops quitters itself; Together grace would hold members)
++            w.r.env.on.remove(jester.id); w.r.env.on.remove(marvin.id);
++            w.r.mgr.onQuit(jester.id, w.r.env.t); w.r.mgr.onQuit(marvin.id, w.r.env.t);
++            w.em.emLeaveRaw(jester.id); w.em.emLeaveRaw(marvin.id);
++            w.r.env.add(jester); w.r.env.add(marvin);
++            w.r.mgr.onJoin(jester.id); w.r.mgr.onJoin(marvin.id);
++            w.r.ctl.playerJoin(jester); w.r.ctl.playerJoin(marvin);
++            w.tick(6); w.emPolls(2);
++            check("L3 after relogs Jester is still out", !w.r.mgr.inParty(jester.id) && w.em.of(jester.id) == null);
++            check("L3 after relogs no party re-formed", w.r.mgr.partyOf(marvin.id) == null);
++            w.rest("L3", marvin, jester);
++        }
++        // ---------- L4: mcMMO disband, then both relog - no resurrection ----------
++        {
++            W w = new W(5);
++            var marvin = w.j("Marvin"); var jester = w.j("Jester");
++            w.meshed(marvin, jester);
++            List<UUID> ids = w.r.ctl.mcmmoEventIds(marvin.id, "mesh", null);
++            w.mc.quit(jester.id); w.mc.quit(marvin.id);
++            w.r.ctl.mcmmoChanged(ids, List.of());
++            w.tick(4); w.emPolls(2);
++            check("L4 disband landed before the relogs", w.r.mgr.partyOf(jester.id) == null);
++            w.r.env.on.remove(jester.id); w.r.env.on.remove(marvin.id);
++            w.r.mgr.onQuit(jester.id, w.r.env.t); w.r.mgr.onQuit(marvin.id, w.r.env.t);
++            w.em.emLeaveRaw(jester.id); w.em.emLeaveRaw(marvin.id);
++            w.r.env.add(jester); w.r.env.add(marvin);
++            w.r.mgr.onJoin(jester.id); w.r.mgr.onJoin(marvin.id);
++            w.r.ctl.playerJoin(jester); w.r.ctl.playerJoin(marvin);
++            w.tick(6); w.emPolls(2);
++            check("L4 after relogs the party stays disbanded everywhere",
++                    w.r.mgr.partyOf(marvin.id) == null && w.r.mgr.partyOf(jester.id) == null && w.em.of(jester.id) == null && w.mc.of(jester.id) == null);
++            w.rest("L4", marvin, jester);
++        }
++        // ---------- L5: suppression survives an EM partyKey rotation (same roster); a fresh group still clears it ----------
++        {
++            W w = new W(5);
++            var liv = w.j("Liv"); var xio = w.j("Xio"); var mel = w.j("Mel"); var dee = w.j("Dee");
++            w.meshed3(liv, xio, mel);
++            w.r.ctl.command(liv, new String[]{"list"});
++            check("L5 setup meshed trio", w.em.inEm(liv.id, xio.id) && w.em.inEm(liv.id, mel.id));
++            EmSyncTest.Em.P twin = w.em.of(liv.id);
++            w.r.ctl.command(liv, new String[]{"kick", "Xio"});
++            check("L5 kick took Xio out", !w.ours(liv, xio) && w.ours(liv, mel));
++            w.em.emJoinRaw(xio.id, twin);                                   // the EM leave "had not landed"
++            EmSyncTest.Em.P twin2 = w.em.makeEm(liv.id);                    // EM re-creates the party: NEW partyKey,
++            w.em.emJoinRaw(xio.id, twin2); w.em.emJoinRaw(mel.id, twin2);   // same roster (Liv, Xio, Mel)
++            w.em.parties.remove(twin.key);
++            w.emPolls(3); w.tick(2);
++            check("L5 Xio is NOT re-adopted from the re-created twin", !w.ours(liv, xio));
++            check("L5 the rest of the party is untouched", w.ours(liv, mel));
++            EmSyncTest.Em.P fresh = w.em.makeEm(dee.id); w.em.emJoinRaw(xio.id, fresh);   // a genuinely fresh group
++            w.emPolls(2); w.tick(2);
++            check("L5 a fresh EM group with a new person still adopts", w.ours(xio, dee));
++            w.rest("L5", liv, mel);
++        }
++        // ---------- L6: a disconnect is not a leave (0.5.2 behaviour preserved) ----------
++        {
++            W w = new W(5);
++            var marvin = w.j("Marvin"); var jester = w.j("Jester");
++            w.meshed(marvin, jester);
++            w.r.env.on.remove(jester.id);
++            w.r.ctl.playerQuit(jester.id);
++            w.em.emLeaveRaw(jester.id);                       // EM drops quitters itself; the twin survives with Marvin
++            w.emPolls(2); w.tick(2);
++            check("L6 a quitter stays in the Together party (grace)", w.r.mgr.inParty(jester.id));
++            w.r.env.add(jester);
++            w.r.ctl.playerJoin(jester);
++            w.tick(4); w.emPolls(2);
++            check("L6 on return the EM face is rebuilt", w.em.inEm(marvin.id, jester.id) && w.ours(marvin, jester));
++            w.rest("L6", marvin, jester);
++        }
++    }
++}
+diff -ruN '--exclude=*.jar' /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/tests/com/winkreyes/exceltogether/PartyFeatureTest.java /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/tests/com/winkreyes/exceltogether/PartyFeatureTest.java
+--- /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.2-20261103/tests/com/winkreyes/exceltogether/PartyFeatureTest.java	2026-11-02 02:42:13.978273933 +0000
++++ /home/hatch/workspace/records-catchup-20261103/packages/exceltogether-0.5.3-20261104/tests/com/winkreyes/exceltogether/PartyFeatureTest.java	2026-11-04 05:51:43.295260227 +0000
+@@ -583,7 +583,7 @@
+     static void packagingTests() throws Exception {
+         String plugin = Files.readString(Path.of(System.getProperty("plugin")));
+         String cfg = Files.readString(Path.of(System.getProperty("cfg")));
+-        check("plugin version 0.5.2", plugin.contains("version: 0.5.2"));
++        check("plugin version 0.5.3", plugin.contains("version: 0.5.3"));
+         check("cue subcommand in usage", plugin.contains("cue"));
+         check("command is excelparty", plugin.contains("  excelparty:") && plugin.contains("aliases: [eparty, together]"));
+         check("does NOT claim bare /party (mcMMO owns it)", !plugin.contains("\n  party:") && !plugin.contains("[party") && !plugin.contains(", party"));
