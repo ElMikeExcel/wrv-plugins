@@ -1,0 +1,74 @@
+{
+  "plugin": "ExcelAutoSortBridge",
+  "version": "0.1.0",
+  "local_build_folder": "menu-toggle-fix-20261103",
+  "jar": {
+    "file": "ExcelAutoSortBridge-0.1.0.jar",
+    "path": "menu-toggle-fix-20261103/ExcelAutoSortBridge-0.1.0.jar",
+    "bytes": 5183,
+    "sha256": "634efc5963ce037a04139ee4861c4aa361f12f77758449f960f07629fae1b22a"
+  },
+  "install": {
+    "status": "installed live (current)",
+    "date": "Nov 3, 2026, 2:00-2:28 PM CST"
+  },
+  "notes": [],
+  "record": {
+    "assembled": "2026-11-03",
+    "assembler": "records catch-up packaging pass (local only; upload by parent)",
+    "files": {
+      "DEPENDENCIES.md": {
+        "sha256": "08f641e0bf6df4623b96e6e6b0d1c40b496e0488c0c5a5f16781d0252f7e1983",
+        "bytes": 497
+      },
+      "DEPENDENCIES.sha256": {
+        "sha256": "c97d3d625126351371df2949ba0a37a6f02c82804e4f261b83524f9fb486fe66",
+        "bytes": 136
+      },
+      "FUNCTIONAL-CHANGE.diff": {
+        "sha256": "c9221e640b67f40e312c0b5edbb1fb726547d4744bbfd793af3c8148b7eb97b4",
+        "bytes": 91
+      },
+      "README.md": {
+        "sha256": "798c0a83564594a5b30c45a453d9ca6083017ad75e2e55650a87a8d2d7513971",
+        "bytes": 1505
+      },
+      "SANITIZATION.diff": {
+        "sha256": "39e1d6b8a1eaef2060e1cf782f2221a04f93e03ed1f1eed2942e387ae174f5c3",
+        "bytes": 419
+      },
+      "SOURCE.md": {
+        "sha256": "c7763e22bbc85fa8d72f9d86329ddbd5d7a930cab7608ad471a19f80efe70ea2",
+        "bytes": 9334
+      },
+      "TEST-RESULTS.txt": {
+        "sha256": "badd4aa1aa1c9d445032d04346a8319ac7d91960c2edeef4ae80a8b8baf6135e",
+        "bytes": 4926
+      },
+      "build.sh": {
+        "sha256": "8e519719eeec00de49762f03bc0b9ed8569da17a727a1e073bc8502a8dbb5c28",
+        "bytes": 1554
+      },
+      "plugin.yml": {
+        "sha256": "30dfce0165d098d0aff53a3c73b036340938c4b681edf0101232238343f80df3",
+        "bytes": 483
+      },
+      "src/com/winkreyes/excelautosortbridge/AutoSortExpansion.java": {
+        "sha256": "8c49cfeca531582ca06ae3f9abc05d4cabb5a90a64555a136a25c445b491946b",
+        "bytes": 1417
+      },
+      "src/com/winkreyes/excelautosortbridge/AutoSortStatus.java": {
+        "sha256": "46e9b200d10d24114a8a14eff5cee4edad926965f503d388a64c4df6007afd5e",
+        "bytes": 2716
+      },
+      "src/com/winkreyes/excelautosortbridge/ExcelAutoSortBridge.java": {
+        "sha256": "3f815c991cf444301df7a60ffe05ac4b12ad59795249a1f8b62f331bbd681edc",
+        "bytes": 4628
+      },
+      "tests/com/winkreyes/excelautosortbridge/AutoSortStatusTest.java": {
+        "sha256": "273d23b08c4a2773a554fef8969685b0ef0a069c9734253f5a3e00c61cbfaaf1",
+        "bytes": 3580
+      }
+    }
+  }
+}
