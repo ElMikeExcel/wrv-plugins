@@ -1,0 +1,963 @@
+diff -ruN build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java
+--- build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java	2026-11-02 00:36:18.040980685 +0000
++++ build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java	2026-11-02 22:07:36.623018209 +0000
+@@ -20,6 +20,9 @@
+ import com.winkreyes.excelbosstrial.core.LaunchSnapshotLog;
+ import com.winkreyes.excelbosstrial.core.PlacementRegistry;
+ import com.winkreyes.excelbosstrial.core.ProvenanceLore;
++import com.winkreyes.excelbosstrial.core.ProtectEmitSettings;
++import com.winkreyes.excelbosstrial.core.ProtectEmitSink;
++import com.winkreyes.excelbosstrial.core.ProtectTableShape;
+ import com.winkreyes.excelbosstrial.core.ScalingRule;
+ import com.winkreyes.excelbosstrial.core.SealLoot;
+ import com.winkreyes.excelbosstrial.core.SprinkleSettings;
+@@ -338,6 +341,15 @@
+     // the share math, the participant sets, or the fight record.
+     private SprinkleService sprinkle;
+     private int sprinkleLeashTask = -1;
++    // 0.3.4: the ExcelProtect emitter. The sink is the seam: it
++    // stays NOOP unless the gateway in the protect package binds
++    // at enable (Protect present + protect-emit.enabled), so
++    // every publish site in this class is a no-op in exactly the
++    // boots where 0.3.3 published nothing. Emit-only - nothing in
++    // the fight, verdict or reward paths reads anything back.
++    private ProtectEmitSink protectEmit = ProtectEmitSink.NOOP;
++    private ProtectEmitSettings protectEmitSettings = ProtectEmitSettings.defaults();
++    private boolean protectEmitBound;
+     private final Map<UUID, DeathOutcome> deathOutcomes = new HashMap<>();
+     private final CooldownBook cooldowns = new CooldownBook();
+     // 0.3.0 repeat system (SPEC section 2): the per-seal repeat
+@@ -496,6 +508,26 @@
+                     + "Governors, spoils and cooldown displays still run, but GuildGate "
+                     + "is not installed to ask, so seals would credit the vanilla way.");
+         }
++        // 0.3.4: the ExcelProtect emitter adapter. The gateway is
++        // the only class linking Protect's API and is constructed
++        // only when the ExcelProtect plugin is installed - with
++        // Protect absent (or protect-emit.enabled off) the sink
++        // stays NOOP and this plugin behaves exactly as 0.3.3.
++        if (protectEmitSettings.enabled()) {
++            org.bukkit.plugin.Plugin protectPlugin =
++                    Bukkit.getPluginManager().getPlugin("ExcelProtect");
++            if (protectPlugin != null) {
++                try {
++                    protectEmit = new com.winkreyes.excelbosstrial.protect
++                            .ProtectEmitGateway(getLogger());
++                    protectEmitBound = true;
++                } catch (Throwable bindFailure) {
++                    getLogger().warning("ExcelProtect emit: OFF (adapter failed to bind: "
++                            + bindFailure + ") - BossTrial runs exactly as before; "
++                            + "fight records stay in fights/.");
++                }
++            }
++        }
+         // 0.3.1: the Magic heal-spell feed (healing-DONE
+         // attribution for the fight record). Its listener is the
+         // only class linking Magic's API and is registered only
+@@ -600,6 +632,24 @@
+         if (sprinkle != null) {
+             getLogger().info(sprinkle.bootSummary());
+         }
++        getLogger().info(protectEmitBootLine());
++    }
++
++    /** The 0.3.4 adapter bind line - exactly one shape per state. */
++    private String protectEmitBootLine() {
++        if (!protectEmitSettings.enabled()) {
++            return "ExcelProtect emit: OFF by config (protect-emit.enabled)"
++                    + " - nothing is published; fight records stay in fights/.";
++        }
++        if (!protectEmitBound) {
++            return "ExcelProtect emit: OFF (ExcelProtect not installed"
++                    + " - fight records stay in fights/ only; BossTrial runs exactly as before)";
++        }
++        return "ExcelProtect emit: ON (adapter bound; fight tables "
++                + (protectEmitSettings.fightTables() ? "ON" : "OFF")
++                + ", state changes "
++                + (protectEmitSettings.stateChanges() ? "ON" : "OFF")
++                + "; verdicts and boss state publish to ExcelProtect)";
+     }
+ 
+     /** The awake-line summary for the 0.3.2 milestone beats: ON
+@@ -788,6 +838,13 @@
+                 dragonChapter.setSprinkleArmed(sprinkle.armed(BossKind.ENDER_DRAGON));
+             }
+         }
++        // 0.3.4 leaf settings, adapter-side like fight-tracking:
++        // the ExcelProtect emitter switches (protect-emit.*).
++        // Every key defaults ON; no fight rule reads them.
++        protectEmitSettings = ProtectEmitSettings.sanitized(
++                getConfig().getBoolean("protect-emit.enabled", true),
++                getConfig().getBoolean("protect-emit.fight-tables", true),
++                getConfig().getBoolean("protect-emit.state-changes", true));
+         loadLootSettings();
+         loadRaidSettings();
+         msgRepeatCreditHeadline = getConfig().getString("messages.repeat-credit-headline",
+@@ -1562,6 +1619,15 @@
+             // the ledger (damage rows read the ledger itself at
+             // snapshot time; only healing needs its own feed).
+             fightTracker.openEncounter(id, kind, fresh.startedMs());
++            // 0.3.4: the boss-state feed opens with the ledger
++            // (the sink is NOOP unless the Protect adapter bound;
++            // a re-opened lost ledger is a new encounter here too,
++            // exactly as the fight record treats it).
++            if (protectEmitSettings.stateChanges()) {
++                protectEmit.record(ProtectTableShape.STREAM,
++                        ProtectTableShape.TYPE_BOSS_STATE,
++                        ProtectTableShape.fightStarted(kind, id.toString(), openingMax));
++            }
+             return fresh;
+         });
+         observeTeam(boss, kind);
+@@ -2868,6 +2934,7 @@
+                 getLogger().info("BossTrial elder generations: monument " + mid
+                         + "'s counted trio turns over - fresh elders surface in "
+                         + CooldownBook.formatRemaining(cfg.elderRepeatRespawnMs) + ".");
++                emitRespawnScheduled(mid, now + cfg.elderRepeatRespawnMs, flipped);
+             }
+         }
+     }
+@@ -3687,6 +3754,8 @@
+                 if (kind == BossKind.ELDER_GUARDIAN) {
+                     monuments.markPendingRespawn(boss.getUniqueId(),
+                             now + cfg.elderRespawnMs);
++                    emitRespawnScheduled(monuments.monumentOf(boss.getUniqueId()),
++                            now + cfg.elderRespawnMs, 1);
+                 }
+                 getLogger().info("BossTrial verdict " + outcome.verdict + ": " + seal
+                         + " seal NOT credited (" + fmt(outcome.sharePercent)
+@@ -3703,6 +3772,8 @@
+                 if (kind == BossKind.ELDER_GUARDIAN) {
+                     monuments.markPendingRespawn(boss.getUniqueId(),
+                             now + cfg.elderRespawnMs);
++                    emitRespawnScheduled(monuments.monumentOf(boss.getUniqueId()),
++                            now + cfg.elderRespawnMs, 1);
+                 }
+                 getLogger().info("BossTrial verdict DENY_COOLDOWN: " + seal
+                         + " kill was fought for but the seal is cooling down ("
+@@ -3767,6 +3838,10 @@
+                         getLogger().info(line);
+                     }
+                     pruneFightRecords(dir);
++                    // 0.3.4: the same record, published to
++                    // ExcelProtect (inside the snapshot's own
++                    // guard - a publish failure changes nothing).
++                    emitProtectPublish(rec, outcome, label, fileName);
+                 }
+             }
+         } catch (Exception failure) {
+@@ -3778,6 +3853,66 @@
+         }
+     }
+ 
++    /**
++     * 0.3.4: publish one finished fight record to ExcelProtect.
++     * A true verdict rides the contract's fight-table event
++     * (Protect writes its combat fight_summary + audit
++     * seal_verdict from it). An elder progress point is NOT a
++     * verdict, so it rides the general publish door as a
++     * fight_progress record instead - no progress point ever
++     * poses as a seal verdict in Protect's audit family. The
++     * closing boss_state record carries the verdict reference
++     * (the fights/ file) for status readers. The verdict publish
++     * rides the fight record: with fight tracking off there is
++     * no table to publish, and boss_state fight_ended rides with
++     * it (fight_started / respawn states are independent).
++     */
++    private void emitProtectPublish(FightTracker.FightRecord rec, DeathOutcome outcome,
++                                    String label, String fileName) {
++        try {
++            String recordRef = "fights/" + fileName;
++            if (protectEmitSettings.fightTables()) {
++                if (outcome.elderProgress) {
++                    protectEmit.record(ProtectTableShape.STREAM,
++                            ProtectTableShape.TYPE_FIGHT_PROGRESS,
++                            ProtectTableShape.fightProgress(rec, label,
++                                    outcome.elderProgressNow, 3, recordRef));
++                } else {
++                    protectEmit.fightTable(rec.kind.sealId(), outcome.verdict.name(),
++                            ProtectTableShape.creditOf(rec), rec.pool,
++                            (double) rec.durationSeconds(),
++                            ProtectTableShape.rows(rec));
++                }
++            }
++            if (protectEmitSettings.stateChanges()) {
++                protectEmit.record(ProtectTableShape.STREAM,
++                        ProtectTableShape.TYPE_BOSS_STATE,
++                        ProtectTableShape.fightEnded(rec, label, recordRef));
++            }
++        } catch (Throwable failure) {
++            getLogger().warning("Protect publish failed (the verdict is unaffected): "
++                    + failure);
++        }
++    }
++
++    /** 0.3.4: elder(s) went on the respawn clock - an unearned
++     *  kill (elders = 1) or a counted trio turning over (elders =
++     *  the number flipped). The boss-state feed hears when the
++     *  chapter is due back. */
++    private void emitRespawnScheduled(String monumentId, long dueMs, int elders) {
++        if (!protectEmitSettings.stateChanges()) {
++            return;
++        }
++        try {
++            protectEmit.record(ProtectTableShape.STREAM,
++                    ProtectTableShape.TYPE_BOSS_STATE,
++                    ProtectTableShape.respawnScheduled(monumentId, dueMs, elders));
++        } catch (Throwable failure) {
++            getLogger().warning("Protect publish failed (respawn bookkeeping "
++                    + "is unaffected): " + failure);
++        }
++    }
++
+     /** Keep only the newest fight-record files (the file names
+      *  sort chronologically); retention 0 keeps everything. */
+     private void pruneFightRecords(File dir) {
+@@ -4391,6 +4526,14 @@
+             getLogger().info("Elder guardian respawned at home " + home.toVector()
+                     + " (monument " + pending.monumentId
+                     + ") after its unearned kill's respawn timer.");
++            // 0.3.4: the boss is available again - the
++            // boss-state feed hears it at the moment it fires.
++            if (protectEmitSettings.stateChanges()) {
++                protectEmit.record(ProtectTableShape.STREAM,
++                        ProtectTableShape.TYPE_BOSS_STATE,
++                        ProtectTableShape.respawned(pending.monumentId,
++                                fresh.getUniqueId().toString(), pending.world));
++            }
+             changed = true;
+         }
+         if (changed) {
+diff -ruN build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ProtectEmitSettings.java build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ProtectEmitSettings.java
+--- build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ProtectEmitSettings.java	1970-01-01 00:00:00.000000000 +0000
++++ build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ProtectEmitSettings.java	2026-11-02 22:06:31.754015692 +0000
+@@ -0,0 +1,50 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++/**
++ * The ExcelProtect emitter switches (ExcelBossTrial 0.3.4): read
++ * adapter-side from the top-level {@code protect-emit:} config
++ * block (the fight-tracking / milestone / sprinkle precedent - no
++ * core verdict rule consumes them, so BossTrialConfig's canonical
++ * record stays untouched).
++ *
++ * The emitter is an OBSERVER: these keys gate ONLY what BossTrial
++ * publishes to ExcelProtect. No value here can change a fight, a
++ * verdict, a pool or a reward; turning every key off leaves
++ * BossTrial behaving exactly as 0.3.3 (the fight records still
++ * land in fights/ as before).
++ *
++ * Defaults are all ON (settled with the 0.3.4 commission, Mike,
++ * Nov 2, 2026): the shadow-live Protect is the suite's record
++ * system, and the seal-verdict slot in its audit family exists
++ * precisely for this publish. {@code enabled} is the master kill
++ * switch; {@code fightTables} gates the verdict fight-table
++ * publish (and the elder-progress publish that rides the same
++ * shaping); {@code stateChanges} gates the boss_state records
++ * (fight started / fight ended / respawn scheduled / respawned).
++ */
++public record ProtectEmitSettings(boolean enabled, boolean fightTables,
++                                  boolean stateChanges) {
++
++    public static ProtectEmitSettings defaults() {
++        return new ProtectEmitSettings(true, true, true);
++    }
++
++    /** Sanitized construction: the record is three booleans, so
++     *  sanitizing is only the shape guarantee - a settings object
++     *  with the master off reports both sub-switches off too, so
++     *  no consumer ever has to re-check the master. */
++    public static ProtectEmitSettings sanitized(boolean enabled, boolean fightTables,
++                                                boolean stateChanges) {
++        if (!enabled) {
++            return new ProtectEmitSettings(false, false, false);
++        }
++        return new ProtectEmitSettings(true, fightTables, stateChanges);
++    }
++
++    /** True when nothing at all may be published. */
++    public boolean dark() {
++        return !enabled || (!fightTables && !stateChanges);
++    }
++}
++
++// ExcelBossTrial - a Wink Reyes Valley Excel plugin.
+diff -ruN build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ProtectEmitSink.java build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ProtectEmitSink.java
+--- build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ProtectEmitSink.java	1970-01-01 00:00:00.000000000 +0000
++++ build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ProtectEmitSink.java	2026-11-02 22:06:36.313015869 +0000
+@@ -0,0 +1,46 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.List;
++import java.util.Map;
++
++/**
++ * The BossTrial side of the ExcelProtect emitter seam
++ * (ExcelBossTrial 0.3.4). The host talks ONLY to this interface,
++ * in plain JDK types; the one implementation that touches
++ * ExcelProtect's API classes lives in the {@code protect}
++ * package and is instantiated only when the ExcelProtect plugin
++ * is present and enabled (the SealCreditHook isolation pattern -
++ * BossTrial's own classes must load cleanly with Protect absent).
++ *
++ * Contract for every implementation: NEVER throws, NEVER blocks
++ * a fight. A failed publish is a lost record line, nothing more;
++ * the fight record in fights/ remains the encounter's own proof.
++ * {@link #NOOP} is the standing sink whenever the adapter is not
++ * bound (Protect absent, disabled by config, or bind failure).
++ */
++public interface ProtectEmitSink {
++
++    /** Publish one verdict fight table (Protect writes its
++     *  combat fight_summary + audit seal_verdict from this). */
++    void fightTable(String encounter, String verdict, String credit, double pool,
++                    double durationSeconds, List<Map<String, Object>> rows);
++
++    /** Publish one general record through Protect's publish API
++     *  (stream is a Protect stream name, e.g. "combat"). */
++    void record(String stream, String type, Map<String, Object> fields);
++
++    /** The sink that drops everything: the adapter-off state. */
++    ProtectEmitSink NOOP = new ProtectEmitSink() {
++        @Override
++        public void fightTable(String encounter, String verdict, String credit,
++                               double pool, double durationSeconds,
++                               List<Map<String, Object>> rows) {
++        }
++
++        @Override
++        public void record(String stream, String type, Map<String, Object> fields) {
++        }
++    };
++}
++
++// ExcelBossTrial - a Wink Reyes Valley Excel plugin.
+diff -ruN build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ProtectTableShape.java build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ProtectTableShape.java
+--- build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ProtectTableShape.java	1970-01-01 00:00:00.000000000 +0000
++++ build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ProtectTableShape.java	2026-11-02 22:06:49.130016366 +0000
+@@ -0,0 +1,209 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.ArrayList;
++import java.util.LinkedHashMap;
++import java.util.List;
++import java.util.Map;
++
++/**
++ * The ExcelProtect publish SHAPES (ExcelBossTrial 0.3.4): pure,
++ * Bukkit-free shaping from BossTrial's own fight record
++ * ({@link FightTracker.FightRecord}) into the exact maps the
++ * ExcelProtect contract consumes. Nothing here knows Protect's
++ * classes exist - the gateway in the {@code protect} package
++ * carries these maps across the seam unchanged, so the shapes
++ * are unit-testable on a bare classpath and the contract can be
++ * re-pointed at a future Protect API by touching one class.
++ *
++ * THE VERDICT TABLE - fired as the contract's FightTableEvent:
++ * encounter = the seal id ("wither", "elder_guardian", "warden",
++ * "ender_dragon"); verdict = the CreditJudge verdict name;
++ * credit = the killing player's name (the player GuildGate
++ * credits or vetoes for the kill; "" when no player landed it);
++ * pool + durationSeconds from the record; rows carry EXACTLY the
++ * contract keys name / uuid / damage_dealt / damage_taken /
++ * healing_done / healing_received, numbers at the fight record's
++ * own one-decimal precision. BossTrial tracks no per-player
++ * death count inside a fight, so no deaths key is invented -
++ * Protect's combat stream attributes deaths from its own entity
++ * ledger.
++ *
++ * ELDER PROGRESS - a trio progress point is not a verdict, so it
++ * does NOT ride FightTableEvent (Protect writes an audit
++ * seal_verdict from every FightTableEvent; a progress point must
++ * never pose as one). It rides the general publish door instead:
++ * stream "combat", type "fight_progress", the same rows, plus
++ * progress_now / progress_of and the verdict label the fight
++ * record carries ("ELDER_PROGRESS n of 3").
++ *
++ * BOSS STATE SCHEMA (stream "combat", type "boss_state",
++ * schema 1) - the feed Protect answers boss status from. Every
++ * record carries: schema (1), source ("bosstrial"), chapter
++ * (seal id), boss (display name), state. Per state:
++ *   fight_started      + boss_uuid, pool
++ *   fight_ended        + boss_uuid, verdict (the verdict name,
++ *                        or the ELDER_PROGRESS label), record
++ *                        (the fights/ file name - the verdict
++ *                        reference), duration_s, champions
++ *                        (standing champions' names, may be empty)
++ *   respawn_scheduled  + monument (elder only), respawn_due_ms,
++ *                        elders (how many elders the schedule
++ *                        covers; 1 for a single unearned kill)
++ *   respawned          + monument (elder only), boss_uuid (the
++ *                        fresh elder), world
++ * Only elder guardians respawn on a plugin clock (the other
++ * chapters are player-summoned), so respawn states exist only
++ * for elder_guardian. Protect stamps its own ts/ts_ms on every
++ * stored line; the event ms below ride along for consumers that
++ * read the fields raw.
++ */
++public final class ProtectTableShape {
++
++    /** boss_state / fight_progress schema version. */
++    public static final int SCHEMA = 1;
++    /** The stream every 0.3.4 publish lands in. */
++    public static final String STREAM = "combat";
++    /** The boss-state record type. */
++    public static final String TYPE_BOSS_STATE = "boss_state";
++    /** The elder-progress record type. */
++    public static final String TYPE_FIGHT_PROGRESS = "fight_progress";
++
++    private ProtectTableShape() {
++    }
++
++    /** One decimal, the fight record's own precision; NaN and
++     *  infinities read 0 (a governed value is never either). */
++    public static double round1(double v) {
++        if (Double.isNaN(v) || Double.isInfinite(v)) {
++            return 0.0;
++        }
++        return Math.round(v * 10.0) / 10.0;
++    }
++
++    /** The contract rows for one fight record (possibly empty -
++     *  a verdict on a boss no player ever touched still has a
++     *  record, with zero rows). */
++    public static List<Map<String, Object>> rows(FightTracker.FightRecord rec) {
++        List<Map<String, Object>> out = new ArrayList<>();
++        if (rec == null) {
++            return out;
++        }
++        for (FightTracker.FightRecord.Row r : rec.rows) {
++            Map<String, Object> m = new LinkedHashMap<>();
++            m.put("name", r.name);
++            m.put("uuid", r.uuid.toString());
++            m.put("damage_dealt", round1(r.damageDealt));
++            m.put("damage_taken", round1(r.damageTaken));
++            m.put("healing_done", round1(r.healingDone));
++            m.put("healing_received", round1(r.healingReceived));
++            out.add(m);
++        }
++        return out;
++    }
++
++    /** The credit string: who landed the kill the seal judges. */
++    public static String creditOf(FightTracker.FightRecord rec) {
++        return rec != null && rec.killerName != null ? rec.killerName : "";
++    }
++
++    private static Map<String, Object> base(BossKind kind, String state) {
++        Map<String, Object> m = new LinkedHashMap<>();
++        m.put("schema", SCHEMA);
++        m.put("source", "bosstrial");
++        m.put("chapter", kind.sealId());
++        m.put("boss", kind.displayName());
++        m.put("state", state);
++        return m;
++    }
++
++    /** fight_started: a fresh encounter ledger opened. */
++    public static Map<String, Object> fightStarted(BossKind kind, String bossUuid,
++                                                   double pool) {
++        Map<String, Object> m = base(kind, "fight_started");
++        m.put("boss_uuid", bossUuid);
++        m.put("pool", round1(pool));
++        return m;
++    }
++
++    /**
++     * fight_ended: the encounter reached its death handler -
++     * a verdict, or an elder progress point (verdictLabel is the
++     * ELDER_PROGRESS label then). {@code recordRef} is the
++     * fights/ file name the full table was written to.
++     */
++    public static Map<String, Object> fightEnded(FightTracker.FightRecord rec,
++                                                 String verdictLabel,
++                                                 String recordRef) {
++        Map<String, Object> m = base(rec.kind, "fight_ended");
++        m.put("boss_uuid", rec.bossUuid.toString());
++        m.put("verdict", verdictLabel);
++        if (recordRef != null) {
++            m.put("record", recordRef);
++        }
++        m.put("duration_s", rec.durationSeconds());
++        m.put("champions", new ArrayList<>(rec.championsStandingNames));
++        return m;
++    }
++
++    /** respawn_scheduled (elder only): a kill that did not count
++     *  put one elder on the respawn clock, or a counted trio
++     *  turned over (elders = the trio size flipped). */
++    public static Map<String, Object> respawnScheduled(String monumentId, long dueMs,
++                                                       int elders) {
++        Map<String, Object> m = base(BossKind.ELDER_GUARDIAN, "respawn_scheduled");
++        if (monumentId != null) {
++            m.put("monument", monumentId);
++        }
++        m.put("respawn_due_ms", dueMs);
++        m.put("elders", elders);
++        return m;
++    }
++
++    /** respawned (elder only): the maintenance loop put a fresh
++     *  elder back at its home - the boss is available again. */
++    public static Map<String, Object> respawned(String monumentId, String newBossUuid,
++                                                String world) {
++        Map<String, Object> m = base(BossKind.ELDER_GUARDIAN, "respawned");
++        if (monumentId != null) {
++            m.put("monument", monumentId);
++        }
++        m.put("boss_uuid", newBossUuid);
++        if (world != null) {
++            m.put("world", world);
++        }
++        return m;
++    }
++
++    /**
++     * The fight_progress record for one elder progress point:
++     * the progress point's own table, shaped like the combat
++     * fight summaries Protect writes for verdicts, plus the
++     * progress counters. {@code recordRef} as in fightEnded.
++     */
++    public static Map<String, Object> fightProgress(FightTracker.FightRecord rec,
++                                                    String verdictLabel,
++                                                    int progressNow, int progressOf,
++                                                    String recordRef) {
++        Map<String, Object> m = new LinkedHashMap<>();
++        m.put("schema", SCHEMA);
++        m.put("source", "bosstrial");
++        m.put("encounter", rec.kind.sealId());
++        m.put("boss", rec.kind.displayName());
++        m.put("verdict", verdictLabel);
++        m.put("progress_now", progressNow);
++        m.put("progress_of", progressOf);
++        m.put("credit", creditOf(rec));
++        m.put("pool", round1(rec.pool));
++        m.put("duration_s", rec.durationSeconds());
++        m.put("total_damage", round1(rec.totalDamage));
++        m.put("player_damage", round1(rec.playerDamage));
++        m.put("share_percent", round1(rec.sharePercent));
++        if (recordRef != null) {
++            m.put("record", recordRef);
++        }
++        m.put("players", rows(rec));
++        return m;
++    }
++}
++
++// ExcelBossTrial - a Wink Reyes Valley Excel plugin.
+diff -ruN build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/protect/ProtectEmitGateway.java build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/protect/ProtectEmitGateway.java
+--- build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/protect/ProtectEmitGateway.java	1970-01-01 00:00:00.000000000 +0000
++++ build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/protect/ProtectEmitGateway.java	2026-11-02 22:06:55.049016596 +0000
+@@ -0,0 +1,75 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.protect;
++
++import com.winkreyes.excelbosstrial.core.ProtectEmitSink;
++import com.winkreyes.excelprotect.api.ExcelProtectAPI;
++import com.winkreyes.excelprotect.api.FightTableEvent;
++import org.bukkit.Bukkit;
++
++import java.util.List;
++import java.util.Map;
++import java.util.logging.Logger;
++
++/**
++ * The ExcelProtect adapter (ExcelBossTrial 0.3.4) - the ONLY
++ * class in BossTrial that touches ExcelProtect's API, kept in
++ * its own package and instantiated by the host ONLY when the
++ * ExcelProtect plugin is present and enabled (the SealCreditHook
++ * isolation pattern): BossTrial compiles against Protect's API
++ * jar but loads and runs exactly as before when Protect is
++ * absent, because nothing outside this class links the API.
++ *
++ * The seam this implements is replaceable by design (house build
++ * style): the host speaks {@link ProtectEmitSink} in plain JDK
++ * types, the shapes come from core/ProtectTableShape, and this
++ * class only carries them across -
++ *   fightTable -> the contract's FightTableEvent (Protect
++ *     records its combat fight_summary + audit seal_verdict);
++ *   record     -> ExcelProtectAPI.publish, Protect's general
++ *     door (boss_state + fight_progress records).
++ *
++ * Fail-soft, always: every call is wrapped end to end. If
++ * Protect was removed mid-boot, its API moved, or the event bus
++ * refuses the event, the publish is dropped with at most three
++ * warning lines per boot and the fight runs untouched - the
++ * encounter's own fights/ record remains the proof of the fight.
++ */
++public final class ProtectEmitGateway implements ProtectEmitSink {
++
++    private final Logger log;
++    private int failures;
++
++    public ProtectEmitGateway(Logger log) {
++        this.log = log;
++    }
++
++    @Override
++    public void fightTable(String encounter, String verdict, String credit, double pool,
++                           double durationSeconds, List<Map<String, Object>> rows) {
++        try {
++            Bukkit.getPluginManager().callEvent(new FightTableEvent(
++                    encounter, verdict, credit, pool, durationSeconds, rows));
++        } catch (Throwable t) {
++            failure("fight table for " + encounter + " (" + verdict + ")", t);
++        }
++    }
++
++    @Override
++    public void record(String stream, String type, Map<String, Object> fields) {
++        try {
++            ExcelProtectAPI.publish(stream, type, fields);
++        } catch (Throwable t) {
++            failure("record " + type + " -> " + stream, t);
++        }
++    }
++
++    private void failure(String what, Throwable t) {
++        failures++;
++        if (failures <= 3) {
++            log.warning("ExcelBossTrial protect emit: " + what
++                    + " was not published (" + t + ") - the fight is unaffected; "
++                    + "its record stands in fights/.");
++        }
++    }
++}
++
++// ExcelBossTrial - a Wink Reyes Valley Excel plugin.
+diff -ruN build-0.3.3/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/ProtectEmitSettingsTest.java build-0.3.4/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/ProtectEmitSettingsTest.java
+--- build-0.3.3/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/ProtectEmitSettingsTest.java	1970-01-01 00:00:00.000000000 +0000
++++ build-0.3.4/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/ProtectEmitSettingsTest.java	2026-11-02 22:08:15.835019731 +0000
+@@ -0,0 +1,55 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++/**
++ * The ExcelProtect emitter switches (0.3.4): the settled
++ * defaults (all ON - the shadow-live Protect is the suite's
++ * record system and its seal-verdict slot exists for this
++ * publish), the master's collapse (a master-off settings object
++ * can never report a live sub-switch, so no consumer re-checks
++ * the master), and dark() - the single "publish nothing"
++ * predicate. The switches gate publishing ONLY; nothing in this
++ * class is read by any fight rule.
++ */
++public final class ProtectEmitSettingsTest {
++
++    private static int checks;
++    private static int failures;
++
++    private static void check(boolean ok, String label) {
++        checks++;
++        if (!ok) {
++            failures++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    public static void main(String[] args) {
++        ProtectEmitSettings d = ProtectEmitSettings.defaults();
++        check(d.enabled() && d.fightTables() && d.stateChanges(),
++                "defaults are all ON");
++        check(!d.dark(), "defaults are not dark");
++
++        ProtectEmitSettings off = ProtectEmitSettings.sanitized(false, true, true);
++        check(!off.enabled() && !off.fightTables() && !off.stateChanges(),
++                "master off collapses both sub-switches off");
++        check(off.dark(), "master off is dark");
++
++        ProtectEmitSettings tablesOnly = ProtectEmitSettings.sanitized(true, true, false);
++        check(tablesOnly.enabled() && tablesOnly.fightTables() && !tablesOnly.stateChanges()
++                && !tablesOnly.dark(), "tables only: live, state changes off");
++
++        ProtectEmitSettings statesOnly = ProtectEmitSettings.sanitized(true, false, true);
++        check(statesOnly.enabled() && !statesOnly.fightTables() && statesOnly.stateChanges()
++                && !statesOnly.dark(), "states only: live, tables off");
++
++        ProtectEmitSettings husk = ProtectEmitSettings.sanitized(true, false, false);
++        check(husk.enabled() && husk.dark(),
++                "master on with both sub-switches off is dark (bound but silent)");
++
++        System.out.println("ProtectEmitSettingsTest: " + checks + " checks, "
++                + failures + " failures");
++        if (failures > 0) {
++            System.exit(1);
++        }
++    }
++}
+diff -ruN build-0.3.3/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/ProtectTableShapeTest.java build-0.3.4/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/ProtectTableShapeTest.java
+--- build-0.3.3/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/ProtectTableShapeTest.java	1970-01-01 00:00:00.000000000 +0000
++++ build-0.3.4/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/ProtectTableShapeTest.java	2026-11-02 22:08:21.591019955 +0000
+@@ -0,0 +1,165 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.List;
++import java.util.Map;
++import java.util.Set;
++import java.util.UUID;
++
++/**
++ * The ExcelProtect publish shapes (0.3.4): the verdict table's
++ * rows carry EXACTLY the contract keys at the fight record's
++ * one-decimal precision; the boss_state schema (version 1) is
++ * stable per state; the elder progress shape carries its rows
++ * without posing as a verdict; and the edge the rig cannot
++ * force - a verdict with ZERO players on the table - shapes to
++ * an empty row list, not an error. Also pins the NOOP sink: the
++ * adapter-off state accepts every publish shape and drops it.
++ */
++public final class ProtectTableShapeTest {
++
++    private static int checks;
++    private static int failures;
++
++    private static void check(boolean ok, String label) {
++        checks++;
++        if (!ok) {
++            failures++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    private static FightTracker.FightRecord record(List<FightTracker.FightRecord.Row> rows,
++                                                   String killerName,
++                                                   List<String> champions) {
++        UUID boss = UUID.randomUUID();
++        UUID killer = killerName == null ? null : UUID.randomUUID();
++        return new FightTracker.FightRecord(BossKind.WITHER, boss, "CREDIT",
++                killer, killerName, 480.0, 470.24, 460.06, 97.93,
++                List.of(), champions, 1_000_000L, 1_060_400L, rows,
++                0.0, Map.of(), null);
++    }
++
++    private static FightTracker.FightRecord.Row row(String name, double dealt, double taken,
++                                                    double done, double received) {
++        return new FightTracker.FightRecord.Row(UUID.randomUUID(), name,
++                dealt, taken, done, received);
++    }
++
++    public static void main(String[] args) {
++        // ---- rows: the contract keys, exactly, at record precision ----
++        FightTracker.FightRecord rec = record(List.of(
++                row("Kailey", 300.04, 45.56, 12.34, 60.0),
++                row("Mike", 160.02, 90.0, 0.0, 12.34)), "Kailey",
++                List.of("Kailey", "Mike"));
++        List<Map<String, Object>> rows = ProtectTableShape.rows(rec);
++        check(rows.size() == 2, "two rows shaped");
++        check(rows.get(0).keySet().equals(Set.of("name", "uuid", "damage_dealt",
++                "damage_taken", "healing_done", "healing_received")),
++                "row keys are exactly the contract six");
++        check("Kailey".equals(rows.get(0).get("name")), "row name carried");
++        check(rows.get(0).get("uuid") instanceof String
++                && ((String) rows.get(0).get("uuid")).length() == 36, "uuid is a string");
++        check(((Number) rows.get(0).get("damage_dealt")).doubleValue() == 300.0,
++                "damage_dealt at one decimal (300.04 -> 300.0)");
++        check(((Number) rows.get(0).get("damage_taken")).doubleValue() == 45.6,
++                "damage_taken rounds (45.56 -> 45.6)");
++        check(((Number) rows.get(0).get("healing_done")).doubleValue() == 12.3,
++                "healing_done rounds (12.34 -> 12.3)");
++        check(!rows.get(0).containsKey("deaths"),
++                "no deaths key is invented (BossTrial tracks none in-fight)");
++
++        // ---- the zero-player edge: an untouched boss's verdict ----
++        FightTracker.FightRecord empty = record(List.of(), null, List.of());
++        check(ProtectTableShape.rows(empty).isEmpty(),
++                "zero players on the table shapes to zero rows");
++        check(ProtectTableShape.rows(null).isEmpty(), "null record shapes to zero rows");
++        check("".equals(ProtectTableShape.creditOf(empty)),
++                "no killer reads as empty credit");
++        check("Kailey".equals(ProtectTableShape.creditOf(rec)),
++                "credit is the killer's name");
++
++        // ---- rounding guards ----
++        check(ProtectTableShape.round1(Double.NaN) == 0.0, "NaN rounds to 0");
++        check(ProtectTableShape.round1(Double.POSITIVE_INFINITY) == 0.0,
++                "infinity rounds to 0");
++        check(ProtectTableShape.round1(-3.26) == -3.3, "negatives round normally");
++
++        // ---- boss_state: fight_started ----
++        Map<String, Object> started = ProtectTableShape.fightStarted(
++                BossKind.WARDEN, "boss-uuid-1", 21600.04);
++        check(started.get("schema").equals(ProtectTableShape.SCHEMA)
++                && "bosstrial".equals(started.get("source"))
++                && "warden".equals(started.get("chapter"))
++                && "The Warden".equals(started.get("boss"))
++                && "fight_started".equals(started.get("state"))
++                && "boss-uuid-1".equals(started.get("boss_uuid"))
++                && ((Number) started.get("pool")).doubleValue() == 21600.0,
++                "fight_started carries the schema head + pool");
++
++        // ---- boss_state: fight_ended (the verdict reference) ----
++        Map<String, Object> ended = ProtectTableShape.fightEnded(rec, "CREDIT",
++                "fights/wither-20261102-120000-abcd1234.yml");
++        check("fight_ended".equals(ended.get("state"))
++                && "wither".equals(ended.get("chapter"))
++                && "CREDIT".equals(ended.get("verdict"))
++                && "fights/wither-20261102-120000-abcd1234.yml".equals(ended.get("record"))
++                && ((Number) ended.get("duration_s")).longValue() == 60L
++                && ended.get("champions").equals(List.of("Kailey", "Mike")),
++                "fight_ended carries verdict + record reference + champions");
++        Map<String, Object> endedBare = ProtectTableShape.fightEnded(empty,
++                "DENY_SHARE", null);
++        check(!endedBare.containsKey("record")
++                && ((List<?>) endedBare.get("champions")).isEmpty(),
++                "a bare fight_ended omits the reference, keeps empty champions");
++
++        // ---- boss_state: the elder respawn pair ----
++        Map<String, Object> sched = ProtectTableShape.respawnScheduled(
++                "monument-1", 1793585545902L, 3);
++        check("elder_guardian".equals(sched.get("chapter"))
++                && "respawn_scheduled".equals(sched.get("state"))
++                && "monument-1".equals(sched.get("monument"))
++                && ((Number) sched.get("respawn_due_ms")).longValue() == 1793585545902L
++                && ((Number) sched.get("elders")).intValue() == 3,
++                "respawn_scheduled carries monument + due + trio size");
++        Map<String, Object> schedSolo = ProtectTableShape.respawnScheduled(null, 42L, 1);
++        check(!schedSolo.containsKey("monument")
++                && ((Number) schedSolo.get("elders")).intValue() == 1,
++                "a solo schedule omits an unknown monument");
++        Map<String, Object> back = ProtectTableShape.respawned(
++                "monument-1", "fresh-uuid", "world");
++        check("respawned".equals(back.get("state"))
++                && "fresh-uuid".equals(back.get("boss_uuid"))
++                && "world".equals(back.get("world")),
++                "respawned carries the fresh elder + world");
++
++        // ---- fight_progress: the elder progress shape ----
++        FightTracker.FightRecord elder = new FightTracker.FightRecord(
++                BossKind.ELDER_GUARDIAN, UUID.randomUUID(), "ELDER_PROGRESS 1 of 3",
++                null, null, 17100.0, 17100.0, 16900.0, 98.8,
++                List.of(), List.of("Kailey"), 2_000_000L, 2_900_000L,
++                List.of(row("Kailey", 16900.0, 500.0, 0.0, 0.0)),
++                0.0, Map.of(), "monument-1");
++        Map<String, Object> prog = ProtectTableShape.fightProgress(elder,
++                "ELDER_PROGRESS 1 of 3", 1, 3, "fights/elder_guardian-x.yml");
++        check("elder_guardian".equals(prog.get("encounter"))
++                && "ELDER_PROGRESS 1 of 3".equals(prog.get("verdict"))
++                && ((Number) prog.get("progress_now")).intValue() == 1
++                && ((Number) prog.get("progress_of")).intValue() == 3
++                && ((List<?>) prog.get("players")).size() == 1
++                && ((Number) prog.get("duration_s")).longValue() == 900L,
++                "fight_progress carries counters + its own table");
++
++        // ---- the NOOP sink drops every shape silently ----
++        ProtectEmitSink noop = ProtectEmitSink.NOOP;
++        noop.fightTable("wither", "CREDIT", "Kailey", 480.0, 60.0, rows);
++        noop.fightTable("wither", "DENY_SHARE", "", 0.0, 0.0, List.of());
++        noop.record("combat", "boss_state", started);
++        check(true, "NOOP sink accepts verdict, empty-table and state shapes");
++
++        System.out.println("ProtectTableShapeTest: " + checks + " checks, "
++                + failures + " failures");
++        if (failures > 0) {
++            System.exit(1);
++        }
++    }
++}
+diff -ruN build-0.3.3/bosstrial/tree/tests/com/winkreyes/excelbosstrial/protect/ProtectEmitGatewayTest.java build-0.3.4/bosstrial/tree/tests/com/winkreyes/excelbosstrial/protect/ProtectEmitGatewayTest.java
+--- build-0.3.3/bosstrial/tree/tests/com/winkreyes/excelbosstrial/protect/ProtectEmitGatewayTest.java	1970-01-01 00:00:00.000000000 +0000
++++ build-0.3.4/bosstrial/tree/tests/com/winkreyes/excelbosstrial/protect/ProtectEmitGatewayTest.java	2026-11-02 22:08:25.374020101 +0000
+@@ -0,0 +1,59 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.protect;
++
++import java.util.List;
++import java.util.Map;
++import java.util.logging.Logger;
++
++/**
++ * The ExcelProtect gateway's fail-soft contract (0.3.4): this
++ * harness runs with Protect's API jar on the classpath but NO
++ * server and NO Protect plugin - the exact shape of a boot
++ * where the adapter bound against a Protect that then failed.
++ * Every publish must come back quietly: no throw, ever, however
++ * often it is called. (The landing side - the records actually
++ * arriving in Protect's streams - is rig-proven; a bare
++ * classpath has no event bus to land on, by design.)
++ */
++public final class ProtectEmitGatewayTest {
++
++    private static int checks;
++    private static int failures;
++
++    private static void check(boolean ok, String label) {
++        checks++;
++        if (!ok) {
++            failures++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    public static void main(String[] args) {
++        ProtectEmitGateway gateway = new ProtectEmitGateway(
++                Logger.getLogger("ProtectEmitGatewayTest"));
++        boolean quiet = true;
++        try {
++            gateway.fightTable("wither", "CREDIT", "Kailey", 480.0, 60.0,
++                    List.of(Map.of("name", "Kailey", "damage_dealt", 300.0)));
++            gateway.fightTable("wither", "DENY_SHARE", "", 0.0, 0.0, List.of());
++            gateway.record("combat", "boss_state",
++                    Map.of("schema", 1, "state", "fight_started"));
++            // Repeated failures stay quiet too (the warning cap
++            // is an implementation detail; the contract is only
++            // that nothing ever throws into a fight).
++            for (int i = 0; i < 6; i++) {
++                gateway.record("combat", "boss_state",
++                        Map.of("schema", 1, "state", "respawned"));
++            }
++        } catch (Throwable t) {
++            quiet = false;
++            System.out.println("gateway threw: " + t);
++        }
++        check(quiet, "every publish shape fails soft with no server bus");
++
++        System.out.println("ProtectEmitGatewayTest: " + checks + " checks, "
++                + failures + " failures");
++        if (failures > 0) {
++            System.exit(1);
++        }
++    }
++}
+--- build-0.3.3/bosstrial/tree/plugin.yml	2026-11-02 00:49:24.733011217 +0000
++++ build-0.3.4/bosstrial/tree/plugin.yml	2026-11-02 22:07:58.597019062 +0000
+@@ -1,10 +1,10 @@
+ name: ExcelBossTrial
+-version: 0.3.3
++version: 0.3.4
+ author: Argus
+ main: com.winkreyes.excelbosstrial.ExcelBossTrial
+ api-version: "1.21"
+-description: The seal-boss rules of Wink Reyes Valley in one home - damage caps, the 70% player-damage share gate (config share-threshold), the presence rule, 6-hour credit cooldowns, the elder-guardian trio, participant spoils, the two-phase dragon trial (ExcelDragonTrial 0.1.2, ported in), participant growth (the boss rallies), and curated seal loot. 0.2.1 adds the seal-integrity fixes - the wither fought-free (cage) check, the warden horizontal range band, and the dragon share gate. 0.2.2 adds the seal-hardening pair - the warden gives up on a fight that never comes to it, and end crystals and respawn anchors answer to their placer. 0.2.3 adds the announcement window - while it is armed, seal attempts, fails, breaks and running cooldowns are announced in chat, repeated hourly, and rebroadcast to everyone on every join. 0.2.4 adds the XP band governor feed - every governed hit plants its band verdict for the XP listener (ExcelRewardGuard), so out-of-band hits pay 25% mcMMO XP in real time while in-band hits pay full; silent, fail-safe both ways. 0.2.5 makes the rewards mean something (spec 4.6) - the dragon gains a signature - "First Breath", one elytra per champion standing at the fall - and every seal's named signature gear is granted per champion, stamped with its earner's provenance, under the fairness rule. 0.2.6 splits the command gate - the status view is public, so any player can run /bosstrial status to check seal state and cooldowns, while reload and reset stay admin-only, enforced in the handler now that plugin.yml no longer gates the whole command. 0.2.7 keeps a fight when its boss is merely unloaded (the family went home, logged off or wiped) instead of forgetting it, holds the dragon trial while nobody is at the arena, and sets aside damage a lost ledger never saw so an honest finish can still earn the seal. 0.2.11 hardens the dragon flip with a second, final judgment at HIGHEST plus danger-zone logging, closes a saved trial out on version change instead of restoring it (archived, logged, counters kept), presents earned rewards automatically once per batch - with immunity frames on the auto-open only, never on a manual one - and pays every signature stack plus the dragon's breath and crystals per champion as personal claims, dragon XP included. 0.3.1 adds the fight record - at every verdict and every elder trio progress point the encounter's per-player table (damage dealt, damage taken, healing done where a heal-spell cast names its source, healing received) is written to fights/ and to the log - and the elder trio escalation, with each elder priced as an epic fight of its own, and the trio's third, seal-completing elder carries a pool multiplier (elder-guardian.trio, settled x1.3). 0.3.2 adds milestone beats - at 75/50/25% of a chapter's pool remaining, a broadcast line and one pulse surge, once per threshold per encounter (per phase for the dragon; the warden's lines are its progress display, the warden having no health bar) - and moves the dragon's add-wave thresholds into config (dragon.adds.wave-thresholds). 0.3.3 adds the elite sprinkle - at each milestone stamp an armed chapter rolls once (chance x stamp multiplier, capped) to send EliteMobs elites in as adds beside the boss, contained (no loot, no coins, no vanilla drops), announced on a pass, leashed to the fight, and removed when the encounter ends; every chapter ships disabled (<chapter>.sprinkle.enabled) until armed, and the plugin runs exactly as before when EliteMobs is absent.
+-softdepend: [ExcelGuildGate, Magic, GriefPrevention, EliteMobs]
++description: The seal-boss rules of Wink Reyes Valley in one home - damage caps, the 70% player-damage share gate (config share-threshold), the presence rule, 6-hour credit cooldowns, the elder-guardian trio, participant spoils, the two-phase dragon trial (ExcelDragonTrial 0.1.2, ported in), participant growth (the boss rallies), and curated seal loot. 0.2.1 adds the seal-integrity fixes - the wither fought-free (cage) check, the warden horizontal range band, and the dragon share gate. 0.2.2 adds the seal-hardening pair - the warden gives up on a fight that never comes to it, and end crystals and respawn anchors answer to their placer. 0.2.3 adds the announcement window - while it is armed, seal attempts, fails, breaks and running cooldowns are announced in chat, repeated hourly, and rebroadcast to everyone on every join. 0.2.4 adds the XP band governor feed - every governed hit plants its band verdict for the XP listener (ExcelRewardGuard), so out-of-band hits pay 25% mcMMO XP in real time while in-band hits pay full; silent, fail-safe both ways. 0.2.5 makes the rewards mean something (spec 4.6) - the dragon gains a signature - "First Breath", one elytra per champion standing at the fall - and every seal's named signature gear is granted per champion, stamped with its earner's provenance, under the fairness rule. 0.2.6 splits the command gate - the status view is public, so any player can run /bosstrial status to check seal state and cooldowns, while reload and reset stay admin-only, enforced in the handler now that plugin.yml no longer gates the whole command. 0.2.7 keeps a fight when its boss is merely unloaded (the family went home, logged off or wiped) instead of forgetting it, holds the dragon trial while nobody is at the arena, and sets aside damage a lost ledger never saw so an honest finish can still earn the seal. 0.2.11 hardens the dragon flip with a second, final judgment at HIGHEST plus danger-zone logging, closes a saved trial out on version change instead of restoring it (archived, logged, counters kept), presents earned rewards automatically once per batch - with immunity frames on the auto-open only, never on a manual one - and pays every signature stack plus the dragon's breath and crystals per champion as personal claims, dragon XP included. 0.3.1 adds the fight record - at every verdict and every elder trio progress point the encounter's per-player table (damage dealt, damage taken, healing done where a heal-spell cast names its source, healing received) is written to fights/ and to the log - and the elder trio escalation, with each elder priced as an epic fight of its own, and the trio's third, seal-completing elder carries a pool multiplier (elder-guardian.trio, settled x1.3). 0.3.2 adds milestone beats - at 75/50/25% of a chapter's pool remaining, a broadcast line and one pulse surge, once per threshold per encounter (per phase for the dragon; the warden's lines are its progress display, the warden having no health bar) - and moves the dragon's add-wave thresholds into config (dragon.adds.wave-thresholds). 0.3.3 adds the elite sprinkle - at each milestone stamp an armed chapter rolls once (chance x stamp multiplier, capped) to send EliteMobs elites in as adds beside the boss, contained (no loot, no coins, no vanilla drops), announced on a pass, leashed to the fight, and removed when the encounter ends; every chapter ships disabled (<chapter>.sprinkle.enabled) until armed, and the plugin runs exactly as before when EliteMobs is absent. 0.3.4 adds the ExcelProtect emitter - at every verdict the encounter's full per-player fight table is published to ExcelProtect, which records its combat fight summary and audit seal verdict from it; elder trio progress points publish as fight progress records; and chapter state changes (a fight started, a fight ended, an elder respawn scheduled, an elder respawned) publish as boss-state records so Protect can answer boss status. The adapter is one replaceable class, config-gated under protect-emit, fail-soft throughout, and BossTrial runs exactly as before when ExcelProtect is absent.
++softdepend: [ExcelGuildGate, Magic, GriefPrevention, EliteMobs, ExcelProtect]
+ commands:
+   bossrewards:
+     description: Open your own earned boss rewards
+--- build-0.3.3/bosstrial/tree/config.yml	2026-11-02 00:36:32.835955747 +0000
++++ build-0.3.4/bosstrial/tree/config.yml	2026-11-02 22:07:54.600018907 +0000
+@@ -224,6 +224,27 @@
+     leash-radius: 24.0
+     types: [GUARDIAN, DROWNED]
+ 
++protect-emit:
++  # The ExcelProtect emitter (0.3.4): at every verdict the
++  # fight record's full per-player table is ALSO published to
++  # ExcelProtect, which records its combat fight summary and
++  # its audit seal verdict from it; elder trio progress points
++  # publish as fight progress records; and chapter state
++  # changes (a fight started, a fight ended, an elder respawn
++  # scheduled, an elder respawned) publish as boss-state
++  # records so Protect can answer boss status. The emitter is
++  # an observer only - nothing in any fight, verdict or reward
++  # path reads anything back, and with ExcelProtect absent the
++  # plugin runs exactly as before (these keys then change
++  # nothing; the records still land in fights/ as always).
++  # Master switch for the whole emitter.
++  enabled: true
++  # The verdict fight tables + elder progress records.
++  fight-tables: true
++  # The boss-state records (fight started / ended, elder
++  # respawn scheduled / respawned).
++  state-changes: true
++
+ fight-tracking:
+   # The fight record (0.3.1): at every verdict (CREDIT / DENY)
+   # and every elder trio progress point, the encounter's
