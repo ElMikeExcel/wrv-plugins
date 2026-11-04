@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: si_menujoin
+menu: commands_menu
+group: server_info
+order: 70
+order-bedrock: 430
+icon: LEVER
+label: '&a&l/menujoin'
+lore:
+  - '&7Turn the auto-open menu on or off'
+  - '&8Server Info'
+action:
+  - '[player] menujoin'

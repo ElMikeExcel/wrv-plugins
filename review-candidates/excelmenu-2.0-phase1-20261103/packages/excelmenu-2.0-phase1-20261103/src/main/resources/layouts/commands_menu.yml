@@ -1,0 +1,97 @@
+# ExcelMenu 2.0 layout definition: commands_menu (the Server Commands
+# catalogue). The catalogue's rows are registry entries (menu:
+# commands_menu, one file per row under entries/); this layout is only
+# the chrome: two chest pages with group header panes and slot lists,
+# the pagination buttons, and the Bedrock grouped-form wording.
+#
+# The arrangement is NEW (Phase 1): the old Java catalogue spread the
+# union's rows across a full 54-slot page plus a 27-slot overflow
+# page, and the Bedrock catalogue had three rows Java lacked (and
+# lacked six Java had). One union list cannot keep both old maps, so
+# the pages are re-laid in the old style — group header pane, then the
+# group's rows in order, page 2 reached by the More Commands button —
+# with every group kept whole on one page. Within-group order follows
+# the Bedrock catalogue (which matches the compass order); see
+# PHASE-1-REPORT for the classified differences.
+id: commands_menu
+title: '&6&lServer Commands'
+form: grouped
+form-title: 'Server Commands'
+form-picker-content: 'Every command you can use, by group. Pick a group:'
+form-note: 'Buttons run the command; rows with <words> in them tell you what to type in chat instead.'
+groups:
+  getting_around: { name: 'Getting Around' }
+  money_jobs: { name: 'Money & Jobs' }
+  skills_levels: { name: 'Skills & Levels' }
+  shops_trading: { name: 'Shops & Trading' }
+  claims_land: { name: 'Claims & Land' }
+  guild_quests: { name: 'Guild & Quests' }
+  server_info: { name: 'Server Info' }
+  fixes_help: { name: 'Fixes & Help' }
+  your_items_help: { name: 'Your Items & Help' }
+pages:
+  - size: 54
+    title: '&6&lServer Commands'
+    fixed:
+      - slot: 0
+        material: MAP
+        name: '&6&lGetting Around'
+        lore: ['&8Command group']
+      - slot: 7
+        material: GOLD_INGOT
+        name: '&6&lMoney & Jobs'
+        lore: ['&8Command group']
+      - slot: 14
+        material: EXPERIENCE_BOTTLE
+        name: '&6&lSkills & Levels'
+        lore: ['&8Command group']
+      - slot: 20
+        material: CHEST
+        name: '&6&lShops & Trading'
+        lore: ['&8Command group']
+      - slot: 28
+        material: GOLDEN_SHOVEL
+        name: '&6&lClaims & Land'
+        lore: ['&8Command group']
+      - slot: 53
+        material: ARROW
+        name: '&a&lMore Commands'
+        lore: ['&7Guild, server info, fixes and your items', '&8Server Commands']
+        page: 2
+    slots:
+      getting_around: [1, 2, 3, 4, 5, 6]
+      money_jobs: [8, 9, 10, 11, 12, 13]
+      skills_levels: [15, 16, 17, 18, 19]
+      shops_trading: [21, 22, 23, 24, 25, 26, 27]
+      claims_land: [29, 30, 31, 32, 33, 34, 35, 36, 37]
+  - size: 54
+    title: '&6&lMore Server Commands'
+    fixed:
+      - slot: 0
+        material: BELL
+        name: '&6&lGuild & Quests'
+        lore: ['&8Command group']
+      - slot: 9
+        material: BOOK
+        name: '&6&lServer Info'
+        lore: ['&8Command group']
+      - slot: 27
+        material: RECOVERY_COMPASS
+        name: '&6&lFixes & Help'
+        lore: ['&8Command group']
+      - slot: 36
+        material: BUNDLE
+        name: '&6&lYour Items & Help'
+        lore: ['&8Command group']
+      - slot: 53
+        material: ARROW
+        name: '&c&lBack to Commands'
+        lore: []
+        page: 1
+    slots:
+      guild_quests: [1, 2, 3, 4]
+      server_info: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+      fixes_help: [28, 29, 30, 31]
+      your_items_help: [37, 38, 39, 40]
+
+# ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)

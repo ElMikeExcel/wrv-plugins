@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: fh_chunks
+menu: commands_menu
+group: fixes_help
+order: 10
+order-bedrock: 480
+icon: SPYGLASS
+label: '&a&l/chunks'
+lore:
+  - '&7Fix dropped items that float, hide or will not pick up'
+  - '&8Fixes & Help'
+action:
+  - '[player] chunks'

@@ -1,0 +1,47 @@
+# ExcelMenu 2.0 layout definition: server_menu (the compass root).
+# The layout is the menu's CHROME — title, chest size, header panes and
+# the exact slots each group's entries fill, in resolver order. The
+# entries themselves are data files under entries/ (one per door).
+# Converted in Phase 1 from the live server_menu.yml definition
+# (SHA-256 132442bf... since the Nov 1, 2026 re-base; originally
+# 86b51650...): header panes and slot positions reproduce the
+# old Java menu EXACTLY, including the deliberate hole at slot 39 in
+# the Settings row (autojoin sits at 40 today; the slot list simply
+# does not offer 39). The Help slot list already offered slot 34, so
+# the re-based halloween_scares entry needed no layout change.
+id: server_menu
+title: '&6&lServer Menu'
+form: flat
+form-title: 'Server Menu'
+form-content: 'What would you like to do?'
+pages:
+  - size: 45
+    fixed:
+      - slot: 0
+        material: LIGHT_BLUE_STAINED_GLASS_PANE
+        name: '&b&lTravel'
+        lore: ['&7Get around the valley']
+      - slot: 9
+        material: LIME_STAINED_GLASS_PANE
+        name: '&a&lMe'
+        lore: ['&7Your skills, magic, money and stuff']
+      - slot: 18
+        material: YELLOW_STAINED_GLASS_PANE
+        name: '&e&lShops'
+        lore: ['&7Spend your Jobs money']
+      - slot: 27
+        material: ORANGE_STAINED_GLASS_PANE
+        name: '&6&lHelp'
+        lore: ['&7News, answers and commands']
+      - slot: 36
+        material: GRAY_STAINED_GLASS_PANE
+        name: '&7&lSettings'
+        lore: ['&7Your on/off switches']
+    slots:
+      travel: [1, 2, 3, 4, 5, 6, 7, 8]
+      me: [10, 11, 12, 13, 14, 15, 16, 17]
+      shops: [19, 20, 21, 22, 23, 24, 25, 26]
+      help: [28, 29, 30, 31, 32, 33, 34, 35]
+      settings: [37, 38, 40, 41, 42, 43, 44]
+
+# ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)

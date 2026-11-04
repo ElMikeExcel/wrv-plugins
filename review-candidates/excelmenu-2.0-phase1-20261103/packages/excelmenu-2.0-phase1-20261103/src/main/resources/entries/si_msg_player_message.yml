@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: si_msg_player_message
+menu: commands_menu
+group: server_info
+order: 30
+order-bedrock: 390
+icon: FEATHER
+label: '&a&l/msg <player> <message>'
+lore:
+  - '&7Send a private message (/r replies)'
+  - '&8Server Info'
+action:
+  - '[message] &7Type it in chat: &e/msg <player> <message>'
