@@ -1,0 +1,46 @@
+===== Test report (source: excelprotect/build-0.1.0/TEST-REPORT.md) =====
+# ExcelProtect 0.1.0 — TEST REPORT
+
+Build date: 2026-11-01 (America/Chicago). Builder: Iris subagent, for parent review. **Nothing installed.**
+Spec: `~/workspace/excelprotect/SPEC.md` (v2 + Amendment 3 addendum).
+
+## Candidate
+
+`ExcelProtect-0.1.0.jar`, SHA-256 **`648d5aa2e77186249874efd0d431a87de04914f55322bf55390a7b59b4f87594`** — two consecutive clean builds byte-identical (pair in this folder). Unit suite **11/11 pass** on every build.
+
+## Sequencing + amendments (acknowledged)
+
+- **Sequencing decision (8:40 PM amendment): EXTEND 0.1.0 now** — one all-in-one build (rationale in SPEC.md: the shadow soak must soak the retiring surface; a core+fold split restarts the soak against the Nov 13 Lost & Found deadline).
+- **Amendment (8:25 PM)** in spec + build: log-everything (no common-item exclusions anywhere), per-sub-family toggles, shareable-clean (self-documenting config, all adapters optional).
+- **Amendment 3 (9:03 PM)** in spec (A3.1–A3.9) + build: Watch/alerts + webhook outbox, inventory history snapshots, rollback preview + undo, item provenance (PDC record IDs + craft records + `match=<rid>` timelines), compaction aging (aggregates kept indefinitely — unit-tested), overload shed policy with marker records, the publish API (`api.RecordEvent` + `ExcelProtectAPI`), economy completion (villager trades via PlayerPurchaseEvent; Jobs via fail-soft reflective hook), admin self-logging stream. Confirmed exclusions honored: no location tracking; chat OFF by default.
+- **Audit parity items** (AUDIT-20261101 §1): byte-exact payloads ✓, economy family ✓, L&F rule chain incl. once-only marks + per-player state + tell-owner ✓ (Bedrock form surface: NOT in 0.1.0 — /lostfound is chat-number driven and works identically on Bedrock; a Cumulus form is the one deferred parity item, flagged for the parent), PDC owner stamping + drop memory ✓, importer ✓ (rig-proven below), progression + samples stream ✓, kill locations ✓, BossTrial emit = full-table publish ✓ (fights/ store NOT folded, per ruling), RewardGuard/EliteMobs consumer repoint = packet gate ✓.
+
+## Unit tests (11)
+
+Envelope + field extraction; config globs; exporter filters (type/match/radius/player/time); DamageLedger replay of the armor-stand shape (9 = sweep 4 + fire 5, environment last); DurableWriter failure retention (the AuditLog 0.2.0 defect inverted) + normal write; payload codec round-trip incl. DeathRecord's plain-Base64 shape; container diff merging; **free-first rule chain** (poor+never → free; rich → not; paid recovery blocks free; free once ever); **compaction aging** (raw deleted, aggregates kept with exact counts); ledger envelope emission.
+
+## Rig (Paper 26.3-231, offline sandbox; driver + evidence in `rig/`)
+
+**Boot A (NO optional plugins):** `READY version=0.1.0 gp=off vault=off mcmmo=off` + "Magic not present — spell attribution off (fail-soft)". **Boot B (+ GriefPrevention + Vault):** `gp=on vault=off` (Vault alone provides no economy — correct).
+
+**THE ACCEPTANCE CASE — PASSED (Boot A, run 1).** Equipped armor stand (netherite set, Prot IV, trim netherite/silence, "Stand Blade" Sharpness V), synthetic sweep + real zombie hits + fire: death line carries killer=environment/FIRE_TICK, damage total 24 (ENTITY_ATTACK 15 / SWEEP 4 / FIRE_TICK 5), origin, and the **full equipment snapshot with byte payloads on every piece**. `export stream=entities type=entity_death match=armor_stand` → **exactly 1 event**. `restore-stand` → new stand; driver verification: **dressedStands=1** (chestplate + sword identical). (Player-sweep substitution documented as in the Black Box rig: no fake players exist headless; the synthetic EntityDamageByEntityEvent is indistinguishable to the ledger.)
+
+**Block round-trip incl. SIGN TEXT — PASSED.** TNT explosion: 64 block_change lines under the explosion path; the sign's break line carries `sign_before: ["RIG SIGN","line two","byte-exact!",""]`. `rollback preview` reported 64 positions without touching the world; `rollback` applied 64/64 with op id + undo file + system records; verify: **sign restored OAK_SIGN with the exact three lines**. `undo <op>` then restored the post-explosion state (sign AIR again) — preview + undo both proven.
+
+**Container round-trip — PASSED.** A container_transaction with payloads published through the **public API door** (which is also how the capture half is exercised end-to-end for the restore path); rollback restored the empty chest to **Slot 0: netherite sword "Container Relic" Sharpness V, Slot 1: diamond ×7** (verified via vanilla `data get block`). NOTE: the live open/close capture half needs a real player — player-proof owed in the shadow soak (the diff logic is unit-tested).
+
+**Soak — PASSED with the overload policy firing as designed.** Burst 1: 10,000 publish-door records in 270 ms; the items stream (2nd in the shed order, effective cap ≈6,363) **shed 3,637 — and wrote the marker**: `overload_shed stream=items shed=3637 dropped_total=3637` in the system stream; status counters agree. Nothing was silently lost. Burst 2 (queue drained): 5,000 in 37 ms, **all 5,000 landed** (total 11,363). Max 100-record batch on the main thread: 52 ms during class-load warmup, ~3–16 ms steady. TPS during soak ≈ 19.9 (fresh-boot rig average). Handler cost is one enqueue per record; serialization is bounded per event.
+
+**Restart / commit window — measured, stated honestly.** Graceful stop (SIGTERM): a 3,000-record burst fired seconds before shutdown **survived 100%** (14,363 total) via the onDisable flush. SIGKILL with `flush-interval-ms` raised to 30,000 for determinism: a 2,000-record burst was **lost in full** (count unchanged at 17,363) — the commit window is exactly the flush interval (default 1,000 ms) plus nothing else; lines flushed are durable, lines queued are not. No corruption in any restart (files reopen and append cleanly).
+
+**Importer — PASSED.** Synthetic DeathRecord set (death yml + burn yml with real serialized items): `import` → "1 deaths, 1 burns, 0 skipped, 0 errors"; both lines carry `imported:true` + original `orig_ts_ms`; the burn record's diamond-sword payload survived (gzip-Base64 `bytes` present and decodable); second import would skip by source marks (idempotent design; marks file written).
+
+**Admin self-logging — PASSED** (admin stream shows rollback/export/import records with actor + detail from the rig runs).
+
+**Watch — partially rig-proven.** The valuable-destruction + alert plumbing shares the emit path proven above; burst/container patterns need players inside claims — **player-proof owed** in the shadow soak (listed in the packet). The outbox file was created on the rig (`outbox.jsonl` present in evidence).
+
+**Rig-found defects (fixed + retested):** (1) the publish/API events were declared async — main-thread `callEvent` threw `RecordEvent may only be triggered asynchronously`; all three API events are now sync events and `ExcelProtectAPI` routes off-thread calls through the scheduler (the container test above is the retest). (2) First candidate's soak shed was initially read as loss until the marker + counters were checked — the policy was working; the report above states it plainly.
+
+## NOT rig-proven (player-bound; shadow-soak proofs, packet-listed)
+
+Player death snapshot + staff restore E2E; Lost & Found claim E2E (paid + free); container open/close capture; inventory snapshots at join/leave; Watch burst + non-owner patterns with real players in claims; mcMMO adapter against a live mcMMO (classes verified present in the staged jar; adapter is fail-soft); Magic heal-claim pairing; GP claim-event records (bridge registered on Boot B; claim create/delete needs a player). The unit suite covers the pure logic behind each (rule chain, diff math, filters, writer).

@@ -1,0 +1,174 @@
+{
+  "plugin": "ExcelProtect",
+  "version": "0.1.0",
+  "local_build_folder": "excelprotect/build-0.1.0",
+  "jar": {
+    "file": "ExcelProtect-0.1.0.jar",
+    "path": "excelprotect/build-0.1.0/ExcelProtect-0.1.0.jar",
+    "bytes": 115549,
+    "sha256": "648d5aa2e77186249874efd0d431a87de04914f55322bf55390a7b59b4f87594"
+  },
+  "install": {
+    "status": "installed shadow-live",
+    "date": "Nov 2, 2026, 4:05-4:12 AM CST"
+  },
+  "notes": [],
+  "record": {
+    "assembled": "2026-11-03",
+    "assembler": "records catch-up packaging pass (local only; upload by parent)",
+    "files": {
+      "CHANGELOG-0.1.0.md": {
+        "sha256": "f10dd4b98f05a50138e14c2da19365c7d6410b3b043fd6f10116707f5e7d0d04",
+        "bytes": 4472
+      },
+      "DEPENDENCIES.md": {
+        "sha256": "b55133392e63e0b8ec0bddf2de446498af1d88809763abda7aaee302e62ab3b8",
+        "bytes": 391
+      },
+      "DEPENDENCIES.sha256": {
+        "sha256": "00c8cbe5c2fc98561a4d099865f8c96b293cb1e08530050b6c7ad31b4777e70a",
+        "bytes": 252
+      },
+      "FUNCTIONAL-CHANGE.diff": {
+        "sha256": "0989de72774f4a9414ab445b333881f96d6b14e83c3650049dd4e9802f028ff8",
+        "bytes": 84
+      },
+      "README.md": {
+        "sha256": "45dfaa08c98768277b6db01475aecd11de34f1be4e1379c02c3cca47e7a9c16c",
+        "bytes": 1914
+      },
+      "SANITIZATION.diff": {
+        "sha256": "4dce1908c515dc61ad6ef86d013e56de29bd8bd40cf44effb73bee08c503fb36",
+        "bytes": 412
+      },
+      "SOURCE.md": {
+        "sha256": "6ca8e887efc1068d05e2781259503daf03b863639a34f0c3acdb4aeaae7fea81",
+        "bytes": 2852
+      },
+      "TEST-RESULTS.txt": {
+        "sha256": "056ce5738bef05796a20a02c602763b135942669b8f2f0b8be6568194c5ffb48",
+        "bytes": 7904
+      },
+      "config.yml": {
+        "sha256": "7a423378a29b283b6715557b97cb29bb08015ef9f0d10dc2ec909060a348d605",
+        "bytes": 7991
+      },
+      "local-build.sh": {
+        "sha256": "f9b15aee914a269558e89d4721547947a64fd63417e41367981a3c3cc6416c84",
+        "bytes": 2014
+      },
+      "plugin.yml": {
+        "sha256": "ff9cbd6e62a6668380d8d00203c963bdeade4c024752f2b96a0c1fb843999f15",
+        "bytes": 1255
+      },
+      "src/com/winkreyes/excelprotect/Adapters.java": {
+        "sha256": "a16f631a7b61ba9c039abfa8e8ea40b83d41f165bd9fa5792e242ddaba3438b7",
+        "bytes": 5812
+      },
+      "src/com/winkreyes/excelprotect/Blocks.java": {
+        "sha256": "c218f4fdc5f2f6bd22497fe0eb05e9280836ad322387db863f6d11fde174d6c7",
+        "bytes": 8902
+      },
+      "src/com/winkreyes/excelprotect/CombatCore.java": {
+        "sha256": "d7e40f148ce868f20a828ec274a83a4c06150d6bf447a20f3b2adceec84fdf69",
+        "bytes": 11682
+      },
+      "src/com/winkreyes/excelprotect/Containers.java": {
+        "sha256": "7d95cde73175f14c0d121e0341da32c79fb1513abb9c4a96998d7a3d9f46dd66",
+        "bytes": 6244
+      },
+      "src/com/winkreyes/excelprotect/DamageLedger.java": {
+        "sha256": "a51b91f29e8ab42c4047ea329767a960f8dc21e11d136fc99b6c94736c4ece8c",
+        "bytes": 2866
+      },
+      "src/com/winkreyes/excelprotect/DurableWriter.java": {
+        "sha256": "4043fe41420373a82c20b6abafe74ea88ce389d94bc6adcdd3f69ee54b7b1634",
+        "bytes": 3844
+      },
+      "src/com/winkreyes/excelprotect/EconomyWatch.java": {
+        "sha256": "683260b789a20ee3d292ab5be4448628289bc31aed67292fab6dcc19b684c18d",
+        "bytes": 3573
+      },
+      "src/com/winkreyes/excelprotect/Entities.java": {
+        "sha256": "5fba5fb4317140e51a5aa31e89e8f8619090cd1fde3d5131ec1fb847c538589f",
+        "bytes": 7219
+      },
+      "src/com/winkreyes/excelprotect/ExcelProtect.java": {
+        "sha256": "29471b951ef7d77b993a1b9458f324079115130b92e72888350e9afe12b250ce",
+        "bytes": 23646
+      },
+      "src/com/winkreyes/excelprotect/Exporter.java": {
+        "sha256": "b31348ec02a8ca600bb061eb8c7c561be6d563f1253eb503caa8122ea503d1db",
+        "bytes": 5245
+      },
+      "src/com/winkreyes/excelprotect/GpAdapter.java": {
+        "sha256": "afe32fee4e3bf57b8f7e9d7a54dea92d8b49713c05e0e7e0097f452b0adc96db",
+        "bytes": 2654
+      },
+      "src/com/winkreyes/excelprotect/Importer.java": {
+        "sha256": "58c6e522d45cf5528b58b8197b5acf095b64496b350d9827d6ad5c3434b01fb2",
+        "bytes": 7189
+      },
+      "src/com/winkreyes/excelprotect/ItemEvents.java": {
+        "sha256": "7b362cec5237b6fca8fb39c2d34b1ec40289059c2159a87660fb2f20e4a9b3f8",
+        "bytes": 9436
+      },
+      "src/com/winkreyes/excelprotect/ItemFact.java": {
+        "sha256": "550440d358c5ec0941094e04d17eaaac46bd3573da6742d034b7940d5d6ccac9",
+        "bytes": 6691
+      },
+      "src/com/winkreyes/excelprotect/Json.java": {
+        "sha256": "ab3fc1b28557df8df570bd4a2c8b85c8753fe17642e552880030c783836e6e4a",
+        "bytes": 7381
+      },
+      "src/com/winkreyes/excelprotect/Ledger.java": {
+        "sha256": "ef19714b101ce27a9628b6c6935b3437adf27df70a8eacc9473a85280517dbb3",
+        "bytes": 9787
+      },
+      "src/com/winkreyes/excelprotect/McmmoAdapter.java": {
+        "sha256": "13eac3b1b932c10963437627265c6dacbc2789371aa39e87c6bfbcfcd02d5c26",
+        "bytes": 2318
+      },
+      "src/com/winkreyes/excelprotect/Players.java": {
+        "sha256": "33ba00220855de4adf708d7489f389e19bba3911f3fce1647e5efc514949b388",
+        "bytes": 8032
+      },
+      "src/com/winkreyes/excelprotect/Recovery.java": {
+        "sha256": "244deeedffdb9404ff88d3c2b50e9ccf58e9e9ee4750a8599a8058f846a6895f",
+        "bytes": 9774
+      },
+      "src/com/winkreyes/excelprotect/Rollback.java": {
+        "sha256": "2f724d14a91c17e415492ee4e773270dc9208021ce36bfaadcbea52409dd8f9b",
+        "bytes": 10322
+      },
+      "src/com/winkreyes/excelprotect/Settings.java": {
+        "sha256": "16d3c8cce5f8daed974ac727be87a595f846a5940dc9ef25bc944b1b464a977d",
+        "bytes": 6732
+      },
+      "src/com/winkreyes/excelprotect/Watch.java": {
+        "sha256": "137100e24a546c2cf33e1cfa6fccfd088abb6693e0106c780b66f0edcfa19b1b",
+        "bytes": 5134
+      },
+      "src/com/winkreyes/excelprotect/api/EconomyEvent.java": {
+        "sha256": "73698a99772ccd6e59844c5dd667d3da1d433ee46352b3e3a777d6f54393dae4",
+        "bytes": 1305
+      },
+      "src/com/winkreyes/excelprotect/api/ExcelProtectAPI.java": {
+        "sha256": "938bc86d7a1e92f542548c488b6a15fe064bea243f06b4aec18da2be0536f7f2",
+        "bytes": 1814
+      },
+      "src/com/winkreyes/excelprotect/api/FightTableEvent.java": {
+        "sha256": "0282c7ea9b981dabb57431458d2a4d83fec257f8c78bde12fa9a59b9c7b81ef6",
+        "bytes": 1945
+      },
+      "src/com/winkreyes/excelprotect/api/RecordEvent.java": {
+        "sha256": "d2585b4b8a85328c25795dd98163da3b35b0fd2c8053ecdb9f4d72764ce85dc3",
+        "bytes": 1209
+      },
+      "tests/com/winkreyes/excelprotect/ProtectTest.java": {
+        "sha256": "fcda5d88a8031d4c036043392c0b274141fb000b5a58b394509e4fa27c94c983",
+        "bytes": 7826
+      }
+    }
+  }
+}
