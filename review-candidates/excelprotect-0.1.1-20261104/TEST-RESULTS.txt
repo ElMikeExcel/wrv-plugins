@@ -1,0 +1,94 @@
+ExcelProtect 0.1.1 — TEST RESULTS (2026-11-04, America/Chicago)
+
+CANDIDATE
+  ExcelProtect-0.1.1.jar — 122,081 B
+  SHA-256 b24c0ef2b16eae8cc381a721ce2d4b252904dd0dcecbe40a8ab5f80130d1312b
+  Two consecutive builds byte-identical (repro jar alongside, cmp clean).
+
+UNIT SUITE — 16/16 PASS (bash local-build.sh, JDK 25)
+  Carried from 0.1.0, unchanged: 11 tests.
+  New in 0.1.1 (5), all in tests/com/winkreyes/excelprotect/ProtectTest.java:
+  - inspectSummaryShapes — one compact summary line per event type
+    (block_change incl. sign_edit, container_transaction, item_drop,
+    death_snapshot, item_destroyed); asserts a seeded contents_after
+    payload value ("SECRETPAYLOAD") NEVER appears in any summary —
+    fingerprints only, never payloads.
+  - inspectReportSortsLatestFirstAndLimits — ts_ms descending order,
+    limit caps the printed lines, Report.total keeps the true count.
+  - inspectParseLimit — default 10, clamp 1..25, non-numeric -> 10.
+  - inspectPlayerFormFromLedgerFiles — the player-form scan mirrored
+    exactly over real day files in @TempDir: 6 seeded RigPlayer events
+    returned, another player's (Marvin) events excluded, unknown
+    player -> total 0.
+  - inspectAtFormFromLedgerFiles — the at-form scan over real day
+    files: exactly the 2 events at the seeded position returned,
+    an empty position -> total 0.
+
+RIG — PASS (console-driven Paper 26.3 sandbox, build-0.1.1/rig/)
+  Sandbox: fresh boot of the 0.1.0 rig server-A runtime (Paper
+  26.3-231; live is 26.3-235 — the rig proves plugin behavior, the
+  point build is not in scope), online-mode=false, ONLY
+  ExcelProtect-0.1.1.jar in plugins/. Ledger day files for
+  2026-11-04 seeded (copies in rig/evidence/): RigPlayer chest place
+  + container transaction at world -100,64,-200 (deposited
+  ominous_bottle#8, withdrew egg#1, contents_after carrying a fake
+  SECRETPAYLOAD bytes field), item_drop diamond_sword "Relic" at
+  -99,64,-200, death_snapshot + item_destroyed (burn, diamond#3);
+  Marvin noise events at 50,70,50.
+  Transcript: rig/evidence/boot-0.1.1.log (240 lines).
+
+  Boot: Done (33.155s); ExcelProtect v0.1.1 enabled;
+    "[ExcelProtect] READY version=0.1.1 dir=plugins/ExcelProtect
+     gp=off vault=off mcmmo=off retention-days=30"
+    (adapters read off ONLY because GP/Vault/mcMMO are absent from
+    the sandbox — the install packet's live boot-verify requires on.)
+    "combat: Magic not present — spell attribution off (fail-soft)"
+    — expected in the sandbox.
+
+  Console commands sent (4s apart) and what answered:
+  - excelprotect status
+      -> "version=0.1.1 gp=off vault=off mcmmo=off dropped-total=0"
+  - excelprotect inspect player RigPlayer
+      -> "RigPlayer — latest 5 of 5 recorded event(s):" then latest
+         first: destroyed (burn) minecraft:diamond#3 @ -100,60,-200;
+         death — fell out of the world; drop minecraft:diamond_sword#1
+         "Relic" @ -99,64,-200; container chest: deposited
+         minecraft:ominous_bottle#8 withdrew minecraft:egg#1;
+         block place minecraft:chest.
+         NO "SECRETPAYLOAD" anywhere in the transcript (grep 0);
+         NO Marvin events (grep 0).
+  - excelprotect inspect at world -100 64 -200
+      -> "history at world -100,64,-200:" with exactly the 2 events
+         at that position (container transaction, chest place).
+  - excelprotect inspect player Ghost
+      -> "no recorded activity for Ghost"
+  - excelprotect inspect at world 0 0 0
+      -> "no recorded events at world 0,0,0"
+  - excelprotect inspect            (bare, from console)
+      -> "console inspect: /excelprotect inspect player <name> [n] |
+          inspect at <world> <x> <y> <z> [n] (bare inspect toggles
+          click mode — players only)"  — the query usage, NOT a
+          "players only" refusal.
+  - excelprotect inspect player     (missing arg)
+      -> "Usage: /excelprotect inspect player <name> [n]"
+  - excelprotect inspect at world x y z   (bad coords)
+      -> "Usage: /excelprotect inspect at <world> <x> <y> <z> [n]"
+  Clean stop afterwards (exit 0).
+
+  SEVERE count in transcript: 0. ExcelProtect WARN/ERROR lines: 0.
+  The only ERROR/WARN noise is Paper/Mojang HTTPS fetches
+  (PaperVersionFetcher, services discovery) failing on the sandbox's
+  blocked egress ("Unsupported or unrecognized SSL message") — not
+  attributable to ExcelProtect; the same block is why the first rig
+  attempt (fresh server dir, no bundler cache) could not boot and
+  the 0.1.0 server-A runtime was cloned instead. Recorded here so
+  the transcript reads honestly.
+
+VERDICT
+  All success criteria met: READY version=0.1.1; both query forms
+  return real reports from the console; both empty cases answer in
+  words; bare console inspect gives usage, never "players only";
+  no payload leakage; zero attributable SEVERE. Player click-mode
+  code path is untouched (bare-inspect toggle preserved by routing
+  order) — its in-game confirmation is a post-install player proof
+  in the install packet.

@@ -1,0 +1,478 @@
+diff -ruN /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.0-20261103/src/com/winkreyes/excelprotect/ExcelProtect.java /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.1-20261104/src/ExcelProtect/src/com/winkreyes/excelprotect/ExcelProtect.java
+--- /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.0-20261103/src/com/winkreyes/excelprotect/ExcelProtect.java	2026-11-02 03:13:38.236347062 +0000
++++ /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.1-20261104/src/ExcelProtect/src/com/winkreyes/excelprotect/ExcelProtect.java	2026-11-04 06:08:11.659257138 +0000
+@@ -24,7 +24,7 @@
+ import java.util.UUID;
+ 
+ /**
+- * ExcelProtect 0.1.0 — the all-in-one record + recovery system (SPEC v2). One async
++ * ExcelProtect 0.1.1 — the all-in-one record + recovery system (SPEC v2). One async
+  * writer, daily JSONL per stream, byte-exact payloads, rollback + restores + Lost &
+  * Found. Every adapter (GriefPrevention / Vault / mcMMO / Magic) is fail-soft.
+  * Excel — Wink Reyes Valley
+@@ -111,7 +111,7 @@
+                 () -> mcmmo.snapshotAll("hourly"), 72_000, 72_000);
+         getServer().getScheduler().runTaskAsynchronously(this, ledger::housekeeping);
+ 
+-        getLogger().info("[ExcelProtect] READY version=0.1.0 dir=" + getDataFolder()
++        getLogger().info("[ExcelProtect] READY version=0.1.1 dir=" + getDataFolder()
+                 + " gp=" + (gpOn ? "on" : "off") + " vault=" + (economy.on() ? "on" : "off")
+                 + " mcmmo=" + (mcmmoOn ? "on" : "off") + " retention-days=" + cfg.retentionDays());
+     }
+@@ -143,10 +143,10 @@
+     }
+ 
+     private boolean protect(CommandSender s, String[] args) {
+-        if (args.length == 0) { s.sendMessage("§e/excelprotect §fexport|inspect|rollback|restore-stand|deaths|import|status"); return true; }
++        if (args.length == 0) { s.sendMessage("§e/excelprotect §fexport|inspect [player <name>|at <world> <x> <y> <z>]|rollback|restore-stand|deaths|import|status"); return true; }
+         switch (args[0]) {
+             case "status" -> {
+-                s.sendMessage("§e[ExcelProtect] §fversion=0.1.0 gp=" + (gpOn ? "on" : "off")
++                s.sendMessage("§e[ExcelProtect] §fversion=0.1.1 gp=" + (gpOn ? "on" : "off")
+                         + " vault=" + (economy.on() ? "on" : "off") + " mcmmo=" + (mcmmoOn ? "on" : "off")
+                         + " dropped-total=" + ledger.totalDropped());
+                 for (String line : ledger.flushAll().split("\n"))
+@@ -154,7 +154,15 @@
+                 return true;
+             }
+             case "inspect" -> {
+-                if (!(s instanceof Player p)) { s.sendMessage("players only"); return true; }
++                // 0.1.1 query forms route FIRST, for any sender — the console can always
++                // help a player (Mike's standing rule, Nov 3, 2026). Bare `inspect` keeps
++                // its 0.1.0 meaning: the click-to-inspect toggle, which needs a player.
++                if (args.length >= 2 && args[1].equals("player")) return inspectPlayerCmd(s, args);
++                if (args.length >= 2 && args[1].equals("at")) return inspectAtCmd(s, args);
++                if (!(s instanceof Player p)) {
++                    s.sendMessage("§e[ExcelProtect] §fconsole inspect: /excelprotect inspect player <name> [n] | inspect at <world> <x> <y> <z> [n] (bare inspect toggles click mode — players only)");
++                    return true;
++                }
+                 if (inspecting.remove(p.getUniqueId())) { s.sendMessage("§e[ExcelProtect] §finspect OFF"); admin(s, "inspect", "off"); }
+                 else { inspecting.add(p.getUniqueId()); s.sendMessage("§e[ExcelProtect] §finspect ON — click any block"); admin(s, "inspect", "on"); }
+                 return true;
+@@ -297,7 +305,7 @@
+                 });
+                 return true;
+             }
+-            default -> { s.sendMessage("§e/excelprotect §fexport|inspect|rollback|restore-stand|deaths|import|status"); return true; }
++            default -> { s.sendMessage("§e/excelprotect §fexport|inspect [player <name>|at <world> <x> <y> <z>]|rollback|restore-stand|deaths|import|status"); return true; }
+         }
+     }
+ 
+@@ -306,6 +314,76 @@
+         return false;
+     }
+ 
++    // ------------------------------------------------- inspect query forms (0.1.1)
++    /** /excelprotect inspect player <name> [n] — that player's latest recorded activity (containers, items, deaths, blocks). Any sender. */
++    private boolean inspectPlayerCmd(CommandSender s, String[] args) {
++        if (args.length < 3) { s.sendMessage("§eUsage: §f/excelprotect inspect player <name> [n]"); return true; }
++        String who = args[2];
++        int limit = InspectReport.parseLimit(args.length >= 4 ? args[3] : null);
++        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
++            ledger.flushAll();
++            List<String> scanned = new ArrayList<>();
++            for (String stream : new String[]{"containers", "items", "deaths", "blocks"}) {
++                Exporter.Query q = Exporter.Query.parse(new String[]{"player=" + who});
++                q.stream = stream;
++                scanned.addAll(Exporter.scan(ledger, q));
++            }
++            InspectReport.Report r = InspectReport.build(scanned, limit);
++            admin(s, "inspect_player", who + " (" + r.total() + " events)");
++            Bukkit.getScheduler().runTask(this, () -> {
++                if (r.total() == 0) { s.sendMessage("§c[ExcelProtect] no recorded activity for " + who); return; }
++                s.sendMessage("§e[ExcelProtect] §f" + who + " — latest " + r.lines().size()
++                        + " of " + r.total() + " recorded event(s):");
++                for (String line : r.lines()) s.sendMessage("§7  " + line);
++            });
++        });
++        return true;
++    }
++
++    /** /excelprotect inspect at <world> <x> <y> <z> [n] — recorded history at one block/container position. Any sender. */
++    private boolean inspectAtCmd(CommandSender s, String[] args) {
++        if (args.length < 6) { s.sendMessage("§eUsage: §f/excelprotect inspect at <world> <x> <y> <z> [n]"); return true; }
++        String world = args[2];
++        long x, y, z;
++        try {
++            x = Long.parseLong(args[3]); y = Long.parseLong(args[4]); z = Long.parseLong(args[5]);
++        } catch (NumberFormatException e) {
++            s.sendMessage("§eUsage: §f/excelprotect inspect at <world> <x> <y> <z> [n]"); return true;
++        }
++        int limit = InspectReport.parseLimit(args.length >= 7 ? args[6] : null);
++        // The click-inspect answer for this exact block when the world is loaded —
++        // the same one-line summary a clicking player would see, as the first line.
++        String latest = null;
++        org.bukkit.World w = Bukkit.getWorld(world);
++        if (w != null) latest = blocks.inspect(new org.bukkit.Location(w, x, y, z));
++        String latestF = latest;
++        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
++            ledger.flushAll();
++            List<String> scanned = new ArrayList<>();
++            for (String stream : new String[]{"blocks", "containers"}) {
++                Exporter.Query q = Exporter.Query.parse(new String[]{
++                        "world=" + world, "at=" + x + "," + y + "," + z, "radius=0"});
++                q.stream = stream;
++                scanned.addAll(Exporter.scan(ledger, q));
++            }
++            InspectReport.Report r = InspectReport.build(scanned, limit);
++            admin(s, "inspect_at", world + " " + x + "," + y + "," + z + " (" + r.total() + " events)");
++            Bukkit.getScheduler().runTask(this, () -> {
++                if (r.total() == 0 && latestF == null) {
++                    s.sendMessage("§c[ExcelProtect] no recorded events at " + world + " " + x + "," + y + "," + z);
++                    return;
++                }
++                s.sendMessage("§e[ExcelProtect] §fhistory at " + world + " " + x + "," + y + "," + z + ":");
++                if (latestF != null) s.sendMessage("§7  latest (click-inspect): " + latestF);
++                for (String line : r.lines()) s.sendMessage("§7  " + line);
++                if (r.total() > r.lines().size())
++                    s.sendMessage("§7  … " + (r.total() - r.lines().size())
++                            + " earlier event(s) — full history via /excelprotect export");
++            });
++        });
++        return true;
++    }
++
+     private boolean deathsCmd(CommandSender s, String[] args) {
+         // /excelprotect deaths <player> [restore <n> [force]]
+         if (args.length < 2) { s.sendMessage("§eUsage: §f/excelprotect deaths <player> [restore <n> [force]]"); return true; }
+diff -ruN /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.0-20261103/src/com/winkreyes/excelprotect/InspectReport.java /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.1-20261104/src/ExcelProtect/src/com/winkreyes/excelprotect/InspectReport.java
+--- /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.0-20261103/src/com/winkreyes/excelprotect/InspectReport.java	1970-01-01 00:00:00.000000000 +0000
++++ /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.1-20261104/src/ExcelProtect/src/com/winkreyes/excelprotect/InspectReport.java	2026-11-04 06:07:49.720257207 +0000
+@@ -0,0 +1,155 @@
++package com.winkreyes.excelprotect;
++
++import java.util.ArrayList;
++import java.util.Comparator;
++import java.util.List;
++
++/**
++ * ExcelProtect 0.1.1 — text inspect reports for ANY sender (console included).
++ * The click-to-inspect mode answers "what happened at this block" for a player
++ * standing in the world; these reports answer the same recorded data as text:
++ * a player's recent recorded activity, and the recorded history at one position.
++ * Pure logic over ledger lines — the command layer does the scanning (Exporter)
++ * and this class does the sorting + one-line summaries, so the whole path is
++ * unit-testable with no server. Summaries NEVER include item payloads (the
++ * "bytes" field) — fingerprints only, like the export listings.
++ * Excel — Wink Reyes Valley
++ */
++public final class InspectReport {
++    private InspectReport() {}
++
++    public static final int DEFAULT_LIMIT = 10;
++    public static final int MAX_LIMIT = 25;
++
++    /** A finished report: the summary lines to print (latest first) + how many reportable events matched in total. */
++    public record Report(List<String> lines, int total) {}
++
++    /** Limit argument: default 10, clamped to 1..25, non-numeric → default. */
++    public static int parseLimit(String s) {
++        if (s == null || s.isBlank()) return DEFAULT_LIMIT;
++        try {
++            int n = Integer.parseInt(s.trim());
++            return Math.max(1, Math.min(MAX_LIMIT, n));
++        } catch (NumberFormatException e) { return DEFAULT_LIMIT; }
++    }
++
++    /** Build a latest-first report from scanned ledger lines (any mix of streams). */
++    public static Report build(List<String> scanned, int limit) {
++        List<String> sorted = new ArrayList<>(scanned);
++        sorted.sort(Comparator.comparingLong((String l) -> (long) Json.numField(l, "ts_ms", 0)).reversed());
++        List<String> out = new ArrayList<>();
++        int total = 0;
++        for (String line : sorted) {
++            String s = summarize(line);
++            if (s == null) continue;
++            total++;
++            if (out.size() < limit) out.add(s);
++        }
++        return new Report(out, total);
++    }
++
++    /** One compact line for a ledger event, or null when the type is not inspect-reportable. */
++    public static String summarize(String line) {
++        String type = Json.strField(line, "type");
++        if (type == null) return null;
++        String time = timeOf(line);
++        return switch (type) {
++            case "block_change" -> {
++                String action = Json.strField(line, "action");
++                String block = Json.strField(line, "block");
++                StringBuilder b = new StringBuilder(time).append(" block ").append(action)
++                        .append(' ').append(block).append(actorSuffix(line)).append(locSuffix(line));
++                if ("sign_edit".equals(action)) {
++                    String raw = Json.rawField(line, "sign_after");
++                    if (raw != null) {
++                        List<String> lines = Json.strings(raw);
++                        String joined = String.join(" / ", lines).trim();
++                        if (!joined.isEmpty())
++                            b.append(" sign: \"").append(joined.length() > 40 ? joined.substring(0, 40) + "…" : joined).append('"');
++                    }
++                }
++                yield b.toString();
++            }
++            case "container_transaction" -> {
++                String kind = Json.strField(line, "container");
++                StringBuilder b = new StringBuilder(time).append(" container ").append(kind == null ? "?" : kind)
++                        .append(actorSuffix(line)).append(locSuffix(line)).append(':');
++                String dep = itemsSuffix(Json.rawField(line, "deposits"));
++                String wd = itemsSuffix(Json.rawField(line, "withdrawals"));
++                if (dep == null && wd == null) b.append(" no item movement");
++                else {
++                    if (dep != null) b.append(" deposited ").append(dep);
++                    if (wd != null) b.append(" withdrew ").append(wd);
++                }
++                yield b.toString();
++            }
++            case "item_drop", "item_pickup", "item_craft" -> {
++                String verb = switch (type) { case "item_drop" -> "drop"; case "item_pickup" -> "pickup"; default -> "craft"; };
++                String fp = itemFingerprint(line);
++                yield fp == null ? null : time + " " + verb + " " + fp + actorSuffix(line) + locSuffix(line);
++            }
++            case "item_despawn", "item_destroy" -> {
++                String fp = itemFingerprint(line);
++                String reason = Json.strField(line, "reason");
++                yield fp == null ? null : time + " item lost (" + (reason == null ? type.substring(5) : reason) + ") "
++                        + fp + locSuffix(line);
++            }
++            case "death_snapshot" -> {
++                String msg = Json.strField(line, "death_message");
++                yield time + " death" + (msg == null ? "" : " — " + msg) + locSuffix(line);
++            }
++            case "item_destroyed" -> {
++                String fp = itemFingerprint(line);
++                String cause = Json.strField(line, "cause");
++                yield fp == null ? null : time + " destroyed (" + (cause == null ? "?" : cause) + ") " + fp
++                        + actorSuffix(line) + locSuffix(line);
++            }
++            default -> null;
++        };
++    }
++
++    private static String timeOf(String line) {
++        long ms = (long) Json.numField(line, "ts_ms", 0);
++        if (ms <= 0) return "??:??:??";
++        String iso = Ledger.isoOf(ms);
++        return iso.length() >= 19 ? iso.substring(11, 19) : iso;
++    }
++
++    private static String actorSuffix(String line) {
++        String p = Json.strField(line, "player");
++        if (p == null) p = Json.strField(line, "owner");
++        if (p != null) return " by " + p;
++        String cause = Json.strField(line, "cause");
++        return cause != null ? " (" + cause + ")" : "";
++    }
++
++    private static String locSuffix(String line) {
++        String w = Json.strField(line, "world");
++        if (w == null || !line.contains("\"x\":")) return "";
++        long x = (long) Json.numField(line, "x", 0), y = (long) Json.numField(line, "y", 0),
++             z = (long) Json.numField(line, "z", 0);
++        return " @ " + w + " " + x + "," + y + "," + z;
++    }
++
++    /** Fingerprint (id#count + custom name) of the line's "item" fact — never the payload. */
++    private static String itemFingerprint(String line) {
++        String raw = Json.rawField(line, "item");
++        if (raw == null) return null;
++        List<ItemFact> facts = ItemFact.listFromJson("[" + raw + "]");
++        return facts.isEmpty() ? null : facts.get(0).fingerprint();
++    }
++
++    /** "id#count, id#count" for a deposits/withdrawals array (max 4 shown), or null when absent/empty. */
++    private static String itemsSuffix(String rawArray) {
++        if (rawArray == null) return null;
++        List<ItemFact> facts = ItemFact.listFromJson(rawArray);
++        if (facts.isEmpty()) return null;
++        StringBuilder b = new StringBuilder();
++        for (int i = 0; i < Math.min(4, facts.size()); i++) {
++            if (i > 0) b.append(", ");
++            b.append(facts.get(i).fingerprint());
++        }
++        if (facts.size() > 4) b.append(", +").append(facts.size() - 4).append(" more");
++        return b.toString();
++    }
++}
+diff -ruN /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.0-20261103/tests/com/winkreyes/excelprotect/ProtectTest.java /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.1-20261104/src/ExcelProtect/tests/com/winkreyes/excelprotect/ProtectTest.java
+--- /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.0-20261103/tests/com/winkreyes/excelprotect/ProtectTest.java	2026-11-02 03:09:06.598336520 +0000
++++ /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.1-20261104/src/ExcelProtect/tests/com/winkreyes/excelprotect/ProtectTest.java	2026-11-04 06:08:46.574257029 +0000
+@@ -135,6 +135,145 @@
+         assertTrue(aggText.contains("\"count\":2"));
+     }
+ 
++    // ------------------------------------------------ 0.1.1 inspect query forms
++
++    private static String env(long tsMs, String world, long x, long y, long z, String body) {
++        return "{\"ts\":\"" + Ledger.isoOf(tsMs) + "\",\"ts_ms\":" + tsMs
++                + ",\"world\":\"" + world + "\",\"x\":" + x + ",\"y\":" + y + ",\"z\":" + z + "," + body + "}";
++    }
++
++    private static final String CONTAINER_BODY = "\"type\":\"container_transaction\",\"container\":\"chest\","
++            + "\"player\":\"RigPlayer\",\"player_uuid\":\"u-rig\","
++            + "\"deposits\":[{\"id\":\"minecraft:ominous_bottle\",\"count\":8}],"
++            + "\"withdrawals\":[{\"id\":\"minecraft:egg\",\"count\":1}],"
++            + "\"contents_after\":[{\"id\":\"minecraft:ominous_bottle\",\"count\":8,\"bytes\":\"SECRETPAYLOAD\"}]";
++    private static final String BLOCK_BODY = "\"type\":\"block_change\",\"action\":\"place\",\"block\":\"minecraft:chest\","
++            + "\"before\":\"minecraft:air\",\"after\":\"minecraft:chest\",\"player\":\"RigPlayer\",\"player_uuid\":\"u-rig\"";
++    private static final String DROP_BODY = "\"type\":\"item_drop\",\"player\":\"RigPlayer\",\"player_uuid\":\"u-rig\","
++            + "\"item\":{\"id\":\"minecraft:diamond_sword\",\"count\":1,\"name\":\"Relic\"}";
++    private static final String DEATH_BODY = "\"type\":\"death_snapshot\",\"player\":\"RigPlayer\",\"player_uuid\":\"u-rig\","
++            + "\"death_message\":\"RigPlayer fell out of the world\"";
++    private static final String DESTROYED_BODY = "\"type\":\"item_destroyed\",\"cause\":\"burn\",\"owner\":\"RigPlayer\","
++            + "\"owner_uuid\":\"u-rig\",\"item\":{\"id\":\"minecraft:diamond\",\"count\":3}";
++
++    @Test void inspectSummaryShapes() {
++        String container = InspectReport.summarize(env(1_000, "world", -100, 64, -200, CONTAINER_BODY));
++        assertNotNull(container);
++        assertTrue(container.contains("container chest"), container);
++        assertTrue(container.contains("by RigPlayer"), container);
++        assertTrue(container.contains("deposited minecraft:ominous_bottle#8"), container);
++        assertTrue(container.contains("withdrew minecraft:egg#1"), container);
++        assertFalse(container.contains("SECRETPAYLOAD"), "summaries must never leak item payloads");
++
++        String block = InspectReport.summarize(env(2_000, "world", -100, 64, -200, BLOCK_BODY));
++        assertTrue(block.contains("block place minecraft:chest by RigPlayer"), block);
++        assertTrue(block.contains("@ world -100,64,-200"), block);
++
++        String drop = InspectReport.summarize(env(3_000, "world", -100, 64, -200, DROP_BODY));
++        assertTrue(drop.contains("drop minecraft:diamond_sword#1 \"Relic\" by RigPlayer"), drop);
++
++        String death = InspectReport.summarize(env(4_000, "world", -100, 64, -200, DEATH_BODY));
++        assertTrue(death.contains("death — RigPlayer fell out of the world"), death);
++
++        String destroyed = InspectReport.summarize(env(5_000, "world", -100, 64, -200, DESTROYED_BODY));
++        assertTrue(destroyed.contains("destroyed (burn) minecraft:diamond#3 by RigPlayer"), destroyed);
++
++        // not inspect-reportable: bulky/internal record types are skipped, never dumped
++        assertNull(InspectReport.summarize(env(6_000, "world", 0, 0, 0,
++                "\"type\":\"inventory_snapshot\",\"player\":\"RigPlayer\"")));
++        assertNull(InspectReport.summarize(env(6_000, "world", 0, 0, 0, "\"type\":\"mcmmo_snapshot\"")));
++    }
++
++    @Test void inspectReportSortsLatestFirstAndLimits() {
++        List<String> scanned = List.of(
++                env(1_000, "world", -100, 64, -200, BLOCK_BODY),
++                env(3_000, "world", -100, 64, -200, DROP_BODY),
++                env(2_000, "world", -100, 64, -200, CONTAINER_BODY),
++                env(4_000, "world", 0, 0, 0, "\"type\":\"inventory_snapshot\",\"player\":\"RigPlayer\""));
++        InspectReport.Report r = InspectReport.build(scanned, 2);
++        assertEquals(3, r.total()); // the snapshot line is not reportable
++        assertEquals(2, r.lines().size());
++        assertTrue(r.lines().get(0).contains("drop"), r.lines().get(0));       // ts 3000 first
++        assertTrue(r.lines().get(1).contains("container"), r.lines().get(1));  // ts 2000 second
++    }
++
++    @Test void inspectParseLimit() {
++        assertEquals(10, InspectReport.parseLimit(null));
++        assertEquals(10, InspectReport.parseLimit(""));
++        assertEquals(3, InspectReport.parseLimit("3"));
++        assertEquals(1, InspectReport.parseLimit("0"));
++        assertEquals(25, InspectReport.parseLimit("999"));
++        assertEquals(10, InspectReport.parseLimit("abc"));
++    }
++
++    /** The exact scan the `inspect player` command runs, over real day files on disk. */
++    private static InspectReport.Report scanPlayer(Ledger ledger, String who, int limit) {
++        List<String> scanned = new java.util.ArrayList<>();
++        for (String stream : new String[]{"containers", "items", "deaths", "blocks"}) {
++            Exporter.Query q = Exporter.Query.parse(new String[]{"player=" + who});
++            q.stream = stream;
++            scanned.addAll(Exporter.scan(ledger, q));
++        }
++        return InspectReport.build(scanned, limit);
++    }
++
++    /** The exact scan the `inspect at` command runs, over real day files on disk. */
++    private static InspectReport.Report scanAt(Ledger ledger, String world, long x, long y, long z, int limit) {
++        List<String> scanned = new java.util.ArrayList<>();
++        for (String stream : new String[]{"blocks", "containers"}) {
++            Exporter.Query q = Exporter.Query.parse(new String[]{
++                    "world=" + world, "at=" + x + "," + y + "," + z, "radius=0"});
++            q.stream = stream;
++            scanned.addAll(Exporter.scan(ledger, q));
++        }
++        return InspectReport.build(scanned, limit);
++    }
++
++    private Ledger seededLedger(File dir) throws Exception {
++        long t0 = 1_793_770_800_000L; // 2026-11-04, morning UTC
++        String day = Ledger.dayOf(t0);
++        Files.writeString(new File(dir, "containers-" + day + ".jsonl").toPath(),
++                env(t0 + 2_000, "world", -100, 64, -200, CONTAINER_BODY) + "\n"
++                + env(t0 + 3_000, "world", 50, 70, 50, CONTAINER_BODY.replace("RigPlayer", "Marvin")) + "\n",
++                StandardCharsets.UTF_8);
++        Files.writeString(new File(dir, "items-" + day + ".jsonl").toPath(),
++                env(t0 + 4_000, "world", -99, 64, -200, DROP_BODY) + "\n", StandardCharsets.UTF_8);
++        Files.writeString(new File(dir, "deaths-" + day + ".jsonl").toPath(),
++                env(t0 + 5_000, "world", -100, 60, -200, DEATH_BODY) + "\n"
++                + env(t0 + 6_000, "world", -100, 60, -200, DESTROYED_BODY) + "\n", StandardCharsets.UTF_8);
++        Files.writeString(new File(dir, "blocks-" + day + ".jsonl").toPath(),
++                env(t0 + 1_000, "world", -100, 64, -200, BLOCK_BODY) + "\n"
++                + env(t0 + 7_000, "world", -101, 64, -200, BLOCK_BODY) + "\n", StandardCharsets.UTF_8);
++        return new Ledger(dir, new Settings(new YamlConfiguration()));
++    }
++
++    @Test void inspectPlayerFormFromLedgerFiles(@TempDir File dir) throws Exception {
++        Ledger ledger = seededLedger(dir);
++        InspectReport.Report r = scanPlayer(ledger, "RigPlayer", 10);
++        assertEquals(6, r.total()); // container + drop + death + destroyed + 2 block places
++        assertEquals(6, r.lines().size());
++        assertTrue(r.lines().get(0).contains("block place"), r.lines().get(0)); // ts t0+7000 is latest
++        assertTrue(r.lines().stream().anyMatch(l -> l.contains("container chest")), r.lines().toString());
++        assertTrue(r.lines().stream().anyMatch(l -> l.contains("death — RigPlayer fell")), r.lines().toString());
++        assertTrue(r.lines().stream().noneMatch(l -> l.contains("Marvin")), "another player's events must not appear");
++        // not-found / empty case: a player with no records gets an empty report (the command prints "no recorded activity")
++        InspectReport.Report ghost = scanPlayer(ledger, "Ghost", 10);
++        assertEquals(0, ghost.total());
++        assertTrue(ghost.lines().isEmpty());
++    }
++
++    @Test void inspectAtFormFromLedgerFiles(@TempDir File dir) throws Exception {
++        Ledger ledger = seededLedger(dir);
++        InspectReport.Report r = scanAt(ledger, "world", -100, 64, -200, 10);
++        assertEquals(2, r.total()); // the chest place + the container transaction at that exact block
++        assertTrue(r.lines().stream().anyMatch(l -> l.contains("container chest")), r.lines().toString());
++        assertTrue(r.lines().stream().anyMatch(l -> l.contains("block place")), r.lines().toString());
++        // empty case: a position with nothing recorded
++        InspectReport.Report empty = scanAt(ledger, "world", 0, 0, 0, 10);
++        assertEquals(0, empty.total());
++        assertTrue(empty.lines().isEmpty());
++    }
++
+     @Test void ledgerEmitsEnvelope(@TempDir File dir) throws Exception {
+         YamlConfiguration y = new YamlConfiguration();
+         Settings cfg = new Settings(y);
+--- /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.0-20261103/plugin.yml	2026-11-02 03:02:23.862320889 +0000
++++ /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.1-20261104/src/ExcelProtect/plugin.yml	2026-11-04 06:08:18.317257117 +0000
+@@ -1,5 +1,5 @@
+ name: ExcelProtect
+-version: '0.1.0'
++version: '0.1.1'
+ main: com.winkreyes.excelprotect.ExcelProtect
+ api-version: '1.21'
+ author: Excel (Wink Reyes Valley)
+@@ -9,7 +9,7 @@
+ commands:
+   excelprotect:
+     description: Export, inspect, rollback, restores, import, status
+-    usage: /excelprotect export|inspect|rollback|restore-stand|deaths|import|status ...
++    usage: /excelprotect export|inspect [player <name>|at <world> <x> <y> <z>]|rollback|restore-stand|deaths|import|status ...
+     permission: excelprotect.admin
+   lostfound:
+     description: Recover your own destroyed items from the ledger
+--- /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.0-20261103/local-build.sh	2026-11-02 03:03:40.155323850 +0000
++++ /home/hatch/workspace/records-catchup-20261103/packages/excelprotect-0.1.1-20261104/src/ExcelProtect/local-build.sh	2026-11-04 06:08:18.295257117 +0000
+@@ -27,9 +27,9 @@
+ cp "$PROJ/plugin.yml" "$PROJ/config.yml" "$OUT/classes/"
+ STAGE="$OUT/stage"; mkdir -p "$STAGE"
+ cp -r "$OUT/classes/." "$STAGE/"
+-find "$STAGE" -exec touch -d '2026-11-01 00:00:00 UTC' {} +
+-JAR_PATH="$PROJ/ExcelProtect-0.1.0.jar"; rm -f "$JAR_PATH"
++find "$STAGE" -exec touch -d '2026-11-04 00:00:00 UTC' {} +
++JAR_PATH="$PROJ/ExcelProtect-0.1.1.jar"; rm -f "$JAR_PATH"
+ # Deterministic packaging: sorted entry list, pinned entry dates, no manifest.
+ (cd "$STAGE" && find . -type f | sed 's|^\./||' | LC_ALL=C sort > "$OUT/entries.txt")
+-(cd "$STAGE" && "$JDK/bin/jar" --create --file "$JAR_PATH" --no-manifest --date=2026-11-01T00:00:00Z @"$OUT/entries.txt")
++(cd "$STAGE" && "$JDK/bin/jar" --create --file "$JAR_PATH" --no-manifest --date=2026-11-04T00:00:00Z @"$OUT/entries.txt")
+ sha256sum "$JAR_PATH"
