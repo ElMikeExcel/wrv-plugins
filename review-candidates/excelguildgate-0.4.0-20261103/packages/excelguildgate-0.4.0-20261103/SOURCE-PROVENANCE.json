@@ -1,0 +1,198 @@
+{
+  "plugin": "ExcelGuildGate",
+  "version": "0.4.0",
+  "local_build_folder": "seal-tuning/build-0.3.0/guildgate",
+  "jar": {
+    "file": "ExcelGuildGate-0.4.0.jar",
+    "path": "seal-tuning/build-0.3.0/jars/ExcelGuildGate-0.4.0.jar",
+    "bytes": 92823,
+    "sha256": "aa983fc40cbae6476b35113bc0611818b355400e36dc9da67196efd4b6f69f6e"
+  },
+  "install": {
+    "status": "installed live (current)",
+    "date": "Nov 1, 2026"
+  },
+  "notes": [],
+  "record": {
+    "assembled": "2026-11-03",
+    "assembler": "records catch-up packaging pass (local only; upload by parent)",
+    "files": {
+      "DEPENDENCIES.md": {
+        "sha256": "3640eabb285d8eaf6e1d3a7fdc1ff4edefd3f4fc7aaf229ae62fa3f0b0515162",
+        "bytes": 351
+      },
+      "DEPENDENCIES.sha256": {
+        "sha256": "c97d3d625126351371df2949ba0a37a6f02c82804e4f261b83524f9fb486fe66",
+        "bytes": 136
+      },
+      "FINAL-VERIFICATION.md": {
+        "sha256": "8bcef786d4ff62f855c4e785f66664e0f075083f04f3bdcc177787ccd45d1f3e",
+        "bytes": 3298
+      },
+      "FUNCTIONAL-CHANGE.diff": {
+        "sha256": "8115778cd156fa659a2af16e6dcfcff59a58a6b80e99368ee355a184cfef5014",
+        "bytes": 267
+      },
+      "README.md": {
+        "sha256": "e9f00fce8aee87d9a69ad78bbddf1d2c7cdb8e73b935a07781a1935ca2edc693",
+        "bytes": 1541
+      },
+      "ROLLOUT-LIMITS.md": {
+        "sha256": "2ba26d216bdb228a9278dd5e866a81fdbb5361f361da159fe8aed1132f73a70e",
+        "bytes": 2347
+      },
+      "SANITIZATION.diff": {
+        "sha256": "77835beefd888d75233a0d93c745394afe3f2267caa4211560587fa0b0d7efd9",
+        "bytes": 421
+      },
+      "SOURCE.md": {
+        "sha256": "a56887fab891252542cb0da6d9b6afdd4ff720a010e36ebef807c0c25b87cafc",
+        "bytes": 3627
+      },
+      "TEST-RESULTS.txt": {
+        "sha256": "4a2dab821e60a73e4e310ab9fa88fb3e3c59172e4de67530b1b70f84f032c488",
+        "bytes": 3413
+      },
+      "TREE-README.md": {
+        "sha256": "2958b29c49984a6b7c1a43d840bcf9b0430a2f8c221a99849f204a7e345beaa5",
+        "bytes": 3467
+      },
+      "build.sh": {
+        "sha256": "01331cd4c9d487c4b2d31981c03b1385b233a1c8ce4469902ad1b4704ab36383",
+        "bytes": 645
+      },
+      "config.yml": {
+        "sha256": "46d71d671584206b235027ca1b427a015568467c1271ceff650e2f2b0c2ae5dc",
+        "bytes": 13859
+      },
+      "plugin.yml": {
+        "sha256": "2f2b012765cc92343974b1f281f4308e96a3e193e8e52b2f8d890ce76c590792",
+        "bytes": 1194
+      },
+      "run-tests.sh": {
+        "sha256": "e13d811781ba2cb52711a2fe5a6189e9ddcd2dbd0355b3ce74676901294edb8b",
+        "bytes": 614
+      },
+      "src/com/winkreyes/excelguildgate/CatchUpTracker.java": {
+        "sha256": "b9a2e1650cf00d8120fbd27da86275cbae00e9b5b7c90bfaab363dffa072cbaa",
+        "bytes": 6206
+      },
+      "src/com/winkreyes/excelguildgate/ExcelGuildGate.java": {
+        "sha256": "fb7513b07a5fd4e4f0022e3dc25fe5948518cdfdca31a154543aa9d869b173ad",
+        "bytes": 102798
+      },
+      "src/com/winkreyes/excelguildgate/GateForms.java": {
+        "sha256": "129b0ff874ca66990c129d028d2767f7c8fb054bd33e8d54ce4b119ea3047683",
+        "bytes": 10279
+      },
+      "src/com/winkreyes/excelguildgate/GuildGateExpansion.java": {
+        "sha256": "1b5617b1c2a55e968fa9715ecdfc7762d8b339bd317d09ef1a89277702c0d6e4",
+        "bytes": 1722
+      },
+      "src/com/winkreyes/excelguildgate/NarrationGuide.java": {
+        "sha256": "60cb720ef9910ad99f6478a47d85c435f1e18fb93e5ee4093b4431d0d213aa64",
+        "bytes": 11250
+      },
+      "src/com/winkreyes/excelguildgate/NarratorPack.java": {
+        "sha256": "28cd5c2985b633d71baaf813374bb7161e861e4ce30fded28b35b31e015f7a05",
+        "bytes": 6375
+      },
+      "src/com/winkreyes/excelguildgate/NarratorPackPrompt.java": {
+        "sha256": "6aebca4234f352b5a913599b3ee5068ae3984da40d45769bcbf22075312ca2a3",
+        "bytes": 9636
+      },
+      "src/com/winkreyes/excelguildgate/NarratorPackStateStore.java": {
+        "sha256": "d79038efe99543dde1bce07df1890e648e6f98b3c01dceab5b4806cd2b39d840",
+        "bytes": 4030
+      },
+      "src/com/winkreyes/excelguildgate/RaidPressureMath.java": {
+        "sha256": "ca4e29c6ba83cb2aedf6ae8dbe5b7c92781621564c134114f6cbd40b3f85efba",
+        "bytes": 3161
+      },
+      "src/com/winkreyes/excelguildgate/RaidRepeatBook.java": {
+        "sha256": "b51e990782948764b06a7493e84919055b0fcbe07de8aff23a60bea19fcf0583",
+        "bytes": 4391
+      },
+      "src/com/winkreyes/excelguildgate/RaidRepeatJudge.java": {
+        "sha256": "c7c3ebf3db4031e11ba1fa2fc9f9ed3713398afb09288fba12d94bf53e0b3a55",
+        "bytes": 4069
+      },
+      "src/com/winkreyes/excelguildgate/RaidWinnerCheck.java": {
+        "sha256": "ece10e4821c862c1ff7cd938179a5b6661444d66a880bfcc6b9a7347c3584079",
+        "bytes": 4768
+      },
+      "src/com/winkreyes/excelguildgate/RecoveryAtomicFile.java": {
+        "sha256": "03a45a1d8c93cc85182aa4adc1edd8cb6b56749e50f56598225f4823bf49187b",
+        "bytes": 1451
+      },
+      "src/com/winkreyes/excelguildgate/RecoveryEngine.java": {
+        "sha256": "33291cdd8841839bd665cda758857e0a5f9eb4b8087076b2e0198552364bcbfd",
+        "bytes": 11631
+      },
+      "src/com/winkreyes/excelguildgate/SealState.java": {
+        "sha256": "c67f04fd17240c847adfbef29eb9275aa92d4202290e12faef8aa855aa2c5b0e",
+        "bytes": 6438
+      },
+      "src/com/winkreyes/guildgate/api/GuildGateAPI.java": {
+        "sha256": "d66f318694b73a10a2566407bef45245e7ded33ed7c7f9b938750e09af570835",
+        "bytes": 2204
+      },
+      "src/com/winkreyes/guildgate/api/RaidBreakEvent.java": {
+        "sha256": "7e4c8b767d5be5a7669a87aedc321b66cbf8133290455a1db3d8af9087e55d9b",
+        "bytes": 2448
+      },
+      "src/com/winkreyes/guildgate/api/RaidRepeatEvent.java": {
+        "sha256": "de4f66f32f3d2aaad3bfae6d679d2c856398800237c8386abed6e9c6cbaeb442",
+        "bytes": 3480
+      },
+      "src/com/winkreyes/guildgate/api/SealCreditEvent.java": {
+        "sha256": "2f3102b898eba42e6b649b1d77bd156958c77c2edd3e0379e208ce6fa5cecb32",
+        "bytes": 2206
+      },
+      "tests/com/winkreyes/excelguildgate/CatchUpTrackerTest.java": {
+        "sha256": "13fce50845f592346ffd818d20df02cdc6c9c446f7146bace1d9862a60281f73",
+        "bytes": 9654
+      },
+      "tests/com/winkreyes/excelguildgate/NarrationGuideTest.java": {
+        "sha256": "3696ebfc6c442536a94e10f5803fff8e3352f468f1d254b0cca4d0c2833700ca",
+        "bytes": 10543
+      },
+      "tests/com/winkreyes/excelguildgate/NarratorPackPromptTest.java": {
+        "sha256": "f27d0100692d85e2c80ac7a89ede9941b32cc670e0f23935479943a47519d381",
+        "bytes": 19648
+      },
+      "tests/com/winkreyes/excelguildgate/NarratorPackTest.java": {
+        "sha256": "b72083d6e34a8649594d5020ada7dd4116e7cbcc74caacb2aa6c292fb3042a43",
+        "bytes": 6962
+      },
+      "tests/com/winkreyes/excelguildgate/RaidRepeatJudgeTest.java": {
+        "sha256": "f9bd60e13d5e5f3bc4f0619348e45e18a610673f97fbd9df00bbd2d8d307574b",
+        "bytes": 8577
+      },
+      "tests/com/winkreyes/excelguildgate/RaidWinnerCheckTest.java": {
+        "sha256": "8653c5f96772af60134d888287029d723d082debef0a7d387abada9242ab9892",
+        "bytes": 8463
+      },
+      "tests/com/winkreyes/excelguildgate/RecoveryAdapterTest.java": {
+        "sha256": "5f0a20513676a53e7a710527a0d2c50451c3485058bcd98907556ae1ecf119c8",
+        "bytes": 10838
+      },
+      "tests/com/winkreyes/excelguildgate/RecoveryEngineTest.java": {
+        "sha256": "442118c1c840d53e7f7226dd05730790d176424356c495a1651e0db8f2795fd2",
+        "bytes": 9213
+      },
+      "tests/com/winkreyes/excelguildgate/SealStateTest.java": {
+        "sha256": "7ca9efd103439a8f3e3afd9225e6363bcc3f0f7c881117930d7bd39ac2ad0482",
+        "bytes": 12399
+      },
+      "tests/com/winkreyes/guildgate/api/GuildGateAPITest.java": {
+        "sha256": "f685f0d19667a8dd7ae9fbcdae2cdf8fb24072ecffa65024d0ed6fe89b598899",
+        "bytes": 4603
+      },
+      "tests/com/winkreyes/guildgate/api/SealCreditEventTest.java": {
+        "sha256": "36e5d86d6899cd8daa8baea1e782be9508323a6aa5b7f73fc0ee0189b9f1d96f",
+        "bytes": 1905
+      }
+    }
+  }
+}
