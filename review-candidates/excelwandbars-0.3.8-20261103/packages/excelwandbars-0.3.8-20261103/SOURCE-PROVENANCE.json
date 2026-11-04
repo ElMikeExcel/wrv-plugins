@@ -1,0 +1,446 @@
+{
+  "plugin": "ExcelWandBars",
+  "version": "0.3.8",
+  "local_build_folder": "wandbars-ux-build/build-0.3.8",
+  "jar": {
+    "file": "ExcelWandBars-0.3.8.jar",
+    "path": "wandbars-ux-build/build-0.3.8/ExcelWandBars-0.3.8.jar",
+    "bytes": 511977,
+    "sha256": "57b86601a8eafc87e16630cd32e725e9c3d329dd6d5e2cae8976008c0e5a37db"
+  },
+  "install": {
+    "status": "installed live",
+    "note": "Installed live Nov 2, 2026."
+  },
+  "notes": [],
+  "record": {
+    "assembled": "2026-11-03",
+    "assembler": "records catch-up packaging pass (local only; upload by parent)",
+    "files": {
+      "DEPENDENCIES.md": {
+        "sha256": "9aab89fbc6157c64b3936130c87c5d1633761dc732bd9254d167415d19f07689",
+        "bytes": 270
+      },
+      "DEPENDENCIES.sha256": {
+        "sha256": "f703f9f01a032e3705afefd297f2cc2c985679af7b5c2ffbb305e47b6153ab7e",
+        "bytes": 83
+      },
+      "FUNCTIONAL-CHANGE.diff": {
+        "sha256": "abf51a4b90eeb1e7a3d0a26c263d5192eef0591949b73b8d705ed0f29e5a793d",
+        "bytes": 41059
+      },
+      "README.md": {
+        "sha256": "2dd21c9b0e8dfcd42e99d3db1c3cbd3362f1fdcf374ff258ad8d1ad40bde62eb",
+        "bytes": 2023
+      },
+      "SANITIZATION.diff": {
+        "sha256": "0e18ed3feda1d5bcc4456f53a82b67687062548ea6358d2294e3182ed02109a5",
+        "bytes": 609
+      },
+      "SOURCE.md": {
+        "sha256": "c1bca2991943fd527aff1c3b5277f49c0e66a64cd6b64b357c67875bf1b123fe",
+        "bytes": 2681
+      },
+      "TEST-RESULTS.txt": {
+        "sha256": "afb89b31483f6ffc3570d3462cbedea81cca07a27dbb21ca19a6d80fea4a7273",
+        "bytes": 11728
+      },
+      "config.yml": {
+        "sha256": "24f64e9d9c4eeee4a20ce2a28be7e4b67e139046821e6bc177a6aa5b1225c437",
+        "bytes": 23174
+      },
+      "plugin.yml": {
+        "sha256": "2cae617ae0d72e64370d3968624da394a5abea83c53322f28300597068725134",
+        "bytes": 5846
+      },
+      "repack.py": {
+        "sha256": "1cfdda9cd7edbca3791daa1c2a324b73fba210539a506b86d73debf402becfd6",
+        "bytes": 2577
+      },
+      "src/com/winkreyes/excelwandbars/AppliedMagicStage.java": {
+        "sha256": "9bcbd641725234ac3de209a671237949bb2af9d5560e4a049531e9d911426e74",
+        "bytes": 1873
+      },
+      "src/com/winkreyes/excelwandbars/ArrangeHook.java": {
+        "sha256": "92b0b2d413ac4cf00e6dbdbf8712e03dd47cf6bb9d7539f6072723de26a042aa",
+        "bytes": 40525
+      },
+      "src/com/winkreyes/excelwandbars/BedrockForms.java": {
+        "sha256": "9ff2e16b679797dd12f00d147c5fc492d96878d6c18b8af82cc372e922ee3c5b",
+        "bytes": 4185
+      },
+      "src/com/winkreyes/excelwandbars/CompassGuard.java": {
+        "sha256": "09f0e74ae8d1e2a4eb5a8a618561f5269b2aa96a6d404360dcdfb62ae88456e9",
+        "bytes": 6544
+      },
+      "src/com/winkreyes/excelwandbars/CurrentPlayerPracticeProviders.java": {
+        "sha256": "2231ff76cd004bb84d6eab627be4145685ba40a77b10d4d719bbdd94ce56e992",
+        "bytes": 9673
+      },
+      "src/com/winkreyes/excelwandbars/ExcelWandBars.java": {
+        "sha256": "a767d267ab0f35f6c5c5f33e5909821ddd8872291b650f63fac66dbb6d29aaa6",
+        "bytes": 49601
+      },
+      "src/com/winkreyes/excelwandbars/ExitSweep.java": {
+        "sha256": "2a71f895d490eb46742ffc6146bf5ccb226d9f05fd4f4103535f20270fc08c12",
+        "bytes": 5669
+      },
+      "src/com/winkreyes/excelwandbars/FirstObservationCoordinator.java": {
+        "sha256": "3037a415112d843299f841649c8d414ec484de8341e83bf60603c0493240a753",
+        "bytes": 17971
+      },
+      "src/com/winkreyes/excelwandbars/FlexibleInventoryGuard.java": {
+        "sha256": "948c7c4565a1edc4a51f207212aa23e818b4a16430b7f8449533e24aa5c796d1",
+        "bytes": 2975
+      },
+      "src/com/winkreyes/excelwandbars/GeyserHoldHook.java": {
+        "sha256": "0973336da1fc891e0855dbc83bd50218ca5751c9dbe20355961c3e7ce7330a81",
+        "bytes": 6617
+      },
+      "src/com/winkreyes/excelwandbars/GeyserTapHook.java": {
+        "sha256": "3fc450110eb09a8c8d7b6bc194a6d0d6712f66e4f92e9b8b76147ea81bca985d",
+        "bytes": 4149
+      },
+      "src/com/winkreyes/excelwandbars/LegacyWandBaselines.java": {
+        "sha256": "ccfb20c258eb2ae4fe2c130b34041c632f6aa6e7fe3a6c8419436f46d3db093b",
+        "bytes": 2814
+      },
+      "src/com/winkreyes/excelwandbars/LoadoutHook.java": {
+        "sha256": "7bf91aa309d059c5fb92df69cc71b195e2748acc4009ab71bfee8dc3d9023ab3",
+        "bytes": 32697
+      },
+      "src/com/winkreyes/excelwandbars/MagicHook.java": {
+        "sha256": "d645442fae18f09c964af8338b23acd2a93ac190dbaa848947a3069fc965c0ea",
+        "bytes": 78951
+      },
+      "src/com/winkreyes/excelwandbars/ManagedMagicRuntime.java": {
+        "sha256": "4dea159de6e6c96957041ab9835c3666e4cdb0eed39ed668dab8b0cc6708c309",
+        "bytes": 10435
+      },
+      "src/com/winkreyes/excelwandbars/MigrationTouchGuard.java": {
+        "sha256": "d7d0173b8e64ab2aebeaf798787c71faabeba2f1983b703e45a0f243ce3729bd",
+        "bytes": 1885
+      },
+      "src/com/winkreyes/excelwandbars/NativePracticeAdmission.java": {
+        "sha256": "4a63e70d4cf6b1884178429b087f9df450abc72e29ded7abcec19012f8cbcb74",
+        "bytes": 5653
+      },
+      "src/com/winkreyes/excelwandbars/OwnedPracticeLifecycle.java": {
+        "sha256": "b8d5bd9cb68063e3ca802235aac25ceac707565728fc519e9637f72a04624fa1",
+        "bytes": 4766
+      },
+      "src/com/winkreyes/excelwandbars/PagerHook.java": {
+        "sha256": "4fced7229affac205ef40308a3812501284ac742f4baff03feb9d88c3d3276cb",
+        "bytes": 13236
+      },
+      "src/com/winkreyes/excelwandbars/PracticeBootstrap.java": {
+        "sha256": "9152f4f1827ff252ccd6dcdfc083bb1977c45ebdf3b20453417bc9377dd2c5e7",
+        "bytes": 4037
+      },
+      "src/com/winkreyes/excelwandbars/PracticeBootstrapConfig.java": {
+        "sha256": "ae2acd5b07676d149d5d9e41589aca365951263a79b556d010b112cdda9e436a",
+        "bytes": 3337
+      },
+      "src/com/winkreyes/excelwandbars/PracticeDisplayBridge.java": {
+        "sha256": "9b5a2ffb9e730e449d6eff57a02bd0f9ff6141e6941741ffb536fc7d5d58a4ba",
+        "bytes": 2069
+      },
+      "src/com/winkreyes/excelwandbars/PracticeIdentityJournal.java": {
+        "sha256": "930563ad2429163355b58f7b115ba730751b1f880e7c6648f61489093c2806fc",
+        "bytes": 9682
+      },
+      "src/com/winkreyes/excelwandbars/PreparedPracticeFactory.java": {
+        "sha256": "8e8ca4c8ee548d34add5a675b5bd49110f8cbd8003279b24f52b297b1814a5fc",
+        "bytes": 11747
+      },
+      "src/com/winkreyes/excelwandbars/RankUpHook.java": {
+        "sha256": "80f72b7b918c56307373fd0abdf2ee8f633d865f8e199f0458de7449987549b7",
+        "bytes": 48451
+      },
+      "src/com/winkreyes/excelwandbars/RenderedExitGuard.java": {
+        "sha256": "f574c274ca573f262721ab5f87a8cbfa8caa1d92ad24309e6f1d0116fcf5b9f2",
+        "bytes": 724
+      },
+      "src/com/winkreyes/excelwandbars/SharedHistoryAttachment.java": {
+        "sha256": "b6c129ca2da709da006cff47f57f06f3d28cb848b541d1313b1a4cf2e1c705ef",
+        "bytes": 2284
+      },
+      "src/com/winkreyes/excelwandbars/SourceAwarePracticeBinding.java": {
+        "sha256": "11f844010949645f1fe0edbd3159960b065327f532596fa0154ab4c71201c1dd",
+        "bytes": 1906
+      },
+      "src/com/winkreyes/excelwandbars/SpellScreen.java": {
+        "sha256": "0b38f79460007129ae1d64ee41b15f9d4d8bae7fe993f0c96d2698cac75b6620",
+        "bytes": 9026
+      },
+      "src/com/winkreyes/excelwandbars/SpellTipHook.java": {
+        "sha256": "a599b01b6d8228d82b253135b9b346a5f48c0512c1e3378f7801c6f7bacab3ef",
+        "bytes": 8792
+      },
+      "src/com/winkreyes/excelwandbars/StoredNativeRanks.java": {
+        "sha256": "7a13a68363a8f760ee2f52156fd8d2cfbc32c641ad6dea98106535f4963c1d77",
+        "bytes": 2684
+      },
+      "src/com/winkreyes/excelwandbars/StyleHook.java": {
+        "sha256": "e057815467a626cd086715a2cf0f99a718dc38ac02209949470bd149f41a56ec",
+        "bytes": 25646
+      },
+      "src/com/winkreyes/excelwandbars/TapBarHook.java": {
+        "sha256": "1a5a435dc51ae5952360b8b968b95a8d77b150377f253c596d01796ab0893586",
+        "bytes": 60937
+      },
+      "src/com/winkreyes/excelwandbars/TeamUsefulTargets.java": {
+        "sha256": "74915868a5be79279bf0330087c70ef2ed3e9c2d66866fc12976d07cc4ed9522",
+        "bytes": 1330
+      },
+      "src/com/winkreyes/excelwandbars/TipHook.java": {
+        "sha256": "2960858157314844b267be48765de0230642eb266d18eff6253979ed2ceda849",
+        "bytes": 9257
+      },
+      "src/com/winkreyes/excelwandbars/WandSlotHook.java": {
+        "sha256": "87749b25df5eccc84dfde685a06e8a3d3cb89a25330c50f8990ea9f781fd0571",
+        "bytes": 12596
+      },
+      "src/com/winkreyes/excelwandbars/core/ApplyGuard.java": {
+        "sha256": "90a07ba0cfca15837efe35faac6655683bffdaa395ed821a8e7bfc35a5d4c833",
+        "bytes": 1242
+      },
+      "src/com/winkreyes/excelwandbars/core/ArrangePlan.java": {
+        "sha256": "32914e97bf96c2a5bff81b1148976e2096ea352edc7e2c5c199c29f10f975ee8",
+        "bytes": 7199
+      },
+      "src/com/winkreyes/excelwandbars/core/BarLoadout.java": {
+        "sha256": "ac5dbb9653dde0209f28ba5454700b74f36c58303eba42c80707b2ef200e13a7",
+        "bytes": 13403
+      },
+      "src/com/winkreyes/excelwandbars/core/BarPosition.java": {
+        "sha256": "3ceeed14607b90a95304896e579768974449434a12ea98bc8a7a0854487c8d53",
+        "bytes": 2369
+      },
+      "src/com/winkreyes/excelwandbars/core/BarText.java": {
+        "sha256": "94e155cefd94c2b740e78027b4ec076dcd02db4c587fa81777675e957c513652",
+        "bytes": 1161
+      },
+      "src/com/winkreyes/excelwandbars/core/BookHoldPlan.java": {
+        "sha256": "5d8c413a7cd863dccf2d8dec85953e9d1dd6d44442b324ada9ec743432b25d30",
+        "bytes": 6196
+      },
+      "src/com/winkreyes/excelwandbars/core/CompassDedupe.java": {
+        "sha256": "16977859450af599c3b90db2ae07cc9c887844cdd6d5ae303da734e575e3a020",
+        "bytes": 1061
+      },
+      "src/com/winkreyes/excelwandbars/core/ControlsText.java": {
+        "sha256": "92f48bab7d0d53ba44004f94b7907200faa49ca49b06d0f2f1dcd8fc3f7ceb2c",
+        "bytes": 8406
+      },
+      "src/com/winkreyes/excelwandbars/core/CrouchHoldGate.java": {
+        "sha256": "85b9b9aaac48660d34f4e40af1dfced9b7fda88772fce7d1afcc24d06e1d7328",
+        "bytes": 2203
+      },
+      "src/com/winkreyes/excelwandbars/core/DragWritePlan.java": {
+        "sha256": "c17c0d84e9a6a70a6bc70be51a343fcf86c83b5b7774ede4e874926dd9217e9d",
+        "bytes": 9875
+      },
+      "src/com/winkreyes/excelwandbars/core/Durations.java": {
+        "sha256": "bf40b06a5d1fa22509bd533ebad157bb9319f5c36e2d04694741f855978649a1",
+        "bytes": 1043
+      },
+      "src/com/winkreyes/excelwandbars/core/EarnMath.java": {
+        "sha256": "73a8e4ab495d56921d93648ea710485f6e3fdc2db164e2855efc375ae778859f",
+        "bytes": 3299
+      },
+      "src/com/winkreyes/excelwandbars/core/EarnedBarGate.java": {
+        "sha256": "33480d203b1fa9a1f9941355e97fa26fe21ba4666c9a201d5410467e71b5cb86",
+        "bytes": 1950
+      },
+      "src/com/winkreyes/excelwandbars/core/ExitSlotPolicy.java": {
+        "sha256": "ecc66725a564f9bbde18097b8ca3f97074ed4b4e31e904050e318fc2d8ef93cc",
+        "bytes": 644
+      },
+      "src/com/winkreyes/excelwandbars/core/ExitSweepPlan.java": {
+        "sha256": "0b289c1292b01ac576a2d422323302fe593aa0aff146768752a0ee9d516ed881",
+        "bytes": 1861
+      },
+      "src/com/winkreyes/excelwandbars/core/FlexibleBarLayout.java": {
+        "sha256": "4c93cdc9430e7a30c9d779f2a585a394c19f1c28de112c5a05df91b44585dade",
+        "bytes": 2791
+      },
+      "src/com/winkreyes/excelwandbars/core/FlipGate.java": {
+        "sha256": "4590227bb4daf40f06662a15a1b5fb250b9155d9e88d0bfc171323092a1fac41",
+        "bytes": 3243
+      },
+      "src/com/winkreyes/excelwandbars/core/HoldReadPlan.java": {
+        "sha256": "d1a05caecfe57bd6613ea796fd18758b4e84429d4ec5f5031777c11daeb83ce5",
+        "bytes": 2318
+      },
+      "src/com/winkreyes/excelwandbars/core/JoinGuardPlan.java": {
+        "sha256": "e1bbbd5b3a3c8e8926609170d9efb5682d71cbe61d4e4a29e47637d132114865",
+        "bytes": 2541
+      },
+      "src/com/winkreyes/excelwandbars/core/LoadoutText.java": {
+        "sha256": "0145881791a270490bedbfcb88dad23588399bfd60c07a73563c87a3968e1607",
+        "bytes": 9507
+      },
+      "src/com/winkreyes/excelwandbars/core/PageLayout.java": {
+        "sha256": "41aeb41678d99a223a308624eeb45dbb328427ea8e2182b5777d99b31d0c225f",
+        "bytes": 3515
+      },
+      "src/com/winkreyes/excelwandbars/core/PagerPlan.java": {
+        "sha256": "759c1966b277fe4cc7e8979552f16efcff77bcd8d298b08f64b36e58e6af3762",
+        "bytes": 2960
+      },
+      "src/com/winkreyes/excelwandbars/core/PracticeDisplay.java": {
+        "sha256": "b98fe7f2a4902c4155c81c4486acb307dac78b66e1c68536c67c82397953eca5",
+        "bytes": 1531
+      },
+      "src/com/winkreyes/excelwandbars/core/ProgressGate.java": {
+        "sha256": "2560b12831af223f0f0a6de3f94b8d5dc1e1a6fc86c994c9ea81984ad0266be0",
+        "bytes": 1903
+      },
+      "src/com/winkreyes/excelwandbars/core/ProgressText.java": {
+        "sha256": "8a51629e6aec44b12b6dd00d203c1fc8c44de7df13bd5269b7aeab5c8c498165",
+        "bytes": 5980
+      },
+      "src/com/winkreyes/excelwandbars/core/RankLadder.java": {
+        "sha256": "62cac1728e33d986db5cfb522c9dd858915ab9696f534e2cd47daabde49bf9cb",
+        "bytes": 2723
+      },
+      "src/com/winkreyes/excelwandbars/core/RankText.java": {
+        "sha256": "707d7a2771399329f19951b37d336a6b8c42cbc1ef63c6b0ec1ae883d804438e",
+        "bytes": 2263
+      },
+      "src/com/winkreyes/excelwandbars/core/SharedSpAward.java": {
+        "sha256": "596926e05f62205589cc98b2ce94e723d66369a7dd9aa88d208f93b5b54f2136",
+        "bytes": 686
+      },
+      "src/com/winkreyes/excelwandbars/core/SharedSpShadow.java": {
+        "sha256": "f27ae2d5b9f54ee9691cc03f914559836c4dd0e2e6089f0353ca383eca2e3c4a",
+        "bytes": 4781
+      },
+      "src/com/winkreyes/excelwandbars/core/SpellEffects.java": {
+        "sha256": "97bff8d3009526b6252e8e07f117882ebd00ce16e9e8fccbfc97ebaa463186ba",
+        "bytes": 30062
+      },
+      "src/com/winkreyes/excelwandbars/core/SpellFacts.java": {
+        "sha256": "5b9d632fa2d84bf087550d516e7d33bd11dbbcd103d2895402376fe7569ddcaa",
+        "bytes": 2840
+      },
+      "src/com/winkreyes/excelwandbars/core/SpellInfoText.java": {
+        "sha256": "2d96529f58bbe6c7bc65dbe07ae53b290cab4c15b624d43274c0b14cdc1c2838",
+        "bytes": 6824
+      },
+      "src/com/winkreyes/excelwandbars/core/SpellTip.java": {
+        "sha256": "a3ccf5f18dbe744c61cf5fc8361363960813ad44eca7d64d0bee55bc215b087a",
+        "bytes": 4412
+      },
+      "src/com/winkreyes/excelwandbars/core/SpellbookGroups.java": {
+        "sha256": "fd8aa3da1d01d3b29b8a6f13bece87c4d1b7bfc61eac9a5f34db1a409308192f",
+        "bytes": 6168
+      },
+      "src/com/winkreyes/excelwandbars/core/SpellbookText.java": {
+        "sha256": "3cce0554f042c9273d083d9be1385d0cad3d7be4b6a6b0fad8347f6844f4088f",
+        "bytes": 14910
+      },
+      "src/com/winkreyes/excelwandbars/core/StylePrefs.java": {
+        "sha256": "b6d84304089c97a303d1a4c701080a0284d765e36ff553351c2dc4f07f406d19",
+        "bytes": 2456
+      },
+      "src/com/winkreyes/excelwandbars/core/StyleProfile.java": {
+        "sha256": "94072a49550417c16f1ecccc3cde55c77c7fe8baa285a3b99d1c599ad027ca8d",
+        "bytes": 9031
+      },
+      "src/com/winkreyes/excelwandbars/core/TipGate.java": {
+        "sha256": "3a63e7d976a36308735ef8f36de34a9481d398409d669c382c5d338920f6f749",
+        "bytes": 7362
+      },
+      "src/com/winkreyes/excelwandbars/core/UnarmedDragPlan.java": {
+        "sha256": "32d46012ae564e9da9a3e29b1ac74def51356cfd8d01f77ef58e1248eae48901",
+        "bytes": 2401
+      },
+      "src/com/winkreyes/excelwandbars/core/WandSlotPlan.java": {
+        "sha256": "a48215e51f68ac042da17c9bd3cba58fb722c9b9c57a45d783fe14ec034f5f3e",
+        "bytes": 5696
+      },
+      "src/com/winkreyes/excelwandbars/core/WandStyle.java": {
+        "sha256": "d303ee691a6e0c0b8061482aa8d9d4797f3eb426ce0e20254a4c3599af9acb19",
+        "bytes": 5009
+      },
+      "src/wrv/magic/evidence/EvidenceFingerprint.java": {
+        "sha256": "2215b7550e8e11b11caa4b96e27f194a3bcc7fcc8d3d1d8c70575e84203f1c12",
+        "bytes": 2973
+      },
+      "src/wrv/magic/evidence/IssuedUsefulSinkV2.java": {
+        "sha256": "d52c140e97d995343b356c755917208f595babb90ae22e644d626875e6d826aa",
+        "bytes": 4209
+      },
+      "src/wrv/magic/evidence/PracticeConsumerAckV2.java": {
+        "sha256": "e59227f62a95629dbd94aac17c9e3fe8f431cb11a825068f35f086873be6f421",
+        "bytes": 5492
+      },
+      "src/wrv/magic/retention/AuthenticatedWindow.java": {
+        "sha256": "065a38478e859e685fbcf9e93d08803214dcb55f2c1f650371a7f6b24b24b9cb",
+        "bytes": 14260
+      },
+      "src/wrv/magic/retention/BoundedPractice.java": {
+        "sha256": "f76ec7e235648fd39333c9b7a602b332a02ed08e1468003680e4645a9ae36ab5",
+        "bytes": 15965
+      },
+      "src/wrv/sp/route/NativeCastRouteAdapter.java": {
+        "sha256": "4db267733b4e09fcb3754550ac0ea983dab6994d66fcc2e0aa08aec59245d520",
+        "bytes": 6138
+      },
+      "src/wrv/sp/route/SingleSpRoute.java": {
+        "sha256": "411bd735948b1ab868efa451b1c538c63f0159e0e055cb00e01f3e8f3557ae86",
+        "bytes": 5903
+      },
+      "tests/ArrangePlanTest.java": {
+        "sha256": "5178b493a207fdf42966ec436d3ccde97457dcbb97d86fbee33899dfe0638eca",
+        "bytes": 3983
+      },
+      "tests/BarLoadoutNewTest.java": {
+        "sha256": "51f5187220b1a41072c09c907542b572ebf3d2a090ce3255bb92faf8738750b8",
+        "bytes": 3707
+      },
+      "tests/BarPositionTest.java": {
+        "sha256": "7cc84314df03dbc201dc5432355e4c4793812fb83f6328c49f3be3407349dc0d",
+        "bytes": 4550
+      },
+      "tests/BookHoldPlanTest.java": {
+        "sha256": "50a238f4cf525622ec3ad6080e9ea9921032da05076db3ff5d4d3c8c450e20d7",
+        "bytes": 4777
+      },
+      "tests/DragWritePlanTest.java": {
+        "sha256": "d8e620f688f2fa1e07d93fad5cd92883fa81aa078615ff4481605ba31783db2d",
+        "bytes": 5769
+      },
+      "tests/DragWriteTwoTapTest.java": {
+        "sha256": "b012c2b1941fbbfbcd758a6117782cc33cd876b4bf5452c70c99558c1e866f20",
+        "bytes": 3782
+      },
+      "tests/ExitSweepPlanTest.java": {
+        "sha256": "ee8afd191313371c4514794e27bf6b1f0b3ab7aaab2d2bb15ece4b1b4c22213a",
+        "bytes": 2798
+      },
+      "tests/HoldReadPlanTest.java": {
+        "sha256": "d7f4d31747167d92a7e42b465136381dedcbc14714be292f0eae706d0c9e970c",
+        "bytes": 1651
+      },
+      "tests/JoinGuardPlanTest.java": {
+        "sha256": "0a81d97d108ebc516233a0d54a56dfb14911286ad3d7d47c99e86a330b7477d5",
+        "bytes": 2344
+      },
+      "tests/PagerPlanTest.java": {
+        "sha256": "84d8e89aaab410aaf54dd2554ff7f7234dd98cc5fe2dc15cfc777c40e683b990",
+        "bytes": 2319
+      },
+      "tests/SpellbookNewTest.java": {
+        "sha256": "a5f7ecdff5f470bd6c2c79f56e33d8f2864eade775b8061171ba8740ea64e406",
+        "bytes": 2207
+      },
+      "tests/UnarmedDragPlanTest.java": {
+        "sha256": "9e7f8a8688f167d508f2d39180ffd935a1dd1819a100c11b044e0cfef6cd846b",
+        "bytes": 2205
+      }
+    }
+  }
+}
