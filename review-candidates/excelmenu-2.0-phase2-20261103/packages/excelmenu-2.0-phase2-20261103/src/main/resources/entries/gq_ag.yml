@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: gq_ag
+menu: commands_menu
+group: guild_quests
+order: 10
+order-bedrock: 330
+icon: NETHER_STAR
+label: '&a&l/ag'
+lore:
+  - '&7Teleport to the Adventurers Guild'
+  - '&8Guild & Quests'
+action:
+  - '[openguimenu] teleport_confirm_guild'

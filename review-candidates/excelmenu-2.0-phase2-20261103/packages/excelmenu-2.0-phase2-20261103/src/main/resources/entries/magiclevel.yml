@@ -1,0 +1,47 @@
+# ExcelMenu 2.0 registry entry — Magic Level (ExcelMagicLevel), authored
+# for ExcelMagicLevel Phase 3 (SPEC section 6.2) against the Phase 0/1
+# registry schema (EntryLoader ENTRY_KEYS / VARIANT_KEYS verbatim) and
+# validated with the Phase 0 EntryLoader — see ENTRY-VALIDATION.md in
+# this folder.
+#
+# PLACEMENT: plugins/ExcelMenu/entries/magiclevel.yml, then
+# /excelmenu reload. Requires ExcelMenu 2.0 Phase 1 live (the registry);
+# ExcelMagicLevel itself may install before or after — the
+# requires-plugin guard resolves this entry to its default variant
+# with the standard message while ExcelMagicLevel is absent.
+#
+# GROUP NOTE: SPEC 6.2 names group "character"; the shipped registry
+# has no such group (server_menu groups: travel, me, shops, help,
+# settings). The spec's own intent is "sits with Skills & Perks / the
+# mcMMO doors" — those live in group "me" (skills: order 10,
+# order-bedrock 90). This entry therefore uses group "me", ordered
+# immediately after Skills & Perks on both platforms (order 15,
+# order-bedrock 95), which is the spec's placement in the schema that
+# actually shipped.
+id: magiclevel
+menu: server_menu
+group: me
+order: 15
+order-bedrock: 95
+icon: EXPERIENCE_BOTTLE
+label: '&d&lMagic Level'
+lore:
+  - '&7Your path and the seals decide what'
+  - '&7you can cast. Your Magic Level decides'
+  - '&7how strong your casting is.'
+  - '&7Tap to see your Magic Level.'
+action:
+  - '[player] magiclevel'
+requires-plugin: ExcelMagicLevel
+status-placeholder: '%excelmagiclevel_level%'
+states:
+  'default':
+    icon: EXPERIENCE_BOTTLE
+    label: '&d&lMagic Level'
+    lore:
+      - '&7Your path and the seals decide what'
+      - '&7you can cast. Your Magic Level decides'
+      - '&7how strong your casting is.'
+      - '&7Tap to see your Magic Level.'
+    action:
+      - '[player] magiclevel'

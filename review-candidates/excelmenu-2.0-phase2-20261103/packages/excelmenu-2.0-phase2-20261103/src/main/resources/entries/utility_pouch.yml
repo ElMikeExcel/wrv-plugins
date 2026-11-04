@@ -1,0 +1,15 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: utility_pouch
+menu: server_menu
+group: me
+order: 60
+order-bedrock: 30
+icon: CHEST
+label: '&6Utility Pouch'
+lore:
+  - '&7Park your Server Menu compass'
+  - '&7and your Magic wand here.'
+action:
+  - '[player] pouch'
+  - '[close]'

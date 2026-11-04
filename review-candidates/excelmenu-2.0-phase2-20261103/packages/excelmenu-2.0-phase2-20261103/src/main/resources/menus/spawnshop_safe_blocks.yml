@@ -1,0 +1,64 @@
+# ExcelMenu definition: spawnshop_safe_blocks
+# Added 2026-10-22 (ExcelMenu 0.1.3): the Safe Blocks shelf from the
+# ExcelShops catalog wave (light_block + petrified_slab) joins the
+# /shop category flow. bedrock-render: chest is the point of this
+# menu: these are cosmetic blocks a player cannot judge from a
+# name, so Bedrock players get the chest GUI with real block icons
+# instead of a text form. Same items, prices and purchase flow
+# (excelshop browse) as every other category, both platforms.
+format: 1
+title: '&e$%vault_eco_balance_2dp% &8| &2Safe Blocks'
+size: 9
+type: dispenser
+bedrock-render: chest
+update-interval: 1
+items:
+  light_block:
+    material: LIGHT
+    slot: 0
+    amount: 4
+    name: '&a&l4 Light Blocks (Level 15)'
+    lore:
+    - '&7Invisible blocks that glow at'
+    - '&7full brightness - light, no lamp.'
+    - '&eBundle price: &f$300'
+    - '&8Tap to choose quantity. No charge yet.'
+    clicks:
+      left:
+      - '[player] excelshop browse light_block'
+      right:
+      - '[player] excelshop browse light_block'
+  petrified_slab:
+    material: PETRIFIED_OAK_SLAB
+    slot: 1
+    amount: 64
+    name: '&a&l64 Petrified Oak Slabs'
+    lore:
+    - '&7Looks like oak, behaves like stone:'
+    - '&7fireproof. Needs a pickaxe to mine.'
+    - '&eBundle price: &f$240'
+    - '&8Tap to choose quantity. No charge yet.'
+    clicks:
+      left:
+      - '[player] excelshop browse petrified_slab'
+      right:
+      - '[player] excelshop browse petrified_slab'
+  balance:
+    material: GOLD_NUGGET
+    slot: 2
+    update: true
+    name: '&e&lCurrent balance: &f$%vault_eco_balance_2dp%'
+    lore:
+    - '&7Tap an item to review your purchase.'
+    - '&7Browsing does not spend money.'
+  back:
+    material: ARROW
+    slot: 3
+    name: '&c&lBack to Categories'
+    clicks:
+      left:
+      - '[openguimenu] spawnshop'
+      right:
+      - '[openguimenu] spawnshop'
+
+# ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
