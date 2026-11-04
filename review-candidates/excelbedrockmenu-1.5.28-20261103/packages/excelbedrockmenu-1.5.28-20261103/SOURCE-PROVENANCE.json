@@ -1,0 +1,94 @@
+{
+  "plugin": "ExcelBedrockMenu",
+  "version": "1.5.28",
+  "local_build_folder": "excelbedrockmenu-1.5.28",
+  "jar": {
+    "file": "ExcelBedrockMenu-1.5.28.jar",
+    "path": "excelbedrockmenu-1.5.28/ExcelBedrockMenu-1.5.28.jar",
+    "bytes": 41839,
+    "sha256": "b9a8abd44fbb82b4a05923e362df6d8e0e9cc8b80a9fdf1d6dcbd47808cb1dc9"
+  },
+  "install": {
+    "status": "installed live, since retired",
+    "note": "Installed live Nov 1, 2026; retired Nov 2, 2026 by the Menu 2.0 Phase 2 unification swap."
+  },
+  "notes": [],
+  "record": {
+    "assembled": "2026-11-03",
+    "assembler": "records catch-up packaging pass (local only; upload by parent)",
+    "files": {
+      "CHANGELOG-1.5.28.md": {
+        "sha256": "3eba374e6b88962355b76b77c1e5586f55f90255ca624982915bb75c4311f4a2",
+        "bytes": 1367
+      },
+      "DEPENDENCIES.md": {
+        "sha256": "882af8b78ae654c1b91d6e9e314bfc7de3bfbf7a875c320e72c1921d6eee4906",
+        "bytes": 359
+      },
+      "DEPENDENCIES.sha256": {
+        "sha256": "c97d3d625126351371df2949ba0a37a6f02c82804e4f261b83524f9fb486fe66",
+        "bytes": 136
+      },
+      "FUNCTIONAL-CHANGE.diff": {
+        "sha256": "986730e2f15e8aa3444eff393a85e288078417f36082702acb0fe2942f38de40",
+        "bytes": 197
+      },
+      "README.md": {
+        "sha256": "b47dbe45b71ec2c0ca3ac74df3e72eb1d7d65bd69d3dd1e84b29a00f9bdf4734",
+        "bytes": 1922
+      },
+      "SANITIZATION.diff": {
+        "sha256": "322b47403aa4e51855fc150c90bf0fd8be7d204f9e13b2bc9ab2ca05230eda81",
+        "bytes": 447
+      },
+      "SOURCE.md": {
+        "sha256": "b3c8e9a974cbc873cbaaab1d1fe14ab3f80f654591a7d77d670744ef6a508654",
+        "bytes": 6798
+      },
+      "TEST-RESULTS.txt": {
+        "sha256": "3214a5a2b37ae5be2b81ba83d458b1be83d31fc2c3d4b3c4264608e988ad90bc",
+        "bytes": 2290
+      },
+      "build-offline.sh": {
+        "sha256": "0acffafea2043e14487b99c7e20825876442b34c5cb64c39257f03693c518993",
+        "bytes": 865
+      },
+      "config.yml": {
+        "sha256": "d3918a814defae678913984933410a4edcf58fb3089bfec92410fc91c4de5674",
+        "bytes": 157
+      },
+      "plugin.yml": {
+        "sha256": "a38b4dc34805fa517f61041391d3b93bd0989b56ce5a3f0c72ae4f2e2f8f9215",
+        "bytes": 879
+      },
+      "src/com/winkreyes/excelbedrockmenu/ChildproofMenu.java": {
+        "sha256": "245183253ebd3d24f6d376707db87e8fc4ad04c7d04e53755a643846358293bf",
+        "bytes": 12378
+      },
+      "src/com/winkreyes/excelbedrockmenu/ClickStats.java": {
+        "sha256": "7f43090f695b335d3f4863318357c48d672eb092e280a480476ed43be32ff349",
+        "bytes": 1253
+      },
+      "src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java": {
+        "sha256": "c1eefd7664cd3d09074231b2e3e0378887e7f5688f96406c6f245fc7f16be2d0",
+        "bytes": 72435
+      },
+      "src/com/winkreyes/excelbedrockmenu/GeyserForms.java": {
+        "sha256": "3985b882425e3ae21ae3d3908bce9c624d59a6171a03590b02fb2df4cb037920",
+        "bytes": 14711
+      },
+      "src/com/winkreyes/excelbedrockmenu/TeleportConfirmationGate.java": {
+        "sha256": "1a586e43d69b8206ee07382f51291c35a611f36e5699d125916fe32e8a0ec1f1",
+        "bytes": 1219
+      },
+      "src/com/winkreyes/excelbedrockmenu/TeleportMenu.java": {
+        "sha256": "17ca65bf958e7b4d7a59510e6623b9e350aad95b04ec5382f9a0ad5fbc626bea",
+        "bytes": 10752
+      },
+      "tests/AdapterLogicTest.java": {
+        "sha256": "5a7f4c8a944f916997aa55e0f9247d8afc760e10fe2d5c8c8ba7dc3045c50f2d",
+        "bytes": 4827
+      }
+    }
+  }
+}

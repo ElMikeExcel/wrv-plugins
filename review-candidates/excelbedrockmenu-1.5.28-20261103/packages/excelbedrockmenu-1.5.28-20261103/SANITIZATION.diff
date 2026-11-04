@@ -1,0 +1,8 @@
+SANITIZATION SCAN — REVIEWED, NO SENSITIVE CONTENT
+Package: excelbedrockmenu-1.5.28-20261103
+
+Scanned every file for IPv4 addresses (excluding loopback/broadcast literals), email addresses, private-key blocks, and credential assignments. All pattern hits were reviewed by hand:
+
+The 4 IPv4-pattern hits are the dotted version string 25.0.4.1 (Temurin JDK) in build-offline.sh and SOURCE.md — not a network address.
+
+No redactions were needed.
