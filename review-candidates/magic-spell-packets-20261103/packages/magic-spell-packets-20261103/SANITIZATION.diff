@@ -1,0 +1,10 @@
+SANITIZATION SCAN — REVIEWED, ONE REDACTION APPLIED
+Package: magic-spell-packets-20261103
+
+Scanned for IPv4 addresses, email addresses, private-key blocks, and credential assignments.
+
+REDACTION (applied during packaging, Nov 3, 2026): the server's public host IP (the Shockbyte endpoint the public DuckDNS join address resolves to) appeared once in each of two boot logs and was replaced with SERVER-IP-REDACTED, per the standing rule that records carry no IPs:
+  packet-3/install-boot-20261102.log: 1 occurrence(s) redacted
+  familiar-cat-cd/install-boot-20261103.log: 1 occurrence(s) redacted
+
+FALSE POSITIVES (reviewed, not sensitive): the remaining IPv4-pattern hits are dotted software version strings in the same boot logs — 25.0.4.1 (Temurin JDK), 5.2.6.3, 1.6.1.2 (CMILib), 1.4.5.0 — not network addresses. No email addresses, private keys, or credential values were found.

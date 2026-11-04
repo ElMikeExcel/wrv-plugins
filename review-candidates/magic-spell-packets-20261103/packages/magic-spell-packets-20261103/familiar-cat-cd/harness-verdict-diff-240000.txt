@@ -1,0 +1,195 @@
+Normalized verdict diff, baseline packet #3 vs prepared 240000 (file-heading paths and run-exit labels normalized):
+--- baseline-packet3
++++ prepared-240000
+@@ -35,7 +35,7 @@
+ | chainlightning|3 | 1 sustainability | mana 75, cooldown 20000 ms -> drain 3.8/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+ | dash | 1 sustainability | mana 100, cooldown 5000 ms -> drain 20.0/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+ | evade | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+-| familiar | 2 summon caps | spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2; tamed=False; mana 50, cooldown 300000.0 ms; undo=20000; NO cap key anywhere in parameters or spawn actions | MEDIUM | persistent entities accumulate with no concurrent cap in config |
++| familiar | 2 summon caps | spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2; tamed=False; mana 50, cooldown 240000.0 ms; undo=20000; NO cap key anywhere in parameters or spawn actions | MEDIUM | persistent entities accumulate with no concurrent cap in config |
+ | fling | 1 sustainability | mana 60, cooldown 5000 ms -> drain 12.0/s <= regen 15/s at pool 100 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+ | fling (family) | 4 cooldown floors | cooldown across tiers: fling 5000 ms, fling|2 2000 ms, fling|3 1000 ms, fling|4 200 ms | MEDIUM | cooldown shrinks 25x across tiers (5000 ms -> 200 ms); top tier is a different spell in practice |
+ | fling|4 | 4 cooldown floors | mana 120, cooldown 200 ms | MEDIUM | sub-second cooldown at this tier: up to 5 casts/sec before mana is consulted |
+@@ -121,8 +121,8 @@
+ | boon|4 | 5 toggle/stacking | activation mana 5, upkeep 0.25 mana/s <= regen 5/s at pool 60 | LOW | channel never mana-starves: the effect can be held indefinitely once activated; only its reserve/duration mechanics limit it |
+ | bubble | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+ | bubble|2 | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+-| cat | 1 sustainability | mana 30, cooldown 300000 ms -> drain 0.1/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+-| cat | 2 summon caps | spawns cat; tamed=True; mana 30, cooldown 300000.0 ms; undo=None; NO cap key anywhere in parameters or spawn actions | LOW | pet/utility summons accumulate with no concurrent cap in config |
++| cat | 1 sustainability | mana 30, cooldown 240000 ms -> drain 0.1/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
++| cat | 2 summon caps | spawns cat; tamed=True; mana 30, cooldown 240000.0 ms; undo=None; NO cap key anywhere in parameters or spawn actions | LOW | pet/utility summons accumulate with no concurrent cap in config |
+ | chainlightning | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+ | chainlightning|2 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+ | chainlightning|3 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+@@ -134,7 +134,7 @@
+ | dash | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+ | eat_food | 1 sustainability | mana 0, cooldown 120000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+ | extinguish | 1 sustainability | mana 30, cooldown 8000 ms -> drain 3.8/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+-| familiar | 1 sustainability | mana 50, cooldown 300000 ms -> drain 0.2/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
++| familiar | 1 sustainability | mana 50, cooldown 240000 ms -> drain 0.2/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+ | feed | 1 sustainability | mana 30, cooldown 60000 ms -> drain 0.5/s <= regen 5/s at pool 60 | LOW | sustained healing at max rate is mana-free at this pool tier |
+ | flare | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+ | flare|2 | 1 sustainability | mana 10, cooldown 1500 ms -> drain 6.7/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+@@ -236,17 +236,17 @@
+ ### Summon spells seen (check 2 detail)
+ - cure|5: spawns villager; tamed=False; mana 20; cooldown 12000.0 ms; undo None; conversion=True; cap keys: NONE
+ - piggyback: spawns skeleton; pig; tamed=False; mana 100; cooldown 20000.0 ms; undo 30000; conversion=False; cap keys: NONE
+-- familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2; tamed=False; mana 50; cooldown 300000.0 ms; undo 20000; conversion=False; cap keys: NONE
++- familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2; tamed=False; mana 50; cooldown 240000.0 ms; undo 20000; conversion=False; cap keys: NONE
+ - wolf: spawns wolf; tamed=True; mana 100; cooldown 60000.0 ms; undo None; conversion=False; cap keys: [('max_wolves', 5)]
+-- cat: spawns cat; tamed=True; mana 30; cooldown 300000.0 ms; undo None; conversion=False; cap keys: NONE
++- cat: spawns cat; tamed=True; mana 30; cooldown 240000.0 ms; undo None; conversion=False; cap keys: NONE
+ - anvil: spawns falling_block; tamed=False; mana 100; cooldown 20000.0 ms; undo 30000; conversion=False; cap keys: NONE
+ 
+ ### Behavior-shape detail (checks 8-11)
+ - bowpull: no references anywhere in this file
+ - pacing: piggyback: spawns skeleton; pig x2/cast; mana 100, cooldown 20000.0 ms, undo 30000 -> sustained ~6.00 spawns/min at pool 100 (packet-#1 pace line: ~1/min)
+-- pacing: familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2 x1/cast; mana 50, cooldown 300000.0 ms, undo 20000 -> sustained ~0.20 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
++- pacing: familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2 x1/cast; mana 50, cooldown 240000.0 ms, undo 20000 -> sustained ~0.25 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
+ - pacing: wolf: spawns wolf x1/cast; mana 100, cooldown 60000.0 ms, undo None -> sustained ~1.00 spawns/min at pool 100 (packet-#1 pace line: ~1/min)
+-- pacing: cat: spawns cat x1/cast; mana 30, cooldown 300000.0 ms, undo None -> sustained ~0.20 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
++- pacing: cat: spawns cat x1/cast; mana 30, cooldown 240000.0 ms, undo None -> sustained ~0.25 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
+ 
+ ### MANUAL check 3 (summon semantics in Java, not config) — do not skip
+ - wolf: spell class=WolfSpell; cap keys in config: [('max_wolves', 5)] — cap behaviour must be verified in the class/rig, config alone cannot settle it.
+@@ -359,10 +359,10 @@
+ - hat: value-touching actions []; mana 30, cooldown 10000.0 ms; earns 1 SP/cast -> up to 6 SP/min at max rate (before Magic's earns cooldown)
+ - hat|2: value-touching actions []; mana 30, cooldown 10000.0 ms; earns 1 SP/cast -> up to 6 SP/min at max rate (before Magic's earns cooldown)
+ - hat|3: value-touching actions []; mana 30, cooldown 10000.0 ms; earns 1 SP/cast -> up to 6 SP/min at max rate (before Magic's earns cooldown)
+-- familiar: value-touching actions ['SpawnEntity']; mana 50, cooldown 300000.0 ms
++- familiar: value-touching actions ['SpawnEntity']; mana 50, cooldown 240000.0 ms
+ - tame: value-touching actions []; mana 100, cooldown 30000.0 ms; earns 2 SP/cast -> up to 4 SP/min at max rate (before Magic's earns cooldown)
+ - wolf: value-touching actions []; mana 100, cooldown 60000.0 ms; earns 2 SP/cast -> up to 2 SP/min at max rate (before Magic's earns cooldown)
+-- cat: value-touching actions ['SpawnEntity']; mana 30, cooldown 300000.0 ms; earns 2 SP/cast -> up to 0 SP/min at max rate (before Magic's earns cooldown)
++- cat: value-touching actions ['SpawnEntity']; mana 30, cooldown 240000.0 ms; earns 2 SP/cast -> up to 0 SP/min at max rate (before Magic's earns cooldown)
+ - mend: value-touching actions []; mana 4, cooldown None ms
+ - mend|2: value-touching actions []; mana 6, cooldown None ms
+ - mend|3: value-touching actions []; mana 8, cooldown None ms
+@@ -435,7 +435,7 @@
+ | dash | 1 sustainability | mana 100, cooldown 5000 ms -> drain 20.0/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+ | earth | 4 cooldown floors | mana 20, NO cooldown key in config | MEDIUM | nothing paces this spell except mana |
+ | evade | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+-| familiar | 2 summon caps | spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2; tamed=False; mana 50, cooldown 300000.0 ms; undo=20000; NO cap key anywhere in parameters or spawn actions | MEDIUM | persistent entities accumulate with no concurrent cap in config |
++| familiar | 2 summon caps | spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2; tamed=False; mana 50, cooldown 240000.0 ms; undo=20000; NO cap key anywhere in parameters or spawn actions | MEDIUM | persistent entities accumulate with no concurrent cap in config |
+ | fling | 1 sustainability | mana 60, cooldown 5000 ms -> drain 12.0/s <= regen 15/s at pool 100 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+ | fling (family) | 4 cooldown floors | cooldown across tiers: fling 5000 ms, fling|2 2000 ms, fling|3 1000 ms, fling|4 200 ms | MEDIUM | cooldown shrinks 25x across tiers (5000 ms -> 200 ms); top tier is a different spell in practice |
+ | fling|4 | 4 cooldown floors | mana 120, cooldown 200 ms | MEDIUM | sub-second cooldown at this tier: up to 5 casts/sec before mana is consulted |
+@@ -531,8 +531,8 @@
+ | boon|4 | 5 toggle/stacking | activation mana 5, upkeep 0.25 mana/s <= regen 5/s at pool 60 | LOW | channel never mana-starves: the effect can be held indefinitely once activated; only its reserve/duration mechanics limit it |
+ | bubble | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+ | bubble|2 | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+-| cat | 1 sustainability | mana 30, cooldown 300000 ms -> drain 0.1/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+-| cat | 2 summon caps | spawns cat; tamed=True; mana 30, cooldown 300000.0 ms; undo=None; NO cap key anywhere in parameters or spawn actions | LOW | pet/utility summons accumulate with no concurrent cap in config |
++| cat | 1 sustainability | mana 30, cooldown 240000 ms -> drain 0.1/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
++| cat | 2 summon caps | spawns cat; tamed=True; mana 30, cooldown 240000.0 ms; undo=None; NO cap key anywhere in parameters or spawn actions | LOW | pet/utility summons accumulate with no concurrent cap in config |
+ | chainlightning | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (4/42 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+ | chainlightning|2 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (4/42 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+ | chainlightning|3 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (4/42 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+@@ -549,7 +549,7 @@
+ | day | 1 sustainability | mana 50, cooldown 1.8e+06 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+ | eat_food | 1 sustainability | mana 0, cooldown 120000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+ | extinguish | 1 sustainability | mana 30, cooldown 8000 ms -> drain 3.8/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+-| familiar | 1 sustainability | mana 50, cooldown 300000 ms -> drain 0.2/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
++| familiar | 1 sustainability | mana 50, cooldown 240000 ms -> drain 0.2/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+ | feed | 1 sustainability | mana 30, cooldown 60000 ms -> drain 0.5/s <= regen 5/s at pool 60 | LOW | sustained healing at max rate is mana-free at this pool tier |
+ | flare | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+ | flare|2 | 1 sustainability | mana 10, cooldown 1500 ms -> drain 6.7/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+@@ -682,17 +682,17 @@
+ ### Summon spells seen (check 2 detail)
+ - cure|5: spawns villager; tamed=False; mana 20; cooldown 12000.0 ms; undo None; conversion=True; cap keys: NONE
+ - piggyback: spawns skeleton; pig; tamed=False; mana 100; cooldown 20000.0 ms; undo 30000; conversion=False; cap keys: NONE
+-- familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2; tamed=False; mana 50; cooldown 300000.0 ms; undo 20000; conversion=False; cap keys: NONE
++- familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2; tamed=False; mana 50; cooldown 240000.0 ms; undo 20000; conversion=False; cap keys: NONE
+ - wolf: spawns wolf; tamed=True; mana 100; cooldown 60000.0 ms; undo None; conversion=False; cap keys: [('max_wolves', 5)]
+-- cat: spawns cat; tamed=True; mana 30; cooldown 300000.0 ms; undo None; conversion=False; cap keys: NONE
++- cat: spawns cat; tamed=True; mana 30; cooldown 240000.0 ms; undo None; conversion=False; cap keys: NONE
+ - anvil: spawns falling_block; tamed=False; mana 100; cooldown 20000.0 ms; undo 30000; conversion=False; cap keys: NONE
+ 
+ ### Behavior-shape detail (checks 8-11)
+ - bowpull: no references anywhere in this file
+ - pacing: piggyback: spawns skeleton; pig x2/cast; mana 100, cooldown 20000.0 ms, undo 30000 -> sustained ~6.00 spawns/min at pool 100 (packet-#1 pace line: ~1/min)
+-- pacing: familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2 x1/cast; mana 50, cooldown 300000.0 ms, undo 20000 -> sustained ~0.20 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
++- pacing: familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2 x1/cast; mana 50, cooldown 240000.0 ms, undo 20000 -> sustained ~0.25 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
+ - pacing: wolf: spawns wolf x1/cast; mana 100, cooldown 60000.0 ms, undo None -> sustained ~1.00 spawns/min at pool 100 (packet-#1 pace line: ~1/min)
+-- pacing: cat: spawns cat x1/cast; mana 30, cooldown 300000.0 ms, undo None -> sustained ~0.20 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
++- pacing: cat: spawns cat x1/cast; mana 30, cooldown 240000.0 ms, undo None -> sustained ~0.25 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
+ 
+ ### MANUAL check 3 (summon semantics in Java, not config) — do not skip
+ - wolf: spell class=WolfSpell; cap keys in config: [('max_wolves', 5)] — cap behaviour must be verified in the class/rig, config alone cannot settle it.
+@@ -806,10 +806,10 @@
+ - hat: value-touching actions []; mana 30, cooldown 10000.0 ms; earns 1 SP/cast -> up to 6 SP/min at max rate (before Magic's earns cooldown)
+ - hat|2: value-touching actions []; mana 30, cooldown 10000.0 ms; earns 1 SP/cast -> up to 6 SP/min at max rate (before Magic's earns cooldown)
+ - hat|3: value-touching actions []; mana 30, cooldown 10000.0 ms; earns 1 SP/cast -> up to 6 SP/min at max rate (before Magic's earns cooldown)
+-- familiar: value-touching actions ['SpawnEntity']; mana 50, cooldown 300000.0 ms
++- familiar: value-touching actions ['SpawnEntity']; mana 50, cooldown 240000.0 ms
+ - tame: value-touching actions []; mana 100, cooldown 30000.0 ms; earns 2 SP/cast -> up to 4 SP/min at max rate (before Magic's earns cooldown)
+ - wolf: value-touching actions []; mana 100, cooldown 60000.0 ms; earns 2 SP/cast -> up to 2 SP/min at max rate (before Magic's earns cooldown)
+-- cat: value-touching actions ['SpawnEntity']; mana 30, cooldown 300000.0 ms; earns 2 SP/cast -> up to 0 SP/min at max rate (before Magic's earns cooldown)
++- cat: value-touching actions ['SpawnEntity']; mana 30, cooldown 240000.0 ms; earns 2 SP/cast -> up to 0 SP/min at max rate (before Magic's earns cooldown)
+ - platform: value-touching actions []; mana 60, cooldown 5000.0 ms; earns 2 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+ - platform|2: value-touching actions []; mana 60, cooldown 5000.0 ms; earns 2 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+ - platform|3: value-touching actions []; mana 60, cooldown 5000.0 ms; earns 2 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+@@ -912,7 +912,7 @@
+ | dash | 1 sustainability | mana 100, cooldown 5000 ms -> drain 20.0/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+ | earth | 4 cooldown floors | mana 20, NO cooldown key in config | MEDIUM | nothing paces this spell except mana |
+ | evade | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+-| familiar | 2 summon caps | spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2; tamed=False; mana 50, cooldown 300000.0 ms; undo=20000; NO cap key anywhere in parameters or spawn actions | MEDIUM | persistent entities accumulate with no concurrent cap in config |
++| familiar | 2 summon caps | spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2; tamed=False; mana 50, cooldown 240000.0 ms; undo=20000; NO cap key anywhere in parameters or spawn actions | MEDIUM | persistent entities accumulate with no concurrent cap in config |
+ | fling | 1 sustainability | mana 60, cooldown 5000 ms -> drain 12.0/s <= regen 15/s at pool 100 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+ | fling (family) | 4 cooldown floors | cooldown across tiers: fling 5000 ms, fling|2 2000 ms, fling|3 1000 ms, fling|4 200 ms | MEDIUM | cooldown shrinks 25x across tiers (5000 ms -> 200 ms); top tier is a different spell in practice |
+ | fling|4 | 4 cooldown floors | mana 120, cooldown 200 ms | MEDIUM | sub-second cooldown at this tier: up to 5 casts/sec before mana is consulted |
+@@ -1008,8 +1008,8 @@
+ | boon|4 | 5 toggle/stacking | activation mana 5, upkeep 0.25 mana/s <= regen 5/s at pool 60 | LOW | channel never mana-starves: the effect can be held indefinitely once activated; only its reserve/duration mechanics limit it |
+ | bubble | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+ | bubble|2 | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+-| cat | 1 sustainability | mana 30, cooldown 300000 ms -> drain 0.1/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+-| cat | 2 summon caps | spawns cat; tamed=True; mana 30, cooldown 300000.0 ms; undo=None; NO cap key anywhere in parameters or spawn actions | LOW | pet/utility summons accumulate with no concurrent cap in config |
++| cat | 1 sustainability | mana 30, cooldown 240000 ms -> drain 0.1/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
++| cat | 2 summon caps | spawns cat; tamed=True; mana 30, cooldown 240000.0 ms; undo=None; NO cap key anywhere in parameters or spawn actions | LOW | pet/utility summons accumulate with no concurrent cap in config |
+ | chainlightning | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (4/42 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+ | chainlightning|2 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (4/42 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+ | chainlightning|3 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (4/42 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+@@ -1026,7 +1026,7 @@
+ | day | 1 sustainability | mana 50, cooldown 1.8e+06 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+ | eat_food | 1 sustainability | mana 0, cooldown 120000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+ | extinguish | 1 sustainability | mana 30, cooldown 8000 ms -> drain 3.8/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+-| familiar | 1 sustainability | mana 50, cooldown 300000 ms -> drain 0.2/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
++| familiar | 1 sustainability | mana 50, cooldown 240000 ms -> drain 0.2/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+ | feed | 1 sustainability | mana 30, cooldown 60000 ms -> drain 0.5/s <= regen 5/s at pool 60 | LOW | sustained healing at max rate is mana-free at this pool tier |
+ | flare | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+ | flare|2 | 1 sustainability | mana 10, cooldown 1500 ms -> drain 6.7/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+@@ -1159,17 +1159,17 @@
+ ### Summon spells seen (check 2 detail)
+ - cure|5: spawns villager; tamed=False; mana 20; cooldown 12000.0 ms; undo None; conversion=True; cap keys: NONE
+ - piggyback: spawns skeleton; pig; tamed=False; mana 100; cooldown 20000.0 ms; undo 30000; conversion=False; cap keys: NONE
+-- familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2; tamed=False; mana 50; cooldown 300000.0 ms; undo 20000; conversion=False; cap keys: NONE
++- familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2; tamed=False; mana 50; cooldown 240000.0 ms; undo 20000; conversion=False; cap keys: NONE
+ - wolf: spawns wolf; tamed=True; mana 100; cooldown 60000.0 ms; undo None; conversion=False; cap keys: [('max_wolves', 5)]
+-- cat: spawns cat; tamed=True; mana 30; cooldown 300000.0 ms; undo None; conversion=False; cap keys: NONE
++- cat: spawns cat; tamed=True; mana 30; cooldown 240000.0 ms; undo None; conversion=False; cap keys: NONE
+ - anvil: spawns falling_block; tamed=False; mana 100; cooldown 20000.0 ms; undo 30000; conversion=False; cap keys: NONE
+ 
+ ### Behavior-shape detail (checks 8-11)
+ - bowpull: no references anywhere in this file
+ - pacing: piggyback: spawns skeleton; pig x2/cast; mana 100, cooldown 20000.0 ms, undo 30000 -> sustained ~6.00 spawns/min at pool 100 (packet-#1 pace line: ~1/min)
+-- pacing: familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2 x1/cast; mana 50, cooldown 300000.0 ms, undo 20000 -> sustained ~0.20 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
++- pacing: familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2 x1/cast; mana 50, cooldown 240000.0 ms, undo 20000 -> sustained ~0.25 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
+ - pacing: wolf: spawns wolf x1/cast; mana 100, cooldown 60000.0 ms, undo None -> sustained ~1.00 spawns/min at pool 100 (packet-#1 pace line: ~1/min)
+-- pacing: cat: spawns cat x1/cast; mana 30, cooldown 300000.0 ms, undo None -> sustained ~0.20 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
++- pacing: cat: spawns cat x1/cast; mana 30, cooldown 240000.0 ms, undo None -> sustained ~0.25 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
+ 
+ ### MANUAL check 3 (summon semantics in Java, not config) — do not skip
+ - wolf: spell class=WolfSpell; cap keys in config: [('max_wolves', 5)] — cap behaviour must be verified in the class/rig, config alone cannot settle it.
+@@ -1284,10 +1284,10 @@
+ - hat: value-touching actions []; mana 30, cooldown 10000.0 ms; earns 1 SP/cast -> up to 6 SP/min at max rate (before Magic's earns cooldown)
+ - hat|2: value-touching actions []; mana 30, cooldown 10000.0 ms; earns 1 SP/cast -> up to 6 SP/min at max rate (before Magic's earns cooldown)
+ - hat|3: value-touching actions []; mana 30, cooldown 10000.0 ms; earns 1 SP/cast -> up to 6 SP/min at max rate (before Magic's earns cooldown)
+-- familiar: value-touching actions ['SpawnEntity']; mana 50, cooldown 300000.0 ms
++- familiar: value-touching actions ['SpawnEntity']; mana 50, cooldown 240000.0 ms
+ - tame: value-touching actions []; mana 100, cooldown 30000.0 ms; earns 2 SP/cast -> up to 4 SP/min at max rate (before Magic's earns cooldown)
+ - wolf: value-touching actions []; mana 100, cooldown 60000.0 ms; earns 2 SP/cast -> up to 2 SP/min at max rate (before Magic's earns cooldown)
+-- cat: value-touching actions ['SpawnEntity']; mana 30, cooldown 300000.0 ms; earns 2 SP/cast -> up to 0 SP/min at max rate (before Magic's earns cooldown)
++- cat: value-touching actions ['SpawnEntity']; mana 30, cooldown 240000.0 ms; earns 2 SP/cast -> up to 0 SP/min at max rate (before Magic's earns cooldown)
+ - platform: value-touching actions []; mana 60, cooldown 5000.0 ms; earns 2 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+ - platform|2: value-touching actions []; mana 60, cooldown 5000.0 ms; earns 2 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+ - platform|3: value-touching actions []; mana 60, cooldown 5000.0 ms; earns 2 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)

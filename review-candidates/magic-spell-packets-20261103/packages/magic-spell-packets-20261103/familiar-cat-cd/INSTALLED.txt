@@ -1,0 +1,24 @@
+INSTALLED — Magic spells.yml: familiar + cat cooldowns 300000 → 240000 (four-destination set)
+Installed Nov 3, 2026 by the wrv-install-failsafe 10:03 AM CST run (browser window 10:09–10:37 AM CST, panel "Michael's Server" 2602e828-7192-4a75-add8-74861e5632d7).
+
+Marker protocol: run-start check clean (no marker); own marker created 10:08:21 AM CST; re-checks before panel Shut Down and before panel Start found only this run's marker (unchanged) — no coordination abort. Marker deleted at window close.
+
+Emptiness gate: console list 0/10 at 10:06:30 AM and 10:07:44 AM CST; pre-swap re-check 0/10 at 10:19:56 AM; pre-shutdown 0/10 at 10:29:54 AM; post-boot 0/10 at 10:36:20 AM.
+
+BACKUP FIRST: Shockbyte backup "Magic spells pre-familiar-cd 20261103" (11/03/2026 10:11 AM Chicago, Manual, 6.8 GB, verified completed in the backup list before any swap).
+
+Gate hashes (parent sha256sum, browser_downloads/sess-2663434592 downloads #0–#3): live plugins/Magic/spells.yml a7fcf51e342d62db74340b19e4ee4e92dc37e365ed79ecfdfdbdd48ebe0ad772 (139,962 B); stage3 template a7fcf51e… (same, 139,962 B); stage4 9e4024a8113faf1812c3908daf02a2ee411df388aa1178db2ff95a237e699969 (178,203 B); stage5 e124568524103de8723f190a19efa1d9bea112dfe6a6e3456913bb594da7de6d (178,203 B) — all EXACT to the packet #3 read-back gates.
+
+In-place backups: spells.yml.bak-20261103-prefamiliar-cd verified in each of the four destination folders before replacement.
+
+Placed (download-back parent-hashed EXACT, sess-2663434592 downloads #4–#7): live + stage3 5c340235a002134c9a9e051f1a3dc4580cc328bdba33432d9a6d5fb617022b69 (139,962 B); stage4 14fc6112332c92d08b3bd54db8f21a6ca59a8836f5cf1ce672a49f4fde4725ea (178,203 B); stage5 bf30449cd4ecd1afbc9e7db0f7d70c9b7174b64e2760f648f29c33480005b03f (178,203 B). Parent parse of all four read-backs: familiar cooldown 240000 AND cat cooldown 240000 at every destination.
+
+Restart: panel Shut Down 10:30:06 AM CST ("Server has stopped" 10:30:08 AM) → panel Start (never console stop); boot began [16:30:56] UTC in latest.log.
+
+Boot verify (preserved log: install-boot-20261103.log in this folder, SHA-256 f5e09c1f8d7be64b0248d90fb4f428cc51c97f53910b3b413565c781bb7d4061; parent grep-verified; log timestamps UTC): Done (20.360s) at [16:31:16]; "[Magic] Loaded 167 spells", no spell-load errors; "[ExcelGuildGate] ExcelGuildGate enabled: 3 of 5 seals broken, guild LOCKED" (unchanged); BossTrial 0.3.7 awake + Dragon chapter awake + XP band governor feed ON lines verbatim; sprinkle "wither ARMED (chance 0.35)" unchanged; Initialized 76 plugins; TPS 20.0/20.0/20.0 (console 10:33:50 AM CST); SEVERE 0 attributable (single [ERROR] = the pre-existing Essentials unsupported-version line).
+
+End state: server ONLINE, 0/10 (outside maintenance window).
+
+Rollback: restore each destination's spells.yml.bak-20261103-prefamiliar-cd, verify hashes return to the gate hashes above, full panel Shut Down → Start — returns familiar + cat to 300,000 ms. The pre-install Shockbyte backup "Magic spells pre-familiar-cd 20261103" is the rollback of record if the update misbehaves in play.
+
+PLAYER PROOF STILL OWED (unchanged by this packet): the packet #3 cooldown-registration proof — Mike casts Familiar once + Cat once in game and the 4-minute cooldown visibly applies.

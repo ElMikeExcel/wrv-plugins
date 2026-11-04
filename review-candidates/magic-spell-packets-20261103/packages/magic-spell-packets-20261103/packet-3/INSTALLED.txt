@@ -1,0 +1,14 @@
+INSTALLED — Spell fix packet #3 (Familiar cooldown root-cause fix + boomerang / workbench|4 / s5 heal drift)
+Installed Nov 2, 2026 by the wrv-install-failsafe 12:03 CST run (browser window 12:05–12:40 PM CST, panel "Michael's Server" 2602e828-7192-4a75-add8-74861e5632d7).
+
+Gate: console list 0/10 at 12:06:37 PM and 12:08:01 PM CST; pre-shutdown re-check 0/10 at 12:23:48 PM; post-boot list 0/10 at 12:35:11 PM.
+Marker protocol: run-start check clean (no marker); own marker created 12:04:40 CST; re-checks immediately before panel Shut Down and before panel Start both found only this run's marker (unchanged) — no coordination abort.
+Hard gate (parent sha256sum, browser_downloads/sess-3468500468): live 140,111 B c49829004d786580107825b0959f1374c9938ca81157243fd560608cd0cf47e6; stage2 86,716 B 0ec3def9ef38331d032dd39dc393609f1dac9442860f3402459b56dc791c4653; stage3 140,111 B c4982900… (same as live); stage4 178,352 B 936af53b2c23ee726eceeced71e8ec4f89c38328c79592f9d826e9d08f698c77; stage5 178,350 B bda9559f7c7ac991c8a887290f958af6f8dd00b3fd8d8df387e4c12b3cf13663 — all EXACT to the packet #2 bases.
+Backups: spells.yml.bak-20261102-prefix3 in place at all five destinations (live Magic, stage2, stage3, stage4, stage5).
+Placed (download-back parent-hashed EXACT, sess-3468500468 #6–#10): stage2 0420eb36ea06100aab920543869efc4c3c915694e80690886f7932a4c19f5c78 (86,719 B); live + stage3 a7fcf51e342d62db74340b19e4ee4e92dc37e365ed79ecfdfdbdd48ebe0ad772 (139,962 B); stage4 9e4024a8113faf1812c3908daf02a2ee411df388aa1178db2ff95a237e699969 (178,203 B); stage5 e124568524103de8723f190a19efa1d9bea112dfe6a6e3456913bb594da7de6d (178,203 B).
+Restart: panel Shut Down 12:25:04 PM CST ("Server has stopped") → panel Start (never console stop).
+Boot verify (preserved log: install-boot-20261102.log in this folder, SHA-256 51bc76d4f2dbcdb8eaa4f2405f269f3c86026e0a7781b3aedc854474a9f23cfd; parent grep-verified): Done (20.526s) at 12:26:37 PM CST; [Magic] Loaded 167 spells, no spell-load errors; [ExcelGuildGate] "3 of 5 seals broken, guild LOCKED" (unchanged); ExcelTogether 0.5.2 enabled line incl. "Magic party repair: ON (ExcelPartyRepair + ExcelRepairItem registered), repair confirm ON (10s window, 4h 0m lockout)"; TPS 20.0/20.0/20.0; SEVERE count 0 (only non-attributable entries: ServerMain terminal WARN + pre-existing Essentials unsupported-version ERROR).
+Post-boot live download-back (sess-3613489404): a7fcf51e… EXACT.
+End state: server ONLINE, 0/10 (outside maintenance window).
+Rollback (if ever needed): restore each destination's spells.yml.bak-20261102-prefix3 and restart — returns to the packet #2 state.
+PLAYER PROOFS OWED: Mike — one Familiar cast (no IllegalAccessError line, animal auto-removes ~20 s, immediate recast blocked by the 5-min cooldown); one Cat cast (clean, 300 s cooldown engages); boomerang pacing ~1/s. Jester — familiar no longer spammable.
