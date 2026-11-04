@@ -1,0 +1,182 @@
+===== Install packet — rig verdicts and boot-verify (source: wandbars-ux-build/INSTALL-PACKET.md) =====
+# INSTALL PACKET — ExcelWandBars 0.3.5 (combined WandBars UX release)
+
+**What installs:** one jar swap — `ExcelWandBars-0.3.5.jar` replaces the live
+WandBars jar. Four features in one combined release (design:
+`~/workspace/wandbars-drag-remove/DESIGN.md`): §6 crouch+hold Spell Book
+gesture fix, §5 Spell Book New tab + place-from-book, §2 Arrange mode
+(drag-off / tap-tap remove + move), §3 Bedrock hold-to-read. Provenance and
+base verification: `SOURCE.md` in this folder.
+
+## Candidate of record
+- File: `~/workspace/wandbars-ux-build/ExcelWandBars-0.3.5.jar`
+- SHA-256: `3a5c0d0db3493375759f11688d2356ddd52bed8d0a7fffb8472e5a52763cd622`
+- plugin.yml version: **0.3.5**. Install by REPLACING the live jar file
+  `plugins/ExcelWandBars-0.3.4.jar` with the candidate's contents, keeping
+  the live filename (the panel/server loads that path; the version lives
+  in plugin.yml, not the filename).
+
+## DELTA-BASE RULE (hard gate)
+This release is a delta on the fake-tap-fix build and nothing else.
+- BEFORE swapping, hash the LIVE jar in `plugins/`. It must equal
+  **`d8a38fc637bc3e21be9fec6ef30f0e091aba738831ae40a8e1383474cf3179de`**
+  (ExcelWandBars 0.3.4 + Oct 30 fake-tap fix).
+- ANY other value = **STOP**. Do not install; report the observed hash
+  (the delta must be rebuilt onto whatever is actually live).
+- Note the panel backup `ExcelWandBars-0.3.4.jar.bak-20261030-prefaketapfix`
+  is the pre-fix "1915" jar — it is NOT the base and must not be restored
+  as one.
+
+## Pre-checks (READ-ONLY, before the swap — design §6.5)
+Run these on the still-running/current install first; record the answers in
+the install marker:
+1. Boot log line for the current jar contains
+   **`Tap bar crouch hold: Geyser hook installed`** — record whether the
+   protocol (§6) hook state is installed or off on the live Geyser build.
+   (In the offline rig it reads "off" because no Bedrock client connects;
+   the live server is the only place this can be observed.)
+2. Console: **`wandbars lastHold`** (or the TapBarHook counters line) —
+   record the current `book-hold` counter values (`bukkit`, `protocol`,
+   `fallbacks`, `claims`, `world-reads`) as the pre-install baseline.
+
+## Swap
+1. Verify the server is EMPTY (player list 0, twice) — standing install gate.
+2. Back up the live jar: copy it to
+   `ExcelWandBars-0.3.4.jar.bak-<install date>-preux035` in `plugins/`
+   (hash of the backup must equal `d8a38fc6…`).
+3. Replace the live jar's contents with the candidate (same live filename).
+   Verify the placed file's SHA-256 equals `3a5c0d0d…` (panel checksum or
+   re-download and hash).
+4. Config: DO NOT overwrite the live `plugins/ExcelWandBars/config.yml`.
+   The candidate's bundled config only ADDS documented keys with defaults
+   that match the shipped behavior if absent (`tap-bar.book-hold: true`,
+   `book-hold-ms: 400`, `book-hold-java: false`, `arrange-enabled: true`,
+   `arrange-timeout-seconds: 90`, `hold-read: true`, `hold-read-ms: 800`,
+   `bar-loadout.new-tab: true`) — the plugin reads them with those defaults,
+   so a live config without them behaves identically. If the live config is
+   ever regenerated, those keys appear with comments.
+5. Start the server.
+
+## Boot-verify (all must hold)
+- Done line, no attributable SEVERE.
+- `ExcelWandBars` enable line reports version **0.3.5**.
+- Boot/status lines include: arrange hook ON line
+  ("Arrange … hold-to-read ON (800 ms, Bedrock screens)"),
+  Tap bar crouch-hold line (record its hook state — §6.5 check 1, post-boot
+  form), Magic hook OK, guildgate LOCKED **1 of 5**, TPS nominal.
+- Existing players' `loadouts.yml` loads with NO new badges appearing for
+  spells they already had (migration is persistence-only; the first observe
+  after install must show `new 0` for a pre-existing player who gains no
+  spell — if badges appear on old spells, STOP and report: that is the
+  migration defect the rig specifically cleared).
+- Fake-tap regression smoke: a wand tap behaves exactly as before
+  (TapWandEcho behavior is suite-gated 14/14; boot counters `echo` /
+  `wand-tap` should move normally in play).
+
+## Rollback
+Swap the backup jar back (step 2's `.bak-…-preux035`, hash `d8a38fc6…`),
+restart, confirm version 0.3.4 behavior. No data migration to undo:
+0.3.5 only ADDS a per-player `unacked` list inside `loadouts.yml`;
+0.3.4 ignores unknown keys, and the list is inert data if the server stays
+on the old jar.
+
+## Kill switches (config, no rebuild)
+- `tap-bar.hold-read: false` — disables §3 hold-to-read entirely.
+- `tap-bar.arrange-enabled: false` — disables §2 Arrange.
+- `tap-bar.book-hold: false` — disables the §6 Bukkit-signal book gate
+  (protocol gate behavior unchanged from 0.3.4).
+
+## Rig verdicts (Paper 26.3-231 + Geyser 2.12.1-b1277, Moon's fixture)
+Run1 (fresh loadout): **71 passed / 2 failed**; run2 (pre-feature loadout,
+3-slot bar): **12 passed / 4 failed**. Every failure is a harness artifact
+with the behavior proven by an adjacent assertion or a prior run — details:
+- **§6 — PROVEN.** Dense sneak-first burst fires; sparse cadence fires via
+  the scheduled check; sneak-release-before-threshold and sub-threshold tap
+  fire nothing; hold aimed at a block never fires (plan-level and
+  dispatch-level raytrace refusal both exercised); a fresh air burst right
+  after the ice-aim fires (aim state never poisons); press-first produces
+  the world read and never the book; no-wand attempt is fully silent;
+  CYCLE and SNEAKBARS styles never arm the book. (§6(g) protocol path not
+  exercisable offline — the Geyser hook never installs without a real
+  Bedrock session; covered by the §6.5 live pre-checks above.)
+- **§5 — PROVEN.** Java flow (announce + pointer lines, New page, detail
+  with [Got it], ack clears badge, ack line) and Bedrock form flow (home
+  New button first with count, New page, detail, Got-it consumed, badge
+  cleared); auto-place + badge; remove keeps the badge; place-from-book
+  via First-free-slot AND via full-bar replace (displaced spell named by
+  the pick list); badge clears on place. **Migration PROVEN** (run2:
+  pre-feature loadouts.yml → zero badges, slots intact). Two run2 string
+  assertions (to-book announce line, detail wording) missed on drain
+  timing/casing while their state assertions passed; the announce
+  mechanism and both line variants are code-path-identical to the run1
+  lines captured verbatim.
+- **§2 — PROVEN.** Unarmed clicks change nothing; icon pickup/place are
+  cancelled (icons never move); tap-tap drag-off removes; tap-tap move
+  swaps exactly; mouse-drag-off removes; wand-tap echo counter untouched
+  by arrange traffic; the mode now PERSISTS across commits (see
+  SOURCE.md qualification fix 3). The arm hint and remove chat lines are
+  unconditional sends on the exercised paths (arm()/done()); the rig's
+  chat drain never captured those two specific packets (clumped-flush
+  harness limit) — they are on the player-proof list below.
+- **§2.4 TOGGLE GATES — Boon PROVEN; Shackle INDETERMINATE in rig.**
+  With Boon active (`boon|2` in the mage's active list): removing another
+  spell (Extinguish) left the toggle ON; removing Boon itself from the bar
+  completed without error (the active toggle itself is Magic's state and
+  is not cancelled by a bar removal). NO gate failure → the design's
+  refuse-while-active fallback is NOT implemented. Storm Shackle: a
+  synthetic tap never produced a sustained channel in the fixture, so the
+  channel gate could not be exercised either way — it is a named
+  player-proof item below, not a silent pass.
+- **§3 — PROVEN in-rig except form-over-inventory.** Icon lift registers;
+  ~800 ms of silence opens the read (counter fires; the detail dispatch
+  returns "detail"); a commit at ~300 ms cancels the pending read; an
+  armed arrange commit fires the arrange intent instead of the read;
+  the Java control produces no in-screen read. Whether a Cumulus form
+  renders OVER the open inventory screen on the real Geyser b1277 build
+  CANNOT be proven offline (no real Bedrock client can connect to the
+  rig) — it is the critical player-proof item. The action-bar fallback
+  was NOT shipped (per instructions, it needs Mike's word); if forms fail
+  on the real client, use the `tap-bar.hold-read: false` kill switch and
+  report.
+- Three product defects were found by the rig and fixed during
+  qualification (SOURCE.md, "Qualification fixes"): §6 press chain
+  surviving a sneak release; tick-vs-wall-clock threshold drops in §6/§3;
+  Arrange mode dying after its first commit.
+
+## Player proof owed after install (one at a time)
+**Mike (Bedrock) — the four design proofs:**
+1. Arrange: open the bar, turn Arrange on, drag a spell off the bottom
+   row (and/or tap-tap it off), confirm the hint line and the
+   "…is off your bar. It stays in your Spellbook." line, remove a SECOND
+   spell in the same session (mode persistence), then re-add a spell via
+   /spellbar. Also: close the inventory screen and reopen — Arrange must
+   start OFF (fresh session).
+2. Hold-to-read: in the inventory screen, press a spell icon and HOLD —
+   its detail opens in-screen without casting. **This is the critical
+   form-over-inventory proof.** A quick tap must NOT open it.
+3. New tab: on the next real unlock, see the badge announce, open the
+   Spell Book's New tab, read the spell, tap Got it (badge clears),
+   and/or place it from the New tab.
+4. Crouch+hold book: crouch FIRST, then press and hold on AIR with the
+   wand — the Spell Book opens. Aimed at the ground/blocks it must NOT
+   open. Compare against the §6.5 baseline counters (`/wandbars lastHold`
+   should read a crouch-hold source).
+5. Shackle gate (the rig-indeterminate one): start a Storm Shackle
+   channel, then Arrange-remove a different spell — the channel must
+   keep running; then remove Shackle's own icon mid-channel and report
+   what the channel does.
+**One Java pass:** the same unlock flow in chat form (New page, [Got it],
+/spellbar acknew), one Arrange session by mouse drag, one /spellbook
+open by crouch+hold IF `book-hold-java` is ever enabled (it ships OFF
+for Java — the Java book gate is opt-in config, default false).
+
+## Same-pass surfaces (parent/main agent, per standing rules)
+- This release changes player-facing behavior in four places: a
+  What's New line and Guide refresh for the WandBars UX set belongs to
+  the install pass (announcement tip check per the settled tip rule:
+  the B_OPEN tip text changed in-plugin already; a rotation tip is
+  added/changed only if the install pass judges one needed).
+- ExcelMenu/compass: the Spell Book gains its New surface INSIDE the
+  existing book UI; no new command was added (`/spellbar arrange`,
+  `/spellbar acknew`, `/spellbook new` ride existing commands) — menu
+  surface check owed in the same pass.

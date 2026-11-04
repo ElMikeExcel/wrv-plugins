@@ -1,0 +1,2278 @@
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/ArrangeHook.java b/src/com/winkreyes/excelwandbars/ArrangeHook.java
+--- a/prev-src/com/winkreyes/excelwandbars/ArrangeHook.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/excelwandbars/ArrangeHook.java	2026-10-30 20:26:22.728276589 +0000
+@@ -0,0 +1,419 @@
++package com.winkreyes.excelwandbars;
++
++import com.elmakers.mine.bukkit.api.magic.Mage;
++import com.elmakers.mine.bukkit.api.magic.MagicAPI;
++import com.elmakers.mine.bukkit.api.wand.Wand;
++import com.winkreyes.excelwandbars.core.ArrangePlan;
++import com.winkreyes.excelwandbars.core.HoldReadPlan;
++import com.winkreyes.excelwandbars.core.LoadoutText;
++import com.winkreyes.excelwandbars.core.WandStyle;
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.format.NamedTextColor;
++import org.bukkit.Bukkit;
++import org.bukkit.configuration.ConfigurationSection;
++import org.bukkit.entity.Player;
++import org.bukkit.event.EventHandler;
++import org.bukkit.event.EventPriority;
++import org.bukkit.event.Listener;
++import org.bukkit.event.inventory.InventoryAction;
++import org.bukkit.event.inventory.InventoryClickEvent;
++import org.bukkit.event.inventory.InventoryCloseEvent;
++import org.bukkit.event.inventory.InventoryDragEvent;
++import org.bukkit.event.inventory.InventoryType;
++import org.bukkit.event.player.PlayerChangedWorldEvent;
++import org.bukkit.event.player.PlayerDropItemEvent;
++import org.bukkit.event.player.PlayerQuitEvent;
++import org.bukkit.inventory.Inventory;
++import org.bukkit.inventory.ItemStack;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.UUID;
++
++/**
++ * 0.3.5: the shared inventory-screen hook for two features (design 2 + 3).
++ *
++ * Arrange mode (section 2): while armed, clicks and drags on the open spell
++ * bar inside the player's own inventory screen are translated into ArrangePlan
++ * inputs and cancelled (the icons are virtual; they never move). Intents run
++ * through LoadoutHook's arrange methods, the exact model calls /spellbar uses,
++ * so chat lines, saves and the layout rebuild are identical by construction.
++ * Icon identity is read from the item itself (MagicHook.spellKeyOf, the NBT
++ * key): the cooldown-freeze investigation proved the renderer resolves spells
++ * per icon the same way, so the tapped icon IS the tapped spell. Slots come
++ * from column math against the wand's current page, never from the icon.
++ *
++ * Hold-to-read (section 3): observe only (MONITOR). A Bedrock player who lifts
++ * a bar icon in this screen and commits nothing for the hold window gets the
++ * spell's detail form, which never fades (the native tooltip's duration is
++ * client-side and cannot be pinned from the server). Any commit cancels the
++ * pending read; Java never gets one (its hover already persists).
++ */
++final class ArrangeHook implements Listener {
++    private final ExcelWandBars plugin;
++    private final MagicAPI api;
++    private final ArrangePlan plan = new ArrangePlan();
++    private final HoldReadPlan holdRead = new HoldReadPlan();
++    private boolean arrangeEnabled = true;
++    private int arrangeTimeoutSeconds = 90;
++    private boolean holdReadEnabled = true;
++    private long holdReadMs = 800;
++    private final Map<UUID, Integer> armSerial = new HashMap<>();
++    private long armSessions = 0, removes = 0, moves = 0, ignored = 0, readsShown = 0, readsCancelled = 0;
++
++    ArrangeHook(ExcelWandBars plugin, MagicAPI api) {
++        this.plugin = plugin;
++        this.api = api;
++    }
++
++    void loadSettings(ConfigurationSection c) {
++        arrangeEnabled = c == null || c.getBoolean("arrange-enabled", true);
++        arrangeTimeoutSeconds = Math.max(10, c == null ? 90 : c.getInt("arrange-timeout-seconds", 90));
++        holdReadEnabled = c == null || c.getBoolean("hold-read", true);
++        holdReadMs = Math.max(100, c == null ? 800 : c.getLong("hold-read-ms", 800));
++    }
++
++    String summary() {
++        return (arrangeEnabled ? "ON (timeout " + arrangeTimeoutSeconds + " s)" : "OFF")
++                + ", hold-to-read " + (holdReadEnabled ? "ON (" + holdReadMs + " ms, Bedrock screens)" : "OFF");
++    }
++
++    String counters() {
++        return "armed " + armSessions + " removes " + removes + " moves " + moves + " ignored " + ignored
++                + " hold-reads shown " + readsShown + " cancelled " + readsCancelled;
++    }
++
++    void clearAll() { plan.clear(); holdRead.clear(); armSerial.clear(); }
++
++    // ------------------------------------------------------------------ arming
++
++    /** /spellbar arrange and the bar menu's Arrange button. Returns a status word. */
++    String arm(Player p) {
++        if (!arrangeEnabled) { p.sendMessage(Component.text(LoadoutText.OFF, NamedTextColor.GRAY)); return "arrange-off"; }
++        LoadoutHook lo = plugin.loadouts();
++        if (lo == null || !lo.usable(p)) { p.sendMessage(Component.text(LoadoutText.NOT_BAR_STYLE, NamedTextColor.GRAY)); return "blocked"; }
++        StyleHook s = plugin.styleHook();
++        if (s == null || s.styleOf(p) != WandStyle.TAPBAR) { p.sendMessage(Component.text(LoadoutText.NOT_BAR_STYLE, NamedTextColor.GRAY)); return "blocked"; }
++        TapBarHook tb = plugin.tapBar();
++        if (tb == null) { p.sendMessage(Component.text(LoadoutText.OFF, NamedTextColor.GRAY)); return "no-tapbar"; }
++        if (!barOpen(p)) {
++            String r = tb.tryOpen(p, "arrange");
++            if (!barOpen(p)) { plugin.getLogger().info("Arrange for " + p.getName() + ": bar did not open (" + r + ")"); return "no-bar"; }
++        }
++        UUID id = p.getUniqueId();
++        plan.setArmed(id, true);
++        int serial = armSerial.merge(id, 1, Integer::sum);
++        armSessions++;
++        p.sendMessage(Component.text(LoadoutText.arrangeHint(plugin.isBedrock(p)), NamedTextColor.AQUA));
++        Bukkit.getScheduler().runTaskLater(plugin, () -> {
++            if (p.isOnline() && plan.isArmed(id) && armSerial.getOrDefault(id, 0) == serial) disarm(p, false);
++        }, arrangeTimeoutSeconds * 20L);
++        return "armed";
++    }
++
++    private void disarm(Player p, boolean silent) {
++        UUID id = p.getUniqueId();
++        if (!plan.isArmed(id)) return;
++        plan.setArmed(id, false);
++        if (!silent) p.sendMessage(Component.text("Arrange is off.", NamedTextColor.GRAY));
++    }
++
++    // ------------------------------------------------------------------ screen state
++
++    private Wand openWand(Player p) {
++        Mage mage = api.getMage(p);
++        Wand w = mage == null ? null : mage.getActiveWand();
++        return w != null && w.isInventoryOpen() ? w : null;
++    }
++
++    private boolean barOpen(Player p) { return openWand(p) != null; }
++
++    /** The player's own inventory screen (their inventory is what clicks land in). */
++    private boolean ownScreen(Player p) {
++        InventoryType t = p.getOpenInventory().getType();
++        return t == InventoryType.CRAFTING || t == InventoryType.PLAYER || t == InventoryType.CREATIVE;
++    }
++
++    private boolean screenActive(Player p) { return barOpen(p) && ownScreen(p); }
++
++    /** Column of a hotbar slot: the non-wand hotbar slots in order (wand slot = the held slot). */
++    private int columnOf(Player p, int hotbarSlot) {
++        int held = p.getInventory().getHeldItemSlot();
++        if (hotbarSlot == held) return -1; // the wand itself
++        return hotbarSlot < held ? hotbarSlot : hotbarSlot - 1;
++    }
++
++    /** Loadout slot behind a hotbar slot on the current page, or -1 when it is not a spell column. */
++    private int loadoutSlotOf(Player p, Wand w, int hotbarSlot) {
++        int col = columnOf(p, hotbarSlot);
++        if (col < 0) return -1;
++        StyleHook s = plugin.styleHook();
++        int perPage = s == null ? 7 : s.perPageFor(WandStyle.TAPBAR);
++        if (col >= perPage) return -1; // the exit column (and anything past it)
++        int page = w instanceof com.elmakers.mine.bukkit.wand.Wand impl ? Math.max(0, impl.getCurrentHotbar()) : 0;
++        return page * perPage + col;
++    }
++
++    private String iconAt(Player p, int hotbarSlot) {
++        MagicHook mh = plugin.magicHook();
++        if (mh == null) return null;
++        ItemStack it = p.getInventory().getItem(hotbarSlot);
++        String k = it == null ? null : mh.spellKeyOf(it);
++        return k == null ? null : mh.baseKey(k).toLowerCase(java.util.Locale.ROOT);
++    }
++
++    private ArrangePlan.Target targetOf(Player p, Wand w, Inventory clicked, int slot) {
++        if (clicked == null) return ArrangePlan.Target.outside(); // clicked outside the window
++        if (clicked.equals(p.getInventory())) {
++            if (slot >= 0 && slot < 9) {
++                int ls = loadoutSlotOf(p, w, slot);
++                return ls >= 0 ? ArrangePlan.Target.bar(ls) : ArrangePlan.Target.protectedSlot();
++            }
++            return ArrangePlan.Target.outside(); // main inventory, armor, offhand: the remove zone
++        }
++        return ArrangePlan.Target.outside(); // the crafting grid and anything else on screen
++    }
++
++    private void execute(Player p, ArrangePlan.Result r) {
++        if (r == null || r.spell == null) return;
++        LoadoutHook lo = plugin.loadouts();
++        switch (r.intent) {
++            case REMOVE:
++                holdReadCommit(p); // the arrange intent firing cancels any pending read (design 3.4)
++                if (lo != null) lo.arrangeRemove(p, r.spell);
++                removes++;
++                keepScreen(p);
++                break;
++            case MOVE:
++                holdReadCommit(p);
++                if (lo != null) lo.arrangeMove(p, r.spell, r.slot);
++                moves++;
++                keepScreen(p);
++                break;
++            default: break;
++        }
++    }
++
++    /**
++     * A loadout change applying can close the wand bar's screen state (the same
++     * reason /spellbar's own changes reopen theirs). Arrange is a mode, not a
++     * one-shot: while the player is still in their own screen with the mode on,
++     * restore the bar so the next gesture lands in the same session. Runs a tick
++     * after the commit, inside the close-check's settle window, so the mode's
++     * lifecycle still judges the result rather than the mid-repaint state.
++     */
++    private void keepScreen(Player p) {
++        UUID id = p.getUniqueId();
++        Bukkit.getScheduler().runTask(plugin, () -> {
++            if (!p.isOnline() || !plan.isArmed(id) || barOpen(p) || !ownScreen(p)) return;
++            TapBarHook tb = plugin.tapBar();
++            if (tb != null) tb.tryOpen(p, "arrange commit");
++        });
++    }
++
++    // ------------------------------------------------------------------ arrange interpreter (LOWEST)
++
++    private static boolean pickupAction(InventoryAction a) {
++        return a == InventoryAction.PICKUP_ALL || a == InventoryAction.PICKUP_HALF
++                || a == InventoryAction.PICKUP_ONE || a == InventoryAction.PICKUP_SOME;
++    }
++
++    @EventHandler(priority = EventPriority.LOWEST)
++    public void onClickArrange(InventoryClickEvent e) {
++        if (!(e.getWhoClicked() instanceof Player p)) return;
++        UUID id = p.getUniqueId();
++        if (!plan.isArmed(id)) return;
++        // Style changed under an armed player: the mode belongs to Tap bar only.
++        StyleHook sh = plugin.styleHook();
++        if (sh == null || sh.styleOf(p) != WandStyle.TAPBAR) { disarm(p, true); return; }
++        if (!screenActive(p)) return;
++        Wand w = openWand(p);
++        Inventory clicked = e.getClickedInventory();
++        boolean inPlayer = clicked != null && clicked.equals(p.getInventory());
++        int slot = e.getSlot();
++        String icon = inPlayer && slot >= 0 && slot < 9 ? iconAt(p, slot) : null;
++        InventoryAction a = e.getAction();
++        boolean dropAction = a == InventoryAction.DROP_ALL_SLOT || a == InventoryAction.DROP_ONE_SLOT;
++
++        if (plan.hasLift(id)) {
++            // The next click is the terminal commit, classified by where it lands.
++            if (dropAction) { e.setCancelled(true); execute(p, plan.drop(id, System.currentTimeMillis())); return; }
++            e.setCancelled(true);
++            execute(p, plan.place(id, targetOf(p, w, clicked, slot), System.currentTimeMillis()));
++            return;
++        }
++        if (icon == null) return; // not an icon: today's protections keep their meaning
++        if (dropAction) {
++            e.setCancelled(true);
++            execute(p, plan.dropSlot(id, icon, loadoutSlotOf(p, w, slot), System.currentTimeMillis()));
++            return;
++        }
++        if (pickupAction(a)) {
++            int from = loadoutSlotOf(p, w, slot);
++            if (from < 0) { e.setCancelled(true); ignored++; return; } // exit-column icons are not spells
++            e.setCancelled(true);
++            plan.pickup(id, icon, from, System.currentTimeMillis());
++            return;
++        }
++        // Any other gesture on an icon (swap, shift-click, number key, collect): the icon
++        // is virtual and must not move; swallow it without an intent.
++        e.setCancelled(true);
++        ignored++;
++    }
++
++    @EventHandler(priority = EventPriority.LOWEST)
++    public void onDragArrange(InventoryDragEvent e) {
++        if (!(e.getWhoClicked() instanceof Player p)) return;
++        UUID id = p.getUniqueId();
++        if (!plan.isArmed(id) || !screenActive(p)) return;
++        Wand w = openWand(p);
++        MagicHook mh = plugin.magicHook();
++        if (mh == null) return;
++        // What is being dragged: the old cursor (an icon already lifted), else an icon in the set.
++        String spell = null;
++        int from = -1;
++        ItemStack old = e.getOldCursor();
++        String oldKey = old == null ? null : mh.spellKeyOf(old);
++        Map<Integer, ItemStack> items = e.getNewItems();
++        List<ArrangePlan.Target> targets = new ArrayList<>();
++        for (Map.Entry<Integer, ItemStack> en : items.entrySet()) {
++            int raw = en.getKey();
++            Inventory inv = e.getView().getInventory(raw);
++            int slot = e.getView().convertSlot(raw);
++            boolean hot = inv != null && inv.equals(p.getInventory()) && slot >= 0 && slot < 9;
++            String here = hot ? iconAt(p, slot) : null;
++            if (here != null && spell == null && oldKey == null) { spell = here; from = loadoutSlotOf(p, w, slot); continue; }
++            targets.add(targetOf(p, w, inv, slot));
++        }
++        if (oldKey != null) {
++            spell = mh.baseKey(oldKey).toLowerCase(java.util.Locale.ROOT);
++            LoadoutHook lo = plugin.loadouts();
++            from = lo == null ? -1 : lo.slotOf(p, spell);
++            targets.clear();
++            for (Map.Entry<Integer, ItemStack> en : items.entrySet()) {
++                int raw = en.getKey();
++                targets.add(targetOf(p, w, e.getView().getInventory(raw), e.getView().convertSlot(raw)));
++            }
++        }
++        if (spell == null || from < 0) return; // no icon involved: not ours
++        e.setCancelled(true);
++        execute(p, plan.drag(id, spell, from, targets, System.currentTimeMillis()));
++    }
++
++    /** Q-drop of an item entity while a lift is pending (the cursor-drop dialect). */
++    @EventHandler(priority = EventPriority.MONITOR)
++    public void onDropEntity(PlayerDropItemEvent e) {
++        UUID id = e.getPlayer().getUniqueId();
++        if (plan.hasLift(id)) execute(e.getPlayer(), plan.drop(id, System.currentTimeMillis()));
++    }
++
++    // ------------------------------------------------------------------ hold-to-read (MONITOR, observe only)
++
++    /**
++     * The hold-read decision. Like the book gate's check, the tick delay is a hint,
++     * not a clock: if the task runs before the wall-clock hold has elapsed (tick
++     * catch-up after a stall), it waits out the remainder rather than dropping
++     * the read. HoldReadPlan.decide is non-consuming before the threshold, so
++     * re-checking is safe.
++     */
++    private void runReadCheck(Player p, UUID id, long liftAt) {
++        if (!p.isOnline()) return;
++        long now = System.currentTimeMillis();
++        if (now - liftAt < holdReadMs) {
++            long restTicks = Math.max(1L, (holdReadMs - (now - liftAt) + 49) / 50);
++            Bukkit.getScheduler().runTaskLater(plugin, () -> runReadCheck(p, id, liftAt), restTicks);
++            return;
++        }
++        String spell = holdRead.decide(id, now, holdReadMs);
++        if (spell == null) return;
++        if (!plugin.isBedrock(p) || !screenActive(p)) return;
++        MagicHook mh = plugin.magicHook();
++        if (mh == null) return;
++        // The form opening forgets any pending arrange lift for this icon (design 3.4).
++        plan.cancelLift(id);
++        String r = mh.showSpellInfo(p, spell);
++        if (r != null && r.startsWith("detail")) readsShown++;
++    }
++
++    private void holdReadCommit(Player p) {
++        UUID id = p.getUniqueId();
++        if (holdRead.pending(id)) readsCancelled++;
++        holdRead.commit(id);
++    }
++
++    @EventHandler(priority = EventPriority.MONITOR)
++    public void onClickRead(InventoryClickEvent e) {
++        if (!holdReadEnabled) return;
++        if (!(e.getWhoClicked() instanceof Player p)) return;
++        if (!plugin.isBedrock(p) || !screenActive(p)) return;
++        UUID id = p.getUniqueId();
++        Inventory clicked = e.getClickedInventory();
++        boolean inPlayer = clicked != null && clicked.equals(p.getInventory());
++        int slot = e.getSlot();
++        if (inPlayer && slot >= 0 && slot < 9 && pickupAction(e.getAction())) {
++            String icon = iconAt(p, slot);
++            if (icon != null) {
++                long liftAt = System.currentTimeMillis();
++                holdRead.lift(id, icon, liftAt);
++                long ticks = Math.max(1L, (holdReadMs + 49) / 50);
++                Bukkit.getScheduler().runTaskLater(plugin, () -> runReadCheck(p, id, liftAt), ticks);
++                return;
++            }
++        }
++        holdReadCommit(p); // any other click is a commit
++    }
++
++    // ------------------------------------------------------------------ lifecycle
++
++    @EventHandler(priority = EventPriority.MONITOR)
++    public void onClose(InventoryCloseEvent e) {
++        if (!(e.getPlayer() instanceof Player p)) return;
++        UUID id = p.getUniqueId();
++        holdRead.screenClosed(id);
++        InventoryType t = e.getView().getType();
++        boolean own = t == InventoryType.CRAFTING || t == InventoryType.PLAYER || t == InventoryType.CREATIVE;
++        if (own) {
++            // A loadout change applying repaints this view by closing and reopening
++            // it around the change; that is not the player closing the screen.
++            // Judge it like the branch below: the mode ends only if the bar is
++            // actually gone once the repaint settles. A real close still ends
++            // the mode (the next open starts clean).
++            scheduleCloseCheck(p);
++            return;
++        }
++        // Some other inventory closed: if it took the bar with it, the mode ends too.
++        scheduleCloseCheck(p);
++    }
++
++    /**
++     * The mode follows the bar, not the close event: check shortly after a close,
++     * and once more a few ticks later, disarming only if the bar is gone at both
++     * judgements (a repaint's reopen lands between them; a real close does not).
++     */
++    private void scheduleCloseCheck(Player p) { scheduleCloseCheck(p, 0); }
++
++    private void scheduleCloseCheck(Player p, int attempt) {
++        Bukkit.getScheduler().runTaskLater(plugin, () -> {
++            if (!p.isOnline()) return;
++            if (barOpen(p)) return;
++            if (attempt == 0) { scheduleCloseCheck(p, 1); return; }
++            disarm(p, true);
++        }, attempt == 0 ? 1L : 3L);
++    }
++
++    @EventHandler
++    public void onQuit(PlayerQuitEvent e) {
++        UUID id = e.getPlayer().getUniqueId();
++        plan.forget(id);
++        holdRead.forget(id);
++        armSerial.remove(id);
++    }
++
++    @EventHandler
++    public void onWorldChange(PlayerChangedWorldEvent e) {
++        disarm(e.getPlayer(), true);
++        holdRead.barClosed(e.getPlayer().getUniqueId());
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/ExcelWandBars.java b/src/com/winkreyes/excelwandbars/ExcelWandBars.java
+--- a/prev-src/com/winkreyes/excelwandbars/ExcelWandBars.java	2026-10-30 18:03:11.050275758 +0000
++++ b/src/com/winkreyes/excelwandbars/ExcelWandBars.java	2026-10-30 18:14:05.776968553 +0000
+@@ -34,6 +34,8 @@
+     private WandSlotHook wandSlot;
+     /** 0.2.9: each player's own spell bar. */
+     private LoadoutHook loadouts;
++    /** 0.3.5: Arrange mode + in-screen hold-to-read (the shared inventory-screen hook). */
++    private ArrangeHook arrange;
+     private String geyserTap = "off";
+     private String geyserHold = "off";
+     /** Admin test aid (/wandbars simbedrock): treat these online Java players as Bedrock. Memory only, cleared on quit. */
+@@ -137,6 +139,19 @@
+                 getLogger().warning("Own spell bar off (" + t + "), every spell on the bar in pages as in 0.2.8.");
+             }
+             try {
++                // 0.3.5: Arrange mode (drag spells off the bar in the inventory screen) and
++                // hold-to-read inside that screen. Needs the loadout; settings ride tap-bar.
++                if (loadouts != null) {
++                    arrange = new ArrangeHook(this, (com.elmakers.mine.bukkit.api.magic.MagicAPI) magic);
++                    arrange.loadSettings(getConfig().getConfigurationSection("tap-bar"));
++                    getServer().getPluginManager().registerEvents(arrange, this);
++                    getLogger().info("Arrange mode " + arrange.summary() + ".");
++                }
++            } catch (Throwable t) {
++                arrange = null;
++                getLogger().warning("Arrange mode off (" + t + ").");
++            }
++            try {
+                 // Rank-up by casting (2026-10-26): off until rank-up-casting.enabled is true (reloadable).
+                 rankUp = new RankUpHook(this, (com.elmakers.mine.bukkit.api.magic.MagicAPI) magic);
+                 rankUp.loadSettings(getConfig().getConfigurationSection("rank-up-casting"));
+@@ -207,6 +222,8 @@
+         rankUp = null;
+         if (loadouts != null) loadouts.save();
+         loadouts = null;
++        if (arrange != null) { try { arrange.clearAll(); } catch (Throwable ignored) { } }
++        arrange = null;
+         tips = null;
+         spellTip = null;
+         screen = null;
+@@ -327,6 +344,7 @@
+     TapBarHook tapBar() { return tapBar; }
+     RankUpHook rankUp() { return rankUp; }
+     LoadoutHook loadouts() { return loadouts; }
++    ArrangeHook arrange() { return arrange; }
+     /** 0.2.8: player-facing rank names (config rank-names). Magic's template and path keys never change. */
+     private final java.util.Map<String, String> rankNames = new java.util.HashMap<>();
+     String rankDisplay(String key, String magicName) {
+@@ -446,6 +464,13 @@
+                 String a0 = args[0].toLowerCase(Locale.ROOT);
+                 if (a0.equals("group") && args.length > 1) { hook.openGroup(p, args[1], pageArg(args, 2)); return true; }
+                 if (a0.equals("all")) { hook.openGroup(p, com.winkreyes.excelwandbars.core.SpellbookText.ALL, pageArg(args, 1)); return true; }
++                // 0.3.5: the New tab and its mark-all action.
++                if (a0.equals("new")) { hook.openNewPage(p, pageArg(args, 1)); return true; }
++                if (a0.equals("markallnew")) {
++                    if (loadouts != null) loadouts.ackAllNew(p);
++                    hook.openNewPage(p, 0);
++                    return true;
++                }
+                 if (a0.equals("locked") && args.length > 1) { hook.openLocked(p, args[1]); return true; }
+                 if (a0.equals("group")) { hook.openSpellBook(p, null); return true; }
+             }
+@@ -497,6 +522,7 @@
+                 if (screen != null) screen.loadSettings(getConfig().getConfigurationSection("spell-screen"), getConfig().getConfigurationSection("progress-line"));
+                 if (rankUp != null) { rankUp.save(); rankUp.loadSettings(getConfig().getConfigurationSection("rank-up-casting")); }
+                 if (loadouts != null) { loadouts.loadSettings(getConfig().getConfigurationSection("bar-loadout")); loadouts.save(); }
++                if (arrange != null) arrange.loadSettings(getConfig().getConfigurationSection("tap-bar"));
+                 checkGroups();
+                 sender.sendMessage("ExcelWandBars settings reloaded." + (rankUp != null ? " Rank-up by casting: " + (rankUp.enabled ? "ON" : "off") + "." : "")
+                         + (loadouts != null ? " Own spell bar: " + loadouts.summary() + "." : "")
+@@ -712,6 +738,7 @@
+                     + " progress lines " + screen.lines() + " uses " + hook.uses())
+                     + ", spell tip " + (spellTip == null ? "OFF" : "shown " + spellTip.shown() + " handed " + spellTip.handed())
+                     + ", tap bar " + (tapBar == null ? "OFF" : tapBar.counters())
++                    + ", arrange " + (arrange == null ? "OFF" : arrange.counters())
+                     + ", " + (wandSlot == null ? "wand slot OFF" : wandSlot.counters()) + ", geyser wand tap " + geyserTap
+                     + ", simbedrock " + simBedrock.size());
+             return true;
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/LoadoutHook.java b/src/com/winkreyes/excelwandbars/LoadoutHook.java
+--- a/prev-src/com/winkreyes/excelwandbars/LoadoutHook.java	2026-10-30 18:03:11.050781647 +0000
++++ b/src/com/winkreyes/excelwandbars/LoadoutHook.java	2026-10-30 18:12:59.742965990 +0000
+@@ -47,6 +47,8 @@
+     int size = BarLoadout.DEFAULT_SLOTS;
+     boolean newSpellLines = true;
+     int maxLines = 3;
++    /** 0.3.5: the Spell Book's New tab (badge, pointer line, Got it). */
++    boolean newTab = true;
+     private boolean saveQueued = false;
+     private long saves = 0, seeded = 0, placed = 0, toBook = 0, changes = 0;
+     private String lastSync = "-";
+@@ -62,16 +64,22 @@
+         size = BarLoadout.clampSize(c == null ? BarLoadout.DEFAULT_SLOTS : c.getInt("slots", BarLoadout.DEFAULT_SLOTS));
+         newSpellLines = c == null || c.getBoolean("new-spell-lines", true);
+         maxLines = Math.max(1, Math.min(10, c == null ? 3 : c.getInt("max-new-spell-lines", 3)));
++        newTab = c == null || c.getBoolean("new-tab", true);
+         boolean any = false;
+         for (BarLoadout l : map.values()) if (l.size() != size) { l.resize(size); any = true; }
+         if (any) saveSoon();
+     }
+ 
+     String summary() {
+-        return enabled ? "ON (" + size + " slots, new spell lines " + (newSpellLines ? "ON, max " + maxLines : "off") + ", " + map.size() + " player(s) saved)"
++        return enabled ? "ON (" + size + " slots, new spell lines " + (newSpellLines ? "ON, max " + maxLines : "off")
++                + ", new tab " + (newTab ? "ON, " + totalNew() + " unacked across " + playersWithNew() + " player(s)" : "off")
++                + ", " + map.size() + " player(s) saved)"
+                 : "off (bar-loadout.enabled: false, every spell on the bar in pages as in 0.2.8)";
+     }
+ 
++    int totalNew() { int n = 0; for (BarLoadout l : map.values()) n += l.newCount(); return n; }
++    int playersWithNew() { int n = 0; for (BarLoadout l : map.values()) if (l.newCount() > 0) n++; return n; }
++
+     String counters() {
+         return "seeded " + seeded + " placed " + placed + " to-book " + toBook + " changes " + changes + " saves " + saves + " last " + lastSync;
+     }
+@@ -88,7 +96,7 @@
+             for (String k : s.getKeys(false)) {
+                 try {
+                     UUID id = UUID.fromString(k);
+-                    map.put(id, BarLoadout.restore(s.getStringList(k + ".slots"), s.getStringList(k + ".seen"), size));
++                    map.put(id, BarLoadout.restore(s.getStringList(k + ".slots"), s.getStringList(k + ".seen"), s.getStringList(k + ".unacked"), size));
+                 } catch (IllegalArgumentException bad) { plugin.getLogger().warning("loadouts.yml: skipped " + k); }
+             }
+         } catch (Throwable t) { plugin.getLogger().warning("loadouts.yml: " + t); }
+@@ -103,6 +111,7 @@
+             for (Map.Entry<UUID, BarLoadout> e : map.entrySet()) {
+                 y.set("players." + e.getKey() + ".slots", e.getValue().storedSlots());
+                 y.set("players." + e.getKey() + ".seen", new ArrayList<>(e.getValue().seen()));
++                y.set("players." + e.getKey() + ".unacked", e.getValue().newSpells());
+             }
+             if (!plugin.getDataFolder().isDirectory()) plugin.getDataFolder().mkdirs();
+             File tmp = new File(plugin.getDataFolder(), "loadouts.yml.tmp");
+@@ -212,10 +221,44 @@
+                 if (!plugin.isBedrock(p) && line.startsWith("Change")) m = m.clickEvent(ClickEvent.runCommand("/spellbar"));
+                 p.sendMessage(m);
+             }
++            // 0.3.5: the New tab pointer, exactly when the sync badged something.
++            if (newTab && !r.newKeys.isEmpty()) {
++                Component m = Component.text(LoadoutText.NEW_POINTER, NamedTextColor.GRAY);
++                if (!plugin.isBedrock(p)) m = m.clickEvent(ClickEvent.runCommand("/spellbook new"));
++                p.sendMessage(m);
++            }
+         }
+         return r;
+     }
+ 
++    // ------------------------------------------------------------------ 0.3.5 New tab access
++
++    boolean newTab() { return newTab; }
++
++    /** This player's unacknowledged new spell keys (empty when the New tab is off or there is no record). */
++    java.util.Set<String> unackedKeys(Player p) {
++        if (!newTab) return java.util.Collections.emptySet();
++        BarLoadout l = map.get(p.getUniqueId());
++        return l == null ? java.util.Collections.emptySet() : l.unacked();
++    }
++
++    /** "Got it" for one spell: model + save only; callers show their own feedback. */
++    boolean ackNew(Player p, String key) {
++        BarLoadout l = map.get(p.getUniqueId());
++        if (l == null || !l.ackNew(key)) return false;
++        saveSoon();
++        return true;
++    }
++
++    /** "Mark all as seen": returns how many were marked new. */
++    int ackAllNew(Player p) {
++        BarLoadout l = map.get(p.getUniqueId());
++        if (l == null) return 0;
++        int n = l.ackAllNew();
++        if (n > 0) saveSoon();
++        return n;
++    }
++
+     /** The layout for this wand; never stores anything (an unseen player is previewed as seeded). */
+     BarLoadout.Layout layout(Player p, Wand w, int perPage) {
+         BarLoadout l = map.get(p.getUniqueId());
+@@ -298,6 +341,9 @@
+             if (ok) used++;
+             items.add(new Item(LoadoutText.slotButton(i, ok ? nm.get(k) : null), "slot " + (i + 1)));
+         }
++        // 0.3.5: the New tab and Arrange entries ride the bar menu (both no-ops when their feature is off).
++        if (newTab && l.newCount() > 0) items.add(new Item(SpellbookText.newButton(l.newCount()), "@book new"));
++        if (plugin.arrange() != null) items.add(new Item(LoadoutText.ARRANGE_BUTTON, "arrange"));
+         items.add(new Item(LoadoutText.BACK_BOOK, "@book"));
+         items.add(new Item(LoadoutText.CLOSE, null));
+         menu(p, LoadoutText.barTitleCount(used, l.size()), LoadoutText.barContent(plugin.isBedrock(p), perPage(p), l.size(), inBook), items);
+@@ -404,6 +450,9 @@
+         BarLoadout l = ensure(p, w);
+         String name = spellName(k);
+         List<Item> items = new ArrayList<>();
++        // 0.3.5: place from the book in one tap when a slot is free.
++        int free = l.firstEmpty();
++        if (free >= 0) items.add(new Item(LoadoutText.FIRST_FREE, "put " + k + " " + (free + 1)));
+         for (int i = 0; i < l.size(); i++) {
+             String o = l.get(i);
+             items.add(new Item(LoadoutText.slotButton(i, o != null && known.contains(o) ? spellName(o) : null), "put " + k + " " + (i + 1)));
+@@ -456,9 +505,39 @@
+ 
+     private static int num(String s) { try { return Integer.parseInt(s.trim()) - 1; } catch (Exception e) { return -1; } }
+ 
++    /** 0.3.5 Arrange execution: take a spell off the bar by key, through the same done() path as /spellbar remove. */
++    String arrangeRemove(Player p, String key) {
++        if (!usable(p)) return "blocked";
++        Wand w = menuWand(p);
++        if (w == null) return "no-wand";
++        BarLoadout l = ensure(p, w);
++        int slot = l.indexOf(BarLoadout.norm(key));
++        if (slot < 0) return "not-on-bar";
++        BarLoadout.Change c = l.remove(slot);
++        done(p, c, false);
++        return c.toString();
++    }
++
++    /** 0.3.5 Arrange execution: move a spell to a loadout slot, through the same done() path as /spellbar put. */
++    String arrangeMove(Player p, String key, int targetSlot) {
++        if (!usable(p)) return "blocked";
++        Wand w = menuWand(p);
++        if (w == null) return "no-wand";
++        BarLoadout l = ensure(p, w);
++        String k = BarLoadout.norm(key);
++        if (k == null || !known(w).contains(k)) return "not-known";
++        BarLoadout.Change c = l.put(k, targetSlot);
++        done(p, c, false);
++        return c.toString();
++    }
++
+     /** /spellbar [slot n | pick n | put spell [n] | remove n | swap a b]. Returns a status word (rig tests). */
+     String handle(Player p, String[] a) {
+-        if (a.length > 0 && a[0].equalsIgnoreCase("@book")) { if (plugin.magicHook() != null) plugin.magicHook().openSpellBook(p, null); return "book"; }
++        if (a.length > 0 && a[0].equalsIgnoreCase("@book")) {
++            if (a.length > 1 && a[1].equalsIgnoreCase("new") && plugin.magicHook() != null) { plugin.magicHook().openNewPage(p, 0); return "new-page"; }
++            if (plugin.magicHook() != null) plugin.magicHook().openSpellBook(p, null);
++            return "book";
++        }
+         String why = blocked(p);
+         if (why != null) { p.sendMessage(Component.text(why, NamedTextColor.GRAY)); return "blocked"; }
+         Wand w = menuWand(p);
+@@ -485,6 +564,28 @@
+                 break;
+             case "remove": if (a.length > 1) { BarLoadout.Change c = l.remove(num(a[1])); done(p, c, true); return c.toString(); } break;
+             case "swap": if (a.length > 2) { BarLoadout.Change c = l.swap(num(a[1]), num(a[2])); done(p, c, true); return c.toString(); } break;
++            case "arrange": {
++                ArrangeHook ah = plugin.arrange();
++                if (ah == null) { p.sendMessage(Component.text(LoadoutText.OFF, NamedTextColor.GRAY)); return "arrange-off"; }
++                return ah.arm(p);
++            }
++            case "new": case "@new":
++                if (plugin.magicHook() != null) { plugin.magicHook().openNewPage(p, 0); return "new-page"; }
++                break;
++            case "acknew":
++                if (a.length > 1) {
++                    String k = BarLoadout.norm(a[1]);
++                    boolean ok = k != null && ackNew(p, k);
++                    p.sendMessage(Component.text(ok ? LoadoutText.gotIt(spellName(k)) : "That spell is not marked new.", NamedTextColor.GRAY));
++                    if (ok && !plugin.isBedrock(p) && plugin.magicHook() != null) plugin.magicHook().openSpellBook(p, k);
++                    return "acknew";
++                }
++                break;
++            case "ackall": {
++                int n = ackAllNew(p);
++                p.sendMessage(Component.text(n > 0 ? n + (n == 1 ? " spell" : " spells") + " marked as seen." : "No new spells to mark.", NamedTextColor.GRAY));
++                return "ackall";
++            }
+             default: break;
+         }
+         openBar(p);
+@@ -495,7 +596,7 @@
+     List<String> describe(Player p) {
+         List<String> out = new ArrayList<>();
+         BarLoadout l = map.get(p.getUniqueId());
+-        out.add("loadout " + p.getName() + ": " + (l == null ? "not seeded yet" : l.filled() + "/" + l.size() + " slots " + l.storedSlots() + " seen " + l.seen().size()));
++        out.add("loadout " + p.getName() + ": " + (l == null ? "not seeded yet" : l.filled() + "/" + l.size() + " slots " + l.storedSlots() + " seen " + l.seen().size() + " new " + l.newCount() + " " + l.newSpells()));
+         Wand w = menuWand(p);
+         if (w != null) {
+             BarLoadout.Layout lay = layout(p, w, perPage(p));
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/MagicHook.java b/src/com/winkreyes/excelwandbars/MagicHook.java
+--- a/prev-src/com/winkreyes/excelwandbars/MagicHook.java	2026-10-30 18:03:11.050827406 +0000
++++ b/src/com/winkreyes/excelwandbars/MagicHook.java	2026-10-30 18:14:00.173968336 +0000
+@@ -668,11 +668,22 @@
+                 acts.add(() -> { if (plugin.loadouts() != null) plugin.loadouts().handle(p, new String[]{"remove", String.valueOf(slot + 1)}); });
+             }
+         }
++        // 0.3.5: a spell still marked new gets its explicit Got it (the only ack besides placing it).
++        LoadoutHook loNew = plugin.loadouts();
++        if (loNew != null && loNew.newTab() && loNew.unackedKeys(p).contains(base(f.key))) {
++            final String nk = base(f.key);
++            buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.GOT_IT);
++            acts.add(() -> { LoadoutHook lo2 = plugin.loadouts(); if (lo2 != null) lo2.ackNew(p, nk); sendDetailForm(p, f); });
++        }
+         // 0.3.0: Back goes to the group page the spell was opened from.
+         View v = viewFor(p, f.key);
+         if (v != null) {
+-            String gname = com.winkreyes.excelwandbars.core.SpellbookText.ALL.equals(v.group) ? com.winkreyes.excelwandbars.core.SpellbookText.allName() : plugin.spellbookGroups().nameOf(v.group);
+-            buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.backTo(gname)); acts.add(() -> openGroup(p, v.group, v.page));
++            boolean isNew = com.winkreyes.excelwandbars.core.SpellbookText.NEW.equals(v.group);
++            String gname = com.winkreyes.excelwandbars.core.SpellbookText.ALL.equals(v.group) ? com.winkreyes.excelwandbars.core.SpellbookText.allName()
++                    : isNew ? com.winkreyes.excelwandbars.core.SpellbookText.NEW_NAME : plugin.spellbookGroups().nameOf(v.group);
++            final String vg = v.group; final int vp = v.page;
++            buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.backTo(gname));
++            acts.add(() -> { if (isNew) openNewPage(p, vp); else openGroup(p, vg, vp); });
+         } else { buttons.add("Back to Spell Book"); acts.add(() -> openSpellBook(p, null)); }
+         buttons.add("Close"); acts.add(null);
+         boolean sent = sendForm(p, f.name + " (" + SpellInfoText.rankText(f) + ")", content, buttons, id -> {
+@@ -696,6 +707,11 @@
+         View v = lastView.get(p.getUniqueId());
+         if (v == null) return null;
+         if (com.winkreyes.excelwandbars.core.SpellbookText.ALL.equals(v.group)) return v;
++        // 0.3.5: the New page holds exactly the unacknowledged spells.
++        if (com.winkreyes.excelwandbars.core.SpellbookText.NEW.equals(v.group)) {
++            LoadoutHook lo = plugin.loadouts();
++            return lo != null && lo.unackedKeys(p).contains(com.winkreyes.excelwandbars.core.BarLoadout.norm(key)) ? v : null;
++        }
+         return plugin.spellbookGroups().groupOf(key).equals(v.group) ? v : null;
+     }
+ 
+@@ -767,6 +783,8 @@
+         LoadoutHook lo = plugin.loadouts();
+         List<String> bar = lo == null ? null : lo.barKeys(p);
+         boolean bars = plugin.barsStyle(p);
++        // 0.3.5: the New tab's membership comes from the loadout's unacknowledged set.
++        java.util.Set<String> unacked = lo == null ? java.util.Collections.emptySet() : lo.unackedKeys(p);
+         java.util.Set<String> known = new java.util.HashSet<>();
+         for (SpellFacts f : book) {
+             String k = com.winkreyes.excelwandbars.core.BarLoadout.norm(f.key);
+@@ -778,6 +796,7 @@
+             if (bar != null) e.barSlot = bar.indexOf(k);
+             else if (bars && f.bar > 0) e.page = f.bar;
+             e.active = f.active;
++            e.isNew = unacked.contains(k);
+             out.add(e);
+         }
+         if (plugin.showLocked() && bw != null) {
+@@ -852,6 +871,9 @@
+             content.append("\n").append(com.winkreyes.excelwandbars.core.SpellbookText.HOME_HINT_BEDROCK);
+             List<String> buttons = new ArrayList<>();
+             List<Runnable> acts = new ArrayList<>();
++            // 0.3.5: the New tab rides first, above the groups, while anything is unacknowledged.
++            int newN = com.winkreyes.excelwandbars.core.SpellbookText.newCount(c.entries);
++            if (newN > 0) { buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.newButton(newN)); acts.add(() -> openNewPage(p, 0)); }
+             for (com.winkreyes.excelwandbars.core.SpellbookText.GroupCount x : gc) {
+                 buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.groupButton(x));
+                 final String gk = x.key;
+@@ -875,6 +897,10 @@
+         if (lockedLine != null) p.sendMessage(Component.text(" " + lockedLine, NamedTextColor.GRAY));
+         for (String h : header) p.sendMessage(Component.text(" " + h, NamedTextColor.GREEN));
+         p.sendMessage(Component.text(bedrock ? com.winkreyes.excelwandbars.core.SpellbookText.HOME_HINT_BEDROCK : com.winkreyes.excelwandbars.core.SpellbookText.HOME_HINT_JAVA, NamedTextColor.GRAY));
++        // 0.3.5: the New tab line, before the groups, while anything is unacknowledged.
++        int newN = com.winkreyes.excelwandbars.core.SpellbookText.newCount(c.entries);
++        if (newN > 0) p.sendMessage(Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.newButton(newN) + "]", NamedTextColor.GOLD)
++                .clickEvent(ClickEvent.runCommand("/spellbook new")));
+         Component line = Component.empty();
+         int n = 0;
+         for (com.winkreyes.excelwandbars.core.SpellbookText.GroupCount x : gc) {
+@@ -969,6 +995,73 @@
+         return true;
+     }
+ 
++    /**
++     * 0.3.5: the New tab (/spellbook new [page]). A pure view over the loadout's
++     * unacknowledged set: opening or reading it never acknowledges anything; the
++     * only exits from the set are placing the spell (any put) and the explicit
++     * Got it / Mark all as seen actions. Detail pages reached from here keep
++     * their place-from-book buttons, so placing works exactly as from a group.
++     */
++    boolean openNewPage(Player p, int page) {
++        Ctx c = ctx(p, false);
++        if (c == null) return true;
++        List<com.winkreyes.excelwandbars.core.SpellbookText.Entry> list = com.winkreyes.excelwandbars.core.SpellbookText.newList(c.entries);
++        boolean bedrock = plugin.isBedrock(p);
++        if (bedrock) {
++            int per = com.winkreyes.excelwandbars.core.SpellbookText.BEDROCK_PER_PAGE;
++            int pg = com.winkreyes.excelwandbars.core.SpellbookText.clampPage(page, list.size(), per);
++            int pages = com.winkreyes.excelwandbars.core.SpellbookText.pages(list.size(), per);
++            lastView.put(p.getUniqueId(), new View(com.winkreyes.excelwandbars.core.SpellbookText.NEW, pg));
++            List<String> buttons = new ArrayList<>();
++            List<Runnable> acts = new ArrayList<>();
++            for (com.winkreyes.excelwandbars.core.SpellbookText.Entry e : com.winkreyes.excelwandbars.core.SpellbookText.page(list, pg, per)) {
++                buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.bedrockButton(e));
++                SpellFacts f = c.facts.get(e.key);
++                acts.add(() -> { if (f != null) sendDetailForm(p, f); });
++            }
++            if (!list.isEmpty()) { buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.MARK_ALL); acts.add(() -> { if (plugin.loadouts() != null) plugin.loadouts().ackAllNew(p); openNewPage(p, 0); }); }
++            if (pg + 1 < pages) { buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.NEXT); acts.add(() -> openNewPage(p, pg + 1)); }
++            if (pg > 0) { buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.PREV); acts.add(() -> openNewPage(p, pg - 1)); }
++            buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.GROUPS); acts.add(() -> openSpellBook(p, null));
++            buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.CLOSE); acts.add(null);
++            String content = list.isEmpty() ? com.winkreyes.excelwandbars.core.SpellbookText.NEW_EMPTY
++                    : com.winkreyes.excelwandbars.core.SpellbookText.groupContent(true, false);
++            boolean sent = sendForm(p, com.winkreyes.excelwandbars.core.SpellbookText.groupTitle(com.winkreyes.excelwandbars.core.SpellbookText.NEW_NAME, list.size(), pg, pages),
++                    content, buttons, id -> {
++                        if (id < 0 || id >= acts.size() || acts.get(id) == null) return;
++                        later(p, acts.get(id));
++                    });
++            if (sent) return true;
++        }
++        int per = com.winkreyes.excelwandbars.core.SpellbookText.JAVA_PER_PAGE;
++        int pg = com.winkreyes.excelwandbars.core.SpellbookText.clampPage(page, list.size(), per);
++        int pages = com.winkreyes.excelwandbars.core.SpellbookText.pages(list.size(), per);
++        lastView.put(p.getUniqueId(), new View(com.winkreyes.excelwandbars.core.SpellbookText.NEW, pg));
++        p.sendMessage(Component.text(com.winkreyes.excelwandbars.core.SpellbookText.groupHeading(com.winkreyes.excelwandbars.core.SpellbookText.NEW_NAME, list.size(), pg, pages), NamedTextColor.GOLD));
++        if (list.isEmpty()) {
++            p.sendMessage(Component.text(com.winkreyes.excelwandbars.core.SpellbookText.NEW_EMPTY, NamedTextColor.GRAY));
++        } else {
++            for (com.winkreyes.excelwandbars.core.SpellbookText.Entry e : com.winkreyes.excelwandbars.core.SpellbookText.page(list, pg, per)) {
++                SpellFacts f = c.facts.get(e.key);
++                Component t = Component.text(" " + com.winkreyes.excelwandbars.core.SpellbookText.javaLine(e), NamedTextColor.AQUA)
++                        .clickEvent(ClickEvent.runCommand("/spellinfo " + e.key));
++                if (f != null) t = t.hoverEvent(HoverEvent.showText(Component.text(String.join("\n", SpellInfoText.lines(f)))));
++                p.sendMessage(t);
++            }
++            p.sendMessage(Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.MARK_ALL + "]", NamedTextColor.GOLD)
++                    .clickEvent(ClickEvent.runCommand("/spellbook markallnew")));
++        }
++        Component nav = Component.empty();
++        if (pg > 0) nav = nav.append(Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.JAVA_PREV + "]", NamedTextColor.GOLD)
++                .clickEvent(ClickEvent.runCommand("/spellbook new " + pg))).append(Component.text(" "));
++        nav = nav.append(Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.JAVA_GROUPS + "]", NamedTextColor.GOLD)
++                .clickEvent(ClickEvent.runCommand("/spellbook")));
++        if (pg + 1 < pages) nav = nav.append(Component.text(" ")).append(Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.JAVA_NEXT + "]", NamedTextColor.GOLD)
++                .clickEvent(ClickEvent.runCommand("/spellbook new " + (pg + 2))));
++        p.sendMessage(nav);
++        return true;
++    }
++
+     /** /spellbook locked <spell>: what a higher rank brings (read only). */
+     boolean openLocked(Player p, String key) {
+         Ctx c = ctx(p, false);
+@@ -988,13 +1081,14 @@
+ 
+     private void sendLocked(Player p, com.winkreyes.excelwandbars.core.SpellbookText.Entry e, String gk, int pg) {
+         List<String> lines = com.winkreyes.excelwandbars.core.SpellbookText.lockedLines(e, spellTemplateDescription(e.key));
+-        String gname = com.winkreyes.excelwandbars.core.SpellbookText.ALL.equals(gk) ? com.winkreyes.excelwandbars.core.SpellbookText.allName() : plugin.spellbookGroups().nameOf(gk);
++        String gname = com.winkreyes.excelwandbars.core.SpellbookText.ALL.equals(gk) ? com.winkreyes.excelwandbars.core.SpellbookText.allName()
++                : com.winkreyes.excelwandbars.core.SpellbookText.NEW.equals(gk) ? com.winkreyes.excelwandbars.core.SpellbookText.NEW_NAME : plugin.spellbookGroups().nameOf(gk);
+         if (plugin.isBedrock(p)) {
+             List<String> buttons = new ArrayList<>();
+             buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.backTo(gname));
+             buttons.add(com.winkreyes.excelwandbars.core.SpellbookText.CLOSE);
+             boolean sent = sendForm(p, com.winkreyes.excelwandbars.core.SpellbookText.lockedTitle(e), String.join("\n\n", lines.subList(1, lines.size())), buttons, id -> {
+-                if (id == 0) later(p, () -> openGroup(p, gk, pg));
++                if (id == 0) later(p, () -> { if (com.winkreyes.excelwandbars.core.SpellbookText.NEW.equals(gk)) openNewPage(p, pg); else openGroup(p, gk, pg); });
+             });
+             if (sent) return;
+         }
+@@ -1007,8 +1101,10 @@
+     private void backChat(Player p, String gk, int pg) {
+         if (gk == null) return;
+         boolean all = com.winkreyes.excelwandbars.core.SpellbookText.ALL.equals(gk);
+-        String gname = all ? com.winkreyes.excelwandbars.core.SpellbookText.allName() : plugin.spellbookGroups().nameOf(gk);
+-        String cmd = all ? "/spellbook all " + (pg + 1) : "/spellbook group " + gk + " " + (pg + 1);
++        boolean isNew = com.winkreyes.excelwandbars.core.SpellbookText.NEW.equals(gk);
++        String gname = all ? com.winkreyes.excelwandbars.core.SpellbookText.allName()
++                : isNew ? com.winkreyes.excelwandbars.core.SpellbookText.NEW_NAME : plugin.spellbookGroups().nameOf(gk);
++        String cmd = all ? "/spellbook all " + (pg + 1) : isNew ? "/spellbook new " + (pg + 1) : "/spellbook group " + gk + " " + (pg + 1);
+         p.sendMessage(Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.backTo(gname) + "]", NamedTextColor.GOLD).clickEvent(ClickEvent.runCommand(cmd)));
+     }
+ 
+@@ -1053,6 +1149,12 @@
+                 .clickEvent(ClickEvent.runCommand("/spellbar put " + k));
+         if (onBar >= 0) line = line.append(Component.text(" ")).append(Component.text("[" + com.winkreyes.excelwandbars.core.LoadoutText.OFF_BUTTON + "]", NamedTextColor.AQUA)
+                 .clickEvent(ClickEvent.runCommand("/spellbar remove " + (onBar + 1))));
++        // 0.3.5: [Got it] clears the New badge for this spell (and only this spell).
++        LoadoutHook lo = plugin.loadouts();
++        if (lo != null && lo.newTab() && lo.unackedKeys(p).contains(k)) {
++            line = line.append(Component.text(" ")).append(Component.text("[" + com.winkreyes.excelwandbars.core.SpellbookText.GOT_IT + "]", NamedTextColor.AQUA)
++                    .clickEvent(ClickEvent.runCommand("/spellbar acknew " + k)));
++        }
+         p.sendMessage(line);
+     }
+ 
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/TapBarHook.java b/src/com/winkreyes/excelwandbars/TapBarHook.java
+--- a/prev-src/com/winkreyes/excelwandbars/TapBarHook.java	2026-10-30 18:03:11.074658650 +0000
++++ b/src/com/winkreyes/excelwandbars/TapBarHook.java	2026-10-30 20:08:42.042235423 +0000
+@@ -24,6 +24,7 @@
+ import net.kyori.adventure.text.Component;
+ import net.kyori.adventure.text.format.NamedTextColor;
+ import net.kyori.adventure.text.format.TextDecoration;
++import com.winkreyes.excelwandbars.core.BookHoldPlan;
+ import com.winkreyes.excelwandbars.core.SpellFacts;
+ import com.winkreyes.excelwandbars.core.SpellInfoText;
+ import com.winkreyes.excelwandbars.core.WandStyle;
+@@ -117,6 +118,22 @@
+     private static final long TAP_PRIME_MS = 2000;
+     private final Map<UUID, Long> lastWandTapPrime = new HashMap<>();
+     private long wandTapEcho;
++    /**
++     * 0.3.5: crouch + hold opens the Spell Book, qualified on Bukkit signals (BookHoldPlan).
++     * The protocol gate (CrouchHoldGate via GeyserHoldHook) starves on real clients: Geyser
++     * never synthesizes the SIMULATION_TICK feed it needs (investigation, Oct 30 2026). It
++     * stays installed as a fast path into the same dispatch (dispatchBook).
++     */
++    private final BookHoldPlan bookHold = new BookHoldPlan();
++    private boolean bookHoldEnabled = true;
++    private long bookHoldMs = BookHoldPlan.DEFAULT_HOLD_MS;
++    private boolean bookHoldJava = false;
++    private final Map<UUID, Long> sneakDownAt = new HashMap<>();
++    /** The current press burst's start and last signal (gap-chained exactly like the world hold). */
++    private final Map<UUID, Long> bookPressStart = new HashMap<>();
++    private final Map<UUID, Long> bookLastSignal = new HashMap<>();
++    private final Map<UUID, Long> lastBookFire = new HashMap<>();
++    private long bookBukkit, bookProtocol, bookFallbacks, bookClaims, worldReads;
+ 
+     TapBarHook(ExcelWandBars plugin, MagicAPI api) { this.plugin = plugin; this.api = api; }
+ 
+@@ -139,6 +156,9 @@
+         tapWand = tws.equals("false") || tws.equals("off") || tws.equals("none") ? "off" : tws.equals("close") ? "close" : "toggle";
+         tapWandGuardMs = Math.max(0, c == null ? 700 : c.getLong("tap-wand-guard-ms", 700));
+         tapWandFreshMs = Math.max(0, c == null ? 1000 : c.getLong("tap-wand-fresh-input-ms", 1000));
++        bookHoldEnabled = c == null || c.getBoolean("book-hold", true);
++        bookHoldMs = Math.max(100, c == null ? BookHoldPlan.DEFAULT_HOLD_MS : c.getLong("book-hold-ms", BookHoldPlan.DEFAULT_HOLD_MS));
++        bookHoldJava = c != null && c.getBoolean("book-hold-java", false);
+     }
+ 
+     boolean tapWandWanted() { return !"off".equals(tapWand); }
+@@ -204,6 +224,7 @@
+     }
+ 
+     void cancelCrouchHold(Player p) {
++        if (p != null) bookHold.cancel(p.getUniqueId());
+         try { Class.forName("com.winkreyes.excelwandbars.GeyserHoldHook").getMethod("reset", UUID.class).invoke(null,p.getUniqueId()); } catch (Throwable ignored) { }
+     }
+ 
+@@ -216,15 +237,146 @@
+         } catch(Throwable unavailable){return "hold hook unavailable";}
+         Wand w=tapWand(p);
+         if(w==null || !w.canUse(p) || p.getInventory().getHeldItemSlot()!=slot) return "not held rank wand";
+-        MagicHook mh=plugin.magicHook();
+-        if(mh==null)return "no Magic";
++        // The protocol path keeps its transaction-typed air semantics (no raytrace).
++        return dispatchBook(p, "protocol", false);
++    }
++
++    // ------------------------------------------------------------------ 0.3.5 crouch + hold book (Bukkit signals)
++
++    /** Sneak edges for the book gate. */
++    @EventHandler(priority = EventPriority.MONITOR)
++    public void onSneakBookTrack(org.bukkit.event.player.PlayerToggleSneakEvent event) {
++        UUID id = event.getPlayer().getUniqueId();
++        if (event.isSneaking()) sneakDownAt.put(id, System.currentTimeMillis());
++        else { sneakDownAt.remove(id); bookHold.sneakUp(id); bookPressStart.remove(id); bookLastSignal.remove(id); }
++    }
++
++    /** Observe only: a swing is a use signal for the book gate. Never cancels or alters anything. */
++    @EventHandler(priority = EventPriority.MONITOR)
++    public void onSwingBookFeed(PlayerAnimationEvent event) {
++        if (event.getAnimationType() != PlayerAnimationType.ARM_SWING) return;
++        bookSignal(event.getPlayer(), BookHoldPlan.USE_AIR);
++    }
++
++    /** Observe only: right click air continues a hold; right click block latches it disqualified. */
++    @EventHandler(priority = EventPriority.MONITOR)
++    public void onInteractBookFeed(PlayerInteractEvent event) {
++        if (event.getHand() != null && event.getHand() != org.bukkit.inventory.EquipmentSlot.HAND) return;
++        if (event.getAction() == Action.RIGHT_CLICK_AIR) bookSignal(event.getPlayer(), BookHoldPlan.USE_AIR);
++        else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) bookSignal(event.getPlayer(), BookHoldPlan.USE_BLOCK);
++    }
++
++    private void bookSignal(Player p, int kind) {
++        if (!bookHoldEnabled || p == null) return;
++        if (!plugin.isBedrock(p) && !bookHoldJava) return;
++        if (!tapBarStyle(p)) return;
++        UUID id = p.getUniqueId();
++        long now = System.currentTimeMillis();
++        boolean sneaking = p.isSneaking();
++        // Sneak-first is judged against the PRESS, not the signal: a press that began
++        // before the crouch belongs to hold-to-read for its whole life (design 6.1, 6.3e).
++        // The press chain uses the world hold's own gap window, so both features agree
++        // on where one press ends and the next begins.
++        Long lastSig = bookLastSignal.get(id);
++        long pressStart;
++        if (lastSig == null || now - lastSig > holdGapMs) { pressStart = now; bookPressStart.put(id, now); }
++        else pressStart = bookPressStart.getOrDefault(id, now);
++        bookLastSignal.put(id, now);
++        Long down = sneakDownAt.get(id);
++        boolean sneakFirst = sneaking && down != null && down < pressStart;
++        long startBefore = bookHold.burstStart(id);
++        boolean fire = bookHold.signal(id, now, kind, sneaking, sneakFirst, bookHoldMs);
++        if (fire) { dispatchBook(p, "bukkit", true); return; }
++        long startAfter = bookHold.burstStart(id);
++        if (startAfter > 0 && startAfter != startBefore) scheduleBookCheck(p, startAfter);
++    }
++
++    /** The scheduled threshold check: carries a sparse-cadence hold across the line (design 6.1). */
++    private void scheduleBookCheck(Player p, long burstStart) {
++        long ticks = Math.max(1L, (bookHoldMs + 49) / 50);
++        Bukkit.getScheduler().runTaskLater(plugin, () -> runBookCheck(p, burstStart), ticks);
++    }
++
++    /**
++     * The threshold check itself. Ticks are a scheduling hint, not a clock: after a
++     * server stall the scheduler can run several ticks inside a fraction of the
++     * wall-clock hold window, so a check that arrives before the threshold has
++     * actually elapsed waits out the remainder instead of judging the burst early.
++     */
++    private void runBookCheck(Player p, long burstStart) {
++        UUID id = p.getUniqueId();
++        if (!p.isOnline() || bookHold.burstStart(id) != burstStart) return;
++        long now = System.currentTimeMillis();
++        if (now - burstStart < bookHoldMs) {
++            long restTicks = Math.max(1L, (bookHoldMs - (now - burstStart) + 49) / 50);
++            Bukkit.getScheduler().runTaskLater(plugin, () -> runBookCheck(p, burstStart), restTicks);
++            return;
++        }
++        BookHoldPlan.Check c = bookHold.scheduledCheck(id, now, p.isSneaking(), bookHoldMs);
++        if (c == BookHoldPlan.Check.FIRE) { dispatchBook(p, "bukkit", true); return; }
++        if (c == BookHoldPlan.Check.GRACE) {
++            long graceTicks = Math.max(1L, (BookHoldPlan.GRACE_MS + 49) / 50);
++            Bukkit.getScheduler().runTaskLater(plugin, () -> {
++                if (!p.isOnline() || bookHold.burstStart(id) != burstStart) return;
++                if (bookHold.scheduledCheck(id, System.currentTimeMillis(), p.isSneaking(), bookHoldMs) == BookHoldPlan.Check.FIRE)
++                    dispatchBook(p, "bukkit", true);
++            }, graceTicks);
++        }
++    }
++
++    /**
++     * 0.3.5: the one book dispatch for both qualification paths (protocol fast path and the
++     * Bukkit signal gate). Failure semantics (design 6.2): non-qualifications stay silent
++     * (result strings go to the debug log as before); a QUALIFIED hold whose form open fails
++     * falls back to the menu path's chat book, and if even that cannot run the player gets
++     * one visible line and the console a warning. A second dispatch within 1500 ms of a
++     * successful fire is dropped (a client feeding both paths must not open the book twice).
++     */
++    private String dispatchBook(Player p, String source, boolean raytraceAim) {
++        if (p == null || !p.isOnline()) return "offline";
++        UUID id = p.getUniqueId();
++        if (!p.isSneaking()) return "not crouched";
++        if (!plugin.isBedrock(p) && !bookHoldJava) return "not Bedrock";
++        Wand w = tapWand(p);
++        if (w == null || !w.canUse(p)) return "not held rank wand";
++        if (raytraceAim && p.getTargetBlockExact(6) != null) return "aimed at block";
++        long now = System.currentTimeMillis();
++        Long firedAt = lastBookFire.get(id);
++        if (firedAt != null && now - firedAt <= 1500) return "already fired";
++        MagicHook mh = plugin.magicHook();
++        if (mh == null) { bookOpenFailed(p, "no Magic"); return "no Magic"; }
+         // This is an intentional form request. Guard its slot resyncs, not ordinary world taps.
+         noteServerChange(p);
+-        boolean shown=mh.openSpellBook(p,null,true);
+-        if(shown){holdsInfo++;lastHold.put(p.getUniqueId(),"crouch hold book");}
+-        return shown?"book":"not shown";
++        boolean shown = mh.openSpellBook(p, null, true);
++        if (shown) {
++            lastBookFire.put(id, now);
++            holdsInfo++;
++            if ("bukkit".equals(source)) bookBukkit++; else bookProtocol++;
++            lastHold.put(id, "crouch hold book");
++            return "book";
++        }
++        // Qualified hold, form open failed: retry the way the menu path does (chat book).
++        boolean chat = mh.openSpellBook(p, null, false);
++        if (chat) {
++            lastBookFire.put(id, now);
++            holdsInfo++;
++            bookFallbacks++;
++            if ("bukkit".equals(source)) bookBukkit++; else bookProtocol++;
++            lastHold.put(id, "crouch hold book (chat)");
++            return "book (chat)";
++        }
++        bookOpenFailed(p, "not shown");
++        return "not shown";
++    }
++
++    private void bookOpenFailed(Player p, String result) {
++        p.sendMessage(Component.text("The Spell Book did not open. Type /spellbook to try again.", NamedTextColor.GRAY));
++        plugin.getLogger().warning("Crouch hold book failed for " + p.getName() + ": " + result);
+     }
+ 
++    /** Book gate state for the arrange/screen hooks and admin: is a sneak-first burst claiming this player's holds? */
++    boolean bookClaimed(Player p) { return p != null && bookHold.claimed(p.getUniqueId()); }
++
+     void start() {
+         if (ticker != null) ticker.cancel();
+         ticker = Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 20L, 10L);
+@@ -245,7 +397,8 @@
+                 + ", Tap bar slot-hold shows spell info " + (holdShowsInfo ? "ON (world taps never open Book; slot hold after a tap reads within " + holdReadsTapMs + " ms)" : "OFF") + ", icon lore " + (!iconLore ? "OFF" : loreMagicStyle ? "Magic's text + next rank" : "Spell Book text")
+                 + ", Tap to pick: tap picks (quick_cast manual), right click handled (Java open / items back, Bedrock hold casts once)"
+                 + ", Tap bar tap the wand: " + tapWand + " (guard " + tapWandGuardMs + " ms, source " + wandTapSource + ")"
+-                + ", tap echo guard: fresh input within " + tapWandFreshMs + " ms or a confirming re-tap";
++                + ", tap echo guard: fresh input within " + tapWandFreshMs + " ms or a confirming re-tap"
++                + ", crouch + hold book: " + (bookHoldEnabled ? "ON (" + bookHoldMs + " ms on Bukkit signals; protocol fast path kept" + (bookHoldJava ? "; Java armed" : "") + ")" : "OFF");
+     }
+     String counters() { return "opened " + opened + " idle-closed " + closedIdle + " empty-closed " + closedEmpty + " other-closed " + closedOther
+             + " hold-info " + holdsInfo + " hold-open " + holdsOpen + " hold-merged " + holdsMerged + " hold-skipped " + holdsSkipped + " lore " + loreSet
+@@ -254,7 +407,8 @@
+             + " right-uses " + rightReads + " right-opens " + rightOpens + " right-closes " + rightCloses + " right-repeats " + rightRepeats
+             + " pick-right-opens " + origRightOpens + " pick-right-closes " + origRightCloses + " pick-hold-casts " + origHoldCasts
+             + " pick-hold-swing-cast " + origHoldSwingCast + " pick-right-repeats " + origRightRepeats
+-            + " wand-tap seen " + wandTapSeen + " closes " + wandTapCloses + " opens " + wandTapOpens + " guarded " + wandTapGuarded + " ignored " + wandTapIgnored + " echo " + wandTapEcho; }
++            + " wand-tap seen " + wandTapSeen + " closes " + wandTapCloses + " opens " + wandTapOpens + " guarded " + wandTapGuarded + " ignored " + wandTapIgnored + " echo " + wandTapEcho
++            + " book-hold bukkit " + bookBukkit + " protocol " + bookProtocol + " fallbacks " + bookFallbacks + " claims " + bookClaims + " world-reads " + worldReads; }
+     String lastHold(Player p) { return lastHold.getOrDefault(p.getUniqueId(), "-"); }
+     String lastCast(Player p) { return lastCast.getOrDefault(p.getUniqueId(), "-") + " x" + casts.getOrDefault(p.getUniqueId(), 0); }
+ 
+@@ -692,6 +846,8 @@
+         // in the same burst, before or after it. Then it was a use, not a hold.
+         Bukkit.getScheduler().runTaskLater(plugin, () -> {
+             if (!p.isOnline()) return;
++            // 0.3.5: a sneak-first burst belongs to the crouch + hold book gate, never to a read.
++            if (bookHold.claimed(id)) { bookClaims++; holdsSkipped++; return; }
+             if (p.isSneaking() || nearUseClick(id)) { holdsSkipped++; return; }
+             Wand w = holdWand(p);
+             if (w == null) { holdsSkipped++; return; }
+@@ -704,6 +860,7 @@
+         long now = System.currentTimeMillis();
+         Long prev = lastSwing.put(id, now);
+         if (prev != null && now - prev < holdGapMs) { holdsMerged++; return; } // the same finger still down
++        worldReads++;
+         lastUse.put(id, now);
+         if (!w.isInventoryOpen()) {
+             String r = tryOpen(p, "press and hold");
+@@ -809,6 +966,7 @@
+         cancelCrouchHold(event.getPlayer());
+         UUID id = event.getPlayer().getUniqueId();
+         lastHoldSignal.remove(id); lastRight.remove(id); lastUse.remove(id); lastSwing.remove(id); lastTapKey.remove(id); lastTapAt.remove(id); lastHold.remove(id); lastUseClick.remove(id); lastSlotPick.remove(id); lastCastStart.remove(id); lastServerChange.remove(id); lastWandTapPrime.remove(id);
++        sneakDownAt.remove(id); bookPressStart.remove(id); bookLastSignal.remove(id); lastBookFire.remove(id); bookHold.cancel(id);
+     }
+ 
+     private void tick() {
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/core/ArrangePlan.java b/src/com/winkreyes/excelwandbars/core/ArrangePlan.java
+--- a/prev-src/com/winkreyes/excelwandbars/core/ArrangePlan.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/excelwandbars/core/ArrangePlan.java	2026-10-30 19:00:59.732077764 +0000
+@@ -0,0 +1,150 @@
++package com.winkreyes.excelwandbars.core;
++
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.UUID;
++
++/**
++ * 0.3.5: Arrange mode's intent interpreter (design 2.3). Pure logic, no Bukkit.
++ *
++ * One interpreter, two input dialects: Java's real drag events and Bedrock's
++ * tap-tap (pickup commit, then place commit) are both translated by the hook
++ * into the same primitive inputs here, so the two platforms can never grow
++ * different arrange rules:
++ *
++ *   pickup(spell, fromLoadoutSlot)  the player lifted a bar icon
++ *   place(target)                   the player put it down: a bar slot, outside
++ *                                   the bar row, or a protected slot
++ *   drop()                          the player dropped it (Q) with it lifted
++ *   drag(spell, from, targets)      one whole drag gesture in a single call
++ *
++ * Rules:
++ *  - Not armed: every input is NONE (the mode is off for this player).
++ *  - Place with nothing lifted, and places onto a protected slot (the wand
++ *    slot, the exit column), are inert: NONE / RETURN, the lift forgotten.
++ *  - Place outside the bar row is REMOVE; onto another bar slot is MOVE;
++ *    back onto its own slot is RETURN.
++ *  - Drop is REMOVE, lifted or (dropSlot) straight off the icon's slot.
++ *  - A drag whose target set reaches outside the bar row is REMOVE; otherwise
++ *    MOVE to the farthest bar target in the set.
++ *  - Duplicates: a real client plus its protocol translation can commit the
++ *    same gesture twice; a second terminal commit for the same spell within
++ *    {@link #DEDUPE_MS} of a REMOVE / MOVE is swallowed as NONE.
++ */
++public final class ArrangePlan {
++    public static final long DEDUPE_MS = 500;
++
++    public enum TargetKind { BAR, OUTSIDE, PROTECTED }
++
++    /** One place target: a loadout slot (BAR), anywhere outside the bar row, or a protected slot. */
++    public static final class Target {
++        public final TargetKind kind;
++        public final int loadoutSlot;
++        private Target(TargetKind k, int s) { kind = k; loadoutSlot = s; }
++        public static Target bar(int loadoutSlot) { return new Target(TargetKind.BAR, loadoutSlot); }
++        public static Target outside() { return new Target(TargetKind.OUTSIDE, -1); }
++        public static Target protectedSlot() { return new Target(TargetKind.PROTECTED, -1); }
++    }
++
++    public enum Intent { NONE, REMOVE, MOVE, RETURN }
++
++    public static final class Result {
++        public final Intent intent;
++        public final String spell;
++        /** REMOVE: the slot it leaves. MOVE: the slot it goes to. */
++        public final int slot;
++        Result(Intent i, String s, int slot) { intent = i; spell = s; this.slot = slot; }
++        public boolean terminal() { return intent == Intent.REMOVE || intent == Intent.MOVE; }
++    }
++
++    private static final Result NONE = new Result(Intent.NONE, null, -1);
++
++    private static final class Lift { String spell; int from; }
++    private static final class Done { String spell; long at; }
++
++    private final Map<UUID, Boolean> armed = new HashMap<>();
++    private final Map<UUID, Lift> lifts = new HashMap<>();
++    private final Map<UUID, Done> lastDone = new HashMap<>();
++
++    public synchronized void setArmed(UUID id, boolean on) {
++        if (id == null) return;
++        if (on) armed.put(id, Boolean.TRUE);
++        else { armed.remove(id); lifts.remove(id); }
++    }
++
++    public synchronized boolean isArmed(UUID id) { return id != null && armed.containsKey(id); }
++    public synchronized boolean hasLift(UUID id) { return id != null && lifts.containsKey(id); }
++
++    /** The player lifted a bar icon (a second lift replaces the first). */
++    public synchronized void pickup(UUID id, String spell, int fromLoadoutSlot, long now) {
++        if (!isArmed(id) || spell == null) return;
++        Lift l = new Lift();
++        l.spell = spell; l.from = fromLoadoutSlot;
++        lifts.put(id, l);
++    }
++
++    /** The player put the lifted icon down. */
++    public synchronized Result place(UUID id, Target target, long now) {
++        Lift l = id == null ? null : lifts.remove(id);
++        if (!isArmed(id) || l == null || target == null) return NONE;
++        switch (target.kind) {
++            case PROTECTED: return new Result(Intent.RETURN, l.spell, l.from);
++            case OUTSIDE: return commit(id, new Result(Intent.REMOVE, l.spell, l.from), now);
++            case BAR:
++                if (target.loadoutSlot == l.from) return new Result(Intent.RETURN, l.spell, l.from);
++                return commit(id, new Result(Intent.MOVE, l.spell, target.loadoutSlot), now);
++            default: return NONE;
++        }
++    }
++
++    /** Dropped (Q) with the icon lifted. */
++    public synchronized Result drop(UUID id, long now) {
++        Lift l = id == null ? null : lifts.remove(id);
++        if (!isArmed(id) || l == null) return NONE;
++        return commit(id, new Result(Intent.REMOVE, l.spell, l.from), now);
++    }
++
++    /** Dropped (Q) while hovering the icon in its own slot (nothing lifted). */
++    public synchronized Result dropSlot(UUID id, String spell, int fromLoadoutSlot, long now) {
++        if (!isArmed(id) || spell == null) return NONE;
++        lifts.remove(id);
++        return commit(id, new Result(Intent.REMOVE, spell, fromLoadoutSlot), now);
++    }
++
++    /** One whole drag gesture: the icon, where it started, every slot the drag touched. */
++    public synchronized Result drag(UUID id, String spell, int fromLoadoutSlot, List<Target> targets, long now) {
++        if (!isArmed(id) || spell == null || targets == null || targets.isEmpty()) return NONE;
++        lifts.remove(id);
++        Target farthest = null;
++        for (Target t : targets) {
++            if (t == null) continue;
++            if (t.kind == TargetKind.OUTSIDE) return commit(id, new Result(Intent.REMOVE, spell, fromLoadoutSlot), now);
++            if (t.kind == TargetKind.BAR && (farthest == null
++                    || Math.abs(t.loadoutSlot - fromLoadoutSlot) > Math.abs(farthest.loadoutSlot - fromLoadoutSlot))) farthest = t;
++        }
++        if (farthest == null) return new Result(Intent.RETURN, spell, fromLoadoutSlot); // only protected slots touched
++        if (farthest.loadoutSlot == fromLoadoutSlot) return new Result(Intent.RETURN, spell, fromLoadoutSlot);
++        return commit(id, new Result(Intent.MOVE, spell, farthest.loadoutSlot), now);
++    }
++
++    /** Forget any pending lift (the read form opened, the screen closed). */
++    public synchronized void cancelLift(UUID id) { if (id != null) lifts.remove(id); }
++
++    public synchronized void forget(UUID id) {
++        if (id == null) return;
++        armed.remove(id); lifts.remove(id); lastDone.remove(id);
++    }
++
++    public synchronized void clear() { armed.clear(); lifts.clear(); lastDone.clear(); }
++
++    /** Dedupe: the same spell's terminal commit twice inside the window counts once. */
++    private Result commit(UUID id, Result r, long now) {
++        Done d = lastDone.get(id);
++        if (d != null && d.spell != null && d.spell.equals(r.spell) && now - d.at < DEDUPE_MS && now >= d.at) return NONE;
++        Done n = new Done();
++        n.spell = r.spell; n.at = now;
++        lastDone.put(id, n);
++        return r;
++    }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/core/BarLoadout.java b/src/com/winkreyes/excelwandbars/core/BarLoadout.java
+--- a/prev-src/com/winkreyes/excelwandbars/core/BarLoadout.java	2026-10-30 18:03:11.057055973 +0000
++++ b/src/com/winkreyes/excelwandbars/core/BarLoadout.java	2026-10-30 18:09:54.860958815 +0000
+@@ -36,6 +36,16 @@
+ 
+     private final List<String> slots = new ArrayList<>();
+     private final Set<String> seen = new LinkedHashSet<>();
++    /**
++     * 0.3.5: spells learned since the seed baseline that the player has not
++     * acknowledged yet (the Spell Book's New tab). A spell enters at the same
++     * seen-transition that announces it (placed on the bar or parked alike)
++     * and leaves only when the player places it (any put of that key) or
++     * acknowledges it (ackNew / ackAllNew). Viewing, reading and removing
++     * never clear it. The seed is a baseline, never an unlock: seed() leaves
++     * this set empty.
++     */
++    private final Set<String> unacked = new LinkedHashSet<>();
+ 
+     public BarLoadout(int size) { resize(size); }
+ 
+@@ -92,6 +102,11 @@
+ 
+     /** Restore from storage. Unknown junk (blank, duplicates) is dropped. */
+     public static BarLoadout restore(List<String> storedSlots, Collection<String> storedSeen, int size) {
++        return restore(storedSlots, storedSeen, null, size);
++    }
++
++    /** Restore, with the 0.3.5 unacknowledged-new set (only keys that are also seen survive). */
++    public static BarLoadout restore(List<String> storedSlots, Collection<String> storedSeen, Collection<String> storedUnacked, int size) {
+         BarLoadout l = new BarLoadout(size);
+         Set<String> used = new java.util.HashSet<>();
+         if (storedSlots != null) {
+@@ -102,9 +117,22 @@
+         }
+         if (storedSeen != null) for (String s : storedSeen) { String k = norm(s); if (k != null) l.seen.add(k); }
+         for (String s : l.slots) if (s != null) l.seen.add(s);
++        if (storedUnacked != null) for (String s : storedUnacked) { String k = norm(s); if (k != null && l.seen.contains(k)) l.unacked.add(k); }
+         return l;
+     }
+ 
++    // ------------------------------------------------------------------ 0.3.5 New spells (unacknowledged)
++
++    public Set<String> unacked() { return java.util.Collections.unmodifiableSet(unacked); }
++    public int newCount() { return unacked.size(); }
++    /** Unacknowledged spell keys, in the order they were learned. */
++    public List<String> newSpells() { return new ArrayList<>(unacked); }
++    public boolean isNew(String key) { String k = norm(key); return k != null && unacked.contains(k); }
++    /** "Got it" for one spell. Returns true when it was marked new. */
++    public boolean ackNew(String key) { String k = norm(key); return k != null && unacked.remove(k); }
++    /** "Mark all as seen". Returns how many were marked new. */
++    public int ackAllNew() { int n = unacked.size(); unacked.clear(); return n; }
++
+     /** Storage form: one entry per slot, "" for empty. */
+     public List<String> storedSlots() {
+         List<String> out = new ArrayList<>();
+@@ -116,6 +144,8 @@
+     public static final class Sync {
+         public final Map<String, Integer> placed = new LinkedHashMap<>();
+         public final List<String> toBook = new ArrayList<>();
++        /** 0.3.5: keys that entered the New set in this sync (placed and parked alike). */
++        public final List<String> newKeys = new ArrayList<>();
+         public boolean changed() { return !placed.isEmpty() || !toBook.isEmpty(); }
+         public int count() { return placed.size() + toBook.size(); }
+     }
+@@ -123,6 +153,7 @@
+     /**
+      * The held wand's spells, in the order new ones should be placed (template order first).
+      * Spells not seen yet go into the first empty slots, the rest to the Spellbook.
++     * Either way they enter the New set (0.3.5) until placed by the player or acknowledged.
+      */
+     public Sync sync(List<String> wandOrder) {
+         Sync r = new Sync();
+@@ -131,6 +162,8 @@
+             if (k == null || seen.contains(k)) continue;
+             seen.add(k);
+             if (indexOf(k) >= 0) continue; // a manual pick before it was seen (cannot normally happen)
++            unacked.add(k);
++            r.newKeys.add(k);
+             int e = firstEmpty();
+             if (e >= 0) { slots.set(e, k); r.placed.put(k, e); }
+             else r.toBook.add(k);
+@@ -155,6 +188,7 @@
+         String k = norm(key);
+         if (k == null || slot < 0 || slot >= slots.size()) return new Change("bad", k, null, slot, -1);
+         seen.add(k);
++        unacked.remove(k); // 0.3.5: placing a spell (from any surface) acknowledges its unlock
+         int from = indexOf(k);
+         String there = slots.get(slot);
+         if (from == slot) return new Change("same", k, null, slot, from);
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/core/BookHoldPlan.java b/src/com/winkreyes/excelwandbars/core/BookHoldPlan.java
+--- a/prev-src/com/winkreyes/excelwandbars/core/BookHoldPlan.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/excelwandbars/core/BookHoldPlan.java	2026-10-30 18:16:56.956975197 +0000
+@@ -0,0 +1,136 @@
++package com.winkreyes.excelwandbars.core;
++
++import java.util.HashMap;
++import java.util.Map;
++import java.util.UUID;
++
++/**
++ * 0.3.5: the crouch + hold Spell Book gesture, qualified on Bukkit signals.
++ *
++ * The protocol gate (CrouchHoldGate) starves on real Bedrock clients: it needs a
++ * PLAYER_INPUT start followed by repeated SIMULATION_TICK transactions, and the
++ * shipped Geyser never synthesizes that feed (investigation, Oct 30 2026). This
++ * gate qualifies the same gesture on the signal family the plugin already proves
++ * daily on real clients (arm swings and right-click-air interacts, observed at
++ * MONITOR): crouch FIRST, then press and hold use on air for the hold window.
++ *
++ * Pure logic, no Bukkit types: server timestamps and tick arithmetic only, in
++ * the same shape as CrouchHoldGate / WandSlotPlan. Freshness vocabulary is
++ * shared with CrouchHoldGate (400 ms hold, 450 ms max gap) so the two gates
++ * cannot drift apart silently.
++ *
++ * Rules (design section 6.1):
++ *  - A burst starts only on a sneak-first use signal: the crouch was already
++ *    down before this PRESS began (the caller judges it against the press
++ *    chain, so press-first-then-crouch belongs to hold-to-read for the whole
++ *    press, and a same-moment crouch + press is not sneak-first either).
++ *  - Continuation is a freshness rule only (gap &lt;= 450 ms); no cadence is
++ *    prescribed, so sparse client rhythms still qualify.
++ *  - The gate fires once per burst, at the threshold, while the finger is
++ *    still down: either on a signal arrival past the threshold, or from the
++ *    scheduled check (see {@link #scheduledCheck}), with one grace re-check.
++ *  - A use-on-block signal latches the burst disqualified (aiming at a block
++ *    mid-hold kills that hold; tilting to the sky starts a fresh one).
++ *  - After a fire or a disqualification the gate re-arms only when the burst
++ *    fully ends: sneak released, or use-signal silence over 500 ms.
++ */
++public final class BookHoldPlan {
++    /** Signal kinds fed by the hook. */
++    public static final int USE_AIR = 0, USE_BLOCK = 1;
++    /** CrouchHoldGate's own constants, shared on purpose. */
++    public static final long DEFAULT_HOLD_MS = 400, MAX_GAP_MS = 450;
++    /** A fired / disqualified burst re-arms after this much signal silence. */
++    public static final long REARM_SILENCE_MS = 500;
++    /** The scheduled check gets exactly one grace re-check this much later. */
++    public static final long GRACE_MS = 150;
++    private static final int MAX_PLAYERS = 2048;
++
++    /** Scheduled threshold check outcomes. */
++    public enum Check { FIRE, GRACE, DEAD }
++
++    private static final class State {
++        long start, last;
++        boolean claimed, disqualified, fired, graceUsed;
++    }
++
++    private final Map<UUID, State> states = new HashMap<>();
++
++    private void restart(State s, long now) {
++        s.start = now; s.last = now;
++        s.claimed = true; s.disqualified = false; s.fired = false; s.graceUsed = false;
++    }
++
++    /**
++     * One use signal. sneakFirst: the crouch was already down before this press
++     * began. Returns true when this signal fires the gate.
++     */
++    public synchronized boolean signal(UUID id, long now, int kind, boolean sneaking, boolean sneakFirst, long holdMs) {
++        if (id == null) return false;
++        State s = states.get(id);
++        if (kind == USE_BLOCK) {
++            if (s != null) s.disqualified = true; // latch: this hold aimed at a block
++            return false;
++        }
++        if (!sneaking) { states.remove(id); return false; }
++        if (s == null) {
++            if (!sneakFirst) return false; // press-first bursts belong to hold-to-read
++            if (states.size() >= MAX_PLAYERS) return false;
++            s = new State();
++            restart(s, now);
++            states.put(id, s);
++            return false;
++        }
++        if (s.fired || s.disqualified) {
++            // Latched until the burst fully ends (sneak up, or silence over the re-arm window).
++            if (now - s.last > REARM_SILENCE_MS && sneakFirst) { restart(s, now); return false; }
++            s.last = now;
++            return false;
++        }
++        if (now - s.last > MAX_GAP_MS) {
++            // The burst died of silence; this signal starts a fresh one.
++            if (sneakFirst) { restart(s, now); return false; }
++            states.remove(id);
++            return false;
++        }
++        s.last = now;
++        if (now - s.start >= Math.max(1, holdMs)) { s.fired = true; return true; }
++        return false;
++    }
++
++    /**
++     * The scheduled threshold check (the hook schedules it for burst start +
++     * holdMs): fires when the last signal is still fresh; one GRACE re-check
++     * when freshness fails by a hair; DEAD otherwise (burst gone, fired,
++     * disqualified, sneak released, or threshold not yet reached).
++     */
++    public synchronized Check scheduledCheck(UUID id, long now, boolean sneaking, long holdMs) {
++        State s = states.get(id);
++        if (s == null || s.fired || s.disqualified) return Check.DEAD;
++        if (!sneaking) { states.remove(id); return Check.DEAD; }
++        if (now - s.start < Math.max(1, holdMs)) return Check.DEAD;
++        if (now - s.last <= MAX_GAP_MS) { s.fired = true; return Check.FIRE; }
++        if (!s.graceUsed) { s.graceUsed = true; return Check.GRACE; }
++        states.remove(id);
++        return Check.DEAD;
++    }
++
++    /** True while a sneak-first burst is live and has not fired: hold-to-read stands down for it. */
++    public synchronized boolean claimed(UUID id) {
++        State s = states.get(id);
++        return s != null && s.claimed && !s.fired;
++    }
++
++    /** Start time of the live burst (0 = none), so the hook can schedule per burst. */
++    public synchronized long burstStart(UUID id) {
++        State s = states.get(id);
++        return s == null ? 0L : s.start;
++    }
++
++    /** Sneak released: the burst is over, fired or not. */
++    public synchronized void sneakUp(UUID id) { states.remove(id); }
++
++    /** Cancellation feeds (wand tap, other inventory, quit, wand reconfigure). */
++    public synchronized void cancel(UUID id) { states.remove(id); }
++
++    public synchronized void clear() { states.clear(); }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/core/HoldReadPlan.java b/src/com/winkreyes/excelwandbars/core/HoldReadPlan.java
+--- a/prev-src/com/winkreyes/excelwandbars/core/HoldReadPlan.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/com/winkreyes/excelwandbars/core/HoldReadPlan.java	2026-10-30 18:14:51.469970327 +0000
+@@ -0,0 +1,57 @@
++package com.winkreyes.excelwandbars.core;
++
++import java.util.HashMap;
++import java.util.Map;
++import java.util.UUID;
++
++/**
++ * 0.3.5: hold-to-read inside the inventory screen (design 3.3). Pure logic, no Bukkit.
++ *
++ * Pinning the native Bedrock tooltip is not possible (its duration is chosen
++ * client-side; there is no server-set tooltip duration to extend), so an
++ * in-screen lift that is still uncommitted after the hold window becomes a
++ * read: the hook opens the spell's detail form, which never fades. Any commit
++ * (a place, a second tap that lands, the arrange intent firing, the screen or
++ * the bar closing) cancels the pending read. A second lift replaces the first.
++ */
++public final class HoldReadPlan {
++    private static final class State { String spell; long at; boolean fired; }
++    private final Map<UUID, State> states = new HashMap<>();
++
++    /** A bar icon was lifted (tapped) in the screen at this time. */
++    public synchronized void lift(UUID id, String spell, long now) {
++        if (id == null || spell == null) return;
++        State s = new State();
++        s.spell = spell; s.at = now;
++        states.put(id, s);
++    }
++
++    /** Any commit cancels the pending read. */
++    public synchronized void commit(UUID id) { if (id != null) states.remove(id); }
++
++    /** The inventory screen closed: no read. */
++    public synchronized void screenClosed(UUID id) { commit(id); }
++
++    /** The spell bar closed: no read. */
++    public synchronized void barClosed(UUID id) { commit(id); }
++
++    /**
++     * At the deadline: the spell to read when the lift is still uncommitted and
++     * the full hold window has passed; null otherwise. Fires exactly once.
++     */
++    public synchronized String decide(UUID id, long now, long holdMs) {
++        State s = id == null ? null : states.get(id);
++        if (s == null || s.fired) return null;
++        if (now - s.at >= Math.max(1, holdMs)) { s.fired = true; return s.spell; }
++        return null;
++    }
++
++    /** A lift is waiting out its hold window (not yet fired). */
++    public synchronized boolean pending(UUID id) {
++        State s = id == null ? null : states.get(id);
++        return s != null && !s.fired;
++    }
++
++    public synchronized void forget(UUID id) { if (id != null) states.remove(id); }
++    public synchronized void clear() { states.clear(); }
++}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/core/LoadoutText.java b/src/com/winkreyes/excelwandbars/core/LoadoutText.java
+--- a/prev-src/com/winkreyes/excelwandbars/core/LoadoutText.java	2026-10-30 18:03:11.061877639 +0000
++++ b/src/com/winkreyes/excelwandbars/core/LoadoutText.java	2026-10-30 18:12:22.965964563 +0000
+@@ -24,6 +24,8 @@
+     public static String newInBook(String name) { return "New spell: " + name + " is in your Spellbook"; }
+     public static String more(int n) { return n + " more new spell" + (n == 1 ? "" : "s") + ". See /spellbook"; }
+     public static final String HOW_TO_CHANGE = "Change your bar: /spellbar";
++    /** 0.3.5: appended under the announce lines when the sync also badged new spells. */
++    public static final String NEW_POINTER = "Find them under New spells in the Spell Book.";
+ 
+     /** The chat lines for one sync: at most max named lines, then one "N more" line. */
+     public static List<String> announce(List<String> placedNames, List<String> bookNames, int max) {
+@@ -113,6 +115,20 @@
+     public static final String NOT_BAR_STYLE = "Your wand style has no spell bar. Pick Tap bar with /wandstyle to use one.";
+     public static final String OFF = "Spell bars are not turned on here.";
+ 
++    // ---------------------------------------------------------------- 0.3.5 arrange + new tab
++
++    public static final String FIRST_FREE = "First free slot";
++    public static final String ARRANGE_BUTTON = "Arrange by dragging";
++
++    /** The arrange mode's one instruction line (wording per platform, design 2.2). */
++    public static String arrangeHint(boolean bedrock) {
++        return bedrock ? "Arrange is on. Tap a spell on the bottom row, then tap below it to take it off your bar. It stays in your Spellbook."
++                : "Arrange is on. Drag spells off the bottom row to take them off your bar. They stay in your Spellbook.";
++    }
++
++    /** The acknowledgement result line. */
++    public static String gotIt(String name) { return name + " marked as seen."; }
++
+     /** Crouch on a one-page bar (replaces 0.2.8's "all N of your spells are on the bar"). */
+     public static String onePage(int onBar, int total) {
+         return onBar >= total ? "Page 1/1: all " + total + " of your spells are on the bar"
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/core/SpellTip.java b/src/com/winkreyes/excelwandbars/core/SpellTip.java
+--- a/prev-src/com/winkreyes/excelwandbars/core/SpellTip.java	2026-10-30 18:03:11.062709408 +0000
++++ b/src/com/winkreyes/excelwandbars/core/SpellTip.java	2026-10-30 18:09:28.315957785 +0000
+@@ -74,7 +74,7 @@
+ 
+     public static final String FEATURE = "spellscreen";
+     public static final String TITLE = "Spell Book tip";
+-    public static final String B_OPEN = "Spell Book: crouch and press and hold with your wand (controller: crouch and press LT) to open it.";
++    public static final String B_OPEN = "Spell Book: crouch and press and hold on air with your wand (controller: crouch and press LT) to open it.";
+     public static final String B_USE = "Tap a spell to read it, then tap Use this spell to put it on your wand.";
+     public static final String J_OPEN = "Spell Book: type /spellbook to see your rank and what each spell's next rank needs.";
+     public static final String PROGRESS = "Each spell shows its rank and what its next rank needs. If casting counts, a line above your hotbar shows it.";
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/core/SpellbookText.java b/src/com/winkreyes/excelwandbars/core/SpellbookText.java
+--- a/prev-src/com/winkreyes/excelwandbars/core/SpellbookText.java	2026-10-30 18:03:11.062791340 +0000
++++ b/src/com/winkreyes/excelwandbars/core/SpellbookText.java	2026-10-30 18:12:03.377963803 +0000
+@@ -39,6 +39,8 @@
+         /** 1-based Magic hotbar page when the own bar is off (0.2.8 paging), 0 = none. */
+         public int page = 0;
+         public boolean active = false;
++        /** 0.3.5: learned but not yet acknowledged (the New tab). */
++        public boolean isNew = false;
+ 
+         public Entry() {}
+         public Entry(String key, String name, int band, String bandName, boolean locked) {
+@@ -83,6 +85,7 @@
+ 
+     /** One group's spells, sorted by rank band then name (locked ones by the same rule). ALL = every spell A to Z. */
+     public static List<Entry> list(SpellbookGroups g, List<Entry> entries, String groupKey, boolean withLocked) {
++        if (NEW.equals(groupKey)) return newList(entries);
+         List<Entry> out = new ArrayList<>();
+         boolean all = ALL.equals(groupKey);
+         for (Entry e : entries) {
+@@ -132,6 +135,27 @@
+     public static final String JAVA_NEXT = "Next >";
+     public static final String JAVA_GROUPS = "Groups";
+ 
++    /** 0.3.5: the New pseudo-group (a view over entry.isNew, never a stored collection). */
++    public static final String NEW = "new";
++    public static final String NEW_NAME = "New spells";
++    public static final String GOT_IT = "Got it";
++    public static final String MARK_ALL = "Mark all as seen";
++    public static final String NEW_EMPTY = "No new spells. New unlocks will wait here.";
++
++    /** 0.3.5: the New tab's entries: unlocked and unacknowledged, rank band then name. */
++    public static List<Entry> newList(List<Entry> entries) {
++        List<Entry> out = new ArrayList<>();
++        if (entries != null) for (Entry e : entries) if (e != null && e.isNew && !e.locked) out.add(e);
++        out.sort(BY_RANK_THEN_NAME);
++        return out;
++    }
++
++    /** 0.3.5: badge count for the New tab. */
++    public static int newCount(List<Entry> entries) { return newList(entries).size(); }
++
++    /** 0.3.5: the New tab button label with its count, e.g. "New spells (2)". */
++    public static String newButton(int n) { return fit(NEW_NAME + " (" + Math.max(0, n) + ")"); }
++
+     /** "Master Wand: 17 spells" (fits a form line). */
+     public static String wandLine(String wandName, int known) {
+         String tail = ": " + plural(known, "spell", "spells");
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/com/winkreyes/excelwandbars/core/StyleProfile.java b/src/com/winkreyes/excelwandbars/core/StyleProfile.java
+--- a/prev-src/com/winkreyes/excelwandbars/core/StyleProfile.java	2026-10-30 18:03:11.062877530 +0000
++++ b/src/com/winkreyes/excelwandbars/core/StyleProfile.java	2026-10-30 18:09:28.309957785 +0000
+@@ -103,7 +103,7 @@
+         // open or items back on Java). Magic's toggle here closed the bar under a held finger.
+         t.put("right_click", "none");
+         // Crouch-start already flips one page. A repeated held-use must not cycle
+-        // pages again while the protocol-qualified crouch hold requests Book.
++        // pages again while the crouch hold (Bukkit-signal or protocol qualified) requests Book.
+         t.put("right_click_sneak", "none");
+         wanted.put(WandStyle.TAPBAR, t);
+         // Normal vanilla XP below; mana remains in the separate existing boss bar.
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/wrv/magic/evidence/ConsumerFanout.java b/src/wrv/magic/evidence/ConsumerFanout.java
+--- a/prev-src/wrv/magic/evidence/ConsumerFanout.java	2026-10-30 18:03:11.069975111 +0000
++++ b/src/wrv/magic/evidence/ConsumerFanout.java	1970-01-01 00:00:00.000000000 +0000
+@@ -1,18 +0,0 @@
+-package wrv.magic.evidence;
+-import java.util.*;import java.util.function.Consumer;
+-/** One immutable composition owned by the shared Magic adapter, never one root hook per consumer. */
+-public final class ConsumerFanout implements EffectObserver.Sink {
+- public record Binding(String id,Set<String> spells,EffectObserver.Sink sink){public Binding{if(id==null||id.isBlank()||spells==null||spells.isEmpty()||sink==null)throw new IllegalArgumentException("binding");spells=Set.copyOf(spells);}}
+- public record Failure(String consumer,String stage,Throwable error){}
+- private final List<Binding> bindings;private final Set<String> spells;private final Consumer<Failure> failures;
+- public ConsumerFanout(List<Binding> bindings,Consumer<Failure> failures){this.bindings=List.copyOf(bindings);this.failures=Objects.requireNonNull(failures);var ids=new HashSet<String>();var scope=new HashSet<String>();for(var b:this.bindings){if(!ids.add(b.id))throw new IllegalArgumentException("duplicate consumer");scope.addAll(b.spells);}if(scope.isEmpty())throw new IllegalArgumentException("empty composition");this.spells=Set.copyOf(scope);}
+- public Set<String> spells(){return spells;}
+- @Override public void castStarted(EffectObserver.RootEvidence root){if(root!=null)dispatch(root.spell(),"cast-start",b->b.sink.castStarted(root));}
+- @Override public void rootFinished(EffectObserver.RootEvidence root){if(root!=null)dispatch(root.spell(),"finish",b->b.sink.rootFinished(root));}
+- @Override public void rootCaptured(EffectObserver.RootEvidence root){if(root!=null)dispatch(root.spell(),"root",b->b.sink.rootCaptured(root));}
+- @Override public void observe(EffectObserver.Receipt receipt){if(receipt==null)return;for(var b:bindings)if(b.spells.contains(receipt.spell()))try{b.sink.observe(receipt);}catch(Throwable failure){try{failures.accept(new Failure(b.id,"effect",failure));}catch(Throwable reportingFailure){/* Consumer diagnostics cannot change native combat. */}}}
+- @Override public void damageStarted(EffectObserver.PendingDamage pending){if(pending==null)return;dispatch(pending.spell(),"damage-start",b->b.sink.damageStarted(pending));}
+- @Override public void damageCompleted(EffectObserver.DamageCompletion completion){if(completion==null)return;dispatch(completion.pending().spell(),"damage-complete",b->b.sink.damageCompleted(completion));}
+- private void dispatch(String spell,String stage,java.util.function.Consumer<Binding> call){for(var b:bindings)if(b.spells.contains(spell))try{call.accept(b);}catch(Throwable failure){try{failures.accept(new Failure(b.id,stage,failure));}catch(Throwable reportingFailure){}}}
+-
+-}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/wrv/magic/evidence/EffectObserver.java b/src/wrv/magic/evidence/EffectObserver.java
+--- a/prev-src/wrv/magic/evidence/EffectObserver.java	2026-10-30 18:03:11.070188922 +0000
++++ b/src/wrv/magic/evidence/EffectObserver.java	1970-01-01 00:00:00.000000000 +0000
+@@ -1,173 +0,0 @@
+-// Excel: shared practice identity preserves native wand identity semantics.
+-package wrv.magic.evidence;
+-import com.elmakers.mine.bukkit.api.action.CastContext;import org.bukkit.entity.*;import java.util.*;
+-/** Evidence-only observer. No progression, SP, policy defaults or activation. */
+-public final class EffectObserver {
+- public enum Kind { DIRECT_HEAL,DIRECT_DAMAGE,DIRECT_CONTROL,DIRECT_CLEANSE }
+- /** Null reference fields mean unknown; ownerKnown distinguishes observed empty owner from failed lookup. */
+- public record SourceSnapshot(String wandId,String templateKey,UUID ownerId,boolean ownerKnown,Boolean bound,Boolean offhand,Double earns,long issuedAtMillis,UUID observedMakerItemId){
+-  public SourceSnapshot(String wandId,String templateKey,UUID ownerId,boolean ownerKnown,Boolean bound,Boolean offhand,Double earns,long issuedAtMillis){this(wandId,templateKey,ownerId,ownerKnown,bound,offhand,earns,issuedAtMillis,null);}
+- }
+- public record RootEvidence(UUID cast,UUID caster,String spell,SourceSnapshot source){}
+- public record ControlChange(Integer beforeAmplifier,int beforeDuration,int afterAmplifier,int afterDuration){}
+- public record CleanseChange(String effectKey,int beforeAmplifier,int beforeDuration,boolean ambient,boolean particles,boolean icon){}
+- public record Receipt(UUID cast,UUID caster,String spell,UUID recipient,Kind kind,double effectiveAmount,SourceSnapshot source,ControlChange control,CleanseChange cleanse){
+-  public Receipt(UUID cast,UUID caster,String spell,UUID recipient,Kind kind,double effectiveAmount,SourceSnapshot source,ControlChange control){this(cast,caster,spell,recipient,kind,effectiveAmount,source,control,null);}
+-  public Receipt(UUID cast,UUID caster,String spell,UUID recipient,Kind kind,double effectiveAmount,SourceSnapshot source){this(cast,caster,spell,recipient,kind,effectiveAmount,source,null);}
+-  public Receipt(UUID cast,UUID caster,String spell,UUID recipient,Kind kind,double effectiveAmount){this(cast,caster,spell,recipient,kind,effectiveAmount,null,null);}
+- }
+- public record PendingDamage(UUID dispatch,UUID cast,UUID caster,String spell,UUID recipient,SourceSnapshot source){}
+- public enum DamageVerdict { VERIFIED,REJECTED,AMBIGUOUS,OBSERVATION_FAILED }
+- public record DamageCompletion(PendingDamage pending,DamageVerdict verdict,Receipt evidence,boolean deathObserved,org.bukkit.event.entity.EntityDamageEvent verifiedEvent,org.bukkit.event.entity.EntityDeathEvent deathEvent){public DamageCompletion(PendingDamage pending,DamageVerdict verdict,Receipt evidence,boolean deathObserved){this(pending,verdict,evidence,deathObserved,null,null);}}
+- public interface Sink {void observe(Receipt receipt);default void rootCaptured(RootEvidence root){}default void castStarted(RootEvidence root){}default void rootFinished(RootEvidence root){}default void damageStarted(PendingDamage pending){}default void damageCompleted(DamageCompletion completion){}}
+- public record RootAuthority(com.elmakers.mine.bukkit.api.magic.Mage mage,com.elmakers.mine.bukkit.api.wand.Wand wand){}
+- public record ReceiptAuthority(com.elmakers.mine.bukkit.api.magic.Mage mage,com.elmakers.mine.bukkit.api.wand.Wand wand,LivingEntity target){}
+- private static final class Origin {
+-  final UUID cast,caster;final String spell;final SourceSnapshot source;final Registration generation;
+-  final java.lang.ref.WeakReference<com.elmakers.mine.bukkit.api.magic.Mage> mage;
+-  final java.lang.ref.WeakReference<com.elmakers.mine.bukkit.api.wand.Wand> wand;
+-  Origin(UUID cast,UUID caster,String spell,SourceSnapshot source,Registration generation,RootAuthority original){this.cast=cast;this.caster=caster;this.spell=spell;this.source=source;this.generation=generation;this.mage=new java.lang.ref.WeakReference<>(original.mage());this.wand=new java.lang.ref.WeakReference<>(original.wand());}
+-  Optional<RootAuthority> authority(){var m=mage.get();var w=wand.get();return m!=null&&w!=null?Optional.of(new RootAuthority(m,w)):Optional.empty();}
+- }
+- private record ReceiptFrame(Receipt exact,Origin origin,LivingEntity target){}
+- private static final ThreadLocal<ReceiptFrame> receiptFrame=new ThreadLocal<>();
+- public static Optional<RootAuthority> currentRootAuthority(RootEvidence exact){var f=issuanceFrame.get();return Thread.currentThread()==ownerThread&&f!=null&&f.root==exact&&f.generation==registration?f.origin.authority():Optional.empty();}
+- public static Optional<ReceiptAuthority> currentReceiptAuthority(Receipt exact){var f=receiptFrame.get();return Thread.currentThread()==ownerThread&&f!=null&&f.exact==exact&&f.origin.generation==registration?f.origin.authority().map(a->new ReceiptAuthority(a.mage(),a.wand(),f.target)):Optional.empty();}
+- private static void deliver(Origin origin,Receipt receipt,LivingEntity target,Runnable callback){
+-  if(origin==null||origin.generation!=registration)return;
+-  var prior=receiptFrame.get();receiptFrame.set(new ReceiptFrame(receipt,origin,target));
+-  try{callback.run();}finally{if(prior==null)receiptFrame.remove();else receiptFrame.set(prior);}
+- }
+- static boolean hostileControlTarget(LivingEntity target){return target!=null&&!(target instanceof Player)&&!(target instanceof Tameable t&&t.isTamed())&&(target instanceof Enemy||target instanceof Monster||target instanceof EnderDragon);}
+-
+- private record Registration(Set<String> spells,Sink sink){}
+- private static final Map<CastContext,Origin> origins=Collections.synchronizedMap(new WeakHashMap<>());
+- private static volatile Registration registration;
+- private static volatile Thread ownerThread;
+- /** Read-only source association, not issuance or payout authority. Unknown and stale contexts fail closed.
+-  * Only exact native contexts are supported; caller should retain context.getBaseContext() as route identity.
+-  * Repeated lookup of a finished/reused object returns the same original identity, never a new cast.
+-  */
+- public static synchronized Optional<RootEvidence> originalRootEvidence(CastContext context){
+-  try{
+-   Registration r=registration;
+-   if(r==null||context==null||context.getClass()!=com.elmakers.mine.bukkit.action.CastContext.class)return Optional.empty();
+-   CastContext root=context.getBaseContext();
+-   if(root==null||root.getClass()!=com.elmakers.mine.bukkit.action.CastContext.class||root.getBaseContext()!=root)return Optional.empty();
+-   Origin origin=null;
+-   // Identity comparison is deliberate: no custom equals/hashCode may alias a root.
+-   synchronized(origins){for(var e:origins.entrySet())if(e.getKey()==root){origin=e.getValue();break;}}
+-   if(origin==null||origin.generation!=r||!r.spells.contains(origin.spell))return Optional.empty();
+-   boolean hasStarted=false;
+-   synchronized(started){for(CastContext candidate:started)if(candidate==root){hasStarted=true;break;}}
+-   if(!hasStarted||registration!=r)return Optional.empty();
+-   return Optional.of(new RootEvidence(origin.cast,origin.caster,origin.spell,origin.source));
+-  }catch(Throwable unavailable){return Optional.empty();}
+- }
+- private static final class IssuanceFrame {final RootEvidence root;final Registration generation;final Origin origin;boolean claimed;IssuanceFrame(RootEvidence r,Registration g,Origin o){root=r;generation=g;origin=o;}}
+- private static final ThreadLocal<IssuanceFrame> issuanceFrame=new ThreadLocal<>();
+- /** One dedicated useful-use issuer may claim only inside the authentic first-start callback. */
+- public static boolean claimIssuance(RootEvidence root){var frame=issuanceFrame.get();if(frame==null||frame.root!=root||frame.generation!=registration||frame.claimed)return false;frame.claimed=true;return true;}
+-
+- private static final Set<CastContext> started=Collections.newSetFromMap(Collections.synchronizedMap(new WeakHashMap<CastContext,Boolean>()));
+- private static volatile boolean lifecycleProofEnabled;
+- private static final Map<CastContext,StrictActionGraph.Proof> lifecycleProofs=Collections.synchronizedMap(new WeakHashMap<>());
+- public static void enableLifecycleProof(boolean enabled){lifecycleProofEnabled=enabled;}
+- private static final ThreadLocal<ArrayDeque<DamageFrame>> damageFrames=ThreadLocal.withInitial(ArrayDeque::new);
+- private static final ThreadLocal<ArrayDeque<CleanseFrame>> cleanseFrames=ThreadLocal.withInitial(ArrayDeque::new);
+- private static final Set<String> NEGATIVE=Set.of("minecraft:nausea","minecraft:poison","minecraft:slowness","minecraft:mining_fatigue","minecraft:weakness","minecraft:wither","minecraft:blindness","minecraft:hunger");
+- private static final class CleanseFrame {final LivingEntity target;boolean nested;final List<org.bukkit.event.entity.EntityPotionEffectEvent> events=new ArrayList<>();CleanseFrame(LivingEntity t){target=t;}}
+- private static org.bukkit.event.Listener damageListener;
+- private static final class DamageFrame {final LivingEntity target; final double before; final CastContext context; PendingDamage pending;boolean deathObserved;org.bukkit.event.entity.EntityDeathEvent deathEvent;boolean nestedAmbiguous; final List<org.bukkit.event.entity.EntityDamageEvent> events=new ArrayList<>();DamageFrame(LivingEntity t,double b,CastContext c){target=t;before=b;context=c;}}
+-
+- public static synchronized void install(Set<String> spells,Sink sink){if(registration!=null)throw new IllegalStateException("already installed");if(spells==null||spells.isEmpty()||sink==null)throw new IllegalArgumentException();var plugin=org.bukkit.Bukkit.getPluginManager().getPlugin("Magic");if(plugin==null)throw new IllegalStateException("Magic unavailable");org.bukkit.event.Listener candidate=new org.bukkit.event.Listener(){};try{org.bukkit.Bukkit.getPluginManager().registerEvent(org.bukkit.event.entity.EntityDamageEvent.class,candidate,org.bukkit.event.EventPriority.MONITOR,(l,e)->{var f=damageFrames.get().peek();if(f!=null&&e instanceof org.bukkit.event.entity.EntityDamageEvent d&&d.getEntity().getUniqueId().equals(f.target.getUniqueId()))f.events.add(d);},plugin,false);org.bukkit.Bukkit.getPluginManager().registerEvent(org.bukkit.event.entity.EntityDeathEvent.class,candidate,org.bukkit.event.EventPriority.MONITOR,(l,e)->{var f=damageFrames.get().peek();if(f!=null&&e instanceof org.bukkit.event.entity.EntityDeathEvent d&&d.getEntity().getUniqueId().equals(f.target.getUniqueId())){f.deathObserved=true;f.deathEvent=d;}},plugin,false);org.bukkit.Bukkit.getPluginManager().registerEvent(org.bukkit.event.entity.EntityPotionEffectEvent.class,candidate,org.bukkit.event.EventPriority.MONITOR,(l,e)->{var f=cleanseFrames.get().peek();if(f!=null&&e instanceof org.bukkit.event.entity.EntityPotionEffectEvent p&&p.getEntity().getUniqueId().equals(f.target.getUniqueId()))f.events.add(p);},plugin,false);damageListener=candidate;ownerThread=Thread.currentThread();registration=new Registration(Set.copyOf(spells),sink);}catch(Throwable failure){org.bukkit.event.HandlerList.unregisterAll(candidate);throw failure;}}
+- /** Identity-scoped owner; a stale close cannot detach a replacement registration. */
+- public static synchronized AutoCloseable installOwned(Set<String> spells,Sink sink){
+-  install(spells,sink);Registration mine=registration;
+-  return ()->{synchronized(EffectObserver.class){if(registration==mine){lifecycleProofEnabled=false;detach();}}};
+- }
+-
+- public static synchronized void detach(){registration=null;ownerThread=null;if(damageListener!=null){org.bukkit.event.HandlerList.unregisterAll(damageListener);damageListener=null;}}
+- public static void captureRoot(CastContext context){try{Registration r=registration;if(r==null)return;String spell=context.getSpell().getSpellKey().getBaseKey();if(!r.spells.contains(spell))return;Entity caster=context.getMage().getEntity();if(caster instanceof Player){var mage=context.getMage();var wand=context.getWand();Origin origin=new Origin(UUID.randomUUID(),caster.getUniqueId(),spell,snapshot(context,wand),r,new RootAuthority(mage,wand));if(origins.putIfAbsent(context,origin)==null)try{r.sink.rootCaptured(new RootEvidence(origin.cast,origin.caster,origin.spell,origin.source));}catch(Throwable observerFailure){}}}catch(RuntimeException unavailable){/* Unknown origin never inferred later. */}}
+-
+- public static void castStarted(CastContext context){try{CastContext root=context.getBaseContext();var origin=origins.get(root);var r=registration;if(origin==null||r==null||origin.generation!=r||!r.spells.contains(origin.spell)||!started.add(root))return;if(lifecycleProofEnabled)StrictActionGraph.inspect(root.getSpell()).ifPresent(proof->lifecycleProofs.put(root,proof));var evidence=new RootEvidence(origin.cast,origin.caster,origin.spell,origin.source);var prior=issuanceFrame.get();issuanceFrame.set(new IssuanceFrame(evidence,r,origin));try{r.sink.castStarted(evidence);}finally{if(prior==null)issuanceFrame.remove();else issuanceFrame.set(prior);}}catch(Throwable observerFailure){/* Casting proceeds without an issuance token. */}}
+- public static void finishSucceeded(CastContext context){try{if(!lifecycleProofEnabled||context.getBaseContext()!=context||context.hasHandlers())return;var proof=lifecycleProofs.remove(context);var origin=origins.get(context);var r=registration;if(proof==null||origin==null||r==null||origin.generation!=r||!r.spells.contains(origin.spell))return;if(!StrictActionGraph.inspect(context.getSpell()).filter(proof::equals).isPresent())return;r.sink.rootFinished(new RootEvidence(origin.cast,origin.caster,origin.spell,origin.source));}catch(Throwable observerFailure){/* Native finish already succeeded; evidence failure cannot alter it. */}}
+- private static String knownText(String value){return value==null||value.isBlank()?null:value;}
+- private static SourceSnapshot snapshot(CastContext context,com.elmakers.mine.bukkit.api.wand.Wand wand){
+-  long issuedAt=System.currentTimeMillis();String id=null,template=null;UUID owner=null;boolean ownerKnown=false;Boolean bound=null,offhand=null;Double earns=null;UUID makerItem=null;
+-  try{double value=context.getSpell().getEarns();if(Double.isFinite(value))earns=value;}catch(RuntimeException unknown){}
+-  if(wand!=null){
+-   try{id=knownText(wrv.magic.level.PracticeWandIdentity.get(wand));}catch(RuntimeException unknown){}
+-   try{template=knownText(wand.getTemplateKey());}catch(RuntimeException unknown){}
+-   try{bound=wand.isBound();}catch(RuntimeException unknown){}
+-   try{offhand=wand.isInOffhand();}catch(RuntimeException unknown){}
+-   try{var item=wand.getItem();if(item!=null&&!item.getType().isAir()&&item.getAmount()==1&&item.hasItemMeta()){String value=item.getItemMeta().getPersistentDataContainer().get(new org.bukkit.NamespacedKey("excelmakersmark","item_id"),org.bukkit.persistence.PersistentDataType.STRING);if(value!=null){UUID parsed=UUID.fromString(value);if(parsed.toString().equals(value))makerItem=parsed;}}}catch(RuntimeException unknown){makerItem=null;}
+-   try{Object value=wand.getClass().getMethod("getOwnerId").invoke(wand);if(value==null||value instanceof String){String text=(String)value;if(text!=null&&!text.isBlank()){owner=UUID.fromString(text);if(!owner.toString().equalsIgnoreCase(text))throw new IllegalArgumentException("noncanonical owner");}ownerKnown=true;}}catch(ReflectiveOperationException|RuntimeException unknown){owner=null;ownerKnown=false;}
+-  }
+-  return new SourceSnapshot(id,template,owner,ownerKnown,bound,offhand,earns,issuedAt,makerItem);
+- }
+- public static void setHealth(LivingEntity target,double requestedHealth,CastContext context){
+-  if(registration==null){target.setHealth(requestedHealth);return;}
+-  double before;try{before=target.getHealth();}catch(RuntimeException unavailable){target.setHealth(requestedHealth);return;}
+-  double observedMaximum;try{observedMaximum=target.getMaxHealth();}catch(RuntimeException unknown){observedMaximum=Double.NaN;}
+-  final double maximum=observedMaximum;
+-  target.setHealth(requestedHealth); // preserve the original mutation and exception behavior exactly once
+-  try{Registration r=registration;if(r==null)return;CastContext root=context.getBaseContext();if(root==null)return;Origin origin=origins.get(root);if(origin==null||origin.generation!=r||!r.spells.contains(origin.spell))return;
+-   Entity caster=context.getMage().getEntity();if(!(caster instanceof Player)||!origin.caster.equals(caster.getUniqueId()))return;
+-   double after=target.getHealth(),delta=after-before;if(!Double.isFinite(delta)||delta<=0)return;
+-   Receipt receipt=new Receipt(origin.cast,origin.caster,origin.spell,target.getUniqueId(),Kind.DIRECT_HEAL,delta,origin.source);
+-   try{HealthTransitionBridge.deliver(receipt,target.getUniqueId(),before,after,maximum,()->deliver(origin,receipt,target,()->r.sink.observe(receipt)));}catch(Throwable observerFailure){/* Isolate only consumer callback, never the native mutation. */}
+-  }catch(RuntimeException unavailable){/* Evidence failure never changes successful healing. */}
+- }
+-
+- /** Only the exact PotionEffectAction.perform removal route calls this; finish cleanup is untouched. */
+- public static void removeEffect(LivingEntity target,org.bukkit.potion.PotionEffectType type,CastContext context){
+-  Registration initial=registration;if(initial==null){target.removePotionEffect(type);return;}
+-  org.bukkit.potion.PotionEffect before;try{before=target.getPotionEffect(type);}catch(RuntimeException unknown){target.removePotionEffect(type);return;}
+-  var frame=new CleanseFrame(target);var frames=cleanseFrames.get();for(var prior:frames)if(prior.target.getUniqueId().equals(target.getUniqueId()))prior.nested=true;frames.push(frame);
+-  try{target.removePotionEffect(type);}finally{if(frames.peek()==frame)frames.pop();else{frames.clear();frame.nested=true;}if(frames.isEmpty())cleanseFrames.remove();}
+-  try{if(registration!=initial||frame.nested||before==null||before.getDuration()==0||!NEGATIVE.contains(type.getKey().toString())||target.isDead()||target.getPotionEffect(type)!=null||frame.events.size()!=1)return;
+-   var event=frame.events.get(0);if(event.isCancelled()||event.getOldEffect()==null||!event.getOldEffect().equals(before)||event.getNewEffect()!=null||event.getAction()!=org.bukkit.event.entity.EntityPotionEffectEvent.Action.REMOVED)return;
+-   var origin=origins.get(context.getBaseContext());if(origin==null||origin.generation!=initial||!initial.spells.contains(origin.spell))return;var caster=context.getMage().getEntity();if(!(caster instanceof Player)||!origin.caster.equals(caster.getUniqueId())||!caster.getUniqueId().equals(target.getUniqueId())&&!context.getController().isFriendly(caster,target))return;
+-   var change=new CleanseChange(type.getKey().toString(),before.getAmplifier(),before.getDuration(),before.isAmbient(),before.hasParticles(),before.hasIcon());try{var receipt=new Receipt(origin.cast,origin.caster,origin.spell,target.getUniqueId(),Kind.DIRECT_CLEANSE,1,origin.source,null,change);deliver(origin,receipt,target,()->initial.sink.observe(receipt));}catch(Throwable observerFailure){}
+-  }catch(RuntimeException unavailable){/* Evidence failure cannot change native removal. */}
+- }
+-
+- /** Observation-only control evidence. effectiveAmount=1 means one improved effect, never HP. */
+- public static boolean applyControl(com.elmakers.mine.bukkit.utility.platform.CompatibilityUtils api,LivingEntity target,org.bukkit.potion.PotionEffect effect,CastContext context){
+-  Registration initial=registration;if(initial==null)return api.applyPotionEffect(target,effect);
+-  org.bukkit.potion.PotionEffect before;try{before=target.getPotionEffect(effect.getType());}catch(RuntimeException unavailable){return api.applyPotionEffect(target,effect);}
+-  boolean applied=api.applyPotionEffect(target,effect); // original native application exactly once
+-  try{if(!applied||registration!=initial||!hostileControlTarget(target)||!effect.getType().equals(org.bukkit.potion.PotionEffectType.SLOWNESS))return applied;
+-   var after=target.getPotionEffect(effect.getType());if(after==null||after.getDuration()<=0||before!=null&&(after.getAmplifier()<before.getAmplifier()||after.getAmplifier()==before.getAmplifier()&&after.getDuration()<=before.getDuration()))return applied;
+-   var origin=origins.get(context.getBaseContext());if(origin==null||origin.generation!=initial||!initial.spells.contains(origin.spell))return applied;Entity caster=context.getMage().getEntity();if(!(caster instanceof Player)||!origin.caster.equals(caster.getUniqueId())||context.getController().isFriendly(caster,target))return applied;
+-   var detail=new ControlChange(before==null?null:before.getAmplifier(),before==null?0:before.getDuration(),after.getAmplifier(),after.getDuration());
+-   try{var receipt=new Receipt(origin.cast,origin.caster,origin.spell,target.getUniqueId(),Kind.DIRECT_CONTROL,1,origin.source,detail);deliver(origin,receipt,target,()->initial.sink.observe(receipt));}catch(Throwable observerFailure){}
+-  }catch(RuntimeException unavailable){}return applied;
+- }
+- public static void damage(com.elmakers.mine.bukkit.utility.platform.CompatibilityUtils api,Damageable target,double amount,Entity source,CastContext context){observeDamage(target,context,()->api.damage(target,amount,source));}
+- public static void typedDamage(com.elmakers.mine.bukkit.utility.platform.CompatibilityUtils api,Damageable target,double amount,Entity source,String type,CastContext context){observeDamage(target,context,()->api.damage(target,amount,source,type));}
+- public static void magicDamage(com.elmakers.mine.bukkit.utility.platform.CompatibilityUtils api,Damageable target,double amount,Entity source,CastContext context){observeDamage(target,context,()->api.magicDamage(target,amount,source));}
+- /** Pending only: caller MUST wait for matching VERIFIED completion before attributing any kill. */
+- public static Optional<PendingDamage> currentDamage(UUID victim){DamageFrame frame=damageFrames.get().peek();return frame!=null&&frame.pending!=null&&frame.target.getUniqueId().equals(victim)?Optional.of(frame.pending):Optional.empty();}
+- private static void notifyStart(Registration r,PendingDamage p){if(r!=null&&p!=null)try{r.sink.damageStarted(p);}catch(Throwable observerFailure){}}
+- private static void notifyComplete(Registration r,DamageFrame f,DamageVerdict v,Receipt receipt){if(r!=null&&f.pending!=null)try{r.sink.damageCompleted(new DamageCompletion(f.pending,v,receipt,f.deathObserved&&f.deathEvent!=null&&!f.deathEvent.isCancelled(),v==DamageVerdict.VERIFIED&&f.events.size()==1?f.events.get(0):null,f.deathEvent));}catch(Throwable observerFailure){}}
+- private static void observeDamage(Damageable target,CastContext context,Runnable original){
+-  Registration initial=registration;if(initial==null||!(target instanceof LivingEntity living)){original.run();return;}
+-  double before;try{before=living.getHealth()+living.getAbsorptionAmount();}catch(RuntimeException unavailable){original.run();return;}
+-  DamageFrame f=new DamageFrame(living,before,context);
+-  try{CastContext root=context.getBaseContext();Origin origin=root==null?null:origins.get(root);Entity caster=context.getMage().getEntity();if(origin!=null&&origin.generation==initial&&initial.spells.contains(origin.spell)&&caster instanceof Player&&origin.caster.equals(caster.getUniqueId()))f.pending=new PendingDamage(UUID.randomUUID(),origin.cast,origin.caster,origin.spell,living.getUniqueId(),origin.source);}catch(RuntimeException unknown){}
+-  var frames=damageFrames.get();for(DamageFrame parent:frames)if(parent.target.getUniqueId().equals(living.getUniqueId()))parent.nestedAmbiguous=true;frames.push(f);notifyStart(initial,f.pending);boolean finished=false;
+-  try{original.run();finished=true;}finally{if(frames.peek()==f)frames.pop();else{frames.clear();f.nestedAmbiguous=true;}if(frames.isEmpty())damageFrames.remove();if(!finished)notifyComplete(initial,f,DamageVerdict.OBSERVATION_FAILED,null);}
+-  DamageVerdict verdict=DamageVerdict.REJECTED;Receipt receipt=null;
+-  try{if(registration!=initial)verdict=DamageVerdict.OBSERVATION_FAILED;
+-   else if(f.nestedAmbiguous||f.events.size()!=1)verdict=DamageVerdict.AMBIGUOUS;
+-   else if(f.pending!=null){var event=f.events.get(0);if(!event.isCancelled()&&event.getDamage()>0){Entity caster=context.getMage().getEntity();if(caster instanceof Player&&f.pending.caster.equals(caster.getUniqueId())&&!context.getController().isFriendly(caster,living)){
+-    double delta=before-(living.getHealth()+living.getAbsorptionAmount());double budget=Math.max(0,event.getFinalDamage());if(event.isApplicable(org.bukkit.event.entity.EntityDamageEvent.DamageModifier.ABSORPTION))budget+=Math.max(0,-event.getDamage(org.bukkit.event.entity.EntityDamageEvent.DamageModifier.ABSORPTION));delta=Math.min(delta,budget);
+-    if(Double.isFinite(delta)&&delta>0){receipt=new Receipt(f.pending.cast,f.pending.caster,f.pending.spell,living.getUniqueId(),Kind.DIRECT_DAMAGE,delta,f.pending.source);verdict=DamageVerdict.VERIFIED;}
+-   }}}
+-  }catch(RuntimeException unknown){verdict=DamageVerdict.OBSERVATION_FAILED;receipt=null;}
+-  if(receipt!=null)try{var exact=receipt;deliver(origins.get(context.getBaseContext()),exact,living,()->initial.sink.observe(exact));}catch(Throwable observerFailure){}
+-  notifyComplete(initial,f,verdict,receipt);
+- }
+-}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/wrv/magic/evidence/HealthTransitionBridge.java b/src/wrv/magic/evidence/HealthTransitionBridge.java
+--- a/prev-src/wrv/magic/evidence/HealthTransitionBridge.java	2026-10-30 18:03:11.070636984 +0000
++++ b/src/wrv/magic/evidence/HealthTransitionBridge.java	1970-01-01 00:00:00.000000000 +0000
+@@ -1,11 +0,0 @@
+-package wrv.magic.evidence;
+-import java.util.*;
+-/** Read-only exact heal observation, available only during delivery of that same receipt object. */
+-public final class HealthTransitionBridge {
+- public record Observation(UUID recipient,double before,double after,double maximum){}
+- private record Frame(EffectObserver.Receipt receipt,Observation health){}
+- private static final ThreadLocal<Frame> current=new ThreadLocal<>();
+- static void deliver(EffectObserver.Receipt receipt,UUID target,double before,double after,double maximum,Runnable consumer){Frame prior=current.get();current.set(new Frame(receipt,new Observation(target,before,after,maximum)));try{consumer.run();}finally{if(prior==null)current.remove();else current.set(prior);}}
+- public static Optional<Observation> current(EffectObserver.Receipt receipt){var f=current.get();return f!=null&&f.receipt()==receipt?Optional.of(f.health()):Optional.empty();}
+- private HealthTransitionBridge(){}
+-}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/wrv/magic/evidence/SharedHistoryProvider.java b/src/wrv/magic/evidence/SharedHistoryProvider.java
+--- a/prev-src/wrv/magic/evidence/SharedHistoryProvider.java	2026-10-30 18:03:11.070732938 +0000
++++ b/src/wrv/magic/evidence/SharedHistoryProvider.java	1970-01-01 00:00:00.000000000 +0000
+@@ -1,10 +0,0 @@
+-package wrv.magic.evidence;
+-/** One optional downstream history consumer. Provider never installs the shared observer. */
+-public interface SharedHistoryProvider {
+- Lease acquire(Runnable invalidated);
+- interface Lease extends AutoCloseable {
+-  ConsumerFanout.Binding binding();
+-  boolean active();
+-  @Override void close();
+- }
+-}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/wrv/magic/evidence/StrictActionGraph.java b/src/wrv/magic/evidence/StrictActionGraph.java
+--- a/prev-src/wrv/magic/evidence/StrictActionGraph.java	2026-10-30 18:03:11.070782883 +0000
++++ b/src/wrv/magic/evidence/StrictActionGraph.java	1970-01-01 00:00:00.000000000 +0000
+@@ -1,39 +0,0 @@
+-package wrv.magic.evidence;
+-import com.elmakers.mine.bukkit.spell.ActionSpell;import com.elmakers.mine.bukkit.action.*;import java.util.*;import java.lang.reflect.*;
+-/** Exact resolved runtime action classes only. Unknown branches/subclasses fail closed. */
+-public final class StrictActionGraph {
+- private static final Set<String> LEAVES=Set.of("HealAction","DamageAction","PotionEffectAction","DelayAction","MessageAction");
+- private static final Set<String> COMPOUNDS=Set.of("RepeatAction","CustomProjectileAction","AreaOfEffectAction","AsynchronousAction","ChangeContextAction","CheckModifiersAction");
+- public record Proof(String shape){}
+- public static Optional<Proof> inspect(Object spell){try{
+-  if(spell==null||spell.getClass()!=ActionSpell.class)return Optional.empty();
+-  var field=ActionSpell.class.getDeclaredField("actions");field.setAccessible(true);Object raw=field.get(spell);if(!(raw instanceof Map<?,?> map)||!map.keySet().equals(Set.of("cast")))return Optional.empty();
+-  var out=new StringBuilder();var seen=Collections.newSetFromMap(new IdentityHashMap<Object,Boolean>());int[] count={0};walk(map.get("cast"),out,seen,count,(ActionSpell)spell,((ActionSpell)spell).getWorkingParameters());
+-  Field current=ActionSpell.class.getDeclaredField("currentHandler");current.setAccessible(true);Object active=current.get(spell);if(active!=null){var check=new StringBuilder();walk(active,check,Collections.newSetFromMap(new IdentityHashMap<Object,Boolean>()),new int[]{0},(ActionSpell)spell,((ActionSpell)spell).getWorkingParameters());if(!out.toString().equals(check.toString()))return Optional.empty();}
+-  return Optional.of(new Proof(out.toString()));
+- }catch(Throwable unavailable){return Optional.empty();}}
+- private static void walk(Object handler,StringBuilder out,Set<Object> seen,int[] count,ActionSpell spell,org.bukkit.configuration.ConfigurationSection parameters)throws Exception{
+-  if(handler==null||handler.getClass()!=ActionHandler.class||!seen.add(handler)||++count[0]>512)throw new IllegalArgumentException("unknown/cyclic graph");out.append('[');
+-  for(ActionContext context:((ActionHandler)handler).getActions()){
+-   if(context==null||context.getClass()!=ActionContext.class)throw new IllegalArgumentException();var effective=context.getEffectiveParameters(parameters);Object action=context.getAction();if(action==null)throw new IllegalArgumentException();String name=action.getClass().getSimpleName();if(!action.getClass().getName().equals("com.elmakers.mine.bukkit.action.builtin."+name))throw new IllegalArgumentException();
+-   out.append(name).append(';');if(COMPOUNDS.contains(name)){Field f=CompoundAction.class.getDeclaredField("handlers");f.setAccessible(true);Object raw=f.get(action);if(!(raw instanceof Map<?,?> children))throw new IllegalArgumentException();var keys=new TreeSet<String>();for(Object key:children.keySet()){if(!(key instanceof String s))throw new IllegalArgumentException();keys.add(s);}for(String key:keys){out.append(key).append(':');walk(children.get(key),out,seen,count,spell,effective);}}
+-   else if(name.equals("ModifierAction")){checkFocus(effective,spell,out);}
+-   else if(!LEAVES.contains(name))throw new IllegalArgumentException("unreviewed action");
+-  }out.append(']');seen.remove(handler);
+- }
+-
+- private static Object field(Class<?> owner,String name,Object target)throws Exception{Field f=owner.getDeclaredField(name);f.setAccessible(true);return f.get(target);}
+- private static void checkFocus(org.bukkit.configuration.ConfigurationSection effective,ActionSpell spell,StringBuilder out)throws Exception{
+-  var removes=com.elmakers.mine.bukkit.utility.ConfigurationUtils.getStringList(effective,"remove_modifiers");if(removes!=null&&!removes.isEmpty())throw new IllegalArgumentException("modifier removals unreviewed");
+-  var adds=effective.getConfigurationSection("add_modifiers");var names=adds==null?com.elmakers.mine.bukkit.utility.ConfigurationUtils.getStringList(effective,"add_modifiers"):new ArrayList<String>(adds.getKeys(false));if(names==null||names.isEmpty()||!Set.of("wrv_focus","wrv_renewed","wrv_warded").containsAll(names))throw new IllegalArgumentException("unreviewed modifier");
+-  for(String name:new TreeSet<String>(names)){
+-   if(adds!=null){var override=adds.getConfigurationSection(name);if(override!=null){if(!Set.of("duration").containsAll(override.getKeys(false)))throw new IllegalArgumentException("modifier overrides");out.append(override.getValues(false));}}
+-   Object template=spell.getController().getModifierTemplate(name);if(template==null||template.getClass()!=com.elmakers.mine.bukkit.magic.ModifierTemplate.class||((com.elmakers.mine.bukkit.magic.ModifierTemplate)template).hasParent())throw new IllegalArgumentException("unknown/parent modifier");
+-   Object config=field(com.elmakers.mine.bukkit.magic.BaseMagicProperties.class,"configuration",template);if(!(config instanceof org.bukkit.configuration.ConfigurationSection c))throw new IllegalArgumentException();var values=new TreeMap<String,Object>(c.getValues(false));
+-   var keys=name.equals("wrv_focus")?Set.of("name","description","hidden","mana_regeneration_boost"):Set.of("name","description","hidden");if(!keys.containsAll(values.keySet()))throw new IllegalArgumentException("modifier may contain indirect effects");
+-   if(name.equals("wrv_focus")){Object boost=values.get("mana_regeneration_boost");if(!(boost instanceof Number n)||!Double.isFinite(n.doubleValue())||n.doubleValue()!=-0.79)throw new IllegalArgumentException("focus template changed");}
+-   for(var e:values.entrySet())if(!(e.getValue() instanceof String||e.getValue() instanceof Boolean||e.getValue() instanceof Number))throw new IllegalArgumentException();out.append(name).append(values);
+-  }
+- }
+- private StrictActionGraph(){}
+-}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/wrv/magic/evidence/WandLoreBridge.java b/src/wrv/magic/evidence/WandLoreBridge.java
+--- a/prev-src/wrv/magic/evidence/WandLoreBridge.java	2026-10-30 18:03:11.070825197 +0000
++++ b/src/wrv/magic/evidence/WandLoreBridge.java	1970-01-01 00:00:00.000000000 +0000
+@@ -1,34 +0,0 @@
+-package wrv.magic.evidence;
+-import java.util.*;
+-import com.elmakers.mine.bukkit.api.wand.Wand;
+-import com.elmakers.mine.bukkit.utility.platform.CompatibilityUtils;
+-import org.bukkit.inventory.ItemStack;
+-/** Native fresh-generation seam only. No provisioning, item writes or stored-lore parsing. */
+-public final class WandLoreBridge {
+- private WandLoreBridge(){}
+- @FunctionalInterface public interface Decorator {List<String> decorate(Wand wand,ItemStack exactTarget,List<String> immutableNativeLore);}
+- private static volatile Registration current;
+- private static final ThreadLocal<Boolean> rendering=ThreadLocal.withInitial(()->false);
+- public static final class Registration implements AutoCloseable {
+-  private final Decorator decorator;private Registration(Decorator d){decorator=d;}
+-  @Override public void close(){synchronized(WandLoreBridge.class){if(current==this)current=null;}}
+- }
+- public static synchronized Registration install(Decorator decorator){Objects.requireNonNull(decorator);if(current!=null)throw new IllegalStateException("lore consumer already registered");return current=new Registration(decorator);}
+- public static List<String> decorate(Wand wand,ItemStack exactTarget,List<String> nativeLore){
+-  Registration r=current;if(r==null||rendering.get()||wand==null||exactTarget==null||nativeLore==null)return nativeLore;
+-  rendering.set(true);
+-  try {
+-   if(wand.getItem()!=exactTarget)return nativeLore;
+-   List<String> base=List.copyOf(nativeLore);List<String> supplied=r.decorator.decorate(wand,exactTarget,base);
+-   if(current!=r||wand.getItem()!=exactTarget||supplied==null)return nativeLore;
+-   List<String> result=List.copyOf(supplied);
+-   // Existing history contract: preserve the fresh native prefix and at most four appended lines.
+-   if(result.size()<base.size()||result.size()>base.size()+4||!result.subList(0,base.size()).equals(base))return nativeLore;
+-   return result;
+-  }catch(Throwable consumerFailure){return nativeLore;}finally{rendering.remove();}
+- }
+- public static boolean setLore(CompatibilityUtils utils,ItemStack exactTarget,List<String> nativeLore,Wand wand){
+-  // Native setter is outside observer failure handling: its return/exception must remain native.
+-  return utils.setLore(exactTarget,decorate(wand,exactTarget,nativeLore));
+- }
+-}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/wrv/magic/level/LearnedHooks.java b/src/wrv/magic/level/LearnedHooks.java
+--- a/prev-src/wrv/magic/level/LearnedHooks.java	2026-10-30 18:03:11.070905788 +0000
++++ b/src/wrv/magic/level/LearnedHooks.java	1970-01-01 00:00:00.000000000 +0000
+@@ -1,57 +0,0 @@
+-// Excel: shared practice identity preserves native wand identity semantics.
+-package wrv.magic.level;
+-import com.elmakers.mine.bukkit.api.spell.*;import com.elmakers.mine.bukkit.api.wand.Wand;import com.elmakers.mine.bukkit.api.magic.Mage;import org.bukkit.entity.Player;
+-/** Inactive by default. Read-only learned spell selection; never reads held/active wand or writes rank. */
+-public final class LearnedHooks{
+- private static volatile LearnedLevelResolver resolver;
+- private static Object generation;
+- private static volatile java.util.Set<String> retiredKeys=java.util.Set.of();
+- private static boolean retired(String nativeKey){if(nativeKey==null)return false;try{return retiredKeys.contains(new SpellKey(nativeKey).getBaseKey());}catch(RuntimeException invalid){return !retiredKeys.isEmpty();}}
+- public static synchronized void requireManaged(java.util.Set<String> keys){if(resolver!=null)throw new IllegalStateException("active learned owner");var copy=java.util.Set.copyOf(keys);for(String key:copy)if(!key.matches("[a-z0-9_.-]+"))throw new IllegalArgumentException("canonical managed keys");var union=new java.util.HashSet<>(retiredKeys);union.addAll(copy);retiredKeys=java.util.Set.copyOf(union);}
+- private static void retire(){if(resolver!=null){var keys=new java.util.HashSet<>(retiredKeys);keys.addAll(resolver.managedKeys());retiredKeys=java.util.Set.copyOf(keys);}resolver=null;generation=null;}
+- public static synchronized void install(LearnedLevelResolver value){if(value==null)throw new IllegalArgumentException();if(resolver!=null)throw new IllegalStateException("already installed");resolver=value;generation=new Object();}
+- public static synchronized AutoCloseable installOwned(LearnedLevelResolver value){
+-  install(value);Object mine=generation;return ()->{synchronized(LearnedHooks.class){if(generation==mine){retire();}}};
+- }
+- public static synchronized void detach(){retire();}
+- public static MageSpell resolve(Mage mage,String nativeKey,Wand original){
+-  var r=resolver;if(r==null)return retired(nativeKey)?null:mage.getSpell(nativeKey);
+-  SpellKey key;try{key=new SpellKey(nativeKey);}catch(Throwable invalid){return null;}if(!r.manages(key.getBaseKey()))return retired(nativeKey)?null:mage.getSpell(nativeKey);
+-  try{
+-   var decision=decision(r,mage,original,key.getBaseKey(),key.getLevel());if(decision==null||decision.status()!=LearnedLevelResolver.Status.RESOLVED)return null;
+-   MageSpell spell=mage.getSpell(new SpellKey(key.getBaseKey(),decision.effectiveLearnedLevel()).getKey());
+-   if(spell==null||!key.getBaseKey().equals(spell.getSpellKey().getBaseKey())||spell.getSpellKey().getLevel()!=decision.effectiveLearnedLevel())return null;return spell;
+-  }catch(Throwable unavailable){return null;}
+- }
+- private static LearnedLevelResolver.Decision decision(LearnedLevelResolver r,Mage mage,Wand wand,String base,int stored){
+-  if(wand==null||mage==null||!(mage.getEntity() instanceof Player player)||!wand.hasSpell(base)||!wand.canUse(player))return null;
+-  var request=new LearnedLevelResolver.Request(player.getUniqueId(),PracticeWandIdentity.get(wand),base,stored);
+-  return OriginalWandContext.withOriginal(request,mage,wand,()->r.resolve(request));
+- }
+- /** Excel: controller quick-cast icons converge at the exact original wand, never the held-item guess. */
+- public static Spell selectForCast(Spell selected,Wand original){
+-  if(selected==null)return null;
+-  try{
+-   if(!managed(selected))return selected;
+-   if(original==null||!(selected instanceof MageSpell source)||source.getMage()==null||source.getMage()!=original.getMage())return null;
+-   String base=selected.getSpellKey().getBaseKey();
+-   if(!original.hasSpell(base))return null;
+-   return resolve(source.getMage(),new SpellKey(base,original.getSpellLevel(base)).getKey(),original);
+-  }catch(Throwable unavailable){return null;}
+- }
+- public static boolean allowCast(MageSpell spell,Wand original){
+-  var r=resolver;if(r==null){try{return !retired(spell.getSpellKey().getKey());}catch(RuntimeException unavailable){return retiredKeys.isEmpty();}}
+-  try{var key=spell.getSpellKey();if(!r.manages(key.getBaseKey()))return !retired(key.getKey());if(original==null)return false;
+-   var d=decision(r,spell.getMage(),original,key.getBaseKey(),original.getSpellLevel(key.getBaseKey()));return d!=null&&d.status()==LearnedLevelResolver.Status.RESOLVED&&key.getLevel()>=1&&key.getLevel()==d.effectiveLearnedLevel();
+-  }catch(Throwable unavailable){return false;}
+- }
+- /** Read-only current-generation query for canonical native spell keys; inactive means unchanged. */
+- public static boolean managesKey(String nativeKey){
+-  var r=resolver;if(nativeKey==null)return false;if(r==null)return retired(nativeKey);
+-  try{if(!nativeKey.matches("[a-z0-9_.-]+(?:\\|[1-9][0-9]*)?"))return false;int delimiter=nativeKey.indexOf('|');if(delimiter>=0)Integer.parseInt(nativeKey.substring(delimiter+1));var key=new SpellKey(nativeKey);return nativeKey.equals(key.getKey())&&key.getBaseKey().matches("[a-z0-9_.-]+")&&key.getLevel()>=1&&(r.manages(key.getBaseKey())||retiredKeys.contains(key.getBaseKey()));}
+-  catch(RuntimeException invalid){return false;}
+- }
+- public static boolean managed(Spell spell){var r=resolver;if(r==null){try{return retired(spell.getSpellKey().getKey());}catch(RuntimeException invalid){return !retiredKeys.isEmpty();}}try{return r.manages(spell.getSpellKey().getBaseKey())||retired(spell.getSpellKey().getKey());}catch(Throwable unavailable){return true;}}
+- public static boolean allowAuto(boolean original,SpellKey key){var r=resolver;if(r==null)return retiredKeys.isEmpty()?original:key!=null&&original&&!retiredKeys.contains(key.getBaseKey());try{return original&&!r.manages(key.getBaseKey())&&!retiredKeys.contains(key.getBaseKey());}catch(Throwable unavailable){return false;}}
+- private LearnedHooks(){}
+-}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/wrv/magic/level/LearnedLevelResolver.java b/src/wrv/magic/level/LearnedLevelResolver.java
+--- a/prev-src/wrv/magic/level/LearnedLevelResolver.java	2026-10-30 18:03:11.070952378 +0000
++++ b/src/wrv/magic/level/LearnedLevelResolver.java	1970-01-01 00:00:00.000000000 +0000
+@@ -1,61 +0,0 @@
+-// Excel: strict default; only an exact committed-provenance adapter may resolve inherited native defaults.
+-package wrv.magic.level;
+-
+-import java.util.*;
+-/** Read-only, opt-in decision boundary. Never grants a spell, writes a rank, or chooses an ownership policy. */
+-public final class LearnedLevelResolver {
+- public record View(String ownerScope,String spellKey,int learnedLevel,int maxLevel,long usefulCount,Long nextCumulativeThreshold,int migrationFloor,String policyId){}
+- public record Request(UUID player,String wandId,String spell,int storedNativeLevel){}
+- public record Scope(Request subject,String ownerScope){}
+- public record Binding(String policyId,int maxLevel){public Binding{if(policyId==null||policyId.isBlank()||maxLevel<1||maxLevel>64)throw new IllegalArgumentException("explicit policy");}}
+- public record Availability(Request subject,String ownerScope,String policyId,String stageRevision,boolean possessesSpell,Set<Integer> availableLevels){public Availability{availableLevels=Set.copyOf(availableLevels);}}
+- @FunctionalInterface public interface ScopeResolver {Scope resolve(Request request)throws Exception;}
+- @FunctionalInterface public interface ViewProvider {View read(Scope scope)throws Exception;}
+- @FunctionalInterface public interface AvailabilityProvider {Availability read(Scope scope)throws Exception;}
+- @FunctionalInterface public interface ReviewedNativeDefault {boolean permits(Scope scope,View view)throws Exception;}
+- public enum Status { UNMANAGED,DENIED,RESOLVED }
+- public record Decision(Status status,int storedNativeLevel,Integer effectiveLearnedLevel,String reason){}
+- private final Map<String,Binding> managed;private final ScopeResolver scopes;private final ViewProvider views;private final AvailabilityProvider availability;private final ReviewedNativeDefault reviewedNativeDefault;private final Thread owner=Thread.currentThread();
+- public LearnedLevelResolver(Map<String,Binding> managed,ScopeResolver scopes,ViewProvider views,AvailabilityProvider availability){
+-  this(managed,scopes,views,availability,(scope,view)->false);
+- }
+- public LearnedLevelResolver(Map<String,Binding> managed,ScopeResolver scopes,ViewProvider views,AvailabilityProvider availability,ReviewedNativeDefault reviewedNativeDefault){
+-  this.reviewedNativeDefault=Objects.requireNonNull(reviewedNativeDefault);
+-  for(String k:managed.keySet())if(k==null||!k.matches("[a-z0-9_.-]+"))throw new IllegalArgumentException("canonical base keys");
+-  this.managed=Map.copyOf(managed);this.scopes=scopes;this.views=views;this.availability=availability;
+- }
+- public static LearnedLevelResolver disabled(){return new LearnedLevelResolver(Map.of(),null,null,null);}
+- public Set<String> managedKeys(){return Set.copyOf(managed.keySet());}
+- public boolean manages(String key){return key!=null&&managed.containsKey(key);}
+- private static Decision deny(Request r,String reason){return new Decision(Status.DENIED,r==null?0:r.storedNativeLevel(),null,reason);}
+- public Decision resolve(Request r){
+-  if(r==null)return deny(null,"missing request");
+-  if(r.spell()==null||!r.spell().matches("[a-z0-9_.-]+"))return deny(r,"canonical base key required");
+-  Binding binding=managed.get(r.spell());
+-  if(binding==null)return new Decision(Status.UNMANAGED,r.storedNativeLevel(),null,"native path unchanged");
+-  if(Thread.currentThread()!=owner)return deny(r,"wrong thread");
+-  if(r.player()==null||r.wandId()==null||r.wandId().isBlank()||r.storedNativeLevel()<1||scopes==null||views==null||availability==null)return deny(r,"missing authority");
+-  try{
+-   Scope scope=scopes.resolve(r);
+-   if(scope==null||!r.equals(scope.subject())||scope.ownerScope()==null||scope.ownerScope().isBlank())return deny(r,"unknown scope");
+-   View v=views.read(scope);
+-   if(v==null||!scope.ownerScope().equals(v.ownerScope())||!r.spell().equals(v.spellKey())||!binding.policyId().equals(v.policyId())||binding.maxLevel()!=v.maxLevel())return deny(r,"view identity/policy mismatch");
+-   if(v.learnedLevel()<1||v.learnedLevel()>v.maxLevel()||v.migrationFloor()<1||v.migrationFloor()>v.learnedLevel()||v.usefulCount()<0|| (v.learnedLevel()==v.maxLevel()?v.nextCumulativeThreshold()!=null:v.nextCumulativeThreshold()==null||v.nextCumulativeThreshold()<=v.usefulCount()))return deny(r,"invalid coherent view");
+-   // A higher saved level requires reviewed floor migration. Never silently downgrade it or invent a floor here.
+-   if(r.storedNativeLevel()>binding.maxLevel())return deny(r,"native rank outside reviewed policy");
+-   if(r.storedNativeLevel()>v.learnedLevel()&&!reviewedNativeDefault.permits(scope,v))return deny(r,"higher native rank needs reviewed migration");
+-   Availability a=availability.read(scope);
+-   if(a==null||!r.equals(a.subject())||!scope.ownerScope().equals(a.ownerScope())||!binding.policyId().equals(a.policyId())||a.stageRevision()==null||a.stageRevision().isBlank()||!a.possessesSpell())return deny(r,"spell or learned template unavailable at current seal");
+-   // Authenticated adapters must report current state, not cached/stale stage evidence.
+-   int effective=0;
+-   for(Integer level:a.availableLevels()){
+-    if(level==null||level<1||level>binding.maxLevel())return deny(r,"invalid current availability");
+-    if(level<=v.learnedLevel())effective=Math.max(effective,level);
+-   }
+-   if(effective<1)return deny(r,"no currently eligible native level");
+-   // Practice remains banked in its ledger. A later path/seal unlock exposes it without rewriting counts.
+-   return new Decision(Status.RESOLVED,r.storedNativeLevel(),effective,
+-       effective<v.learnedLevel()?"practice banked; higher rank requires current path/seal":"read-only learned rank");
+-  }catch(Exception unavailable){return deny(r,"authority unavailable");}
+- }
+-}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/wrv/magic/level/OriginalWandContext.java b/src/wrv/magic/level/OriginalWandContext.java
+--- a/prev-src/wrv/magic/level/OriginalWandContext.java	2026-10-30 18:03:11.070991597 +0000
++++ b/src/wrv/magic/level/OriginalWandContext.java	1970-01-01 00:00:00.000000000 +0000
+@@ -1,16 +0,0 @@
+-package wrv.magic.level;
+-import java.util.*;import java.util.function.Supplier;
+-import com.elmakers.mine.bukkit.api.magic.Mage;import com.elmakers.mine.bukkit.api.wand.Wand;
+-/** Exact original native/display request scope, never resolves an item from a mutable held slot or template lookup. */
+-public final class OriginalWandContext {
+- public record Authority(Mage mage,Wand wand){}
+- private record Frame(LearnedLevelResolver.Request request,Authority authority){}
+- private static final ThreadLocal<Frame> current=new ThreadLocal<>();
+- public static <T>T withOriginal(LearnedLevelResolver.Request request,Mage mage,Wand wand,Supplier<T> operation){
+-  Objects.requireNonNull(request);Objects.requireNonNull(mage);Objects.requireNonNull(wand);Objects.requireNonNull(operation);
+-  Frame prior=current.get();current.set(new Frame(request,new Authority(mage,wand)));
+-  try{return operation.get();}finally{if(prior==null)current.remove();else current.set(prior);}
+- }
+- public static Optional<Authority> current(LearnedLevelResolver.Request request){Frame f=current.get();return f!=null&&f.request()==request?Optional.of(f.authority()):Optional.empty();}
+- private OriginalWandContext(){}
+-}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/wrv/magic/level/PracticeWandIdentity.java b/src/wrv/magic/level/PracticeWandIdentity.java
+--- a/prev-src/wrv/magic/level/PracticeWandIdentity.java	2026-10-30 18:03:11.071045808 +0000
++++ b/src/wrv/magic/level/PracticeWandIdentity.java	1970-01-01 00:00:00.000000000 +0000
+@@ -1,85 +0,0 @@
+-package wrv.magic.level;
+-
+-import java.util.UUID;
+-import org.bukkit.Bukkit;
+-import org.bukkit.NamespacedKey;
+-import org.bukkit.inventory.ItemStack;
+-import org.bukkit.persistence.PersistentDataType;
+-import com.elmakers.mine.bukkit.api.wand.Wand;
+-
+-/**
+- * Excel practice identity, separate from Magic's unique/lost-wand identity.
+- * Reads never assign an identity or copy ItemMeta. A present malformed Excel key
+- * fails closed rather than silently falling back to a native identity.
+- */
+-public final class PracticeWandIdentity {
+-    private static final NamespacedKey KEY = new NamespacedKey("excelwandbars", "practice_id");
+-
+-    public static boolean hasToken(ItemStack item) {
+-        return item != null && item.getPersistentDataContainer().has(KEY);
+-    }
+-
+-    /** Returns canonical UUID text, or null for absent/wrong-type/malformed values. */
+-    public static String readToken(ItemStack item) {
+-        if (item == null) return null;
+-        try {
+-            String text = item.getPersistentDataContainer().get(KEY, PersistentDataType.STRING);
+-            return canonical(text) ? text : null;
+-        } catch (RuntimeException unavailable) {
+-            return null;
+-        }
+-    }
+-
+-    public static String get(Wand wand) {
+-        if (wand == null) return null;
+-        try {
+-            ItemStack item = wand.getItem();
+-            if (hasToken(item)) {
+-                String token = readToken(item);
+-                return token;
+-            }
+-            String nativeId = wand.getId();
+-            return canonical(nativeId) ? nativeId : null;
+-        } catch (RuntimeException unavailable) {
+-            return null;
+-        }
+-    }
+-
+-    /**
+-     * Low-level attachment only. The owning coordinator MUST durably archive the
+-     * exact original Magic wand configuration and assignment before calling this method.
+-     * Full ItemStack restoration requires a separate backup. This method
+-     * does not authorize migration or manufacture a durable-journal confirmation.
+-     * Existing different or malformed tokens are never overwritten.
+-     */
+-    public static boolean attach(ItemStack item, UUID token) {
+-        if (item == null || token == null || !Bukkit.isPrimaryThread() || item.getAmount() != 1) return false;
+-        String value = token.toString();
+-        try {
+-        if (!com.elmakers.mine.bukkit.wand.Wand.isWand(item)
+-                || com.elmakers.mine.bukkit.wand.Wand.isUpgrade(item)) return false;
+-            if (hasToken(item)) return value.equals(readToken(item));
+-            boolean edited = item.editPersistentDataContainer(pdc -> {
+-                if (!pdc.has(KEY)) pdc.set(KEY, PersistentDataType.STRING, value);
+-            });
+-            return edited && value.equals(readToken(item));
+-        } catch (RuntimeException unavailable) {
+-            return false;
+-        }
+-    }
+-
+-    private static boolean canonical(String value) {
+-        if (value == null || value.length() != 36) return false;
+-        for (int i = 0; i < value.length(); i++) {
+-            char c = value.charAt(i);
+-            if (i == 8 || i == 13 || i == 18 || i == 23) {
+-                if (c != '-') return false;
+-            } else if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))) {
+-                return false;
+-            }
+-        }
+-        return true;
+-    }
+-
+-    private PracticeWandIdentity() {}
+-}
+diff -ruN '--exclude=*.class' '--exclude=*.jar' a/prev-src/wrv/magic/level/RawWandLoadBridge.java b/src/wrv/magic/level/RawWandLoadBridge.java
+--- a/prev-src/wrv/magic/level/RawWandLoadBridge.java	2026-10-30 18:03:11.071085488 +0000
++++ b/src/wrv/magic/level/RawWandLoadBridge.java	1970-01-01 00:00:00.000000000 +0000
+@@ -1,38 +0,0 @@
+-package wrv.magic.level;
+-import java.util.*;import java.util.function.Predicate;import org.bukkit.configuration.ConfigurationSection;import com.elmakers.mine.bukkit.api.wand.Wand;
+-/** Disabled by default. Explicit pre-load durable confirmation; never grants ranks or edits raw configuration. */
+-public final class RawWandLoadBridge {
+- public enum Origin { CONSTRUCTOR_RAW, ALREADY_LOADED_CURRENT_ITEM }
+- public record Snapshot(Wand original,String id,String ownerId,String template,Boolean bound,Object spells,Map<String,Integer> spellLevels,boolean existingWand,boolean upgrade,Origin origin,boolean wellFormed){
+-  public Snapshot{Objects.requireNonNull(original);Objects.requireNonNull(origin);if(spells instanceof List<?> list)spells=List.copyOf(list);else if(spells!=null&&!(spells instanceof String))throw new IllegalArgumentException("raw spell shape");spellLevels=Map.copyOf(spellLevels);}
+- }
+- private record Registration(Thread thread,Predicate<Snapshot> confirm,Predicate<Snapshot> scope){}
+- private static volatile Predicate<Snapshot> retiredScope;
+- private static Predicate<Snapshot> union(Predicate<Snapshot> a,Predicate<Snapshot> b){return a==null?b:s->inScope(a,s)||inScope(b,s);}
+- public static synchronized void requireManagedScope(Predicate<Snapshot> scope){if(registration!=null)throw new IllegalStateException("active raw load owner");retiredScope=union(retiredScope,Objects.requireNonNull(scope));}
+- private static volatile Registration registration;
+- private record Frame(Registration registration,Snapshot exact,String rawText){Frame(Registration r,Snapshot s){this(r,s,null);}}
+- /** Excel: exact pre-load raw provenance, available only inside current observer callback. */
+- public static String rawText(Snapshot exact){var f=frame.get();return isCurrentSnapshot(exact)?f.rawText():null;}
+- private static String serialize(ConfigurationSection raw){var yaml=new org.bukkit.configuration.file.YamlConfiguration();for(var e:raw.getValues(false).entrySet())yaml.set(e.getKey(),e.getValue());return yaml.saveToString();}
+- private static final ThreadLocal<Frame> frame=new ThreadLocal<>();
+- public static boolean isCurrentSnapshot(Snapshot exact){var f=frame.get();return f!=null&&f.exact()==exact&&f.registration()==registration&&f.registration().thread()==Thread.currentThread();}
+- public static synchronized AutoCloseable installOwned(Predicate<Snapshot> confirm){return installOwned(confirm,s->true);}
+- /** Scope must be immutable and independent of the owner: it survives retirement as a safety fence. */
+- public static synchronized AutoCloseable installOwned(Predicate<Snapshot> confirm,Predicate<Snapshot> scope){if(registration!=null)throw new IllegalStateException("raw load observer already owned");var mine=new Registration(Thread.currentThread(),Objects.requireNonNull(confirm),Objects.requireNonNull(scope));registration=mine;return ()->{if(mine.thread()!=Thread.currentThread())throw new IllegalStateException("owner thread required");synchronized(RawWandLoadBridge.class){if(registration==mine){retiredScope=union(retiredScope,mine.scope());registration=null;}}};}
+- private static boolean inScope(Predicate<Snapshot> scope,Snapshot snapshot){try{return scope.test(snapshot);}catch(RuntimeException|LinkageError failed){throw new IllegalStateException("raw load scope unavailable",failed);}}
+- /** Called ONLY at native existing-item constructor return from itemToConfig, before migration/load/save. */
+- public static ConfigurationSection beforeLoad(ConfigurationSection raw,Wand original,boolean existingWand,boolean upgrade){if(!existingWand||upgrade)return raw;var r=registration;var retired=retiredScope;if(r==null&&retired==null)return raw;var captured=snapshot(raw,original,existingWand,upgrade,Origin.CONSTRUCTOR_RAW);if(r==null){if(inScope(retired,captured))throw new IllegalStateException("managed raw load owner unavailable");return raw;}if(inScope(r.scope(),captured))confirm(r,captured,raw);else if(retired!=null&&inScope(retired,captured))throw new IllegalStateException("reserved raw load scope not owned");return raw;}
+- /** Explicit bootstrap read of stored current item, never historical/pre-construction provenance. */
+- public static void captureAlreadyLoaded(Wand original){var r=registration;if(r==null)throw new IllegalStateException("explicit observer required");if(original==null||original.getClass()!=com.elmakers.mine.bukkit.wand.Wand.class)throw new IllegalArgumentException("exact native wand required");var item=original.getItem();if(!com.elmakers.mine.bukkit.wand.Wand.isWand(item)||com.elmakers.mine.bukkit.wand.Wand.isUpgrade(item))return;var raw=com.elmakers.mine.bukkit.wand.Wand.itemToConfig(item,null);confirm(r,snapshot(raw,original,com.elmakers.mine.bukkit.wand.Wand.isWand(item),com.elmakers.mine.bukkit.wand.Wand.isUpgrade(item),Origin.ALREADY_LOADED_CURRENT_ITEM),raw);}
+- private static void confirm(Registration r,Snapshot snapshot,ConfigurationSection raw){if(r.thread()!=Thread.currentThread()||r!=registration)throw new IllegalStateException("raw load owner unavailable");var prior=frame.get();frame.set(new Frame(r,snapshot,serialize(raw)));try{boolean accepted=r.confirm().test(snapshot);if(!accepted||r!=registration)throw new IllegalStateException("raw item baseline not durably confirmed");}finally{if(prior==null)frame.remove();else frame.set(prior);}}
+- static Snapshot snapshot(ConfigurationSection raw,Wand original,boolean existing,boolean upgrade,Origin origin){
+-  if(raw==null)throw new IllegalStateException("raw item data unavailable");
+-  try{return strictSnapshot(raw,original,existing,upgrade,origin);}catch(IllegalArgumentException invalid){return new Snapshot(original,raw.getString("id"),raw.getString("owner_id"),raw.getString("template"),raw.isBoolean("bound")?raw.getBoolean("bound"):null,null,Map.of(),existing,upgrade,origin,false);}
+- }
+- private static Snapshot strictSnapshot(ConfigurationSection raw,Wand original,boolean existing,boolean upgrade,Origin origin){Object spells=raw.get("spells");if(spells instanceof Collection<?> c){if(c.size()>4096)throw new IllegalArgumentException("spell capacity");var copy=new ArrayList<String>();for(Object value:c){if(!(value instanceof String text)||text.length()>1024)throw new IllegalArgumentException("raw spell value");copy.add(text);}spells=List.copyOf(copy);}else if(spells!=null&&!(spells instanceof String))throw new IllegalArgumentException("raw spells unavailable");
+-  Object levels=raw.get("spell_levels");Map<?,?> map=levels instanceof ConfigurationSection section?section.getValues(false):levels instanceof Map<?,?> m?m:levels==null?Map.of():null;if(map==null||map.size()>4096)throw new IllegalArgumentException("raw levels unavailable");var copied=new TreeMap<String,Integer>();for(var entry:map.entrySet()){if(!(entry.getKey() instanceof String key)||!(entry.getValue() instanceof Integer value))throw new IllegalArgumentException("raw level value");copied.put(key,value);}
+-  return new Snapshot(original,raw.getString("id"),raw.getString("owner_id"),raw.getString("template"),raw.isBoolean("bound")?raw.getBoolean("bound"):null,spells,copied,existing,upgrade,origin,true);
+- }
+- private RawWandLoadBridge(){}
+-}
