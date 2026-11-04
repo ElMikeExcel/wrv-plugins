@@ -1,0 +1,140 @@
+===== Phase 1 test results (source: menu-2.0/phase-1/TEST-RESULTS.md) =====
+# ExcelMenu 2.0.0 — Phase 1 TEST RESULTS
+
+Date: 2026-10-31. Command: `./build.sh` in this folder.
+**JUnit: OK (81 tests)** — Phase 0's 54 carried unchanged + 27 new
+Phase 1 tests. Three consecutive builds byte-identical
+(SHA-256 `1419bdb9ddd4b97b32f3fef466e63c305a6c6cf94e443416c8abd513adde0fd3`).
+
+## Suites
+
+| Suite | Tests | Covers |
+|---|---|---|
+| EntryLoaderTest (Phase 0) | 22 | schema closedness, refs, materials, malformed files |
+| GuardResolutionTest (Phase 0) | 12 | guard default-variant + standard message, state picks |
+| DateWindowTest (Phase 0) | 5 | dated entries in/out of window |
+| EntryRegistryTest (Phase 0) | 7 | registry build, diff, menu/governs |
+| PlatformDetectionTest (Phase 0) | 7 | platform override precedence |
+| GoldenHarnessTest (Phase 0) | 1 | see below |
+| LayoutLoaderTest (new) | 8 | production layouts load; 7 refusal shapes (bad form, bad page ref, dup slot, overlap, unknown group, slot out of range, empty) |
+| ChestModelTest (new) | 6 | slot-exact server menu incl. the slot-39 hole; dated entry drops out of window; guard default-variant renders with unavailable action; catalogue pages place 39 + 28 with page-turn fixed items; overflow is an error; missing page is an error |
+| FormModelTest (new) | 5 | flat form = the 25 live buttons in exact order + group-coloured labels; dated entry drops; picker = 9 groups in layout order; grouped form bodies/notes; typed rows are buttons |
+| FormSessionTest (new) | 6 | OK / consumed / superseded / expired / world-changed / no-session |
+| CatalogueConversionTest (new) | 1 | completeness counts + verbatim Java columns (below) |
+| CatalogueHarnessTest (new) | 1 | three-column catalogue comparison (below) |
+
+## Golden harness over PRODUCTION entries (the Phase 1 gate)
+
+The Phase 0 harness, unmodified, re-run over the 82 production entry
+files (26 server-menu + 56 catalogue):
+
+    GOLDEN HARNESS: 108 viewer states x2 platforms, 5418 rows compared,
+    deltas occurred: [D1, D2, D3, D4, D5, D6, D7, D8, D9]
+
+**Zero unclassified differences.** All nine Phase 0 acceptances still
+occur and are still enforced (a missing acceptance fails the build).
+D1/D5 remain recorded Phase-2 awareness items for Mike, not
+implemented here.
+
+## Catalogue harness (Amendment B gate)
+
+Old Java columns rebuilt independently from the preserved live
+`commands_menu.yml` + `commands_menu_page2.yml`; old Bedrock columns
+from the extracted 1.5.27 catalogue arrays; new columns from the
+production entries:
+
+    CATALOGUE HARNESS: 56 rows compared,
+    acceptances occurred: [C1, C2, C3, C4, C5, C6, C7]
+
+All seven catalogue acceptances occur (each is required; a missing
+one fails the build) and **zero unclassified differences** remain:
+C1 Bedrock-only rows (3) new on Java · C2 Java-only rows + the Fixes
+& Help group (6 rows) new on Bedrock · C3 six description drifts
+resolved to the Java wording · C4 /ag dispatch convergence · C5 /ask
++ /mark screen-to-hint convergence · C6 typed rows become
+spoken-hint buttons on Bedrock · C7 /cosmetics' second position in
+Shops & Trading preserved per platform.
+
+Conversion completeness (CatalogueConversionTest): 53 old Java rows +
+50 old Bedrock rows reconcile to exactly 56 registry entries; every
+shared row's id, Java label, lore (trailer stripped), action and
+group are asserted verbatim against the old Java file; per-group
+counts: 6 / 6 / 5 / 7 / 9 / 4 / 11 / 4 / 4.
+
+## Rig (console-level proof)
+
+Paper 26.3-231 (the Phase 0 rig), plugins: ExcelMenu 2.0.0 (THIS
+jar), ExcelBedrockMenu 1.5.27, Geyser 2.12.1-b1277, PlaceholderAPI
+2.12.3. The three converted/retired definition files were planted in
+`plugins/ExcelMenu/menus/`; everything else extracted from the jar.
+Full log: `rig/boot.log` (final-jar run).
+
+Proven on the rig:
+- `ExcelMenu registry: 82 entries live` (+82 diff listed);
+  `ExcelMenu layouts: 2 live: commands_menu, server_menu`;
+- skip lines for server_menu, commands_menu, commands_menu_page2
+  ("registry-owned or retired … the file is inert");
+- `self-check: loaded 16 menus` (the full unconverted set);
+  `/shop` and `/basicsmenu` open-command registrations;
+- `platform bridge self-check: Geyser reflection surface PRESENT`;
+- console `excelmenu list` and `dm list` print the merged surface
+  (16 definitions + 2 registry menus + 82 entries);
+- console `menu` answered by ExcelBedrockMenu ("Only players can use
+  /menu.") — /menu ownership untouched;
+- `excelmenu reload`: registry diff +0/−0/~0 with 82 unchanged,
+  layouts 2/0 failed, definitions 16/0 failed, skips re-logged;
+- extracted entries/layouts/menus byte-identical to the jar's
+  resources (sha256 spot-check 6/6, counts 82/2/19);
+- clean disable; no SEVERE and no ExcelMenu errors in the log.
+  (One earlier feeder run hit a Paper console race — commands fed in
+  the same tick as "Done" NPE inside Paper's own command context,
+  hitting vanilla /stop identically; re-run with post-Done feeding
+  was clean. Not a plugin defect.)
+
+## Player-owed proofs (NOT rig-provable)
+
+Carried into INSTALL-PACKET §6: Java + Bedrock Server Menu passes
+against the registry renderers, toggle flip re-render on both
+platforms, cross-menu door navigation (My Skills & Perks and back),
+commands catalogue on both platforms (incl. a typed-row tap speaking
+its hint on Bedrock), dated-entry behaviour in game, definition
+menus unchanged in game, ExcelMenuJoin compass flow untouched.
+
+## RE-BASE RUN (Nov 1, 2026 — server_menu conversion re-derived)
+
+Trigger: the install packet's server_menu hard gate failed against
+live (live `132442bf…` / 13,613 B vs filed `86b51650…` / 13,117 B) —
+the live file gained the slot-34 `halloween_scares` item after the
+original conversion. Baseline first: the untouched tree rebuilt
+green and reproduced the filed jar byte-identically
+(`1419bdb9…`, 5,418 harness rows), so the re-base started from a
+proven-green base.
+
+- Fixture replaced with the preserved live file
+  (`fixtures/server_menu.yml` now SHA-256 `132442bf…`); the two
+  commands fixtures re-verified unchanged (`e230a10b…`, `4fe2562f…`).
+- Converters re-run: `make_fixtures.py` (27 server-menu entries —
+  the ONLY delta vs the previous output is the new
+  `halloween_scares.yml`, transcribed exactly as live) and
+  `make_catalogue.py` (56 entries — the ONLY deltas are the two
+  settled lore fixes, now applied by the converter itself:
+  st_shop "Open the Excel Shop", yi_lostfound "last 14 days").
+- `./build.sh`: **OK (81 tests)** — test COUNT unchanged. Amended
+  expectations: GoldenHarnessTest (D3/D4 extended to
+  `halloween_scares`), CatalogueConversionTest (the two settled
+  fixes as named, must-fire exceptions to verbatim lore),
+  ChestModelTest (slot 34 expected; page total 32; out-of-window
+  asserts both seasonal entries drop), FormModelTest (27 in-window
+  buttons; Aim Assist at index 26; out-of-window still 25).
+- Golden harness: **5,472 rows compared** (was 5,418; +54 = the new
+  entry in the Java column across the 54 in-window states), deltas
+  D1–D9 all occurred, **zero unclassified differences**.
+  Catalogue harness: 56 rows, C1–C7 all occurred.
+- New jar: `ExcelMenu-2.0.0.jar`, 224,061 B, SHA-256
+  `afa74d1430a29aa5bfa1824f6d0b38d08168c9aa4e22b5ee0d8a8e8c8354e96f`,
+  byte-identical across two builds; jar contents spot-verified
+  (83 entry files incl. `halloween_scares.yml`; both settled lore
+  lines present). Registry entry count is now **83** (packet §1/§5
+  figures superseded by the packet's re-base note).
+- Rig NOT re-run (desk re-base; the install's boot-verify + the
+  packet §6 player proofs remain the live checks).

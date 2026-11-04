@@ -1,0 +1,19 @@
+name: ExcelMenu
+version: 2.0.0
+main: com.winkreyes.excelmenu.bukkit.ExcelMenu
+api-version: '1.13'
+author: WinkReyesValley
+description: ExcelMenu 2.0 (Phase 1) — one menu plugin for Java + Bedrock. The Server Menu and the commands catalogue are registry data (entries/ + layouts/ under plugins/ExcelMenu/), resolved per viewer and rendered as a Java chest GUI or a Bedrock Cumulus form through the unified platform bridge; the remaining menus still load as definitions (menus/) and render the same way. Phase 1 registers /excelmenu and /dm only; /menu and its family stay with ExcelBedrockMenu until the Phase 2 unification (DESIGN-2.0 §3.3).
+softdepend: [PlaceholderAPI, Vault, Geyser-Spigot, floodgate]
+commands:
+  excelmenu:
+    description: ExcelMenu 2.0 admin — list menus and registry entries, open a menu, resolve entries for yourself, reload everything.
+    usage: /excelmenu list|open <menu> [player]|entries [menu]|reload
+  dm:
+    description: DeluxeMenus compatibility alias (list/open/reload) so the fleet's existing "dm open ..." dispatches keep working.
+    usage: /dm list|open <menu> [player]|reload
+permissions:
+  excelmenu.admin:
+    default: op
+
+# ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)

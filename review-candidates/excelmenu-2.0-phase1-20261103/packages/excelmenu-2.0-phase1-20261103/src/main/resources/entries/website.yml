@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: website
+menu: server_menu
+group: help
+order: 50
+order-bedrock: 160
+icon: ENDER_EYE
+label: '&a&lServer Website'
+lore:
+  - '&7Guides, commands and news'
+  - '&7Tap for the address'
+action:
+  - '[json] {"text":"» Server Website: elmikeexcel.github.io/winkreyesvalley","color":"aqua","underlined":true,"clickEvent":{"action":"open_url","value":"https://elmikeexcel.github.io/winkreyesvalley/"},"hoverEvent":{"action":"show_text","value":"Open the server website"}}'
+  - '[message] &bhttps://elmikeexcel.github.io/winkreyesvalley/'
+  - '[message] &7Short, easy to type: &btinyurl.com/winkreyesvalley'

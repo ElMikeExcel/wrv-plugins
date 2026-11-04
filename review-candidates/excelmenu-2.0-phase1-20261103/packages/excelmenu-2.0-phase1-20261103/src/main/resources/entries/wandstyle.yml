@@ -1,0 +1,18 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: wandstyle
+menu: server_menu
+group: settings
+order: 40
+order-bedrock: 190
+icon: BLAZE_ROD
+label: '&e&lWand controls'
+lore:
+  - '&7Pick how your Magic wand works:'
+  - '&7Classic, Sneak bars, Cycle,'
+  - '&7Tap to pick or Tap bar'
+  - '&7Click to choose, switch any time'
+  - '&7Same as typing &e/wandstyle'
+action:
+  - '[close]'
+  - '[player] wandstyle'
