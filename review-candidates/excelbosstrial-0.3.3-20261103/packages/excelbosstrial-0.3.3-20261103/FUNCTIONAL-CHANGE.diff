@@ -1,0 +1,1641 @@
+diff -ruN '--exclude=out' '--exclude=out2' build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java
+--- build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java	2026-11-01 21:55:58.225335764 +0000
++++ build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java	2026-11-02 00:36:18.040980685 +0000
+@@ -22,6 +22,8 @@
+ import com.winkreyes.excelbosstrial.core.ProvenanceLore;
+ import com.winkreyes.excelbosstrial.core.ScalingRule;
+ import com.winkreyes.excelbosstrial.core.SealLoot;
++import com.winkreyes.excelbosstrial.core.SprinkleSettings;
++import com.winkreyes.excelbosstrial.sprinkle.SprinkleService;
+ import com.winkreyes.excelbosstrial.core.SpoilsMath;
+ import com.winkreyes.excelbosstrial.core.XpBandPlant;
+ import com.winkreyes.excelbosstrial.core.XpBandTokens;
+@@ -329,6 +331,13 @@
+     // the chapter reads its own copy for the lines.
+     private final Map<BossKind, MilestoneSettings> milestoneSettings =
+             new EnumMap<>(BossKind.class);
++    // 0.3.3: the elite sprinkle (ELITE-SPRINKLE-STUDY-20261101).
++    // Constructed in onEnable; every EliteMobs call lives inside
++    // the service's gateway, and the service's registry is the
++    // ONLY place adds are tracked - they never enter the ledger,
++    // the share math, the participant sets, or the fight record.
++    private SprinkleService sprinkle;
++    private int sprinkleLeashTask = -1;
+     private final Map<UUID, DeathOutcome> deathOutcomes = new HashMap<>();
+     private final CooldownBook cooldowns = new CooldownBook();
+     // 0.3.0 repeat system (SPEC section 2): the per-seal repeat
+@@ -447,6 +456,15 @@
+     @Override
+     public void onEnable() {
+         saveDefaultConfig();
++        // 0.3.3: the elite sprinkle service (configured by
++        // loadSettings below; its leash task is scheduled with
++        // the other repeating tasks). The participants lookup is
++        // the encounter ledger's own set - read-only here, used
++        // solely to retarget a leashed add onto a real fighter.
++        sprinkle = new SprinkleService(this, id -> {
++            EncounterLedger l = encounters.get(id);
++            return l == null ? Set.of() : l.participants();
++        });
+         loadSettings();
+         loadState();
+         try { teamClaims = new TeamClaims(this, signaturePaid); }
+@@ -517,6 +535,26 @@
+                     ledger.queueSurge();
+                 }
+             });
++            // 0.3.3: the dragon's sprinkle sink - the chapter
++            // calls it with the phase-2 milestone mask and the
++            // fountain anchor; the roll itself is the host's,
++            // against the dragon chapter's sprinkle block.
++            dragonChapter.setSprinkleSink((dragonUuid, stampMask, fountain) -> {
++                if (sprinkle == null) {
++                    return;
++                }
++                Entity ent = Bukkit.getEntity(dragonUuid);
++                if (!(ent instanceof LivingEntity dragonBoss)) {
++                    return;
++                }
++                for (int i = 0; i < MilestoneBeats.THRESHOLDS.length; i++) {
++                    if ((stampMask & (1 << i)) != 0) {
++                        sprinkle.onMilestone(BossKind.ENDER_DRAGON, dragonBoss, i, fountain);
++                    }
++                }
++            });
++            dragonChapter.setSprinkleArmed(sprinkle != null
++                    && sprinkle.armed(BossKind.ENDER_DRAGON));
+         }
+         // 0.3.0 raid companion: the BossTrial-side adapter pays the
+         // raid signature + repeat slate off GuildGate's events.
+@@ -539,6 +577,10 @@
+                 this, this::pressurePulseTick, 20L, 20L);
+         maintenanceTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(
+                 this, this::maintenance, 600L, 600L);
++        if (sprinkle != null) {
++            sprinkleLeashTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(
++                    this, sprinkle::leashTick, 40L, 40L);
++        }
+         getLogger().info("ExcelBossTrial " + getDescription().getVersion()
+                 + " awake: " + (cfg.enabled ? "ENABLED" : "disabled by config")
+                 + " (share gate " + (int) (cfg.shareThreshold * 100) + "% of max HP, presence "
+@@ -555,6 +597,9 @@
+                         + "in the unattributed bucket") + ")"
+                 : "OFF by config (fight-tracking.enabled)"));
+         getLogger().info("Milestone beats: " + milestoneSummary());
++        if (sprinkle != null) {
++            getLogger().info(sprinkle.bootSummary());
++        }
+     }
+ 
+     /** The awake-line summary for the 0.3.2 milestone beats: ON
+@@ -577,6 +622,12 @@
+ 
+     @Override
+     public void onDisable() {
++        if (sprinkleLeashTask >= 0) { Bukkit.getScheduler().cancelTask(sprinkleLeashTask); sprinkleLeashTask = -1; }
++        // 0.3.3: no sprinkle add outlives the plugin - every open
++        // encounter's elites are removed here, before state saves.
++        if (sprinkle != null) {
++            sprinkle.closeAll("plugin disable");
++        }
+         if (pressurePulseTask >= 0) { Bukkit.getScheduler().cancelTask(pressurePulseTask); pressurePulseTask = -1; }
+         BossTrialAPI.unbindRepeat();
+         if (teamSampleTask >= 0) { Bukkit.getScheduler().cancelTask(teamSampleTask); teamSampleTask = -1; }
+@@ -700,6 +751,43 @@
+                     milestoneText(base + "text-50", d.text50()),
+                     milestoneText(base + "text-25", d.text25())));
+         }
++        // 0.3.3 leaf settings, adapter-side like milestones: the
++        // elite sprinkle. Master keys under sprinkle:, per-chapter
++        // blocks under <chapter>.sprinkle. Every chapter defaults
++        // to DISABLED (SprinkleSettings.defaults) - arming is a
++        // config edit, never a jar default.
++        if (sprinkle != null) {
++            Map<BossKind, SprinkleSettings> sprinkleChapters = new EnumMap<>(BossKind.class);
++            for (BossKind kind : BossKind.values()) {
++                SprinkleSettings d = SprinkleSettings.defaults(kind);
++                String base = chapterSection(kind) + ".sprinkle.";
++                sprinkleChapters.put(kind, SprinkleSettings.sanitized(
++                        getConfig().getBoolean(base + "enabled", d.enabled()),
++                        getConfig().getDouble(base + "chance", d.chance()),
++                        getConfig().getInt(base + "count", d.count()),
++                        getConfig().getIntegerList(base + "levels"),
++                        getConfig().getInt(base + "max-alive", d.maxAlive()),
++                        getConfig().getInt(base + "max-per-fight", d.maxPerFight()),
++                        getConfig().getDouble(base + "leash-radius", d.leashRadius()),
++                        getConfig().getStringList(base + "types"),
++                        d));
++            }
++            sprinkle.configure(
++                    getConfig().getBoolean("sprinkle.enabled", true),
++                    getConfig().getDoubleList("sprinkle.stamp-multipliers"),
++                    getConfig().getDouble("sprinkle.chance-ceiling",
++                            SprinkleSettings.DEFAULT_CHANCE_CEILING),
++                    getConfig().getString("sprinkle.announce-text",
++                            SprinkleSettings.DEFAULT_ANNOUNCE_TEXT),
++                    sprinkleChapters);
++            // The dragon chapter mirrors the armed flag so its
++            // per-phase beat tracker advances for the sprinkle
++            // exactly when armed (reload path; the enable path
++            // pushes it again at sink wiring).
++            if (dragonChapter != null) {
++                dragonChapter.setSprinkleArmed(sprinkle.armed(BossKind.ENDER_DRAGON));
++            }
++        }
+         loadLootSettings();
+         loadRaidSettings();
+         msgRepeatCreditHeadline = getConfig().getString("messages.repeat-credit-headline",
+@@ -1874,7 +1962,7 @@
+         // ledger spans both phases and the chapter fires its beats
+         // per phase.
+         if (kind != BossKind.ENDER_DRAGON) {
+-            checkMilestones(kind, ledger);
++            checkMilestones(kind, boss, ledger);
+         }
+         if (dealt != null && event.getFinalDamage() > 0) {
+             // The attempt registry (0.2.3): the first attributed
+@@ -1905,9 +1993,16 @@
+      * two thresholds speaks both lines, surges once - the surge
+      * amount is the same for every threshold).
+      */
+-    private void checkMilestones(BossKind kind, EncounterLedger ledger) {
++    private void checkMilestones(BossKind kind, LivingEntity boss, EncounterLedger ledger) {
+         MilestoneSettings ms = milestoneSettings.get(kind);
+-        if (ms == null || !ms.enabled()) {
++        boolean beatsOn = ms != null && ms.enabled();
++        // 0.3.3: the elite sprinkle rolls on the same stamps but
++        // is armed independently of the milestone lines - a
++        // chapter with its lines silenced still rolls. When
++        // neither feature is live for the chapter this returns
++        // exactly as 0.3.2 did, tracker untouched.
++        boolean sprinkleOn = sprinkle != null && sprinkle.armed(kind);
++        if (!beatsOn && !sprinkleOn) {
+             return;
+         }
+         double pool = ledger.maxHealth();
+@@ -1925,21 +2020,26 @@
+             if ((pending & (1 << i)) == 0) {
+                 continue;
+             }
+-            String text = ms.textFor(i);
+-            if (!text.isEmpty()) {
+-                broadcast(text.replace("{name}", kind.displayName()));
+-            }
+-            getLogger().info("BossTrial milestone [" + kind.displayName() + "]: "
+-                    + MilestoneBeats.thresholdPercent(i) + "% of the pool remains ("
+-                    + fmt(ledger.totalDamage()) + " of " + fmt(pool) + " dealt)"
+-                    + (ms.surgeMultiplier() > 0 ? " - pulse surge queued" : "")
+-                    + ".");
+-            if (!surged && ms.surgeMultiplier() > 0) {
+-                BossTrialConfig.Pressure pressure = cfg.pressure(kind);
+-                if (pressure.enabled() && pressure.pulseDamage() > 0) {
+-                    ledger.queueSurge();
++            if (beatsOn) {
++                String text = ms.textFor(i);
++                if (!text.isEmpty()) {
++                    broadcast(text.replace("{name}", kind.displayName()));
++                }
++                getLogger().info("BossTrial milestone [" + kind.displayName() + "]: "
++                        + MilestoneBeats.thresholdPercent(i) + "% of the pool remains ("
++                        + fmt(ledger.totalDamage()) + " of " + fmt(pool) + " dealt)"
++                        + (ms.surgeMultiplier() > 0 ? " - pulse surge queued" : "")
++                        + ".");
++                if (!surged && ms.surgeMultiplier() > 0) {
++                    BossTrialConfig.Pressure pressure = cfg.pressure(kind);
++                    if (pressure.enabled() && pressure.pulseDamage() > 0) {
++                        ledger.queueSurge();
++                    }
++                    surged = true;
+                 }
+-                surged = true;
++            }
++            if (sprinkleOn) {
++                sprinkle.onMilestone(kind, boss, i, null);
+             }
+         }
+     }
+@@ -2012,6 +2112,11 @@
+             return; // settled by the death handler in the same pass
+         }
+         deathOutcomes.remove(boss.getUniqueId());
++        // 0.3.3: a give-up is an encounter close like any other -
++        // its sprinkle adds are removed with it.
++        if (sprinkle != null) {
++            sprinkle.closeEncounter(boss.getUniqueId(), "warden give-up");
++        }
+         // 0.3.1: a verdict-less ending drops the fight record's
+         // healing state with the ledger (no snapshot - no verdict).
+         fightTracker.closeEncounter(boss.getUniqueId());
+@@ -2237,6 +2342,14 @@
+         EncounterLedger ledger = encounters.remove(boss.getUniqueId());
+         attempts.remove(boss.getUniqueId());
+         attemptsAnnounced.remove(boss.getUniqueId());
++        // 0.3.3: the verdict closes the sprinkle too - this
++        // encounter's elite adds are removed here (every elder
++        // trio progress point also passes through this handler,
++        // so a fallen elder's adds end with that elder, exactly
++        // as the design settles).
++        if (sprinkle != null) {
++            sprinkle.closeEncounter(boss.getUniqueId(), "verdict");
++        }
+         DeathOutcome outcome = outcomeFor(kind, boss, ledger);
+         // 0.3.1: snapshot the fight record NOW, while the ledger
+         // still holds the per-player table - every verdict and
+@@ -4216,6 +4329,11 @@
+                 encounters.remove(id);
+                 fightTracker.closeEncounter(id);
+                 elderTrioMult.remove(id);
++                // 0.3.3: a pruned encounter's sprinkle adds are
++                // removed with it - no elite outlives its fight.
++                if (sprinkle != null) {
++                    sprinkle.closeEncounter(id, "prune");
++                }
+                 if (!found) {
+                     getLogger().info("BossTrial encounter [" + e.getValue().kind().displayName()
+                             + "] closed without a verdict: "
+@@ -4489,6 +4607,10 @@
+             deathOutcomes.clear();
+             attempts.clear();
+             attemptsAnnounced.clear();
++            // 0.3.3: a reset closes every sprinkle encounter too.
++            if (sprinkle != null) {
++                sprinkle.closeAll("admin reset");
++            }
+             placements.clear();
+             if (args.length > 1 && args[1].equalsIgnoreCase("all")) {
+                 monuments.restore(Map.of());
+diff -ruN '--exclude=out' '--exclude=out2' build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/SprinkleBook.java build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/SprinkleBook.java
+--- build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/SprinkleBook.java	1970-01-01 00:00:00.000000000 +0000
++++ build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/SprinkleBook.java	2026-11-02 00:34:04.298975495 +0000
+@@ -0,0 +1,124 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.LinkedHashMap;
++import java.util.LinkedHashSet;
++import java.util.Map;
++import java.util.Set;
++import java.util.UUID;
++
++/**
++ * The sprinkle's per-encounter bookkeeping (ExcelBossTrial
++ * 0.3.3, study section 6): which elite adds each open encounter
++ * owns, and how many it has spawned across the whole fight (the
++ * max-per-fight accounting). Pure logic, no Bukkit - the
++ * adapter (SprinkleService) owns the entities and asks this
++ * book who to remove when an encounter closes.
++ *
++ * Runtime-only by design: sprinkles never persist across an
++ * encounter, so there is no state file and nothing to restore.
++ * An orphan elite left by a crash is just a tagged elite with
++ * its loot flags already set false (study section 6).
++ *
++ * Cleanup contract: EVERY encounter close - verdict, prune,
++ * warden give-up, admin reset, plugin disable - drains the
++ * boss's entry here and removes exactly the returned adds.
++ * Closing an unknown boss returns an empty set.
++ */
++public final class SprinkleBook {
++
++    private static final class Fight {
++        final Set<UUID> adds = new LinkedHashSet<>();
++        int spawnedTotal;
++    }
++
++    private final Map<UUID, Fight> fights = new LinkedHashMap<>();
++
++    /** Record one spawned add under its boss. */
++    public void recordSpawn(UUID bossUuid, UUID addUuid) {
++        Fight f = fights.computeIfAbsent(bossUuid, k -> new Fight());
++        if (f.adds.add(addUuid)) {
++            f.spawnedTotal++;
++        }
++    }
++
++    /** Elites this encounter has spawned across the whole fight. */
++    public int spawnedTotal(UUID bossUuid) {
++        Fight f = fights.get(bossUuid);
++        return f == null ? 0 : f.spawnedTotal;
++    }
++
++    /** The adds currently registered to this encounter (a copy). */
++    public Set<UUID> adds(UUID bossUuid) {
++        Fight f = fights.get(bossUuid);
++        return f == null ? Set.of() : Set.copyOf(f.adds);
++    }
++
++    /** Living registered adds, given the set of add UUIDs still
++     *  alive in the world (the adapter prunes the dead first). */
++    public int aliveCount(UUID bossUuid, Set<UUID> aliveInWorld) {
++        Fight f = fights.get(bossUuid);
++        if (f == null) {
++            return 0;
++        }
++        int n = 0;
++        for (UUID id : f.adds) {
++            if (aliveInWorld.contains(id)) {
++                n++;
++            }
++        }
++        return n;
++    }
++
++    /** Forget one add (it died or was removed on its own). The
++     *  spawned total is NOT decremented: it prices the fight. */
++    public void forget(UUID bossUuid, UUID addUuid) {
++        Fight f = fights.get(bossUuid);
++        if (f != null) {
++            f.adds.remove(addUuid);
++        }
++    }
++
++    /** Forget every add no longer in the world; returns how many
++     *  were pruned. The fight entry itself SURVIVES an empty add
++     *  set: its spawned total is the max-per-fight accounting and
++     *  must live until the encounter closes (entries drain only
++     *  through close / closeAll, which every encounter ending
++     *  calls). */
++    public int pruneDead(UUID bossUuid, Set<UUID> aliveInWorld) {
++        Fight f = fights.get(bossUuid);
++        if (f == null) {
++            return 0;
++        }
++        int before = f.adds.size();
++        f.adds.retainAll(aliveInWorld);
++        return before - f.adds.size();
++    }
++
++    /**
++     * Close one encounter: returns exactly the adds to remove
++     * and drains the entry. Unknown boss: empty set.
++     */
++    public Set<UUID> close(UUID bossUuid) {
++        Fight f = fights.remove(bossUuid);
++        return f == null ? Set.of() : Set.copyOf(f.adds);
++    }
++
++    /** Close every open encounter (disable / reset): boss -> adds. */
++    public Map<UUID, Set<UUID>> closeAll() {
++        Map<UUID, Set<UUID>> out = new LinkedHashMap<>();
++        for (Map.Entry<UUID, Fight> e : fights.entrySet()) {
++            out.put(e.getKey(), Set.copyOf(e.getValue().adds));
++        }
++        fights.clear();
++        return out;
++    }
++
++    /** Bosses with sprinkle state on the book. */
++    public Set<UUID> openBosses() {
++        return Set.copyOf(fights.keySet());
++    }
++
++    public boolean isEmpty() {
++        return fights.isEmpty();
++    }
++}
+diff -ruN '--exclude=out' '--exclude=out2' build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/SprinkleRoller.java build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/SprinkleRoller.java
+--- build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/SprinkleRoller.java	1970-01-01 00:00:00.000000000 +0000
++++ build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/SprinkleRoller.java	2026-11-02 00:33:58.334975263 +0000
+@@ -0,0 +1,101 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.List;
++import java.util.Random;
++
++/**
++ * The elite-sprinkle roll (ExcelBossTrial 0.3.3, study section
++ * 3). Pure logic, no Bukkit - the adapter (SprinkleService)
++ * supplies the live counts and acts on the decision.
++ *
++ * The rules, in order:
++ * <ol>
++ *   <li><b>Caps beat chance.</b> When the fight's spawned total
++ *       has reached max-per-fight, later stamps DO NOT ROLL AT
++ *       ALL (the decision says so, and the adapter logs "cap
++ *       reached"): the sprinkle budget is spent and the later
++ *       stamps' better odds are moot.</li>
++ *   <li>Otherwise roll once: pass when the roll lands under the
++ *       effective chance = base chance x stamp multiplier,
++ *       clamped to the ceiling.</li>
++ *   <li>A passed roll spawns up to the room available - the
++ *       smaller of (max-alive - alive now) and (max-per-fight -
++ *       spawned so far). A partial wave is normal. If there is
++ *       no room, the passed roll is SPENT, never banked: banking
++ *       would quietly turn "chance per stamp" into "guaranteed,
++ *       eventually", which the design forbids.</li>
++ * </ol>
++ */
++public final class SprinkleRoller {
++
++    private SprinkleRoller() {
++    }
++
++    /**
++     * The outcome of one stamp.
++     *
++     * @param rolled          false when the per-fight cap kept
++     *                        the stamp from rolling at all
++     * @param passed          the roll landed under the chance
++     * @param roll            the value rolled (NaN when not rolled)
++     * @param effectiveChance base x stamp multiplier, ceiling-clamped
++     * @param spawnCount      elites to spawn (0 on a fail, and 0
++     *                        on a pass with no room - spent, not banked)
++     */
++    public record Decision(boolean rolled, boolean passed, double roll,
++                           double effectiveChance, int spawnCount) {
++    }
++
++    /** base x stamp multiplier, clamped to [0, ceiling]. */
++    public static double effectiveChance(double baseChance, double stampMultiplier,
++                                         double ceiling) {
++        double raw = baseChance * stampMultiplier;
++        if (Double.isNaN(raw) || raw < 0.0) {
++            return 0.0;
++        }
++        return Math.min(raw, Math.max(0.0, ceiling));
++    }
++
++    /** The multiplier for a stamp bit; a short or malformed list
++     *  falls back to the settled [0.75, 1.0, 1.25] at that index. */
++    public static double stampMultiplier(List<Double> multipliers, int stampIndex) {
++        int i = Math.max(0, Math.min(2, stampIndex));
++        if (multipliers != null && multipliers.size() > i) {
++            Double m = multipliers.get(i);
++            if (m != null && !m.isNaN() && !m.isInfinite() && m >= 0.0) {
++                return m;
++            }
++        }
++        return SprinkleSettings.DEFAULT_STAMP_MULTIPLIERS.get(i);
++    }
++
++    /**
++     * Decide one stamp.
++     *
++     * @param rng             roll source (nextDouble in [0, 1))
++     * @param baseChance      the chapter's sprinkle.chance
++     * @param stampMultiplier this stamp's multiplier
++     * @param ceiling         the effective-chance ceiling
++     * @param waveCount       the chapter's count per passed roll
++     * @param aliveNow        this encounter's living sprinkles
++     * @param maxAlive        the chapter's max-alive cap
++     * @param spawnedThisFight elites this encounter has spawned so far
++     * @param maxPerFight     the chapter's max-per-fight cap
++     */
++    public static Decision decide(Random rng, double baseChance, double stampMultiplier,
++                                  double ceiling, int waveCount, int aliveNow,
++                                  int maxAlive, int spawnedThisFight, int maxPerFight) {
++        double eff = effectiveChance(baseChance, stampMultiplier, ceiling);
++        if (waveCount <= 0 || maxPerFight <= 0 || spawnedThisFight >= maxPerFight) {
++            return new Decision(false, false, Double.NaN, eff, 0);
++        }
++        double roll = rng.nextDouble();
++        boolean passed = roll < eff;
++        if (!passed) {
++            return new Decision(true, false, roll, eff, 0);
++        }
++        int room = Math.min(maxAlive - aliveNow, maxPerFight - spawnedThisFight);
++        int spawn = Math.max(0, Math.min(waveCount, room));
++        return new Decision(true, true, roll, eff, spawn);
++    }
++}
+diff -ruN '--exclude=out' '--exclude=out2' build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/SprinkleSettings.java build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/SprinkleSettings.java
+--- build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/SprinkleSettings.java	1970-01-01 00:00:00.000000000 +0000
++++ build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/SprinkleSettings.java	2026-11-02 00:33:58.444975267 +0000
+@@ -0,0 +1,134 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.List;
++
++/**
++ * One chapter's elite-sprinkle settings (ExcelBossTrial 0.3.3,
++ * ELITE-SPRINKLE-STUDY-20261101 sections 3 and 7): the
++ * per-chapter switches the adjustability law requires, read
++ * adapter-side from the chapter's {@code sprinkle:} config block
++ * (the milestone-settings precedent - no core verdict rule
++ * consumes them, so BossTrialConfig's canonical record stays
++ * untouched).
++ *
++ * The sprinkle is CHANCE-based per milestone stamp, never
++ * guaranteed (Mike, Nov 1, 2026, 3:54 PM CST): at each 75/50/25%
++ * stamp the chapter rolls once against {@code chance} times the
++ * stamp multiplier; a passed roll spawns {@code count} elites at
++ * the stamp's fixed level; a failed roll is silent in game. Every
++ * chapter ships with {@code enabled: false} - Mike arms chapters
++ * individually.
++ *
++ * The spawn pool is {@code types}, drawn in order and cycled:
++ * with count 2, [SKELETON, ZOMBIE] spawns one of each and
++ * [ENDERMAN, ENDERMAN] spawns two endermen. Plain mob types
++ * only - no disguise key exists anywhere in this design (the
++ * stage-2 standing rule: LibsDisguises bosses are invisible to
++ * Bedrock players).
++ */
++public record SprinkleSettings(boolean enabled, double chance, int count,
++                               List<Integer> levels, int maxAlive,
++                               int maxPerFight, double leashRadius,
++                               List<String> types) {
++
++    /** The settled stamp multipliers (75% / 50% / 25% remaining):
++     *  later stamps roll better odds (study section 3). */
++    public static final List<Double> DEFAULT_STAMP_MULTIPLIERS =
++            List.of(0.75, 1.0, 1.25);
++
++    /** Effective chance never exceeds this, however the keys stack. */
++    public static final double DEFAULT_CHANCE_CEILING = 0.90;
++
++    /** The settled announcement (Mike's pick, Nov 1, 2026, 4:05 PM
++     *  CST: a passed roll is ANNOUNCED, never silent). {chapter}
++     *  is the boss's display name, {count} the elites spawned. */
++    public static final String DEFAULT_ANNOUNCE_TEXT =
++            "&4The seal fights back&7 - {count} elite reinforcements join "
++                    + "the battle against {chapter}!";
++
++    /**
++     * Sanitized construction. Fail-dark on the chance (a NaN
++     * chance reads as 0: a malformed key must never make elites
++     * MORE likely); counts and caps clamp to sane ranges; the
++     * levels list always ends up with exactly three positive
++     * entries (a short list repeats its last entry, an empty one
++     * falls back to the chapter default); an empty types list
++     * falls back to the chapter default pool.
++     */
++    public static SprinkleSettings sanitized(boolean enabled, double chance, int count,
++                                             List<Integer> levels, int maxAlive,
++                                             int maxPerFight, double leashRadius,
++                                             List<String> types, SprinkleSettings fallback) {
++        double c = (Double.isNaN(chance) || Double.isInfinite(chance))
++                ? 0.0 : Math.max(0.0, Math.min(1.0, chance));
++        int n = Math.max(0, Math.min(8, count));
++        int alive = Math.max(0, Math.min(16, maxAlive));
++        int perFight = Math.max(0, Math.min(48, maxPerFight));
++        double leash = (Double.isNaN(leashRadius) || Double.isInfinite(leashRadius))
++                ? fallback.leashRadius()
++                : Math.max(4.0, Math.min(128.0, leashRadius));
++        List<Integer> lv = new java.util.ArrayList<>();
++        if (levels != null) {
++            for (Integer v : levels) {
++                if (v != null && v > 0) {
++                    lv.add(Math.min(200, v));
++                }
++            }
++        }
++        if (lv.isEmpty()) {
++            lv.addAll(fallback.levels());
++        }
++        while (lv.size() < 3) {
++            lv.add(lv.get(lv.size() - 1));
++        }
++        if (lv.size() > 3) {
++            lv = new java.util.ArrayList<>(lv.subList(0, 3));
++        }
++        List<String> tp = new java.util.ArrayList<>();
++        if (types != null) {
++            for (String t : types) {
++                if (t != null && !t.isBlank()) {
++                    tp.add(t.trim().toUpperCase(java.util.Locale.ROOT));
++                }
++            }
++        }
++        if (tp.isEmpty()) {
++            tp.addAll(fallback.types());
++        }
++        return new SprinkleSettings(enabled, c, n, List.copyOf(lv), alive,
++                perFight, leash, List.copyOf(tp));
++    }
++
++    /** The fixed elite level for a stamp bit (0 = 75%, 1 = 50%, 2 = 25%). */
++    public int levelFor(int stampIndex) {
++        return levels.get(Math.max(0, Math.min(2, stampIndex)));
++    }
++
++    /** The mob type drawn for the i-th elite of a wave (cycled). */
++    public String typeFor(int waveIndex) {
++        return types.get(Math.floorMod(waveIndex, types.size()));
++    }
++
++    /**
++     * The settled defaults per chapter (study section 7). Every
++     * chapter ships DISABLED; the numbers below are the design
++     * Mike settled, present as config defaults so arming a
++     * chapter is a one-key edit.
++     */
++    public static SprinkleSettings defaults(BossKind kind) {
++        return switch (kind) {
++            case WITHER -> new SprinkleSettings(false, 0.35, 2,
++                    List.of(20, 22, 24), 3, 6, 40.0,
++                    List.of("WITHER_SKELETON", "WITHER_SKELETON"));
++            case WARDEN -> new SprinkleSettings(false, 0.40, 2,
++                    List.of(22, 24, 26), 3, 6, 32.0,
++                    List.of("SKELETON", "ZOMBIE"));
++            case ENDER_DRAGON -> new SprinkleSettings(false, 0.30, 2,
++                    List.of(18, 20, 22), 3, 6, 48.0,
++                    List.of("ENDERMAN", "ENDERMAN"));
++            case ELDER_GUARDIAN -> new SprinkleSettings(false, 0.30, 2,
++                    List.of(18, 20, 22), 3, 6, 24.0,
++                    List.of("GUARDIAN", "DROWNED"));
++        };
++    }
++}
+diff -ruN '--exclude=out' '--exclude=out2' build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/dragon/DragonChapter.java build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/dragon/DragonChapter.java
+--- build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/dragon/DragonChapter.java	2026-11-01 21:55:02.081333585 +0000
++++ build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/dragon/DragonChapter.java	2026-11-02 00:36:14.305980540 +0000
+@@ -149,6 +149,32 @@
+         this.milestoneSurgeSink = sink;
+     }
+ 
++    /** 0.3.3: the host's elite-sprinkle hand-off - the chapter
++     *  reports the phase-2 milestone mask and the fountain
++     *  anchor; the host rolls and spawns (it owns the sprinkle
++     *  service and the encounter ledger). */
++    public interface SprinkleSink {
++        void onMilestones(UUID dragonUuid, int stampMask, Location fountainAnchor);
++    }
++
++    private SprinkleSink sprinkleSink;
++    /** 0.3.3: mirrors the host's dragon.sprinkle.enabled state
++     *  (pushed at wiring and on every settings reload), so the
++     *  beat tracker advances for the sprinkle exactly when the
++     *  chapter is armed - and 0.3.2 behavior is untouched while
++     *  both the lines and the sprinkle are dark. */
++    private boolean sprinkleArmed;
++
++    /** Host wiring (0.3.3): where phase-2 sprinkle rolls go. */
++    public void setSprinkleSink(SprinkleSink sink) {
++        this.sprinkleSink = sink;
++    }
++
++    /** Host wiring (0.3.3): the dragon sprinkle's armed state. */
++    public void setSprinkleArmed(boolean armed) {
++        this.sprinkleArmed = armed;
++    }
++
+     /** A world trial carrying the CURRENT config's wave thresholds. */
+     private WorldTrial newWorldTrial() {
+         WorldTrial wt = new WorldTrial();
+@@ -977,7 +1003,11 @@
+      */
+     private void fireMilestoneBeats(World world, WorldTrial wt, EnderDragon dragon,
+                                     double remainingFraction) {
+-        if (!dragonBeats.enabled()) {
++        // 0.3.3: the sprinkle rolls on the same per-phase stamps,
++        // armed independently of the lines - the tracker advances
++        // when either feature is live for the chapter, and this
++        // returns exactly as 0.3.2 did while both are dark.
++        if (!dragonBeats.enabled() && !sprinkleArmed) {
+             return;
+         }
+         int pending = wt.phaseBeats.pending(remainingFraction);
+@@ -985,36 +1015,53 @@
+             return;
+         }
+         wt.phaseBeats.commit(pending);
+-        boolean surged = false;
+-        for (int i = 0; i < MilestoneBeats.THRESHOLDS.length; i++) {
+-            if ((pending & (1 << i)) == 0) {
+-                continue;
+-            }
+-            String text = dragonBeats.textFor(i);
+-            if (!text.isEmpty()) {
+-                Bukkit.broadcastMessage(color(text.replace("{name}", "The Ender Dragon")));
+-            }
+-            getLogger().info("Dragon milestone [" + world.getName() + "]: "
+-                    + MilestoneBeats.thresholdPercent(i) + "% of phase "
+-                    + wt.machine.phase() + " remains - beat fired"
+-                    + (dragonBeats.surgeMultiplier() > 0 ? ", surge handed to the host" : "")
+-                    + ".");
+-            if (!surged && dragonBeats.surgeMultiplier() > 0 && milestoneSurgeSink != null) {
+-                milestoneSurgeSink.accept(dragon.getUniqueId());
+-                surged = true;
++        if (dragonBeats.enabled()) {
++            boolean surged = false;
++            for (int i = 0; i < MilestoneBeats.THRESHOLDS.length; i++) {
++                if ((pending & (1 << i)) == 0) {
++                    continue;
++                }
++                String text = dragonBeats.textFor(i);
++                if (!text.isEmpty()) {
++                    Bukkit.broadcastMessage(color(text.replace("{name}", "The Ender Dragon")));
++                }
++                getLogger().info("Dragon milestone [" + world.getName() + "]: "
++                        + MilestoneBeats.thresholdPercent(i) + "% of phase "
++                        + wt.machine.phase() + " remains - beat fired"
++                        + (dragonBeats.surgeMultiplier() > 0 ? ", surge handed to the host" : "")
++                        + ".");
++                if (!surged && dragonBeats.surgeMultiplier() > 0 && milestoneSurgeSink != null) {
++                    milestoneSurgeSink.accept(dragon.getUniqueId());
++                    surged = true;
++                }
+             }
+         }
++        // 0.3.3: the elite sprinkle, PHASE 2 ONLY (study section
++        // 7.3: phase 1 stays exactly as the rebalance leaves it).
++        // The sink rolls per stamp bit against the dragon block.
++        if (sprinkleArmed && sprinkleSink != null
++                && wt.machine.phase() == BattlePhase.PHASE2) {
++            sprinkleSink.onMilestones(dragon.getUniqueId(), pending, fountainAnchor(world));
++        }
+         saveState();
+     }
+ 
++    /** The fountain anchor: the End island's arena centre, where
++     *  the chapter's own add waves spawn and where the sprinkle's
++     *  leash holds its endermen (the dragon flies - an anchor
++     *  chasing it would drop adds into the void). */
++    private Location fountainAnchor(World world) {
++        DragonBattle battle = world.getEnderDragonBattle();
++        return battle != null && battle.getEndPortalLocation() != null
++                ? battle.getEndPortalLocation()
++                : new Location(world, 0, world.getHighestBlockYAt(0, 0) + 1, 0);
++    }
++
+     private int spawnWaves(World world, EnderDragon dragon, int pendingMask) {
+         long alive = world.getEntitiesByClass(Enderman.class).stream()
+                 .filter(e -> e.getPersistentDataContainer().has(addKey, PersistentDataType.BYTE))
+                 .count();
+-        DragonBattle battle = world.getEnderDragonBattle();
+-        Location center = battle != null && battle.getEndPortalLocation() != null
+-                ? battle.getEndPortalLocation()
+-                : new Location(world, 0, world.getHighestBlockYAt(0, 0) + 1, 0);
++        Location center = fountainAnchor(world);
+         int spawnedMask = 0;
+         int waves = Integer.bitCount(pendingMask);
+         for (int w = 0; w < waves; w++) {
+diff -ruN '--exclude=out' '--exclude=out2' build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/sprinkle/EliteSprinkleGateway.java build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/sprinkle/EliteSprinkleGateway.java
+--- build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/sprinkle/EliteSprinkleGateway.java	1970-01-01 00:00:00.000000000 +0000
++++ build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/sprinkle/EliteSprinkleGateway.java	2026-11-02 00:34:23.305976232 +0000
+@@ -0,0 +1,353 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.sprinkle;
++
++import org.bukkit.Bukkit;
++import org.bukkit.entity.Entity;
++import org.bukkit.entity.LivingEntity;
++import org.bukkit.event.entity.CreatureSpawnEvent;
++import org.bukkit.plugin.Plugin;
++
++import java.lang.reflect.Constructor;
++import java.lang.reflect.Method;
++import java.util.logging.Logger;
++
++/**
++ * The EliteMobs gateway for the elite sprinkle (ExcelBossTrial
++ * 0.3.3) - a mirror of ExcelRaidBuff's proven EmGateway (study
++ * section 1.1), extended with the containment and removal calls
++ * the sprinkle needs. This is the ONLY class in BossTrial that
++ * touches EliteMobs, and it does so reflectively against EM's
++ * classloader: BossTrial compiles and runs with EliteMobs
++ * absent, and any failure - plugin missing, class moved, invoke
++ * error - degrades to "no conversion" and never throws into a
++ * fight. The fight proceeds exactly as if the sprinkle were off.
++ *
++ * Conversion is EM's public constructor
++ * {@code EliteEntity(LivingEntity, int, SpawnReason)} - the call
++ * EM's own natural-spawn handler makes - with
++ * {@code SpawnReason.CUSTOM} (RaidBuff converts existing raiders
++ * with RAID; BossTrial spawns its own adds, so CUSTOM). A
++ * conversion is PROVEN, not assumed: the living entity must come
++ * back non-null and PersistentTagger must read the entity as an
++ * elite afterwards.
++ *
++ * Containment (study section 4, bytecode-verified gates): a
++ * fresh EliteEntity defaults elite/random/vanilla loot TRUE, so
++ * immediately after conversion the adapter sets
++ * setEliteLoot / setRandomLoot / setVanillaLoot false and READS
++ * THEM BACK. isEliteLoot false is the single gate that covers
++ * both the coin shower and the elite item rolls; isRandomLoot
++ * gates procedural loot; isVanillaLoot gates vanilla drops. The
++ * one residual - EM skill XP has no per-entity flag on this
++ * route - is accepted by precedent (RaidBuff's conversions carry
++ * the same) and named in the changelog.
++ *
++ * TrainingWheels constraint (study section 5): the add's
++ * damageMultiplier is READ at conversion and reported; the
++ * sprinkle never sets one (an authored multiplier is invisible
++ * to TrainingWheels' ladder division). EM's constructor leaves
++ * it 1.0; the read exists so the rig measurement and any future
++ * EM change are visible in the log, not silent.
++ */
++public final class EliteSprinkleGateway {
++
++    private final Logger log;
++    private boolean seamDead;
++    private boolean seamLogged;
++    private int convertFailures;
++
++    private Method isEliteMethod;
++    private Method getEliteMethod;
++    private Constructor<?> eliteCtor;
++    private Method getLivingMethod;
++    private Method getLevelMethod;
++    private Method getDamageMultiplierMethod;
++    private Method setEliteLootMethod;
++    private Method setRandomLootMethod;
++    private Method setVanillaLootMethod;
++    private Method isEliteLootMethod;
++    private Method isRandomLootMethod;
++    private Method isVanillaLootMethod;
++    private Method removeMethod;
++    private Object removalOther;
++
++    public EliteSprinkleGateway(Logger log) {
++        this.log = log;
++    }
++
++    public boolean available() {
++        return !seamDead && resolveTagger();
++    }
++
++    public boolean seamDead() {
++        return seamDead;
++    }
++
++    /** True when EliteMobs itself tags this entity as an elite. */
++    public boolean isElite(Entity entity) {
++        if (entity == null || !resolveTagger()) {
++            return false;
++        }
++        try {
++            return Boolean.TRUE.equals(isEliteMethod.invoke(null, entity));
++        } catch (Throwable t) {
++            markDead("EliteMobs elite check failed: " + t);
++            return false;
++        }
++    }
++
++    /** The entity's EliteMobs level, or -1 when not an elite / unreadable. */
++    public int eliteLevelOf(Entity entity) {
++        Object elite = eliteOf(entity);
++        if (elite == null) {
++            return -1;
++        }
++        try {
++            if (getLevelMethod == null) {
++                getLevelMethod = elite.getClass().getMethod("getLevel");
++            }
++            Object lvl = getLevelMethod.invoke(elite);
++            return lvl instanceof Number n ? n.intValue() : -1;
++        } catch (Throwable t) {
++            return -1;
++        }
++    }
++
++    /** The EliteEntity handle for an entity, or null. */
++    public Object eliteOf(Entity entity) {
++        if (entity == null || !resolveTagger()) {
++            return null;
++        }
++        try {
++            return getEliteMethod.invoke(null, entity);
++        } catch (Throwable t) {
++            return null;
++        }
++    }
++
++    /**
++     * Convert an already-spawned vanilla mob into an EliteMobs
++     * elite IN PLACE at the fixed level, then close the three
++     * loot flags and verify them by read-back. If EM's natural
++     * handler already converted the mob in its spawn event (the
++     * ladder's spawn chance), the constructor is skipped - the
++     * mob is an elite either way - but the flags are still set
++     * and verified, and the caller is told the level is EM's,
++     * not the chapter's (the outcome records it).
++     *
++     * @return the conversion outcome; {@code ok()} false means
++     *         the caller must remove the vanilla spawn - a
++     *         sprinkle that cannot convert does not get to
++     *         change the fight at all
++     */
++    public record Conversion(boolean ok, boolean preConverted, int level,
++                             double damageMultiplier) {
++    }
++
++    public Conversion convertAndContain(LivingEntity entity, int level) {
++        Conversion fail = new Conversion(false, false, -1, Double.NaN);
++        if (entity == null || !resolveAll()) {
++            return fail;
++        }
++        try {
++            boolean pre = isElite(entity);
++            Object elite;
++            if (pre) {
++                elite = eliteOf(entity);
++                if (elite == null) {
++                    convertFailure("entity reads as an elite but no EliteEntity "
++                            + "handle came back for " + entity.getType());
++                    return fail;
++                }
++            } else {
++                Object built = eliteCtor.newInstance(entity, level,
++                        CreatureSpawnEvent.SpawnReason.CUSTOM);
++                Object living = getLivingMethod.invoke(built);
++                if (living == null) {
++                    convertFailure("EliteEntity came back with no living entity for "
++                            + entity.getType() + " (conversion refused by EliteMobs)");
++                    return fail;
++                }
++                if (!isElite(entity)) {
++                    convertFailure("EliteEntity constructed for " + entity.getType()
++                            + " but the tagger does not read it as an elite");
++                    return fail;
++                }
++                elite = eliteOf(entity);
++                if (elite == null) {
++                    convertFailure("converted " + entity.getType()
++                            + " but no EliteEntity handle came back");
++                    return fail;
++                }
++            }
++            // Containment: close the three loot flags, then prove
++            // them by read-back (study section 4).
++            setEliteLootMethod.invoke(elite, false);
++            setRandomLootMethod.invoke(elite, false);
++            setVanillaLootMethod.invoke(elite, false);
++            boolean eliteLoot = Boolean.TRUE.equals(isEliteLootMethod.invoke(elite));
++            boolean randomLoot = Boolean.TRUE.equals(isRandomLootMethod.invoke(elite));
++            boolean vanillaLoot = Boolean.TRUE.equals(isVanillaLootMethod.invoke(elite));
++            if (eliteLoot || randomLoot || vanillaLoot) {
++                convertFailure("loot flags did not read back closed for "
++                        + entity.getType() + " (eliteLoot=" + eliteLoot
++                        + ", randomLoot=" + randomLoot
++                        + ", vanillaLoot=" + vanillaLoot + ")");
++                return fail;
++            }
++            double mult = Double.NaN;
++            try {
++                Object m = getDamageMultiplierMethod.invoke(elite);
++                if (m instanceof Number n) {
++                    mult = n.doubleValue();
++                }
++            } catch (Throwable ignored) {
++                // The read is evidence, not a gate: a future EM
++                // without the accessor must not kill conversions.
++            }
++            int actualLevel = eliteLevelOf(entity);
++            return new Conversion(true, pre, actualLevel, mult);
++        } catch (Throwable t) {
++            // A constructor that throws part-way can leave EM's
++            // tag on the entity (RaidBuff observed this). The tag
++            // is the truth: report it so the caller keeps the mob
++            // OUT of the sprinkle registry - EliteMobs owns it -
++            // rather than tracking an add we cannot contain.
++            boolean tagged = isElite(entity);
++            convertFailure("EliteMobs conversion threw for " + entity.getType() + ": " + t
++                    + (tagged ? " (the entity reads as an elite anyway; "
++                    + "not tracked as a sprinkle add)" : ""));
++            return fail;
++        }
++    }
++
++    /**
++     * Remove an elite through EM's own removal path
++     * ({@code EliteEntity.remove(RemovalReason.OTHER)}: untags,
++     * unregisters, fires EM's remove event - removed, never
++     * killed: no death event, no drops, no XP).
++     *
++     * @return false when the handle or the call is unavailable;
++     *         the caller falls back to a plain Entity.remove()
++     */
++    public boolean removeElite(Entity entity) {
++        Object elite = eliteOf(entity);
++        if (elite == null || !resolveRemove(elite)) {
++            return false;
++        }
++        try {
++            removeMethod.invoke(elite, removalOther);
++            return true;
++        } catch (Throwable t) {
++            return false;
++        }
++    }
++
++    // ---------- resolution ----------
++
++    private ClassLoader emLoader() {
++        try {
++            Plugin em = Bukkit.getPluginManager().getPlugin("EliteMobs");
++            if (em == null || !em.isEnabled()) {
++                markDead("EliteMobs plugin not present");
++                return null;
++            }
++            return em.getClass().getClassLoader();
++        } catch (Throwable t) {
++            markDead("EliteMobs lookup failed: " + t);
++            return null;
++        }
++    }
++
++    private boolean resolveTagger() {
++        if (seamDead) {
++            return false;
++        }
++        if (isEliteMethod != null) {
++            return true;
++        }
++        ClassLoader loader = emLoader();
++        if (loader == null) {
++            return false;
++        }
++        try {
++            Class<?> tagger = Class.forName("com.magmaguy.elitemobs.tagger.PersistentTagger",
++                    true, loader);
++            isEliteMethod = tagger.getMethod("isEliteEntity", Entity.class);
++            getEliteMethod = tagger.getMethod("getEliteEntity", Entity.class);
++            return true;
++        } catch (Throwable t) {
++            markDead("EliteMobs tagger resolution failed: " + t);
++            return false;
++        }
++    }
++
++    private boolean resolveAll() {
++        if (!resolveTagger()) {
++            return false;
++        }
++        if (eliteCtor != null) {
++            return true;
++        }
++        ClassLoader loader = emLoader();
++        if (loader == null) {
++            return false;
++        }
++        try {
++            Class<?> eliteEntity = Class.forName(
++                    "com.magmaguy.elitemobs.mobconstructor.EliteEntity", true, loader);
++            eliteCtor = eliteEntity.getConstructor(LivingEntity.class, int.class,
++                    CreatureSpawnEvent.SpawnReason.class);
++            getLivingMethod = eliteEntity.getMethod("getLivingEntity");
++            setEliteLootMethod = eliteEntity.getMethod("setEliteLoot", boolean.class);
++            setRandomLootMethod = eliteEntity.getMethod("setRandomLoot", boolean.class);
++            setVanillaLootMethod = eliteEntity.getMethod("setVanillaLoot", boolean.class);
++            isEliteLootMethod = eliteEntity.getMethod("isEliteLoot");
++            isRandomLootMethod = eliteEntity.getMethod("isRandomLoot");
++            isVanillaLootMethod = eliteEntity.getMethod("isVanillaLoot");
++            getDamageMultiplierMethod = eliteEntity.getMethod("getDamageMultiplier");
++            return true;
++        } catch (Throwable t) {
++            markDead("EliteMobs conversion API resolution failed: " + t);
++            return false;
++        }
++    }
++
++    private boolean resolveRemove(Object elite) {
++        if (removeMethod != null) {
++            return true;
++        }
++        ClassLoader loader = emLoader();
++        if (loader == null) {
++            return false;
++        }
++        try {
++            Class<?> reason = Class.forName(
++                    "com.magmaguy.elitemobs.api.internal.RemovalReason", true, loader);
++            @SuppressWarnings({"unchecked", "rawtypes"})
++            Object other = Enum.valueOf((Class<Enum>) reason, "OTHER");
++            removalOther = other;
++            removeMethod = elite.getClass().getMethod("remove", reason);
++            return true;
++        } catch (Throwable t) {
++            return false;
++        }
++    }
++
++    private void convertFailure(String reason) {
++        convertFailures++;
++        if (convertFailures <= 3) {
++            log.warning("ExcelBossTrial sprinkle: conversion skipped - " + reason
++                    + " (the vanilla spawn is removed; the fight is unchanged)");
++        }
++    }
++
++    private void markDead(String reason) {
++        seamDead = true;
++        if (!seamLogged) {
++            seamLogged = true;
++            log.warning("ExcelBossTrial sprinkle: EliteMobs seam unavailable (" + reason
++                    + ") - the elite sprinkle is OFF for this boot; "
++                    + "seal fights run exactly as before");
++        }
++    }
++}
+diff -ruN '--exclude=out' '--exclude=out2' build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/sprinkle/SprinkleService.java build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/sprinkle/SprinkleService.java
+--- build-0.3.2/bosstrial/tree/src/com/winkreyes/excelbosstrial/sprinkle/SprinkleService.java	1970-01-01 00:00:00.000000000 +0000
++++ build-0.3.3/bosstrial/tree/src/com/winkreyes/excelbosstrial/sprinkle/SprinkleService.java	2026-11-02 00:35:07.090977932 +0000
+@@ -0,0 +1,393 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.sprinkle;
++
++import com.winkreyes.excelbosstrial.core.BossKind;
++import com.winkreyes.excelbosstrial.core.MilestoneBeats;
++import com.winkreyes.excelbosstrial.core.SprinkleBook;
++import com.winkreyes.excelbosstrial.core.SprinkleRoller;
++import com.winkreyes.excelbosstrial.core.SprinkleSettings;
++import org.bukkit.Bukkit;
++import org.bukkit.ChatColor;
++import org.bukkit.Location;
++import org.bukkit.NamespacedKey;
++import org.bukkit.World;
++import org.bukkit.entity.Entity;
++import org.bukkit.entity.EntityType;
++import org.bukkit.entity.LivingEntity;
++import org.bukkit.entity.Mob;
++import org.bukkit.entity.Player;
++import org.bukkit.persistence.PersistentDataType;
++import org.bukkit.plugin.java.JavaPlugin;
++
++import java.util.ArrayList;
++import java.util.EnumMap;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.List;
++import java.util.Map;
++import java.util.Random;
++import java.util.Set;
++import java.util.UUID;
++import java.util.function.Function;
++
++/**
++ * The elite sprinkle's Bukkit adapter (ExcelBossTrial 0.3.3,
++ * study sections 1.3, 3, 6): owns the per-encounter add
++ * registry, the milestone-stamp rolls, the spawns (through
++ * EliteSprinkleGateway - the only EliteMobs seam), the 2-second
++ * leash, and cleanup at every encounter close.
++ *
++ * Fight integrity (study section 6): adds are tracked ONLY
++ * here, keyed by the boss's UUID in SprinkleBook. They never
++ * enter the encounter ledger, the share math, the participant
++ * sets, or the fight records - damage to an add is an event
++ * whose victim is no tracked boss, and damage from an add
++ * resolves to no governed boss kind in the host's handlers.
++ * Adds keep EM's ordinary scaled-combat path with
++ * damageMultiplier 1.0 (never set here), so TrainingWheels'
++ * ladder compensation prices them exactly like natural
++ * elites.
++ *
++ * Fail-soft throughout: master switch off, a chapter dark, or
++ * the EliteMobs seam unavailable all reduce every entry point
++ * to a no-op, and the seal fight runs exactly as it did in
++ * 0.3.2.
++ */
++public final class SprinkleService {
++
++    private final JavaPlugin host;
++    private final EliteSprinkleGateway gateway;
++    private final Function<UUID, Set<UUID>> participantsByBoss;
++    private final SprinkleBook book = new SprinkleBook();
++    private final Map<UUID, BossKind> kinds = new HashMap<>();
++    private final Map<UUID, Location> fixedAnchors = new HashMap<>();
++    private final Random rng = new Random();
++    private NamespacedKey addKey;
++
++    private boolean masterEnabled = true;
++    private List<Double> stampMultipliers = SprinkleSettings.DEFAULT_STAMP_MULTIPLIERS;
++    private double chanceCeiling = SprinkleSettings.DEFAULT_CHANCE_CEILING;
++    private String announceText = SprinkleSettings.DEFAULT_ANNOUNCE_TEXT;
++    private final Map<BossKind, SprinkleSettings> settings = new EnumMap<>(BossKind.class);
++
++    /**
++     * @param participantsByBoss the encounter's participant set
++     *        (the host's ledger), used only to retarget a leashed
++     *        add onto someone actually fighting its boss
++     */
++    public SprinkleService(JavaPlugin host, Function<UUID, Set<UUID>> participantsByBoss) {
++        this.host = host;
++        this.gateway = new EliteSprinkleGateway(host.getLogger());
++        this.participantsByBoss = participantsByBoss;
++        for (BossKind kind : BossKind.values()) {
++            settings.put(kind, SprinkleSettings.defaults(kind));
++        }
++    }
++
++    /** (Re)read the sprinkle settings - called from the host's
++     *  loadSettings, so /bosstrial reload re-arms live. */
++    public void configure(boolean masterEnabled, List<Double> stampMultipliers,
++                          double chanceCeiling, String announceText,
++                          Map<BossKind, SprinkleSettings> chapterSettings) {
++        this.masterEnabled = masterEnabled;
++        if (stampMultipliers != null && !stampMultipliers.isEmpty()) {
++            this.stampMultipliers = List.copyOf(stampMultipliers);
++        }
++        this.chanceCeiling = (Double.isNaN(chanceCeiling) || chanceCeiling < 0.0)
++                ? SprinkleSettings.DEFAULT_CHANCE_CEILING
++                : Math.min(1.0, chanceCeiling);
++        if (announceText != null) {
++            this.announceText = announceText;
++        }
++        if (chapterSettings != null) {
++            settings.putAll(chapterSettings);
++        }
++    }
++
++    /** True when this chapter could actually roll (master on +
++     *  chapter armed). The host asks before spending milestone
++     *  bookkeeping on a dark chapter. */
++    public boolean armed(BossKind kind) {
++        SprinkleSettings s = settings.get(kind);
++        return masterEnabled && s != null && s.enabled();
++    }
++
++    /** The boot awake line: per-chapter state, in the open. */
++    public String bootSummary() {
++        StringBuilder sb = new StringBuilder("Elite sprinkle: master ")
++                .append(masterEnabled ? "ON" : "OFF (sprinkle.enabled)");
++        for (BossKind kind : BossKind.values()) {
++            SprinkleSettings s = settings.get(kind);
++            sb.append("; ").append(kind.sealId()).append(' ')
++                    .append(s != null && s.enabled()
++                            ? "ARMED (chance " + trim(s.chance()) + ")"
++                            : "off");
++            if (kind == BossKind.ENDER_DRAGON) {
++                sb.append(" (phase 2 only)");
++            }
++        }
++        sb.append(" - chapters ship dark until armed in <chapter>.sprinkle; ")
++                .append("EliteMobs seam: ")
++                .append(gateway.available() ? "resolved" : "unavailable (sprinkle inert)");
++        return sb.toString();
++    }
++
++    /**
++     * One milestone stamp for one encounter: roll, log, and on a
++     * pass spawn the wave. Called by the host for the ledger
++     * chapters (fixedAnchor null - the anchor follows the boss)
++     * and by the dragon chapter's sink for phase 2 (fixedAnchor =
++     * the fountain, the End island's arena centre).
++     */
++    public void onMilestone(BossKind kind, LivingEntity boss, int stampIndex,
++                            Location fixedAnchor) {
++        SprinkleSettings s = settings.get(kind);
++        if (!masterEnabled || s == null || !s.enabled() || boss == null) {
++            return;
++        }
++        UUID bossUuid = boss.getUniqueId();
++        kinds.put(bossUuid, kind);
++        if (fixedAnchor != null) {
++            fixedAnchors.put(bossUuid, fixedAnchor.clone());
++        }
++        if (!gateway.available()) {
++            return; // the gateway logged the seam once at first failure
++        }
++        pruneDead(bossUuid);
++        int alive = book.aliveCount(bossUuid, aliveAdds(bossUuid));
++        double mult = SprinkleRoller.stampMultiplier(stampMultipliers, stampIndex);
++        SprinkleRoller.Decision d = SprinkleRoller.decide(rng, s.chance(), mult,
++                chanceCeiling, s.count(), alive, s.maxAlive(),
++                book.spawnedTotal(bossUuid), s.maxPerFight());
++        int pct = MilestoneBeats.thresholdPercent(stampIndex);
++        if (!d.rolled()) {
++            host.getLogger().info("BossTrial sprinkle [" + kind.displayName() + "]: "
++                    + pct + "% stamp - per-fight cap reached ("
++                    + book.spawnedTotal(bossUuid) + "/" + s.maxPerFight()
++                    + " spawned); no roll.");
++            return;
++        }
++        host.getLogger().info("BossTrial sprinkle [" + kind.displayName() + "]: "
++                + pct + "% stamp roll " + trim(d.roll()) + " vs chance "
++                + trim(d.effectiveChance()) + " (base " + trim(s.chance())
++                + " x stamp " + trim(mult) + ") - " + (d.passed() ? "PASS" : "FAIL")
++                + ".");
++        if (!d.passed()) {
++            return; // silent in game by design; the log is the record
++        }
++        if (d.spawnCount() <= 0) {
++            host.getLogger().info("BossTrial sprinkle [" + kind.displayName() + "]: "
++                    + pct + "% stamp passed but no room (alive " + alive + "/"
++                    + s.maxAlive() + ") - the roll is spent, not banked.");
++            return;
++        }
++        Location anchor = fixedAnchor != null ? fixedAnchor : boss.getLocation();
++        int spawned = spawnWave(kind, bossUuid, s, stampIndex, d.spawnCount(), anchor);
++        if (spawned > 0 && !announceText.isBlank()) {
++            Bukkit.broadcastMessage(color(announceText
++                    .replace("{chapter}", kind.displayName())
++                    .replace("{count}", Integer.toString(spawned))));
++        }
++    }
++
++    /** Spawn + convert + register up to n adds around the anchor. */
++    private int spawnWave(BossKind kind, UUID bossUuid, SprinkleSettings s,
++                          int stampIndex, int n, Location anchor) {
++        World world = anchor.getWorld();
++        if (world == null) {
++            return 0;
++        }
++        int level = s.levelFor(stampIndex);
++        int spawned = 0;
++        for (int i = 0; i < n; i++) {
++            EntityType type;
++            try {
++                type = EntityType.valueOf(s.typeFor(i));
++            } catch (IllegalArgumentException bad) {
++                host.getLogger().warning("BossTrial sprinkle [" + kind.displayName()
++                        + "]: unknown mob type '" + s.typeFor(i)
++                        + "' in sprinkle.types - skipped.");
++                continue;
++            }
++            Location loc = placement(kind, anchor);
++            Entity raw = world.spawnEntity(loc, type);
++            if (!(raw instanceof LivingEntity add)) {
++                raw.remove();
++                continue;
++            }
++            EliteSprinkleGateway.Conversion conv = gateway.convertAndContain(add, level);
++            if (!conv.ok()) {
++                // A sprinkle that cannot convert does not get to
++                // change the fight: the vanilla spawn goes away.
++                add.remove();
++                continue;
++            }
++            add.getPersistentDataContainer().set(addKey(), PersistentDataType.BYTE, (byte) 1);
++            book.recordSpawn(bossUuid, add.getUniqueId());
++            spawned++;
++            host.getLogger().info("BossTrial sprinkle [" + kind.displayName()
++                    + "]: spawned " + type + " elite level " + conv.level()
++                    + (conv.preConverted()
++                            ? " (EliteMobs' natural conversion pre-empted the stamp level)"
++                            : "")
++                    + ", damageMultiplier " + trim(conv.damageMultiplier())
++                    + ", loot flags closed (elite/random/vanilla read back false).");
++        }
++        return spawned;
++    }
++
++    /** Where an add lands: on a ring around the anchor. The
++     *  dragon's adds snap to the island top like the chapter's
++     *  own Sealbound waves; the elder's stay at the boss's depth
++     *  (the fight is underwater inside the monument); the land
++     *  chapters stay at arena level, stepping up out of a solid
++     *  block rather than snapping to the surface far above. */
++    private Location placement(BossKind kind, Location anchor) {
++        double angle = rng.nextDouble() * Math.PI * 2.0;
++        double radius = 2.5 + rng.nextDouble() * 2.0;
++        Location loc = anchor.clone().add(Math.cos(angle) * radius, 0.0,
++                Math.sin(angle) * radius);
++        World world = anchor.getWorld();
++        if (kind == BossKind.ENDER_DRAGON && world != null) {
++            loc.setY(world.getHighestBlockYAt(loc) + 1);
++        } else if (kind != BossKind.ELDER_GUARDIAN && world != null) {
++            for (int up = 0; up < 3 && loc.getBlock().getType().isSolid(); up++) {
++                loc.add(0.0, 1.0, 0.0);
++            }
++        }
++        return loc;
++    }
++
++    /**
++     * The 2-second leash (study section 6): an add farther than
++     * its chapter's leash-radius from the encounter anchor is
++     * teleported back to the spawn ring and retargeted onto a
++     * random encounter participant. The anchor follows the boss,
++     * except the dragon's, which stays at the fountain - the
++     * dragon flies, and an anchor chasing it would drop
++     * endermen into the void.
++     */
++    public void leashTick() {
++        if (!masterEnabled || book.isEmpty()) {
++            return;
++        }
++        for (UUID bossUuid : new ArrayList<>(book.openBosses())) {
++            pruneDead(bossUuid);
++            BossKind kind = kinds.get(bossUuid);
++            SprinkleSettings s = kind == null ? null : settings.get(kind);
++            if (s == null) {
++                continue;
++            }
++            Location anchor = fixedAnchors.get(bossUuid);
++            if (anchor == null) {
++                Entity boss = Bukkit.getEntity(bossUuid);
++                if (boss == null) {
++                    continue; // closing soon via the host's prune
++                }
++                anchor = boss.getLocation();
++            }
++            for (UUID addUuid : book.adds(bossUuid)) {
++                Entity e = Bukkit.getEntity(addUuid);
++                if (!(e instanceof LivingEntity add) || add.isDead()) {
++                    continue;
++                }
++                Location at = add.getLocation();
++                if (at.getWorld() == null || !at.getWorld().equals(anchor.getWorld())
++                        || at.distance(anchor) > s.leashRadius()) {
++                    add.teleport(placement(kind, anchor));
++                    if (add instanceof Mob mob) {
++                        Player target = randomParticipant(bossUuid);
++                        if (target != null) {
++                            mob.setTarget(target);
++                        }
++                    }
++                }
++            }
++        }
++    }
++
++    private Player randomParticipant(UUID bossUuid) {
++        Set<UUID> parts = participantsByBoss.apply(bossUuid);
++        if (parts == null || parts.isEmpty()) {
++            return null;
++        }
++        List<Player> online = new ArrayList<>();
++        for (UUID id : parts) {
++            Player p = Bukkit.getPlayer(id);
++            if (p != null && p.isOnline()) {
++                online.add(p);
++            }
++        }
++        return online.isEmpty() ? null : online.get(rng.nextInt(online.size()));
++    }
++
++    /**
++     * Close one encounter: remove exactly its adds - through
++     * EliteMobs' own removal where the handle answers (removed,
++     * never killed: no death event, no drops, no XP), plain
++     * Entity.remove() as the fallback.
++     */
++    public void closeEncounter(UUID bossUuid, String reason) {
++        int total = book.spawnedTotal(bossUuid);
++        Set<UUID> adds = book.close(bossUuid);
++        kinds.remove(bossUuid);
++        fixedAnchors.remove(bossUuid);
++        int removed = 0;
++        for (UUID addUuid : adds) {
++            Entity e = Bukkit.getEntity(addUuid);
++            if (e == null) {
++                continue;
++            }
++            if (!gateway.removeElite(e)) {
++                e.remove();
++            }
++            removed++;
++        }
++        if (total > 0) {
++            host.getLogger().info("BossTrial sprinkle: encounter closed (" + reason
++                    + ") - " + removed + " elite add(s) removed, " + total
++                    + " spawned this fight.");
++        }
++    }
++
++    /** Close every open encounter (plugin disable, admin reset). */
++    public void closeAll(String reason) {
++        for (UUID bossUuid : new ArrayList<>(book.openBosses())) {
++            closeEncounter(bossUuid, reason);
++        }
++    }
++
++    /** This plugin's sprinkle-add PDC key (the rig and any future
++     *  tooling identify sprinkle adds by it). */
++    public NamespacedKey addKey() {
++        if (addKey == null) {
++            addKey = new NamespacedKey(host, "sprinkle-add");
++        }
++        return addKey;
++    }
++
++    private Set<UUID> aliveAdds(UUID bossUuid) {
++        Set<UUID> alive = new HashSet<>();
++        for (UUID addUuid : book.adds(bossUuid)) {
++            Entity e = Bukkit.getEntity(addUuid);
++            if (e != null && !e.isDead() && e.isValid()) {
++                alive.add(addUuid);
++            }
++        }
++        return alive;
++    }
++
++    private void pruneDead(UUID bossUuid) {
++        book.pruneDead(bossUuid, aliveAdds(bossUuid));
++    }
++
++    private static String color(String text) {
++        return ChatColor.translateAlternateColorCodes('&', text);
++    }
++
++    private static String trim(double v) {
++        if (Double.isNaN(v)) {
++            return "n/a";
++        }
++        return Double.toString(Math.round(v * 1000.0) / 1000.0);
++    }
++}
+--- build-0.3.2/bosstrial/tree/plugin.yml	2026-11-01 21:56:34.865401062 +0000
++++ build-0.3.3/bosstrial/tree/plugin.yml	2026-11-02 00:49:24.733011217 +0000
+@@ -1,10 +1,10 @@
+ name: ExcelBossTrial
+-version: 0.3.2
++version: 0.3.3
+ author: Argus
+ main: com.winkreyes.excelbosstrial.ExcelBossTrial
+ api-version: "1.21"
+-description: The seal-boss rules of Wink Reyes Valley in one home - damage caps, the 70% player-damage share gate (config share-threshold), the presence rule, 6-hour credit cooldowns, the elder-guardian trio, participant spoils, the two-phase dragon trial (ExcelDragonTrial 0.1.2, ported in), participant growth (the boss rallies), and curated seal loot. 0.2.1 adds the seal-integrity fixes - the wither fought-free (cage) check, the warden horizontal range band, and the dragon share gate. 0.2.2 adds the seal-hardening pair - the warden gives up on a fight that never comes to it, and end crystals and respawn anchors answer to their placer. 0.2.3 adds the announcement window - while it is armed, seal attempts, fails, breaks and running cooldowns are announced in chat, repeated hourly, and rebroadcast to everyone on every join. 0.2.4 adds the XP band governor feed - every governed hit plants its band verdict for the XP listener (ExcelRewardGuard), so out-of-band hits pay 25% mcMMO XP in real time while in-band hits pay full; silent, fail-safe both ways. 0.2.5 makes the rewards mean something (spec 4.6) - the dragon gains a signature - "First Breath", one elytra per champion standing at the fall - and every seal's named signature gear is granted per champion, stamped with its earner's provenance, under the fairness rule. 0.2.6 splits the command gate - the status view is public, so any player can run /bosstrial status to check seal state and cooldowns, while reload and reset stay admin-only, enforced in the handler now that plugin.yml no longer gates the whole command. 0.2.7 keeps a fight when its boss is merely unloaded (the family went home, logged off or wiped) instead of forgetting it, holds the dragon trial while nobody is at the arena, and sets aside damage a lost ledger never saw so an honest finish can still earn the seal. 0.2.11 hardens the dragon flip with a second, final judgment at HIGHEST plus danger-zone logging, closes a saved trial out on version change instead of restoring it (archived, logged, counters kept), presents earned rewards automatically once per batch - with immunity frames on the auto-open only, never on a manual one - and pays every signature stack plus the dragon's breath and crystals per champion as personal claims, dragon XP included. 0.3.1 adds the fight record - at every verdict and every elder trio progress point the encounter's per-player table (damage dealt, damage taken, healing done where a heal-spell cast names its source, healing received) is written to fights/ and to the log - and the elder trio escalation, with each elder priced as an epic fight of its own, and the trio's third, seal-completing elder carries a pool multiplier (elder-guardian.trio, settled x1.3). 0.3.2 adds milestone beats - at 75/50/25% of a chapter's pool remaining, a broadcast line and one pulse surge, once per threshold per encounter (per phase for the dragon; the warden's lines are its progress display, the warden having no health bar) - and moves the dragon's add-wave thresholds into config (dragon.adds.wave-thresholds).
+-softdepend: [ExcelGuildGate, Magic, GriefPrevention]
++description: The seal-boss rules of Wink Reyes Valley in one home - damage caps, the 70% player-damage share gate (config share-threshold), the presence rule, 6-hour credit cooldowns, the elder-guardian trio, participant spoils, the two-phase dragon trial (ExcelDragonTrial 0.1.2, ported in), participant growth (the boss rallies), and curated seal loot. 0.2.1 adds the seal-integrity fixes - the wither fought-free (cage) check, the warden horizontal range band, and the dragon share gate. 0.2.2 adds the seal-hardening pair - the warden gives up on a fight that never comes to it, and end crystals and respawn anchors answer to their placer. 0.2.3 adds the announcement window - while it is armed, seal attempts, fails, breaks and running cooldowns are announced in chat, repeated hourly, and rebroadcast to everyone on every join. 0.2.4 adds the XP band governor feed - every governed hit plants its band verdict for the XP listener (ExcelRewardGuard), so out-of-band hits pay 25% mcMMO XP in real time while in-band hits pay full; silent, fail-safe both ways. 0.2.5 makes the rewards mean something (spec 4.6) - the dragon gains a signature - "First Breath", one elytra per champion standing at the fall - and every seal's named signature gear is granted per champion, stamped with its earner's provenance, under the fairness rule. 0.2.6 splits the command gate - the status view is public, so any player can run /bosstrial status to check seal state and cooldowns, while reload and reset stay admin-only, enforced in the handler now that plugin.yml no longer gates the whole command. 0.2.7 keeps a fight when its boss is merely unloaded (the family went home, logged off or wiped) instead of forgetting it, holds the dragon trial while nobody is at the arena, and sets aside damage a lost ledger never saw so an honest finish can still earn the seal. 0.2.11 hardens the dragon flip with a second, final judgment at HIGHEST plus danger-zone logging, closes a saved trial out on version change instead of restoring it (archived, logged, counters kept), presents earned rewards automatically once per batch - with immunity frames on the auto-open only, never on a manual one - and pays every signature stack plus the dragon's breath and crystals per champion as personal claims, dragon XP included. 0.3.1 adds the fight record - at every verdict and every elder trio progress point the encounter's per-player table (damage dealt, damage taken, healing done where a heal-spell cast names its source, healing received) is written to fights/ and to the log - and the elder trio escalation, with each elder priced as an epic fight of its own, and the trio's third, seal-completing elder carries a pool multiplier (elder-guardian.trio, settled x1.3). 0.3.2 adds milestone beats - at 75/50/25% of a chapter's pool remaining, a broadcast line and one pulse surge, once per threshold per encounter (per phase for the dragon; the warden's lines are its progress display, the warden having no health bar) - and moves the dragon's add-wave thresholds into config (dragon.adds.wave-thresholds). 0.3.3 adds the elite sprinkle - at each milestone stamp an armed chapter rolls once (chance x stamp multiplier, capped) to send EliteMobs elites in as adds beside the boss, contained (no loot, no coins, no vanilla drops), announced on a pass, leashed to the fight, and removed when the encounter ends; every chapter ships disabled (<chapter>.sprinkle.enabled) until armed, and the plugin runs exactly as before when EliteMobs is absent.
++softdepend: [ExcelGuildGate, Magic, GriefPrevention, EliteMobs]
+ commands:
+   bossrewards:
+     description: Open your own earned boss rewards
+--- build-0.3.2/bosstrial/tree/config.yml	2026-11-01 21:56:17.085182412 +0000
++++ build-0.3.3/bosstrial/tree/config.yml	2026-11-02 00:36:32.835955747 +0000
+@@ -64,6 +64,19 @@
+   enabled: true
+   max-multiplier: 5
+ 
++# Elite sprinkle (0.3.3) - master keys. The per-chapter blocks
++# live under <chapter>.sprinkle and every chapter ships DISABLED;
++# this master switch is the one-edit kill for the whole feature.
++sprinkle:
++  enabled: true
++  # Later stamps roll better odds (75% / 50% / 25% remaining).
++  stamp-multipliers: [0.75, 1.0, 1.25]
++  # Effective chance (base x stamp multiplier) never exceeds this.
++  chance-ceiling: 0.90
++  # A passed roll is announced - one line per spawn event.
++  # {chapter} is the boss's name, {count} the elites spawned.
++  announce-text: "&4The seal fights back&7 - {count} elite reinforcements join the battle against {chapter}!"
++
+ wither:
+   enabled: true
+   share-gate: true
+@@ -111,6 +124,25 @@
+     text-50: "&5{name} &7staggers - half the fight is spent."
+     text-25: "&5{name} &7falters - three quarters spent. The end is in sight."
+ 
++  sprinkle:
++    # Elite sprinkle (0.3.3): at each milestone stamp (75/50/25% of
++    # the pool remaining) this chapter rolls ONCE against chance x
++    # the stamp multiplier (sprinkle.stamp-multipliers); a passed
++    # roll spawns count EliteMobs elites at the stamp's fixed level
++    # beside the boss. A failed roll is silent. Caps beat chance:
++    # max-per-fight ends the rolls, max-alive trims a wave, and a
++    # passed roll is never banked. The adds pay NOTHING (their loot
++    # flags are closed at conversion) and are removed when the
++    # fight ends. Ships DISABLED - arm per chapter.
++    enabled: false
++    chance: 0.35
++    count: 2
++    levels: [20, 22, 24]
++    max-alive: 3
++    max-per-fight: 6
++    leash-radius: 40.0
++    types: [WITHER_SKELETON, WITHER_SKELETON]
++
+ elder-guardian:
+   enabled: true
+   share-gate: true
+@@ -179,6 +211,19 @@
+     text-50: "&3{name} &7staggers - half the fight is spent."
+     text-25: "&3{name} &7reels - three quarters spent. The tide is turning."
+ 
++  sprinkle:
++    # Elite sprinkle (0.3.3): rolls per elder (each elder is its own
++    # encounter), at each milestone stamp. Aquatic types only - the
++    # fight is underwater inside the monument. Ships DISABLED.
++    enabled: false
++    chance: 0.30
++    count: 2
++    levels: [18, 20, 22]
++    max-alive: 3
++    max-per-fight: 6
++    leash-radius: 24.0
++    types: [GUARDIAN, DROWNED]
++
+ fight-tracking:
+   # The fight record (0.3.1): at every verdict (CREDIT / DENY)
+   # and every elder trio progress point, the encounter's
+@@ -254,6 +299,19 @@
+     text-50: "&8The Warden &7staggers - half the fight is spent."
+     text-25: "&8The Warden &7reels - three quarters spent. The deep is losing its grip."
+ 
++  sprinkle:
++    # Elite sprinkle (0.3.3): at each milestone stamp this chapter
++    # rolls ONCE; a passed roll sends one skeleton and one zombie
++    # in at the stamp's fixed level. Ships DISABLED.
++    enabled: false
++    chance: 0.40
++    count: 2
++    levels: [22, 24, 26]
++    max-alive: 3
++    max-per-fight: 6
++    leash-radius: 32.0
++    types: [SKELETON, ZOMBIE]
++
+ # The dragon chapter: ExcelDragonTrial 0.1.2's two-phase machine,
+ # ported whole, plus the shared presence rule (no share gate - the
+ # two-phase machine is the dragon's gate) and XP spoils above.
+@@ -302,6 +360,21 @@
+     text-75: "&5{name} &7falters - a quarter spent."
+     text-50: "&5{name} &7staggers - half spent."
+     text-25: "&5{name} &7reels - three quarters spent."
++
++  sprinkle:
++    # Elite sprinkle (0.3.3): PHASE 2 ONLY - at each phase-2
++    # milestone stamp this chapter rolls ONCE; a passed roll sends
++    # two elite endermen in at the fountain, beside the Sealbound
++    # waves. Unlike the vanilla adds, the elites are removed at
++    # the verdict. Ships DISABLED.
++    enabled: false
++    chance: 0.30
++    count: 2
++    levels: [18, 20, 22]
++    max-alive: 3
++    max-per-fight: 6
++    leash-radius: 48.0
++    types: [ENDERMAN, ENDERMAN]
+   adds:
+     enabled: true
+     per-wave: 3
