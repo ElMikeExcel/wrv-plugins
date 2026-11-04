@@ -1,0 +1,107 @@
+===== Test results (source: halloween-toggles/TEST-RESULTS.md) =====
+# ExcelHalloweenToggles 0.1.0 — TEST RESULTS
+
+**Run:** Oct 31, 2026, via `build.sh` (offline javac + JUnit 4.13.2).
+**Result: 23 tests, 0 failures — OK (23 tests)**, reproduced identically
+on every rebuild (the built jar is byte-stable across consecutive
+builds: SHA-256 `3b537e87…` twice in a row).
+
+| Suite | Tests | What it proves |
+|---|---|---|
+| ScareGateTest | 8 | The full fire-decision matrix. FIRE only when event window + scheduler + Halloween global + player toggle + eligibility ALL pass. **Toggle OFF ⇒ STOP for every combination of the other inputs** (the Witching-Hour case included — halved intervals change only the delay, never the gate). All-toggles-off ⇒ no fire for any input. Global-off and momentary ineligibility ⇒ RETRY (chain survives, nothing fires). Retired window / scheduler off ⇒ STOP. Login gate is a plain AND of its five conditions. |
+| EventWindowTest | 4 | Auto-retirement boundary: active through Nov 5, 2026, retired Nov 6 — at the date level AND at the instant level in America/Chicago (Nov 5 23:30 CST still active; Nov 6 00:30 CST retired; post-DST CST offsets pinned). Null inputs fail safe (inactive). |
+| ToggleStoreTest | 6 | Defaults are ALL ON for a fresh player; state survives a save → reload cycle (the relog/restart case); toggle flips and returns the new state; players are independent; **unknown feature keys are rejected on read and write** (the fake-toggle guard — `ambient_sounds`, `witching_hour` etc. cannot be stored); a corrupt players.yml falls back to defaults with a warning instead of breaking. |
+| FeatureRegistryTest | 6 | The shipped registry is exactly the seven gateable features in menu order (login_pumpkin, pumpkin_curse, slenderman, darkness, lightning, fire, herobrine); none of the design's not-gateable features exist as toggles; the event-name alias resolves (`pumpkin` → pumpkin_curse); **every registry path (enabled / min / max / cooldown) exists in the REAL Halloween 3.4.0 jar's bundled config** (test fails, never skips, if the jar config isn't supplied); the registry rejects an unknown Halloween event and a second login feature. |
+
+The one WARNING line in the test output is the corrupt-file test
+exercising the fallback on purpose.
+
+**Cold-review catches during this build (fixed before the rig, per
+Moon's playbook):** (1) scheduler chains were only started by the
+60-second sweep — join/quit listeners added so chains start at join
+and die at quit; (2) ON/OFF labels were color-translated before
+substitution and would have reached players as literal `&a` — labels
+now carry pre-translated section signs; (3) the login re-drive ignored
+the scheduler master switch — it now returns DISABLED.
+
+===== Rig report (source: halloween-toggles/RIG-REPORT.md) =====
+# ExcelHalloweenToggles 0.1.0 — RIG REPORT
+
+**Date:** Oct 31, 2026 (evening CDT). **Jars under test:** the real
+Halloween_Softici 3.4.0 (SHA-256 `a6efe2ca…`, the live event jar) +
+ExcelHalloweenToggles-0.1.0.jar (SHA-256 `3b537e87…`) +
+PlaceholderAPI 2.12.3 (the live server's copy).
+
+## What ran
+
+**Boot A — Paper 26.3-231 (extracted layout), both jars + surgery
+config.** The live build is Paper 26.3-234; its paperclip jar cannot
+fetch the Mojang server jar inside this sandbox (no network —
+`boot0-paper234-paperclip-failed.log`), so the rig used the extracted
+26.3-231 layout from the EliteMobs qualification rig. 231↔234 differ
+only in internals the Oct 31 update-bar review already judged
+immaterial (MaterialTags, respawn radius, console paste parsing);
+the companion uses only stable Bukkit API + the Halloween plugin's
+public surface. Result: **Done (37.917s)**; Halloween enabled;
+companion awake line verbatim —
+
+> ExcelHalloweenToggles 0.1.0 awake: 7 per-player toggles (6 ambient scares under scheduler takeover + login pumpkin); event window through 2026-11-05 (America/Chicago), then auto-retired.
+
+**No SURGERY warning** — the companion's boot self-check confirmed all
+seven Halloween flags already false in the surgery config. Zero
+WARN/ERROR lines name ExcelHalloweenToggles; every ERROR in the log
+is offline-environment noise (Paper version fetch, PAPI update/hash
+checks). Log: `rig/bootA.log`.
+
+**Boot B — Paper 26.3-231, companion WITHOUT the Halloween jar.**
+Result: **Done (28.459s)**; the companion logged its single
+self-disable line ("Halloween_Softici is not present —
+ExcelHalloweenToggles is inert without the Halloween event and
+disables itself") and disabled cleanly. This is the post-event
+forgotten-jar guarantee. Log: `rig/bootB.log`.
+
+**Boot A2 — Paper 26.2-123 (extracted layout), both jars + PAPI,
+console-driven checks.** Result: Done (30.699s), same awake line,
+PAPI registered the companion's expansion verbatim
+("Successfully registered internal expansion: halloweentoggles
+[0.1.0]"); console `plugins` lists ExcelHalloweenToggles enabled;
+console `scares` returns the player-only guidance line (command
+registered, behaving); console `papi list` shows `halloweentoggles`;
+the companion generated its data folder with the shipped config
+(end-date 2026-11-05 read back from disk). Log: `rig262/bootA262.log`.
+
+## What did NOT run — stated plainly
+
+**The mineflayer end-to-end player proof (design §6 rig: bot joins,
+login pumpkin lands, chains fire when ON, silence when OFF, re-arm
+when ON) was NOT executed.** Every mineflayer install in the sandbox
+pins minecraft-protocol 1.68.0, whose supported-protocol list ends at
+26.1; the servers here speak protocol 776 (26.2) / 777 (26.3), the
+protocol data for those versions is not in the bundled minecraft-data,
+npm is unreachable from the sandbox, and no extracted 26.1 layout
+exists locally. Three connection attempts are logged
+(`rig/botA.log`, `rig262/botA262.log`); the fully-scripted bot is
+preserved at `rig/bot.js` and will run unchanged the day a
+26.2/26.3-capable client exists.
+
+Coverage that stands in for it, honestly labelled:
+- The fire/no-fire decision is unit-proven over the **entire input
+  matrix** (TEST-RESULTS.md), including toggle-off under
+  Witching-Hour conditions and the all-off player.
+- The seams the bot would have exercised (triggerEvent dispatch,
+  eventDelayTicks argument order/units, canReceiveJoinPumpkin /
+  setLastPumpkinJoin, scheduleNext dying on enabled:false) were
+  verified **from the jar's own bytecode** during the design pass and
+  re-verified at this build's start.
+- Boot A proves both plugins enable together on the live major build
+  with the surgery applied and no attributable errors.
+- The remaining behavioural proofs are the design's own §6
+  **post-install player proofs** — they are written into the install
+  packet as owed, one at a time, exactly as designed. The install
+  should not be called proof-complete until they are done.
+
+## Rig leftovers
+
+`rig/` (26.3-231) and `rig262/` (26.2-123) are disposable local rigs;
+nothing in them is a live artifact. The 26.3 rig still holds the
+Halloween folder under `rig/held/` from Boot B.

@@ -1,0 +1,126 @@
+{
+  "plugin": "ExcelHalloweenToggles",
+  "version": "0.1.0",
+  "local_build_folder": "halloween-toggles",
+  "jar": {
+    "file": "ExcelHalloweenToggles-0.1.0.jar",
+    "path": "halloween-toggles/ExcelHalloweenToggles-0.1.0.jar",
+    "bytes": 30016,
+    "sha256": "3b537e87a720f915cb831befb11ad2fda7e18bebcbccd5afc68f597e992d642c"
+  },
+  "install": {
+    "status": "installed live",
+    "date": "Nov 1, 2026"
+  },
+  "notes": [],
+  "record": {
+    "assembled": "2026-11-03",
+    "assembler": "records catch-up packaging pass (local only; upload by parent)",
+    "files": {
+      "DEPENDENCIES.md": {
+        "sha256": "4ad6196509c04844f121a3d7b259a3caa962f6aff8cabd00cf84707bfb5ca43f",
+        "bytes": 399
+      },
+      "DEPENDENCIES.sha256": {
+        "sha256": "c97d3d625126351371df2949ba0a37a6f02c82804e4f261b83524f9fb486fe66",
+        "bytes": 136
+      },
+      "FUNCTIONAL-CHANGE.diff": {
+        "sha256": "40a19728f417e831001f5daa1c299f1221cf807b4e35aa882563bc52b476d428",
+        "bytes": 93
+      },
+      "README.md": {
+        "sha256": "26dcb4c14acb85dc21e1f5927e2fa1bea5bc46065c1754a3917cecc81aec8535",
+        "bytes": 1575
+      },
+      "SANITIZATION.diff": {
+        "sha256": "f6a42ca9a0da95afdf0a15ef186bf0ab612fffc4bd7e873b0453b5508a189c99",
+        "bytes": 421
+      },
+      "SOURCE.md": {
+        "sha256": "e9c2bd505d2028782acda46c460b191f87955a784027faf83624ce05bd211e83",
+        "bytes": 4367
+      },
+      "TEST-RESULTS.txt": {
+        "sha256": "477c40f10e2f67927a2334eed10454f7effff3413b0a7acfdc3ac3cd94277d1c",
+        "bytes": 7060
+      },
+      "build.sh": {
+        "sha256": "bab298edce3fbcf0c0eaa33ebf407c522410d5c6479b77c994e35cf938ff1015",
+        "bytes": 3262
+      },
+      "config.yml": {
+        "sha256": "a48732de85015603e5b6d0274c49569c49efe9f6d4c64e97fd865a22fb0d80fc",
+        "bytes": 4945
+      },
+      "plugin.yml": {
+        "sha256": "fae1842935f98c7a42e9e194dfc4800e50e2bd67f8c10e432f088d0b3509bf13",
+        "bytes": 666
+      },
+      "src/main/java/com/winkreyesvalley/excelhalloweentoggles/EventWindow.java": {
+        "sha256": "a715c5165eb6dd4c05747425c1781b6dac3886500e75c68ba96f3bfc1bf4bdff",
+        "bytes": 1198
+      },
+      "src/main/java/com/winkreyesvalley/excelhalloweentoggles/ExcelHalloweenToggles.java": {
+        "sha256": "7058b177ab29e4ae37d14714f8af8f5c89dfddaad3f6f5609490f96cce164e49",
+        "bytes": 9601
+      },
+      "src/main/java/com/winkreyesvalley/excelhalloweentoggles/FeatureDef.java": {
+        "sha256": "a1d4419e753148406d8e790e776b5c6e15cb24f5fbc6aaeed7c1a8fdfdc011c9",
+        "bytes": 3054
+      },
+      "src/main/java/com/winkreyesvalley/excelhalloweentoggles/FeatureRegistry.java": {
+        "sha256": "cfb8571645d45f54ab32ff46322f8e2e24cbcfcb3adee3acdcd465e3d104f1cf",
+        "bytes": 7422
+      },
+      "src/main/java/com/winkreyesvalley/excelhalloweentoggles/JoinPumpkinDriver.java": {
+        "sha256": "2e12cbbdbefea319cf98f87001049c11a0f14d8b4fd285e1108331061dc48552",
+        "bytes": 2980
+      },
+      "src/main/java/com/winkreyesvalley/excelhalloweentoggles/ScareGate.java": {
+        "sha256": "a8bde83640e6f9e38e009f8f4ef90d51a37e3896778e0572e745fad0f14fd5d0",
+        "bytes": 2026
+      },
+      "src/main/java/com/winkreyesvalley/excelhalloweentoggles/ScareScheduler.java": {
+        "sha256": "6c82f47da24952171e6d77940e911b83182cc25e64e94a87a304c87347b09adb",
+        "bytes": 8167
+      },
+      "src/main/java/com/winkreyesvalley/excelhalloweentoggles/ScaresCommand.java": {
+        "sha256": "36feabb6d8fbae0e89c82d543f6a4676eb4e73d762fcf3b7301321a80957c43a",
+        "bytes": 7988
+      },
+      "src/main/java/com/winkreyesvalley/excelhalloweentoggles/ScaresPlaceholders.java": {
+        "sha256": "200b694fa39fe4b0c80a667cef238d4543d6eed04e49cc9d11f5c89bde08c226",
+        "bytes": 1639
+      },
+      "src/main/java/com/winkreyesvalley/excelhalloweentoggles/ToggleStore.java": {
+        "sha256": "5dbd68490fce9b4c8e4bfeef940f4ff0cdf930e55efee646b6f49b6995603980",
+        "bytes": 3066
+      },
+      "src/main/resources/config.yml": {
+        "sha256": "a48732de85015603e5b6d0274c49569c49efe9f6d4c64e97fd865a22fb0d80fc",
+        "bytes": 4945
+      },
+      "src/main/resources/plugin.yml": {
+        "sha256": "fae1842935f98c7a42e9e194dfc4800e50e2bd67f8c10e432f088d0b3509bf13",
+        "bytes": 666
+      },
+      "src/test/java/com/winkreyesvalley/excelhalloweentoggles/EventWindowTest.java": {
+        "sha256": "83abb9ba1385e3933dc6160f2af8331660cef04c6692029257a8fecfa74ab272",
+        "bytes": 1914
+      },
+      "src/test/java/com/winkreyesvalley/excelhalloweentoggles/FeatureRegistryTest.java": {
+        "sha256": "5ec61f4fb9b966a329fb4f1f7dbe44c0785dba6072487c5de4f54145617eacde",
+        "bytes": 5259
+      },
+      "src/test/java/com/winkreyesvalley/excelhalloweentoggles/ScareGateTest.java": {
+        "sha256": "914c5472d9e21273a48acaa822ac5906b4983d2639c80b7ca7a154ec825a97d4",
+        "bytes": 3278
+      },
+      "src/test/java/com/winkreyesvalley/excelhalloweentoggles/ToggleStoreTest.java": {
+        "sha256": "cb8a247923ca08a4a3b47bf15f5b213cae58ad4fb4e7e95364c226c8d4e07839",
+        "bytes": 4306
+      }
+    }
+  }
+}
