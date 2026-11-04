@@ -1,0 +1,762 @@
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.4-source.zip' '--exclude=bosstrial-0.3.5-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/CHANGELOG-0.3.4.md ./CHANGELOG-0.3.4.md
+--- /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/CHANGELOG-0.3.4.md	2026-11-02 22:28:54.067790030 +0000
++++ ./CHANGELOG-0.3.4.md	1970-01-01 00:00:00.000000000 +0000
+@@ -1,98 +0,0 @@
+-# ExcelBossTrial 0.3.4 — CHANGELOG
+-
+-Release date: built 2026-11-02 (pending install). Base: ExcelBossTrial 0.3.3
+-(shipped live jar, SHA-256
+-`6bdeefb3b92ea09f1d67615950f6bd4ba2a4337bda9bac2b43501d98a52d0cbe`, rebuilt
+-byte-identical from this release's starting tree before any change — see
+-`base-verify/BASE-PROOF.md`).
+-
+-0.3.4 is an **emit-only delta**: it teaches BossTrial to publish its fight
+-tables, seal verdicts, and boss state changes to ExcelProtect 0.1.0. No seal,
+-fight, tuning, sprinkle, gate, reward, or cooldown behavior changes in any
+-way. Every value in every chapter is exactly as 0.3.3.
+-
+-## What players and staff see
+-
+-- Nothing changes in game. Fights, verdicts, spoils, cooldowns, fight
+-  records in `fights/`, and every chat/console line behave exactly as
+-  0.3.3.
+-- Behind the scenes, ExcelProtect can now answer boss questions from its
+-  own record: the last verdict per seal with the full per-player table
+-  (damage dealt/taken, healing done/received), when a trial opened, when
+-  a fight ended, and when an elder trio respawned (boss available again).
+-
+-## Added — the ExcelProtect emitter adapter
+-
+-- **Verdict publish (fight tables).** At every chapter fight verdict —
+-  CREDIT, REPEAT_CREDIT, or any DENY — BossTrial fires Protect's
+-  `FightTableEvent` with the same record it writes to `fights/`: chapter,
+-  verdict, credit (the killer's name), the pool, the duration, and one row
+-  per participant with exactly the contract keys `name`, `uuid`,
+-  `damage_dealt`, `damage_taken`, `healing_done`, `healing_received`
+-  (one-decimal values). Protect's receiving side turns that one event into
+-  a combat `fight_summary` line and an audit `seal_verdict` line.
+-  Elder progress points (per-elder kills inside a trio) are NOT verdicts,
+-  so they travel the general door instead as combat `fight_progress`
+-  records — a progress point can never pose as a seal verdict in the
+-  audit family.
+-- **State-change publishes (boss status).** Through Protect's general
+-  record door (`ExcelProtectAPI.publish`, stream `combat`), BossTrial
+-  publishes `boss_state` records, schema v1 (fields: `schema`, `source`
+-  = `bosstrial`, `chapter`, `boss`, `state`, plus per-state fields):
+-  - `fight_started` — a chapter encounter opens (`boss_uuid`, `pool`).
+-  - `fight_ended` — a verdict lands (`boss_uuid`, `verdict`, `record`
+-    = the `fights/` file name, `duration_s`, `champions`).
+-  - `respawn_scheduled` — elder kills deny on share/presence/cooldown or
+-    a trio flips (`monument`, `respawn_due_ms`, `elders`).
+-  - `respawned` — the maintenance loop respawns an elder at its monument
+-    (`monument`, fresh `boss_uuid`, `world`).
+-- **Config gates (all default ON).** New `protect-emit` section:
+-  `protect-emit.enabled` (master), `protect-emit.fight-tables`,
+-  `protect-emit.state-changes`. Turning the master off is a complete
+-  no-op: zero publish attempts, proven on the rig from the receiving
+-  side (Boot C in TEST-REPORT.md).
+-- **Boot line.** One new console line reports the adapter state:
+-  `ExcelProtect emit: ON (adapter bound; fight tables ON, state changes ON; verdicts and boss state publish to ExcelProtect)`,
+-  or the OFF variants (`not installed` / `by config` / bind failure), so
+-  a boot log always says whether publishing is live.
+-
+-## House-style guarantees (fail-soft adapter)
+-
+-- The connection is a replaceable adapter, not a weld: every Protect type
+-  is referenced from exactly one gateway class
+-  (`protect/ProtectEmitGateway.java`); the rest of BossTrial talks to a
+-  plain in-house interface whose default standing instance is a no-op.
+-- BossTrial runs **identically with Protect absent, disabled, or
+-  erroring**: publishes fire after the fight record is safely on disk,
+-  every call is guarded so a failure can never reach fight logic, and a
+-  failing adapter logs at most three quiet warnings per boot (no stack
+-  traces in normal operation, no repeated spam).
+-- `plugin.yml` gains `ExcelProtect` as a **softdepend only** — never a
+-  hard dependency — so load order resolves the shared event classes when
+-  Protect is present and nothing changes when it is not.
+-- Honest scope note: the fight record carries no per-player death count
+-  (BossTrial has never tracked one), so the published table has no deaths
+-  column rather than an invented one. Protect's own death ledger remains
+-  the deaths record.
+-
+-## Verification
+-
+-- Delta-build law honored: unmodified 0.3.3 sources rebuilt byte-identical
+-  to the shipped live jar before the first edit.
+-- Full test suite: 25,414 checks, 0 failures (25,250 inherited + 164 new
+-  across the suite, including 31 checks dedicated to the emitter:
+-  settings collapse rules, table shaping/rounding/zero-player edge, all
+-  four `boss_state` shapes, the `fight_progress` shape, gateway
+-  never-throws with no server present).
+-- Built twice from the same tree: byte-identical jars (348,104 B,
+-  SHA-256 `14d5d06c2c3cd1d151cdb82dd8d6e069a19f10c0fd95ec82dca141ead8b38ad0`).
+-- Jar-level change scope vs 0.3.3: only the host class family
+-  (recompiled), the four new adapter classes, `plugin.yml`, and
+-  `config.yml` differ; every other class is byte-identical.
+-- Rig on Paper 26.3-235, three boots (see TEST-REPORT.md):
+-  (A) Protect present — a wither verdict's table + seal verdict +
+-  fight_started/fight_ended + elder respawned all landed in Protect's
+-  JSONL stores; (B) Protect absent — the identical fight, number for
+-  number, with the not-installed boot line and zero Protect errors;
+-  (C) emit disabled by config — verdict and fight record normal, Protect
+-  received zero BossTrial lines.
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.4-source.zip' '--exclude=bosstrial-0.3.5-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/CHANGELOG-0.3.5.md ./CHANGELOG-0.3.5.md
+--- /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/CHANGELOG-0.3.5.md	1970-01-01 00:00:00.000000000 +0000
++++ ./CHANGELOG-0.3.5.md	2026-11-03 02:52:55.888727468 +0000
+@@ -0,0 +1,115 @@
++# ExcelBossTrial 0.3.5 — changelog
++
++Released as a build on 2026-11-02 (not yet installed). A single-purpose
++delta on 0.3.4: guardian spike reflect is retired for tracked seal
++elders. Everything else — fights, verdicts, rewards, the 0.3.4
++ExcelProtect emitter — is byte-for-byte the 0.3.4 behavior.
++
++## Why
++
++Mike's playstyle-parity ruling (Nov 2, 2026): melee, ranged, and magic
++must all stay viable in seal fights; a mechanic that taxes one style
++out of the fight is a defect even when the tuning matches the design.
++Vanilla elder guardians return 3 HP (Hard) on every melee hit while
++their spikes are out. Against a normal 80 HP elder that is trivial;
++against BossTrial's governed pools (7,800 solo, 10,900 duo) it lands
++on the order of a thousand times per elder, on melee only — and the
++attrition pressure ramp scaled it like boss offense, doubling it by
++about minute 17 of a long fight. Jester's live feel report the same
++night (thorns "hella annoying" at ~1 governed damage per hit dealt)
++is the player-side confirmation. Feasibility and design of record:
++`~/workspace/seal-audit/REFLECT-FIX-FEASIBILITY-20261102.md`.
++
++## What changed
++
++- **New config key (elder chapter only):**
++  `elder-guardian.reflect.multiplier`. Shipped value **0.0** — spike
++  reflect from a tracked seal elder during an encounter is cancelled
++  outright (Mike's decision, Nov 2, 2026: full cancel, not a scale).
++  1.0 restores exact vanilla; 0.25 restores a quarter sting; values
++  above 1 are accepted deliberately. The value is a config key with
++  the settled value as its code default — never hardcoded
++  (adjustability law).
++- **Interception:** the existing HIGH-priority boss→player handler
++  (`onBossPressureDamage`) judges spike reflect FIRST, through the
++  new pure core class `core/ReflectRule`, and applies the chapter
++  multiplier INSTEAD of the pressure scale. Reflect is never ramped,
++  at any fight length — at multiplier 0.0 the result is 0 regardless
++  of ramp ordering. At a scaled value of 0 the event is *cancelled*,
++  not zeroed, so the MONITOR fight recorder skips it and reflect
++  leaves the fight table's damage-taken column entirely (a melee
++  champion's participation evidence comes from their dealt records,
++  which are untouched). At intermediate values the scaled reflect
++  still records as damage taken, truthfully.
++- **Identification is exact.** Paper assigns guardian spikes and the
++  Thorns enchantment the same damage cause (THORNS); the pair
++  (cause == THORNS, damager resolves to an elder guardian with an
++  open encounter ledger) can only be spikes — seal elders wear no
++  armor, and a player's own Thorns armor fires in the opposite
++  direction, which this handler never sees. Proven on the rig: the
++  probe logged `cause=THORNS, damager=ELDER_GUARDIAN, damage=3.0`
++  on every spike hit.
++- **Scope — what is NOT touched:** vanilla guardians and wild elder
++  guardians outside an encounter, elder sprinkle adds (regular
++  GUARDIAN elites), player Thorns enchantment in either direction,
++  EliteMobs mobs, and the wither/warden/dragon chapters (they have
++  no spikes; their `reflect(kind)` reads a neutral 1.0 and their
++  handlers never consult it). The reflect branch deliberately runs
++  ahead of the pressure-enabled gate: retiring reflect must not
++  depend on the attrition layer being switched on.
++- **Config plumbing:** `BossTrialConfig` gains a `Reflect` record
++  (`elderReflect`, parsed by `reflectFrom` beside `pressureFrom`; a
++  config missing the block runs the settled default) and a new
++  canonical constructor (the 0.3.0 shape delegates at the settled
++  default). The adapter's flat-key whitelist gains
++  `elder-guardian.reflect.multiplier`.
++
++## Numbers
++
++- Vanilla spike: 3.0 HP raw on Hard → ≈0.67 HP through the rig's
++  netherite set. At 0.0: 0 (event cancelled). At 1.0: unchanged
++  vanilla — including NO ramp, where 0.3.4 would have doubled it
++  late-fight.
++- `ReflectRule` clamps: negative or NaN multiplier reads as 0 (a
++  broken value retires reflect rather than restoring the tax);
++  NaN/negative raw damage reads as 0; scaled output is always
++  finite and ≥ 0, so the fight table can never gain a negative or
++  NaN row from reflect.
++
++## Tests
++
++- New `ReflectRuleTest` (31 checks): multiplier math at 0.0 / 0.25 /
++  1.0 / 2.0, clamps, cancel semantics, ramp independence (0 × ramp
++  stays 0; 1.0 yields vanilla, not the ramped value), the full
++  identification-predicate matrix (untracked elder, other chapters,
++  player damager, non-THORNS cause), and the TrainingWheels
++  composition — Rylie's 0.25 factor composed with reflect in either
++  order at multiplier 0 is 0, no special-casing.
++- New `ReflectConfigTest` (9 checks): settled default 0.0, flat-key
++  parse, missing-block default, per-kind accessor neutrality.
++- Full suite: 26,949 checks, 0 failures (0.3.4: 26,909; +40 new).
++  Built twice, byte-identical.
++- Rig (Paper 26.3-235 + Geyser pattern as 0.3.4, two boots): at
++  multiplier 0.0, 11/11 probed spike hits from a tracked elder were
++  cancelled and the player took zero reflect; at 1.0, 5/5 landed at
++  exact vanilla values; a wild plain guardian's reflect landed
++  untouched in both boots; the 0.3.4 Protect `boss_state`
++  fight_started emissions still landed in ExcelProtect's store;
++  SEVERE 0 in both boots.
++
++## Notes
++
++- First candidate jar (`e963f717…`) failed to load on the rig: a
++  colon-space inside this release's plugin.yml description text
++  made the YAML unparseable and Paper skipped the jar. The
++  description was rephrased, the jar rebuilt (`3364c152…`), and
++  plugin.yml/config.yml are now parse-verified inside the built
++  jar as part of this build's record. No other content changed
++  between the two candidates.
++- Installs BEHIND 0.3.4 (the queue order is surfaces → 0.3.4 →
++  BedrockMenu 1.5.29 → Menu Phase 2 → 0.3.5): the merged staging
++  config here already contains the 0.3.4 `protect-emit` block.
++- Player proof owed after install: in the next elder fight, a melee
++  champion takes no spike reflect across the whole fight (and, if
++  anyone wears Thorns armor, the elder still takes its enchantment
++  reflect exactly as vanilla).
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.4-source.zip' '--exclude=bosstrial-0.3.5-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/config.yml ./config.yml
+--- /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/config.yml	2026-11-02 22:07:54.600018907 +0000
++++ ./config.yml	2026-11-03 02:39:02.257730760 +0000
+@@ -197,6 +197,19 @@
+     pulse-hot-seconds: 30
+     ramp-per-minute: 0.06
+     ramp-max: 2.0
++  reflect:
++    # Spike reflect (0.3.5): vanilla guardians/elder guardians return
++    # 3 HP (Hard) on every melee hit while their spikes are out. In a
++    # vanilla fight that is nothing; against a governed pool in the
++    # tens of thousands it is a melee-only tax that grows with the
++    # pool - and the attrition ramp used to double it late-fight.
++    # This multiplier applies to spike reflect dealt BY a tracked
++    # seal elder during an encounter, INSTEAD of the pressure scale
++    # (reflect is never ramped). 1.0 = exact vanilla; 0.0 = reflect
++    # retired for seal elders (settled, Mike Nov 2, 2026 - melee,
++    # ranged and magic all stay viable). Monument guardians, sprinkle
++    # adds and everything outside a seal encounter are never touched.
++    multiplier: 0.0
+ 
+   milestones:
+     # Milestone beats (0.3.2): at 75/50/25% of the pool remaining,
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.4-source.zip' '--exclude=bosstrial-0.3.5-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/plugin.yml ./plugin.yml
+--- /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/plugin.yml	2026-11-02 22:07:58.597019062 +0000
++++ ./plugin.yml	2026-11-03 02:46:40.915728949 +0000
+@@ -1,9 +1,9 @@
+ name: ExcelBossTrial
+-version: 0.3.4
++version: 0.3.5
+ author: Argus
+ main: com.winkreyes.excelbosstrial.ExcelBossTrial
+ api-version: "1.21"
+-description: The seal-boss rules of Wink Reyes Valley in one home - damage caps, the 70% player-damage share gate (config share-threshold), the presence rule, 6-hour credit cooldowns, the elder-guardian trio, participant spoils, the two-phase dragon trial (ExcelDragonTrial 0.1.2, ported in), participant growth (the boss rallies), and curated seal loot. 0.2.1 adds the seal-integrity fixes - the wither fought-free (cage) check, the warden horizontal range band, and the dragon share gate. 0.2.2 adds the seal-hardening pair - the warden gives up on a fight that never comes to it, and end crystals and respawn anchors answer to their placer. 0.2.3 adds the announcement window - while it is armed, seal attempts, fails, breaks and running cooldowns are announced in chat, repeated hourly, and rebroadcast to everyone on every join. 0.2.4 adds the XP band governor feed - every governed hit plants its band verdict for the XP listener (ExcelRewardGuard), so out-of-band hits pay 25% mcMMO XP in real time while in-band hits pay full; silent, fail-safe both ways. 0.2.5 makes the rewards mean something (spec 4.6) - the dragon gains a signature - "First Breath", one elytra per champion standing at the fall - and every seal's named signature gear is granted per champion, stamped with its earner's provenance, under the fairness rule. 0.2.6 splits the command gate - the status view is public, so any player can run /bosstrial status to check seal state and cooldowns, while reload and reset stay admin-only, enforced in the handler now that plugin.yml no longer gates the whole command. 0.2.7 keeps a fight when its boss is merely unloaded (the family went home, logged off or wiped) instead of forgetting it, holds the dragon trial while nobody is at the arena, and sets aside damage a lost ledger never saw so an honest finish can still earn the seal. 0.2.11 hardens the dragon flip with a second, final judgment at HIGHEST plus danger-zone logging, closes a saved trial out on version change instead of restoring it (archived, logged, counters kept), presents earned rewards automatically once per batch - with immunity frames on the auto-open only, never on a manual one - and pays every signature stack plus the dragon's breath and crystals per champion as personal claims, dragon XP included. 0.3.1 adds the fight record - at every verdict and every elder trio progress point the encounter's per-player table (damage dealt, damage taken, healing done where a heal-spell cast names its source, healing received) is written to fights/ and to the log - and the elder trio escalation, with each elder priced as an epic fight of its own, and the trio's third, seal-completing elder carries a pool multiplier (elder-guardian.trio, settled x1.3). 0.3.2 adds milestone beats - at 75/50/25% of a chapter's pool remaining, a broadcast line and one pulse surge, once per threshold per encounter (per phase for the dragon; the warden's lines are its progress display, the warden having no health bar) - and moves the dragon's add-wave thresholds into config (dragon.adds.wave-thresholds). 0.3.3 adds the elite sprinkle - at each milestone stamp an armed chapter rolls once (chance x stamp multiplier, capped) to send EliteMobs elites in as adds beside the boss, contained (no loot, no coins, no vanilla drops), announced on a pass, leashed to the fight, and removed when the encounter ends; every chapter ships disabled (<chapter>.sprinkle.enabled) until armed, and the plugin runs exactly as before when EliteMobs is absent. 0.3.4 adds the ExcelProtect emitter - at every verdict the encounter's full per-player fight table is published to ExcelProtect, which records its combat fight summary and audit seal verdict from it; elder trio progress points publish as fight progress records; and chapter state changes (a fight started, a fight ended, an elder respawn scheduled, an elder respawned) publish as boss-state records so Protect can answer boss status. The adapter is one replaceable class, config-gated under protect-emit, fail-soft throughout, and BossTrial runs exactly as before when ExcelProtect is absent.
++description: The seal-boss rules of Wink Reyes Valley in one home - damage caps, the 70% player-damage share gate (config share-threshold), the presence rule, 6-hour credit cooldowns, the elder-guardian trio, participant spoils, the two-phase dragon trial (ExcelDragonTrial 0.1.2, ported in), participant growth (the boss rallies), and curated seal loot. 0.2.1 adds the seal-integrity fixes - the wither fought-free (cage) check, the warden horizontal range band, and the dragon share gate. 0.2.2 adds the seal-hardening pair - the warden gives up on a fight that never comes to it, and end crystals and respawn anchors answer to their placer. 0.2.3 adds the announcement window - while it is armed, seal attempts, fails, breaks and running cooldowns are announced in chat, repeated hourly, and rebroadcast to everyone on every join. 0.2.4 adds the XP band governor feed - every governed hit plants its band verdict for the XP listener (ExcelRewardGuard), so out-of-band hits pay 25% mcMMO XP in real time while in-band hits pay full; silent, fail-safe both ways. 0.2.5 makes the rewards mean something (spec 4.6) - the dragon gains a signature - "First Breath", one elytra per champion standing at the fall - and every seal's named signature gear is granted per champion, stamped with its earner's provenance, under the fairness rule. 0.2.6 splits the command gate - the status view is public, so any player can run /bosstrial status to check seal state and cooldowns, while reload and reset stay admin-only, enforced in the handler now that plugin.yml no longer gates the whole command. 0.2.7 keeps a fight when its boss is merely unloaded (the family went home, logged off or wiped) instead of forgetting it, holds the dragon trial while nobody is at the arena, and sets aside damage a lost ledger never saw so an honest finish can still earn the seal. 0.2.11 hardens the dragon flip with a second, final judgment at HIGHEST plus danger-zone logging, closes a saved trial out on version change instead of restoring it (archived, logged, counters kept), presents earned rewards automatically once per batch - with immunity frames on the auto-open only, never on a manual one - and pays every signature stack plus the dragon's breath and crystals per champion as personal claims, dragon XP included. 0.3.1 adds the fight record - at every verdict and every elder trio progress point the encounter's per-player table (damage dealt, damage taken, healing done where a heal-spell cast names its source, healing received) is written to fights/ and to the log - and the elder trio escalation, with each elder priced as an epic fight of its own, and the trio's third, seal-completing elder carries a pool multiplier (elder-guardian.trio, settled x1.3). 0.3.2 adds milestone beats - at 75/50/25% of a chapter's pool remaining, a broadcast line and one pulse surge, once per threshold per encounter (per phase for the dragon; the warden's lines are its progress display, the warden having no health bar) - and moves the dragon's add-wave thresholds into config (dragon.adds.wave-thresholds). 0.3.3 adds the elite sprinkle - at each milestone stamp an armed chapter rolls once (chance x stamp multiplier, capped) to send EliteMobs elites in as adds beside the boss, contained (no loot, no coins, no vanilla drops), announced on a pass, leashed to the fight, and removed when the encounter ends; every chapter ships disabled (<chapter>.sprinkle.enabled) until armed, and the plugin runs exactly as before when EliteMobs is absent. 0.3.4 adds the ExcelProtect emitter - at every verdict the encounter's full per-player fight table is published to ExcelProtect, which records its combat fight summary and audit seal verdict from it; elder trio progress points publish as fight progress records; and chapter state changes (a fight started, a fight ended, an elder respawn scheduled, an elder respawned) publish as boss-state records so Protect can answer boss status. The adapter is one replaceable class, config-gated under protect-emit, fail-soft throughout, and BossTrial runs exactly as before when ExcelProtect is absent. 0.3.5 retires guardian spike reflect for tracked seal elders (elder-guardian.reflect.multiplier, settled 0.0) - the vanilla 3 HP spike return, trivial against a normal elder, compounded into a melee-only tax against the governed epic pools, and the attrition ramp silently doubled it late in long fights - so spike hits from a tracked elder during an encounter are scaled by the chapter multiplier instead of the pressure scale, and cancel outright at 0.0; guardians outside seal encounters, sprinkle adds, player Thorns armor and every other chapter are untouched.
+ softdepend: [ExcelGuildGate, Magic, GriefPrevention, EliteMobs, ExcelProtect]
+ commands:
+   bossrewards:
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.4-source.zip' '--exclude=bosstrial-0.3.5-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java ./src/com/winkreyes/excelbosstrial/ExcelBossTrial.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java	2026-11-02 22:07:36.623018209 +0000
++++ ./src/com/winkreyes/excelbosstrial/ExcelBossTrial.java	2026-11-03 02:38:53.766730794 +0000
+@@ -736,6 +736,8 @@
+                 "elder-guardian.pressure.pulse-damage", "elder-guardian.pressure.pulse-interval-seconds",
+                 "elder-guardian.pressure.pulse-hot-seconds", "elder-guardian.pressure.ramp-per-minute",
+                 "elder-guardian.pressure.ramp-max",
++                // 0.3.5: the elder chapter's spike-reflect scale.
++                "elder-guardian.reflect.multiplier",
+                 "warden.pressure.enabled", "warden.pressure.outgoing-multiplier",
+                 "warden.pressure.pulse-damage", "warden.pressure.pulse-interval-seconds",
+                 "warden.pressure.pulse-hot-seconds", "warden.pressure.ramp-per-minute",
+@@ -3449,7 +3451,20 @@
+      *  math the unit tests pin (PressureMath). The dragon chapter
+      *  multiplies its own phase-2 factor natively; this handler
+      *  still applies to it (its settled outgoing default is 1.0,
+-     *  so the composition is the chapter's own - SPEC 3.1). */
++     *  so the composition is the chapter's own - SPEC 3.1).
++     *
++     *  0.3.5: spike reflect from a tracked seal elder is judged
++     *  FIRST, by ReflectRule, and never reaches the pressure
++     *  scale - reflect is not the boss's offense, and the ramp
++     *  used to double it by about minute 17 of an elder fight.
++     *  The identification is exact: guardian spikes and the
++     *  Thorns enchantment share the THORNS cause, but a spike
++     *  hit's damager IS the elder itself, and this handler only
++     *  runs when that damager resolved to a boss kind with an
++     *  open encounter ledger - so vanilla guardians outside an
++     *  encounter, sprinkle adds, player Thorns armor (which
++     *  fires in the opposite direction) and every other chapter
++     *  are untouched. */
+     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+     public void onBossPressureDamage(EntityDamageByEntityEvent event) {
+         if (!(event.getEntity() instanceof Player victim)) {
+@@ -3466,6 +3481,21 @@
+         if (ledger == null) {
+             return;
+         }
++        if (com.winkreyes.excelbosstrial.core.ReflectRule.isSpikeReflect(
++                event.getCause() == EntityDamageEvent.DamageCause.THORNS,
++                true, kind)) {
++            double scaled = com.winkreyes.excelbosstrial.core.ReflectRule.scaledDamage(
++                    event.getDamage(), cfg.reflect(kind).multiplier());
++            if (com.winkreyes.excelbosstrial.core.ReflectRule.cancels(scaled)) {
++                // Cancelled, not zeroed: the MONITOR recorder
++                // (ignoreCancelled) skips the event, so reflect
++                // leaves the fight table's damage-taken entirely.
++                event.setCancelled(true);
++            } else {
++                event.setDamage(scaled);
++            }
++            return;
++        }
+         BossTrialConfig.Pressure pressure = cfg.pressure(kind);
+         if (!pressure.enabled()) {
+             return;
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.4-source.zip' '--exclude=bosstrial-0.3.5-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/BossTrialConfig.java ./src/com/winkreyes/excelbosstrial/core/BossTrialConfig.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/BossTrialConfig.java	2026-11-02 22:05:49.167545300 +0000
++++ ./src/com/winkreyes/excelbosstrial/core/BossTrialConfig.java	2026-11-03 02:38:46.741730821 +0000
+@@ -123,6 +123,29 @@
+         }
+     }
+ 
++    /**
++     * The elder chapter's spike-reflect scale (0.3.5): the
++     * multiplier applied to guardian spike reflect dealt by a
++     * tracked seal elder during an encounter, INSTEAD of the
++     * pressure scale (reflect is never ramped). Only the
++     * guardian family has spikes, so the block belongs to this
++     * chapter alone: {@code elder-guardian.reflect.multiplier}.
++     * 1.0 = exact vanilla; 0.0 = reflect retired for seal
++     * elders. The arithmetic lives in {@link ReflectRule}.
++     */
++    public record Reflect(double multiplier) {
++
++        /** The settled default (Mike, Nov 2, 2026): reflect is
++         *  retired for seal elders - the governed pool made the
++         *  vanilla 3 HP spike a melee-only tax that compounded
++         *  over hundreds of hits, and the attrition ramp doubled
++         *  it late-fight. The key stays in config so a trace of
++         *  it can be restored (e.g. 0.25) without a rebuild. */
++        public static Reflect settled() {
++            return new Reflect(0.0);
++        }
++    }
++
+     /** One clear-count title row (SPEC section 4.7): at
+      *  {@code clears} recorded clears of {@code sealId}, the
+      *  champion earns {@code title}. */
+@@ -139,6 +162,10 @@
+     public final Pressure wardenPressure;
+     public final Pressure dragonPressure;
+ 
++    /** The elder chapter's spike-reflect scale (0.3.5). Elder
++     *  chapter only - no other boss kind has spikes. */
++    public final Reflect elderReflect;
++
+     /** The repeat system (SPEC sections 2 + 4). All keys live
+      *  under {@code repeat.*} unless a chapter overrides them. */
+     public final boolean repeatEnabled;
+@@ -175,6 +202,14 @@
+         };
+     }
+ 
++    /** A chapter's spike-reflect scale (0.3.5): only the elder
++     *  chapter has one - the other kinds return a neutral 1.0
++     *  record (exact vanilla) and their handlers never consult
++     *  it, because no other boss kind deals spike reflect. */
++    public Reflect reflect(BossKind kind) {
++        return kind == BossKind.ELDER_GUARDIAN ? elderReflect : new Reflect(1.0);
++    }
++
+     /** A seal's repeat window in milliseconds (chapter override wins). */
+     public long repeatWindowMs(BossKind kind) {
+         double hours = switch (kind) {
+@@ -280,8 +315,8 @@
+                 6L * 3600_000L, -1.0, -1.0, -1.0, -1.0, defaultTitles());
+     }
+ 
+-    /** The 0.3.0 canonical constructor: everything above, plus the
+-     *  intake cap, the four pressure blocks and the repeat system. */
++    /** The 0.3.0 canonical constructor shape: the 0.3.5 elder
++     *  reflect block at its settled default. */
+     public BossTrialConfig(boolean enabled, double shareThreshold, double presenceRange,
+                            long cooldownMs, boolean spoilsEnabled, int spoilsCap,
+                            long elderRespawnMs, Chapter wither, Chapter elderGuardian,
+@@ -306,6 +341,49 @@
+                            double witherRepeatResetHours, double elderRepeatResetHours,
+                            double wardenRepeatResetHours, double dragonRepeatResetHours,
+                            java.util.List<TitleRow> repeatTitles) {
++        this(enabled, shareThreshold, presenceRange, cooldownMs, spoilsEnabled,
++                spoilsCap, elderRespawnMs, wither, elderGuardian, warden,
++                dragonPresence, wardenShareHeightBand, witherScaling,
++                elderScaling, wardenScaling, dragonShareGate, wardenShareRangeBand,
++                witherFoughtFreeCheck, witherFoughtFreeRadius, witherFoughtFreeWindow,
++                wardenGiveUpWindowMs, intakeEntityCap, witherPressure, elderPressure,
++                wardenPressure, dragonPressure, repeatEnabled, repeatResetHours,
++                repeatSignatureEnabled, repeatAnnounce, repeatJackpotExtraRolls,
++                repeatCashPerChampion, repeatMcMmoXp, repeatMagicLevelXp,
++                repeatClaimflyHours, repeatDeathProtectionPremium,
++                repeatLostFoundVoucherEnabled, healerRecognitionEnabled,
++                elderRepeatRespawnMs, witherRepeatResetHours, elderRepeatResetHours,
++                wardenRepeatResetHours, dragonRepeatResetHours, repeatTitles,
++                Reflect.settled());
++    }
++
++    /** The 0.3.5 canonical constructor: everything above, plus the
++     *  elder chapter's spike-reflect block. */
++    public BossTrialConfig(boolean enabled, double shareThreshold, double presenceRange,
++                           long cooldownMs, boolean spoilsEnabled, int spoilsCap,
++                           long elderRespawnMs, Chapter wither, Chapter elderGuardian,
++                           Chapter warden, boolean dragonPresence,
++                           double wardenShareHeightBand,
++                           ScalingRule witherScaling, ScalingRule elderScaling,
++                           ScalingRule wardenScaling,
++                           boolean dragonShareGate, double wardenShareRangeBand,
++                           boolean witherFoughtFreeCheck, double witherFoughtFreeRadius,
++                           double witherFoughtFreeWindow,
++                           long wardenGiveUpWindowMs,
++                           double intakeEntityCap,
++                           Pressure witherPressure, Pressure elderPressure,
++                           Pressure wardenPressure, Pressure dragonPressure,
++                           boolean repeatEnabled, double repeatResetHours,
++                           boolean repeatSignatureEnabled, boolean repeatAnnounce,
++                           int repeatJackpotExtraRolls, long repeatCashPerChampion,
++                           long repeatMcMmoXp, long repeatMagicLevelXp,
++                           double repeatClaimflyHours, boolean repeatDeathProtectionPremium,
++                           boolean repeatLostFoundVoucherEnabled,
++                           boolean healerRecognitionEnabled, long elderRepeatRespawnMs,
++                           double witherRepeatResetHours, double elderRepeatResetHours,
++                           double wardenRepeatResetHours, double dragonRepeatResetHours,
++                           java.util.List<TitleRow> repeatTitles,
++                           Reflect elderReflect) {
+         this.enabled = enabled;
+         this.shareThreshold = clamp(shareThreshold, 0.0, 1.0);
+         this.presenceRange = clamp(presenceRange, 0.0, 10000.0);
+@@ -351,6 +429,7 @@
+         this.dragonRepeatResetHours = dragonRepeatResetHours;
+         this.repeatTitles = repeatTitles == null
+                 ? java.util.List.of() : java.util.List.copyOf(repeatTitles);
++        this.elderReflect = elderReflect != null ? elderReflect : Reflect.settled();
+     }
+ 
+     /** Pre-amendment constructor shape: the warden height band at its settled default. */
+@@ -453,7 +532,19 @@
+                 num(m, "elder-guardian.repeat.reset-hours", d.elderRepeatResetHours),
+                 num(m, "warden.repeat.reset-hours", d.wardenRepeatResetHours),
+                 num(m, "dragon.repeat.reset-hours", d.dragonRepeatResetHours),
+-                titlesFrom(m, d.repeatTitles));
++                titlesFrom(m, d.repeatTitles),
++                reflectFrom(m, d.elderReflect));
++    }
++
++    /** The elder chapter's reflect block (0.3.5): one key,
++     *  {@code elder-guardian.reflect.multiplier}; a config file
++     *  missing the block runs the settled default, exactly as
++     *  pressure does. The value itself is NOT clamped here -
++     *  {@link ReflectRule#clampMultiplier} owns the applied
++     *  shape (negative or NaN reads as 0) at the point of use. */
++    private static Reflect reflectFrom(Map<String, Object> m, Reflect d) {
++        return new Reflect(
++                num(m, "elder-guardian.reflect.multiplier", d.multiplier()));
+     }
+ 
+     private static Pressure pressureFrom(Map<String, Object> m, String prefix, Pressure d) {
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.4-source.zip' '--exclude=bosstrial-0.3.5-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ReflectRule.java ./src/com/winkreyes/excelbosstrial/core/ReflectRule.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/ReflectRule.java	1970-01-01 00:00:00.000000000 +0000
++++ ./src/com/winkreyes/excelbosstrial/core/ReflectRule.java	2026-11-03 02:38:33.360730874 +0000
+@@ -0,0 +1,99 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++/**
++ * Spike reflect (ExcelBossTrial 0.3.5): the pure arithmetic and
++ * the identification predicate for guardian spike reflect dealt
++ * BY a tracked seal elder during an encounter.
++ *
++ * Why this rule exists (Mike, Nov 2, 2026 - playstyle parity):
++ * vanilla elder guardians return 3 HP (Hard) on every melee hit
++ * while their spikes are out. Against a normal 80 HP elder that
++ * is nothing; against a governed seal pool in the tens of
++ * thousands it is a melee-only tax that scales with OUR pool -
++ * and until 0.3.5 the attrition pressure ramp scaled it too, so
++ * the tax doubled by about minute 17 of a long elder fight.
++ * Ranged and magic never pay it. A mechanic that taxes one
++ * playstyle out of the fight is a defect even when the tuning
++ * matches the spreadsheet, so the elder chapter carries a
++ * multiplier for it ({@code elder-guardian.reflect.multiplier},
++ * settled 0.0: reflect retired for seal elders). Melee, ranged
++ * and magic all stay viable; preparation - not a per-hit tax -
++ * is the fight.
++ *
++ * Identification: Paper gives guardian spikes and the Thorns
++ * enchantment the SAME damage cause (THORNS) - by cause alone
++ * they are indistinguishable. The distinguisher is the damager:
++ * a spike hit's damager IS the guardian itself, so the pair
++ * (cause == THORNS, damager resolves to a tracked elder with an
++ * open encounter) can only be guardian spikes. Seal elders wear
++ * no armor and carry no Thorns enchantment, and a player's own
++ * Thorns armor fires in the opposite direction (victim = boss,
++ * damager = player), which the boss-to-player handler never
++ * sees. See REFLECT-FIX-FEASIBILITY-20261102.md sections 1-2.
++ *
++ * The Bukkit adapter owns the handler; every number it applies
++ * is decided here, in the PressureMath / BossCaps style.
++ */
++public final class ReflectRule {
++
++    private ReflectRule() {
++    }
++
++    /**
++     * True when a boss-to-player damage event is spike reflect
++     * from a tracked seal elder: the THORNS cause, a damager the
++     * adapter resolved to a boss with an open encounter ledger,
++     * and that boss an elder guardian. Every other combination -
++     * a non-THORNS cause, an untracked damager, any other chapter
++     * - is not spike reflect and is never scaled by this rule.
++     */
++    public static boolean isSpikeReflect(boolean thornsCause, boolean damagerIsTrackedBoss,
++                                         BossKind damagerKind) {
++        return thornsCause && damagerIsTrackedBoss && damagerKind == BossKind.ELDER_GUARDIAN;
++    }
++
++    /**
++     * The multiplier as applied: a negative reads as 0 (reflect
++     * can be retired or kept, never inverted into healing), and a
++     * NaN reads as 0 too - a broken value retires reflect rather
++     * than restoring the tax Mike ruled out. Values above 1 are
++     * allowed deliberately: a future chapter could turn reflect
++     * UP without a rebuild (the adjustability law).
++     */
++    public static double clampMultiplier(double multiplier) {
++        if (Double.isNaN(multiplier) || multiplier < 0.0) {
++            return 0.0;
++        }
++        return multiplier;
++    }
++
++    /**
++     * The reflected damage after the chapter multiplier: the raw
++     * event damage times the clamped multiplier, floored at 0.
++     * This REPLACES the pressure scale for reflect events - the
++     * result never passes through the attrition ramp, at any
++     * fight length, so a multiplier of 0.0 yields exactly 0 no
++     * matter how the caller would have ordered the two scales.
++     * A NaN or negative raw damage reads as 0 (there is nothing
++     * to reflect), and the result is never NaN or negative: the
++     * fight table that later records it stays clean.
++     */
++    public static double scaledDamage(double rawDamage, double multiplier) {
++        double raw = Double.isNaN(rawDamage) ? 0.0 : Math.max(0.0, rawDamage);
++        double scaled = raw * clampMultiplier(multiplier);
++        return Double.isNaN(scaled) ? 0.0 : Math.max(0.0, scaled);
++    }
++
++    /**
++     * True when a scaled reflect amount cancels the event
++     * outright: at 0 the event is cancelled (not merely zeroed),
++     * so the MONITOR fight recorder skips it and reflect leaves
++     * the damage-taken table entirely instead of stamping a
++     * zero-damage "boss fought back" witness.
++     */
++    public static boolean cancels(double scaledDamage) {
++        return !(scaledDamage > 0.0);
++    }
++}
++
++// ExcelBossTrial - a Wink Reyes Valley Excel plugin.
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.4-source.zip' '--exclude=bosstrial-0.3.5-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/ReflectConfigTest.java ./tests/com/winkreyes/excelbosstrial/core/ReflectConfigTest.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/ReflectConfigTest.java	1970-01-01 00:00:00.000000000 +0000
++++ ./tests/com/winkreyes/excelbosstrial/core/ReflectConfigTest.java	2026-11-03 02:39:17.822730699 +0000
+@@ -0,0 +1,65 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.Map;
++
++/**
++ * The 0.3.5 config surface: the elder reflect key parses from
++ * the flat map BossTrialConfig consumes, the settled default is
++ * Mike's Nov 2, 2026 ruling (0.0 - reflect retired for seal
++ * elders), a config missing the block runs the settled default,
++ * and no other chapter grows a reflect block.
++ */
++public final class ReflectConfigTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    public static void main(String[] args) {
++        // Settled default, no config at all.
++        BossTrialConfig d = BossTrialConfig.defaults();
++        check(d.elderReflect.multiplier() == 0.0,
++                "settled default: elder reflect multiplier is 0.0 (Mike, Nov 2, 2026)");
++        check(d.reflect(BossKind.ELDER_GUARDIAN).multiplier() == 0.0,
++                "reflect(elder) reads the elder block");
++        check(d.reflect(BossKind.WITHER).multiplier() == 1.0,
++                "reflect(wither) is the neutral 1.0 - no reflect block on that chapter");
++        check(d.reflect(BossKind.WARDEN).multiplier() == 1.0,
++                "reflect(warden) is the neutral 1.0");
++        check(d.reflect(BossKind.ENDER_DRAGON).multiplier() == 1.0,
++                "reflect(dragon) is the neutral 1.0");
++        check(BossTrialConfig.Reflect.settled().multiplier() == 0.0,
++                "Reflect.settled() is 0.0");
++
++        // The flat key parses.
++        BossTrialConfig tuned = BossTrialConfig.fromMap(
++                Map.of("elder-guardian.reflect.multiplier", 0.25));
++        check(tuned.elderReflect.multiplier() == 0.25,
++                "elder-guardian.reflect.multiplier parses from the flat map");
++
++        // A config missing the block runs the settled default,
++        // exactly as pressure does.
++        BossTrialConfig absent = BossTrialConfig.fromMap(Map.of("enabled", true));
++        check(absent.elderReflect.multiplier() == 0.0,
++                "missing reflect block: settled default 0.0 applies");
++
++        // Vanilla remains one config edit away.
++        BossTrialConfig vanilla = BossTrialConfig.fromMap(
++                Map.of("elder-guardian.reflect.multiplier", 1.0));
++        check(vanilla.elderReflect.multiplier() == 1.0,
++                "multiplier 1.0 (exact vanilla) parses and is kept");
++
++        System.out.println("ReflectConfigTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.4-source.zip' '--exclude=bosstrial-0.3.5-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/ReflectRuleTest.java ./tests/com/winkreyes/excelbosstrial/core/ReflectRuleTest.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.4/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/ReflectRuleTest.java	1970-01-01 00:00:00.000000000 +0000
++++ ./tests/com/winkreyes/excelbosstrial/core/ReflectRuleTest.java	2026-11-03 02:39:17.800730699 +0000
+@@ -0,0 +1,122 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++/**
++ * Spike reflect (0.3.5): the multiplier math, the identification
++ * predicate, and the compositions the fight depends on - the
++ * attrition ramp must never resurrect reflect at multiplier 0,
++ * and TrainingWheels' 0.25 child factor must compose to 0 in
++ * either order. The vanilla spike on Hard is 3 HP; that is the
++ * raw value used throughout.
++ */
++public final class ReflectRuleTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    private static void close(double actual, double expected, String label) {
++        check(Math.abs(actual - expected) < 1e-9,
++                label + " (expected " + expected + ", got " + actual + ")");
++    }
++
++    public static void main(String[] args) {
++        // --- The settled multipliers on the vanilla Hard spike (3 HP).
++        close(ReflectRule.scaledDamage(3.0, 0.0), 0.0,
++                "multiplier 0.0: reflect retired, exactly 0");
++        close(ReflectRule.scaledDamage(3.0, 0.25), 0.75,
++                "multiplier 0.25: a quarter sting remains");
++        close(ReflectRule.scaledDamage(3.0, 1.0), 3.0,
++                "multiplier 1.0: exact vanilla");
++        close(ReflectRule.scaledDamage(3.0, 2.0), 6.0,
++                "multiplier above 1 allowed (a future chapter may turn reflect up)");
++
++        // --- Multiplier clamps: never inverted, never NaN.
++        close(ReflectRule.clampMultiplier(-0.5), 0.0,
++                "negative multiplier reads as 0 (reflect never becomes healing)");
++        close(ReflectRule.clampMultiplier(Double.NaN), 0.0,
++                "NaN multiplier reads as 0 (a broken value retires reflect, never restores the tax)");
++        close(ReflectRule.scaledDamage(3.0, -1.0), 0.0,
++                "scaled damage under a negative multiplier is 0, not negative");
++        close(ReflectRule.scaledDamage(3.0, Double.NaN), 0.0,
++                "scaled damage under a NaN multiplier is 0, not NaN");
++
++        // --- Raw-damage hygiene: the fight table stays clean.
++        close(ReflectRule.scaledDamage(Double.NaN, 1.0), 0.0,
++                "NaN raw damage reads as 0");
++        close(ReflectRule.scaledDamage(-3.0, 1.0), 0.0,
++                "negative raw damage reads as 0");
++        close(ReflectRule.scaledDamage(0.0, 1.0), 0.0, "zero raw stays zero");
++        boolean clean = true;
++        for (double raw : new double[] {0.0, 0.5, 2.0, 3.0, 5.0, 100.0}) {
++            for (double mult : new double[] {-1.0, 0.0, 0.25, 0.5, 1.0, 2.0, Double.NaN}) {
++                double out = ReflectRule.scaledDamage(raw, mult);
++                if (Double.isNaN(out) || Double.isInfinite(out) || out < 0.0) {
++                    clean = false;
++                }
++            }
++        }
++        check(clean, "sweep: scaled damage is always finite and >= 0 (no negatives/NaN in the table)");
++
++        // --- Cancel semantics.
++        check(ReflectRule.cancels(0.0), "scaled 0 cancels the event outright");
++        check(ReflectRule.cancels(ReflectRule.scaledDamage(3.0, 0.0)),
++                "multiplier 0.0 composes to a cancel");
++        check(!ReflectRule.cancels(0.75), "scaled 0.75 lands (no cancel)");
++        check(!ReflectRule.cancels(3.0), "scaled 3.0 lands (no cancel)");
++
++        // --- Ramp independence: reflect REPLACES the pressure scale.
++        // The handler applies scaledDamage INSTEAD of outgoingScale;
++        // simulate the wrong composition too, to pin why the order
++        // matters: at minute 25 the elder ramp is x2.0.
++        double rampAt25 = PressureMath.outgoingScale(1.0, 25, 0.06, 2.0);
++        close(rampAt25, 2.0, "fixture: the elder pressure ramp at minute 25 is x2.0");
++        close(ReflectRule.scaledDamage(3.0, 0.0), 0.0,
++                "multiplier 0 at minute 25: reflect is 0 - the ramp never sees the event");
++        check(ReflectRule.scaledDamage(3.0, 0.0) * rampAt25 == 0.0,
++                "even if a future edit multiplied the ramp in afterwards, 0 x ramp stays 0");
++        close(ReflectRule.scaledDamage(3.0, 1.0), 3.0,
++                "multiplier 1.0 at minute 25: exact vanilla 3.0, NOT the ramped 6.0 of 0.3.4");
++
++        // --- The identification predicate.
++        check(ReflectRule.isSpikeReflect(true, true, BossKind.ELDER_GUARDIAN),
++                "THORNS + tracked elder damager + elder kind: spike reflect");
++        check(!ReflectRule.isSpikeReflect(false, true, BossKind.ELDER_GUARDIAN),
++                "non-THORNS cause from a tracked elder (the laser): not reflect");
++        check(!ReflectRule.isSpikeReflect(true, false, BossKind.ELDER_GUARDIAN),
++                "THORNS from an untracked elder (no open encounter): not ours to scale");
++        check(!ReflectRule.isSpikeReflect(true, true, BossKind.WITHER),
++                "THORNS-shaped event from a wither: not reflect (withers have no spikes)");
++        check(!ReflectRule.isSpikeReflect(true, true, BossKind.WARDEN),
++                "THORNS-shaped event from a warden: not reflect");
++        check(!ReflectRule.isSpikeReflect(true, true, BossKind.ENDER_DRAGON),
++                "THORNS-shaped event from the dragon: not reflect");
++        check(!ReflectRule.isSpikeReflect(true, true, null),
++                "THORNS with no boss kind (a player damager - Thorns armor): not reflect");
++        check(!ReflectRule.isSpikeReflect(false, false, null),
++                "nothing matching: not reflect");
++
++        // --- TrainingWheels composition (Rylie, 0.25 damage factor):
++        // her melee reflect at multiplier 0 is 0 in either order -
++        // no special-casing in the handler, proven arithmetically.
++        double tw = 0.25;
++        close(ReflectRule.scaledDamage(3.0, 0.0) * tw, 0.0,
++                "Rylie: reflect scaled to 0 first, then TW 0.25: still 0");
++        close(ReflectRule.scaledDamage(3.0 * tw, 0.0), 0.0,
++                "Rylie: TW 0.25 applied to the raw spike first, then reflect 0: still 0");
++        close(ReflectRule.scaledDamage(3.0, 0.25) * tw, 0.1875,
++                "Rylie at multiplier 0.25: 3 x 0.25 (reflect) x 0.25 (TW) = 0.1875 - composition is plain multiplication");
++
++        System.out.println("ReflectRuleTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}
