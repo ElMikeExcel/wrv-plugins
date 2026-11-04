@@ -1,0 +1,15 @@
+NOTE: this build folder has no TEST-REPORT.md. Recorded evidence is the INSTALLED.txt below and the AdapterLogicTest.java suite under tests/. No further test results are claimed.
+
+===== Installed record (source: excelbedrockmenu-1.5.28/INSTALLED.txt) =====
+ExcelBedrockMenu 1.5.28 — INSTALLED Nov 1, 2026 by the install failsafe (run scheduled 15:33 CST; panel window 3:35–3:50 PM CST, harness-measured)
+
+Gate: list 0/10 at 3:38:06 PM + 3:39:23 PM CST + final pre-shutdown list 0/10 at 3:42:15 PM CST. Server ONLINE on arrival (outside maintenance window); left ONLINE.
+Pre-reads: guildgate LOCKED 3 of 5; plugins total 76.
+HARD GATE PASS: fresh live download of ExcelBedrockMenu-1.5.27.jar = 41,741 B, SHA-256 a6e445e11a027adee5f0357130fa6ded77064fec69ef6ab38f62b9d2461ad529 — panel checksum AND parent sha256sum of the downloaded file (~/workspace/browser_downloads/sess-991776883/) both exact.
+Backup: ExcelBedrockMenu-1.5.27.jar.bak-20261101-prescaresbutton (rename-aside, no pre-existing .bak with that name).
+Swap: ExcelBedrockMenu-1.5.28.jar placed under its own name, 41,839 B, panel SHA-256 b9a8abd44fbb82b4a05923e362df6d8e0e9cc8b80a9fdf1d6dcbd47808cb1dc9 exact. plugins/ExcelBedrockMenu/config.yml and all other files untouched.
+Boot: panel Shut Down (Offline 3:42:27 PM) → Start; Done (20.062s) at 3:46:35 PM CST; "Enabling ExcelBedrockMenu v1.5.28" + exact enable line "ExcelBedrockMenu enabled: /menu uses native Bedrock dialogs" at 3:46:32 PM; SEVERE 0 (only exempt Essentials unsupported-version ERROR + a terminal-features WARN); plugins post-boot 76 total UNCHANGED, ExcelBedrockMenu v1.5.28; guildgate LOCKED 3 of 5 unchanged; TPS 20.0/20.0/20.0; final list 0/10. Server left ONLINE.
+
+PLAYER PROOF OWED (packet §6, ONE, Bedrock — Mike): /menu shows "Halloween Scares — your switches" right after "Ask the Guide"; tap lists the seven scare switches.
+RETIREMENT: removed in the Nov 6 Halloween cleanup window (cleanup packet §3C — swap back to the preserved 1.5.27 .bak).
+SAME-PASS SURFACES (parent): packet §8 — Guide menu-coverage wording now reads true on Bedrock; What's New line for the Bedrock button is the parent's call (Oct 31 Halloween entry already covers the toggles — do not duplicate silently). Rotation tips checked in packet: no change.
