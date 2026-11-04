@@ -1,0 +1,2147 @@
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/CHANGELOG-0.3.6.md ./CHANGELOG-0.3.6.md
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/CHANGELOG-0.3.6.md	1970-01-01 00:00:00.000000000 +0000
++++ ./CHANGELOG-0.3.6.md	2026-11-03 03:37:51.305529944 +0000
+@@ -0,0 +1,139 @@
++# ExcelBossTrial 0.3.6 — CHANGELOG
++
++Release date: built 2026-11-02 (pending install). Base: ExcelBossTrial
++0.3.5 (FROZEN candidate jar, 350,952 bytes, SHA-256
++`3364c152202eb864c16240dc48efc68241a5de7ab4ef25419247867443bf5dc0`),
++rebuilt byte-identical from its tree before any change — see
++`base-verify/BASE-PROOF.md` in the build folder.
++
++0.3.6 is the **FEEL PATCH** (Mike, Nov 2, 2026, approving the feel
++audit's option (e)): seal fights finally SHOW their numbers. The
++damage governor never flattened real damage — a netherite sword
++always hit the elder's pool 2.75x harder than a wooden one — but it
++flattened PERCEPTION to zero: every hit in every seal fight moves
++the vanilla boss bar less than one pixel, so no player could see
++their gear working. 0.3.6 changes no fight math at all. It displays
++the fight the ledger already judges: the boss bar carries the true
++pool numbers, and every hitter sees their own damage totals as
++they land. Fight length, pools, caps, ramp, reflect, verdicts,
++rewards: identical, proven by a dedicated regression suite that
++runs the same hit sequence with the display observing and without
++and demands byte-identical ledgers.
++
++## What players see
++
++- **A numbered boss bar on every seal fight.** Title:
++  `Elder Guardian — 8,431 / 10,900` — the true remaining pool and
++  the true total, US-grouped, updated on every recorded hit. A
++  wooden sword takes 4 off the number; a Sharpness V netherite
++  sword takes 11; a crit 16.5; a Power V bow about 24. Gear tiers
++  are visible again.
++- **The Warden gets a bar.** Vanilla gives the Warden no boss bar
++  at all; BossTrial now supplies its own, with the same true
++  numbers.
++- **Wither and dragon fights keep ONE bar** — BossTrial's
++  numbered one. The vanilla wither/dragon bars show only a
++  fraction of the same fight (by intake design the fraction is
++  the ledger's), so they are hidden while the encounter is open
++  and restored when it closes. Elder guardians have no vanilla
++  bar (verified against the Paper 26.3 jar: no boss-event
++  machinery exists for them), so nothing changes hands there.
++- **Your damage, as you deal it.** After each of your hits, the
++  action bar shows `16.5 hit · 31.5 total damage` — your last
++  governed hit and your fight total. The total IS the fight
++  table's number: the same per-player dealt the verdict record
++  and ExcelProtect's fight summary carry. A hit the share band
++  refuses (wrong height/range) raises the pool total on the bar
++  but never inflates your personal total — the display follows
++  the ledger, never invents.
++- **The dragon's bar is priced per phase.** The title total is
++  the current phase's pool (phase 1, then phase 2 at the flip) —
++  the same pricing the chapter's own governor judges by.
++- **Opt out any time:** `/bosstrial feedback off` removes you
++  from the boss bar audience and stops your action-bar totals;
++  `/bosstrial feedback on` restores both. Your choice persists
++  across restarts (state.yml). Other players' bars are
++  unaffected. Chat stays clean either way — feedback is screen
++  furniture only, never chat.
++
++## The display rules (why it can't lie, and can't break a fight)
++
++- The display reads ledger getters ONLY (`totalDamage`,
++  `maxHealth`, `dealtBy`) after the record calls have run. It
++  never writes to the ledger, the governor, or any fight state.
++- The ledger-equality regression (FeedbackNoDamageChangeTest)
++  runs a scripted sequence — plain hits, a crit, a per-event-cap
++  trim, a same-tick explosion-pool starve, a banded exclusion,
++  taken-side hits including a TrainingWheels-shaped quarter and
++  the 0.3.5 reflect value at multiplier 0.0 — with the feedback
++  observer computing after every record, without it, and with
++  feedback configured fully OFF. All three ledgers come out
++  identical in every judged field.
++- Fail-soft: if the display path ever throws, it logs once,
++  removes its bars, restores the vanilla bars, and disables
++  itself for the rest of the boot. The fight cannot notice.
++- The 0.3.4 FightTableEvent → ExcelProtect path and the 0.3.5
++  elder reflect fix are untouched (jar-level diff: the emitter
++  classes are byte-identical to 0.3.5).
++
++## Configuration (all new, all adjustable)
++
++New `feedback:` block in config.yml with the settled defaults:
++
++- `pool-numbers: true` — the numbered boss bar. False = no
++  BossTrial bar at all (vanilla bars stay as vanilla).
++- `damage-total: actionbar` — per-player totals: `actionbar`
++  or `off`.
++- `title-format: "{name} — {remaining} / {total}"`
++- `damage-total-format: "{last} hit · {total} total damage"`
++- `viewer-range: 64` — who sees the bar: fight participants
++  always, plus online players within this range of the boss.
++- `damage-total-min-interval-ms: 500` — action-bar throttle.
++- `title-tick-ms: 1000` — the reconcile sweep cadence (also the
++  dragon phase-flip pickup bound).
++
++Per-chapter overrides: each chapter section accepts its own
++`feedback:` block with `pool-numbers` and/or `damage-total`;
++each key overrides the global independently (commented examples
++ship in the config). A junk value anywhere degrades to the
++settled default — a typo can never silently switch feedback
++off, and never crashes a boot. Both switches are read untyped:
++in YAML an unquoted `off` parses as a boolean, and the plugin
++honors that shape as off rather than letting a typed read
++resurrect the display (rig finding F4, fixed before ship).
++
++State: `state.yml` gains one additive key, `feedback-opt-outs`
++(the opted-out player UUIDs). Old state files load unchanged;
++broken rows in the list are skipped, never fatal.
++
++## Deliberately NOT in 0.3.6
++
++- **Floating damage numbers (TextDisplay entities)** stay out:
++  they ship only when a rig with Geyser aboard verifies a
++  Bedrock client renders them (king rule: tested and proven
++  before it ships). The title + action-bar surfaces are the
++  settled 0.3.6 feedback; numbers over the boss's head are a
++  later, separately-proven addition if Mike wants them.
++- No fight-math option from the audit's menu (vulnerability
++  windows, crit bypass, ledger amplification) — Mike chose
++  feedback only; durations change by exactly zero.
++
++## Tests
++
++Full suite green: 27,068 checks (0.3.5's 26,949 inherited plus
++119 new), 0 failures, including FeedbackFormatTest (25),
++FeedbackSettingsTest (35), FeedbackTotalsTest (20),
++FeedbackOptOutsTest (14), FeedbackNoDamageChangeTest (16), and
++the CommandAccess matrix extension (+9: `/bosstrial feedback`
++is a player's own-screen toggle, allowed for players and ops
++alike, never a stranger path into admin verbs). Built twice from
++clean copies: byte-identical jars. Rig-proven on Paper 26.3-235
++(see the build folder's TEST-REPORT.md): exact title decrements
++at the duel pool 10,900 (wood 4 / Sharp V 11 / crit 16.5 / bow
++23.8), the warden's supplied bar, wither vanilla-bar suppression
++holding past 60 s and a chunk excursion and restoring at close,
++the dragon title switching pools at the phase flip, opt-out
++removing audience + action bar and restoring both, the kill
++switch booting dark with an identical verdict path, and a
++deliberately broken feedback config booting clean on sanitized
++defaults.
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/config.yml ./config.yml
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/config.yml	2026-11-03 02:39:02.257730760 +0000
++++ ./config.yml	2026-11-03 03:37:48.557529965 +0000
+@@ -143,6 +143,11 @@
+     leash-radius: 40.0
+     types: [WITHER_SKELETON, WITHER_SKELETON]
+ 
++  # feedback: (0.3.6) per-chapter overrides of the global
++  # feedback: block - absent keys inherit the globals.
++  #   pool-numbers: true
++  #   damage-total: actionbar
++
+ elder-guardian:
+   enabled: true
+   share-gate: true
+@@ -237,6 +242,11 @@
+     leash-radius: 24.0
+     types: [GUARDIAN, DROWNED]
+ 
++  # feedback: (0.3.6) per-chapter overrides of the global
++  # feedback: block - absent keys inherit the globals.
++  #   pool-numbers: true
++  #   damage-total: actionbar
++
+ protect-emit:
+   # The ExcelProtect emitter (0.3.4): at every verdict the
+   # fight record's full per-player table is ALSO published to
+@@ -258,6 +268,43 @@
+   # respawn scheduled / respawned).
+   state-changes: true
+ 
++feedback:
++  # Damage feedback (0.3.6, the feel patch): DISPLAY ONLY - the
++  # governor scales every governed hit before it touches the
++  # entity, so the vanilla boss bar moves less than a pixel per
++  # hit and gear progression was invisible in the fight (a wood
++  # sword and a Sharpness V netherite sword both read as "about
++  # 1"). The ledger always kept the true numbers; now the player
++  # sees them: the boss bar title carries the true pool numbers
++  # on every chapter, and each champion's action bar carries
++  # their own last hit + running damage total. Fight math,
++  # pools, verdicts and rewards are untouched - with every key
++  # off the plugin behaves exactly as 0.3.5. Any player can opt
++  # out for their own screen with /bosstrial feedback off.
++  # The boss bar title shows "{name} - {remaining} / {total}"
++  # in true pool HP (the warden gains the bar vanilla never
++  # gave it; the dragon's numbers are per phase).
++  pool-numbers: true
++  # Per-player damage totals: "off" | actionbar. (Quote the
++  # off if you write it - YAML reads a bare off as a boolean;
++  # the plugin accepts either shape, but the quoted form is
++  # the one that means the same thing to every YAML reader.)
++  damage-total: actionbar
++  # Title shape: {name}, {remaining}, {total}.
++  title-format: "{name} — {remaining} / {total}"
++  # Action-bar shape: {last} (this hit), {total} (your fight).
++  damage-total-format: "{last} hit · {total} total damage"
++  # Boss bar audience: fight participants, plus any online
++  # player within this many blocks of the boss.
++  viewer-range: 64
++  # Minimum milliseconds between action-bar totals per player.
++  damage-total-min-interval-ms: 500
++  # The bar sweep's cadence: titles and audiences reconcile at
++  # most this often per encounter (hits always refresh at once;
++  # this also bounds how fast the dragon's title picks up a
++  # phase flip between hits).
++  title-tick-ms: 1000
++
+ fight-tracking:
+   # The fight record (0.3.1): at every verdict (CREDIT / DENY)
+   # and every elder trio progress point, the encounter's
+@@ -346,6 +393,12 @@
+     leash-radius: 32.0
+     types: [SKELETON, ZOMBIE]
+ 
++  # feedback: (0.3.6) per-chapter overrides of the global
++  # feedback: block - absent keys inherit the globals. The
++  # warden's numbered bar is the only boss bar it has ever had.
++  #   pool-numbers: true
++  #   damage-total: actionbar
++
+ # The dragon chapter: ExcelDragonTrial 0.1.2's two-phase machine,
+ # ported whole, plus the shared presence rule (no share gate - the
+ # two-phase machine is the dragon's gate) and XP spoils above.
+@@ -409,6 +462,12 @@
+     max-per-fight: 6
+     leash-radius: 48.0
+     types: [ENDERMAN, ENDERMAN]
++  # feedback: (0.3.6) per-chapter overrides of the global
++  # feedback: block - absent keys inherit the globals. The
++  # dragon's title numbers are per phase (phase pool + phase
++  # damage), so the total flips at the phase boundary.
++  #   pool-numbers: true
++  #   damage-total: actionbar
+   adds:
+     enabled: true
+     per-wave: 3
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/plugin.yml ./plugin.yml
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/plugin.yml	2026-11-03 02:46:40.915728949 +0000
++++ ./plugin.yml	2026-11-03 03:02:59.227546061 +0000
+@@ -1,9 +1,9 @@
+ name: ExcelBossTrial
+-version: 0.3.5
++version: 0.3.6
+ author: Argus
+ main: com.winkreyes.excelbosstrial.ExcelBossTrial
+ api-version: "1.21"
+-description: The seal-boss rules of Wink Reyes Valley in one home - damage caps, the 70% player-damage share gate (config share-threshold), the presence rule, 6-hour credit cooldowns, the elder-guardian trio, participant spoils, the two-phase dragon trial (ExcelDragonTrial 0.1.2, ported in), participant growth (the boss rallies), and curated seal loot. 0.2.1 adds the seal-integrity fixes - the wither fought-free (cage) check, the warden horizontal range band, and the dragon share gate. 0.2.2 adds the seal-hardening pair - the warden gives up on a fight that never comes to it, and end crystals and respawn anchors answer to their placer. 0.2.3 adds the announcement window - while it is armed, seal attempts, fails, breaks and running cooldowns are announced in chat, repeated hourly, and rebroadcast to everyone on every join. 0.2.4 adds the XP band governor feed - every governed hit plants its band verdict for the XP listener (ExcelRewardGuard), so out-of-band hits pay 25% mcMMO XP in real time while in-band hits pay full; silent, fail-safe both ways. 0.2.5 makes the rewards mean something (spec 4.6) - the dragon gains a signature - "First Breath", one elytra per champion standing at the fall - and every seal's named signature gear is granted per champion, stamped with its earner's provenance, under the fairness rule. 0.2.6 splits the command gate - the status view is public, so any player can run /bosstrial status to check seal state and cooldowns, while reload and reset stay admin-only, enforced in the handler now that plugin.yml no longer gates the whole command. 0.2.7 keeps a fight when its boss is merely unloaded (the family went home, logged off or wiped) instead of forgetting it, holds the dragon trial while nobody is at the arena, and sets aside damage a lost ledger never saw so an honest finish can still earn the seal. 0.2.11 hardens the dragon flip with a second, final judgment at HIGHEST plus danger-zone logging, closes a saved trial out on version change instead of restoring it (archived, logged, counters kept), presents earned rewards automatically once per batch - with immunity frames on the auto-open only, never on a manual one - and pays every signature stack plus the dragon's breath and crystals per champion as personal claims, dragon XP included. 0.3.1 adds the fight record - at every verdict and every elder trio progress point the encounter's per-player table (damage dealt, damage taken, healing done where a heal-spell cast names its source, healing received) is written to fights/ and to the log - and the elder trio escalation, with each elder priced as an epic fight of its own, and the trio's third, seal-completing elder carries a pool multiplier (elder-guardian.trio, settled x1.3). 0.3.2 adds milestone beats - at 75/50/25% of a chapter's pool remaining, a broadcast line and one pulse surge, once per threshold per encounter (per phase for the dragon; the warden's lines are its progress display, the warden having no health bar) - and moves the dragon's add-wave thresholds into config (dragon.adds.wave-thresholds). 0.3.3 adds the elite sprinkle - at each milestone stamp an armed chapter rolls once (chance x stamp multiplier, capped) to send EliteMobs elites in as adds beside the boss, contained (no loot, no coins, no vanilla drops), announced on a pass, leashed to the fight, and removed when the encounter ends; every chapter ships disabled (<chapter>.sprinkle.enabled) until armed, and the plugin runs exactly as before when EliteMobs is absent. 0.3.4 adds the ExcelProtect emitter - at every verdict the encounter's full per-player fight table is published to ExcelProtect, which records its combat fight summary and audit seal verdict from it; elder trio progress points publish as fight progress records; and chapter state changes (a fight started, a fight ended, an elder respawn scheduled, an elder respawned) publish as boss-state records so Protect can answer boss status. The adapter is one replaceable class, config-gated under protect-emit, fail-soft throughout, and BossTrial runs exactly as before when ExcelProtect is absent. 0.3.5 retires guardian spike reflect for tracked seal elders (elder-guardian.reflect.multiplier, settled 0.0) - the vanilla 3 HP spike return, trivial against a normal elder, compounded into a melee-only tax against the governed epic pools, and the attrition ramp silently doubled it late in long fights - so spike hits from a tracked elder during an encounter are scaled by the chapter multiplier instead of the pressure scale, and cancel outright at 0.0; guardians outside seal encounters, sprinkle adds, player Thorns armor and every other chapter are untouched.
++description: The seal-boss rules of Wink Reyes Valley in one home - damage caps, the 70% player-damage share gate (config share-threshold), the presence rule, 6-hour credit cooldowns, the elder-guardian trio, participant spoils, the two-phase dragon trial (ExcelDragonTrial 0.1.2, ported in), participant growth (the boss rallies), and curated seal loot. 0.2.1 adds the seal-integrity fixes - the wither fought-free (cage) check, the warden horizontal range band, and the dragon share gate. 0.2.2 adds the seal-hardening pair - the warden gives up on a fight that never comes to it, and end crystals and respawn anchors answer to their placer. 0.2.3 adds the announcement window - while it is armed, seal attempts, fails, breaks and running cooldowns are announced in chat, repeated hourly, and rebroadcast to everyone on every join. 0.2.4 adds the XP band governor feed - every governed hit plants its band verdict for the XP listener (ExcelRewardGuard), so out-of-band hits pay 25% mcMMO XP in real time while in-band hits pay full; silent, fail-safe both ways. 0.2.5 makes the rewards mean something (spec 4.6) - the dragon gains a signature - "First Breath", one elytra per champion standing at the fall - and every seal's named signature gear is granted per champion, stamped with its earner's provenance, under the fairness rule. 0.2.6 splits the command gate - the status view is public, so any player can run /bosstrial status to check seal state and cooldowns, while reload and reset stay admin-only, enforced in the handler now that plugin.yml no longer gates the whole command. 0.2.7 keeps a fight when its boss is merely unloaded (the family went home, logged off or wiped) instead of forgetting it, holds the dragon trial while nobody is at the arena, and sets aside damage a lost ledger never saw so an honest finish can still earn the seal. 0.2.11 hardens the dragon flip with a second, final judgment at HIGHEST plus danger-zone logging, closes a saved trial out on version change instead of restoring it (archived, logged, counters kept), presents earned rewards automatically once per batch - with immunity frames on the auto-open only, never on a manual one - and pays every signature stack plus the dragon's breath and crystals per champion as personal claims, dragon XP included. 0.3.1 adds the fight record - at every verdict and every elder trio progress point the encounter's per-player table (damage dealt, damage taken, healing done where a heal-spell cast names its source, healing received) is written to fights/ and to the log - and the elder trio escalation, with each elder priced as an epic fight of its own, and the trio's third, seal-completing elder carries a pool multiplier (elder-guardian.trio, settled x1.3). 0.3.2 adds milestone beats - at 75/50/25% of a chapter's pool remaining, a broadcast line and one pulse surge, once per threshold per encounter (per phase for the dragon; the warden's lines are its progress display, the warden having no health bar) - and moves the dragon's add-wave thresholds into config (dragon.adds.wave-thresholds). 0.3.3 adds the elite sprinkle - at each milestone stamp an armed chapter rolls once (chance x stamp multiplier, capped) to send EliteMobs elites in as adds beside the boss, contained (no loot, no coins, no vanilla drops), announced on a pass, leashed to the fight, and removed when the encounter ends; every chapter ships disabled (<chapter>.sprinkle.enabled) until armed, and the plugin runs exactly as before when EliteMobs is absent. 0.3.4 adds the ExcelProtect emitter - at every verdict the encounter's full per-player fight table is published to ExcelProtect, which records its combat fight summary and audit seal verdict from it; elder trio progress points publish as fight progress records; and chapter state changes (a fight started, a fight ended, an elder respawn scheduled, an elder respawned) publish as boss-state records so Protect can answer boss status. The adapter is one replaceable class, config-gated under protect-emit, fail-soft throughout, and BossTrial runs exactly as before when ExcelProtect is absent. 0.3.5 retires guardian spike reflect for tracked seal elders (elder-guardian.reflect.multiplier, settled 0.0) - the vanilla 3 HP spike return, trivial against a normal elder, compounded into a melee-only tax against the governed epic pools, and the attrition ramp silently doubled it late in long fights - so spike hits from a tracked elder during an encounter are scaled by the chapter multiplier instead of the pressure scale, and cancel outright at 0.0; guardians outside seal encounters, sprinkle adds, player Thorns armor and every other chapter are untouched. 0.3.6 adds damage feedback (the feel patch) - the boss bar title carries the true pool numbers on every chapter, the warden gains the numbered bar vanilla never gave it, the dragon title is priced per phase, and each champion's action bar carries their own last hit and running damage total, so the gear progression the governor always preserved in the ledger is finally visible on every hit (a wood sword reads 4, a Sharpness V netherite sword 11, a crit 16.5). Display only - fight math, pools, verdicts, rewards and the ExcelProtect fight-table feed are untouched - with a per-player opt-out at /bosstrial feedback on or off, and every display behavior a key under feedback in the config.
+ softdepend: [ExcelGuildGate, Magic, GriefPrevention, EliteMobs, ExcelProtect]
+ commands:
+   bossrewards:
+@@ -11,7 +11,7 @@
+     usage: /bossrewards
+   bosstrial:
+     description: ExcelBossTrial status and admin controls
+-    usage: /bosstrial [status|reload|reset [all]|grantclaim <player> <material> <count>]
++    usage: /bosstrial [status|feedback on|off|reload|reset [all]|grantclaim <player> <material> <count>]
+ permissions:
+   excelbosstrial.admin:
+     description: Allows /bosstrial admin commands
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java ./src/com/winkreyes/excelbosstrial/ExcelBossTrial.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/ExcelBossTrial.java	2026-11-03 02:38:53.766730794 +0000
++++ ./src/com/winkreyes/excelbosstrial/ExcelBossTrial.java	2026-11-03 03:37:42.636530011 +0000
+@@ -20,6 +20,8 @@
+ import com.winkreyes.excelbosstrial.core.LaunchSnapshotLog;
+ import com.winkreyes.excelbosstrial.core.PlacementRegistry;
+ import com.winkreyes.excelbosstrial.core.ProvenanceLore;
++import com.winkreyes.excelbosstrial.core.FeedbackOptOuts;
++import com.winkreyes.excelbosstrial.core.FeedbackSettings;
+ import com.winkreyes.excelbosstrial.core.ProtectEmitSettings;
+ import com.winkreyes.excelbosstrial.core.ProtectEmitSink;
+ import com.winkreyes.excelbosstrial.core.ProtectTableShape;
+@@ -350,6 +352,24 @@
+     private ProtectEmitSink protectEmit = ProtectEmitSink.NOOP;
+     private ProtectEmitSettings protectEmitSettings = ProtectEmitSettings.defaults();
+     private boolean protectEmitBound;
++    // 0.3.6: the damage-feedback display (the feel patch). The
++    // display adapter owns every Bukkit bar; it only ever READS
++    // the ledger, and it is constructed in onEnable (null in the
++    // bare instances the recovery harness drives, so every call
++    // site null-guards). The opt-out set persists in state.yml
++    // beside the cooldowns; lazy-init for the same reason.
++    private FeedbackDisplay feedback;
++    private FeedbackSettings feedbackSettings = FeedbackSettings.defaults();
++    private final Map<BossKind, FeedbackSettings> feedbackChapterSettings =
++            new EnumMap<>(BossKind.class);
++    private FeedbackOptOuts feedbackOptOuts;
++
++    private FeedbackOptOuts feedbackOptOuts() {
++        if (feedbackOptOuts == null) {
++            feedbackOptOuts = new FeedbackOptOuts();
++        }
++        return feedbackOptOuts;
++    }
+     private final Map<UUID, DeathOutcome> deathOutcomes = new HashMap<>();
+     private final CooldownBook cooldowns = new CooldownBook();
+     // 0.3.0 repeat system (SPEC section 2): the per-seal repeat
+@@ -483,6 +503,37 @@
+         catch (java.io.IOException failure) {
+             getLogger().severe("Team rewards unavailable; combat enforcement remains active, direct signature fallback disabled: " + failure.getMessage());
+         }
++        // 0.3.6: the damage-feedback display (feel patch). It
++        // reads the ledger only; its dragon phase view prices
++        // the dragon title per phase off the chapter's own
++        // fraction basis (health over the phase's entity max,
++        // the same ratio the chapter's beats judge).
++        feedback = new FeedbackDisplay(getLogger(), feedbackOptOuts(), dragonUuid -> {
++            if (dragonChapter == null) {
++                return null;
++            }
++            double pool = dragonChapter.currentPhasePool(dragonUuid);
++            if (pool <= 0) {
++                return null;
++            }
++            org.bukkit.entity.Entity ent = Bukkit.getEntity(dragonUuid);
++            if (!(ent instanceof EnderDragon dragon)) {
++                return null;
++            }
++            AttributeInstance attr = dragon.getAttribute(Attribute.MAX_HEALTH);
++            double entityMax = attr != null ? attr.getValue() : 0;
++            if (entityMax <= 0) {
++                return null;
++            }
++            double fraction = dragon.getHealth() / entityMax;
++            if (fraction < 0) {
++                fraction = 0;
++            } else if (fraction > 1) {
++                fraction = 1;
++            }
++            return new double[] {pool, pool * (1.0 - fraction)};
++        });
++        pushFeedbackSettings();
+         teamSampleTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
+             for (UUID id : new ArrayList<>(encounters.keySet())) {
+                 org.bukkit.entity.Entity entity = Bukkit.getEntity(id);
+@@ -629,12 +680,45 @@
+                         + "in the unattributed bucket") + ")"
+                 : "OFF by config (fight-tracking.enabled)"));
+         getLogger().info("Milestone beats: " + milestoneSummary());
++        getLogger().info("Damage feedback: " + feedbackSummary());
+         if (sprinkle != null) {
+             getLogger().info(sprinkle.bootSummary());
+         }
+         getLogger().info(protectEmitBootLine());
+     }
+ 
++    /** The awake-line summary for the 0.3.6 damage feedback:
++     *  ON when at least one chapter can show pool numbers or
++     *  action-bar totals, else OFF. */
++    private String feedbackSummary() {
++        boolean numbers = false;
++        boolean totals = false;
++        for (BossKind kind : BossKind.values()) {
++            FeedbackSettings s = feedbackChapterSettings.getOrDefault(kind, feedbackSettings);
++            numbers |= s.poolNumbersOn();
++            totals |= s.actionBarOn();
++        }
++        if (!numbers && !totals) {
++            return "OFF by config (feedback.pool-numbers off and "
++                    + "feedback.damage-total off for every chapter)";
++        }
++        return "ON (boss bar title carries the true pool numbers"
++                + (numbers ? "" : " - off")
++                + "; per-player damage totals "
++                + (totals ? "on the action bar" : "off")
++                + "; /bosstrial feedback off opts a player out; "
++                + "display only - fight math untouched)";
++    }
++
++    /** Push the parsed feedback settings into the display
++     *  adapter (loadSettings runs before the adapter exists at
++     *  enable and again on every reload). */
++    private void pushFeedbackSettings() {
++        if (feedback != null) {
++            feedback.configure(feedbackSettings, feedbackChapterSettings);
++        }
++    }
++
+     /** The 0.3.4 adapter bind line - exactly one shape per state. */
+     private String protectEmitBootLine() {
+         if (!protectEmitSettings.enabled()) {
+@@ -672,6 +756,11 @@
+ 
+     @Override
+     public void onDisable() {
++        // 0.3.6: no feedback bar outlives the plugin (and every
++        // suppressed vanilla bar is restored with its encounter).
++        if (feedback != null) {
++            feedback.closeAll();
++        }
+         if (sprinkleLeashTask >= 0) { Bukkit.getScheduler().cancelTask(sprinkleLeashTask); sprinkleLeashTask = -1; }
+         // 0.3.3: no sprinkle add outlives the plugin - every open
+         // encounter's elites are removed here, before state saves.
+@@ -847,6 +936,34 @@
+                 getConfig().getBoolean("protect-emit.enabled", true),
+                 getConfig().getBoolean("protect-emit.fight-tables", true),
+                 getConfig().getBoolean("protect-emit.state-changes", true));
++        // 0.3.6 leaf settings, adapter-side like protect-emit:
++        // the damage-feedback display (feedback.* globals plus
++        // per-chapter <chapter>.feedback overrides). Display
++        // only - no fight rule reads them.
++        feedbackSettings = FeedbackSettings.sanitized(
++                FeedbackSettings.poolNumbersValue(getConfig().get("feedback.pool-numbers")),
++                FeedbackSettings.damageTotalModeValue(getConfig().get("feedback.damage-total")),
++                getConfig().getString("feedback.title-format"),
++                getConfig().getString("feedback.damage-total-format"),
++                getConfig().getInt("feedback.viewer-range",
++                        FeedbackSettings.DEFAULT_VIEWER_RANGE),
++                getConfig().getLong("feedback.damage-total-min-interval-ms",
++                        FeedbackSettings.DEFAULT_MIN_INTERVAL_MS),
++                getConfig().getLong("feedback.title-tick-ms",
++                        FeedbackSettings.DEFAULT_TITLE_TICK_MS));
++        feedbackChapterSettings.clear();
++        for (BossKind kind : BossKind.values()) {
++            String base = chapterSection(kind) + ".feedback.";
++            Boolean poolOverride = getConfig().contains(base + "pool-numbers")
++                    ? FeedbackSettings.poolNumbersValue(getConfig().get(base + "pool-numbers"))
++                    : null;
++            String modeOverride = getConfig().contains(base + "damage-total")
++                    ? FeedbackSettings.damageTotalModeValue(getConfig().get(base + "damage-total"))
++                    : null;
++            feedbackChapterSettings.put(kind,
++                    feedbackSettings.withOverrides(poolOverride, modeOverride));
++        }
++        pushFeedbackSettings();
+         loadLootSettings();
+         loadRaidSettings();
+         msgRepeatCreditHeadline = getConfig().getString("messages.repeat-credit-headline",
+@@ -1283,6 +1400,9 @@
+                 clearCounts.put(sealId, counts);
+             }
+         }
++        // 0.3.6: the damage-feedback opt-outs (restored
++        // defensively like every 0.3.0 section).
++        feedbackOptOuts().restore(y.getStringList("feedback-opt-outs"));
+         getLogger().info("State loaded: cooldowns " + cooldowns.snapshot().keySet()
+                 + ", monuments " + monuments.monumentIds().size()
+                 + ", elder seal " + (elderSealApproved ? "approved" : "open")
+@@ -1328,6 +1448,11 @@
+                 }
+             }
+         }
++        // 0.3.6: the damage-feedback opt-outs (additive like the
++        // 0.3.0 sections: an older rollback ignores the key).
++        if (feedbackOptOuts != null) {
++            y.set("feedback-opt-outs", feedbackOptOuts.snapshot());
++        }
+         y.set("recovery.protocol", 1);
+         y.set("recovery.receipts", new ArrayList<>(recoveryReceipts.values()));
+         return y;
+@@ -1632,6 +1757,11 @@
+             }
+             return fresh;
+         });
++        // 0.3.6: the feedback bar opens with the ledger (the
++        // call is create-once; every later touch is a no-op).
++        if (feedback != null) {
++            feedback.onEncounterOpen(boss, kind, ledger);
++        }
+         observeTeam(boss, kind);
+         encounterSeenAt.put(boss.getUniqueId(), SeenAt.of(boss.getLocation()));
+         if (kind == BossKind.WITHER) {
+@@ -2032,6 +2162,16 @@
+         if (kind != BossKind.ENDER_DRAGON) {
+             checkMilestones(kind, boss, ledger);
+         }
++        // 0.3.6: damage feedback, AFTER the record and any rally
++        // growth (and after the milestone judgment), so the title
++        // renders post-record ledger truth. Display only: the
++        // credited amount is what the ledger just credited this
++        // damager (0 for a band-excluded blow - its total did not
++        // move, and the action bar must not pretend it did).
++        if (feedback != null) {
++            double credited = dealt != null && counts ? recordedDamage : 0.0;
++            feedback.onRecordedHit(boss, kind, ledger, dealt, credited);
++        }
+         if (dealt != null && event.getFinalDamage() > 0) {
+             // The attempt registry (0.2.3): the first attributed
+             // damaging hit opens the attempt, whoever lands it -
+@@ -2188,6 +2328,10 @@
+         // 0.3.1: a verdict-less ending drops the fight record's
+         // healing state with the ledger (no snapshot - no verdict).
+         fightTracker.closeEncounter(boss.getUniqueId());
++        // 0.3.6: the give-up closes the feedback bar too.
++        if (feedback != null) {
++            feedback.onEncounterClose(boss.getUniqueId());
++        }
+         elderTrioMult.remove(boss.getUniqueId());
+         getLogger().info("BossTrial burrow [The Warden]: only out-of-band or "
+                 + "unattributed damage for " + (cfg.wardenGiveUpWindowMs / 1000)
+@@ -2418,6 +2562,11 @@
+         if (sprinkle != null) {
+             sprinkle.closeEncounter(boss.getUniqueId(), "verdict");
+         }
++        // 0.3.6: the verdict closes the feedback bar with the
++        // encounter (every elder trio progress point too).
++        if (feedback != null) {
++            feedback.onEncounterClose(boss.getUniqueId());
++        }
+         DeathOutcome outcome = outcomeFor(kind, boss, ledger);
+         // 0.3.1: snapshot the fight record NOW, while the ledger
+         // still holds the per-player table - every verdict and
+@@ -3523,6 +3672,15 @@
+             if (kind == null || !chapterOn(kind)) {
+                 continue;
+             }
++            // 0.3.6: the feedback sweep rides this same 1-second
++            // walk (no new repeating task): cadence-gated title
++            // refresh + audience reconciliation per open bar.
++            if (feedback != null) {
++                org.bukkit.entity.Entity feedbackEntity = Bukkit.getEntity(entry.getKey());
++                if (feedbackEntity instanceof LivingEntity feedbackBoss) {
++                    feedback.reconcile(feedbackBoss, kind, ledger, now);
++                }
++            }
+             BossTrialConfig.Pressure pressure = cfg.pressure(kind);
+             if (!pressure.enabled() || pressure.pulseDamage() <= 0) {
+                 continue;
+@@ -4493,6 +4651,11 @@
+             if (d == EncounterRetention.Decision.PRUNE) {
+                 encounters.remove(id);
+                 fightTracker.closeEncounter(id);
++                // 0.3.6: a pruned encounter's feedback bar ends
++                // with its ledger, like its sprinkle adds below.
++                if (feedback != null) {
++                    feedback.onEncounterClose(id);
++                }
+                 elderTrioMult.remove(id);
+                 // 0.3.3: a pruned encounter's sprinkle adds are
+                 // removed with it - no elite outlives its fight.
+@@ -4766,6 +4929,10 @@
+             handleGrantClaim(sender, args);
+             return true;
+         }
++        if (args[0].equalsIgnoreCase("feedback")) {
++            handleFeedback(sender, args);
++            return true;
++        }
+         if (args[0].equalsIgnoreCase("reload")) {
+             loadSettings();
+             if (dragonChapter != null) {
+@@ -4784,6 +4951,10 @@
+             if (sprinkle != null) {
+                 sprinkle.closeAll("admin reset");
+             }
++            // 0.3.6: and every feedback bar (encounters are gone).
++            if (feedback != null) {
++                feedback.closeAll();
++            }
+             placements.clear();
+             if (args.length > 1 && args[1].equalsIgnoreCase("all")) {
+                 monuments.restore(Map.of());
+@@ -4800,11 +4971,45 @@
+                             ? " (including monuments + elder approval)" : "") + "."));
+             return true;
+         }
+-        sender.sendMessage(color("&cUsage: /bosstrial [status|reload|reset [all]|grantclaim <player> <material> <count>]"));
++        sender.sendMessage(color("&cUsage: /bosstrial [status|feedback on|off|reload|reset [all]|grantclaim <player> <material> <count>]"));
+         return true;
+     }
+ 
+     /**
++     * 0.3.6: /bosstrial feedback on|off - a player's OWN damage
++     * feedback setting (public in the permission split: it moves
++     * nobody else's screen). Off removes their action-bar damage
++     * totals and their seat in every BossTrial boss bar audience;
++     * on restores both. Persisted in state.yml with the rest of
++     * the plugin state. The console has no screen to set: it gets
++     * the usage line, not an error.
++     */
++    private void handleFeedback(CommandSender sender, String[] args) {
++        if (!(sender instanceof Player player)) {
++            sender.sendMessage(color("&cUsage (players only): /bosstrial feedback [on|off]"));
++            return;
++        }
++        if (args.length != 2
++                || !(args[1].equalsIgnoreCase("on") || args[1].equalsIgnoreCase("off"))) {
++            boolean currentlyOff = feedbackOptOuts().isOptedOut(player.getUniqueId());
++            sender.sendMessage(color("&cUsage: /bosstrial feedback [on|off] &7- your damage "
++                    + "feedback is currently " + (currentlyOff ? "&cOFF" : "&aON")
++                    + "&7 (boss bar numbers + your damage totals)."));
++            return;
++        }
++        boolean on = args[1].equalsIgnoreCase("on");
++        boolean changed = feedbackOptOuts().setOptedOut(player.getUniqueId(), !on);
++        if (changed) {
++            saveState();
++        }
++        sender.sendMessage(color(on
++                ? "&aDamage feedback ON: seal boss bars show the true pool numbers, "
++                        + "and your hits show your running damage total."
++                : "&eDamage feedback OFF: no boss bar numbers or damage totals on your "
++                        + "screen. /bosstrial feedback on brings them back anytime."));
++    }
++
++    /**
+      * 0.2.11: /bosstrial grantclaim <player> <material> <count> —
+      * throw an owed reward into a player's personal claims (Mike,
+      * Oct 30, 2026: remediations ride the claims store because it
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/FeedbackDisplay.java ./src/com/winkreyes/excelbosstrial/FeedbackDisplay.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/FeedbackDisplay.java	1970-01-01 00:00:00.000000000 +0000
++++ ./src/com/winkreyes/excelbosstrial/FeedbackDisplay.java	2026-11-03 03:06:28.606544448 +0000
+@@ -0,0 +1,396 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial;
++
++import com.winkreyes.excelbosstrial.core.BossKind;
++import com.winkreyes.excelbosstrial.core.EncounterLedger;
++import com.winkreyes.excelbosstrial.core.FeedbackOptOuts;
++import com.winkreyes.excelbosstrial.core.FeedbackSettings;
++import com.winkreyes.excelbosstrial.core.FeedbackTotals;
++import java.util.EnumMap;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.Map;
++import java.util.Set;
++import java.util.UUID;
++import java.util.function.Function;
++import java.util.logging.Logger;
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
++import org.bukkit.Bukkit;
++import org.bukkit.ChatColor;
++import org.bukkit.boss.BarColor;
++import org.bukkit.boss.BarStyle;
++import org.bukkit.boss.BossBar;
++import org.bukkit.entity.EnderDragon;
++import org.bukkit.entity.LivingEntity;
++import org.bukkit.entity.Player;
++import org.bukkit.entity.Wither;
++
++/**
++ * The feel patch's Bukkit surface (ExcelBossTrial 0.3.6): owns
++ * every numbered boss bar and every action-bar damage total.
++ *
++ * DISPLAY ONLY (DESIGN section 2): this class reads ledger
++ * getters ({@code maxHealth}, {@code totalDamage},
++ * {@code dealtBy}, {@code participants}) and the dragon
++ * chapter's phase view, and writes NOTHING back - no event is
++ * touched, no ledger mutator is called, no entity state changes
++ * except the visibility/title of the display bars themselves
++ * (and the wither/dragon vanilla-bar suppression below). A
++ * failure here can never reach the fight: every entry point is
++ * fail-soft (the FightTracker / ProtectEmit house pattern) -
++ * the first display exception is logged once and the whole
++ * display path disables itself for the boot.
++ *
++ * Bar ownership (DESIGN section 4): BossTrial owns one numbered
++ * bar per encounter on EVERY chapter, so title, audience and
++ * opt-out are uniform - including the warden, which vanilla
++ * gives no bar at all. For the wither and the dragon, the
++ * entity's vanilla bar is hidden for the encounter's life (its
++ * progress fraction is the same number this bar shows, by
++ * IntakeFactor design) and restored at close. Elder guardians
++ * have no vanilla bar at all (finding R-1, TEST-REPORT: the
++ * Paper 26.3 ElderGuardian class carries no ServerBossEvent
++ * and CraftBukkit exposes no handle, because there is nothing
++ * to handle) - the numbered bar is the only bar an elder gets.
++ *
++ * The dragon's title is priced PER PHASE from the host's phase
++ * view (pool 4,000 then 16,000 at the settled slate): the main
++ * ledger spans both phases, so the host supplies
++ * {phasePool, phaseDealt} through the phase source; the title
++ * total flips at the phase boundary on the next hit or sweep.
++ */
++final class FeedbackDisplay {
++
++    /** One encounter's bar + the vanilla handle it suppressed. */
++    private static final class BarState {
++        final BossKind kind;
++        final BossBar bar;
++        final BossBar vanillaBar;
++        String lastTitle = "";
++        double lastProgress = -1.0;
++        long lastReconcileMs;
++
++        BarState(BossKind kind, BossBar bar, BossBar vanillaBar) {
++            this.kind = kind;
++            this.bar = bar;
++            this.vanillaBar = vanillaBar;
++        }
++    }
++
++    private final Logger log;
++    private final FeedbackOptOuts optOuts;
++    /** {phasePool, phaseDealt} for a dragon boss, or null when
++     *  the chapter does not track it (ledger view is the fallback). */
++    private final Function<UUID, double[]> dragonPhaseSource;
++    private final Map<UUID, BarState> bars = new HashMap<>();
++    /** Per-player action-bar throttle stamps (across encounters). */
++    private final Map<UUID, Long> lastActionBarMs = new HashMap<>();
++    /** Per-player last action-bar line (diagnostic surface: the
++     *  rig reads it to prove the total equals the fight table). */
++    private final Map<UUID, String> lastActionBarLine = new HashMap<>();
++    private FeedbackSettings global = FeedbackSettings.defaults();
++    private final Map<BossKind, FeedbackSettings> chapters = new EnumMap<>(BossKind.class);
++    private boolean disabled;
++    private boolean failureLogged;
++
++    FeedbackDisplay(Logger log, FeedbackOptOuts optOuts,
++                    Function<UUID, double[]> dragonPhaseSource) {
++        this.log = log;
++        this.optOuts = optOuts;
++        this.dragonPhaseSource = dragonPhaseSource;
++    }
++
++    /** The host's parsed settings (loadSettings; runs again on
++     *  every /bosstrial reload). */
++    void configure(FeedbackSettings globalSettings,
++                   Map<BossKind, FeedbackSettings> chapterSettings) {
++        if (globalSettings != null) {
++            global = globalSettings;
++        }
++        chapters.clear();
++        if (chapterSettings != null) {
++            chapters.putAll(chapterSettings);
++        }
++    }
++
++    private FeedbackSettings settings(BossKind kind) {
++        FeedbackSettings s = chapters.get(kind);
++        return s != null ? s : global;
++    }
++
++    // ------------------------------------------------------------------
++    // Encounter lifecycle
++    // ------------------------------------------------------------------
++
++    /** The encounter's ledger exists (the host calls this on
++     *  every encounter() touch; creation happens once). */
++    void onEncounterOpen(LivingEntity boss, BossKind kind, EncounterLedger ledger) {
++        if (disabled || boss == null || kind == null || ledger == null) {
++            return;
++        }
++        try {
++            if (bars.containsKey(boss.getUniqueId())) {
++                return;
++            }
++            FeedbackSettings s = settings(kind);
++            if (!s.poolNumbersOn()) {
++                return;
++            }
++            BossBar vanilla = null;
++            if (boss instanceof Wither wither) {
++                vanilla = wither.getBossBar();
++            } else if (boss instanceof EnderDragon dragon) {
++                vanilla = dragon.getBossBar();
++            }
++            if (vanilla != null) {
++                vanilla.setVisible(false);
++            }
++            BossBar bar = Bukkit.createBossBar("", barColor(kind), BarStyle.SEGMENTED_20);
++            BarState state = new BarState(kind, bar, vanilla);
++            bars.put(boss.getUniqueId(), state);
++            refresh(boss, state, ledger, true);
++        } catch (Throwable failure) {
++            failSoft("encounter open", failure);
++        }
++    }
++
++    /** A hit was just recorded (post-record, post-rally): move
++     *  the title by the hit's true ledger amount and hand the
++     *  damager their running total. {@code credited} is what the
++     *  ledger credited the damager for this hit (0 for a
++     *  band-excluded or unattributed blow). */
++    void onRecordedHit(LivingEntity boss, BossKind kind, EncounterLedger ledger,
++                       UUID dealt, double credited) {
++        if (disabled || boss == null || kind == null || ledger == null) {
++            return;
++        }
++        try {
++            BarState state = bars.get(boss.getUniqueId());
++            if (state != null) {
++                refresh(boss, state, ledger, true);
++            }
++            FeedbackSettings s = settings(kind);
++            if (dealt == null || credited <= 0 || !s.actionBarOn()
++                    || optOuts.isOptedOut(dealt)) {
++                return;
++            }
++            Player player = Bukkit.getPlayer(dealt);
++            if (player == null || !player.isOnline()) {
++                return;
++            }
++            long now = System.currentTimeMillis();
++            long last = lastActionBarMs.getOrDefault(dealt, 0L);
++            if (now - last < s.damageTotalMinIntervalMs()) {
++                return;
++            }
++            lastActionBarMs.put(dealt, now);
++            String line = FeedbackTotals.actionBarLine(
++                    s.damageTotalFormat(), credited, ledger, dealt);
++            lastActionBarLine.put(dealt, line);
++            player.sendActionBar(LegacyComponentSerializer.legacySection()
++                    .deserialize(color(line)));
++        } catch (Throwable failure) {
++            failSoft("recorded hit", failure);
++        }
++    }
++
++    /** The sweep pass (the host's 1-second encounter loop):
++     *  cadence-gated title refresh + audience reconciliation, so
++     *  a player who walks up mid-fight gets the bar without
++     *  hitting anything, and the dragon's title total flips at
++     *  the phase boundary even between hits. */
++    void reconcile(LivingEntity boss, BossKind kind, EncounterLedger ledger, long nowMs) {
++        if (disabled || boss == null || kind == null || ledger == null) {
++            return;
++        }
++        try {
++            BarState state = bars.get(boss.getUniqueId());
++            if (state == null) {
++                // The encounter predates the bar (plugin reload
++                // mid-fight, or pool-numbers was off at open and
++                // a reload armed it): open it now.
++                onEncounterOpen(boss, kind, ledger);
++                return;
++            }
++            if (nowMs - state.lastReconcileMs < settings(kind).titleTickMs()) {
++                return;
++            }
++            state.lastReconcileMs = nowMs;
++            refresh(boss, state, ledger, true);
++        } catch (Throwable failure) {
++            failSoft("sweep reconcile", failure);
++        }
++    }
++
++    /** The encounter ended (verdict, give-up, prune): the bar
++     *  leaves every screen and the vanilla bar returns. */
++    void onEncounterClose(UUID bossId) {
++        if (bossId == null) {
++            return;
++        }
++        try {
++            BarState state = bars.remove(bossId);
++            if (state != null) {
++                teardown(state);
++            }
++        } catch (Throwable failure) {
++            failSoft("encounter close", failure);
++        }
++    }
++
++    /** Every bar down (disable / admin reset). */
++    void closeAll() {
++        try {
++            for (BarState state : bars.values()) {
++                teardown(state);
++            }
++            bars.clear();
++        } catch (Throwable failure) {
++            failSoft("close all", failure);
++        }
++    }
++
++    private void teardown(BarState state) {
++        state.bar.removeAll();
++        if (state.vanillaBar != null) {
++            try {
++                state.vanillaBar.setVisible(true);
++            } catch (Throwable ignored) {
++                // The entity (and its bar) is gone; nothing to restore.
++            }
++        }
++    }
++
++    // ------------------------------------------------------------------
++    // Rendering
++    // ------------------------------------------------------------------
++
++    private void refresh(LivingEntity boss, BarState state, EncounterLedger ledger,
++                         boolean reconcileAudience) {
++        FeedbackTotals view = view(state.kind, boss, ledger);
++        FeedbackSettings s = settings(state.kind);
++        String title = view.title(s.titleFormat(), state.kind);
++        if (!title.equals(state.lastTitle)) {
++            state.bar.setTitle(color(title));
++            state.lastTitle = title;
++        }
++        if (Math.abs(view.fraction() - state.lastProgress) > 0.0005) {
++            state.bar.setProgress(view.fraction());
++            state.lastProgress = view.fraction();
++        }
++        if (reconcileAudience) {
++            reconcileAudience(boss, state, ledger, s);
++        }
++    }
++
++    /** The numbers a title shows: the dragon prices per phase,
++     *  every other chapter straight off the ledger. */
++    private FeedbackTotals view(BossKind kind, LivingEntity boss, EncounterLedger ledger) {
++        if (kind == BossKind.ENDER_DRAGON && dragonPhaseSource != null) {
++            double[] phase = dragonPhaseSource.apply(boss.getUniqueId());
++            if (phase != null && phase.length == 2 && phase[0] > 0) {
++                return FeedbackTotals.forPhase(phase[0], phase[1]);
++            }
++        }
++        return FeedbackTotals.fromLedger(ledger);
++    }
++
++    /** Audience = ledger participants + online players within
++     *  the viewer range of the boss, minus the opted-out. */
++    private void reconcileAudience(LivingEntity boss, BarState state,
++                                   EncounterLedger ledger, FeedbackSettings s) {
++        Set<UUID> want = new HashSet<>();
++        want.addAll(ledger.participants());
++        double rangeSq = (double) s.viewerRange() * s.viewerRange();
++        for (Player p : boss.getWorld().getPlayers()) {
++            if (p.getLocation().distanceSquared(boss.getLocation()) <= rangeSq) {
++                want.add(p.getUniqueId());
++            }
++        }
++        want.removeIf(optOuts::isOptedOut);
++        Set<UUID> have = new HashSet<>();
++        for (Player p : state.bar.getPlayers()) {
++            have.add(p.getUniqueId());
++        }
++        for (UUID id : want) {
++            if (!have.contains(id)) {
++                Player p = Bukkit.getPlayer(id);
++                if (p != null && p.isOnline()) {
++                    state.bar.addPlayer(p);
++                }
++            }
++        }
++        for (UUID id : have) {
++            if (!want.contains(id)) {
++                Player p = Bukkit.getPlayer(id);
++                if (p != null) {
++                    state.bar.removePlayer(p);
++                }
++            }
++        }
++    }
++
++    /** Bar colors echo vanilla: wither red, elder purple,
++     *  warden blue, dragon pink (DESIGN section 4; constants,
++     *  not config - color is not balance). */
++    private static BarColor barColor(BossKind kind) {
++        return switch (kind) {
++            case WITHER -> BarColor.RED;
++            case ELDER_GUARDIAN -> BarColor.PURPLE;
++            case WARDEN -> BarColor.BLUE;
++            case ENDER_DRAGON -> BarColor.PINK;
++        };
++    }
++
++    private static String color(String text) {
++        return ChatColor.translateAlternateColorCodes('&', text);
++    }
++
++    // ------------------------------------------------------------------
++    // Diagnostic surface (rig + status): titles and lines as the
++    // players last saw them.
++    // ------------------------------------------------------------------
++
++    /** The current title of one encounter's bar ("" when none). */
++    String titleOf(UUID bossId) {
++        BarState state = bars.get(bossId);
++        return state == null ? "" : state.lastTitle;
++    }
++
++    /** How many encounter bars are up right now. */
++    int openBars() {
++        return bars.size();
++    }
++
++    /** One player's last action-bar damage line ("" when none). */
++    String lastActionBarOf(UUID player) {
++        return lastActionBarLine.getOrDefault(player, "");
++    }
++
++    /** True once a display failure has disabled the path (boot). */
++    boolean isDisabled() {
++        return disabled;
++    }
++
++    /** Fail-soft (DESIGN section 2.3): log once, disable for the
++     *  boot, never throw into the fight. */
++    private void failSoft(String where, Throwable failure) {
++        disabled = true;
++        try {
++            for (BarState state : bars.values()) {
++                teardown(state);
++            }
++        } catch (Throwable ignored) {
++            // Already failing soft; a stuck bar must not chain.
++        }
++        bars.clear();
++        if (!failureLogged) {
++            failureLogged = true;
++            log.warning("Damage feedback disabled for this boot (failure at "
++                    + where + ": " + failure + ") - the fights themselves "
++                    + "are unaffected; feedback returns next boot.");
++        }
++    }
++}
++
++// ExcelBossTrial - a Wink Reyes Valley Excel plugin.
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/CommandAccess.java ./src/com/winkreyes/excelbosstrial/core/CommandAccess.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/CommandAccess.java	2026-11-03 02:37:41.382618100 +0000
++++ ./src/com/winkreyes/excelbosstrial/core/CommandAccess.java	2026-11-03 03:00:58.901546988 +0000
+@@ -6,12 +6,16 @@
+  * The status view is PUBLIC: a bare /bosstrial or /bosstrial
+  * status is the check the seal system itself points players
+  * at (seal state, credit cooldowns), so any player may run
+- * it. Everything else the command exposes - reload, reset,
+- * and any unknown subcommand, which for an admin falls
+- * through to the usage line - is an admin action and needs
+- * the excelbosstrial.admin node, the node that gated the
+- * WHOLE command in plugin.yml through 0.2.5 (which is why
+- * players could not run the status view at all).
++ * it. The 0.3.6 feedback toggle is public for the same
++ * reason: /bosstrial feedback on|off is a player's OWN
++ * display setting (their damage totals, their boss bar
++ * audience) and touches nothing of anyone else's. Everything
++ * else the command exposes - reload, reset, and any unknown
++ * subcommand, which for an admin falls through to the usage
++ * line - is an admin action and needs the
++ * excelbosstrial.admin node, the node that gated the WHOLE
++ * command in plugin.yml through 0.2.5 (which is why players
++ * could not run the status view at all).
+  *
+  * Pure and Bukkit-free so the permission matrix is pinned
+  * by the JVM suite; the adapter only supplies the sender's
+@@ -43,12 +47,19 @@
+         return args.length == 0 || "status".equalsIgnoreCase(args[0]);
+     }
+ 
++    /** True when the call is the public per-player feedback
++     *  toggle (0.3.6): /bosstrial feedback [on|off]. */
++    public static boolean isFeedbackCall(String[] args) {
++        return args.length >= 1 && "feedback".equalsIgnoreCase(args[0]);
++    }
++
+     /**
+-     * True when the call may proceed: the status view for
+-     * anyone, anything else only for an admin.
++     * True when the call may proceed: the status view and the
++     * feedback toggle for anyone, anything else only for an
++     * admin.
+      */
+     public static boolean allowed(String[] args, boolean admin) {
+-        return isStatusCall(args) || admin;
++        return isStatusCall(args) || isFeedbackCall(args) || admin;
+     }
+ }
+ 
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/FeedbackFormat.java ./src/com/winkreyes/excelbosstrial/core/FeedbackFormat.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/FeedbackFormat.java	1970-01-01 00:00:00.000000000 +0000
++++ ./src/com/winkreyes/excelbosstrial/core/FeedbackFormat.java	2026-11-03 03:00:43.567547106 +0000
+@@ -0,0 +1,92 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.Locale;
++
++/**
++ * The feel patch's text rules (ExcelBossTrial 0.3.6): how ledger
++ * numbers become the strings a player reads - the boss bar title's
++ * true pool numbers and the action bar's per-player damage line.
++ *
++ * Pure and pinned: grouping is US-locale BY CONSTANT (never the
++ * server locale - the numbers must read the same on every host),
++ * and every rounding happens HERE, at display time only, always
++ * from the true ledger value. The display never accumulates its
++ * own rounded state: two 16.5 crits move the title by exactly 33
++ * because the title always renders (pool - true dealt), never
++ * (last title - rounded hit).
++ */
++public final class FeedbackFormat {
++
++    private FeedbackFormat() {
++    }
++
++    /**
++     * The short chapter name a title carries. BossKind.displayName
++     * carries articles ("An Elder Guardian") that read wrong
++     * mid-title; these are the settled short forms.
++     */
++    public static String shortName(BossKind kind) {
++        if (kind == null) {
++            return "Boss";
++        }
++        return switch (kind) {
++            case WITHER -> "Wither";
++            case ELDER_GUARDIAN -> "Elder Guardian";
++            case WARDEN -> "Warden";
++            case ENDER_DRAGON -> "Ender Dragon";
++        };
++    }
++
++    /**
++     * An integer pool number with US thousands separators
++     * ("8,431"). Rounds the true value half-up at display; NaN
++     * and infinities degrade to 0 - a title never prints "NaN".
++     */
++    public static String grouped(double value) {
++        return String.format(Locale.US, "%,d", Math.round(clean(value)));
++    }
++
++    /**
++     * A one-decimal damage number ("4.0", "16.5", "23.8") - the
++     * action bar's precision, chosen so fractional spell hits
++     * visibly accumulate in the running total. NaN degrades to 0.
++     */
++    public static String oneDecimal(double value) {
++        return String.format(Locale.US, "%.1f", clean(value));
++    }
++
++    private static double clean(double value) {
++        return Double.isNaN(value) || Double.isInfinite(value) ? 0.0 : value;
++    }
++
++    /**
++     * Render a boss bar title from a format: {name} is the
++     * chapter's short name, {remaining} and {total} the grouped
++     * pool numbers. A null/blank format reads as the settled
++     * default; unknown placeholders pass through literally (an
++     * owner's typo stays visible, never an exception).
++     */
++    public static String title(String format, BossKind kind,
++                               double remaining, double total) {
++        String f = format == null || format.isBlank()
++                ? FeedbackSettings.DEFAULT_TITLE_FORMAT : format;
++        return f.replace("{name}", shortName(kind))
++                .replace("{remaining}", grouped(remaining))
++                .replace("{total}", grouped(total));
++    }
++
++    /**
++     * Render an action-bar damage line from a format: {last} is
++     * this hit's ledger damage, {total} the player's running
++     * ledger total - both one-decimal. A null/blank format reads
++     * as the settled default; unknown placeholders pass through.
++     */
++    public static String actionBar(String format, double lastHit, double playerTotal) {
++        String f = format == null || format.isBlank()
++                ? FeedbackSettings.DEFAULT_DAMAGE_TOTAL_FORMAT : format;
++        return f.replace("{last}", oneDecimal(lastHit))
++                .replace("{total}", oneDecimal(playerTotal));
++    }
++}
++
++// ExcelBossTrial - a Wink Reyes Valley Excel plugin.
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/FeedbackOptOuts.java ./src/com/winkreyes/excelbosstrial/core/FeedbackOptOuts.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/FeedbackOptOuts.java	1970-01-01 00:00:00.000000000 +0000
++++ ./src/com/winkreyes/excelbosstrial/core/FeedbackOptOuts.java	2026-11-03 03:00:54.302547024 +0000
+@@ -0,0 +1,76 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.ArrayList;
++import java.util.LinkedHashSet;
++import java.util.List;
++import java.util.Set;
++import java.util.UUID;
++
++/**
++ * The per-player damage-feedback opt-outs (ExcelBossTrial 0.3.6):
++ * who has run {@code /bosstrial feedback off}. An opted-out
++ * player gets no action-bar damage totals and is removed from
++ * every BossTrial-owned boss bar audience. Everyone else -
++ * the default - sees the feedback.
++ *
++ * Pure set + persistence shape: the adapter persists
++ * {@link #snapshot()} as a string list in state.yml (beside the
++ * cooldowns, the AtomicStateFile pattern) and restores it at
++ * load. Malformed rows degrade to skipped, never a failed load.
++ */
++public final class FeedbackOptOuts {
++
++    private final Set<UUID> optedOut = new LinkedHashSet<>();
++
++    /** True when this player has opted out of damage feedback. */
++    public synchronized boolean isOptedOut(UUID player) {
++        return player != null && optedOut.contains(player);
++    }
++
++    /**
++     * Set a player's opt-out state.
++     *
++     * @return true when the state changed (the adapter saves
++     *         state only on a change)
++     */
++    public synchronized boolean setOptedOut(UUID player, boolean optOut) {
++        if (player == null) {
++            return false;
++        }
++        return optOut ? optedOut.add(player) : optedOut.remove(player);
++    }
++
++    /** How many players are currently opted out. */
++    public synchronized int size() {
++        return optedOut.size();
++    }
++
++    /** The persisted shape: UUID strings, insertion order. */
++    public synchronized List<String> snapshot() {
++        List<String> out = new ArrayList<>();
++        for (UUID id : optedOut) {
++            out.add(id.toString());
++        }
++        return out;
++    }
++
++    /** Restore from the persisted shape; junk rows are skipped. */
++    public synchronized void restore(List<String> rows) {
++        optedOut.clear();
++        if (rows == null) {
++            return;
++        }
++        for (String row : rows) {
++            if (row == null) {
++                continue;
++            }
++            try {
++                optedOut.add(UUID.fromString(row.strip()));
++            } catch (IllegalArgumentException ignored) {
++                // a malformed uuid row degrades to skipped
++            }
++        }
++    }
++}
++
++// ExcelBossTrial - a Wink Reyes Valley Excel plugin.
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/FeedbackSettings.java ./src/com/winkreyes/excelbosstrial/core/FeedbackSettings.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/FeedbackSettings.java	1970-01-01 00:00:00.000000000 +0000
++++ ./src/com/winkreyes/excelbosstrial/core/FeedbackSettings.java	2026-11-03 03:37:39.474530035 +0000
+@@ -0,0 +1,162 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++/**
++ * Damage-feedback settings (ExcelBossTrial 0.3.6, the feel patch):
++ * read adapter-side from the top-level {@code feedback:} config
++ * block plus per-chapter {@code <chapter>.feedback} overrides (the
++ * fight-tracking / milestone / sprinkle precedent - no core verdict
++ * rule consumes them, so BossTrialConfig's canonical record stays
++ * untouched).
++ *
++ * The feedback path is DISPLAY ONLY (FEEL-AUDIT-20261102 section
++ * 6e): the boss bar title carries the true pool numbers and each
++ * champion's action bar carries their own damage total, so gear
++ * progression is visible on every hit. No value here can change a
++ * fight, a verdict, a pool or a reward; turning everything off
++ * leaves BossTrial behaving exactly as 0.3.5.
++ *
++ * Settled defaults (Mike, Nov 2, 2026, approving the audit's
++ * option (e)): pool numbers ON, per-player totals on the action
++ * bar, viewer range 64, action-bar throttle 500 ms, sweep title
++ * cadence 1000 ms.
++ */
++public record FeedbackSettings(boolean poolNumbers, String damageTotalMode,
++                               String titleFormat, String damageTotalFormat,
++                               int viewerRange, long damageTotalMinIntervalMs,
++                               long titleTickMs) {
++
++    /** damage-total mode: no per-player totals anywhere. */
++    public static final String MODE_OFF = "off";
++    /** damage-total mode: per-player totals on the action bar. */
++    public static final String MODE_ACTIONBAR = "actionbar";
++
++    public static final String DEFAULT_TITLE_FORMAT = "{name} — {remaining} / {total}";
++    public static final String DEFAULT_DAMAGE_TOTAL_FORMAT = "{last} hit · {total} total damage";
++    public static final int DEFAULT_VIEWER_RANGE = 64;
++    public static final long DEFAULT_MIN_INTERVAL_MS = 500L;
++    public static final long DEFAULT_TITLE_TICK_MS = 1000L;
++    /** Viewer-range ceiling: a bar audience never needs a bigger
++     *  scan than this; the cap keeps a junk config value from
++     *  turning every sweep into a world scan. */
++    public static final int MAX_VIEWER_RANGE = 512;
++
++    public static FeedbackSettings defaults() {
++        return new FeedbackSettings(true, MODE_ACTIONBAR,
++                DEFAULT_TITLE_FORMAT, DEFAULT_DAMAGE_TOTAL_FORMAT,
++                DEFAULT_VIEWER_RANGE, DEFAULT_MIN_INTERVAL_MS,
++                DEFAULT_TITLE_TICK_MS);
++    }
++
++    /**
++     * Sanitized construction: an unknown damage-total mode reads
++     * as the settled default (actionbar) - a typo can silence the
++     * totals only by spelling "off" correctly; a non-positive
++     * viewer range reads as the default; a negative interval reads
++     * as the default (0 is a real choice: no throttle); blank
++     * formats read as the settled defaults; NaN-shaped numbers
++     * never reach this record (the adapter's typed reads degrade
++     * to the defaults first).
++     */
++    public static FeedbackSettings sanitized(boolean poolNumbers, String damageTotalMode,
++                                             String titleFormat, String damageTotalFormat,
++                                             int viewerRange, long damageTotalMinIntervalMs,
++                                             long titleTickMs) {
++        String mode = damageTotalMode == null
++                ? MODE_ACTIONBAR : damageTotalMode.strip().toLowerCase(java.util.Locale.ROOT);
++        if (!mode.equals(MODE_OFF) && !mode.equals(MODE_ACTIONBAR)) {
++            mode = MODE_ACTIONBAR;
++        }
++        int range = viewerRange <= 0 ? DEFAULT_VIEWER_RANGE
++                : Math.min(viewerRange, MAX_VIEWER_RANGE);
++        long interval = damageTotalMinIntervalMs < 0
++                ? DEFAULT_MIN_INTERVAL_MS : damageTotalMinIntervalMs;
++        long tick = titleTickMs <= 0 ? DEFAULT_TITLE_TICK_MS : titleTickMs;
++        return new FeedbackSettings(poolNumbers, mode,
++                blankTo(titleFormat, DEFAULT_TITLE_FORMAT),
++                blankTo(damageTotalFormat, DEFAULT_DAMAGE_TOTAL_FORMAT),
++                range, interval, tick);
++    }
++
++    private static String blankTo(String value, String fallback) {
++        return value == null || value.isBlank() ? fallback : value;
++    }
++
++    /**
++     * The pool-numbers switch from a RAW config value (the
++     * adapter reads it untyped so junk is testable here): a
++     * Boolean reads as itself, the strings "true"/"false" read
++     * as themselves, and anything else - a missing key included -
++     * reads as the settled default ON (a broken value never
++     * silently retires the numbers).
++     */
++    /**
++     * The damage-total mode from a raw config value, read
++     * UNTYPED for the same reason as poolNumbersValue - and one
++     * sharper: in YAML an unquoted {@code off} (the documented
++     * way to write this very setting) parses as the boolean
++     * false, not a string, and a typed getString would hand
++     * back null and silently resurrect the action bar on a
++     * config that says off (rig finding F4). A boolean false
++     * reads as "off", a boolean true as the settled action bar;
++     * a string passes through for sanitize() to judge; anything
++     * else (a number, a list) reads as ABSENT (null) so a junk
++     * chapter override can never override at all.
++     */
++    public static String damageTotalModeValue(Object raw) {
++        if (raw instanceof Boolean b) {
++            return b ? MODE_ACTIONBAR : MODE_OFF;
++        }
++        if (raw instanceof String s) {
++            return s;
++        }
++        return null;
++    }
++
++    public static boolean poolNumbersValue(Object raw) {
++        if (raw instanceof Boolean b) {
++            return b;
++        }
++        if (raw instanceof String s) {
++            if (s.strip().equalsIgnoreCase("true")) {
++                return true;
++            }
++            if (s.strip().equalsIgnoreCase("false")) {
++                return false;
++            }
++        }
++        return true;
++    }
++
++    /**
++     * Apply a chapter's overrides over these (global) settings:
++     * each override is independent - a null override inherits,
++     * a present one replaces (sanitized on the way in, so a
++     * chapter's junk mode reads as the settled default, never
++     * as a silent off).
++     */
++    public FeedbackSettings withOverrides(Boolean poolNumbersOverride,
++                                          String damageTotalModeOverride) {
++        boolean pool = poolNumbersOverride != null ? poolNumbersOverride : poolNumbers;
++        String mode = damageTotalModeOverride == null ? damageTotalMode
++                : sanitized(true, damageTotalModeOverride, "x", "x", 1, 0, 1).damageTotalMode();
++        return new FeedbackSettings(pool, mode, titleFormat, damageTotalFormat,
++                viewerRange, damageTotalMinIntervalMs, titleTickMs);
++    }
++
++    /** True when this chapter shows the numbered boss bar. */
++    public boolean poolNumbersOn() {
++        return poolNumbers;
++    }
++
++    /** True when per-player totals ride the action bar. */
++    public boolean actionBarOn() {
++        return MODE_ACTIONBAR.equals(damageTotalMode);
++    }
++
++    /** True when the display has nothing to do for a chapter. */
++    public boolean dark() {
++        return !poolNumbers && !actionBarOn();
++    }
++}
++
++// ExcelBossTrial - a Wink Reyes Valley Excel plugin.
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/FeedbackTotals.java ./src/com/winkreyes/excelbosstrial/core/FeedbackTotals.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/src/com/winkreyes/excelbosstrial/core/FeedbackTotals.java	1970-01-01 00:00:00.000000000 +0000
++++ ./src/com/winkreyes/excelbosstrial/core/FeedbackTotals.java	2026-11-03 03:00:51.096547048 +0000
+@@ -0,0 +1,77 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++/**
++ * The feel patch's view-model (ExcelBossTrial 0.3.6): one
++ * encounter's pool numbers, derived ONLY from ledger getters -
++ * {@code maxHealth()}, {@code totalDamage()}, {@code dealtBy()} -
++ * or, for the dragon, from the chapter's phase pool and phase
++ * damage (the dragon's ledger spans both phases; its title is
++ * priced per phase).
++ *
++ * The record holds the TRUE doubles. Remaining clamps at 0 (an
++ * overkill hit never prints a negative pool) and the bar
++ * fraction clamps to [0, 1]; every rounding decision lives in
++ * FeedbackFormat, at render time. Nothing here mutates anything:
++ * the display reads the fight, it never writes it - the
++ * on/off ledger-equality regression (FeedbackNoDamageChangeTest)
++ * pins that the fight is byte-identical with this view computed
++ * after every hit or never computed at all.
++ */
++public record FeedbackTotals(double pool, double dealt, double remaining,
++                             double fraction) {
++
++    /** Derive the view from raw pool/dealt numbers (sanitized:
++     *  NaN reads as 0, negative dealt reads as 0, a non-positive
++     *  pool reads as an empty view). */
++    public static FeedbackTotals of(double pool, double dealt) {
++        double p = clean(pool);
++        double d = Math.max(0.0, clean(dealt));
++        if (p <= 0) {
++            return new FeedbackTotals(0.0, 0.0, 0.0, 0.0);
++        }
++        double remaining = Math.max(0.0, p - d);
++        double fraction = remaining / p;
++        if (fraction < 0.0) {
++            fraction = 0.0;
++        } else if (fraction > 1.0) {
++            fraction = 1.0;
++        }
++        return new FeedbackTotals(p, d, remaining, fraction);
++    }
++
++    /** The standard chapters' view: straight off the ledger. */
++    public static FeedbackTotals fromLedger(EncounterLedger ledger) {
++        if (ledger == null) {
++            return of(0.0, 0.0);
++        }
++        return of(ledger.maxHealth(), ledger.totalDamage());
++    }
++
++    /** The dragon's view: the CURRENT phase's pool and the
++     *  damage dealt inside this phase (the title's total flips
++     *  4,000 -> 16,000 at the phase boundary by construction). */
++    public static FeedbackTotals forPhase(double phasePool, double phaseDealt) {
++        return of(phasePool, phaseDealt);
++    }
++
++    private static double clean(double value) {
++        return Double.isNaN(value) || Double.isInfinite(value) ? 0.0 : value;
++    }
++
++    /** The boss bar title for this view under a chapter format. */
++    public String title(String format, BossKind kind) {
++        return FeedbackFormat.title(format, kind, remaining, pool);
++    }
++
++    /** One player's action-bar line: their last hit and their
++     *  running total, both read from the same ledger the fight
++     *  table reads - the display total IS the table total. */
++    public static String actionBarLine(String format, double lastHit,
++                                       EncounterLedger ledger,
++                                       java.util.UUID player) {
++        double total = ledger == null || player == null ? 0.0 : ledger.dealtBy(player);
++        return FeedbackFormat.actionBar(format, lastHit, total);
++    }
++}
++
++// ExcelBossTrial - a Wink Reyes Valley Excel plugin.
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/CommandAccessTest.java ./tests/com/winkreyes/excelbosstrial/core/CommandAccessTest.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/CommandAccessTest.java	2026-11-03 02:37:41.403872821 +0000
++++ ./tests/com/winkreyes/excelbosstrial/core/CommandAccessTest.java	2026-11-03 03:03:07.312545999 +0000
+@@ -52,6 +52,18 @@
+         check(!CommandAccess.allowed(a("bogus"), false),
+                 "non-op: unknown subcommand DENIED (never reaches the usage line, as under the old gate)");
+ 
++        // --- 0.3.6: the feedback toggle is a player's own display
++        // setting - public like the status view, and NOT status. ---
++        check(CommandAccess.isFeedbackCall(a("feedback")), "'feedback' is the feedback toggle");
++        check(CommandAccess.isFeedbackCall(a("feedback", "off")), "'feedback off' is the feedback toggle");
++        check(CommandAccess.isFeedbackCall(a("FEEDBACK", "ON")), "'FEEDBACK ON' matches case-insensitively");
++        check(!CommandAccess.isFeedbackCall(a("feedbackx")), "'feedbackx' is not the feedback toggle");
++        check(!CommandAccess.isFeedbackCall(a()), "a bare call is not the feedback toggle");
++        check(!CommandAccess.isStatusCall(a("feedback", "off")), "'feedback off' is not the status view");
++        check(CommandAccess.allowed(a("feedback"), false), "non-op: feedback allowed (own screen only)");
++        check(CommandAccess.allowed(a("feedback", "off"), false), "non-op: feedback off allowed");
++        check(CommandAccess.allowed(a("feedback", "on"), true), "op: feedback on allowed");
++
+         // --- ADMIN matrix: everything allowed, byte-for-byte the old op surface. ---
+         check(CommandAccess.allowed(a(), true), "op: bare status allowed");
+         check(CommandAccess.allowed(a("status"), true), "op: status allowed");
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/FeedbackFormatTest.java ./tests/com/winkreyes/excelbosstrial/core/FeedbackFormatTest.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/FeedbackFormatTest.java	1970-01-01 00:00:00.000000000 +0000
++++ ./tests/com/winkreyes/excelbosstrial/core/FeedbackFormatTest.java	2026-11-03 03:03:28.596545835 +0000
+@@ -0,0 +1,111 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++/**
++ * The feel patch's text rules (0.3.6): the boss bar title's true
++ * pool numbers and the action bar's damage line. The numbers a
++ * player reads must be the ledger's numbers - grouped, rounded
++ * at display only, never accumulated from rounded parts.
++ */
++public final class FeedbackFormatTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    private static void eq(String actual, String expected, String label) {
++        check(expected.equals(actual),
++                label + " (expected \"" + expected + "\", got \"" + actual + "\")");
++    }
++
++    public static void main(String[] args) {
++        // --- The headline case (FEEL-AUDIT section 1): duo elder,
++        // 2,469 dealt of the 10,900 pool.
++        FeedbackTotals duo = FeedbackTotals.of(10_900, 2_469);
++        eq(duo.title(FeedbackSettings.DEFAULT_TITLE_FORMAT, BossKind.ELDER_GUARDIAN),
++                "Elder Guardian — 8,431 / 10,900",
++                "duo elder title after 2,469 dealt (grouping on both numbers)");
++
++        // --- Chapter short names (displayName carries articles
++        // that read wrong mid-title).
++        eq(FeedbackFormat.shortName(BossKind.WITHER), "Wither", "short name: wither");
++        eq(FeedbackFormat.shortName(BossKind.ELDER_GUARDIAN), "Elder Guardian",
++                "short name: elder guardian");
++        eq(FeedbackFormat.shortName(BossKind.WARDEN), "Warden", "short name: warden");
++        eq(FeedbackFormat.shortName(BossKind.ENDER_DRAGON), "Ender Dragon",
++                "short name: ender dragon");
++
++        // --- Remaining clamps at 0 on an overkill hit.
++        FeedbackTotals over = FeedbackTotals.of(100, 150);
++        check(over.remaining() == 0.0, "overkill: remaining clamps to 0");
++        check(over.fraction() == 0.0, "overkill: fraction clamps to 0");
++        eq(over.title(FeedbackSettings.DEFAULT_TITLE_FORMAT, BossKind.WITHER),
++                "Wither — 0 / 100", "overkill title never prints a negative pool");
++
++        // --- Rounding is display-only: two 16.5 crits move the
++        // title by exactly 33 (10900 - 33 = 10867), never 32/34
++        // of accumulated per-hit rounding.
++        FeedbackTotals crits = FeedbackTotals.of(10_900, 16.5 + 16.5);
++        check(crits.remaining() == 10_867.0, "two crits: true remaining is 10,867");
++        eq(FeedbackFormat.grouped(crits.remaining()), "10,867",
++                "two crits: title reads 10,867 (no rounding drift)");
++        eq(FeedbackFormat.grouped(8_431.4), "8,431", "grouping rounds .4 down");
++        eq(FeedbackFormat.grouped(8_431.5), "8,432", "grouping rounds .5 up");
++
++        // --- Rally growth: the title's total follows the grown pool.
++        FeedbackTotals grown = FeedbackTotals.of(14_000, 2_469);
++        eq(grown.title(FeedbackSettings.DEFAULT_TITLE_FORMAT, BossKind.ELDER_GUARDIAN),
++                "Elder Guardian — 11,531 / 14,000",
++                "rally-grown pool: title total follows the growth");
++
++        // --- Custom formats: reordered placeholders render;
++        // unknown placeholders pass through literally; a null or
++        // blank format falls back to the settled default.
++        eq(FeedbackFormat.title("{total} - {remaining} - {name}",
++                        BossKind.WARDEN, 500, 7_200),
++                "7,200 - 500 - Warden", "custom title format with reordered placeholders");
++        eq(FeedbackFormat.title("{name} {bogus}", BossKind.WITHER, 1, 2),
++                "Wither {bogus}", "unknown placeholder passes through literally");
++        eq(FeedbackFormat.title(null, BossKind.WITHER, 1, 2),
++                "Wither — 1 / 2", "null title format falls back to the default");
++        eq(FeedbackFormat.title("  ", BossKind.WITHER, 1, 2),
++                "Wither — 1 / 2", "blank title format falls back to the default");
++
++        // --- The action-bar line: one decimal, so fractional
++        // spell hits visibly accumulate in the running total.
++        eq(FeedbackFormat.actionBar(FeedbackSettings.DEFAULT_DAMAGE_TOTAL_FORMAT, 4.0, 4.0),
++                "4.0 hit · 4.0 total damage", "wood sword: 4.0 / 4.0");
++        eq(FeedbackFormat.actionBar(FeedbackSettings.DEFAULT_DAMAGE_TOTAL_FORMAT, 16.5, 31.5),
++                "16.5 hit · 31.5 total damage", "crit renders 16.5");
++        eq(FeedbackFormat.actionBar(FeedbackSettings.DEFAULT_DAMAGE_TOTAL_FORMAT, 0.47, 0.47),
++                "0.5 hit · 0.5 total damage", "a 0.47 spell hit renders 0.5 at 1dp");
++        double spellTotal = 0;
++        for (int i = 0; i < 10; i++) {
++            spellTotal += 0.47;
++        }
++        eq(FeedbackFormat.actionBar(FeedbackSettings.DEFAULT_DAMAGE_TOTAL_FORMAT, 0.47, spellTotal),
++                "0.5 hit · 4.7 total damage",
++                "ten 0.47 hits: the total keeps full precision and renders 4.7");
++        eq(FeedbackFormat.actionBar(null, 23.75, 23.75),
++                "23.8 hit · 23.8 total damage", "Power V 23.75 renders 23.8");
++
++        // --- Junk degrades to 0, never "NaN" on a player's screen.
++        eq(FeedbackFormat.grouped(Double.NaN), "0", "NaN groups to 0");
++        eq(FeedbackFormat.oneDecimal(Double.NaN), "0.0", "NaN renders 0.0");
++        FeedbackTotals nan = FeedbackTotals.of(10_900, Double.NaN);
++        eq(nan.title(FeedbackSettings.DEFAULT_TITLE_FORMAT, BossKind.ELDER_GUARDIAN),
++                "Elder Guardian — 10,900 / 10,900", "NaN dealt reads as no damage");
++
++        System.out.println("FeedbackFormatTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/FeedbackNoDamageChangeTest.java ./tests/com/winkreyes/excelbosstrial/core/FeedbackNoDamageChangeTest.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/FeedbackNoDamageChangeTest.java	1970-01-01 00:00:00.000000000 +0000
++++ ./tests/com/winkreyes/excelbosstrial/core/FeedbackNoDamageChangeTest.java	2026-11-03 03:04:49.918902264 +0000
+@@ -0,0 +1,199 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.UUID;
++
++/**
++ * THE feel-patch regression (0.3.6, DESIGN section 2): the
++ * display changes NOTHING. One scripted hit sequence - plain,
++ * crit-sized, a per-event-cap trim, a same-tick explosion-pool
++ * starve, a banded exclusion, taken-side hits including a
++ * TrainingWheels-shaped quarter and the 0.3.5 reflect value at
++ * multiplier 0.0 - runs through BossGovernor + EncounterLedger
++ * twice: once with a feedback observer computing every title
++ * and action-bar payload after every record, once without.
++ * The ledgers must come out IDENTICAL in every field the fight
++ * is judged on. A third run with feedback settings fully OFF
++ * (the observer short-circuits, as the adapter does) must match
++ * too - the off path is a no-op, not a second math.
++ */
++public final class FeedbackNoDamageChangeTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    private static final UUID A = UUID.fromString("00000000-0000-0000-0000-0000000000a1");
++    private static final UUID B = UUID.fromString("00000000-0000-0000-0000-0000000000b2");
++    private static final UUID RYLIE = UUID.fromString("00000000-0000-0000-0009-01f05d0d739d");
++    private static final long T0 = 2_000_000L;
++
++    /** The observer: exactly what the adapter computes after a
++     *  record - the view, the title, both players' lines - and
++     *  nothing else. Returns a digest so the computation is
++     *  observable (it cannot be optimized into a no-op). */
++    private static String observe(EncounterLedger ledger, FeedbackSettings settings) {
++        if (settings.dark()) {
++            return "";
++        }
++        FeedbackTotals view = FeedbackTotals.fromLedger(ledger);
++        StringBuilder sb = new StringBuilder();
++        sb.append(view.title(settings.titleFormat(), BossKind.ELDER_GUARDIAN)).append('|');
++        sb.append(FeedbackTotals.actionBarLine(
++                settings.damageTotalFormat(), 1.0, ledger, A)).append('|');
++        sb.append(FeedbackTotals.actionBarLine(
++                settings.damageTotalFormat(), 1.0, ledger, B)).append('|');
++        sb.append(view.fraction());
++        return sb.toString();
++    }
++
++    /** Length of the observer digest from the latest run -
++     *  proves the observer actually computed (kept OUT of the
++     *  compared snapshot: the digest is the observer's output,
++     *  not ledger state). */
++    private static int lastDigestLength;
++
++    private static String run(boolean withObserver, FeedbackSettings settings) {
++        EncounterLedger ledger = new EncounterLedger(
++                BossKind.ELDER_GUARDIAN, UUID.randomUUID(), 10_900, T0);
++        BossGovernor governor = new BossGovernor();
++        BossCaps elderCaps = new BossCaps(45, 45);
++        StringBuilder digest = new StringBuilder();
++        long t = T0;
++
++        // 1. A plain governed hit (wood-tier 10 after fractions).
++        double d1 = governor.govern(10.0, false, 100L, elderCaps).damage;
++        ledger.recordDealt(A, d1, ++t);
++        if (withObserver) digest.append(observe(ledger, settings));
++        // 2. A crit-sized hit.
++        double d2 = governor.govern(16.5, false, 101L, elderCaps).damage;
++        ledger.recordDealt(A, d2, ++t);
++        if (withObserver) digest.append(observe(ledger, settings));
++        // 3. A burst explosion: the per-event cap trims 100 -> 45,
++        // the same-tick pool (45) lets it all through.
++        double d3 = governor.govern(100.0, true, 102L, elderCaps).damage;
++        ledger.recordDealt(A, d3, ++t);
++        if (withObserver) digest.append(observe(ledger, settings));
++        // 4. A second same-tick explosion: trimmed to 45, then the
++        // drained pool starves it to 0 - the record is a no-op.
++        double d4 = governor.govern(100.0, true, 102L, elderCaps).damage;
++        ledger.recordDealt(A, d4, ++t);
++        if (withObserver) digest.append(observe(ledger, settings));
++        // 5. A capped melee burst from B.
++        double d5 = governor.govern(60.0, false, 103L, elderCaps).damage;
++        ledger.recordDealt(B, d5, ++t);
++        if (withObserver) digest.append(observe(ledger, settings));
++        // 6. A banded exclusion (the warden shape, judged here on
++        // the elder ledger - the band facts are ledger mechanics).
++        ledger.recordDealtBanded(B, 20.0, ++t, false, true);
++        if (withObserver) digest.append(observe(ledger, settings));
++        // 7. B lands an honest Power-V-sized hit.
++        ledger.recordDealt(B, 23.8, ++t);
++        if (withObserver) digest.append(observe(ledger, settings));
++        // 8. Taken side: a boss hit on A, a TrainingWheels-shaped
++        // quarter hit on Rylie (8.0 x 0.25), and the 0.3.5 reflect
++        // value - at multiplier 0.0 the spike records NOTHING.
++        ledger.recordTaken(A, 5.0, ++t);
++        ledger.recordTaken(RYLIE, 8.0 * 0.25, ++t);
++        ledger.recordTaken(A, ReflectRule.scaledDamage(3.0, 0.0), ++t);
++        if (withObserver) digest.append(observe(ledger, settings));
++        // 9. Unattributed environment damage.
++        ledger.recordDealt(null, 7.0, ++t);
++        if (withObserver) digest.append(observe(ledger, settings));
++
++        lastDigestLength = digest.length();
++        return snapshot(ledger, governor);
++    }
++
++    /** Every field the fight is judged on, as one string. */
++    private static String snapshot(EncounterLedger ledger, BossGovernor governor) {
++        StringBuilder sb = new StringBuilder();
++        sb.append("total=").append(ledger.totalDamage());
++        sb.append(";player=").append(ledger.playerDamage());
++        sb.append(";other=").append(ledger.otherDamage());
++        sb.append(";dealtA=").append(ledger.dealtBy(A));
++        sb.append(";dealtB=").append(ledger.dealtBy(B));
++        sb.append(";takenA=").append(ledger.takenBy(A));
++        sb.append(";takenR=").append(ledger.takenBy(RYLIE));
++        sb.append(";exclHits=").append(ledger.shareExcludedHits());
++        sb.append(";exclDmg=").append(ledger.shareExcludedDamage());
++        sb.append(";exclH=").append(ledger.heightExcludedHits());
++        sb.append(";exclR=").append(ledger.rangeExcludedHits());
++        sb.append(";damagers=").append(ledger.damagerCount());
++        sb.append(";participants=").append(ledger.participants().size());
++        sb.append(";pool=").append(ledger.maxHealth());
++        sb.append(";share=").append(ledger.playerSharePercent());
++        sb.append(";govPool=").append(governor.poolRemaining());
++        sb.append(";govTick=").append(governor.poolTick());
++        double remainingFraction = 1.0 - ledger.totalDamage() / ledger.maxHealth();
++        sb.append(";beatsPending=").append(ledger.milestoneBeats().pending(remainingFraction));
++        sb.append(";snapshot=").append(ledger.dealtSnapshot());
++        return sb.toString();
++    }
++
++    public static void main(String[] args) {
++        FeedbackSettings on = FeedbackSettings.defaults();
++        FeedbackSettings off = FeedbackSettings.sanitized(
++                false, "off", null, null, 64, 500, 1000);
++
++        String bare = run(false, on);
++        check(lastDigestLength == 0, "the bare run computed no feedback");
++        String observed = run(true, on);
++        check(lastDigestLength > 0,
++                "the observed run really computed titles + lines after every record");
++        int onDigest = lastDigestLength;
++        String observedOff = run(true, off);
++        check(lastDigestLength == 0,
++                "the OFF run's observer short-circuited (the adapter's off path)");
++        check(onDigest > 0, "the ON digest was non-empty");
++
++        check(bare.equals(observed),
++                "feedback ON (observer after every record): ledger identical to no feedback\n"
++                        + "  bare:     " + bare + "\n  observed: " + observed);
++        check(bare.equals(observedOff),
++                "feedback OFF at parse level: ledger identical (the off path is a no-op)\n"
++                        + "  bare: " + bare + "\n  off:  " + observedOff);
++
++        // The governed values themselves, pinned so the equality
++        // above can never be equality-of-two-wrongs:
++        // dealt = 10 + 16.5 + 45 + 0 + 45 + 20(banded) + 23.8 + 7 = 167.3
++        check(bare.contains("total=167.3"), "sequence total is the hand-computed 167.3");
++        check(bare.contains("dealtA=71.5"), "A dealt 10 + 16.5 + 45 + 0 = 71.5");
++        check(bare.contains("dealtB=68.8"), "B dealt 45 + 23.8 = 68.8 (banded 20 excluded)");
++        check(bare.contains("takenA=5.0"), "A took the 5.0 boss hit; the 0.0 reflect recorded nothing");
++        check(bare.contains("takenR=2.0"), "Rylie's taken is the TW-shaped 2.0 (8.0 x 0.25)");
++        check(bare.contains("exclHits=1"), "exactly one banded exclusion");
++
++        // --- Dragon shape: phase views computed across the flip
++        // boundary leave the battle ledger untouched.
++        EncounterLedger dragon = new EncounterLedger(
++                BossKind.ENDER_DRAGON, UUID.randomUUID(), 20_000, T0);
++        dragon.recordDealt(A, 4_000, T0 + 1);
++        String before = snapshot(dragon, new BossGovernor());
++        FeedbackTotals p1 = FeedbackTotals.forPhase(4_000, 4_000);
++        FeedbackTotals p2 = FeedbackTotals.forPhase(16_000, 0);
++        dragon.recordDealt(A, 11.0, T0 + 2);
++        FeedbackTotals p2After = FeedbackTotals.forPhase(16_000, 11.0);
++        String after = snapshot(dragon, new BossGovernor());
++        check(p1.remaining() == 0.0 && p2.remaining() == 16_000,
++                "phase views flip 4,000 -> 16,000 at the boundary");
++        check(p2After.remaining() == 15_989,
++                "phase 2 view follows phase damage only");
++        check(!before.equals(after) && after.contains("total=4011.0"),
++                "the dragon ledger moved only by the recorded hit (4,000 + 11)");
++        check(FeedbackTotals.fromLedger(dragon).dealt() == 4_011.0,
++                "computing phase views never wrote to the ledger");
++
++        System.out.println("FeedbackNoDamageChangeTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/FeedbackOptOutsTest.java ./tests/com/winkreyes/excelbosstrial/core/FeedbackOptOutsTest.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/FeedbackOptOutsTest.java	1970-01-01 00:00:00.000000000 +0000
++++ ./tests/com/winkreyes/excelbosstrial/core/FeedbackOptOutsTest.java	2026-11-03 03:04:25.909545394 +0000
+@@ -0,0 +1,66 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.List;
++import java.util.UUID;
++
++/**
++ * The per-player feedback opt-outs (0.3.6): default on for
++ * everyone, toggle semantics the command relies on (save only
++ * on a change), and the state.yml persistence shape - junk
++ * rows degrade to skipped, never a failed load.
++ */
++public final class FeedbackOptOutsTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    public static void main(String[] args) {
++        UUID a = UUID.fromString("00000000-0000-0000-0000-0000000000a1");
++        UUID b = UUID.fromString("00000000-0000-0000-0000-0000000000b2");
++
++        FeedbackOptOuts set = new FeedbackOptOuts();
++        check(!set.isOptedOut(a), "default: nobody is opted out");
++        check(!set.isOptedOut(null), "a null player reads as not opted out");
++        check(set.setOptedOut(a, true), "opting out reports a change");
++        check(set.isOptedOut(a), "opted out after set");
++        check(!set.setOptedOut(a, true), "re-setting the same state reports no change");
++        check(!set.isOptedOut(b), "another player is unaffected");
++        check(set.setOptedOut(a, false), "opting back in reports a change");
++        check(!set.isOptedOut(a), "opted back in");
++        check(!set.setOptedOut(null, true), "a null toggle changes nothing");
++
++        // Persistence round-trip through the string-list shape.
++        set.setOptedOut(a, true);
++        set.setOptedOut(b, true);
++        List<String> snap = set.snapshot();
++        check(snap.size() == 2 && snap.contains(a.toString()) && snap.contains(b.toString()),
++                "snapshot carries both uuids as strings");
++        FeedbackOptOuts restored = new FeedbackOptOuts();
++        restored.restore(snap);
++        check(restored.isOptedOut(a) && restored.isOptedOut(b) && restored.size() == 2,
++                "restore round-trips the set");
++
++        // Junk degrades to skipped; restore replaces wholesale.
++        restored.restore(List.of("not-a-uuid", "", a.toString()));
++        check(restored.size() == 1 && restored.isOptedOut(a) && !restored.isOptedOut(b),
++                "junk rows are skipped and restore replaces the old set");
++        restored.restore(null);
++        check(restored.size() == 0, "a null restore clears to the default (nobody out)");
++        restored.restore(List.of());
++        check(restored.size() == 0, "an empty restore stays empty");
++
++        System.out.println("FeedbackOptOutsTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/FeedbackSettingsTest.java ./tests/com/winkreyes/excelbosstrial/core/FeedbackSettingsTest.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/FeedbackSettingsTest.java	1970-01-01 00:00:00.000000000 +0000
++++ ./tests/com/winkreyes/excelbosstrial/core/FeedbackSettingsTest.java	2026-11-03 03:37:45.966529985 +0000
+@@ -0,0 +1,140 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++/**
++ * Damage-feedback settings (0.3.6): the settled defaults, the
++ * per-chapter override independence, and the sanitize rules - a
++ * junk value must degrade to the settled behavior, never to a
++ * silent off and never to a crash.
++ */
++public final class FeedbackSettingsTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    public static void main(String[] args) {
++        // --- Settled defaults (Mike, Nov 2, 2026, option (e)).
++        FeedbackSettings d = FeedbackSettings.defaults();
++        check(d.poolNumbers(), "default: pool numbers ON");
++        check(FeedbackSettings.MODE_ACTIONBAR.equals(d.damageTotalMode()),
++                "default: damage totals on the action bar");
++        check(FeedbackSettings.DEFAULT_TITLE_FORMAT.equals(d.titleFormat()),
++                "default: settled title format");
++        check(FeedbackSettings.DEFAULT_DAMAGE_TOTAL_FORMAT.equals(d.damageTotalFormat()),
++                "default: settled damage-total format");
++        check(d.viewerRange() == 64, "default: viewer range 64");
++        check(d.damageTotalMinIntervalMs() == 500, "default: action-bar interval 500 ms");
++        check(d.titleTickMs() == 1000, "default: title sweep cadence 1000 ms");
++        check(!d.dark() && d.poolNumbersOn() && d.actionBarOn(),
++                "default: fully live, not dark");
++
++        // --- Per-chapter resolution: no overrides = the globals,
++        // for every chapter.
++        for (BossKind kind : BossKind.values()) {
++            check(d.withOverrides(null, null).equals(d),
++                    "chapter " + kind + ": no overrides inherits the globals whole");
++        }
++
++        // --- Overrides are independent: each replaces alone.
++        FeedbackSettings poolOff = d.withOverrides(false, null);
++        check(!poolOff.poolNumbers() && poolOff.actionBarOn(),
++                "override pool-numbers off alone: totals still on");
++        FeedbackSettings totalsOff = d.withOverrides(null, "off");
++        check(totalsOff.poolNumbers() && !totalsOff.actionBarOn() && totalsOff.dark() == false,
++                "override damage-total off alone: pool numbers still on");
++        check(d.withOverrides(false, "off").dark(),
++                "both overridden off: the chapter is dark");
++        check(d.withOverrides(true, "actionbar").equals(d),
++                "overrides restating the globals change nothing");
++        check(FeedbackSettings.MODE_ACTIONBAR.equals(
++                        d.withOverrides(null, "banana").damageTotalMode()),
++                "a chapter's junk mode reads as the settled default, not a silent off");
++
++        // --- Sanitize: junk degrades to settled behavior.
++        check(FeedbackSettings.MODE_ACTIONBAR.equals(FeedbackSettings.sanitized(
++                        true, "banana", "x", "x", 1, 0, 1).damageTotalMode()),
++                "sanitize: damage-total 'banana' -> actionbar");
++        check(FeedbackSettings.MODE_OFF.equals(FeedbackSettings.sanitized(
++                        true, "OFF", "x", "x", 1, 0, 1).damageTotalMode()),
++                "sanitize: damage-total 'OFF' -> off (case-insensitive)");
++        check(FeedbackSettings.MODE_ACTIONBAR.equals(FeedbackSettings.sanitized(
++                        true, null, "x", "x", 1, 0, 1).damageTotalMode()),
++                "sanitize: damage-total null -> actionbar");
++        check(FeedbackSettings.sanitized(true, "off", "x", "x", -5, 0, 1).viewerRange() == 64,
++                "sanitize: viewer range -5 -> 64");
++        check(FeedbackSettings.sanitized(true, "off", "x", "x", 0, 0, 1).viewerRange() == 64,
++                "sanitize: viewer range 0 -> 64");
++        check(FeedbackSettings.sanitized(true, "off", "x", "x", 99999, 0, 1).viewerRange()
++                        == FeedbackSettings.MAX_VIEWER_RANGE,
++                "sanitize: viewer range is capped");
++        check(FeedbackSettings.sanitized(true, "off", "x", "x", 1, -1, 1)
++                        .damageTotalMinIntervalMs() == 500,
++                "sanitize: interval -1 -> 500");
++        check(FeedbackSettings.sanitized(true, "off", "x", "x", 1, 0, 1)
++                        .damageTotalMinIntervalMs() == 0,
++                "sanitize: interval 0 is a real choice (no throttle)");
++        check(FeedbackSettings.sanitized(true, "off", "x", "x", 1, 0, 0).titleTickMs() == 1000,
++                "sanitize: title tick 0 -> 1000");
++        check(FeedbackSettings.DEFAULT_TITLE_FORMAT.equals(FeedbackSettings.sanitized(
++                        true, "off", "  ", "x", 1, 0, 1).titleFormat()),
++                "sanitize: blank title format -> settled default");
++        check(FeedbackSettings.DEFAULT_DAMAGE_TOTAL_FORMAT.equals(FeedbackSettings.sanitized(
++                        true, "off", "x", null, 1, 0, 1).damageTotalFormat()),
++                "sanitize: null damage-total format -> settled default");
++
++        // --- The pool-numbers switch from a raw config value:
++        // junk reads as the settled ON, never a silent off.
++        check(!FeedbackSettings.poolNumbersValue(Boolean.FALSE),
++                "pool-numbers: Boolean false reads false");
++        check(FeedbackSettings.poolNumbersValue(Boolean.TRUE),
++                "pool-numbers: Boolean true reads true");
++        check(!FeedbackSettings.poolNumbersValue("false"),
++                "pool-numbers: 'false' reads false");
++        check(FeedbackSettings.poolNumbersValue("true"),
++                "pool-numbers: 'true' reads true");
++        check(FeedbackSettings.poolNumbersValue("junk"),
++                "pool-numbers: junk string reads as the default ON");
++        check(FeedbackSettings.poolNumbersValue(null),
++                "pool-numbers: a missing key reads as the default ON");
++        check(FeedbackSettings.poolNumbersValue(42),
++                "pool-numbers: a non-boolean reads as the default ON");
++
++        // --- The damage-total mode from a raw config value
++        // (rig finding F4): in YAML an unquoted `off` - the
++        // documented way to write this setting - parses as the
++        // boolean false, and a typed string read would hand
++        // back null and silently resurrect the action bar.
++        check(FeedbackSettings.MODE_OFF.equals(
++                        FeedbackSettings.damageTotalModeValue(Boolean.FALSE)),
++                "mode value: Boolean false (an unquoted YAML off) reads off");
++        check(FeedbackSettings.MODE_ACTIONBAR.equals(
++                        FeedbackSettings.damageTotalModeValue(Boolean.TRUE)),
++                "mode value: Boolean true reads as the settled actionbar");
++        check(FeedbackSettings.MODE_OFF.equals(
++                        FeedbackSettings.damageTotalModeValue("off")),
++                "mode value: the string 'off' passes through");
++        check("banana".equals(FeedbackSettings.damageTotalModeValue("banana")),
++                "mode value: a junk string passes through for sanitize to judge");
++        check(FeedbackSettings.damageTotalModeValue(42) == null,
++                "mode value: a non-string non-boolean reads as absent");
++        check(FeedbackSettings.damageTotalModeValue(null) == null,
++                "mode value: a missing key reads as absent");
++        check(!FeedbackSettings.sanitized(true,
++                        FeedbackSettings.damageTotalModeValue(Boolean.FALSE),
++                        "x", "x", 1, 0, 1).actionBarOn(),
++                "mode value: the full unquoted-off path lands dark on totals");
++
++        System.out.println("FeedbackSettingsTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}
+diff -ruN '--exclude=FUNCTIONAL-CHANGE.diff' '--exclude=SHA256SUMS' '--exclude=FILE-LIST.txt' '--exclude=TEST-RESULTS.txt' '--exclude=bosstrial-0.3.5-source.zip' '--exclude=bosstrial-0.3.6-source.zip' /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/FeedbackTotalsTest.java ./tests/com/winkreyes/excelbosstrial/core/FeedbackTotalsTest.java
+--- /home/hatch/workspace/seal-tuning/build-0.3.5/bosstrial/tree/tests/com/winkreyes/excelbosstrial/core/FeedbackTotalsTest.java	1970-01-01 00:00:00.000000000 +0000
++++ ./tests/com/winkreyes/excelbosstrial/core/FeedbackTotalsTest.java	2026-11-03 03:03:41.462545736 +0000
+@@ -0,0 +1,114 @@
++/* Excel WRV maintenance; existing authorship retained. */ package com.winkreyes.excelbosstrial.core;
++
++import java.util.UUID;
++
++/**
++ * The feel patch's view-model against ledger truth (0.3.6): the
++ * display total must BE the fight table's total - the same
++ * dealtBy the verdict record reads - and the display must
++ * follow what the ledger actually recorded, including what a
++ * share band refused.
++ */
++public final class FeedbackTotalsTest {
++
++    private static int passed;
++    private static int failed;
++
++    private static void check(boolean cond, String label) {
++        if (cond) {
++            passed++;
++        } else {
++            failed++;
++            System.out.println("FAIL: " + label);
++        }
++    }
++
++    private static void eq(double actual, double expected, String label) {
++        check(Math.abs(actual - expected) < 1e-9,
++                label + " (expected " + expected + ", got " + actual + ")");
++    }
++
++    private static void eqs(String actual, String expected, String label) {
++        check(expected.equals(actual),
++                label + " (expected \"" + expected + "\", got \"" + actual + "\")");
++    }
++
++    public static void main(String[] args) {
++        UUID a = UUID.fromString("00000000-0000-0000-0000-0000000000a1");
++        UUID b = UUID.fromString("00000000-0000-0000-0000-0000000000b2");
++        long t0 = 1_000_000L;
++
++        // --- Scripted elder sequence on a real ledger (duo pool).
++        EncounterLedger ledger = new EncounterLedger(
++                BossKind.ELDER_GUARDIAN, UUID.randomUUID(), 10_900, t0);
++        ledger.recordDealt(a, 4.0, t0 + 1);
++        ledger.recordDealt(a, 11.0, t0 + 2);
++        ledger.recordDealt(a, 16.5, t0 + 3);
++        ledger.recordDealt(b, 23.8, t0 + 4);
++
++        FeedbackTotals view = FeedbackTotals.fromLedger(ledger);
++        eq(view.pool(), 10_900, "view pool is the ledger pool");
++        eq(view.dealt(), 55.3, "view dealt is the ledger total (4 + 11 + 16.5 + 23.8)");
++        eq(view.remaining(), 10_844.7, "view remaining is pool - dealt, unrounded");
++        eqs(view.title(FeedbackSettings.DEFAULT_TITLE_FORMAT, BossKind.ELDER_GUARDIAN),
++                "Elder Guardian — 10,845 / 10,900",
++                "title renders the true remaining (10,844.7 rounds to 10,845)");
++
++        // --- The display total IS the fight-table total: the
++        // same double dealtBy returns, the same value the
++        // snapshot's per-player map carries.
++        check(ledger.dealtBy(a) == 31.5, "ledger dealtBy(A) is exactly 31.5");
++        eqs(FeedbackTotals.actionBarLine(
++                        FeedbackSettings.DEFAULT_DAMAGE_TOTAL_FORMAT, 16.5, ledger, a),
++                "16.5 hit · 31.5 total damage",
++                "A's action-bar total is A's ledger dealt");
++        check(ledger.dealtSnapshot().get(a) == ledger.dealtBy(a),
++                "dealtSnapshot and dealtBy agree (the fight table reads the same truth)");
++        check(ledger.dealtSnapshot().get(b) == ledger.dealtBy(b),
++                "dealtSnapshot and dealtBy agree for B");
++        eqs(FeedbackTotals.actionBarLine(
++                        FeedbackSettings.DEFAULT_DAMAGE_TOTAL_FORMAT, 23.8, ledger, b),
++                "23.8 hit · 23.8 total damage",
++                "B's action-bar total is B's ledger dealt");
++
++        // --- Banded hits: the display follows what recordDealt-
++        // Banded actually recorded - a refused blow raises the
++        // pool total but never the player's total.
++        EncounterLedger warden = new EncounterLedger(
++                BossKind.WARDEN, UUID.randomUUID(), 7_200, t0);
++        warden.recordDealtBanded(b, 20.0, t0 + 1, false, true);
++        eq(warden.totalDamage(), 20.0, "banded refused blow still lands on the pool");
++        eq(warden.dealtBy(b), 0.0, "banded refused blow credits the player nothing");
++        FeedbackTotals wv = FeedbackTotals.fromLedger(warden);
++        eq(wv.remaining(), 7_180, "the title follows the pool, refused blow included");
++        eqs(FeedbackTotals.actionBarLine(
++                        FeedbackSettings.DEFAULT_DAMAGE_TOTAL_FORMAT, 0.0, warden, b),
++                "0.0 hit · 0.0 total damage",
++                "the player's total never invents the refused damage");
++        warden.recordDealtBanded(b, 20.0, t0 + 2, true, true);
++        eq(warden.dealtBy(b), 20.0, "an in-band blow credits normally");
++        eq(FeedbackTotals.fromLedger(warden).remaining(), 7_160,
++                "the title follows both blows");
++
++        // --- The dragon's per-phase view: totals flip at the
++        // phase boundary by construction.
++        FeedbackTotals p1 = FeedbackTotals.forPhase(4_000, 1_000);
++        eq(p1.remaining(), 3_000, "phase 1: 4,000 pool, 1,000 dealt");
++        eq(p1.fraction(), 0.75, "phase 1 fraction");
++        FeedbackTotals p2 = FeedbackTotals.forPhase(16_000, 1_000);
++        eqs(p2.title(FeedbackSettings.DEFAULT_TITLE_FORMAT, BossKind.ENDER_DRAGON),
++                "Ender Dragon — 15,000 / 16,000",
++                "phase 2: the title total is the phase-2 pool");
++        check(FeedbackTotals.forPhase(0, 500).pool() == 0,
++                "an untracked dragon (pool 0) reads as an empty view");
++
++        // --- Degenerate ledgers stay safe.
++        check(FeedbackTotals.fromLedger(null).remaining() == 0,
++                "a null ledger reads as an empty view");
++
++        System.out.println("FeedbackTotalsTest: " + passed + " passed, " + failed + " failed");
++        if (failed > 0) {
++            System.exit(1);
++        }
++    }
++}

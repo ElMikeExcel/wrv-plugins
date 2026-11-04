@@ -1,0 +1,126 @@
+ExcelBossTrial 0.3.6 suite run 2026-11-02 (build-2.log, JDK 25, package.sh full harness set)
+
+PASS 49 actual API holder/event checks; no side getInventory calls
+23 reviewed-world resolver checks pass
+AnnouncementsTest: 25 passed, 0 failed
+BossGovernorTest: 26 passed, 0 failed
+BossTrialConfigTest: 28 passed, 0 failed
+CommandAccessTest: 34 passed, 0 failed
+CooldownBookTest: 24 passed, 0 failed
+CreditJudgeRepeatTest: 24 passed, 0 failed
+CreditJudgeTest: 21 passed, 0 failed
+DenialMessageTest: 23 passed, 0 failed
+EncounterLedgerTest: 21 passed, 0 failed
+EncounterRetentionTest: 30 passed, 0 failed
+FeedbackFormatTest: 25 passed, 0 failed
+FeedbackNoDamageChangeTest: 16 passed, 0 failed
+FeedbackOptOutsTest: 14 passed, 0 failed
+FeedbackSettingsTest: 42 passed, 0 failed
+FeedbackTotalsTest: 20 passed, 0 failed
+FightTrackerTest: 57 passed, 0 failed
+GrantClaimPlanTest: 19 passed, 0 failed
+HealingAttributionTest: 9 passed, 0 failed
+HeightBandTest: 27 passed, 0 failed
+IntakeFactorTest: 22 passed, 0 failed
+LedgerGrowthTest: 33 passed, 0 failed
+MilestoneBeatsTest: 39 checks, 0 failures
+MonumentGenerationTest: 12 passed, 0 failed
+MonumentTrackerTest: 25 passed, 0 failed
+PresentOutcomeTest: 16 passed, 0 failed
+PressureMathTest: 22 passed, 0 failed
+ProtectEmitSettingsTest: 7 checks, 0 failures
+ProtectTableShapeTest: 23 checks, 0 failures
+ProvenanceLoreTest: 11 passed, 0 failed
+ReflectConfigTest: 9 passed, 0 failed
+ReflectRuleTest: 31 passed, 0 failed
+RepeatConfigTest: 21 passed, 0 failed
+RepeatRewardsTest: 36 passed, 0 failed
+ScalingConfigTest: 19 passed, 0 failed
+ScalingRuleTest: 30 passed, 0 failed
+SealHardeningTest: 74 passed, 0 failed
+SealIntegrityFixTest: 104 passed, 0 failed
+SealLootDistributionTest: 57 passed, 0 failed
+SealLootTest: 178 passed, 0 failed
+SignatureGrantTest: 32 passed, 0 failed
+SpoilsMathTest: 20 passed, 0 failed
+SpoilsVerdictTest: 29 passed, 0 failed
+SprinkleBookTest: 15 checks, 0 failures
+SprinkleRollerTest: 26 checks, 0 failures
+SprinkleSettingsTest: 22 checks, 0 failures
+TrioEscalationTest: 36 passed, 0 failed
+XpBandPlantTest: 25 passed, 0 failed
+XpBandTokensTest: 50 passed, 0 failed
+BedIgnitionLogTest: 12 passed, 0 failed
+CrystalPlacementRuleTest: 11 passed, 0 failed
+DamageGovernorTest: 23 passed, 0 failed
+FlipEffectsTest: 8 passed, 0 failed
+NoFalseCreditTest: 41 passed, 0 failed
+StaleTrialPolicyTest: 17 passed, 0 failed
+TrialConfigTest: 22 passed, 0 failed
+TrialStateMachineHardeningTest: 27 passed, 0 failed
+TrialStateMachineTest: 26 passed, 0 failed
+TrialWaveThresholdsTest: 22 checks, 0 failures
+ProtectEmitGatewayTest: 1 checks, 0 failures
+PASS snapshot protocol/enabled
+PASS real API apply
+PASS only selected cooldown cleared
+PASS receipt and unrelated deadline committed together
+PASS same receipt replay
+PASS receipt replay blocks coordinator completion during a newer selected fight
+PASS unrelated encounter does not block receipt replay
+PASS disabled plugin blocks receipt replay completion
+PASS normal save preserves receipt
+PASS restart receipt replay across generation
+PASS replay does not clear newer cooldown
+PASS old generation preview refused
+PASS invalid operation refused
+PASS conflicting digest refused
+PASS raid not owned here
+PASS disabled selected chapter blocks receipt replay
+PASS dragon bridge supported without altering battle phase
+PASS off-main API refused
+PASS pending elder blocks recovery
+PASS elder timer/state preserved
+PASS other seal recovery works with unrelated pending elders
+PASS unrelated monuments and signature rewards unchanged in memory
+PASS unrelated pending elder and signature persisted unchanged
+PASS after-rename failure reported
+PASS receipt actually reached disk before injected error
+PASS normal save cannot erase uncertain committed receipt
+PASS uncertain live instance fails closed
+PASS restart reconciles committed receipt
+PASS retained selected encounter marked active without entity lookup
+PASS selected active encounter refuses apply
+PASS unrelated active wither preserved during warden recovery
+PASS reviewed full elder recovery establishes latch without monument reset
+PASS later elder latch revoke not overwritten by receipt replay
+PASS before-rename failure reported
+PASS before-rename keeps old disk state intact
+PASS malformed receipt locks recovery
+PASS normal save preserves corrupt evidence rather than erasing it
+PASS malformed YAML fails closed
+PASS external disk edit after preview refuses owner write
+PASS external edited state left untouched
+PASS normal save cannot overwrite external edit after lock
+PASS normal save independently checks disk fingerprint and locks
+PASS invalid raw protocol locks: 1.5
+PASS invalid protocol evidence preserved: 1.5
+PASS invalid raw protocol locks: '1'
+PASS invalid protocol evidence preserved: '1'
+PASS invalid raw protocol locks: .NaN
+PASS invalid protocol evidence preserved: .NaN
+PASS invalid raw protocol locks: .inf
+PASS invalid protocol evidence preserved: .inf
+PASS invalid raw protocol locks: 2
+PASS invalid protocol evidence preserved: 2
+RecoveryApiTest: 52 passed, 0 failed; proxy server + real temp filesystem, not live gameplay.
+EliteSprinkleGatewayTest: 9 checks, 0 failures
+GrantClaimStoreTest: 9 passed, 0 failed
+ClaimSessionTest: 288 checks passed
+InventoryPlanTest: 24906 checks passed (surrogate stacks)
+ReviewFramesPolicyTest: 19 passed, 0 failed
+ReviewPresentationTest: 17 passed, 0 failed
+ComponentTest: 8 checks passed
+PASS 48 checks; actual temp files: /tmp/team-reward-test-3953467071184189490
+
+Total: 27,075 checks, 0 failures (26,949 inherited from 0.3.5 + 126 new).
