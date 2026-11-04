@@ -1,0 +1,88 @@
+ExcelTogether 0.5.3 — TEST RESULTS
+Candidate: ExcelTogether-0.5.3.jar
+sha256 494073dcabf05ad0637846e21095faea0cef46046f09a7d50d0987f19f43f9f5, 176,042 bytes
+(build.sh assembles twice and hash-asserts; a second independent build.sh run
+reproduced the identical hash.)
+
+BASE PROOF (before any 0.5.3 edit)
+  Pristine 0.5.2 tree rebuilt in /tmp/basecheck-052:
+  cb0cb309d81b5d5dd8400688f4ff83f7d815cb7b675fdb679e985c096bb91d2a (171,337 B),
+  byte-identical to build-0.5.2's shipped candidate; suite 826 checks, 0 failures.
+  LeaveSticksTest run against that 0.5.2 build: 19 passed, 14 FAILED — the
+  convicted paths reproduce (L1 EM-door leave, L2 mcMMO disband, L3/L4 relog
+  variants, L5 partyKey-rotation suppression defeat); L6 (disconnect != leave)
+  passes on 0.5.2 and must keep passing.
+
+UNIT SUITE (headless, run by build.sh) — 890 checks, 0 failures
+  PartyTest 18, PartyFeatureTest 196, RangeIndicatorTest 61, McmmoLinkTest 79,
+  McmmoSyncTest 86, ShareTest 30, XpShareTest 22, BaseRulesTest 100,
+  EmSyncTest 95, EmLinkMappingTest 73, PartyLookupTest 6, PartyRepairTest 27,
+  RepairGateTest 35 (all inherited; EmSyncTest is 93 -> 95 because its B9b block
+  was rewritten from the convicted 0.5.2 expectations to the 0.5.3 verdict, net +2)
+  plus the two new suites:
+
+  LeaveSticksTest: 33 checks (the regression suite for this bug)
+    L1 EM-door leave sticks: out of Together, party ends, NOT driven back into
+       EM, mcMMO cascade told, leaver heard he left, rest-state silent.
+    L2 mcMMO-door disband sticks: Together stays disbanded, EM face torn down.
+    L3 EM-door leave + both relog: no resurrection.
+    L4 mcMMO disband + both relog: no resurrection.
+    L5 suppression survives an EM partyKey rotation with the SAME roster (not
+       re-adopted from a re-created twin) and clears for a genuinely fresh
+       group containing a new person (adopted).
+    L6 a disconnect is not a leave: quitter held through grace; on return the
+       EM face is rebuilt (0.5.2 behaviour preserved).
+
+  AdminCommandTest: 29 checks (Controller.adminCommand, no Bukkit)
+    A1 status: Together party + leader + members, mcMMO mirror, EliteMobs
+       mirror, suppression line; partyless and unknown-name answers.
+    A2 remove: reply wording, out of Together, both mirrors driven out,
+       suppression in both syncs immediately after, member told + party told
+       with the admin wording, polls do not resurrect.
+    A3 disband: reply wording, both out everywhere, suppression for both,
+       both told, polls do not resurrect.
+    A4 edges: remove/disband of a partyless player, bare/unknown/missing-arg
+       usage lines, ambiguous name refused with the candidates listed.
+
+ORDER-SENSITIVITY (flake hunt, all after the addOne funnel guard)
+  EmSyncTest 8/8 runs green; LeaveSticksTest 8/8; AdminCommandTest 3/3;
+  a 40-iteration probe of the B9b scenario (randomised poll order) 40/40.
+  (Before the guard, B9b failed ~1 run in 3: a party-mate reconciled first
+  drove the leaver back into EM via converge/addOne. See BUG-VERDICT.md.)
+
+RIG (Paper 26.3-235, Jobs + CMILib + Vault + Magic 11.2.5; driver rig/driver/,
+PartyAdminRig, fake players as in 0.5.1/0.5.2; log rig/boot-admin-console.log)
+  Boot verdicts — 6/6 PASS:
+    SETUP-PARTY (real PartyManager roster of 2 via mgr.adopt)
+    ADMIN-STATUS-DISPATCH — console ran 'excelparty admin status RigMember';
+      the log carries the reply verbatim: "Party status for RigMember:" /
+      "ExcelTogether: in a party of 2/5, leader RigLeader. Members: RigLeader
+      (leader), RigMember." / "mcMMO: link off." / "EliteMobs: link off." /
+      "Suppressed (will not be auto-rejoined): mcMMO no, EliteMobs no."
+    ADMIN-UNKNOWN-DISPATCH — "No online or partied player matches 'NobodyHere'."
+    CONSOLE-NONADMIN-DISPATCH — console 'excelparty list' answered "Players
+      only." (the player branch still rejects the console; only admin routes
+      before the check)
+    ADMIN-REMOVE — console reply "Removed RigMember from the party (was 2/5,
+      leader RigLeader). The mirrors were told; RigMember will not be
+      auto-rejoined."; PartyManager state: both partyless afterwards.
+    ADMIN-DISBAND — console reply "Disbanded the party of 2 (leader RigLeader):
+      RigLeader, RigMember. ..."; both partyless; the unpartied third player
+      untouched.
+  Awake line: "ExcelTogether 0.5.3 enabled: x1.25 money and XP, bonus-mode
+  PARTY, ... EliteMobs mesh: OFF (EliteMobs not installed). PartyLookup service:
+  published. Magic party repair: ON (ExcelPartyRepair + ExcelRepairItem
+  registered), repair confirm ON (10s window, 4h 0m lockout)."
+  SEVERE: 0 in the whole boot. WARN/ERROR attributable to ExcelTogether: none
+  (the boot's WARNs are the sandbox's offline-network noise, as on every rig).
+  Rig limits, stated plainly: the rig has no mcMMO and no EliteMobs, so the
+  mesh legs were OFF and door-leave semantics rest on the unit fakes (which
+  model both plugins' party state + drive recording); the rig proves the real
+  Bukkit command path the fakes cannot.
+
+NOT COVERED HERE (player proofs, in the packet)
+  Live, with real clients: leave via /em party leave and via the EliteMobs
+  sidebar and STAY out (the incident scenario, Jester + Marvin); a /party
+  disband that stays disbanded; one console 'excelparty admin status' against a
+  live meshed party showing all three faces; the Repair Equipment gate proofs
+  still owed from 0.5.2 (never installed).
