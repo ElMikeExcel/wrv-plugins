@@ -1,0 +1,18 @@
+name: ExcelBossTrial
+version: 0.3.2
+author: Argus
+main: com.winkreyes.excelbosstrial.ExcelBossTrial
+api-version: "1.21"
+description: The seal-boss rules of Wink Reyes Valley in one home - damage caps, the 70% player-damage share gate (config share-threshold), the presence rule, 6-hour credit cooldowns, the elder-guardian trio, participant spoils, the two-phase dragon trial (ExcelDragonTrial 0.1.2, ported in), participant growth (the boss rallies), and curated seal loot. 0.2.1 adds the seal-integrity fixes - the wither fought-free (cage) check, the warden horizontal range band, and the dragon share gate. 0.2.2 adds the seal-hardening pair - the warden gives up on a fight that never comes to it, and end crystals and respawn anchors answer to their placer. 0.2.3 adds the announcement window - while it is armed, seal attempts, fails, breaks and running cooldowns are announced in chat, repeated hourly, and rebroadcast to everyone on every join. 0.2.4 adds the XP band governor feed - every governed hit plants its band verdict for the XP listener (ExcelRewardGuard), so out-of-band hits pay 25% mcMMO XP in real time while in-band hits pay full; silent, fail-safe both ways. 0.2.5 makes the rewards mean something (spec 4.6) - the dragon gains a signature - "First Breath", one elytra per champion standing at the fall - and every seal's named signature gear is granted per champion, stamped with its earner's provenance, under the fairness rule. 0.2.6 splits the command gate - the status view is public, so any player can run /bosstrial status to check seal state and cooldowns, while reload and reset stay admin-only, enforced in the handler now that plugin.yml no longer gates the whole command. 0.2.7 keeps a fight when its boss is merely unloaded (the family went home, logged off or wiped) instead of forgetting it, holds the dragon trial while nobody is at the arena, and sets aside damage a lost ledger never saw so an honest finish can still earn the seal. 0.2.11 hardens the dragon flip with a second, final judgment at HIGHEST plus danger-zone logging, closes a saved trial out on version change instead of restoring it (archived, logged, counters kept), presents earned rewards automatically once per batch - with immunity frames on the auto-open only, never on a manual one - and pays every signature stack plus the dragon's breath and crystals per champion as personal claims, dragon XP included. 0.3.1 adds the fight record - at every verdict and every elder trio progress point the encounter's per-player table (damage dealt, damage taken, healing done where a heal-spell cast names its source, healing received) is written to fights/ and to the log - and the elder trio escalation, with each elder priced as an epic fight of its own, and the trio's third, seal-completing elder carries a pool multiplier (elder-guardian.trio, settled x1.3). 0.3.2 adds milestone beats - at 75/50/25% of a chapter's pool remaining, a broadcast line and one pulse surge, once per threshold per encounter (per phase for the dragon; the warden's lines are its progress display, the warden having no health bar) - and moves the dragon's add-wave thresholds into config (dragon.adds.wave-thresholds).
+softdepend: [ExcelGuildGate, Magic, GriefPrevention]
+commands:
+  bossrewards:
+    description: Open your own earned boss rewards
+    usage: /bossrewards
+  bosstrial:
+    description: ExcelBossTrial status and admin controls
+    usage: /bosstrial [status|reload|reset [all]|grantclaim <player> <material> <count>]
+permissions:
+  excelbosstrial.admin:
+    description: Allows /bosstrial admin commands
+    default: op

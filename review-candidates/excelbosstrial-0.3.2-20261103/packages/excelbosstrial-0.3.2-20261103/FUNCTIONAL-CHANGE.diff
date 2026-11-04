@@ -1,0 +1,33 @@
+--- previous/plugin.yml
++++ candidate/plugin.yml
+@@ -1,5 +1,5 @@
+ name: ExcelBossTrial
+-version: 0.2.9-offline-team-r2
++version: 0.2.10-marker-fix
+ author: Argus
+ main: com.winkreyes.excelbosstrial.ExcelBossTrial
+ api-version: "1.21"
+--- previous/src/com/winkreyes/teamrewards/marker/PersonalChestMarkers.java
++++ candidate/src/com/winkreyes/teamrewards/marker/PersonalChestMarkers.java
+@@ -1,3 +1,4 @@
++// Excel WRV: personal reward marker protection; original project attribution preserved.
+ package com.winkreyes.teamrewards.marker;
+ import java.util.*;import java.util.function.Consumer;import org.bukkit.*;import org.bukkit.block.*;import org.bukkit.entity.Player;import org.bukkit.event.*;import org.bukkit.event.block.*;import org.bukkit.event.entity.EntityExplodeEvent;import org.bukkit.event.inventory.*;import org.bukkit.event.player.PlayerInteractEvent;import org.bukkit.inventory.*;import org.bukkit.persistence.PersistentDataType;import org.bukkit.plugin.Plugin;
+ 
+@@ -47,7 +48,15 @@
+   String id=chest.getPersistentDataContainer().get(markerKey,PersistentDataType.STRING),owner=chest.getPersistentDataContainer().get(ownerKey,PersistentDataType.STRING);
+   try{var m=registry.get(UUID.fromString(id));return m!=null&&m.owner().toString().equals(owner)&&m.world().equals(b.getWorld().getUID())&&m.x()==b.getX()&&m.y()==b.getY()&&m.z()==b.getZ()?m:null;}catch(RuntimeException bad){return null;}
+  }
+- private boolean tagged(Inventory inventory){InventoryHolder h=inventory.getHolder();if(h instanceof Chest chest)return chest.getPersistentDataContainer().has(markerKey,PersistentDataType.STRING);if(h instanceof DoubleChest dc)return tagged(dc.getLeftSide().getInventory())||tagged(dc.getRightSide().getInventory());return false;}
++ private boolean tagged(Inventory inventory){
++  if(inventory==null)return false;
++  InventoryHolder holder=inventory.getHolder();
++  // Excel: inspect each physical chest directly. Chest#getInventory can return
++  // the combined double chest again, so never recurse through side inventories.
++  if(holder instanceof DoubleChest dc)return taggedChest(dc.getLeftSide())||taggedChest(dc.getRightSide());
++  return taggedChest(holder);
++ }
++ private boolean taggedChest(InventoryHolder holder){return holder instanceof Chest chest&&chest.getPersistentDataContainer().has(markerKey,PersistentDataType.STRING);}
+  public boolean cleanup(UUID id){main();if(!registry.writable())return false;var m=registry.get(id);if(m==null)return false;World w=Bukkit.getWorld(m.world());if(w==null||!w.isChunkLoaded(m.x()>>4,m.z()>>4))return false;Block b=w.getBlockAt(m.x(),m.y(),m.z());if(!m.equals(proof(b)))return false;
+   try{if(!authorization.mayRemove(m.owner(),b))return false;}catch(RuntimeException unknown){return false;}
+   Chest chest=(Chest)b.getState();if(!chest.getBlockInventory().isEmpty())return false; // Never destroy externally inserted property.
