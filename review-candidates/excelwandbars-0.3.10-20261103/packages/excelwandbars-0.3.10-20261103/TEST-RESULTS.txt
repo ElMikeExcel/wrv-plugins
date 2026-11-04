@@ -1,0 +1,64 @@
+===== Build record (source: wandbars-ux-build/build-0.3.10/BUILD-RECORD.md) =====
+# ExcelWandBars 0.3.10 — Build Record
+
+Built Nov 3, 2026, from the shipped 0.3.9 tree. **Candidate only — not installed.** Mike approved the feature Nov 3, 2026, ~9:58 AM CST (options-card pick: "Build the name-tag countdown into the next WandBars packet"). Design of record: `../COOLDOWN-64-INVESTIGATION.md` (Option A).
+
+- **Candidate:** `ExcelWandBars-0.3.10.jar` — SHA-256 `0afbf993282df6447533e3b3b753eca3c96fb0a4dcf741078b7c7b90973a8461`, **529,841 bytes, 233 entries**. Built twice, byte-identical both times.
+- **Base gate:** the unmodified 0.3.9 source tree was rebuilt and repacked first and reproduced the shipped 0.3.9 candidate byte-identically — SHA-256 `6652e6bebb067ae10b423bcf6e730e4a16ec28f3aaee92f90b1f1057154fd70d`, 520,282 B (reference copy in this folder as `ref-0.3.9.jar`, hash re-verified at close-out).
+- **Entry diff vs 0.3.9:** 8 changed (ExcelWandBars, ExcelWandBars$1, MagicHook + $Ctx/$LastForm/$View, config.yml, plugin.yml), 2 added (NameTagHook, core/CooldownTagPlan), 0 removed. Inner-class shifts in MagicHook are synthetic-accessor renumbering, the same pattern as prior builds.
+- **Tests:** 14 pure suites, **416 checks, 0 failed** (355 carried from 0.3.9, all still passing, + 61 new in `CooldownTagPlanTest`).
+- **Rig (Paper 26.3-235, Moon's lifecycle fixture, Probe0310):** repro on stock 0.3.9 — **8 checks, 0 failed, SEVERE 0** (`rig/evidence/probe0310-result-repro039.txt`, `boot3-repro039-final.console.log`); feature on 0.3.10 — **42 checks, 0 failed, SEVERE 0** (`rig/evidence/probe0310-result-final.txt`, `boot17-feature-final.console.log`).
+
+New config keys (new section `cooldown-name-tag`, defaults = the behavior Mike approved): `enabled: true`, `threshold-seconds: 60` (clamped 0–3600). **This is a jar + config packet**: the live config gains the new section merged in; existing live values are untouched (see the MANIFEST entry).
+
+---
+
+## The bug (verified in `../COOLDOWN-64-INVESTIGATION.md`)
+
+Magic writes each spell icon's stack amount as `ceil(time-to-cast / 1000)` clamped to [1, 99], where time-to-cast is the max of remaining cooldown, charge recharge, and mana wait (`Mage.updateHotbarStatus`, bytecode-verified in Magic 11.2.5). Geyser then flattens any amount to 64 for Bedrock clients. So on Bedrock a 4-minute Familiar cooldown reads "64" for most of its wait, and on Java it pins at 99 — the number cannot tell the truth past ~a minute either way. Mike's screenshot (Nov 3, 9:47 AM CST) showed exactly this: Familiar's egg at 64 with ~3 minutes left.
+
+**Repro (rig, stock 0.3.9):** mend given a 240 s time-to-cast — the icon's name shows nothing about the remaining time (`mend  (Active rank 2 of 5)`) while Magic's own value reads 238,488 ms. Fixture limitation, stated plainly: the fixture does not run Magic's live amount updater for the synthetic player (all amounts stay 1), so the 99/64 pin itself is asserted at formula level — `min(99, ceil(ttc/1000)) == 99` — and stands on the bytecode verification in the investigation file plus Mike's live screenshot.
+
+## The fix — name-tag countdown (`NameTagHook` + `core/CooldownTagPlan`)
+
+While a wand-mode hotbar spell's true time-to-cast (Magic's own `BaseSpell.getTimeToCast()`, the same max-of-three value) exceeds the threshold, the icon's display name is annotated: `Familiar · 3:24` (the spell's own painted name, middle dot, m:ss, seconds ceilinged so the tag never understates). At or below the threshold the name is left alone and Magic's number does the talking; when the spell becomes castable the annotation clears on the next poll.
+
+Mechanics, and why they are stable against Magic's refresh (the task's hard ordering question, settled by bytecode before code):
+
+- `Mage.updateHotbarStatus()` / `BaseSpell.updateItem` never write the display name or lore — only the stack amount and the icon art (material/skull). Names are painted at inventory-build time and by WandBars' own `TapBarHook.applyLore` on open/cast. So there is no per-tick fight: a 10-tick poll appends the suffix to the current name, and after any repaint it simply re-appends.
+- The first annotation records the spell's name component verbatim in a PDC marker (`cooldown_name_tag`, Gson-serialized component) plus the spell key (`cooldown_name_spell`). Every refresh re-renders from the **recorded base**, so suffixes can never stack; if the marker's spell key no longer matches the icon's spell, the copy is stale and is restored instead of refreshed.
+- The suffix is a separate gray, non-italic text component appended after the spell's own name — Magic's name and lore underneath are never rewritten, and restore puts the recorded base back byte-for-byte (rig-verified: page paint byte-identical after a raw close mid-cooldown).
+- The stack amount is never touched (rig-asserted: WandBars writes no amount).
+- Platform parity is by construction: the annotation lives in the item's display name, which Java renders natively and Geyser translates for Bedrock the same way it translates every other spell name. (Bedrock rendering itself is a player proof — see below.)
+
+## Save-safety (the 0.3.9 pager-leak discipline, applied in full)
+
+Annotated icons are display copies only. The defenses mirror `PagerHook`'s:
+
+1. **Pre-save sweeps:** `MagicHook.sweepNameTag` runs beside `sweepPager` at all three sweep sites (sneak-flip branch, `flipPage`, `flipListPage`), so any save WandBars itself initiates sees a clean display. Rig: a WandBars flip saved with **no** annotated copy in the page paint, checked in the same tick before the cleanup poll could run (hook summary `sweeps 1`).
+2. **Standing cleanup:** every poll (and on join, at +20/+60 ticks after join, and at +1/+10 ticks after inventory close) restores marked items found in the wand's stored inventory, in hotbar page contents, in the real inventory while the bar is closed, and on the cursor. Restoration is in place — the recorded base name is put back; nothing is ever deleted. While the bar is open, all pages **except the current one** are restored (the current page is render/sweep-owned); copies Magic's own page cycles save into background pages are therefore collected within one poll. Rig: after a raw Magic close mid-cooldown, the page paint is clean, the real and stored inventories are clean, and the page paint is **byte-identical** to its pre-close serialization.
+3. **Quit/join:** the quit handler (LOWEST priority) splits its steps (display sweep / standing cleanup / explicit restore of every hotbar page) into separate guards so one failing step cannot skip the others; join schedules cleanup passes. Rig: at the quit moment the real inventory holds no annotated copy; after the join event and a close, real inventory and page paint are clean.
+4. **Persistence shape (bytecode):** a wand's saved state is its spell map plus properties — painted page stacks are never serialized — and for spell items `saveInventory` records only the spell key. An annotated name therefore has no path to disk through the wand at all; the in-memory page paint is the only residue vector, and it is covered by (2).
+
+**One documented observation, not a leak (rig boot16 diagnostic):** at a quit event, Magic's own quit handling (registered earlier, same priority) saves the open inventory and deactivates the wand before WandBars' handler can reach that wand's page paint; a direct cleanup call at that instant restores 0 because there is no active wand left. The copies Magic saved sit only in that deactivated wand object's in-memory paint — never persisted (spell-map persistence, above), rebuilt from the map at the next activation, and the probe's post-join check reads **the same wand object** clean. Everything that is persisted or displayed — real inventory, stored inventory, spell map — is clean in every ordering.
+
+Fail-soft: any error while handling a player disables the feature for that player for the session, restores their display, and logs one warning — the same posture as the pager hook.
+
+## Rig phases (Probe0310, final run — 42 checks, 0 failed)
+
+- **C1/C2:** baseline paint clean; a 240 s cooldown tags the icon `mend  (Active rank 2 of 5) · 3:59` (239 s of 240, matching Magic's 238,492 ms), marker present, base name leading; a castable spell's icon untouched; WandBars never writes the amount.
+- **C3:** the tag ticks down (239 → 236 over ~3.25 s).
+- **C5:** an annotated icon moved by drag-write lands swapped in the model, re-annotates at its new slot (`· 3:54`), and storage is clean everywhere after the move + close.
+- **C4:** WandBars flip pre-save sweep (above); raw Magic close + byte-identical restore; tag returns on its own when the wand comes back out mid-cooldown.
+- **C6:** just over the threshold the tag shows ~`1:01`; ticking under 60 s removes it (name plain, marker off).
+- **C7:** at expiry the name is plain, `wand.cast(spell)` succeeds, and a fresh 240 s cooldown re-tags (`· 4:00`).
+- **C8:** quit/join as documented above.
+
+Probe-side fixtures worth knowing (not product defects): the fixture's first bar-open can fail its exit-layout repair (also on stock jars — the probe retries); after mass grants, the fixture's Magic-built pages and WandBars' loadout pages paginate differently, so later phases work on a "focus" spell found by turning pages until it is displayed.
+
+## What is NOT proven here
+
+- **The live amount pin (99 Java / 64 Bedrock) is not rig-reproducible** — the fixture never runs Magic's amount updater for the synthetic player. It stands on bytecode + Mike's live screenshot.
+- **No true relog:** quit/join are exercised by firing real `PlayerQuitEvent`/`PlayerJoinEvent` through the plugin manager on a still-connected synthetic player, not by an actual disconnect/reconnect.
+- **Bedrock rendering** of the annotated name is by construction (same display-name channel as every spell name) — Mike's in-game proof is the decider, listed in the MANIFEST entry.
+- Player proofs owed after install are listed in the MANIFEST entry (Mike on Bedrock: Familiar name tag counts down from ~4:00 while the number sits at 64, clears at expiry; Jester on Java: same on a >99 s cooldown).

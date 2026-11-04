@@ -1,0 +1,8 @@
+SANITIZATION SCAN — REVIEWED, NO SENSITIVE CONTENT
+Package: excelwandbars-0.3.10-20261103
+
+Scanned every file for IPv4 addresses (excluding loopback/broadcast literals), email addresses, private-key blocks, and credential assignments. All pattern hits were reviewed by hand:
+
+The 2 credential-pattern hits are the Java variable `secret` in src/wrv/magic/retention/AuthenticatedWindow.java — a byte[] HMAC key generated at runtime with SecureRandom; no credential value exists in the source.
+
+No redactions were needed.
