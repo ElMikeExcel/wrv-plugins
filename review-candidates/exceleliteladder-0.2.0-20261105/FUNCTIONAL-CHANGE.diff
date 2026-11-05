@@ -1,0 +1,1180 @@
+FUNCTIONAL CHANGE — ExcelEliteLadder 0.1.2 -> 0.2.0
+Baseline: the 0.1.2 record tree (packages/exceleliteladder-0.1.2-20261103).
+Scope: src/, tests/, config.yml, plugin.yml, build.sh, run-tests.sh, plus the NEW ladder.yml.
+Changed sources: ExcelEliteLadder.java (loader/reload/status), core/LadderTable.java (statics -> instance),
+core/StepPlan.java + core/FileApplier.java (active table as parameter). NEW: core/LadderConfig.java,
+core/LadderConfigException.java, ladder.yml (the table as config, = the 0.1.2 values), tests/LadderConfigSuite.java (new),
+tests/TestMain.java (the carried 0.1.2 suite adapted to the instance API — checks unchanged).
+Unchanged byte-for-byte: core/FileApplier apply-path helpers aside from the signature, core/LadderStep.java,
+core/LadderException.java, core/MobCombatFile.java, tests/Check.java, all 7 tests/fixtures files.
+build.sh / run-tests.sh were rewritten for this VM's toolchain paths (noted in SOURCE.md).
+
+diff -ruN /tmp/fcdiff/a/build.sh /tmp/fcdiff/b/build.sh
+--- /tmp/fcdiff/a/build.sh	2026-11-05 12:25:39.429232259 +0000
++++ /tmp/fcdiff/b/build.sh	2026-11-05 12:25:39.480000027 +0000
+@@ -1,18 +1,23 @@
+ #!/bin/bash
+-# Build ExcelEliteLadder-0.1.2.jar (deterministic: two builds give the same sha).
+-# Manual javac route like the other Excel plugins. Compile-only deps: Paper API + snakeyaml.
++# Build ExcelEliteLadder-0.2.0.jar (deterministic: the script builds twice and
++# refuses to finish unless the two jars are byte-identical).
++# Manual javac route like the other Excel plugins. Compile-only deps are read
++# from this VM's pinned trees (Paper API 26.3 build 231 + the Paper runtime
++# library set), the same classpath family the other 0.2.0-era builds use.
+ set -euo pipefail
+ cd "$(dirname "$0")"
+-JDK=${JDK:-/home/box/tools/jdk-25.0.5+8}
+-LIBS=${LIBS:-/workspace/es135/src135/build-libs}
+-CP="$LIBS/paper-api.jar"
+-for j in adventure-api-4.20.0 adventure-key-4.20.0 adventure-text-serializer-legacy-4.20.0 examination-api-1.3.0 guava-33.3.1-jre snakeyaml-2.2; do CP="$CP:$LIBS/$j.jar"; done
+-RT=${RT:-/workspace/eliteladder-rig/libraries}
+-CP="$CP:$RT/net/md-5/bungeecord-chat/1.21-R0.2-deprecated+build.21/bungeecord-chat-1.21-R0.2-deprecated+build.21.jar:$RT/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar"
++JDK=${JDK:-/home/hatch/workspace/.jdk25}
++API=${API:-/home/hatch/workspace/magic-los-fix/cp/paper-api-26.3.build.231-stable.jar}
++L=${L:-/home/hatch/workspace/excelbuildmode-pilot/runtime-server/libraries}
++CP="$API"
++for j in $(find $L/net/kyori $L/org/jspecify $L/com/google $L/net/md-5 $L/org/yaml $L/org/slf4j $L/org/joml $L/it/unimi -name '*.jar' 2>/dev/null); do CP="$CP:$j"; done
+ rm -rf build/classes && mkdir -p build/classes
+ "$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$CP" -d build/classes $(find src -name '*.java')
+-cp plugin.yml config.yml build/classes/
+-OUT=${OUT:-build/ExcelEliteLadder-0.1.2.jar}
+-rm -f "$OUT"
+-"$JDK/bin/jar" --create --file "$OUT" --date=2026-11-01T00:00:00-05:00 -C build/classes .
++cp plugin.yml config.yml ladder.yml build/classes/
++DATE=2026-11-05T00:00:00-06:00
++OUT=${OUT:-ExcelEliteLadder-0.2.0.jar}
++rm -f "$OUT" build/repro.jar
++"$JDK/bin/jar" --create --file "$OUT" --date=$DATE -C build/classes .
++"$JDK/bin/jar" --create --file build/repro.jar --date=$DATE -C build/classes .
++cmp "$OUT" build/repro.jar && echo "deterministic: two builds byte-identical"
+ sha256sum "$OUT"
+diff -ruN /tmp/fcdiff/a/config.yml /tmp/fcdiff/b/config.yml
+--- /tmp/fcdiff/a/config.yml	2026-11-05 12:25:39.429072429 +0000
++++ /tmp/fcdiff/b/config.yml	2026-11-05 12:25:39.479881519 +0000
+@@ -1,9 +1,13 @@
+-# ExcelEliteLadder 0.1.2
+-# The ladder table itself is built into the jar (approved Oct 25, 2026) and is not editable here.
++# ExcelEliteLadder 0.2.0
++# The ladder TABLE itself lives in ladder.yml in this same folder (since 0.2.0;
++# Mike's 2.0 decision, Nov 5, 2026) — edit it there and run /eliteladder reload.
++# The table is strictly validated on every load: a malformed ladder.yml is
++# refused with the exact defect named, and the last-good table keeps running
++# (at first boot, the built-in copy of the shipped default). Current table:
+ # S1 0.07/1.75/0.55, S2 0.08/1.90/0.50, S3 0.09/2.05/0.50, S4 0.11/2.35/0.40, S5 0.11/2.35/0.40,
+ # cap 120 on S1-S3 and 150 on S4-S5 (the ladder tops out at Seal 4, compressed - Nov 1, 2026;
+ # the S5 row equals S4, so a Seal 5 trigger is a no-op), dungeon (normalized) toElite/toPlayer
+-# 0.5/2.0 on every step.
++# 0.5/2.0 on every step. This file holds only the watcher behaviour below.
+ 
+ # Master switch. false = watch nothing, change nothing.
+ enabled: true
+diff -ruN /tmp/fcdiff/a/ladder.yml /tmp/fcdiff/b/ladder.yml
+--- /tmp/fcdiff/a/ladder.yml	1970-01-01 00:00:00.000000000 +0000
++++ /tmp/fcdiff/b/ladder.yml	2026-11-05 12:25:39.480193397 +0000
+@@ -0,0 +1,72 @@
++# ExcelEliteLadder — the mob ladder table (since 0.2.0 this lives here, not in
++# the jar; Mike's 2.0 decision, Nov 5, 2026). One row per broken-seal count:
++# when ExcelGuildGate reports N seals broken, the step-N row is what the world
++# should look like, and ExcelEliteLadder writes it into EliteMobs'
++# MobCombatSettings.yml (up only, never down).
++#
++# HOW TO CHANGE THE LADDER: edit the numbers below, then run
++#   /eliteladder reload
++# from the console (or in game with exceleliteladder.admin). No restart, no
++# new jar. The reload either takes the WHOLE table or refuses it — watch the
++# reply: "accepted" means the new table is live; "REFUSED" names the exact
++# defect and the previous table keeps running.
++#
++# THE RULES (enforced on every load — a violation refuses the whole table):
++#   - exactly step-1 through step-5, each with exactly these six values:
++#       spawn               fraction of spawns that become elites, > 0 and <= 1
++#       cap                 highest natural elite level, a whole number 1..1000
++#       normalized-to-elite damage TO elites in dungeons (normalized gear)
++#       normalized-to-player damage FROM elites in dungeons (normalized gear)
++#       scaled-to-elite     damage TO elites in the open world (scaled gear)
++#       scaled-to-player    damage FROM elites in the open world (scaled gear)
++#     Damage multipliers must be > 0 and <= 10. No extra keys — a typo like
++#     "spwan" refuses the table instead of silently doing nothing.
++#   - As seals break the world only gets harder: spawn and cap never go DOWN
++#     from one step to the next, scaled-to-player never goes down, and
++#     scaled-to-elite never goes UP. Staying equal is fine (see step-5).
++#
++# STEP 5 EQUALS STEP 4 ON PURPOSE: the ladder tops out at seal 4 compressed —
++# there is no harder seal-5 step in the design (after the fifth seal the group
++# moves on to the EliteMobs guild world). The step-5 row must stay equal to
++# step-4; the Seal 5 trigger is a safe no-op.
++#
++# If this file is deleted, the plugin regenerates this default on the next
++# boot. If it is malformed at boot, the plugin runs on its built-in copy of
++# this same table and warns loudly in the log.
++ladder:
++  step-1:
++    spawn: 0.07
++    cap: 120
++    normalized-to-elite: 0.5
++    normalized-to-player: 2.0
++    scaled-to-elite: 0.55
++    scaled-to-player: 1.75
++  step-2:
++    spawn: 0.08
++    cap: 120
++    normalized-to-elite: 0.5
++    normalized-to-player: 2.0
++    scaled-to-elite: 0.50
++    scaled-to-player: 1.90
++  step-3:
++    spawn: 0.09
++    cap: 120
++    normalized-to-elite: 0.5
++    normalized-to-player: 2.0
++    scaled-to-elite: 0.50
++    scaled-to-player: 2.05
++  step-4:
++    spawn: 0.11
++    cap: 150
++    normalized-to-elite: 0.5
++    normalized-to-player: 2.0
++    scaled-to-elite: 0.40
++    scaled-to-player: 2.35
++  step-5:
++    # Identical to step-4 BY DESIGN — the ladder tops out at seal 4 (see header).
++    spawn: 0.11
++    cap: 150
++    normalized-to-elite: 0.5
++    normalized-to-player: 2.0
++    scaled-to-elite: 0.40
++    scaled-to-player: 2.35
+diff -ruN /tmp/fcdiff/a/plugin.yml /tmp/fcdiff/b/plugin.yml
+--- /tmp/fcdiff/a/plugin.yml	2026-11-05 12:25:39.429153511 +0000
++++ /tmp/fcdiff/b/plugin.yml	2026-11-05 12:25:39.479941889 +0000
+@@ -1,14 +1,14 @@
+ name: ExcelEliteLadder
+-version: 0.1.2
++version: 0.2.0
+ main: com.winkreyes.exceleliteladder.ExcelEliteLadder
+ api-version: '1.13'
+ softdepend: [EliteMobs, ExcelGuildGate]
+ author: WinkReyesValley
+-description: Elite Seal Ladder - when a GuildGate seal breaks, steps EliteMobs MobCombatSettings.yml up to the approved ladder values at the next empty-server moment (dated backup, verify, restore on failure, em reload). Up only.
++description: Elite Seal Ladder - when a GuildGate seal breaks, steps EliteMobs MobCombatSettings.yml up to the ladder values at the next empty-server moment (dated backup, verify, restore on failure, em reload). Up only. Since 0.2.0 the ladder table lives in ladder.yml (strictly validated on load; a malformed table is refused and the last-good table keeps running).
+ commands:
+   eliteladder:
+-    description: Elite Seal Ladder admin (status / check / retry).
+-    usage: /eliteladder status | check | retry
++    description: Elite Seal Ladder admin (status / check / retry / reload the ladder table).
++    usage: /eliteladder status | check | retry | reload
+     permission: exceleliteladder.admin
+ permissions:
+   exceleliteladder.admin:
+diff -ruN /tmp/fcdiff/a/run-tests.sh /tmp/fcdiff/b/run-tests.sh
+--- /tmp/fcdiff/a/run-tests.sh	2026-11-05 12:25:39.430780322 +0000
++++ /tmp/fcdiff/b/run-tests.sh	2026-11-05 12:25:39.480085615 +0000
+@@ -1,9 +1,13 @@
+ #!/bin/bash
+-# Compile and run the ExcelEliteLadder plain-JVM suite (core only; Bukkit glue is proven on the rig).
++# Compile and run the ExcelEliteLadder plain-JVM suites (core only; Bukkit glue is
++# proven on the rig). 0.2.0 adds LadderConfigSuite, which parses the shipped
++# ladder.yml with SnakeYAML (the YAML engine family Bukkit itself uses), so it
++# is on the test classpath.
+ set -euo pipefail
+ cd "$(dirname "$0")"
+-JDK=${JDK:-/home/box/tools/jdk-25.0.5+8}
++JDK=${JDK:-/home/hatch/workspace/.jdk25}
++SNAKE=${SNAKE:-/home/hatch/workspace/excelbuildmode-pilot/runtime-server/libraries/org/yaml/snakeyaml/2.6/snakeyaml-2.6.jar}
+ rm -rf build/test-classes && mkdir -p build/test-classes
+-"$JDK/bin/javac" --release 21 -proc:none -nowarn -d build/test-classes \
++"$JDK/bin/javac" --release 21 -proc:none -nowarn -cp "$SNAKE" -d build/test-classes \
+   $(find src/com/winkreyes/exceleliteladder/core -name '*.java') $(find tests -name '*.java')
+-"$JDK/bin/java" -cp build/test-classes TestMain
++"$JDK/bin/java" -cp "build/test-classes:$SNAKE" TestMain ladder.yml
+diff -ruN /tmp/fcdiff/a/src/com/winkreyes/exceleliteladder/ExcelEliteLadder.java /tmp/fcdiff/b/src/com/winkreyes/exceleliteladder/ExcelEliteLadder.java
+--- /tmp/fcdiff/a/src/com/winkreyes/exceleliteladder/ExcelEliteLadder.java	2026-11-05 12:25:39.409667516 +0000
++++ /tmp/fcdiff/b/src/com/winkreyes/exceleliteladder/ExcelEliteLadder.java	2026-11-05 12:25:39.435829830 +0000
+@@ -1,6 +1,8 @@
+ package com.winkreyes.exceleliteladder;
+ 
+ import com.winkreyes.exceleliteladder.core.FileApplier;
++import com.winkreyes.exceleliteladder.core.LadderConfig;
++import com.winkreyes.exceleliteladder.core.LadderConfigException;
+ import com.winkreyes.exceleliteladder.core.LadderException;
+ import com.winkreyes.exceleliteladder.core.LadderStep;
+ import com.winkreyes.exceleliteladder.core.LadderTable;
+@@ -17,6 +19,7 @@
+ import java.util.ArrayList;
+ import java.util.Date;
+ import java.util.HashSet;
++import java.util.LinkedHashMap;
+ import java.util.List;
+ import java.util.Locale;
+ import java.util.Map;
+@@ -27,6 +30,7 @@
+ import org.bukkit.command.CommandExecutor;
+ import org.bukkit.command.CommandSender;
+ import org.bukkit.command.TabCompleter;
++import org.bukkit.configuration.ConfigurationSection;
+ import org.bukkit.configuration.InvalidConfigurationException;
+ import org.bukkit.configuration.file.YamlConfiguration;
+ import org.bukkit.entity.Player;
+@@ -55,9 +59,18 @@
+     private Method sealsMethod;
+     private final Set<String> loggedOnce = new HashSet<>();
+ 
++    // The active ladder table (0.2.0): loaded from ladder.yml under strict
++    // validation; the built-in 0.1.x table until/unless a config table loads.
++    // volatile: swapped wholesale by /eliteladder reload, read by the watch tick.
++    private volatile LadderTable table = LadderTable.builtin();
++    private volatile String tableSource = "built-in default";
++    private volatile String tableLoadNote = "not loaded yet";
++    private volatile String lastLadderDefect = null;
++
+     @Override
+     public void onEnable() {
+         saveDefaultConfig();
++        loadLadder(true);
+         loadState();
+         String fault = System.getProperty(TEST_FAULT_PROPERTY);
+         if (fault != null) {
+@@ -71,6 +84,7 @@
+         long period = Math.max(5, getConfig().getInt("poll-seconds", 30)) * 20L;
+         getServer().getScheduler().runTaskTimer(this, this::evaluate, 100L, period);
+         getLogger().info("ExcelEliteLadder enabled: applied step " + stepText(appliedStep)
++                + ", ladder table: " + tableSource
+                 + ", watching ExcelGuildGate seals every " + getConfig().getInt("poll-seconds", 30) + "s"
+                 + ", reload with players online " + (allowWithPlayers() ? "ALLOWED" : "off (waits for an empty server)")
+                 + (getConfig().getBoolean("enabled", true) ? "" : " (master switch OFF)"));
+@@ -89,6 +103,95 @@
+         return n < 1 ? "none (no verified baseline)" : "S" + n;
+     }
+ 
++    // ---------- ladder table (ladder.yml, 0.2.0) ----------
++
++    private File ladderFile() {
++        return new File(getDataFolder(), "ladder.yml");
++    }
++
++    /**
++     * Loads (or reloads) the ladder table from ladder.yml under LadderConfig's
++     * strict validation. Discipline (Mike's 2.0 trade, Nov 5, 2026): ANY defect
++     * refuses the new table whole — on first boot the built-in default table
++     * (the exact 0.1.x values) runs instead; on reload the last-good table
++     * keeps running. A missing file is generated from the bundled default, so
++     * a fresh install behaves identically to 0.1.2.
++     */
++    private void loadLadder(boolean initial) {
++        String when = initial ? "at boot" : "on reload";
++        File f = ladderFile();
++        boolean generated = false;
++        if (!f.exists()) {
++            try {
++                saveResource("ladder.yml", false);
++                generated = true;
++            } catch (IllegalArgumentException | IllegalStateException ex) {
++                refuseLadder(when, initial, "ladder.yml is missing and the bundled default could not be generated (" + ex.getMessage() + ")");
++                return;
++            }
++        }
++        if (!f.exists()) {
++            refuseLadder(when, initial, "ladder.yml is missing and the bundled default could not be generated");
++            return;
++        }
++        try {
++            YamlConfiguration y = new YamlConfiguration();
++            y.load(f);
++            Map<String, Object> root = new LinkedHashMap<>();
++            ConfigurationSection sec = y.getConfigurationSection(LadderConfig.SECTION);
++            root.put(LadderConfig.SECTION, sec == null ? null : sectionToMap(sec));
++            LadderTable parsed = LadderConfig.parseRoot(root);
++            table = parsed;
++            tableSource = "ladder.yml (config)" + (generated ? " — default generated on first boot" : "");
++            lastLadderDefect = null;
++            tableLoadNote = (initial ? "loaded from ladder.yml at boot" : "reloaded from ladder.yml (accepted)")
++                    + (generated ? "; the file did not exist and was generated from the bundled default" : "");
++            if (!initial) {
++                getLogger().info("Ladder table reloaded from ladder.yml and is now live ("
++                        + table.step(LadderTable.MAX_STEP).label() + ": " + table.step(LadderTable.MAX_STEP).summary() + ").");
++            }
++        } catch (LadderConfigException ex) {
++            refuseLadder(when, initial, ex.getMessage());
++        } catch (InvalidConfigurationException ex) {
++            refuseLadder(when, initial, "ladder.yml is not valid YAML: " + oneLine(ex.getMessage()));
++        } catch (IOException ex) {
++            refuseLadder(when, initial, "ladder.yml could not be read: " + ex.getMessage());
++        }
++    }
++
++    /** Refusal path: keep last-good (or the built-in default at boot), name the defect loudly. */
++    private void refuseLadder(String when, boolean initial, String defect) {
++        if (initial) {
++            table = LadderTable.builtin();
++            tableSource = "built-in default";
++        }
++        lastLadderDefect = defect;
++        tableLoadNote = "REFUSED " + when + ": " + defect
++                + (initial ? " — running on the built-in default table (the exact 0.1.2 values)"
++                           : " — previous table kept (" + tableSource + ")");
++        getLogger().warning("Ladder table REFUSED " + when + ": " + defect
++                + (initial ? ". Running on the built-in default table (identical to 0.1.2). Fix ladder.yml and run /eliteladder reload."
++                           : ". The previous table stays in force; nothing was changed. Fix ladder.yml and run /eliteladder reload again."));
++    }
++
++    private static Map<String, Object> sectionToMap(ConfigurationSection sec) {
++        Map<String, Object> out = new LinkedHashMap<>();
++        for (String k : sec.getKeys(false)) {
++            Object v = sec.get(k);
++            if (v instanceof ConfigurationSection sub) {
++                v = sectionToMap(sub);
++            }
++            out.put(k, v);
++        }
++        return out;
++    }
++
++    private static String oneLine(String s) {
++        if (s == null) return "unknown parse error";
++        int i = s.indexOf('\n');
++        return (i >= 0 ? s.substring(0, i) : s).trim();
++    }
++
+     // ---------- seal source ----------
+ 
+     private Integer readSeals() {
+@@ -134,15 +237,16 @@
+             once("baseline-" + why, () -> getLogger().warning("No baseline, nothing will be applied: " + why));
+             return;
+         }
+-        int k = LadderTable.matchStep(live);
++        LadderTable active = table;
++        int k = active.matchStep(live);
+         if (k >= LadderTable.MIN_STEP) {
+             appliedStep = k;
+             lastResult = "baseline adopted: live file equals S" + k + "-norm";
+             saveState();
+-            getLogger().info("Baseline adopted: live MobCombatSettings.yml equals ladder S" + k + "-norm (" + LadderTable.step(k).summary() + ").");
++            getLogger().info("Baseline adopted: live MobCombatSettings.yml equals ladder S" + k + "-norm (" + active.step(k).summary() + ").");
+             return;
+         }
+-        String why = LadderTable.describeOffLadder(live, LadderTable.step(1));
++        String why = LadderTable.describeOffLadder(live, active.step(1));
+         pendingNote = "REFUSED: " + why + ". Install the S1-norm file first.";
+         once("baseline-" + why, () -> getLogger().warning("No baseline, nothing will be applied: " + why
+                 + ". Install the S1-norm MobCombatSettings.yml (sha 57ad4ab2...) and the ladder starts from there."));
+@@ -217,10 +321,11 @@
+         }
+         applying = true;
+         int from = appliedStep;
+-        LadderStep to = LadderTable.step(target);
++        LadderTable active = table; // one consistent table for the whole apply
++        LadderStep to = active.step(target);
+         try {
+             String stamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ROOT).format(new Date());
+-            FileApplier.Result r = FileApplier.apply(mobCombatFile(), backupDir(), from, to, stamp, this::yamlCheck, faults());
++            FileApplier.Result r = FileApplier.apply(mobCombatFile(), backupDir(), active, from, to, stamp, this::yamlCheck, faults());
+             if (!r.ok()) {
+                 if (r.error() != null && r.error().startsWith("REFUSED")) {
+                     lastResult = r.error();
+@@ -393,17 +498,23 @@
+         switch (sub) {
+             case "status" -> {
+                 Integer seals = readSeals();
++                LadderTable active = table;
+                 String liveText;
+                 try {
+                     Map<String, Double> live = readLive();
+-                    int k = LadderTable.matchStep(live);
+-                    liveText = k > 0 ? "S" + k + "-norm" : "OFF LADDER (" + LadderTable.describeOffLadder(live, LadderTable.step(Math.max(1, appliedStep))) + ")";
++                    int k = active.matchStep(live);
++                    liveText = k > 0 ? "S" + k + "-norm" : "OFF LADDER (" + LadderTable.describeOffLadder(live, active.step(Math.max(1, appliedStep))) + ")";
+                 } catch (IOException | LadderException ex) {
+                     liveText = "unreadable (" + ex.getMessage() + ")";
+                 }
+                 s.sendMessage(color("&6EliteLadder &7status"));
+                 s.sendMessage(color("&7Current seals: &f" + (seals == null ? "unknown (ExcelGuildGate missing)" : seals + " of 5")));
+                 s.sendMessage(color("&7Applied step: &f" + stepText(appliedStep)));
++                s.sendMessage(color("&7Ladder table: &f" + tableSource));
++                s.sendMessage(color("&7Table load: &f" + tableLoadNote));
++                for (LadderStep st : active.steps()) {
++                    s.sendMessage(color("&7  " + st.label() + ": &f" + st.summary()));
++                }
+                 s.sendMessage(color("&7Live file: &f" + liveText));
+                 s.sendMessage(color("&7Pending: &f" + pendingNote));
+                 s.sendMessage(color("&7Last result: &f" + lastResult));
+@@ -426,8 +537,24 @@
+                 s.sendMessage(color("&7Checked. Pending: &f" + pendingNote));
+                 return true;
+             }
++            case "reload" -> {
++                reloadConfig();
++                loadLadder(false);
++                if (lastLadderDefect != null) {
++                    s.sendMessage(color("&c[EliteLadder] &7ladder.yml REFUSED: " + lastLadderDefect
++                            + ". Previous table kept (" + tableSource + "); nothing was changed."));
++                } else {
++                    s.sendMessage(color("&a[EliteLadder] &7Ladder table reloaded from ladder.yml and is now live:"));
++                    for (LadderStep st : table.steps()) {
++                        s.sendMessage(color("&7  " + st.label() + ": &f" + st.summary()));
++                    }
++                    evaluate();
++                    s.sendMessage(color("&7Checked against the new table. Pending: &f" + pendingNote));
++                }
++                return true;
++            }
+             default -> {
+-                s.sendMessage(color("&7Usage: /eliteladder status | check | retry"));
++                s.sendMessage(color("&7Usage: /eliteladder status | check | retry | reload"));
+                 return true;
+             }
+         }
+@@ -437,7 +564,7 @@
+     public List<String> onTabComplete(CommandSender s, Command c, String a, String[] args) {
+         List<String> out = new ArrayList<>();
+         if (args.length == 1) {
+-            for (String o : List.of("status", "check", "retry")) {
++            for (String o : List.of("status", "check", "retry", "reload")) {
+                 if (o.startsWith(args[0].toLowerCase(Locale.ROOT))) {
+                     out.add(o);
+                 }
+diff -ruN /tmp/fcdiff/a/src/com/winkreyes/exceleliteladder/core/FileApplier.java /tmp/fcdiff/b/src/com/winkreyes/exceleliteladder/core/FileApplier.java
+--- /tmp/fcdiff/a/src/com/winkreyes/exceleliteladder/core/FileApplier.java	2026-11-05 12:25:39.411667516 +0000
++++ /tmp/fcdiff/b/src/com/winkreyes/exceleliteladder/core/FileApplier.java	2026-11-05 12:25:39.438667517 +0000
+@@ -44,7 +44,7 @@
+      *                  set as the original, else a reason
+      * @param stamp     dated stamp for the backup name, e.g. 20261025-141500
+      */
+-    public static Result apply(Path target, Path backupDir, int applied, LadderStep to, String stamp,
++    public static Result apply(Path target, Path backupDir, LadderTable table, int applied, LadderStep to, String stamp,
+                                Function<String[], String> yamlCheck, Faults faults) {
+         byte[] original;
+         try {
+@@ -60,7 +60,7 @@
+         } catch (LadderException ex) {
+             return new Result(false, false, ex.getMessage(), null, shaBefore, shaBefore, false);
+         }
+-        String drift = StepPlan.driftCheck(live, applied, to.step());
++        String drift = StepPlan.driftCheck(table, live, applied, to.step());
+         if (drift != null) {
+             return new Result(false, false, "REFUSED: " + drift, null, shaBefore, shaBefore, false);
+         }
+diff -ruN /tmp/fcdiff/a/src/com/winkreyes/exceleliteladder/core/LadderConfig.java /tmp/fcdiff/b/src/com/winkreyes/exceleliteladder/core/LadderConfig.java
+--- /tmp/fcdiff/a/src/com/winkreyes/exceleliteladder/core/LadderConfig.java	1970-01-01 00:00:00.000000000 +0000
++++ /tmp/fcdiff/b/src/com/winkreyes/exceleliteladder/core/LadderConfig.java	2026-11-05 12:25:39.449667517 +0000
+@@ -0,0 +1,227 @@
++package com.winkreyes.exceleliteladder.core;
++
++import java.util.LinkedHashMap;
++import java.util.Map;
++import java.util.Set;
++
++/**
++ * Strict parser/validator for the ladder table in ladder.yml (0.2.0+).
++ *
++ * Mike's accepted trade (Nov 5, 2026, 2.0 decision sheet item 3): the table
++ * lives in config in exchange for being "nearly as typo-proof" as jar code.
++ * This class is that proof — EVERY defect refuses the whole table with the
++ * exact defect named; nothing is ever partially applied, defaulted silently,
++ * or coerced:
++ *
++ *   - the 'ladder' section must be a mapping with exactly step-1..step-5;
++ *   - each step must be a mapping with exactly the six known fields
++ *     (an unknown key is refused — that is where typos land);
++ *   - every value must be a finite number of the right shape
++ *     (cap a whole number; strings/booleans/null are refused, never parsed);
++ *   - ranges: spawn in (0, 1]; cap in [1, 1000]; every multiplier in (0, 10];
++ *   - monotonicity the design requires (LadderTable class doc): spawn and
++ *     cap never decrease step over step, scaled damage dealt to elites
++ *     (scaled-to-player) never decreases, scaled damage taken from elites
++ *     (scaled-to-elite) never increases. Plateaus are allowed.
++ *     The two normalized ("dungeon") values carry no monotonicity rule —
++ *     they have been constant (0.5 / 2.0) in every shipped table and the
++ *     design constrains them by range only.
++ *
++ * Pure Java (maps in, LadderTable out) so the plain-JVM suite can drive it
++ * with SnakeYAML-parsed maps in exactly the shape the Bukkit glue produces.
++ */
++public final class LadderConfig {
++    private LadderConfig() {
++    }
++
++    public static final String SECTION = "ladder";
++
++    public static final String F_SPAWN = "spawn";
++    public static final String F_CAP = "cap";
++    public static final String F_NORM_ELITE = "normalized-to-elite";
++    public static final String F_NORM_PLAYER = "normalized-to-player";
++    public static final String F_SCALED_ELITE = "scaled-to-elite";
++    public static final String F_SCALED_PLAYER = "scaled-to-player";
++
++    private static final Set<String> FIELDS = Set.of(
++            F_SPAWN, F_CAP, F_NORM_ELITE, F_NORM_PLAYER, F_SCALED_ELITE, F_SCALED_PLAYER);
++    private static final String FIELDS_HUMAN =
++            "spawn, cap, normalized-to-elite, normalized-to-player, scaled-to-elite, scaled-to-player";
++
++    private static final double MULT_MAX = 10.0;
++    private static final int CAP_MAX = 1000;
++
++    /**
++     * Parse a whole parsed-YAML root map: pulls the 'ladder' section out and
++     * validates it. This is the single entry point both the plugin glue and
++     * the test suite use.
++     */
++    public static LadderTable parseRoot(Map<String, ?> root) {
++        if (root == null) {
++            throw new LadderConfigException("ladder.yml is empty or unreadable — no 'ladder:' section found");
++        }
++        Object section = root.get(SECTION);
++        if (section == null) {
++            throw new LadderConfigException("ladder.yml has no 'ladder:' section — the table is missing entirely");
++        }
++        return parse(section);
++    }
++
++    /** Validate the 'ladder' section value itself (must be a map of step maps). */
++    public static LadderTable parse(Object sectionValue) {
++        if (!(sectionValue instanceof Map<?, ?> section)) {
++            throw new LadderConfigException("'ladder:' must be a mapping of step-1..step-"
++                    + LadderTable.MAX_STEP + ", found: " + describe(sectionValue));
++        }
++        // Unknown step keys first: a typo'd or extra row must never slip through.
++        for (Object k : section.keySet()) {
++            if (!(k instanceof String key) || !isStepKey(key)) {
++                throw new LadderConfigException("ladder has unknown step key '" + k
++                        + "' — allowed keys are step-1..step-" + LadderTable.MAX_STEP + " only");
++            }
++        }
++        LadderStep[] steps = new LadderStep[LadderTable.MAX_STEP + 1];
++        for (int n = LadderTable.MIN_STEP; n <= LadderTable.MAX_STEP; n++) {
++            String key = "step-" + n;
++            if (!section.containsKey(key)) {
++                throw new LadderConfigException("ladder." + key + " is missing — the table must define step-1 through step-"
++                        + LadderTable.MAX_STEP);
++            }
++            steps[n] = parseStep(key, section.get(key));
++        }
++        checkMonotonic(steps);
++        return new LadderTable(steps);
++    }
++
++    private static boolean isStepKey(String key) {
++        for (int n = LadderTable.MIN_STEP; n <= LadderTable.MAX_STEP; n++) {
++            if (key.equals("step-" + n)) return true;
++        }
++        return false;
++    }
++
++    private static LadderStep parseStep(String key, Object rowValue) {
++        if (!(rowValue instanceof Map<?, ?> row)) {
++            throw new LadderConfigException("ladder." + key + " must be a mapping of the six ladder values ("
++                    + FIELDS_HUMAN + "), found: " + describe(rowValue));
++        }
++        for (Object k : row.keySet()) {
++            if (!(k instanceof String field) || !FIELDS.contains(field)) {
++                throw new LadderConfigException("ladder." + key + " has unknown key '" + k
++                        + "' — allowed keys are: " + FIELDS_HUMAN + " (check for a typo)");
++            }
++        }
++        double spawn = number(key, row, F_SPAWN);
++        double capRaw = number(key, row, F_CAP);
++        double normElite = number(key, row, F_NORM_ELITE);
++        double normPlayer = number(key, row, F_NORM_PLAYER);
++        double scaledElite = number(key, row, F_SCALED_ELITE);
++        double scaledPlayer = number(key, row, F_SCALED_PLAYER);
++
++        if (spawn <= 0.0 || spawn > 1.0) {
++            throw new LadderConfigException("ladder." + key + ".spawn must be > 0 and <= 1"
++                    + " (it is the fraction of spawns that become elites), found: " + fmt(spawn));
++        }
++        if (capRaw != Math.rint(capRaw)) {
++            throw new LadderConfigException("ladder." + key + ".cap must be a whole number, found: " + fmt(capRaw));
++        }
++        if (capRaw < 1 || capRaw > CAP_MAX) {
++            throw new LadderConfigException("ladder." + key + ".cap must be between 1 and " + CAP_MAX
++                    + ", found: " + fmt(capRaw));
++        }
++        range(key, F_NORM_ELITE, normElite);
++        range(key, F_NORM_PLAYER, normPlayer);
++        range(key, F_SCALED_ELITE, scaledElite);
++        range(key, F_SCALED_PLAYER, scaledPlayer);
++        int stepNum = key.charAt(key.length() - 1) - '0';
++        return new LadderStep(stepNum, spawn, (int) capRaw, normElite, normPlayer, scaledElite, scaledPlayer);
++    }
++
++    private static void range(String key, String field, double v) {
++        if (v <= 0.0 || v > MULT_MAX) {
++            throw new LadderConfigException("ladder." + key + "." + field + " must be > 0 and <= " + fmt(MULT_MAX)
++                    + " (it is a damage multiplier), found: " + fmt(v));
++        }
++    }
++
++    /** One required numeric field: present, a Number, finite. Never coerced. */
++    private static double number(String key, Map<?, ?> row, String field) {
++        if (!row.containsKey(field)) {
++            throw new LadderConfigException("ladder." + key + " is missing '" + field
++                    + "' — every step needs all six values (" + FIELDS_HUMAN + ")");
++        }
++        Object v = row.get(field);
++        if (v == null) {
++            throw new LadderConfigException("ladder." + key + "." + field + " is blank — a number is required");
++        }
++        if (v instanceof Boolean || !(v instanceof Number num)) {
++            throw new LadderConfigException("ladder." + key + "." + field + " must be a number, found: "
++                    + describe(v));
++        }
++        double d = num.doubleValue();
++        if (Double.isNaN(d) || Double.isInfinite(d)) {
++            throw new LadderConfigException("ladder." + key + "." + field + " must be a finite number, found: "
++                    + fmt(d));
++        }
++        return d;
++    }
++
++    private static void checkMonotonic(LadderStep[] steps) {
++        for (int n = LadderTable.MIN_STEP + 1; n <= LadderTable.MAX_STEP; n++) {
++            LadderStep prev = steps[n - 1], cur = steps[n];
++            if (cur.spawn() < prev.spawn()) {
++                throw mono("spawn", "must not decrease", prev, cur, cur.spawn(), prev.spawn());
++            }
++            if (cur.cap() < prev.cap()) {
++                throw mono("cap", "must not decrease", prev, cur, cur.cap(), prev.cap());
++            }
++            if (cur.scaledPlayer() < prev.scaledPlayer()) {
++                throw mono("scaled-to-player", "must not decrease (damage dealt to elites only grows as seals break)",
++                        prev, cur, cur.scaledPlayer(), prev.scaledPlayer());
++            }
++            if (cur.scaledElite() > prev.scaledElite()) {
++                throw mono("scaled-to-elite", "must not increase (damage taken from elites only shrinks as seals break)",
++                        prev, cur, cur.scaledElite(), prev.scaledElite());
++            }
++        }
++    }
++
++    private static LadderConfigException mono(String field, String rule, LadderStep prev, LadderStep cur,
++                                              double curV, double prevV) {
++        return new LadderConfigException("ladder." + field + " " + rule + ": step-" + cur.step() + " is "
++                + fmt(curV) + " but step-" + prev.step() + " is " + fmt(prevV)
++                + " (plateaus are fine; going backwards is not)");
++    }
++
++    private static String describe(Object v) {
++        if (v == null) return "nothing (blank)";
++        if (v instanceof String s) return "'" + s + "' (text)";
++        if (v instanceof Boolean b) return b + " (true/false)";
++        if (v instanceof Map) return "a nested mapping";
++        if (v instanceof Iterable) return "a list";
++        return v + " (" + v.getClass().getSimpleName() + ")";
++    }
++
++    private static String fmt(double d) {
++        if (d == Math.rint(d) && !Double.isInfinite(d) && Math.abs(d) < 1e15) {
++            return Long.toString((long) d);
++        }
++        return Double.toString(d);
++    }
++
++    /** The shipped default table as a mutable map tree — used by tests to build fixtures. */
++    public static Map<String, Object> defaultSectionMap() {
++        Map<String, Object> section = new LinkedHashMap<>();
++        for (LadderStep s : LadderTable.builtin().steps()) {
++            Map<String, Object> row = new LinkedHashMap<>();
++            row.put(F_SPAWN, s.spawn());
++            row.put(F_CAP, s.cap());
++            row.put(F_NORM_ELITE, s.normElite());
++            row.put(F_NORM_PLAYER, s.normPlayer());
++            row.put(F_SCALED_ELITE, s.scaledElite());
++            row.put(F_SCALED_PLAYER, s.scaledPlayer());
++            section.put("step-" + s.step(), row);
++        }
++        return section;
++    }
++}
+diff -ruN /tmp/fcdiff/a/src/com/winkreyes/exceleliteladder/core/LadderConfigException.java /tmp/fcdiff/b/src/com/winkreyes/exceleliteladder/core/LadderConfigException.java
+--- /tmp/fcdiff/a/src/com/winkreyes/exceleliteladder/core/LadderConfigException.java	1970-01-01 00:00:00.000000000 +0000
++++ /tmp/fcdiff/b/src/com/winkreyes/exceleliteladder/core/LadderConfigException.java	2026-11-05 12:25:39.446740794 +0000
+@@ -0,0 +1,13 @@
++package com.winkreyes.exceleliteladder.core;
++
++/**
++ * A ladder.yml defect, named exactly. Thrown by LadderConfig on ANY validation
++ * failure; the plugin catches it, refuses the new table, keeps the last-good
++ * table (or the built-in default on first boot) and logs the message verbatim
++ * in a WARN. Extends LadderException so existing refusal handling applies.
++ */
++public class LadderConfigException extends LadderException {
++    public LadderConfigException(String message) {
++        super(message);
++    }
++}
+diff -ruN /tmp/fcdiff/a/src/com/winkreyes/exceleliteladder/core/LadderTable.java /tmp/fcdiff/b/src/com/winkreyes/exceleliteladder/core/LadderTable.java
+--- /tmp/fcdiff/a/src/com/winkreyes/exceleliteladder/core/LadderTable.java	2026-11-05 12:25:39.412880440 +0000
++++ /tmp/fcdiff/b/src/com/winkreyes/exceleliteladder/core/LadderTable.java	2026-11-05 12:25:39.442667517 +0000
+@@ -6,8 +6,18 @@
+ 
+ /**
+  * The approved Elite Seal Ladder (Oct 25, 2026; Seal 5 spawn 0.12 picked 11:40 PM CDT), with the Seal 5 dungeon values
+- * (normalized 0.5 / 2.0) already in from S1. Hardcoded on purpose: the table is not
+- * editable in config, so a typo in a config file can never change live combat.
++ * (normalized 0.5 / 2.0) already in from S1.
++ *
++ * 0.1.x: hardcoded on purpose — the table was not editable in config, so a typo in
++ * a config file could never change live combat.
++ *
++ * 0.2.0 (Nov 5, 2026): Mike's 2.0 decision (item 3) moves the table into ladder.yml
++ * in exchange for strict validation — LadderConfig refuses any malformed table and
++ * the last-good table keeps running, "nearly as typo-proof" with no jar cycles.
++ * This class is now an instance: {@link #builtin()} carries the exact 0.1.x values
++ * as the fallback when ladder.yml is missing/unreadable/refused, and as the
++ * migration reference the shipped default ladder.yml must equal value-for-value
++ * (proven by the equality suite).
+  *
+  * 0.1.2 (Nov 1, 2026): Mike re-decided the ladder - it TOPS OUT AT SEAL 4, COMPRESSED
+  * (2:30 PM CST, superseding the Oct 21 S5-parity final and the Oct 25 Seal 5 picks).
+@@ -20,7 +30,8 @@
+     public static final int MIN_STEP = 1;
+     public static final int MAX_STEP = 5;
+ 
+-    private static final LadderStep[] STEPS = {
++    /** The 0.1.x hardcoded table verbatim — fallback and migration reference. */
++    private static final LadderStep[] BUILTIN_STEPS = {
+         null,
+         new LadderStep(1, 0.07, 120, 0.5, 2.0, 0.55, 1.75),
+         new LadderStep(2, 0.08, 120, 0.5, 2.0, 0.50, 1.90),
+@@ -33,14 +44,47 @@
+     public static final LadderStep OLD_S0 = new LadderStep(0, 0.07, 120, 1.0, 1.0, 0.55, 1.60);
+     public static final LadderStep OLD_S1 = new LadderStep(1, 0.07, 120, 1.0, 1.0, 0.55, 1.75);
+ 
+-    private LadderTable() {
++    private final LadderStep[] steps; // index 1..MAX_STEP
++
++    /**
++     * @param steps array indexed by step number: length MAX_STEP+1, slots 1..MAX_STEP
++     *              non-null with matching step numbers. Defensively copied. Anything
++     *              else is a programming error, not user input — user input arrives
++     *              via LadderConfig, which validates before constructing.
++     */
++    public LadderTable(LadderStep[] steps) {
++        if (steps == null || steps.length != MAX_STEP + 1) {
++            throw new IllegalArgumentException("ladder table must hold exactly steps 1.." + MAX_STEP);
++        }
++        this.steps = new LadderStep[MAX_STEP + 1];
++        for (int n = MIN_STEP; n <= MAX_STEP; n++) {
++            LadderStep s = steps[n];
++            if (s == null || s.step() != n) {
++                throw new IllegalArgumentException("ladder table slot " + n + " must hold step " + n);
++            }
++            this.steps[n] = s;
++        }
+     }
+ 
+-    public static LadderStep step(int n) {
++    /** The built-in default table: the exact 0.1.x hardcoded values. */
++    public static LadderTable builtin() {
++        return new LadderTable(BUILTIN_STEPS.clone());
++    }
++
++    public LadderStep step(int n) {
+         if (n < MIN_STEP || n > MAX_STEP) {
+             throw new IllegalArgumentException("no ladder step " + n);
+         }
+-        return STEPS[n];
++        return steps[n];
++    }
++
++    /** The steps S1..S5 in order. */
++    public java.util.List<LadderStep> steps() {
++        java.util.List<LadderStep> out = new ArrayList<>(MAX_STEP);
++        for (int n = MIN_STEP; n <= MAX_STEP; n++) {
++            out.add(steps[n]);
++        }
++        return java.util.List.copyOf(out);
+     }
+ 
+     public static int clampSeals(int seals) {
+@@ -58,9 +102,9 @@
+     }
+ 
+     /** Ladder step whose six values equal the live values, or 0 when none does. */
+-    public static int matchStep(Map<String, Double> live) {
++    public int matchStep(Map<String, Double> live) {
+         for (int i = MIN_STEP; i <= MAX_STEP; i++) {
+-            if (matches(live, STEPS[i])) {
++            if (matches(live, steps[i])) {
+                 return i;
+             }
+         }
+diff -ruN /tmp/fcdiff/a/src/com/winkreyes/exceleliteladder/core/StepPlan.java /tmp/fcdiff/b/src/com/winkreyes/exceleliteladder/core/StepPlan.java
+--- /tmp/fcdiff/a/src/com/winkreyes/exceleliteladder/core/StepPlan.java	2026-11-05 12:25:39.416879882 +0000
++++ /tmp/fcdiff/b/src/com/winkreyes/exceleliteladder/core/StepPlan.java	2026-11-05 12:25:39.446684440 +0000
+@@ -50,9 +50,9 @@
+      * applied step (normal case) or already the target (re-run after a crash).
+      * Returns null when allowed, else the refusal reason.
+      */
+-    public static String driftCheck(java.util.Map<String, Double> live, int applied, int target) {
+-        LadderStep from = LadderTable.step(applied);
+-        LadderStep to = LadderTable.step(target);
++    public static String driftCheck(LadderTable table, java.util.Map<String, Double> live, int applied, int target) {
++        LadderStep from = table.step(applied);
++        LadderStep to = table.step(target);
+         if (LadderTable.matches(live, from) || LadderTable.matches(live, to)) {
+             return null;
+         }
+diff -ruN /tmp/fcdiff/a/tests/LadderConfigSuite.java /tmp/fcdiff/b/tests/LadderConfigSuite.java
+--- /tmp/fcdiff/a/tests/LadderConfigSuite.java	1970-01-01 00:00:00.000000000 +0000
++++ /tmp/fcdiff/b/tests/LadderConfigSuite.java	2026-11-05 12:25:39.478667518 +0000
+@@ -0,0 +1,193 @@
++import com.winkreyes.exceleliteladder.core.*;
++import java.io.IOException;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.*;
++import java.util.*;
++import org.yaml.snakeyaml.Yaml;
++import org.yaml.snakeyaml.error.YAMLException;
++
++/**
++ * ExcelEliteLadder 0.2.0 suites for the config-table move:
++ *
++ *   1. MIGRATION EQUALITY — the shipped default ladder.yml, parsed by the same
++ *      YAML engine family the server uses, must yield a table equal to the
++ *      0.1.x hardcoded table (LadderTable.builtin()) value-for-value across
++ *      every step and every one of the six MobCombat keys, and must resolve
++ *      every staged fixture to the same step.
++ *   2. MALFORMED BATTERY — every defect class is refused with the defect
++ *      named, and a holder following the plugin's policy (refuse -> keep
++ *      last-good) provably keeps the previous table instance.
++ *   3. RELOAD FLIP — a valid edited table takes over without restart; a
++ *      broken edit afterwards leaves the flipped table in force.
++ */
++public final class LadderConfigSuite {
++
++    /** The plugin's load policy in miniature: refused loads never touch the live table. */
++    static final class Holder {
++        LadderTable current = LadderTable.builtin();
++        String defect = null;
++
++        boolean tryLoad(Map<String, ?> root) {
++            try {
++                current = LadderConfig.parseRoot(root);
++                defect = null;
++                return true;
++            } catch (LadderConfigException ex) {
++                defect = ex.getMessage();
++                return false;
++            }
++        }
++    }
++
++    @SuppressWarnings("unchecked")
++    static Map<String, Object> loadYaml(Path p) throws IOException {
++        Object root = new Yaml().load(Files.readString(p, StandardCharsets.UTF_8));
++        return (Map<String, Object>) root;
++    }
++
++    static Map<String, Object> goodRoot() {
++        Map<String, Object> root = new LinkedHashMap<>();
++        root.put("ladder", LadderConfig.defaultSectionMap());
++        return root;
++    }
++
++    @SuppressWarnings("unchecked")
++    static Map<String, Object> section(Map<String, Object> root) {
++        return (Map<String, Object>) root.get("ladder");
++    }
++
++    @SuppressWarnings("unchecked")
++    static Map<String, Object> row(Map<String, Object> root, int n) {
++        return (Map<String, Object>) section(root).get("step-" + n);
++    }
++
++    static void assertTablesEqual(LadderTable expected, LadderTable actual, String label) {
++        for (int n = LadderTable.MIN_STEP; n <= LadderTable.MAX_STEP; n++) {
++            for (String key : MobCombatFile.KEYS) {
++                Check.close(expected.step(n).values().get(key), actual.step(n).values().get(key),
++                        label + " S" + n + " " + key);
++            }
++        }
++    }
++
++    static void run(String ladderYmlPath) throws Exception {
++        System.out.println("0.2.0 migration equality: shipped ladder.yml == the 0.1.x hardcoded table");
++        LadderTable builtin = LadderTable.builtin();
++        Map<String, Object> shipped = loadYaml(Paths.get(ladderYmlPath));
++        LadderTable fromConfig = LadderConfig.parseRoot(shipped);
++        assertTablesEqual(builtin, fromConfig, "ladder.yml");
++        LadderTable fromMap = LadderConfig.parse(LadderConfig.defaultSectionMap());
++        assertTablesEqual(builtin, fromMap, "defaultSectionMap");
++        for (String name : List.of("S1-norm", "S2-norm", "S3-norm", "S4-norm", "S5-norm", "old-S0", "old-S1")) {
++            Map<String, Double> v = MobCombatFile.read(TestMain.fx(name + "-MobCombatSettings.yml"));
++            Check.eq(builtin.matchStep(v), fromConfig.matchStep(v), "matchStep parity on " + name);
++        }
++
++        System.out.println("0.2.0 malformed battery: every defect refused, last-good kept");
++        Holder h = new Holder();
++        Check.ok(h.tryLoad(goodRoot()), "holder loads the good table");
++        LadderTable good = h.current;
++
++        refuse(h, good, "missing step-4", r -> section(r).remove("step-4"), "ladder.step-4 is missing");
++        refuse(h, good, "extra step-6", r -> section(r).put("step-6", row(goodRoot(), 5)), "unknown step key 'step-6'");
++        refuse(h, good, "misnamed step-02", r -> { Object v = section(r).remove("step-2"); section(r).put("step-02", v); },
++                "unknown step key 'step-02'");
++        refuse(h, good, "missing field scaled-to-player", r -> row(r, 2).remove("scaled-to-player"),
++                "ladder.step-2 is missing 'scaled-to-player'");
++        refuse(h, good, "typo key spwan", r -> { row(r, 1).remove("spawn"); row(r, 1).put("spwan", 0.07); },
++                "ladder.step-1 has unknown key 'spwan'");
++        refuse(h, good, "spawn as text", r -> row(r, 3).put("spawn", "lots"), "ladder.step-3.spawn must be a number");
++        refuse(h, good, "cap as text", r -> row(r, 3).put("cap", "many"), "ladder.step-3.cap must be a number");
++        refuse(h, good, "cap not whole", r -> row(r, 2).put("cap", 120.5), "ladder.step-2.cap must be a whole number");
++        refuse(h, good, "spawn zero", r -> row(r, 1).put("spawn", 0), "ladder.step-1.spawn must be > 0 and <= 1");
++        refuse(h, good, "spawn above 1", r -> row(r, 1).put("spawn", 1.5), "ladder.step-1.spawn must be > 0 and <= 1");
++        refuse(h, good, "cap zero", r -> row(r, 4).put("cap", 0), "ladder.step-4.cap must be between 1 and 1000");
++        refuse(h, good, "negative multiplier", r -> row(r, 2).put("scaled-to-player", -1),
++                "ladder.step-2.scaled-to-player must be > 0 and <= 10");
++        refuse(h, good, "multiplier above 10", r -> row(r, 2).put("normalized-to-player", 99),
++                "ladder.step-2.normalized-to-player must be > 0 and <= 10");
++        refuse(h, good, "NaN spawn", r -> row(r, 5).put("spawn", Double.NaN), "ladder.step-5.spawn must be a finite number");
++        refuse(h, good, "infinite multiplier", r -> row(r, 5).put("scaled-to-elite", Double.POSITIVE_INFINITY),
++                "ladder.step-5.scaled-to-elite must be a finite number");
++        refuse(h, good, "boolean spawn", r -> row(r, 1).put("spawn", Boolean.TRUE), "ladder.step-1.spawn must be a number");
++        refuse(h, good, "blank cap", r -> row(r, 1).put("cap", null), "ladder.step-1.cap is blank");
++        refuse(h, good, "spawn decreases at step-3", r -> row(r, 3).put("spawn", 0.05), "ladder.spawn must not decrease");
++        refuse(h, good, "cap decreases at step-4", r -> row(r, 4).put("cap", 100), "ladder.cap must not decrease");
++        refuse(h, good, "dealt decreases at step-4", r -> row(r, 4).put("scaled-to-player", 2.0),
++                "ladder.scaled-to-player must not decrease");
++        refuse(h, good, "taken increases at step-2", r -> row(r, 2).put("scaled-to-elite", 0.60),
++                "ladder.scaled-to-elite must not increase");
++        refuse(h, good, "step row not a mapping", r -> section(r).put("step-3", 42), "ladder.step-3 must be a mapping");
++        refuse(h, good, "ladder section not a mapping", r -> r.put("ladder", 42), "'ladder:' must be a mapping");
++        refuse(h, good, "no ladder section at all", r -> r.remove("ladder"), "no 'ladder:' section");
++        refuse(h, good, "empty file (null root)", r -> { }, "no 'ladder:' section found", true);
++
++        // YAML-text level: garbage never reaches the table, and a .nan in the
++        // shipped file's own text is refused by the finite check.
++        boolean yamlThrew = false;
++        try {
++            new Yaml().load("ladder: [unclosed");
++        } catch (YAMLException ex) {
++            yamlThrew = true;
++        }
++        Check.ok(yamlThrew, "broken YAML text throws at parse (plugin converts this to a refusal)");
++        String nanText = Files.readString(Paths.get(ladderYmlPath), StandardCharsets.UTF_8)
++                .replaceFirst("spawn: 0\\.07", "spawn: .nan");
++        Map<String, Object> nanRoot = (Map<String, Object>) new Yaml().load(nanText);
++        Holder hNan = new Holder();
++        Check.ok(!hNan.tryLoad(nanRoot) && hNan.defect != null && hNan.defect.contains("finite"),
++                "shipped text with spawn .nan refused (" + hNan.defect + ")");
++        Check.ok(tablesEqual(hNan.current, builtin),
++                "first-boot refusal keeps the built-in default");
++
++        System.out.println("0.2.0 reload flip: valid edit applies without restart, broken edit keeps it");
++        Holder flip = new Holder();
++        Check.ok(flip.tryLoad(goodRoot()), "flip holder starts on the shipped table");
++        Map<String, Object> edited = goodRoot();
++        // The peak plateau is S4==S5: retuning the peak spawn means editing both
++        // rows (editing S4 alone is refused by monotonicity — proven in the battery
++        // shape above: spawn may never decrease, and 0.12 -> 0.11 would).
++        row(edited, 4).put("spawn", 0.12);
++        row(edited, 5).put("spawn", 0.12);
++        Check.ok(flip.tryLoad(edited), "edited table (peak spawn 0.12 on S4+S5) accepted");
++        Check.close(0.12, flip.current.step(4).spawn(), "live table now has S4 spawn 0.12");
++        LadderTable flipped = flip.current;
++        String s4edited = MobCombatFile.patch(TestMain.fx("S3-norm-MobCombatSettings.yml"),
++                new LadderStep(4, 0.12, 150, 0.5, 2.0, 0.40, 2.35));
++        Map<String, Double> editedValues = MobCombatFile.read(s4edited);
++        Check.eq(4, flip.current.matchStep(editedValues), "edited S4 file matches the flipped table at S4");
++        Check.eq(0, builtin.matchStep(editedValues), "edited S4 file is off the OLD table (the flip is real)");
++        Map<String, Object> broken = goodRoot();
++        section(broken).remove("step-5");
++        Check.ok(!flip.tryLoad(broken), "broken edit after the flip refused");
++        Check.ok(flip.current == flipped, "last-good kept: still the flipped table instance");
++        Check.close(0.12, flip.current.step(4).spawn(), "S4 spawn still 0.12 after the refused reload");
++    }
++
++    static boolean tablesEqual(LadderTable a, LadderTable b) {
++        for (int n = LadderTable.MIN_STEP; n <= LadderTable.MAX_STEP; n++) {
++            for (String key : MobCombatFile.KEYS) {
++                if (Math.abs(a.step(n).values().get(key) - b.step(n).values().get(key)) > 1e-9) return false;
++            }
++        }
++        return true;
++    }
++
++    interface Mutator {
++        void apply(Map<String, Object> root);
++    }
++
++    static void refuse(Holder h, LadderTable good, String name, Mutator m, String fragment) {
++        refuse(h, good, name, m, fragment, false);
++    }
++
++    static void refuse(Holder h, LadderTable good, String name, Mutator m, String fragment, boolean nullRoot) {
++        Map<String, Object> root = goodRoot();
++        m.apply(root);
++        boolean accepted = h.tryLoad(nullRoot ? null : root);
++        Check.ok(!accepted, name + " refused");
++        Check.ok(h.defect != null && h.defect.contains(fragment),
++                name + " names the defect (" + h.defect + ")");
++        Check.ok(h.current == good, name + ": last-good table instance kept");
++    }
++}
+diff -ruN /tmp/fcdiff/a/tests/TestMain.java /tmp/fcdiff/b/tests/TestMain.java
+--- /tmp/fcdiff/a/tests/TestMain.java	2026-11-05 12:25:39.418008886 +0000
++++ /tmp/fcdiff/b/tests/TestMain.java	2026-11-05 12:25:39.452667517 +0000
+@@ -32,37 +32,38 @@
+ 
+     public static void main(String[] a) throws Exception {
+         System.out.println("Ladder table + fixtures");
++        LadderTable table = LadderTable.builtin();
+         for (int i = 1; i <= 4; i++) {
+             Map<String, Double> v = MobCombatFile.read(fx("S" + i + "-norm-MobCombatSettings.yml"));
+-            Check.eq(i, LadderTable.matchStep(v), "staged S" + i + "-norm file matches table row " + i);
++            Check.eq(i, table.matchStep(v), "staged S" + i + "-norm file matches table row " + i);
+         }
+         // 0.1.2: the S5 row is identical to S4 by design, so the S5 fixture matches
+         // row 5's values and matchStep resolves the peak file to the first peak row (4).
+         Map<String, Double> v5 = MobCombatFile.read(fx("S5-norm-MobCombatSettings.yml"));
+-        Check.ok(LadderTable.matches(v5, LadderTable.step(5)), "staged S5-norm file matches table row 5 values");
+-        Check.eq(4, LadderTable.matchStep(v5), "peak file resolves to S4 (S5 row identical, first match wins)");
+-        Check.eq(0, LadderTable.matchStep(MobCombatFile.read(fx("old-S0-MobCombatSettings.yml"))), "old S0 is off ladder");
+-        Check.eq(0, LadderTable.matchStep(MobCombatFile.read(fx("old-S1-MobCombatSettings.yml"))), "old S1 (no norm) is off ladder");
+-        Check.ok(LadderTable.describeOffLadder(MobCombatFile.read(fx("old-S0-MobCombatSettings.yml")), LadderTable.step(1)).contains("OLD pre-ladder S0"), "old S0 refusal names it");
+-        Check.ok(LadderTable.describeOffLadder(MobCombatFile.read(fx("old-S1-MobCombatSettings.yml")), LadderTable.step(1)).contains("OLD S1 file without the dungeon lines"), "old S1 refusal names it");
++        Check.ok(LadderTable.matches(v5, table.step(5)), "staged S5-norm file matches table row 5 values");
++        Check.eq(4, table.matchStep(v5), "peak file resolves to S4 (S5 row identical, first match wins)");
++        Check.eq(0, table.matchStep(MobCombatFile.read(fx("old-S0-MobCombatSettings.yml"))), "old S0 is off ladder");
++        Check.eq(0, table.matchStep(MobCombatFile.read(fx("old-S1-MobCombatSettings.yml"))), "old S1 (no norm) is off ladder");
++        Check.ok(LadderTable.describeOffLadder(MobCombatFile.read(fx("old-S0-MobCombatSettings.yml")), table.step(1)).contains("OLD pre-ladder S0"), "old S0 refusal names it");
++        Check.ok(LadderTable.describeOffLadder(MobCombatFile.read(fx("old-S1-MobCombatSettings.yml")), table.step(1)).contains("OLD S1 file without the dungeon lines"), "old S1 refusal names it");
+ 
+         System.out.println("0.1.2: ladder tops out at Seal 4, compressed (Mike, Nov 1, 2026, 2:30 PM CST)");
+-        Check.close(0.11, LadderTable.step(4).values().get("eliteMobsSpawnPercentage"), "S4 spawn = 0.11 (compressed peak)");
+-        Check.close(150.0, LadderTable.step(4).values().get("naturalEliteMobsLevelCap"), "S4 cap = 150");
+-        Check.close(2.35, LadderTable.step(4).values().get("scaledDamageToPlayerMultiplier"), "S4 toPlayer = 2.35");
+-        Check.close(0.40, LadderTable.step(4).values().get("scaledDamageToEliteMultiplier"), "S4 toElite = 0.40");
+-        for (Map.Entry<String, Double> e : LadderTable.step(4).values().entrySet()) {
+-            Check.close(e.getValue(), LadderTable.step(5).values().get(e.getKey()), "S5 " + e.getKey() + " = S4 (no-op row)");
++        Check.close(0.11, table.step(4).values().get("eliteMobsSpawnPercentage"), "S4 spawn = 0.11 (compressed peak)");
++        Check.close(150.0, table.step(4).values().get("naturalEliteMobsLevelCap"), "S4 cap = 150");
++        Check.close(2.35, table.step(4).values().get("scaledDamageToPlayerMultiplier"), "S4 toPlayer = 2.35");
++        Check.close(0.40, table.step(4).values().get("scaledDamageToEliteMultiplier"), "S4 toElite = 0.40");
++        for (Map.Entry<String, Double> e : table.step(4).values().entrySet()) {
++            Check.close(e.getValue(), table.step(5).values().get(e.getKey()), "S5 " + e.getKey() + " = S4 (no-op row)");
+         }
+-        Check.close(120.0, LadderTable.step(3).values().get("naturalEliteMobsLevelCap"), "S3 cap stays 120");
+-        Check.close(2.05, LadderTable.step(3).values().get("scaledDamageToPlayerMultiplier"), "S3 toPlayer stays 2.05");
++        Check.close(120.0, table.step(3).values().get("naturalEliteMobsLevelCap"), "S3 cap stays 120");
++        Check.close(2.05, table.step(3).values().get("scaledDamageToPlayerMultiplier"), "S3 toPlayer stays 2.05");
+         String s4old = fx("S4-norm-MobCombatSettings.yml")
+                 .replace("eliteMobsSpawnPercentage: 0.11", "eliteMobsSpawnPercentage: 0.10")
+                 .replace("naturalEliteMobsLevelCap: 150", "naturalEliteMobsLevelCap: 120")
+                 .replace("scaledDamageToEliteMultiplier: 0.40", "scaledDamageToEliteMultiplier: 0.45")
+                 .replace("scaledDamageToPlayerMultiplier: 2.35", "scaledDamageToPlayerMultiplier: 2.20");
+-        Check.eq(0, LadderTable.matchStep(MobCombatFile.read(s4old)), "0.1.1-era S4 file (0.10/120/0.45/2.20) is off ladder in 0.1.2");
+-        String d4 = LadderTable.differences(MobCombatFile.read(s4old), LadderTable.step(4));
++        Check.eq(0, table.matchStep(MobCombatFile.read(s4old)), "0.1.1-era S4 file (0.10/120/0.45/2.20) is off ladder in 0.1.2");
++        String d4 = LadderTable.differences(MobCombatFile.read(s4old), table.step(4));
+         Check.ok(d4.contains("eliteMobsSpawnPercentage=0.1 (want 0.11)") && d4.contains("naturalEliteMobsLevelCap=120 (want 150)")
+                 && d4.contains("scaledDamageToEliteMultiplier=0.45 (want 0.4)") && d4.contains("scaledDamageToPlayerMultiplier=2.2 (want 2.35)"),
+                 "and the refusal names exactly the four peak lines");
+@@ -71,31 +72,31 @@
+                 .replace("naturalEliteMobsLevelCap: 150", "naturalEliteMobsLevelCap: 120")
+                 .replace("scaledDamageToEliteMultiplier: 0.40", "scaledDamageToEliteMultiplier: 0.45")
+                 .replace("scaledDamageToPlayerMultiplier: 2.35", "scaledDamageToPlayerMultiplier: 2.20");
+-        Check.eq(0, LadderTable.matchStep(MobCombatFile.read(s5old)), "0.1.1-era S5 file (0.12/120/0.45/2.20) is off ladder in 0.1.2");
++        Check.eq(0, table.matchStep(MobCombatFile.read(s5old)), "0.1.1-era S5 file (0.12/120/0.45/2.20) is off ladder in 0.1.2");
+ 
+         System.out.println("Patch: each step from the previous, bytes = staged file in EliteMobs' number form");
+         String cur = fx("S1-norm-MobCombatSettings.yml");
+         Check.eq(cur, canonical(cur), "S1-norm is already in EliteMobs number form");
+         for (int i = 2; i <= 5; i++) {
+-            String next = MobCombatFile.patch(cur, LadderTable.step(i));
++            String next = MobCombatFile.patch(cur, table.step(i));
+             String staged = fx("S" + i + "-norm-MobCombatSettings.yml");
+             Check.eq(canonical(staged), next, "S" + (i - 1) + " -> S" + i + " equals staged S" + i + "-norm (EM form)");
+-            Check.eq(null, MobCombatFile.verify(cur, next, LadderTable.step(i)), "verify S" + i + " ok");
++            Check.eq(null, MobCombatFile.verify(cur, next, table.step(i)), "verify S" + i + " ok");
+             Check.eq(MobCombatFile.read(staged), MobCombatFile.read(next), "S" + i + " values equal staged values");
+             cur = next;
+         }
+         String s1 = fx("S1-norm-MobCombatSettings.yml");
+-        Check.eq(s1, MobCombatFile.patch(s1, LadderTable.step(1)), "patching S1 onto S1 is a no-op (idempotent)");
++        Check.eq(s1, MobCombatFile.patch(s1, table.step(1)), "patching S1 onto S1 is a no-op (idempotent)");
+         String crlf = s1.replace("\n", "\r\n");
+-        String crlf2 = MobCombatFile.patch(crlf, LadderTable.step(2));
++        String crlf2 = MobCombatFile.patch(crlf, table.step(2));
+         Check.eq(canonical(fx("S2-norm-MobCombatSettings.yml")).replace("\n", "\r\n"), crlf2, "CRLF file keeps CRLF");
+ 
+         System.out.println("Reader refusals");
+         expectThrow(() -> MobCombatFile.read(s1.replace("eliteMobsSpawnPercentage: 0.07", "x: 1")), "missing key");
+         expectThrow(() -> MobCombatFile.read(s1 + "\nscaledDamageToPlayerMultiplier: 9.0"), "duplicate key");
+         expectThrow(() -> MobCombatFile.read(s1.replace("naturalEliteMobsLevelCap: 120", "naturalEliteMobsLevelCap: lots")), "non-number");
+-        Check.ok(MobCombatFile.verify(s1, s1.replace("doWeakEffect: true", "doWeakEffect: false"), LadderTable.step(1)) != null, "verify flags a non-ladder line change");
+-        Check.ok(MobCombatFile.verify(s1, s1.substring(0, s1.length() / 2), LadderTable.step(1)) != null, "verify flags a truncated file");
++        Check.ok(MobCombatFile.verify(s1, s1.replace("doWeakEffect: true", "doWeakEffect: false"), table.step(1)) != null, "verify flags a non-ladder line change");
++        Check.ok(MobCombatFile.verify(s1, s1.substring(0, s1.length() / 2), table.step(1)) != null, "verify flags a truncated file");
+ 
+         System.out.println("StepPlan");
+         Check.eq(StepPlan.Action.APPLY, StepPlan.decide(true, 2, 1, 0, false).action(), "seal 2, empty -> apply");
+@@ -115,55 +116,57 @@
+         Path f = dir.resolve("MobCombatSettings.yml");
+         Path bk = dir.resolve("backups");
+         Files.writeString(f, s1);
+-        FileApplier.Result r = FileApplier.apply(f, bk, 1, LadderTable.step(2), "20261025-140000", YAML_OK, FileApplier.NONE);
++        FileApplier.Result r = FileApplier.apply(f, bk, table, 1, table.step(2), "20261025-140000", YAML_OK, FileApplier.NONE);
+         Check.ok(r.ok() && r.changed(), "S1 -> S2 applied");
+         Check.eq(FileApplier.sha256(canonical(fx("S2-norm-MobCombatSettings.yml")).getBytes(StandardCharsets.UTF_8)), FileApplier.shaOf(f), "file sha = S2-norm (EM form)");
+         Check.eq(s1, Files.readString(bk.resolve("MobCombatSettings.yml.20261025-140000-from-S1.bak")), "dated backup holds S1 bytes");
+         Check.ok(!Files.exists(dir.resolve("MobCombatSettings.yml.eliteladder-tmp")), "no temp left");
+-        FileApplier.Result again = FileApplier.apply(f, bk, 1, LadderTable.step(2), "20261025-140000", YAML_OK, FileApplier.NONE);
++        FileApplier.Result again = FileApplier.apply(f, bk, table, 1, table.step(2), "20261025-140000", YAML_OK, FileApplier.NONE);
+         Check.ok(again.ok() && !again.changed(), "re-run with file already at target is a no-op");
+ 
+         System.out.println("FileApplier (0.1.2 peak + Seal 5 no-op)");
+         Path f2 = dir.resolve("MobCombatSettings-peak.yml");
+         Files.writeString(f2, fx("S3-norm-MobCombatSettings.yml"));
+-        FileApplier.Result rPeak = FileApplier.apply(f2, bk, 3, LadderTable.step(4), "20261101-143000", YAML_OK, FileApplier.NONE);
++        FileApplier.Result rPeak = FileApplier.apply(f2, bk, table, 3, table.step(4), "20261101-143000", YAML_OK, FileApplier.NONE);
+         Check.ok(rPeak.ok() && rPeak.changed(), "S3 -> S4 compressed peak applied");
+         Check.eq(FileApplier.sha256(canonical(fx("S4-norm-MobCombatSettings.yml")).getBytes(StandardCharsets.UTF_8)), FileApplier.shaOf(f2), "file sha = S4-peak (EM form)");
+         String peakSha = FileApplier.shaOf(f2);
+-        FileApplier.Result rNoop = FileApplier.apply(f2, bk, 4, LadderTable.step(5), "20261101-143100", YAML_OK, FileApplier.NONE);
++        FileApplier.Result rNoop = FileApplier.apply(f2, bk, table, 4, table.step(5), "20261101-143100", YAML_OK, FileApplier.NONE);
+         Check.ok(rNoop.ok() && !rNoop.changed(), "Seal 5 step from the peak is a safe no-op");
+         Check.eq(peakSha, FileApplier.shaOf(f2), "no-op left the peak file byte-identical");
+ 
+         String sha2 = FileApplier.shaOf(f);
+-        FileApplier.Result bad = FileApplier.apply(f, bk, 3, LadderTable.step(4), "20261025-140100", YAML_OK, FileApplier.NONE);
++        FileApplier.Result bad = FileApplier.apply(f, bk, table, 3, table.step(4), "20261025-140100", YAML_OK, FileApplier.NONE);
+         Check.ok(!bad.ok() && bad.error().startsWith("REFUSED"), "applied S3 but file is S2 -> refused");
+         Check.eq(sha2, FileApplier.shaOf(f), "refusal changed nothing");
+ 
+         Files.writeString(f, fx("old-S0-MobCombatSettings.yml"));
+         String sha0 = FileApplier.shaOf(f);
+-        FileApplier.Result r0 = FileApplier.apply(f, bk, 1, LadderTable.step(2), "20261025-140200", YAML_OK, FileApplier.NONE);
++        FileApplier.Result r0 = FileApplier.apply(f, bk, table, 1, table.step(2), "20261025-140200", YAML_OK, FileApplier.NONE);
+         Check.ok(!r0.ok() && r0.error().contains("OLD pre-ladder S0"), "old S0 live -> refused with reason");
+         Check.eq(sha0, FileApplier.shaOf(f), "old S0 untouched");
+         Files.writeString(f, fx("old-S1-MobCombatSettings.yml"));
+-        FileApplier.Result r1 = FileApplier.apply(f, bk, 1, LadderTable.step(2), "20261025-140300", YAML_OK, FileApplier.NONE);
++        FileApplier.Result r1 = FileApplier.apply(f, bk, table, 1, table.step(2), "20261025-140300", YAML_OK, FileApplier.NONE);
+         Check.ok(!r1.ok() && r1.error().contains("OLD S1"), "old S1 live -> refused with reason");
+ 
+         Files.writeString(f, s1);
+-        FileApplier.Result fb = FileApplier.apply(f, bk, 1, LadderTable.step(2), "20261025-140400", YAML_OK, new FileApplier.Faults() {
++        FileApplier.Result fb = FileApplier.apply(f, bk, table, 1, table.step(2), "20261025-140400", YAML_OK, new FileApplier.Faults() {
+             @Override public void beforeMove(Path t) throws IOException { throw new IOException("disk full"); }
+         });
+         Check.ok(!fb.ok() && fb.error().contains("disk full") && fb.restored(), "write failure -> restored");
+         Check.eq(s1, Files.readString(f), "file is S1 again after write failure");
+-        FileApplier.Result fa = FileApplier.apply(f, bk, 1, LadderTable.step(2), "20261025-140500", YAML_OK, new FileApplier.Faults() {
++        FileApplier.Result fa = FileApplier.apply(f, bk, table, 1, table.step(2), "20261025-140500", YAML_OK, new FileApplier.Faults() {
+             @Override public void afterMove(Path t) throws IOException { byte[] b = Files.readAllBytes(t); Files.write(t, Arrays.copyOf(b, b.length / 2)); }
+         });
+         Check.ok(!fa.ok() && fa.error().contains("verify failed") && fa.restored(), "corrupt write -> verify fails -> restored");
+         Check.eq(s1, Files.readString(f), "file is S1 again after corrupt write");
+-        FileApplier.Result fy = FileApplier.apply(f, bk, 1, LadderTable.step(2), "20261025-140600", ba -> "YAML parse failed: test", FileApplier.NONE);
++        FileApplier.Result fy = FileApplier.apply(f, bk, table, 1, table.step(2), "20261025-140600", ba -> "YAML parse failed: test", FileApplier.NONE);
+         Check.ok(!fy.ok() && fy.restored(), "YAML check failure -> restored");
+         Check.eq(s1, Files.readString(f), "file is S1 again after YAML failure");
+         Check.ok(Files.exists(bk.resolve("MobCombatSettings.yml.20261025-140000-from-S1.bak")), "earlier backup never overwritten");
+ 
++        LadderConfigSuite.run(a.length > 0 ? a[0] : "ladder.yml");
++
+         System.out.println();
+         System.out.println(Check.passed + " passed, " + Check.failed + " failed");
+         if (Check.failed > 0) System.exit(1);

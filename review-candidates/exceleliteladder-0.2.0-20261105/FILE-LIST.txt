@@ -1,0 +1,45 @@
+BUILD-RECORD.md	2561
+CHANGELOG-0.2.0.md	4189
+DEPENDENCIES.md	1363
+DEPENDENCIES.sha256	498
+FILE-LIST.txt	(self-referential; size not listed)
+FUNCTIONAL-CHANGE.diff	69747
+INSTALL-PACKET.md	5152
+INSTALLED.txt	2748
+MANIFEST-ENTRY.md	4834
+PUSH-PLAN.md	7362
+README.md	3097
+SANITIZATION.diff	999
+SHA256SUMS	(self-referential; size not listed)
+SOURCE-PROVENANCE.json	(self-describing; size not listed)
+SOURCE.md	1962
+TEST-REPORT.md	6225
+TEST-RESULTS.txt	3866
+base-proof/build-base.sh	1255
+build.sh	1346
+config.yml	1454
+ladder.yml	3033
+plugin.yml	812
+rig/evidence/r1-r2-console.log	35021
+rig/evidence/r2b-apply-console.log	30924
+rig/evidence/r3-broken-boot-latest.log	33389
+run-tests.sh	789
+src/com/winkreyes/exceleliteladder/ExcelEliteLadder.java	26775
+src/com/winkreyes/exceleliteladder/core/FileApplier.java	6522
+src/com/winkreyes/exceleliteladder/core/LadderConfig.java	10897
+src/com/winkreyes/exceleliteladder/core/LadderConfigException.java	511
+src/com/winkreyes/exceleliteladder/core/LadderException.java	267
+src/com/winkreyes/exceleliteladder/core/LadderStep.java	1453
+src/com/winkreyes/exceleliteladder/core/LadderTable.java	6028
+src/com/winkreyes/exceleliteladder/core/MobCombatFile.java	5905
+src/com/winkreyes/exceleliteladder/core/StepPlan.java	2106
+tests/Check.java	901
+tests/LadderConfigSuite.java	10978
+tests/TestMain.java	13506
+tests/fixtures/S1-norm-MobCombatSettings.yml	14529
+tests/fixtures/S2-norm-MobCombatSettings.yml	14529
+tests/fixtures/S3-norm-MobCombatSettings.yml	14529
+tests/fixtures/S4-norm-MobCombatSettings.yml	14529
+tests/fixtures/S5-norm-MobCombatSettings.yml	14529
+tests/fixtures/old-S0-MobCombatSettings.yml	14528
+tests/fixtures/old-S1-MobCombatSettings.yml	14529

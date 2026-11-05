@@ -1,0 +1,196 @@
+{
+  "plugin": "ExcelEliteLadder",
+  "version": "0.2.0",
+  "local_build_folder": "eliteladder-config-build",
+  "jar": {
+    "file": "ExcelEliteLadder-0.2.0.jar",
+    "path": "eliteladder-config-build/ExcelEliteLadder-0.2.0.jar",
+    "bytes": 40475,
+    "sha256": "781eea2fe99269fb1400b217f5026f29bcd03dc919501cc84b28aa56e083afd0"
+  },
+  "install": {
+    "status": "installed live (current)",
+    "date": "Nov 5, 2026",
+    "detail": "Installed Nov 5, 2026, 6:04-6:20 AM CST by wrv-install-failsafe (backup 'EliteLadder pre-0.2.0 20261105', cap-at-6 prune of one oldest manual; boot Done 19.854s; enable line reports ladder table source ladder.yml (config); eliteladder status + reload verified live; plugins 78; guild LOCKED 3 of 5; SEVERE 0). See INSTALLED.txt."
+  },
+  "notes": [
+    "The 2.0 change (2.0 decision sheet item 3, approved by Mike Nov 5, 2026): the ladder table moves from the jar into plugins/ExcelEliteLadder/ladder.yml under strict validation; any defect refuses the whole table and the last-good table keeps running. Ladder values unchanged \u2014 the shipped ladder.yml equals the 0.1.2 hardcoded table value-for-value (migration equality suite).",
+    "Deterministic build: build.sh assembles the jar twice and byte-compares (SHA-256 781eea2fe99269fb1400b217f5026f29bcd03dc919501cc84b28aa56e083afd0, 40,475 B).",
+    "Base proof deviation (toolchain, predates the refactor): unmodified 0.1.2 sources rebuilt in this VM come out 31,499 B / 336a57d2... vs the jar of record 31,403 B / 7ea61276...; entry lists identical, every .class differs. See TEST-REPORT.md. The base-proof rebuilt jar is a binary and is NOT included in this text record; its build script (base-proof/build-base.sh) is.",
+    "Previous version: 0.1.2, recorded in packages/exceleliteladder-0.1.2-20261103 (FUNCTIONAL-CHANGE.diff baseline)."
+  ],
+  "record": {
+    "assembled": "2026-11-05",
+    "assembler": "records close-out pass (Drive deposits + GitHub draft record PR executed in the same pass)",
+    "files": {
+      "BUILD-RECORD.md": {
+        "sha256": "02ebdf6172cbab903a5b6ac0131ed2f3319f329f4d704c07dc9200f6d9d8b2d2",
+        "bytes": 2561
+      },
+      "CHANGELOG-0.2.0.md": {
+        "sha256": "183aeca14837426595c620209946bb4469142ecd54eef569c536af6e445866f3",
+        "bytes": 4189
+      },
+      "DEPENDENCIES.md": {
+        "sha256": "c08607b07fb107155ff5dbebf3a10fdda9ccce87e67f628af2531c78aadaa910",
+        "bytes": 1363
+      },
+      "DEPENDENCIES.sha256": {
+        "sha256": "427a1f41a72df76c2c3fc6053a18ad15e6f037d1bd428e323bc9ef55dd8ad430",
+        "bytes": 498
+      },
+      "FUNCTIONAL-CHANGE.diff": {
+        "sha256": "4c0613e97c4f3ce43d0c8291739ce072935e9eaef9d6e3c1dfaf025f315b7320",
+        "bytes": 69747
+      },
+      "INSTALL-PACKET.md": {
+        "sha256": "ff5fb3d4284c5eaad869b38477637f09a9bc94ebb5d528a2f9e58e22307462fc",
+        "bytes": 5152
+      },
+      "INSTALLED.txt": {
+        "sha256": "7c32b1deb9c4476ea47e3c9a13b477fd8ca96c1d5a2e787a694915cd239b4a20",
+        "bytes": 2748
+      },
+      "MANIFEST-ENTRY.md": {
+        "sha256": "02445fde37d6bd52a261253026637b9cd5ef6cfc20a67d9d7833a3fb8d1e3d62",
+        "bytes": 4834
+      },
+      "PUSH-PLAN.md": {
+        "sha256": "e7cd44dd05901c32fb96f51db0857117e6617f4241deb7e3f6177f33d424bf30",
+        "bytes": 7362
+      },
+      "README.md": {
+        "sha256": "389c15aed88c938ddf20a71e6933a48d8a6a0c7a807101b95b41de2e2eee4da3",
+        "bytes": 3097
+      },
+      "SANITIZATION.diff": {
+        "sha256": "349b993243196698050a3ddc70b3dbe9f89026fea6e8360ec031a18c88f31f69",
+        "bytes": 999
+      },
+      "SOURCE.md": {
+        "sha256": "48a4fb2db794fe8a273d93720597aad408b19193eb54d37ea0479595c2b7ad75",
+        "bytes": 1962
+      },
+      "TEST-REPORT.md": {
+        "sha256": "13f236cf50816875e139577c79297668fd0739c2329d75df8c26178cf95eb77a",
+        "bytes": 6225
+      },
+      "TEST-RESULTS.txt": {
+        "sha256": "0199b4eb0ad9eb3b3c31edc3f15bc69afadd583c99f71cdf85498712218a3125",
+        "bytes": 3866
+      },
+      "base-proof/build-base.sh": {
+        "sha256": "bd5ae7aff134e1524940958907c8d18f464079865022407e29cc985e2a7a3ccd",
+        "bytes": 1255
+      },
+      "build.sh": {
+        "sha256": "a95dab05dcdd5fab4eee595b26b95781525e9a2438b45fb34cc3655eec3d542c",
+        "bytes": 1346
+      },
+      "config.yml": {
+        "sha256": "43e73f71715de6d4bec5f708950330d2dcf5d75fc298b1c16c5f138da19e4582",
+        "bytes": 1454
+      },
+      "ladder.yml": {
+        "sha256": "892a235308c9ef31ec7b019d5d80b704e692bda506e5add84fcf933eda8a9e16",
+        "bytes": 3033
+      },
+      "plugin.yml": {
+        "sha256": "2aee7b0a5e7f3e4d9391e94bdc9c6434b12aa202216b054698da8cd9b1f67ed0",
+        "bytes": 812
+      },
+      "rig/evidence/r1-r2-console.log": {
+        "sha256": "9cc81b8b8e3a27ad5f46c74aa06b3dd98b74f4d06c4cfe5dd0e8b7a5bb4a759e",
+        "bytes": 35021
+      },
+      "rig/evidence/r2b-apply-console.log": {
+        "sha256": "11a9928158125880fd29797f8380f04d293bccf448cb8fe64b5eee8cd23b3abc",
+        "bytes": 30924
+      },
+      "rig/evidence/r3-broken-boot-latest.log": {
+        "sha256": "343184f012efb4eac452c3e03a86ca02e49987fe0cbcbaac4da688c66a0eba03",
+        "bytes": 33389
+      },
+      "run-tests.sh": {
+        "sha256": "4c852b6c0edf6918097224770c9535b9740140fbbfaa9fcc8c3d8a78e86aff81",
+        "bytes": 789
+      },
+      "src/com/winkreyes/exceleliteladder/ExcelEliteLadder.java": {
+        "sha256": "e725e8128b7255fbd85f5f872da0057498668a39c374bc0986c4c5497820580a",
+        "bytes": 26775
+      },
+      "src/com/winkreyes/exceleliteladder/core/FileApplier.java": {
+        "sha256": "03b1c3a8d851d66a4fd6f31209eebc1dc7e52b38f95364ab0bb58dce89c83124",
+        "bytes": 6522
+      },
+      "src/com/winkreyes/exceleliteladder/core/LadderConfig.java": {
+        "sha256": "b9bd7c374eb947d0fce924408879857492ccdc5aa8b24ad1852108d189a0e757",
+        "bytes": 10897
+      },
+      "src/com/winkreyes/exceleliteladder/core/LadderConfigException.java": {
+        "sha256": "929cdc19720f2e93e38ebd6cf1a491bc6c2f30a7b175ef8d0fd211eb739a6fc1",
+        "bytes": 511
+      },
+      "src/com/winkreyes/exceleliteladder/core/LadderException.java": {
+        "sha256": "861e9e1e24506ce20dc9e4b1a0aaffeeac9b4f84e3fb91ff4535a1b0056fb4a7",
+        "bytes": 267
+      },
+      "src/com/winkreyes/exceleliteladder/core/LadderStep.java": {
+        "sha256": "916fdd8750f99e9458020c1b6d8d29cd893b36df2b3449898a13f6776b93d8fa",
+        "bytes": 1453
+      },
+      "src/com/winkreyes/exceleliteladder/core/LadderTable.java": {
+        "sha256": "64c1a35da7dcb703c3494fa3eabd29b4cfa95b6683b978d9a4b243e08a1549ee",
+        "bytes": 6028
+      },
+      "src/com/winkreyes/exceleliteladder/core/MobCombatFile.java": {
+        "sha256": "9108d51c06e161a76c471f94a84c7050d7b9aa91a7a2cdd0a1042750415e65aa",
+        "bytes": 5905
+      },
+      "src/com/winkreyes/exceleliteladder/core/StepPlan.java": {
+        "sha256": "eabf234a5f17416a801227aebcd86af94af5c310157831a20c020a0432eef943",
+        "bytes": 2106
+      },
+      "tests/Check.java": {
+        "sha256": "242b251d8e2b9b94daa4f87a7e7d2de79546ce2537c6772d44d606a4bf617c3c",
+        "bytes": 901
+      },
+      "tests/LadderConfigSuite.java": {
+        "sha256": "ccd744c73bb63dbddd0c2a8af16d31a092d37f4f5f91d39e3b299c91f41fffaf",
+        "bytes": 10978
+      },
+      "tests/TestMain.java": {
+        "sha256": "2a16c8181c54a989308d5758f504a546cda607b44906a3653620e82485effb5f",
+        "bytes": 13506
+      },
+      "tests/fixtures/S1-norm-MobCombatSettings.yml": {
+        "sha256": "57ad4ab2c75fd8c68508aafdc8e27cc3601afb454f7295958e893c19c45c976d",
+        "bytes": 14529
+      },
+      "tests/fixtures/S2-norm-MobCombatSettings.yml": {
+        "sha256": "a42f8fb123aa2ecd9e1f669e5e791eee508eb5ee3fecf6bba8cbaa48055c61ad",
+        "bytes": 14529
+      },
+      "tests/fixtures/S3-norm-MobCombatSettings.yml": {
+        "sha256": "0add8ff7b1efe31059ead138abb5365fa284ba93e80ae3c43f16f240288381b4",
+        "bytes": 14529
+      },
+      "tests/fixtures/S4-norm-MobCombatSettings.yml": {
+        "sha256": "a8af53d70cf5146131fe4201bdf50b5bf461af6a7ea291a740c69544b43c0b3a",
+        "bytes": 14529
+      },
+      "tests/fixtures/S5-norm-MobCombatSettings.yml": {
+        "sha256": "a8af53d70cf5146131fe4201bdf50b5bf461af6a7ea291a740c69544b43c0b3a",
+        "bytes": 14529
+      },
+      "tests/fixtures/old-S0-MobCombatSettings.yml": {
+        "sha256": "2861a26d86b18659fceb901da3971bf3506e61ef31f0c768eac14c0d7d241930",
+        "bytes": 14528
+      },
+      "tests/fixtures/old-S1-MobCombatSettings.yml": {
+        "sha256": "b5cb1d7b2a5dc26ce6da54bb90f2bd1067a3cf97afc43869e871bebbce728fb4",
+        "bytes": 14529
+      }
+    }
+  }
+}

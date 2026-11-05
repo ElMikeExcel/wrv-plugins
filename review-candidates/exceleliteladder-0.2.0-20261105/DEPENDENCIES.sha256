@@ -1,0 +1,7 @@
+f0df9e7faccd38fabcdf4d2e6a243649cabc11f0a19fec100b43d7357369fb22  paper-api-26.3.build.231-stable.jar
+c8f7a98e7394adda02f6317249710e4d1b4c7a25aa8c7eace0c2eea52eb8bf85  snakeyaml-2.6.jar
+# Remaining compile-classpath jars come from the Paper runtime library set
+# pinned by path in build.sh (excelbuildmode-pilot/runtime-server/libraries);
+# the two entries above are the primary inputs (API + the YAML engine the
+# equality suite parses with). No dependency binaries are included in this
+# record.
