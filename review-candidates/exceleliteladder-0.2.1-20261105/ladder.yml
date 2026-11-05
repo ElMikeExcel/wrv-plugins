@@ -1,0 +1,92 @@
+# ExcelEliteLadder — the mob ladder table (since 0.2.0 this lives here, not in
+# the jar; Mike's 2.0 decision, Nov 5, 2026). One row per broken-seal count:
+# when ExcelGuildGate reports N seals broken, the step-N row is what the world
+# should look like, and ExcelEliteLadder writes it into EliteMobs'
+# MobCombatSettings.yml (up only, never down).
+#
+# THIS BUNDLED DEFAULT carries the Nov 5, 2026 RETUNE (shipped with 0.2.1;
+# the same values as the retune packet's candidate ladder.yml, and the same
+# values as the jar's built-in fallback table — the fallback must never
+# silently resurrect pre-retune tuning if this file is lost or malformed).
+# Mike's decisions, Nov 5, 2026, 08:34-08:36 CST:
+#   - Spawn rates UP (his "moderate bump" card pick): 0.10 / 0.12 / 0.14 /
+#     0.17 / 0.17 (was 0.07 / 0.08 / 0.09 / 0.11 / 0.11).
+#   - Elite damage out (scaled-to-player): steps 1-3 first kept as-is with
+#     the seal-4 peak (step-4 AND step-5) reset 2.35 -> 2.15, then the whole
+#     curve stepped down 10 percent, 2-decimal rounding:
+#     1.58 / 1.71 / 1.85 / 1.94 / 1.94.
+#   - Effective elite health via scaled-to-elite (player damage TO elites):
+#     0.50 / 0.45 / 0.40 / 0.35 / 0.35 (was 0.55 / 0.50 / 0.50 / 0.40 / 0.40) —
+#     elites live longer because players hit them softer (at step 3,
+#     0.50 -> 0.40 is ~25% more effective health).
+#   - Cap and both normalized (dungeon) values unchanged.
+#   - The tiny elite movement-speed buff Mike also asked for is NOT a table
+#     value: it is the elite-speed section of config.yml (0.2.1). Neither
+#     this table nor EliteMobs' MobCombatSettings.yml has a speed key.
+#
+# HOW TO CHANGE THE LADDER: edit the numbers below, then run
+#   /eliteladder reload
+# from the console (or in game with exceleliteladder.admin). No restart, no
+# new jar. The reload either takes the WHOLE table or refuses it — watch the
+# reply: "accepted" means the new table is live; "REFUSED" names the exact
+# defect and the previous table keeps running.
+#
+# THE RULES (enforced on every load — a violation refuses the whole table):
+#   - exactly step-1 through step-5, each with exactly these six values:
+#       spawn               fraction of spawns that become elites, > 0 and <= 1
+#       cap                 highest natural elite level, a whole number 1..1000
+#       normalized-to-elite damage TO elites in dungeons (normalized gear)
+#       normalized-to-player damage FROM elites in dungeons (normalized gear)
+#       scaled-to-elite     damage TO elites in the open world (scaled gear)
+#       scaled-to-player    damage FROM elites in the open world (scaled gear)
+#     Damage multipliers must be > 0 and <= 10. No extra keys — a typo like
+#     "spwan" refuses the table instead of silently doing nothing.
+#   - As seals break the world only gets harder: spawn and cap never go DOWN
+#     from one step to the next, scaled-to-player never goes down, and
+#     scaled-to-elite never goes UP. Staying equal is fine (see step-5).
+#
+# STEP 5 EQUALS STEP 4 ON PURPOSE: the ladder tops out at seal 4 compressed —
+# there is no harder seal-5 step in the design (after the fifth seal the group
+# moves on to the EliteMobs guild world). The step-5 row must stay equal to
+# step-4; the Seal 5 trigger is a safe no-op.
+#
+# If this file is deleted, the plugin regenerates this default on the next
+# boot. If it is malformed at boot, the plugin runs on its built-in copy of
+# this same table and warns loudly in the log.
+ladder:
+  step-1:
+    spawn: 0.10
+    cap: 120
+    normalized-to-elite: 0.5
+    normalized-to-player: 2.0
+    scaled-to-elite: 0.50
+    scaled-to-player: 1.58
+  step-2:
+    spawn: 0.12
+    cap: 120
+    normalized-to-elite: 0.5
+    normalized-to-player: 2.0
+    scaled-to-elite: 0.45
+    scaled-to-player: 1.71
+  step-3:
+    spawn: 0.14
+    cap: 120
+    normalized-to-elite: 0.5
+    normalized-to-player: 2.0
+    scaled-to-elite: 0.40
+    scaled-to-player: 1.85
+  step-4:
+    spawn: 0.17
+    cap: 150
+    normalized-to-elite: 0.5
+    normalized-to-player: 2.0
+    scaled-to-elite: 0.35
+    scaled-to-player: 1.94
+  step-5:
+    # Identical to step-4 BY DESIGN — the ladder tops out at seal 4 (see header).
+    spawn: 0.17
+    cap: 150
+    normalized-to-elite: 0.5
+    normalized-to-player: 2.0
+    scaled-to-elite: 0.35
+    scaled-to-player: 1.94

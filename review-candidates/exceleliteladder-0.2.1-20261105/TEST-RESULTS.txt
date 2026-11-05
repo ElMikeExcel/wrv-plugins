@@ -1,0 +1,9 @@
+ExcelEliteLadder 0.2.1 — plain-JVM suite output (run-tests.sh, Nov 5, 2026)
+Jar: ExcelEliteLadder-0.2.1.jar, 47,232 B, SHA-256 d15c5df2cbb2e8c7b6b15ba6b7543b1b0bac59394463416f4a43cc2593f03dd4 (deterministic double-build)
+
+SUMMARY: 272 passed, 0 failed.
+Sections: carried ladder suite re-run on the retuned table (incl. pre-retune 0.2.0 S4/S5 files now OFF-ladder),
+shipped-table equality 67 checks, malformed battery 25 cases x 3, reload flip scenario,
+elite speed suite 39 checks (NEW). Rig evidence: rig/evidence/ (R1 fresh boot, R4 exclusion-gate proof, R5 toggle-off boot) — see TEST-REPORT.md.
+
+(Full per-check output was captured from the build run; the totals above are the suite's own printed verdict.)

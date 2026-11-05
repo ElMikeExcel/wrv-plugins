@@ -1,0 +1,43 @@
+# ExcelEliteLadder 0.2.1
+# The ladder TABLE itself lives in ladder.yml in this same folder (since 0.2.0;
+# Mike's 2.0 decision, Nov 5, 2026) — edit it there and run /eliteladder reload.
+# The table is strictly validated on every load: a malformed ladder.yml is
+# refused with the exact defect named, and the last-good table keeps running
+# (at first boot, the built-in copy of the shipped default). Current table
+# (the Nov 5, 2026 retune, shipped with 0.2.1):
+# S1 0.10/1.58/0.50, S2 0.12/1.71/0.45, S3 0.14/1.85/0.40, S4 0.17/1.94/0.35, S5 0.17/1.94/0.35
+# (spawn / scaled-to-player / scaled-to-elite), cap 120 on S1-S3 and 150 on S4-S5
+# (the ladder tops out at Seal 4, compressed - Nov 1, 2026; the S5 row equals S4,
+# so a Seal 5 trigger is a no-op), dungeon (normalized) toElite/toPlayer
+# 0.5/2.0 on every step. This file holds the watcher behaviour and the
+# elite-speed settings below.
+
+# Master switch. false = watch nothing, change nothing.
+enabled: true
+
+# How often to look at the GuildGate seal count (seconds, min 5). A player quitting also triggers a look.
+poll-seconds: 30
+
+# false (default) = a pending step waits until 0 players are online, then applies and runs em reload.
+# true = apply and run em reload right away, even with players on (em reload removes live elites
+# and ends running EliteMobs fights and events, but kicks nobody).
+allow-reload-with-players-online: false
+
+# Console command run after a successful write.
+reload-command: "em reload"
+
+# Seconds after the reload before the file is re-read and checked.
+post-reload-check-seconds: 20
+
+# Elite speed (0.2.1): every NATURAL elite gets a Speed potion effect — the
+# same channel EliteMobs' own movement_speed power uses. Custom bosses are
+# never touched (they can roll that power themselves). Read at enable and on
+# /eliteladder reload. Turning enabled off stops NEW applications only:
+# effects already on living mobs are never stripped (they cannot be told
+# apart from an EM power's own Speed effect) and die with their mobs.
+elite-speed:
+  enabled: true
+  # 0 = Speed I (+20%, Mike's "tiny"); 1 = Speed II (+40%, EliteMobs' own power value).
+  amplifier: 0
+  # -1 = permanent for the mob's life. A positive number is a duration in ticks.
+  duration-ticks: -1
