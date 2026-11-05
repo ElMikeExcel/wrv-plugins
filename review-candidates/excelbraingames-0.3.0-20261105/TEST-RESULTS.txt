@@ -1,0 +1,92 @@
+ExcelBrainGames 0.3.0 — TEST RESULTS (2026-11-05, America/Chicago)
+Full build-lane reports: TEST-REPORT.md (Phase 3) and
+phase2/TEST-REPORT.md (Phase 2) in this package. This file is the
+close-out summary over the FINAL shipped content of both phases.
+
+CANDIDATE (installed)
+  ExcelBrainGames-0.3.0.jar — 118,307 B
+  SHA-256 acfba81f800cf67e9bdf56e9eae016ec2d6ce8c42fce7c8558e9f3e694345b63
+  build.sh assembles the jar twice per run and hash-asserts; the
+  repro jar alongside matches byte-for-byte. Toolchain: JDK 25,
+  javac --release 21, Paper API 26.3 build 231 + Vault 2.0.0 compile
+  inputs (hash-pinned; unchanged from 0.1.0).
+
+INTERMEDIATE (superseded, never installed)
+  ExcelBrainGames-0.2.0.jar — 84,155 B
+  SHA-256 36e9519345088c3dd34f75e68486a2b466cf90375debd671c37cf995a3d1b6b6
+
+PHASE 2 SUITE (build-phase2 gate) — 538,880 checks, 0 failures
+  WordSearchTest 20,416 + MemoryTest 3,039 + LedgerTest 55 +
+  PropertyTest 499,811 (all Phase 1 regression) + SudokuTest 553 +
+  SudokuPropertyTest 15,006.
+  SudokuTest — generated shapes valid at all four sizes; givens in
+    the config band and matching the solution; given cells locked;
+    Check flags exactly the planted wrong cell, adult cap refuses a
+    4th use, kid checks unlimited; deduction math 10%/use floored at
+    zero ($250 with 2 checks pays $200; Medium $180 − 10% then +20%
+    par = $194.40); adult on Kid 4×4 earns $12.50 half, kid-flagged
+    $25; full-but-wrong board does not complete; serialization
+    round-trip incl. picture mode.
+  SudokuPropertyTest — 500 seeds × all 5 shipped tiers (bands read
+    from the shipped config): an INDEPENDENT solver (no shared code
+    with the production solver) proves every deal has exactly one
+    solution and it is the stored one; solving by placing the
+    solution completes; spoiling one cell blocks completion. Slowest
+    single generation 44 ms.
+
+PHASE 3 SUITE (build-phase3 gate, cumulative) — 622,227 checks,
+0 failures
+  All Phase 1 + Phase 2 suites above (regression) + TextTest 103 +
+  TextPropertyTest 83,244.
+  TextTest — Quick Math 10-question flow, one attempt each, wrong
+    answers advance and show the correct one; §6.3 payout math
+    (tier × correct/10 rounded DOWN: 9/10 on $50 = $45; 7/10 on
+    $25 = $17); Scramble permutations never equal the word, Hint
+    halves the word ($20 → $10), finish-now banks exact partial
+    credit, kid retries without advancing, undersized pool refuses
+    cleanly; Riddle matching (exact/case/article/punctuation/plural
+    variants match; prefixes and different words never do), $100 −
+    $25/hint with the $25 floor; kid-half on text values through the
+    shared path; serialization round-trips.
+  TextPropertyTest — 500 seeds × every text tier on the SHIPPED
+    content: 15,000 Quick Math questions RE-PARSED and evaluated by
+    an independent evaluator (no shared code) and equal to the
+    stored answers, with tier invariants checked from the parsed
+    tokens (Kid +/− only, results ≤ 20, never negative; Standard one
+    operation, exact division; Challenge two operations, 1–999);
+    Scramble rounds deal 5 distinct in-band words, every shuffle a
+    true permutation ≠ the word, kid choices always 3 and contain
+    the word; perfect play banks the full round amount.
+
+RIG — Paper 26.3 + Vault + EssentialsX 2.22.0 (scratch rig; logs in
+rig/evidence/ and phase2/rig/evidence/)
+  Phase 2: ALL PASS, SEVERE 0 on both boots. Adult solving Kid 4×4
+    paid $22.50 ($12.50 half + $10 streak); 9×9 Medium with one
+    Check + par bonus paid $194.40; a seeded 6×6 resumed intact
+    after a full restart and paid $60.00.
+  Phase 3: ALL PASS, SEVERE 0 on both boots. Quick Math Kid by taps
+    paid $22.50 (adult half + streak); Quick Math Standard answered
+    through genuine AsyncChatEvents paid $50.00 for 10/10; Scramble
+    Standard with a Hint paid $90.00; Riddle hint (−$25) + fuzzy
+    answer paid $75.00; a seeded kid Scramble (2 words, $20 banked)
+    resumed after restart and paid the $25.00 adult half.
+  Phase 3 rig note: the rig ran the immediately-prior build
+    (5d3abe45…, same size); a class-by-class jar diff shows the
+    only difference from the shipped jar is LineNumberTable debug
+    entries in the two QuestionLoop record classes (a javadoc edit
+    shifted two source lines) — no instruction, constant, or
+    resource differs, so the verdicts carry unchanged.
+
+LIVE INSTALL (Nov 5, 2026, 5:34-5:53 AM CST — INSTALLED.txt)
+  Boot Done (19.778s); enable line verbatim with games=[word-search,
+  memory-match, sudoku, quick-math, word-scramble, riddle],
+  kid-tiers=ENABLED, wordlists=10 files / 6 themes, riddles=16,
+  economy=EssentialsX Economy; plugins 78; ExcelMenu registry 85
+  entries, 0 failed; guild LOCKED 3 of 5 unchanged; TPS 20.0x3;
+  SEVERE 0 attributable; console smoke: `games admin riddle` printed
+  index 7 (rain), `setriddle 0` forced the piano riddle, reload
+  reported 3 Quick Math tiers, 2 Scramble tiers, 16 riddles (the
+  smoke left today's live riddle forced to index 0). Player proofs
+  (Mike Bedrock / Jester Java / Rylie kid taps) still owed — they
+  are post-install proofs by Mike's accepted install-then-test
+  flow, not build gates.

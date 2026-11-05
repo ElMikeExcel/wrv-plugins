@@ -1,0 +1,265 @@
+# ExcelBrainGames — every tunable lives here (config-first): payouts, tier
+# shapes, the daily cap, themes, symbols, kid flags, messages. Edit + run
+# /games admin reload; never rebuild for a number change.
+
+economy:
+  # Shared across ALL Brain Games: no player earns more than this per day.
+  # Changing the cap is a Mike decision (SPEC section 9.2).
+  daily-cap: 1500.00
+  # Day boundary for the cap, streaks and daily totals.
+  zone: America/Chicago
+  # Streak bonus: on the first paid completion of a day, +per-day x streak
+  # days, up to the max. The bonus counts toward the daily cap.
+  streak-bonus-per-day: 10.00
+  streak-bonus-max: 50.00
+
+games:
+  # Kid tiers ENABLED at launch: Mike hand-checked the kid word lists and
+  # approved them Nov 4, 2026 (SPEC section 9.4 gate cleared); the checked
+  # lists live in wordlists/ (kid-animals / kid-food / kid-minecraft).
+  kid-tiers-enabled: true
+  wordsearch:
+    tiers:
+      kid:
+        label: "Kid 6x6"
+        kid: true
+        cols: 6
+        rows: 6
+        words: 5
+        min-length: 3
+        max-length: 5
+        directions: [E, S]
+        payout: 40.00
+        par-seconds: 0
+        speed-bonus-percent: 0
+      standard:
+        label: "Standard 9x6"
+        kid: false
+        cols: 9
+        rows: 6
+        words: 8
+        min-length: 4
+        max-length: 8
+        directions: [E, W, S, N]
+        payout: 90.00
+        par-seconds: 360
+        speed-bonus-percent: 20
+      challenge:
+        label: "Challenge 9x6"
+        kid: false
+        cols: 9
+        rows: 6
+        # 10 words, not the spec's 12: generator saturation testing (Nov 4,
+        # 2026) showed 12 words of 5-10 letters cannot be placed reliably on
+        # a 9x6 board even with crossing-preferring placement (~2% of deals);
+        # 10 places at full count across 500-seed property tests. Deviation
+        # recorded in TEST-REPORT.md; payout unchanged.
+        words: 10
+        min-length: 5
+        max-length: 10
+        directions: [E, W, S, N, NE, NW, SE, SW]
+        payout: 150.00
+        par-seconds: 600
+        speed-bonus-percent: 20
+  memory:
+    tiers:
+      kid:
+        label: "Kid — 6 pairs"
+        kid: true
+        pairs: 6
+        payout: 30.00
+        par-flips: 24
+        par-bonus-percent: 20
+      standard:
+        label: "Standard — 8 pairs"
+        kid: false
+        pairs: 8
+        payout: 55.00
+        par-flips: 34
+        par-bonus-percent: 20
+      big:
+        label: "Big — 12 pairs"
+        kid: false
+        pairs: 12
+        payout: 100.00
+        par-flips: 52
+        par-bonus-percent: 20
+      giant:
+        label: "Giant — 18 pairs"
+        kid: false
+        pairs: 18
+        payout: 160.00
+        par-flips: 80
+        par-bonus-percent: 20
+    # Card faces for Memory Match: distinct, readable at phone size.
+    # Giant (18 pairs) needs at least 18 entries here.
+    symbols:
+      - APPLE
+      - MELON_SLICE
+      - SUNFLOWER
+      - COOKIE
+      - CAKE
+      - EGG
+      - FEATHER
+      - BONE
+      - STICK
+      - TORCH
+      - LANTERN
+      - BOOK
+      - COMPASS
+      - DIAMOND
+      - EMERALD
+      - GOLD_INGOT
+      - IRON_INGOT
+      - REDSTONE
+  sudoku:
+    # Check button (SPEC 4.4): each use on an adult tier deducts this
+    # percent of the tier payout from the prize; the kid 4x4 check is
+    # free and unlimited. Max paid checks per round on adult tiers:
+    check-cost-percent: 10
+    max-checks: 3
+    tiers:
+      kid4:
+        label: "Kid 4x4"
+        kid: true
+        size: 4
+        box-rows: 2
+        box-cols: 2
+        givens-min: 8
+        givens-max: 10
+        payout: 25.00
+        par-seconds: 0
+        speed-bonus-percent: 0
+        # The kid 4x4 also offers picture mode (digits become these icons):
+        picture: true
+      six:
+        label: "6x6"
+        kid: false
+        size: 6
+        box-rows: 2
+        box-cols: 3
+        givens-min: 18
+        givens-max: 22
+        payout: 60.00
+        par-seconds: 0
+        speed-bonus-percent: 0
+      easy:
+        label: "9x9 Easy"
+        kid: false
+        size: 9
+        box-rows: 3
+        box-cols: 3
+        givens-min: 38
+        givens-max: 44
+        payout: 120.00
+        par-seconds: 0
+        speed-bonus-percent: 0
+      medium:
+        label: "9x9 Medium"
+        kid: false
+        size: 9
+        box-rows: 3
+        box-cols: 3
+        givens-min: 30
+        givens-max: 35
+        payout: 180.00
+        par-seconds: 900
+        speed-bonus-percent: 20
+      hard:
+        label: "9x9 Hard"
+        kid: false
+        size: 9
+        box-rows: 3
+        box-cols: 3
+        givens-min: 24
+        givens-max: 29
+        payout: 250.00
+        par-seconds: 1200
+        speed-bonus-percent: 20
+    # Picture-mode icons for the kid 4x4 (digits 1-4): four silhouettes a
+    # kid can tell apart at phone size — round fruit, tall flower, blue
+    # heart, square cake.
+    picture-symbols:
+      - APPLE
+      - SUNFLOWER
+      - HEART_OF_THE_SEA
+      - CAKE
+  quickmath:
+    # 10 questions per round; payout = tier x (right answers / 10),
+    # rounded down to whole dollars (SPEC 6.3). Kid tier answers by
+    # tapping one of three choices — no typing (choices: true).
+    tiers:
+      kid:
+        label: "Kid"
+        kid: true
+        payout: 25.00
+        choices: true
+      standard:
+        label: "Standard"
+        kid: false
+        payout: 50.00
+        choices: false
+      challenge:
+        label: "Challenge"
+        kid: false
+        payout: 90.00
+        choices: false
+  scramble:
+    # 5 words per round drawn from every theme's lists for the band.
+    # Kid: 3-4 letter words, 3-choice tap, retries allowed, $10/word.
+    # Standard: 5-8 letter words, typed answers, one try, $20/word.
+    # payout is the full-round amount; per-word = payout / 5.
+    tiers:
+      kid:
+        label: "Kid"
+        kid: true
+        payout: 50.00
+      standard:
+        label: "Standard"
+        kid: false
+        payout: 100.00
+  riddle:
+    # One riddle per server day for everyone (wordlists/riddles.yml).
+    # $100, minus $25 per hint, floor $25; 3 attempts per player per day.
+    # On Sat/Sun the daily pick prefers kid-suitable riddles:
+    prefer-kid-weekends: true
+
+# Word Search themes. Word content itself lives in wordlists/<theme>.yml.
+themes:
+  animals:
+    label: "Animals"
+    icon: BONE
+  food:
+    label: "Food"
+    icon: APPLE
+  minecraft:
+    label: "Minecraft"
+    icon: GRASS_BLOCK
+  space:
+    label: "Space"
+    icon: ENDER_PEARL
+  ocean:
+    label: "Ocean"
+    icon: HEART_OF_THE_SEA
+  school:
+    label: "School"
+    icon: WRITABLE_BOOK
+
+# Kid-flagged players (anti-farm, SPEC section 9.3): kid tiers pay them in
+# full; everyone else earns HALF on kid tiers (Mike's decision, Nov 4, 2026).
+# Managed by /games admin setkid; edited here only by hand when needed.
+kids:
+  - uuid: "00000000-0000-0000-0009-01f05d0d739d"
+    name: ".RylieDSunflower"
+
+messages:
+  completed: "&a&l{game} complete! &r&e+{amount}"
+  bonus-earned: "&7Sharp finish — speed/flip bonus included."
+  streak-bonus: "&dStreak bonus: +{amount} (day {streak})"
+  cap-hit: "&6You've hit today's Brain Games limit of {cap}. More tomorrow!"
+  picker-wordsearch: "&a&lWord Search"
+  picker-memory: "&b&lMemory Match"
+  picker-sudoku: "&d&lSudoku"
+  picker-quickmath: "&c&lQuick Math"
+  picker-scramble: "&e&lWord Scramble"
+  picker-riddle: "&6&lRiddle of the Day"
