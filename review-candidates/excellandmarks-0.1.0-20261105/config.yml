@@ -1,0 +1,37 @@
+# ExcelLandmarks 0.1.0 — every price, period and message lives here.
+# Prices adopted by Mike, Nov 5, 2026: rent $500 / $1,500 / $3,000 per
+# month; buy $10,000 / $25,000 / $50,000. Change them here — never in code.
+
+tiers:
+  spot:
+    rent: 500        # minor spot, per month
+    buy: 10000
+    plot-size: 3     # half-extent in blocks when a PLOT uses the default
+  landmark:
+    rent: 1500
+    buy: 25000
+    plot-size: 5
+  heart:
+    rent: 3000       # heart piece, per month
+    buy: 50000
+    plot-size: 8
+
+# Used when a [Landmark] sign's line 3 is left blank.
+defaults:
+  type: LANDMARK     # LANDMARK (naming only) or PLOT (naming + build rights)
+  tier: SPOT         # SPOT, LANDMARK or HEART
+
+rent-period-days: 30     # what "per month" means for the rent clock
+grace-days: 7            # after paid-through, before the plot finalizes
+clock-tick-minutes: 15   # how often the rent clock sweeps
+
+plot:
+  y-below: 3             # region extends this far under the sign
+  y-above: 12            # ... and this far above it
+
+redemption:
+  search-radius: 3       # free cells searched beside the sign for the box
+
+protect:
+  # ExcelProtect's data folder, relative to the plugins folder.
+  logs-dir: "../ExcelProtect"

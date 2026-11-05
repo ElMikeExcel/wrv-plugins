@@ -1,0 +1,30 @@
+ExcelLandmarks 0.1.0 — INSTALLED Nov 5, 2026, 7:05–7:23 AM CST by wrv-install-failsafe (harness-measured window; panel boot Done 7:15:02 AM CST).
+
+Window / marker: this run's own WINDOW-IN-PROGRESS.txt created 2026-11-05T07:04:31-06:00; present and unchanged at the pre-shutdown and pre-start re-check points (own marker, never a conflict); deleted at close-out.
+Time note: 7:03 AM run is OUTSIDE the 2:00–5:00 AM maintenance window; server left ONLINE. Halloween cleanup entry skipped by its own date gate (not before Nov 6).
+
+Emptiness gate (panel CST): list 0/10 at 7:06:32 AM and 7:07:46 AM; pre-shutdown list 0/10 at 7:13:35 AM; post-boot list 0/10 at 7:20:23 AM. (.coolgirlkail, online for the 6:41 AM run's skip, had left at 7:02:01 AM.)
+Pre-install reads: guildgate status 7:06:39 AM — LOCKED, 3 of 5 (dragon Oct 31 GumGumJetPistol; elder Nov 1 .coolgirlkail; raid Oct 23 Jester_Turtle; wither + warden pending). Plugins 78.
+
+BACKUP FIRST: 6 backups existed; cap-at-6 prune of ONE oldest manual backup "ExcelProtect pre-0.1.1 20261104" (11/04/2026 1:08 AM, 6.8 GB), confirmed deleted 7:08 AM. Two newest manuals (EliteLadder pre-0.2.0 20261105, BrainGames pre-0.3.0 20261105) and newest Daily Backup (11/04 7:42 PM) untouched. Fresh backup "Landmarks pre-0.1.0 20261105" created 7:09 AM, verified completed in list at 7:11 AM (11/05/2026, 7:09 AM, Manual, 6.8 GB). Total after creation: 6.
+
+Uploads (both NEW files, no overwrite prompt, no existing file modified):
+- ExcelLandmarks-0.1.0.jar → plugins/ExcelLandmarks-0.1.0.jar — 77,996 B; panel-computed SHA-256 EXACT 466c14c4a4002b87fb72e399411355d4df442b8d19b6fcbc58122073521246dc.
+- landmarks.yml → plugins/ExcelMenu/entries/landmarks.yml — 736 B (id: landmarks, "My Landmarks", menu: server_menu).
+
+Restart: panel Shut Down 7:13:45 AM (stopped 7:13:47 AM), panel Start ~7:14 AM — never console stop.
+
+Boot verify (all PASS):
+- Done (20.082s) at 7:15:02 AM CST (logs/latest.log line 618).
+- Enable line verbatim: "ExcelLandmarks 0.1.0 enabled: spots=0, gp=ON (subdivisions), protect-attribution=ON, floodgate-forms=ON, rent-period=30d, grace=7d"
+- Plugins 78 → 79 ("Initialized 79 plugins").
+- excelmenu reload (7:19:50 AM): "ExcelMenu registry reloaded: 86 entries, 0 failed."
+- landmarks admin status (7:19:58 AM): "ExcelLandmarks 0.1.0: spots=0 (rented 0, owned 0, available 0), gp=ON, protect-attribution=ON, floodgate-forms=ON, redemptions=0 boxes / 0 virtual"
+- guildgate status post-boot (7:20:18 AM): LOCKED 3 of 5 — UNCHANGED.
+- TPS 20.0 / 20.0 / 20.0. SEVERE 0 attributable (none in latest.log). Only boot Errors: pre-existing ServerMain terminal-features line + Essentials unsupported-version line.
+- Generated folder: plugins/ExcelLandmarks/ contains config.yml (1.2 KB) only at 7:21 AM check — spots.yml, redemptions.yml, registry-export.json NOT yet present, consistent with 0 spots / 0 redemptions (no data to write); plugin enabled and answering normally. Observed, not a failure.
+
+End state: server ONLINE, 0/10.
+
+Still owed (parent, NOT this entry): activation — the in-game admin sign-placement pass + spawn-landmark tier inventory (Mike's in-world call); player proofs after activation (Mike Bedrock sign-tap form + rent; Jester Java chest menu + view-only; redemption-box owner-only open); same-pass surfaces (Guide knowledge + intents, website index.html + ai-knowledge.json pair, What's New BOTH surfaces, broadcaster tip check); Landmarks records package.
+Rollback of record: pre-install Shockbyte backup "Landmarks pre-0.1.0 20261105"; packet rollback = remove jar + entry file, excelmenu reload, restart.

@@ -1,0 +1,79 @@
+ExcelLandmarks 0.1.0 — TEST RESULTS (2026-11-05, America/Chicago)
+Full build-lane report: TEST-REPORT.md in this package. This file is the
+close-out summary.
+
+CANDIDATE
+  ExcelLandmarks-0.1.0.jar — 77,996 B
+  SHA-256 466c14c4a4002b87fb72e399411355d4df442b8d19b6fcbc58122073521246dc
+  build.sh assembles the jar twice per run and hash-asserts the pair;
+  two full runs produced byte-identical jars. Toolchain: JDK 25
+  (Temurin 25.0.4.1), javac --release 21, Paper API 26.3 build 231 +
+  Vault 2.0.0 + GriefPrevention 16.18.7 + Floodgate (all hash-pinned).
+
+PLAIN-JVM SUITES — 101,018 passed, 0 failed (run inside build.sh)
+  - RentClockTest (100,904): rent/grace boundaries to the millisecond
+    (at paid-through = still ACTIVE, at grace end = still GRACE,
+    +1 ms = LAPSED/due); renewal stacking (early renew stacks from
+    paid-through, grace renew from now); hourly state classification
+    across a full period+grace; 20,000-case randomized sweep
+    (due <=> past grace end; renew formula max(now, paidThrough) +
+    period).
+  - AttributionTest (29): Protect blocks-*.jsonl parser (field order,
+    malformed/non-numeric lines dropped, never thrown); latest-per-
+    position resolution (later break beats earlier place, newer ts wins
+    out of order); renter-only region tally (edges inclusive, other
+    players excluded, broken-after-place excluded, air excluded);
+    file-level read through the real ProtectAttribution incl. duplicate
+    collapse and missing-dir fail-soft; GP adapter NONE contract.
+  - TapRouterTest (11): the one OPEN_MENU case (main-hand
+    RIGHT_CLICK_BLOCK on a registered sign past the debounce) + every
+    IGNORE branch (left click, off-hand echo, unregistered sign, air,
+    physical) and the 299/300/301 ms debounce edges.
+  - SpotMenuModelTest (42): available -> Rent/Buy only; own rental ->
+    Renew/Buy Outright/Release; grace -> Renew first, labelled with the
+    deadline; own owned -> Release only; someone else's spot -> Close
+    is the ONLY button (both modes) with the info view intact; confirm
+    screens (exact charge, buy-out no-refund note only when buying out
+    a rental, plot-release redemption warning); sign lines for all
+    four states.
+  - CoreTest (32): Mike's adopted prices pinned as the config defaults
+    ($500/$1,500/$3,000 rent; $10,000/$25,000/$50,000 buy; 30-day
+    period, 7-day grace); money formatting; region inclusion; registry
+    sign index, ownership queries, id sequence restore.
+
+RIG — Paper 26.3-235, NMS fake players firing REAL events
+(SignChangeEvent, PlayerInteractEvent, InventoryClickEvent,
+BlockPlaceEvent — the exact path a phone tap takes; logs in
+rig/evidence/), SEVERE 0, RIG OVERALL PASS
+  - Boot A (Vault + EssentialsX + GriefPrevention 16.18.7 +
+    ExcelProtect 0.1.1): 28/28 PASS — real [Landmark] sign
+    registration; tap -> menu -> confirm rent with the exact $500
+    Vault charge (balance untouched before Confirm); GP subdivision
+    Build rights live for the buyer; guest view-only (Close only);
+    unregistered sign untouched; grace hold with the "Grace til ..."
+    sign; lapse finalize with redemption contents exactly
+    {5 diamonds, 3 emeralds, 2 glowstone, 1 chest}.
+  - Boot B (GP + Protect jars ABSENT): 9/9 PASS fail-soft — hooks
+    report OFF by name; naming-only purchases still work.
+  - Rig-found, fixed pre-ship: (1) GP subdivisions cannot change
+    owners (NoTransferException) — shipped model is TRUST (Build +
+    manager, verified by re-read; SPEC section 5 amended);
+    (2) Protect logs-dir resolved one folder too high — attribution
+    would have read nothing live; fixed at both call sites.
+  - Named limitation: the Bedrock form SEND path cannot be exercised
+    by fake Java players (the form is built from the same test-pinned
+    model and falls back to the inventory menu) — player proof owed
+    (Mike, Bedrock, after activation). The ExcelMenu registry load was
+    gated live at install instead (85 -> 86, 0 failed).
+
+LIVE INSTALL (Nov 5, 2026, 7:05-7:23 AM CST — INSTALLED.txt)
+  Boot Done (20.082s); enable line verbatim "ExcelLandmarks 0.1.0
+  enabled: spots=0, gp=ON (subdivisions), protect-attribution=ON,
+  floodgate-forms=ON, rent-period=30d, grace=7d"; plugins 78 -> 79;
+  excelmenu reload registry 86 entries 0 failed; landmarks admin
+  status answered (spots=0, all flags ON, redemptions=0); guildgate
+  LOCKED 3 of 5 unchanged; TPS 20.0x3; SEVERE 0 attributable; server
+  left ONLINE. Plugin inert at spots=0 until the activation
+  sign-placement pass (parent/Mike). Player proofs owed after
+  activation: Mike (Bedrock) sign-tap form + rent; Jester (Java)
+  chest menu + view-only; redemption-box owner-only open.

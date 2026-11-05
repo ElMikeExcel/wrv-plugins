@@ -1,0 +1,20 @@
+name: ExcelLandmarks
+version: 0.1.0
+main: com.winkreyes.excellandmarks.ExcelLandmarks
+api-version: "1.21"
+description: Spawn-build naming, rent and buy — sign-registered spots, menu purchases, GP plot subdivisions, lapse redemption boxes.
+author: Wink Reyes Valley
+depend: [Vault]
+softdepend: [GriefPrevention, ExcelProtect, floodgate, ExcelMenu]
+commands:
+  landmarks:
+    description: Landmarks — tap a [Landmark] sign at spawn, or open your landmarks here.
+    usage: /landmarks [open <id>] | /landmarks admin ...
+    aliases: [plots]
+permissions:
+  landmarks.play:
+    description: Use Landmarks menus and commands.
+    default: true
+  landmarks.admin:
+    description: Register/remove spots and run Landmarks admin commands (console always allowed).
+    default: op
