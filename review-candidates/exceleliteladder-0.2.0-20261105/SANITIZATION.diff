@@ -1,0 +1,9 @@
+SANITIZATION SCAN — CLEAN (one false-positive class, reviewed)
+Package: exceleliteladder-0.2.0-20261105
+
+Scanned every file in this package for: IPv4 addresses (excluding 0.0.0.0 / 127.0.0.1 / 255.255.255.255 loopback-broadcast literals), email addresses, private-key blocks, and credential assignments (password/secret/token/api-key followed by a value).
+
+Hits, all reviewed as false positives:
+- The dotted Java version string "25.0.4.1" (Eclipse Adoptium Temurin 25.0.4.1) in the bootstrap line of the three rig evidence logs (rig/evidence/r1-r2-console.log, rig/evidence/r2b-apply-console.log, rig/evidence/r3-broken-boot-latest.log) and in SOURCE.md / TEST-REPORT.md toolchain notes — a software version, not an IP address. Same disposition as the Nov 3 record packages and the ExcelBrainGames 0.1.0 record.
+
+No server IP, email address, private key, token, or credential value appears anywhere in this package. No redactions were needed; no content was removed or altered by sanitization.

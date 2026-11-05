@@ -1,0 +1,29 @@
+ExcelEliteLadder 0.2.0 — INSTALLED Nov 5, 2026, 6:04–6:20 AM CST by wrv-install-failsafe (browser task ran 6:04–6:20 AM CST, harness-measured)
+
+Emptiness gate: list 0/10 at 6:05:50 AM, 6:07:08 AM, and pre-shutdown 6:12:30 AM CST.
+Pre-window: 78 plugins; guildgate LOCKED 3 of 5.
+
+Gates:
+- Exactly one active ExcelEliteLadder jar live: ExcelEliteLadder-0.1.2.jar, panel size 30.67 KB = 31,403 B (matches packet). SHA-256 of the live jar was NOT computed in the browser (no hashing tool available there) — size + single-active-jar verified; two inactive .bak jars (0.1.0, 0.1.1) present and untouched.
+- state.yml: appliedStep: 3 (lastKnownSeals: 3, lastResult: OK S2 -> S3, failedLatch: false).
+- ladder.yml did NOT exist pre-swap (expected).
+
+BACKUP FIRST: 6 backups before; cap-at-6 prune deleted ONE oldest manual backup "Together pre-0.5.3 20261104" (11/04/2026 12:20 AM, 6.8 GB; not a Daily Backup newest copy, not one of the two newest manuals). Fresh backup "EliteLadder pre-0.2.0 20261105" created 11/05/2026 6:08 AM, verified completed (6.8 GB, Manual) pre-swap. Total after: 6.
+
+Swap: live jar renamed aside to ExcelEliteLadder-0.1.2.jar.held-20261105-pre020 (never deleted); candidate placed as plugins/ExcelEliteLadder-0.2.0.jar at 40,475 B (panel 39.53 KB), SHA-256 781eea2fe99269fb1400b217f5026f29bcd03dc919501cc84b28aa56e083afd0 (parent-verified locally pre-upload). Exactly one active jar after. Data folder contents untouched by the executor.
+
+Boot-verify (panel Shut Down -> Start, never console stop):
+- Done (19.854s) at 6:15:24 AM CST
+- "Enabling ExcelEliteLadder v0.2.0"
+- Enable line verbatim: "ExcelEliteLadder enabled: applied step S3, ladder table: ladder.yml (config) — default generated on first boot, watching ExcelGuildGate seals every 30s, reload with players online off (waits for an empty server)"
+- plugins/ExcelEliteLadder/ladder.yml now EXISTS (2.96 KB, generated 6:15 AM)
+- Plugin count 78 before and after
+- guildgate status: "Guild: LOCKED | Progress: 3 of 5" unchanged
+- TPS 20.0, 20.0, 20.0
+- SEVERE 0 attributable; panel Errors 0
+- eliteladder status: Ladder table: ladder.yml (config); Table load: loaded from ladder.yml at boot (generated from bundled default); five rows incl. S4: spawn 0.11, cap 150, toElite 0.4, toPlayer 2.35; applied S3; live file S3-norm; Pending: none
+- eliteladder reload: accepted — "Ladder table reloaded from ladder.yml and is now live"
+
+End state: server left ONLINE (outside maintenance window), 0/10 players.
+
+Same-pass surfaces still owed (main agent): website plugin-table row 0.1.2 -> 0.2.0 with ai-knowledge.json regen pair; 0.2.0 records package + Drive deposits + draft PR. No player-facing change (no What's New / tips / menus). Player proofs owed: none.
