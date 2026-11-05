@@ -1,0 +1,15 @@
+ExcelBrainGames 0.1.0 — INSTALLED Nov 5, 2026, 12:05–12:23 AM CST by wrv-install-failsafe (browser panel window, harness-measured 12:05–12:23 AM CST)
+
+Emptiness gate: panel `list` 0/10 twice (12:06:21 AM, 12:07:24 AM CST) + pre-shutdown 0/10 (12:15:45 AM). Server Online on arrival, left ONLINE.
+Pre-flight: no ExcelBrainGames*.jar and no plugins/ExcelBrainGames/ folder live (first install confirmed); plugins 77 pre-install; guildgate LOCKED 3 of 5 pre-install.
+BACKUP FIRST: Shockbyte backup "BrainGames pre-0.1.0 20261105" (11/05/2026 12:10 AM, Manual, 6.8 GB, verified completed pre-swap). Cap-at-6: panel total was 7; pruned the two oldest manual backups first, as named in the panel report: "Magic spells pre-0.1.1 20261103" (11/03/2026 10:11 AM, 6.7 GB) and "WandBars pre-0.3.10 20261103" (11/03/2026 11:39 AM, 6.7 GB). Daily Backup newest copy (11/04/2026 7:42 PM) and the two newest manuals were NOT deleted. Final total: 6.
+Uploads verified: plugins/ExcelBrainGames-0.1.0.jar 69,650 B (panel 68.02 KB; local SHA-256 b23f916fe9f15f58f28f991ada9b13f5a758b609f212eb623c9b87f2ab5e86ef) and plugins/ExcelMenu/entries/braingames.yml 664 B.
+Restart: panel Shut Down (Offline 12:15:51 AM) → panel Start (12:16:12 AM); never console stop.
+Boot verify: Done (20.396s) 12:16:46 AM; enable line verbatim "ExcelBrainGames 0.1.0 enabled: games=[word-search, memory-match], kid-tiers=ENABLED, daily-cap=$1,500.00, wordlists=9 files / 6 themes, economy=EssentialsX Economy"; plugins 78; guildgate LOCKED 3 of 5 unchanged; TPS 20.0/20.0/20.0; SEVERE 0 attributable (2 pre-existing unrelated errors only: terminal-init fallback + known Essentials unsupported-version warning).
+Console smoke: `games` printed the console usage block (admin status/reset/resetday/setkid/reload); `games admin status Jester_Turtle` answered "No Brain Games data for 'Jester_Turtle'." (in words, not players-only).
+Menu: `excelmenu reload` clean — "ExcelMenu registry reloaded: 85 entries, 0 failed" (84 → 85; braingames already counted at boot, so reload diff +0).
+Marker re-checks before Shut Down and Start: the only marker present throughout was this run's own (created 12:04:11 AM CST) — no foreign window conflict.
+
+PROOFS STILL OWED: Mike (Bedrock) phone test — one Word Search + one Memory Match round from the compass Brain Games button; Jester (Java) one round of each; Rylie's first kid-tier rounds; console `games admin status` for a player with an active round.
+SAME-PASS SURFACES STILL OWED (main agent, per packet): Guide knowledge + intents for Brain Games, website plugin-table row + Nov 4 change-log entry + ai-knowledge.json regen, in-game What's New how-to entry, broadcaster tips check. The ExcelMenu entry itself shipped in this window (registry 85).
+Rollback of record: pre-install Shockbyte backup "BrainGames pre-0.1.0 20261105"; or per packet remove the jar + plugins/ExcelBrainGames/ (keep a copy of the ledger data) + entries/braingames.yml, reload, restart.
