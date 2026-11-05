@@ -1,0 +1,19 @@
+name: ExcelBrainGames
+version: 0.1.0
+author: Steve
+main: com.winkreyes.excelbraingames.ExcelBrainGames
+api-version: "1.21"
+description: 'Brain Games for the family: tap-only puzzle games in a menu. Phase 1 ships the framework (/games, compass Brain Games door, save/resume sessions, the shared $1,500/day cap with streak bonuses, Vault payouts, console admin) plus Word Search (fresh generated grid every round, two-tap circling) and Memory Match. Kid tiers ship disabled until the kid word lists are hand-checked. Sudoku follows in Phase 2; Quick Math, Word Scramble and Riddle of the Day in Phase 3.'
+depend: [Vault]
+commands:
+  games:
+    description: Open the Brain Games menu, or run console admin commands
+    usage: /games — or /games admin [status|reset|resetday|setkid|reload] (console or braingames.admin)
+    aliases: [brain, puzzles]
+permissions:
+  braingames.play:
+    description: Open the Brain Games menu and play
+    default: true
+  braingames.admin:
+    description: Run /games admin (status, reset, resetday, setkid, reload) to help stuck players; the server console can always run it
+    default: op

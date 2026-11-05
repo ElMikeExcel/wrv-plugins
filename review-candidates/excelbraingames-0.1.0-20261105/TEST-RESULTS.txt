@@ -1,0 +1,88 @@
+ExcelBrainGames 0.1.0 — TEST RESULTS (2026-11-04, America/Chicago)
+Full build-lane report: TEST-REPORT.md in this package (incl. the Nov 4
+ship-prep addendum). This file is the close-out summary over the FINAL
+shipped content.
+
+CANDIDATE
+  ExcelBrainGames-0.1.0.jar — 69,650 B
+  SHA-256 b23f916fe9f15f58f28f991ada9b13f5a758b609f212eb623c9b87f2ab5e86ef
+  build.sh assembles the jar twice per run and hash-asserts; a second
+  full build.sh run reproduced the identical hash (repro jar alongside
+  in the build folder). Toolchain: JDK 25, javac --release 21, Paper
+  API 26.3 build 231 + Vault 2.0.0 compile inputs (hash-pinned).
+
+UNIT / LOGIC SUITE — 23,510 checks, 0 failures (run by build.sh)
+  WordSearchTest 20,416 — the two-tap checker accepts a placed word in
+    all 8 directions, tapped forward AND in reverse tap order; tier
+    direction legality (Kid E/S only, Standard 4-way, Challenge 8-way);
+    invalid selections (straight non-word -> NO_MATCH, knight move ->
+    NOT_A_LINE); tap-same-cell cancel; re-tapping a found word ->
+    ALREADY_FOUND with no state change; GUI control cells (slots
+    51-53) are void and never crossed by a placement; save/resume
+    serialization round-trip.
+  MemoryTest 3,039 — deck integrity (each symbol exactly twice) for
+    6/8/12/18 pairs; flip/match/ignore rules; miss flow (both cards
+    stay up, flips blocked, resolveMiss flips them back); perfect game
+    = exactly 2 flips per pair; serialization round-trip.
+  LedgerTest 55 — cap: exact-landing, partial payment at the boundary
+    ($1,495 earned + $90 round -> pays exactly $5.00, flagged capped,
+    total never exceeds cap); streak steps $10->$20->$30->$40->$50->$50
+    across six consecutive days; gap resets streak to 1; no bonus on a
+    day's second completion; kid-half (Q6 amendment): $40 -> $20.00 for
+    adults, full $40 for kid-flagged, odd cents round DOWN (2501c ->
+    1250c), streak bonus NOT halved; speed/par +20% math; resetday;
+    35-day prune; money formatting.
+
+GENERATOR PROPERTY TESTS — 499,811 checks, 0 failures (PropertyTest)
+  Run against the SHIPPED config + word lists: 500 seeded boards per
+  tier per theme (Standard x6 themes, Challenge x6, Kid x3 — 15
+  tier/theme combos):
+  - every board places the tier's full word count (Kid 5, Standard 8,
+    Challenge 10);
+  - every placed word reads back off the grid at its stored placement
+    and is FOUND by tapping its endpoints through the real checker — a
+    full solve completes every board;
+  - every placement is in-bounds, direction-legal for the tier, and
+    never crosses a void cell;
+  - accidental-word probes: wherever a listed pool word happened to be
+    formed by filler at a non-placement position, tapping it was
+    rejected (NO_MATCH) — the checker honors stored placements only.
+    Probes executed: Standard 119 boards, Challenge 1, Kid 232.
+  Worst board generation: 146 ms.
+
+SHIP-PREP BUG FOUND + FIXED (addendum, TEST-REPORT.md)
+  The Mike-directed Minecraft list expansion (kid 14 -> 28 words,
+  adult 24 -> 72) pushed the Challenge minecraft pool to 69 candidates
+  and the property suite threw: dealSubsetBudget/dealSubset sorted
+  with a comparator that re-rolled rng.nextInt(3) per comparison — a
+  TimSort contract violation silent under ~32 candidates (old max pool
+  24). Fixed by drawing jitter keys once per word before sorting; no
+  other generator logic changed. Totals above are the re-test on the
+  fixed, final content.
+
+RIG — Paper 26.3 + Vault + EssentialsX economy (scratch rig, 24/24
+verdicts; logs in rig/evidence/)
+  - Q6 amendment end-to-end: an adult on a kid Word Search round paid
+    $30.00 = $20 half payout + $10 streak bonus.
+  - Pays-once: a completed board cannot pay twice.
+  - Save/resume: a half-finished Challenge round resumed intact after
+    a full server restart.
+  - SEVERE 0 across both gameplay boots (boot-a.log, boot-b.log).
+
+SMOKE BOOT OF THE FINAL JAR — Paper 26.3-235 (the exact live build)
+  Fresh data folder: boot reached Done; enable line verbatim
+  "...kid-tiers=ENABLED, daily-cap=$1,500.00, wordlists=9 files /
+  6 themes..." (economy=NONE on the smoke box only — no provider
+  there; the EssentialsX hookup was proven in the rig and is live);
+  extraction produced exactly the 9 word lists with NO draft/ folder;
+  console `games` usage + `games admin status` answered in words;
+  SEVERE 0. Log: rig/evidence/smoke-20261104.log.
+
+LIVE INSTALL (Nov 5, 2026, 12:05-12:23 AM CST — INSTALLED.txt)
+  Boot Done (20.396s); enable line verbatim with economy=EssentialsX
+  Economy; plugins 78; ExcelMenu registry 85 entries, 0 failed; guild
+  LOCKED 3 of 5 unchanged; TPS 20.0x3; SEVERE 0 attributable; console
+  `games` usage printed and `games admin status Jester_Turtle`
+  answered in words. Player proofs (Mike Bedrock / Jester Java /
+  Rylie kid-tier rounds) still owed — they are post-install proofs by
+  Mike's accepted install-then-test flow, not build gates.
