@@ -1,0 +1,198 @@
+# ExcelProtect configuration — Excel (Wink Reyes Valley)
+# Every switch and number the plugin uses lives here; mechanics live in code.
+# Each toggle says WHAT it records and WHAT IT COSTS. Turning a family off stops
+# recording it from that moment (old files stay). Defaults suit a small community
+# server: almost everything is recorded; volume is managed by gzip + retention,
+# never by refusing to record.
+
+# retention-days: day files older than this are deleted at rollover (their .gz too).
+# 0 = keep forever. Restore-grade state (Lost & Found marks/state) never expires.
+retention-days: 30
+
+writer:
+  # How often queued lines are written to disk. Lower = smaller loss window if the
+  # server is killed hard; higher = fewer, bigger writes. Lines still queued at a
+  # hard kill are lost — the window is this interval plus queue depth.
+  flush-interval-ms: 1000
+  # Max queued lines per stream before new lines are dropped (and COUNTED in
+  # /excelprotect status — drops are never silent).
+  queue-cap-per-stream: 20000
+  # Overload shed order: when a stream's queue saturates, streams shed in this
+  # order (first = shed first, smallest effective queue). Shed events write a
+  # marker record — shedding is never silent.
+  shed-order: [blocks, items, snapshots, players, combat, damage, containers, audit, entities, economy, admin, deaths, system]
+
+log:
+  blocks:
+    # Player block place/break (with before/after block states + sign text).
+    player: true
+    # Leaves decay and other natural block loss.
+    natural: true
+    # Blocks destroyed by fire.
+    burn: true
+    # Explosion block lists (one line per block, one shared event id).
+    explosions: true
+    # Form/fade/grow/spread (snow forming, ice melting, crops). OFF by default:
+    # very high volume on farm-heavy servers. Turn on if you need it.
+    form-fade-grow: false
+    # Liquid flow. OFF by default: the highest-volume block event there is.
+    liquid-flow: false
+    # Piston moves. OFF by default: machine farms generate thousands of lines.
+    pistons: false
+  containers:
+    # Chest/barrel/shulker/hopper/ender-chest transactions: who deposited or
+    # withdrew what, plus the container's full resulting contents (rollback
+    # restores from those snapshots).
+    transactions: true
+  entities:
+    # Every entity death: killer + damage attribution, and a full equipment
+    # snapshot (with restorable payloads) for anything wearing/carrying items.
+    deaths: true
+    # Armor-stand equipment changes and item-frame content changes.
+    equipment-changes: true
+    # Spawns of named / tamed / armor-stand-class entities (also stamps the
+    # spawn origin that death records carry).
+    spawns: true
+    # Taming events.
+    tames: true
+  items:
+    # Every item drop, by every player. Yes, feathers and eggs too — the record
+    # is the point; gzip keeps it cheap.
+    drops: true
+    # Every pickup (players and entities), with the item's stamped owner.
+    pickups: true
+    # Items that despawn, burn, or fall into the void (valuable ones also land
+    # in the Lost & Found ledger with restorable payloads).
+    despawns: true
+  players:
+    joins: true     # join with location
+    leaves: true    # leave with location
+    teleports: true # teleports with cause + from/to
+    commands: true  # every command (also feeds economy money-delta tagging)
+    # Chat messages. OFF by default — privacy. Turning it on records public chat.
+    chat: false
+    deaths: true    # death event + killer attribution
+    # Lightweight inventory snapshots (fingerprint lists) at join / leave /
+    # world change, so "where did it go" is diff-able. In the snapshots stream.
+    inventory-snapshots: true
+    # mcMMO level-ups (needs mcMMO; silently off without it) + skill snapshots.
+    progression: true
+  economy:
+    # Shop purchase records (needs an emitter plugin firing EconomyEvent).
+    shop-purchases: true
+    # Vault balance changes, tagged with the player's recent command.
+    money-deltas: true
+    # Reward adjustments incl. blocked ones at paid=0 (needs an emitter).
+    reward-adjustments: true
+    # Charges for services like Lost & Found (with balance_before).
+    service-charges: true
+    # Economy-relevant free actions, e.g. party-repair casts (needs an emitter).
+    service-casts: true
+  audit:
+    xp-levels: true   # vanilla XP level changes
+    enchants: true    # enchanting table results
+    enderchest: true  # ender-chest open/close markers (contents live in containers)
+  combat:
+    # Every player-involved damage event: attacker, victim, amount, cause,
+    # weapon/spell where knowable.
+    damage: true
+    # Every heal on a player: amount + source (spell name when a cast explains it).
+    healing: true
+    # Per-fight rollups (damage dealt/taken, healing done/received per player).
+    fight-summaries: true
+    # Damage INCIDENTS (0.1.2): consecutive damage ticks to a player from the
+    # same source merge into ONE record on the damage stream — totals, biggest
+    # hit, health start/end/min, elite attribution for EliteMobs attackers,
+    # near-death and death flags. This is the damage-TAKEN evidence base
+    # (per-tick events stay on the combat stream above).
+    damage-incidents: true
+  deaths:
+    # Full byte-exact inventory/armor/ender-chest snapshot at every player death
+    # (staff restores read these). Payloads make files bigger; deaths are rare.
+    snapshots: true
+    # The burn/despawn ledger behind Lost & Found: destroyed items with owner
+    # attribution; restorable-class items carry byte-exact payloads.
+    burn-ledger: true
+  claims:
+    # GriefPrevention claim create/delete/change (silently off without GP).
+    events: true
+  # Other plugins publishing records through the public API (RecordEvent /
+  # ExcelProtectAPI.publish) — BossTrial and Together ride this door.
+  publish: true
+
+detail:
+  # Item id GLOBS whose destruction/despawn records always carry a byte-exact
+  # restorable payload, even when payload-all-ledger-items is false. These lists
+  # shape DETAIL, never whether an event exists.
+  payload-types:
+    - "minecraft:diamond_*"
+    - "minecraft:netherite_*"
+    - "minecraft:elytra"
+    - "minecraft:totem_of_undying"
+    - "minecraft:enchanted_*"
+    - "minecraft:*_skull"
+    - "minecraft:dragon_*"
+    - "minecraft:beacon"
+    - "minecraft:nether_star"
+    - "minecraft:shulker_box"
+    - "minecraft:*shulker_box"
+  # true = EVERY ledger item carries a payload (simplest restores; bigger files).
+  payload-all-ledger-items: true
+  # Items younger than this (ticks) are ignored on destruction paths — filters
+  # out vanilla /give artifacts and drop-spam accidents.
+  ghost-min-age-ticks: 100
+
+combat:
+  # A fight grouping closes after this many quiet seconds.
+  fight-gap-seconds: 30
+  # Fight summaries below this total damage are not written.
+  fight-min-damage: 1.0
+  # Damage incidents: ticks from the same source arriving within this many
+  # milliseconds of the previous tick merge into the open incident; a longer
+  # quiet gap closes it. 2000 = a lava burn or a mob combo reads as one
+  # incident, a re-engagement seconds later reads as a new one.
+  damage-incident-gap-ms: 2000
+  # An incident is flagged near_death when the player survives it with health
+  # at or below this fraction of their max health (0.30 = 30%, six hearts on
+  # a standard 20-heart bar).
+  near-death-health-fraction: 0.30
+
+rollback:
+  # Allow /excelprotect restore-stand (re-dress a new armor stand from a death
+  # snapshot's equipment). Best-effort by design.
+  entity-restore: true
+
+inspect:
+  # How many block positions /excelprotect inspect remembers (latest event each).
+  index-cap: 5000
+
+lostfound:
+  # Price per recovery. DEFAULT BELOW IS THE WRV SERVER'S SETTLED VALUE — change
+  # it to whatever your server wants (0 = free).
+  price: 10000
+  # A player's first recovery is free when their balance is below free-threshold.
+  free-first-recovery: true
+  free-threshold: 10000
+  # The free recovery only applies if the player has NEVER recovered before.
+  free-only-if-no-earlier-recovery: true
+  # Days after destruction during which an item can be recovered.
+  window-days: 14
+  # Hours between recoveries per player (0 = no cooldown; the price is the gate).
+  cooldown-hours: 0
+  # Message the owner when a restorable item of theirs is destroyed.
+  tell-owner: true
+
+watch:
+  # Real-time pattern alerts: staff in-game + webhook outbox (outbox.jsonl in
+  # the data folder; drained to the URL below when one is set — empty = hold).
+  enabled: true
+  webhook-url: ""
+  burst-breaks:
+    # This many block breaks by one player inside one claim within the window
+    # raises a burst alert.
+    count: 20
+    window-seconds: 60
+  # Alert when a restorable (payload-carrying) item is destroyed.
+  valuable-destruction: true
+  # Alert when someone opens a container inside a claim they don't own.
+  non-owner-container-access: true
