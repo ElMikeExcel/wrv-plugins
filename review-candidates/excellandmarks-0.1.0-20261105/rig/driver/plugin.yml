@@ -1,0 +1,6 @@
+name: LmRig
+version: 1.0
+main: rig.LmRig
+api-version: "1.21"
+description: 'Rig-only driver for ExcelLandmarks 0.1.0 proof. NOT shipped.'
+depend: [ExcelLandmarks, Vault]

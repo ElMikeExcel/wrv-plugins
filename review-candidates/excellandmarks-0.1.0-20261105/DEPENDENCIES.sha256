@@ -1,0 +1,13 @@
+f0df9e7faccd38fabcdf4d2e6a243649cabc11f0a19fec100b43d7357369fb22  paper-api-26.3.build.231-stable.jar
+8b2ce431c88741fcae6d4de6032ab2ab0cca6aa86e8af375bdfe654321822a68  Vault-2.0.0.jar
+45e9907c61222e559ed2e099ffee0ede706a21243a31d7db549baf678708fdf0  GriefPrevention-16.18.7.jar
+21570aff9ce17d6983928e8552777760e1ede5050026b04c686b0ae112e6fd7e  floodgate.jar
+c8f7a98e7394adda02f6317249710e4d1b4c7a25aa8c7eace0c2eea52eb8bf85  snakeyaml-2.6.jar
+# The four API/hook jars above are the primary compile inputs, each
+# hash-asserted inside build.sh at build time (verified again against
+# the on-disk jars in the records close-out pass, Nov 5, 2026).
+# snakeyaml-2.6.jar ships in the Paper runtime library set the build
+# classpath draws from. Remaining compile-classpath jars come from that
+# same set, pinned by path in build.sh
+# (excelbuildmode-pilot/runtime-server/libraries). No dependency
+# binaries are included in this record.

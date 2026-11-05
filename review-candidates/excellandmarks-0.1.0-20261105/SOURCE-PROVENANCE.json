@@ -1,0 +1,233 @@
+{
+  "plugin": "ExcelLandmarks",
+  "version": "0.1.0",
+  "local_build_folder": "landmarks-build",
+  "jar": {
+    "file": "ExcelLandmarks-0.1.0.jar",
+    "path": "landmarks-build/ExcelLandmarks-0.1.0.jar",
+    "bytes": 77996,
+    "sha256": "466c14c4a4002b87fb72e399411355d4df442b8d19b6fcbc58122073521246dc"
+  },
+  "install": {
+    "status": "installed live (current)",
+    "date": "Nov 5, 2026",
+    "detail": "Installed Nov 5, 2026, 7:05-7:23 AM CST by wrv-install-failsafe (backup 'Landmarks pre-0.1.0 20261105', cap-at-6 prune of oldest manual 'ExcelProtect pre-0.1.1 20261104'; jar + ExcelMenu entry both NEW files, panel SHA-256 of the jar EXACT; boot Done 20.082s; enable line reports spots=0, gp=ON, protect-attribution=ON, floodgate-forms=ON; excelmenu reload registry 86 entries 0 failed; landmarks admin status verified live; plugins 78 -> 79; guild LOCKED 3 of 5; SEVERE 0). Plugin inert until the activation sign-placement pass (parent/Mike). See INSTALLED.txt."
+  },
+  "notes": [
+    "First release (Mike's GO Nov 5, 2026, 'Yes to landmark'; design village-identity/REMAP-DIRECTION-20261103.md): an admin [Landmark] sign registers a spawn spot; players tap the sign for the spot menu (one core model, Floodgate form on Bedrock / chest inventory on Java, viewer-available options only, confirm before any charge); PLOTs get a GriefPrevention subdivision at purchase; rentals 30d + 7d grace, then lapse finalize packs contents + Protect-attributed materials into a never-expiring redemption box. Prices are config (rent $500/$1,500/$3,000/mo; buy $10,000/$25,000/$50,000).",
+    "Deterministic build: build.sh assembles the jar twice per run with a hash assert; two full builds byte-identical (SHA-256 466c14c4a4002b87fb72e399411355d4df442b8d19b6fcbc58122073521246dc, 77,996 B).",
+    "Rig-found fixes shipped in this source: (1) GP rights model is TRUST (Build + manager) because changeClaimOwner throws NoTransferException on subdivisions; (2) the ExcelProtect logs-dir resolution was fixed at both call sites (first cut resolved one folder too high and would have read nothing live).",
+    "Tests: 101,018 plain-JVM checks, 0 failures; Paper 26.3-235 rig Boot A 28/28 (Vault + EssentialsX + GP 16.18.7 + Protect 0.1.1), Boot B 9/9 fail-soft (GP + Protect absent), SEVERE 0 both boots.",
+    "The product jar and the two rig binaries (rig/driver/LmRig.jar, rig/driver/lib/annotations-24.1.0.jar) are binaries and are NOT included in this text record; the rig driver source is included."
+  ],
+  "record": {
+    "assembled": "2026-11-05",
+    "assembler": "records close-out pass (Drive deposits executed in the same pass; GitHub draft record PR staged for the parent's browser route per PUSH-PLAN.md)",
+    "files": {
+      "BUILD-RECORD.md": {
+        "sha256": "8f0319a360a334361796f105cd0f70de9405bf2d45497a1d3826b60bd7a704a6",
+        "bytes": 3645
+      },
+      "CHANGELOG-0.1.0.md": {
+        "sha256": "f7f218aaad9c44369d06aefccdddcddbb0026bae65ff3fd8af32be1445595a36",
+        "bytes": 4660
+      },
+      "DEPENDENCIES.md": {
+        "sha256": "d9857b92286f3d47b889ecc3e021ea4586fba459121da039731084cbcdec2dc7",
+        "bytes": 1956
+      },
+      "DEPENDENCIES.sha256": {
+        "sha256": "9ae0cc44f8a1451e0c6bd099b9627f76304d4d21efbab9a8a61ec9dabfa7c8de",
+        "bytes": 929
+      },
+      "INSTALL-PACKET.md": {
+        "sha256": "d14eb9b8db8719b3b4d6fbd5947a224101470912f031ee3f72881fc984eed2af",
+        "bytes": 6913
+      },
+      "INSTALLED.txt": {
+        "sha256": "ee292d64c904d7ed7c7ead98ea07cdd2e93484825d4cb4ba09e0751f383929d0",
+        "bytes": 3618
+      },
+      "MANIFEST-ENTRY.md": {
+        "sha256": "69107dcfbae5625879bfc67a61fd54036e7c7248ed7ac5ee2544c83a89ed82fd",
+        "bytes": 6616
+      },
+      "PUSH-PLAN.md": {
+        "sha256": "911377995d5f7ac2927c533cdb390974f5e247a261fcf32747c793b4e22162b7",
+        "bytes": 8634
+      },
+      "README.md": {
+        "sha256": "6e436595ea5b3dbd0acede190e402c93a41f227d08bfc1f9cb2392617ae1e6ba",
+        "bytes": 5103
+      },
+      "SANITIZATION.diff": {
+        "sha256": "36cefa0ea31790101e113d33ca483cf14bf0edbdcaa508d5b26c17eee8493102",
+        "bytes": 1064
+      },
+      "SOURCE.md": {
+        "sha256": "39c697153e0c104046880c552c14ad271c2a16b307878e91539c49ad875e073f",
+        "bytes": 2777
+      },
+      "SPEC.md": {
+        "sha256": "804461b5d07467b9f70c34048e2cb48f0537683be39f5a048a3cff5ad7eea7e1",
+        "bytes": 15854
+      },
+      "TEST-REPORT.md": {
+        "sha256": "16d958d37c38cd43b6d98a89fda04da72d71a3e1068c4d2e2296c56cfe7599d5",
+        "bytes": 6983
+      },
+      "TEST-RESULTS.txt": {
+        "sha256": "217a327f75ac811d6aa1e04e885d97f82bbeaaea63b180d3995b05c09ecd95d5",
+        "bytes": 4699
+      },
+      "build.sh": {
+        "sha256": "261816d126f5752559653b252c05c5bfe6c76eedcef3fcc67e67ecdc363222a6",
+        "bytes": 4029
+      },
+      "config.yml": {
+        "sha256": "5a0ecde9f77609cbe5cb8f1fc89e6a7ddc65bc8c3d3bcf3a9d1422ce6c2b1e3b",
+        "bytes": 1226
+      },
+      "menu-entry/landmarks.yml": {
+        "sha256": "0256e5c2e177ff1919222c19e01be24a6a8f4913a1ca494a578ba3dea30d577b",
+        "bytes": 736
+      },
+      "plugin.yml": {
+        "sha256": "3cd4641273c5523c2f6e41605d316b1bfe9d85c879ecc4af2991e22432456640",
+        "bytes": 775
+      },
+      "rig/drive.py": {
+        "sha256": "7ebe6175cc404add94447a2abcc00f19087e18175f3114d3d67a4b943f381a3a",
+        "bytes": 4637
+      },
+      "rig/driver/plugin.yml": {
+        "sha256": "ef7f06ec5b8bbc76ab92e5c4b95877adc84f4dbf5b41323448a01b5c900f09ed",
+        "bytes": 169
+      },
+      "rig/driver/src/rig/GpRig.java": {
+        "sha256": "4ae222fe5cf51fe0c5f533a28e855f4e986bd7a0e4813254f667cb54b806239b",
+        "bytes": 2015
+      },
+      "rig/driver/src/rig/LmRig.java": {
+        "sha256": "b79d71af28eecdfb2d3f55f4dcfd423825a3574fb8e1fcca325a999bc4ddd08d",
+        "bytes": 20231
+      },
+      "rig/evidence/boot-a.log": {
+        "sha256": "dafcf37b4f7d09a49f1f8f56a708e00156ddb882a77ea3f76ba6be007839b9e3",
+        "bytes": 36651
+      },
+      "rig/evidence/boot-b.log": {
+        "sha256": "6890d0a323e47373908822214150fe79ab1bbb1093dd1a5a9083d04166d27df7",
+        "bytes": 33701
+      },
+      "src/com/winkreyes/excellandmarks/ExcelLandmarks.java": {
+        "sha256": "8e7a4e02ba5637b53ad560a63c232835300fb2b175bf0064cd2dca743ed7bdc5",
+        "bytes": 7788
+      },
+      "src/com/winkreyes/excellandmarks/LandmarksCommand.java": {
+        "sha256": "e2e45ae2f03f952311d2cc2bcfd0ddecbcddaa14998d48d60ccdda578e32d7f9",
+        "bytes": 10920
+      },
+      "src/com/winkreyes/excellandmarks/SignListener.java": {
+        "sha256": "3e0ab72d4e0ae40e76d644e2e3990a54762c96d89fcddaa1d9587e6c6d0ddac6",
+        "bytes": 7196
+      },
+      "src/com/winkreyes/excellandmarks/core/Attribution.java": {
+        "sha256": "5021ab1b29e217dec1ee519ff7147f9ece40101327217f4cd2c82b19c1c0fc01",
+        "bytes": 5489
+      },
+      "src/com/winkreyes/excellandmarks/core/Money.java": {
+        "sha256": "203a60261a20e79b30e3b6f707763cc2475a2a91df8e6b5a4bf882677f1dd461",
+        "bytes": 717
+      },
+      "src/com/winkreyes/excellandmarks/core/Registry.java": {
+        "sha256": "5c93c29e3bdcce87ec164bd91b12647516e0b6269d5a4a6bf10bb7b773957870",
+        "bytes": 1451
+      },
+      "src/com/winkreyes/excellandmarks/core/RentClock.java": {
+        "sha256": "ba54e5b262f45ff33eef1a569ea179a09d59e8793b14ec8362aa5413cfb88271",
+        "bytes": 1664
+      },
+      "src/com/winkreyes/excellandmarks/core/Settings.java": {
+        "sha256": "b51bd6a41dfc51107da297be778992618866a328511a7c3617cd967d6bdeecf8",
+        "bytes": 1775
+      },
+      "src/com/winkreyes/excellandmarks/core/Spot.java": {
+        "sha256": "6cb362148e630cc80c71bc7cb2731193ecdd8d948a197cfb9032738636b89db7",
+        "bytes": 2236
+      },
+      "src/com/winkreyes/excellandmarks/core/SpotMenuModel.java": {
+        "sha256": "d75c9f63502c21b410557c938c361eb7c43989df71dcd17144b880e7257453c3",
+        "bytes": 7227
+      },
+      "src/com/winkreyes/excellandmarks/core/TapRouter.java": {
+        "sha256": "5daf7383eee62cec83ee9704e0aa351c7d9876dc80d34c21bf6eb456739803e3",
+        "bytes": 1159
+      },
+      "src/com/winkreyes/excellandmarks/hook/GpAdapter.java": {
+        "sha256": "a420ea1eabf7a0df816dd7409357a61b6693a91ec0fe143f5eb4e56a5e031792",
+        "bytes": 1351
+      },
+      "src/com/winkreyes/excellandmarks/hook/GpHook.java": {
+        "sha256": "40e2b1ecadb9167d23952410d17daa95041fcdc58e9f53b2280b04350da8ae77",
+        "bytes": 4816
+      },
+      "src/com/winkreyes/excellandmarks/hook/ProtectAttribution.java": {
+        "sha256": "dda9adc344435295a876222c6bdebb6cf622acffaf2db3175479adddbd294760",
+        "bytes": 2936
+      },
+      "src/com/winkreyes/excellandmarks/menu/FloodgateForms.java": {
+        "sha256": "3352abde5cd47530d282999a56c04a1bc5032df641c86403cced39121d5fd506",
+        "bytes": 2256
+      },
+      "src/com/winkreyes/excellandmarks/menu/FormPort.java": {
+        "sha256": "f36c9d52a2abc23f5e510bb676081dddc767cb2f1f1b8b572ea80269f46e8d03",
+        "bytes": 1298
+      },
+      "src/com/winkreyes/excellandmarks/menu/Menus.java": {
+        "sha256": "653be9313452b8efac555d9bb9cc099bfd294951845261cec622979229ce5843",
+        "bytes": 12061
+      },
+      "src/com/winkreyes/excellandmarks/service/LandmarkService.java": {
+        "sha256": "6fcbe67893ed377e611d837903bedec04aef6df5b278723b7745de8785d9e32c",
+        "bytes": 13940
+      },
+      "src/com/winkreyes/excellandmarks/store/Store.java": {
+        "sha256": "e96480a7539d07e87a0f5ca8a2fc62a60d9c27413ae04aaab3d5cdefeb8d8972",
+        "bytes": 10708
+      },
+      "src/config.yml": {
+        "sha256": "5a0ecde9f77609cbe5cb8f1fc89e6a7ddc65bc8c3d3bcf3a9d1422ce6c2b1e3b",
+        "bytes": 1226
+      },
+      "src/plugin.yml": {
+        "sha256": "3cd4641273c5523c2f6e41605d316b1bfe9d85c879ecc4af2991e22432456640",
+        "bytes": 775
+      },
+      "tests/com/winkreyes/excellandmarks/AttributionTest.java": {
+        "sha256": "2f1dafe577dcc4b37c645cbbe70aa08ff0f44a05c6eb783962ec91a0fcc1c88e",
+        "bytes": 8707
+      },
+      "tests/com/winkreyes/excellandmarks/Check.java": {
+        "sha256": "2ea07db9ca62ca0d2473c0095dc4bdbb68ce7f45567dc5cb067b9db2ae4fd494",
+        "bytes": 943
+      },
+      "tests/com/winkreyes/excellandmarks/CoreTest.java": {
+        "sha256": "b2c4c83fc38953c3a3b208e7746b86e9a91d6906265128d872fda3b53540289d",
+        "bytes": 4188
+      },
+      "tests/com/winkreyes/excellandmarks/RentClockTest.java": {
+        "sha256": "6d80c4d3ab356cdbd6d96f1016d3fc07b60c6190a9103a4d8fabc55b0b41ee4b",
+        "bytes": 5335
+      },
+      "tests/com/winkreyes/excellandmarks/SpotMenuModelTest.java": {
+        "sha256": "32d24a7c53c881b4c12f2b56cab00463f3699dab3ae3a12d207227a371dfbe96",
+        "bytes": 7285
+      },
+      "tests/com/winkreyes/excellandmarks/TapRouterTest.java": {
+        "sha256": "0b61de3e069d351268792899e77f28fb34ce9604f07824aa90545e4314c6d697",
+        "bytes": 2787
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+# ExcelMenu 2.0 registry entry — Landmarks compass door ("My Landmarks").
+# Ships with ExcelLandmarks; the install packet places this file into
+# plugins/ExcelMenu/entries/ and runs /excelmenu reload. Content follows the
+# registry pattern (config-first: editing this file changes the door, never
+# a rebuild). The door opens /landmarks, the second door next to the signs
+# themselves — tapping a registered [Landmark] sign opens that spot's menu
+# directly.
+id: landmarks
+menu: server_menu
+group: me
+order: 80
+order-bedrock: 800
+icon: OAK_SIGN
+label: '&6&lMy Landmarks'
+lore:
+  - '&7Your rented and owned spots'
+  - '&7at spawn — renew, release,'
+  - '&7and claim redemption boxes'
+action:
+  - '[close]'
+  - '[player] landmarks'
