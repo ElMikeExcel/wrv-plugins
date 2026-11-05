@@ -1,0 +1,309 @@
+Starting org.bukkit.craftbukkit.Main
+2026-11-05T11:22:22.123294735Z ServerMain WARN Advanced terminal features are not available in this environment
+[11:22:22 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4.1+1-LTS; Eclipse Adoptium Temurin-25.0.4.1+1) on Linux 7.0.0-39-generic (amd64)
+[11:22:22 INFO]: [bootstrap] Loading Paper 26.3-214-main@e65c076 (2026-10-22T13:30:42Z) for Minecraft 26.3
+[11:22:22 INFO]: [PluginInitializerManager] Initializing plugins...
+[11:22:23 INFO]: [PluginInitializerManager] Initialized 4 plugins
+[11:22:23 INFO]: [PluginInitializerManager] Bukkit plugins (4):
+ - BrainRig (1.0), Essentials (2.22.0), ExcelBrainGames (0.3.0), Vault (2.0.0)
+[11:22:33 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[11:22:33 INFO]: [com.destroystokyo.paper.profile.PaperServicesDiscoveryService] Environment: Environment[discoveryUrl=https://discovery.minecraftservices.com/minecraft/client, name=PROD]
+[11:22:35 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 2,406.6ms
+[11:22:36 WARN]: Failed to connect
+com.mojang.authlib.exceptions.MinecraftClientException: Failed to read from https://discovery.minecraftservices.com/minecraft/client due to Unsupported or unrecognized SSL message
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readServiceResponse(MinecraftClient.java:151) ~[authlib-10.0.77.jar:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.getWithEtag(MinecraftClient.java:81) ~[authlib-10.0.77.jar:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.get(MinecraftClient.java:65) ~[authlib-10.0.77.jar:?]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.lambda$createDiscoverySupplier$1(MinecraftServicesDiscoveryService.java:76) ~[paper-26.3.jar:26.3-214-e65c076]
+	at com.mojang.authlib.services.RetryableFetch$1.run(RetryableFetch.java:42) ~[authlib-10.0.77.jar:26.3-214-e65c076]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[?:?]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328) ~[?:?]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:309) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+Caused by: javax.net.ssl.SSLException: Unsupported or unrecognized SSL message
+	at java.base/sun.security.ssl.SSLSocketInputRecord.handleUnknownRecord(SSLSocketInputRecord.java:462) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.decode(SSLSocketInputRecord.java:175) ~[?:?]
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:111) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:490) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:190) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1379) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1305) ~[?:?]
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:493) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getResponseCode(HttpsURLConnectionImpl.java:307) ~[?:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readServiceResponse(MinecraftClient.java:130) ~[authlib-10.0.77.jar:?]
+	... 10 more
+	Suppressed: java.net.SocketException: Broken pipe
+		at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+		at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+		at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:402)
+		at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:418)
+		at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:448)
+		at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:821)
+		at java.base/java.net.Socket$SocketOutputStream.implWrite(Socket.java:1086)
+		at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1076)
+		at java.base/sun.security.ssl.SSLSocketOutputRecord.encodeAlert(SSLSocketOutputRecord.java:81)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:412)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:319)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:314)
+		at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:145) ~[?:?]
+		... 21 more
+[11:22:36 WARN]: Services are unavailable, unable to fetch uri for AUTHENTICATION/getPublicKeys
+[11:22:36 WARN]: Failed to connect
+com.mojang.authlib.exceptions.MinecraftClientException: Services are unavailable
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.getEndpoint(MinecraftServicesDiscoveryService.java:139) ~[paper-26.3.jar:26.3-214-e65c076]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.getUrl(MinecraftServicesDiscoveryService.java:125) ~[paper-26.3.jar:26.3-214-e65c076]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.lambda$getServicesKeySet$0(MinecraftServicesDiscoveryService.java:117) ~[paper-26.3.jar:26.3-214-e65c076]
+	at com.mojang.authlib.services.RetryableFetch$1.run(RetryableFetch.java:40) ~[authlib-10.0.77.jar:26.3-214-e65c076]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[?:?]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328) ~[?:?]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:309) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+[11:22:36 WARN]: Services are unavailable, unable to fetch uri for AUTHENTICATION/getPublicKeys
+[11:22:36 WARN]: Failed to connect
+com.mojang.authlib.exceptions.MinecraftClientException: Services are unavailable
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.getEndpoint(MinecraftServicesDiscoveryService.java:139) ~[paper-26.3.jar:26.3-214-e65c076]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.getUrl(MinecraftServicesDiscoveryService.java:125) ~[paper-26.3.jar:26.3-214-e65c076]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.lambda$getServicesKeySet$0(MinecraftServicesDiscoveryService.java:117) ~[paper-26.3.jar:26.3-214-e65c076]
+	at com.mojang.authlib.services.RetryableFetch$1.run(RetryableFetch.java:40) ~[authlib-10.0.77.jar:26.3-214-e65c076]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[?:?]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328) ~[?:?]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:309) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+[11:22:41 INFO]: Loaded 1866 advancements
+[11:22:42 INFO]: Starting minecraft server version 26.3
+[11:22:42 WARN]: ****************************
+[11:22:42 WARN]: YOU ARE RUNNING THIS SERVER AS AN ADMINISTRATIVE OR ROOT USER. THIS IS NOT ADVISED.
+[11:22:42 WARN]: YOU ARE OPENING YOURSELF UP TO POTENTIAL RISKS WHEN DOING THIS.
+[11:22:42 WARN]: FOR MORE INFORMATION, SEE https://madelinemiller.dev/blog/root-minecraft-server/
+[11:22:42 WARN]: ****************************
+[11:22:42 INFO]: Loading properties
+[11:22:42 INFO]: This server is running Paper version 26.3-214-main@e65c076 (2026-10-22T13:30:42Z) (Implementing API version 26.3.build.214-stable)
+[11:22:42 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[11:22:42 INFO]: Server Ping Player Sample Count: 12
+[11:22:42 INFO]: Using 4 threads for Netty based IO
+[11:22:43 INFO]: [MoonriseCommon] Paper is using 1 worker threads, 1 I/O threads
+[11:22:44 INFO]: Default game type: SURVIVAL
+[11:22:44 INFO]: Generating keypair
+[11:22:44 INFO]: Starting Minecraft server on *:25565
+[11:22:44 INFO]: Paper: Using libdeflate (Linux x86_64) compression from Velocity.
+[11:22:44 INFO]: Paper: Using OpenSSL 3.x.x (Linux x86_64) cipher from Velocity.
+[11:22:45 INFO]: [Vault] Loading server plugin Vault v2.0.0
+[11:22:45 INFO]: [ExcelBrainGames] Loading server plugin ExcelBrainGames v0.3.0
+[11:22:45 INFO]: [Essentials] Loading server plugin Essentials v2.22.0
+[11:22:45 INFO]: [BrainRig] Loading server plugin BrainRig v1.0
+[11:22:45 INFO]: [Vault] Enabling Vault v2.0.0
+[11:22:45 INFO]: [Vault] [Permission] SuperPerms loaded as backup permission system.
+[11:22:45 INFO]: [Vault] Enabled Version 2.0.0
+[11:22:45 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[11:22:45 WARN]: The server will make no attempt to authenticate usernames. Beware.
+[11:22:45 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[11:22:45 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[11:22:45 INFO]: Preparing level "world"
+[11:22:45 INFO]: Loading 0 persistent chunks for level 'minecraft:overworld'...
+[11:22:45 INFO]: Preparing spawn area: 100%
+[11:22:45 INFO]: Prepared spawn area in 60 ms
+[11:22:45 INFO]: Loading 0 persistent chunks for level 'minecraft:the_nether'...
+[11:22:45 INFO]: Prepared spawn area in 0 ms
+[11:22:45 INFO]: Loading 0 persistent chunks for level 'minecraft:the_end'...
+[11:22:45 INFO]: Preparing spawn area: 100%
+[11:22:45 INFO]: Prepared spawn area in 1 ms
+[11:22:45 INFO]: Done preparing level "world" (0.884s)
+[11:22:46 INFO]: [ExcelBrainGames] Enabling ExcelBrainGames v0.3.0
+[11:22:46 INFO]: [ExcelBrainGames] ExcelBrainGames 0.3.0 enabled: games=[word-search, memory-match, sudoku, quick-math, word-scramble, riddle], kid-tiers=ENABLED, daily-cap=$1,500.00, wordlists=10 files / 6 themes, riddles=16, economy=EssentialsX Economy
+[11:22:46 INFO]: [Essentials] Enabling Essentials v2.22.0
+[11:22:47 ERROR]: [Essentials] You are running an unsupported server version!
+[11:22:48 INFO]: [Essentials] Attempting to convert old kits in config.yml to new kits.yml
+[11:22:48 INFO]: [Essentials] No kits found to migrate.
+[11:22:48 INFO]: [Essentials] Selected 1.14.4+ Persistent Data Container Provider as the provider for PersistentDataProvider
+[11:22:48 INFO]: [Essentials] Selected 1.12+ Spawner Block Provider as the provider for SpawnerBlockProvider
+[11:22:48 INFO]: [Essentials] Selected 1.8.3+ Spawner Item Provider as the provider for SpawnerItemProvider
+[11:22:48 INFO]: [Essentials] Selected Paper Server State Provider as the provider for ServerStateProvider
+[11:22:48 INFO]: [Essentials] Selected 1.14+ Sign Data Provider as the provider for SignDataProvider
+[11:22:48 INFO]: [Essentials] Selected Paper Material Tag Provider as the provider for MaterialTagProvider
+[11:22:48 INFO]: [Essentials] Selected 1.20.5+ Banner Data Provider as the provider for BannerDataProvider
+[11:22:48 INFO]: [Essentials] Selected 1.21.4+ Sync Commands Provider as the provider for SyncCommandsProvider
+[11:22:48 INFO]: [Essentials] Selected Legacy Biome Name Provider as the provider for BiomeNameProvider
+[11:22:48 INFO]: [Essentials] Selected Paper Serialization Provider as the provider for SerializationProvider
+[11:22:48 INFO]: [Essentials] Selected 1.17.1+ World Info Provider as the provider for WorldInfoProvider
+[11:22:48 INFO]: [Essentials] Selected Paper Container Provider as the provider for ContainerProvider
+[11:22:48 INFO]: [Essentials] Selected 1.21+ InventoryView Interface ABI Provider as the provider for InventoryViewProvider
+[11:22:48 INFO]: [Essentials] Selected 1.20.4+ Damage Event Provider as the provider for DamageEventProvider
+[11:22:48 INFO]: [Essentials] Selected 1.12.2+ Player Locale Provider as the provider for PlayerLocaleProvider
+[11:22:48 INFO]: [Essentials] Selected 1.20.6+ Potion Meta Provider as the provider for PotionMetaProvider
+[11:22:48 INFO]: [Essentials] Selected Paper 1.13+ Tile Entity Provider as the provider for TileEntityProvider
+[11:22:48 INFO]: [Essentials] No provider found for BiomeKeyProvider, but it is nullable
+[11:22:48 INFO]: [Essentials] Selected Reflection Online Mode Provider as the provider for OnlineModeProvider
+[11:22:48 INFO]: [Essentials] Selected Paper Known Commands Provider as the provider for KnownCommandsProvider
+[11:22:48 INFO]: [Essentials] Selected Paper Tick Count Provider as the provider for TickCountProvider
+[11:22:48 INFO]: [Essentials] Selected 1.11+ Item Unbreakable Provider as the provider for ItemUnbreakableProvider
+[11:22:48 INFO]: [Essentials] Selected Reflection Formatted Command Alias Provider as the provider for FormattedCommandAliasProvider
+[11:22:48 INFO]: [Essentials] Selected 1.13+ Spawn Egg Provider as the provider for SpawnEggProvider
+[11:22:49 INFO]: [Essentials] Loaded 46312 items from items.json.
+[11:22:49 INFO]: [Essentials] Using locale en_US
+[11:22:50 INFO]: [Essentials] ServerListPingEvent: Spigot iterator API
+[11:22:50 INFO]: [Essentials] Starting Metrics. Opt-out using the global bStats config.
+[11:22:50 INFO]: [Essentials] Using superperms-based permissions.
+[11:22:50 INFO]: [BrainRig] Enabling BrainRig v1.0
+[11:22:51 INFO]: [spark] Starting background profiler...
+[11:22:52 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[11:22:52 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[11:22:52 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[11:22:52 WARN]: Low disk space! Might not be able to save the world.
+[11:22:52 INFO]: Running delayed init tasks
+[11:22:52 INFO]: [Essentials] Essentials found a compatible payment resolution method: Vault Compatibility Layer (v2.0.0)!
+[11:22:52 INFO]: [Essentials] Fetching version information...
+[11:22:52 INFO]: Done (32.382s)! For help, type "help"
+[11:22:53 ERROR]: [PaperVersionFetcher] Error while parsing version list
+javax.net.ssl.SSLException: Unsupported or unrecognized SSL message
+	at java.base/sun.security.ssl.SSLSocketInputRecord.handleUnknownRecord(SSLSocketInputRecord.java:462) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.decode(SSLSocketInputRecord.java:175) ~[?:?]
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:111) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:490) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:190) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1379) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1305) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:223) ~[?:?]
+	at com.destroystokyo.paper.PaperVersionFetcher.fetchMinecraftVersionList(PaperVersionFetcher.java:150) ~[paper-26.3.jar:?]
+	at com.destroystokyo.paper.PaperVersionFetcher.getUpdateStatusStartupMessage(PaperVersionFetcher.java:74) ~[paper-26.3.jar:?]
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1825) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+[11:22:53 ERROR]: [PaperVersionFetcher] Error while parsing version
+javax.net.ssl.SSLException: Unsupported or unrecognized SSL message
+	at java.base/sun.security.ssl.SSLSocketInputRecord.handleUnknownRecord(SSLSocketInputRecord.java:462) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.decode(SSLSocketInputRecord.java:175) ~[?:?]
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:111) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:490) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:190) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1379) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1305) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:223) ~[?:?]
+	at com.destroystokyo.paper.PaperVersionFetcher.fetchDistanceFromSiteApi(PaperVersionFetcher.java:209) ~[paper-26.3.jar:?]
+	at com.destroystokyo.paper.PaperVersionFetcher.getUpdateStatusStartupMessage(PaperVersionFetcher.java:76) ~[paper-26.3.jar:?]
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1825) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+	Suppressed: java.net.SocketException: Broken pipe
+		at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+		at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+		at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:402)
+		at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:418)
+		at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:448)
+		at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:821)
+		at java.base/java.net.Socket$SocketOutputStream.implWrite(Socket.java:1086)
+		at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1076)
+		at java.base/sun.security.ssl.SSLSocketOutputRecord.encodeAlert(SSLSocketOutputRecord.java:81)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:412)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:319)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:314)
+		at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:145) ~[?:?]
+		... 15 more
+[11:22:53 ERROR]: *** Error obtaining version information! Cannot fetch version info ***
+[11:22:53 WARN]: javax.net.ssl.SSLException: Unsupported or unrecognized SSL message
+[11:22:53 WARN]: 	at java.base/sun.security.ssl.SSLSocketInputRecord.handleUnknownRecord(SSLSocketInputRecord.java:462)
+[11:22:53 WARN]: 	at java.base/sun.security.ssl.SSLSocketInputRecord.decode(SSLSocketInputRecord.java:175)
+[11:22:53 WARN]: 	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:111)
+[11:22:53 WARN]: 	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506)
+[11:22:53 WARN]: 	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421)
+[11:22:53 WARN]: 	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455)
+[11:22:53 WARN]: 	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426)
+[11:22:53 WARN]: 	at java.base/sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:490)
+[11:22:53 WARN]: 	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:190)
+[11:22:53 WARN]: 	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.connect(HttpsURLConnectionImpl.java:141)
+[11:22:53 WARN]: 	at EssentialsX-2.22.0.jar//com.earth2me.essentials.updatecheck.UpdateChecker.tryRequestWithFallback(UpdateChecker.java:159)
+[11:22:53 WARN]: 	at EssentialsX-2.22.0.jar//com.earth2me.essentials.updatecheck.UpdateChecker.lambda$fetchLatestRelease$1(UpdateChecker.java:98)
+[11:22:53 WARN]: 	at org.bukkit.craftbukkit.scheduler.CraftTask.run(CraftTask.java:78)
+[11:22:53 WARN]: 	at org.bukkit.craftbukkit.scheduler.CraftAsyncTask.run(CraftAsyncTask.java:57)
+[11:22:53 WARN]: 	at com.destroystokyo.paper.ServerSchedulerReportingWrapper.run(ServerSchedulerReportingWrapper.java:22)
+[11:22:53 WARN]: 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+[11:22:53 WARN]: 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
+[11:22:53 WARN]: 	at java.base/java.lang.Thread.run(Thread.java:1474)
+[11:22:53 WARN]: 	Suppressed: java.net.SocketException: Broken pipe
+[11:22:53 WARN]: 		at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+[11:22:53 WARN]: 		at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+[11:22:53 WARN]: 		at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:402)
+[11:22:53 WARN]: 		at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:418)
+[11:22:53 WARN]: 		at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:448)
+[11:22:53 WARN]: 		at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:821)
+[11:22:53 WARN]: 		at java.base/java.net.Socket$SocketOutputStream.implWrite(Socket.java:1086)
+[11:22:53 WARN]: 		at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1076)
+[11:22:53 WARN]: 		at java.base/sun.security.ssl.SSLSocketOutputRecord.encodeAlert(SSLSocketOutputRecord.java:81)
+[11:22:53 WARN]: 		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:412)
+[11:22:53 WARN]: 		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:319)
+[11:22:53 WARN]: 		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:314)
+[11:22:53 WARN]: 		at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:145)
+[11:22:53 WARN]: 		... 15 more
+[11:22:53 WARN]: [Essentials] Error while fetching EssentialsX version information! Build information: id:'2.22.0' branch:'2.x' isDev:false.
+[11:22:55 INFO]: [BrainRig] RIGRESULT SETUP PASS plugin=true economy=EssentialsX Economy
+[11:22:58 INFO]: System chat: RigPlayer joined the game
+[11:22:58 INFO]: RigPlayer[embedded] logged in with entity id 1 at ([minecraft:overworld]0.0, 0.0, 0.0)
+[11:22:58 INFO]: [BrainRig] RIGRESULT NOTE phase=B uuid=14d09c01-016e-31d0-ae70-da2e4ca07e3e
+[11:23:00 INFO]: [BrainRig] RIGRESULT B-SCR-RESUME-STATE PASS round=kid index=2 earned=2000
+[11:23:07 INFO]: [BrainRig] RIGRESULT B-SCR-OPEN PASS view=RESUME
+[11:23:07 INFO]: [BrainRig] RIGRESULT B-SCR-RESUME PASS view=QUESTION
+[11:23:08 INFO]: [BrainRig] RIGRESULT B-SCR-PAYOUT PASS delta=2500 expected=2500 (adult half of the $50 kid round, resumed across restart)
+[11:23:08 INFO]: [BrainRig] RIGRESULT NOTE RIGREADY STOP-B
+[11:23:10 INFO]: Brain Games — RigPlayer
+[11:23:10 INFO]:   Kid flag: false
+[11:23:11 INFO]:   Today: $262.50 of $1,500.00 cap
+[11:23:11 INFO]:   Streak: 1 day(s), last paid day: 2026-11-05
+[11:23:11 INFO]:   Word Search round: none
+[11:23:11 INFO]:   Memory Match round: none
+[11:23:11 INFO]:   Sudoku round: none
+[11:23:11 INFO]:   Quick Math round: none
+[11:23:11 INFO]:   Word Scramble round: none
+[11:23:11 INFO]:   Riddle today: 0/3 attempts, 0 hint(s)
+[11:23:14 INFO]: Discarded RigPlayer's Word Scramble round (unpaid — banked words are lost).
+[11:23:17 INFO]: System chat: Stopping the server
+[11:23:17 INFO]: Stopping server
+[11:23:17 INFO]: [BrainRig] Disabling BrainRig v1.0
+[11:23:17 INFO]: [Essentials] Disabling Essentials v2.22.0
+[11:23:17 INFO]: [ExcelBrainGames] Disabling ExcelBrainGames v0.3.0
+[11:23:17 INFO]: [Vault] Disabling Vault v2.0.0
+[11:23:17 INFO]: Saving players
+[11:23:17 INFO]: Saving worlds
+[11:23:17 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[11:23:17 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:overworld'
+[11:23:17 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:overworld'
+[11:23:17 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:overworld'
+[11:23:20 INFO]: [ChunkHolderManager] Saved 169 block chunks, 169 entity chunks, 0 poi chunks in world 'minecraft:overworld' in 2.80s
+[11:23:20 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:overworld'
+[11:23:20 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:overworld'
+[11:23:20 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[11:23:20 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_nether'
+[11:23:20 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_nether'
+[11:23:20 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_nether'
+[11:23:20 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_nether' in 0.00s
+[11:23:20 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_nether'
+[11:23:20 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_nether'
+[11:23:20 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[11:23:20 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_end'
+[11:23:20 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_end'
+[11:23:20 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_end'
+[11:23:20 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_end' in 0.00s
+[11:23:20 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_end'
+[11:23:20 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_end'
+[11:23:20 INFO]: Waiting for all RegionFile I/O tasks to complete...
+[11:23:20 INFO]: All RegionFile I/O tasks to complete
+[11:23:20 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+[11:23:20 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...

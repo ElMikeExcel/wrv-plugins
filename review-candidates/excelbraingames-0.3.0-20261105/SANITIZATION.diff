@@ -1,0 +1,10 @@
+SANITIZATION SCAN — CLEAN (two false-positive classes, reviewed)
+Package: excelbraingames-0.3.0-20261105
+
+Scanned every file in this package for: IPv4 addresses (excluding 0.0.0.0 / 127.0.0.1 / 255.255.255.255 loopback-broadcast literals), email addresses, private-key blocks, and credential assignments (password/secret/token/api-key followed by a value). Also scanned explicitly for the server join address / ports (duckdns, 20795, 25622): no hits anywhere.
+
+Hits, all reviewed as false positives:
+- The dotted Java version string "25.0.4.1" (Eclipse Adoptium Temurin 25.0.4.1) in the bootstrap line of the four rig evidence logs (rig/evidence/boot-a.log, rig/evidence/boot-b.log, phase2/rig/evidence/boot-a.log, phase2/rig/evidence/boot-b.log) and in the FUNCTIONAL-CHANGE.diff lines quoting them — a software version, not an IP address. Same disposition as the Nov 3 record packages and the 0.1.0 BrainGames package.
+- UUID-shaped strings, all already present in previously published record packages: the scratch-rig synthetic player UUID in the rig evidence logs (a fake offline-mode test player, "RigPlayer", created by the rig driver — not a real account); the kid-flag entry UUID in config.yml / phase2/config.yml (the offline-mode UUID of the kid-flagged player, already published verbatim in the 0.1.0 record package, PR #138); and the Shockbyte panel ID in INSTALLED.txt (already published in the magic-spell-packets record packages). None is a credential, a server IP, or contact information.
+
+No server IP, email address, private key, token, or credential value appears anywhere in this package. No redactions were needed; no content was removed or altered by sanitization.
