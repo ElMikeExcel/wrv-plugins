@@ -1,0 +1,6 @@
+name: BrainRig
+version: 1.0
+main: rig.BrainRig
+api-version: "1.21"
+description: 'Rig-only driver for ExcelBrainGames Phase 1 proof. NOT shipped.'
+depend: [ExcelBrainGames, Vault]
