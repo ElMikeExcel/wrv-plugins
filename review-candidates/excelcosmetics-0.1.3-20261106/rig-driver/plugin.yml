@@ -1,0 +1,9 @@
+name: CosmeticRigDriver
+version: 0.1.0
+main: cosmeticrig.CosmeticRigDriver
+api-version: '1.21'
+description: Rig-only fake-player driver for the ExcelCosmetics scratch server. Never ships.
+commands:
+  rig:
+    description: Drive the Cosmetics rig proofs.
+    usage: /rig <spawn|chat|cmd|inv|click|bal|quit>
