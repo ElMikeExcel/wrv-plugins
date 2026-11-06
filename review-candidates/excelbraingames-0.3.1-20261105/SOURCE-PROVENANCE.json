@@ -1,0 +1,42 @@
+{
+ "plugin": "ExcelBrainGames",
+ "version": "0.3.1",
+ "build_folder": "/home/hatch/workspace/brain-games/build-0.3.1",
+ "baseline": {
+  "version": "0.3.0",
+  "jar_file": "ExcelBrainGames-0.3.0.jar",
+  "jar_bytes": 118307,
+  "jar_sha256": "acfba81f800cf67e9bdf56e9eae016ec2d6ce8c42fce7c8558e9f3e694345b63",
+  "note": "live at build time; build-phase3 tree re-hashed to this value before copying"
+ },
+ "jar_file": "ExcelBrainGames-0.3.1.jar",
+ "jar_bytes": 125732,
+ "jar_sha256": "b51d4c14105292fc3e118205e1b8b6449905fa40adc1e2e8a72ab99dc13d118f",
+ "packs": {
+  "java_zip": {
+   "file": "braingames-tiles-java.zip",
+   "bytes": 189943,
+   "sha256": "05942eed39e0eed0e7bfc9538641c033fda420c5019484fef768e81ef20bb0d4",
+   "sha1_for_server_properties": "d110eadec60cf07e7c6f0d5c27623de4a7ee729d"
+  },
+  "bedrock_mcpack": {
+   "file": "braingames-tiles-bedrock.mcpack",
+   "bytes": 85596,
+   "sha256": "486bcad6e1452ffa8e6e83e267112d6edad693c2de68f4e1057c3bc9c2221286"
+  },
+  "geyser_mappings": {
+   "file": "braingames-tiles.json",
+   "sha256": "8ad2a15c987d1e42b5318331f1df0bd9b5d1ed38b136aad02d417684f252405c"
+  },
+  "tiles": 205
+ },
+ "build_inputs_pinned": {
+  "paper_api": "paper-api-26.3.build.231-stable.jar sha256 f0df9e7faccd38fabcdf4d2e6a243649cabc11f0a19fec100b43d7357369fb22",
+  "vault": "Vault-2.0.0.jar sha256 8b2ce431c88741fcae6d4de6032ab2ab0cca6aa86e8af375bdfe654321822a68",
+  "rig_server": "Paper 26.3-235 (fill-data CDN, sha256 4ebaf5c9da98c654bb8f17245799943dfb05a285830be4307bfdf7bc9ca024bf)"
+ },
+ "tests": "636,700 checks, 0 failures (622,227 carried = 0.3.0 baseline counts + 14,473 TileTest, incl. the add-on’s 44 once-per-question Quick Math print checks); packs validated (hashes unchanged by the add-on); rig boot Done/SEVERE 0 on Paper 26.3-235",
+ "installed": "NOT installed by this build — filed PENDING via INSTALL-PACKET.md (gated); parent files the MANIFEST entry",
+ "package_assembled": "Nov 5, 2026 (staging only)",
+ "addon": "Nov 5, 2026 add-on build: gui/Views.java only — Quick Math kid choice rounds print the question once per question in chat (SPEC-DELTA §8 residual closed); jar superseded 45b178a7… (125,602 B)"
+}
