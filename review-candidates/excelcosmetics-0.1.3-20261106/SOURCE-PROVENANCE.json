@@ -1,0 +1,31 @@
+{
+ "plugin": "ExcelCosmetics",
+ "version": "0.1.3",
+ "build_folder": "/home/hatch/workspace/excelcosmetics/build-0.1.3",
+ "baseline": {
+  "version": "0.1.2",
+  "jar_file": "ExcelCosmetics-0.1.2.jar",
+  "jar_bytes": 79395,
+  "jar_sha256": "45fc556ca0f84f77209faa1fb13a540f39e5a31248b0b75467d6d5586636509b",
+  "source_tarball_sha256": "82fbe0e784d071292601bd417972073a45a7e1a8934463b1e9de6e6a73ca6f85",
+  "note": "live at build time; jar + tarball re-verified on build day Nov 6, 2026 before building 0.1.3"
+ },
+ "jar_file": "ExcelCosmetics-0.1.3.jar",
+ "jar_bytes": 82562,
+ "jar_sha256": "e18d5af59657ca44f0d2747e62ffe09a71e2056e32225f069ccc9e0b0ad3162b",
+ "source_tarball": {
+  "file": "ExcelCosmetics-0.1.3-source.tar.gz",
+  "bytes": 45123,
+  "sha256": "a1ebbc881ad67e9b94c0d09539af853f7dd5fcde4c7bab236a13d71095ada957"
+ },
+ "drive": {
+  "jar_id": "1UluDvjud3rT9XxtYZyn0YknWOgN30yNc",
+  "source_id": "12zEqMXiAcid_onxVdiMmLAgDFolC48ud",
+  "note": "Drive leg DONE + byte-verified Nov 6, 2026 (parent-backlog-driver); full MD5s in parent-backlog item 14",
+  "jar_md5_prefix": "7493b51b",
+  "source_md5_prefix": "f7ac3c4a"
+ },
+ "tests": "316 checks, 0 failed (285 baseline 0.1.2 checks + 31 new TestCompensation mutating-fake checks); deterministic double-build byte-identical",
+ "installed": "INSTALLED LIVE Nov 6, 2026, 3:05-3:40 PM CST by wrv-install-failsafe (backup 'ExcelCosmetics pre-0.1.3 20261106', cap-at-6 pruned 'ExcelProtect pre-0.1.5 20261106'; boot Done 19.676s, SEVERE 0, 77 plugins; see INSTALLED.txt). Player proofs owed: one real purchase per shape (rent + own).",
+ "package_assembled": "Nov 6, 2026 (parent-backlog-driver GitHub leg staging)"
+}
