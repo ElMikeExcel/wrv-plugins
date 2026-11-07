@@ -1,0 +1,91 @@
+# ExcelAutoSort — configuration
+# Every player-facing sentence the plugin speaks lives in this file
+# (the house config-first rule), so wording can change without a
+# rebuild. The behavioral switches are at the top; the words are
+# below them under messages:.
+# Adding something later (Mike's config posture, Nov 6, 2026): put a
+# new knob in the section it belongs to and comment what it does and
+# what changing it means; put new sentences under messages:. Nothing
+# else needs restructuring — the file is meant to grow by addition.
+
+sort:
+  # Which containers tidy themselves for players with sorting on.
+  # These four are the set the old AutoSort handled — the parity set.
+  types: [CHEST, BARREL, ENDER_CHEST, SHULKER_BOX]
+  # The names read out in the "Sorting enabled for: ..." line.
+  type-names:
+    CHEST: Chest
+    BARREL: Barrel
+    ENDER_CHEST: Ender Chest
+    SHULKER_BOX: Shulker Box
+
+filter:
+  # Hoppers feeding a filter chest get filtered too — farms are the
+  # headline use, so this ships ON (decided Nov 6, 2026). Turn it off
+  # here if a redstone farm ever needs the chest left alone; no
+  # rebuild needed. Removals by hopper are written down as hopper
+  # removals and land in the chest owner's recovery box.
+  hoppers: true
+  # If this list is ever non-empty, hopper filtering happens ONLY in
+  # these worlds. Empty = every world.
+  hopper-worlds: []
+
+recovery:
+  # How long a removed stack waits in the recovery box before it is
+  # really gone: 7 days (decided Nov 6, 2026 — the family plays
+  # heaviest on weekends, and 24 hours was too easy to miss).
+  hours: 168
+  # The most stacks one player's box can hold — three double chests'
+  # worth. Past the cap, the oldest entries go first, and every one
+  # of those is written down too.
+  max-stacks: 162
+
+selector:
+  # Chest kinds shown per page of the setup screen.
+  page-size: 28
+
+messages:
+  sort-enabled: "Sorting &aenabled&r for: {types}"
+  sort-disabled: "Sorting &cdisabled"
+  not-for-console: "This command is not available for non-players."
+  no-permission: "&cYou don't have permission for that."
+  usage:
+    - "&eExcelAutoSort — /autosort toggles sorting of your chests"
+    - "&e/autosort chest — set up the filter on the chest you are looking at"
+    - "&e/autosort recover — open your filter recovery box"
+    - "&e/autosort status — your auto-sort state"
+    - "&e/autosort admin prune|reload — staff tools"
+  status-sort: "&eAuto-sort: &f{state}"
+  status-chests: "&eFilter chests you set up: &f{count}"
+  status-buffer: "&eRecovery box: &f{count} stacks waiting"
+  look-at-chest: "&eLook at a chest or barrel and try again."
+  bad-material: "&cThat is not an item name I know: {name}"
+  hand-empty: "&eYour hand is empty — hold the item you want to add."
+  edit-applied: "&a{item}: {state} the list."
+  edit-noop: "&e{item} is already {state} the list."
+  confirm-needed: "&eThat change would remove these from the chest right now:"
+  confirm-how: "&eNothing changed. Run it again with &f--confirm&e to move those to your recovery box."
+  armed: "&aFilter on: {mode}"
+  swept: "&eMoved {count} items to your recovery box."
+  claimed: "&aClaimed {count} stacks from your recovery box."
+  gui-selector-title: "Chest filter"
+  gui-confirm-title: "Turn the filter on?"
+  gui-picker-title: "Add from my inventory"
+  gui-recovery-title: "Filter recovery box"
+  mode-off: "Filter: OFF"
+  mode-whitelist: "Keep only these (whitelist)"
+  mode-blacklist: "Throw away these (blacklist)"
+  confirm-whitelist: "Keep only the {count} kinds on the list. Anything else put in this chest will be removed to the recovery box."
+  confirm-blacklist: "Throw away the {count} kinds on the list. Everything else put in this chest stays."
+  confirm-off: "The filter is off. This chest removes nothing."
+  confirm-on: "&aTurn the filter on"
+  confirm-sweep: "&aMove those to my recovery box and turn the filter on"
+  confirm-not-yet: "&cNot yet"
+  add-from-hand: "&eAdd from my hand"
+  add-from-inventory: "&eAdd from my inventory"
+  recovery-button: "&eRecovery box — {count} waiting"
+  recovery-empty: "Nothing is waiting in your recovery box."
+  claim-all: "&aClaim everything"
+  done: "&aDone"
+  info-title: "&eThis chest's filter"
+  form-list-button: "Filter list & mode"
