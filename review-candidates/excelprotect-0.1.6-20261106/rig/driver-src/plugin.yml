@@ -1,0 +1,7 @@
+name: ProtectRigRecovery
+version: '0.1.6-rig'
+main: rig.RigRecovery
+api-version: '1.21'
+description: Rig-only driver for the ExcelProtect 0.1.6 Recovery acceptance pass. NOT shipped.
+depend: [ExcelProtect]
+softdepend: [WorldEdit]

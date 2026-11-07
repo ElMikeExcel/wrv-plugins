@@ -1,0 +1,10 @@
+ExcelProtect 0.1.6 "Recovery" INSTALLED Nov 6, 2026, 6:36–7:10 PM CST by wrv-install-failsafe (run scheduled 2026-11-06 18:33 CST).
+Window marker: created 2026-11-06T18:34:09-06:00; re-checks before Shut Down and before Start — own marker only.
+Emptiness gate: list 0/10 at 6:36:22 PM + 6:37:35 PM CST; pre-swap list 0/10 6:49:29 PM; pre-shutdown list 0/10 6:55:33 PM CST; final list 0/10 7:10:06 PM CST.
+Live gate: plugins/ExcelProtect-0.1.5.jar SHA-256 c9b5dc1f58cd67de7db60e67e82b8e1cd8cb83b6ed0207ae9597bca0fa3ed5cb EXACT (panel Compute checksum, verified twice).
+BACKUP FIRST: "ExcelProtect pre-0.1.6 20261106" created 11/06/2026 6:46 PM, 6.9 GB, Manual, verified completed. Cap-at-6 prune: deleted oldest manual "Halloween cleanup pre 20261106" (11/06/2026 12:39 AM, 6.8 GB); Daily newest + two newest manuals untouched; total 6 after.
+Swap: candidate ExcelProtect-0.1.6.jar placed 234,451 B, SHA-256 097a4cbc836ef7252db3510770673c7173531eb900c5500d4d6d26c39566b028 EXACT (panel Compute checksum); live 0.1.5 jar renamed aside to ExcelProtect-0.1.5.jar.held-20261106-pre016; exactly one active jar; config untouched.
+Boot: panel Shut Down 6:55:42 PM (Offline verified), Start 6:58:18 PM, Done (21.096s) 6:58:41 PM. READY version=0.1.6 we=on; worldedit logging ON; recovery ON (0.1.6); carried lines combat/damage/dealt/healing/locations/clarity/timelines all present; guildgate LOCKED 3 of 5; 77 plugins (ExcelProtect enabled); SEVERE 0 attributable (no SEVERE in boot at all). Status: version=0.1.6 we=on dropped-total=0.
+End state: server left ONLINE 0/10 (outside maintenance window).
+Note: Phase 1 panel read returned a wrong backup list (invented "Pre 0.1.x install" entries); caught at Phase 2 verification against the real list + manifest history; no action taken on the bad list.
+Proofs still owed: live rollback proof per ~/workspace/protect-rollback-proof/LIVE-PROOF-PACKET.md; first staff WorldEdit edit -> worldedit line in blocks stream.

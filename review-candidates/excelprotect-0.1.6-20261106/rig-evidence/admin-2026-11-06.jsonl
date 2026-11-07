@@ -1,0 +1,20 @@
+{"type":"file_header","generator":"ExcelProtect","version":"0.1.5","brand":"Excel — Wink Reyes Valley"}
+{"ts":"2026-11-06T18:20:37.939-06:00","ts_ms":1794010837939,"type":"admin","action":"rollback_preview","detail":"3 blocks, 0 containers, target=2026-11-06T18:20:37.836-06:00","player":"console"}
+{"ts":"2026-11-06T18:20:41.040-06:00","ts_ms":1794010841040,"type":"admin","action":"rollback","detail":"op-1794010840973: 3 blocks, 0 containers","player":"console"}
+{"ts":"2026-11-06T18:20:46.022-06:00","ts_ms":1794010846022,"type":"admin","action":"rollback_undo","detail":"op-1794010840973: 3 positions, 0 containers","player":"console"}
+{"ts":"2026-11-06T18:21:06.992-06:00","ts_ms":1794010866992,"type":"admin","action":"rollback","detail":"op-1794010866912: 0 blocks, 1 containers","player":"console"}
+{"ts":"2026-11-06T18:21:13.974-06:00","ts_ms":1794010873974,"type":"admin","action":"rollback","detail":"op-1794010873871: 0 blocks, 1 containers","player":"console"}
+{"ts":"2026-11-06T18:21:18.073-06:00","ts_ms":1794010878073,"type":"admin","action":"rollback_undo","detail":"op-1794010873871: 0 positions, 1 containers","player":"console"}
+{"ts":"2026-11-06T18:21:29.424-06:00","ts_ms":1794010889424,"type":"admin","action":"export","detail":"4 events -> export-20261106T1821294210600.jsonl filters=stream=blocks radius=30 at=16,110,112 world=world from=2026-11-06T18:19:26 to=2026-11-06T18:22:29","player":"console"}
+{"ts":"2026-11-06T18:21:31.872-06:00","ts_ms":1794010891872,"type":"admin","action":"export_error","detail":"bad filter from=banana (DateTimeParseException: Text 'banana' could not be parsed at index 0)","player":"console"}
+{"ts":"2026-11-06T18:21:33.872-06:00","ts_ms":1794010893872,"type":"admin","action":"rollback_error","detail":"bad filter from=banana (DateTimeParseException: Text 'banana' could not be parsed at index 0)","player":"console"}
+{"ts":"2026-11-06T18:21:44.971-06:00","ts_ms":1794010904971,"type":"admin","action":"restore_entity_preview","detail":"minecraft:armor_stand 'RigStand' died 2026-11-06T18:21:40.387-06:00","player":"console"}
+{"ts":"2026-11-06T18:21:47.970-06:00","ts_ms":1794010907970,"type":"admin","action":"restore_entity","detail":"minecraft:armor_stand 'RigStand' died 2026-11-06T18:21:40.387-06:00","player":"console"}
+{"ts":"2026-11-06T18:21:53.970-06:00","ts_ms":1794010913970,"type":"admin","action":"restore_entity","detail":"minecraft:wolf 'RigWolf' died 2026-11-06T18:21:40.400-06:00","player":"console"}
+{"ts":"2026-11-06T18:21:59.970-06:00","ts_ms":1794010919970,"type":"admin","action":"restore_entity","detail":"minecraft:armor_stand 'RigStand' died 2026-11-06T18:21:40.387-06:00","player":"console"}
+{"ts":"2026-11-06T18:22:04.970-06:00","ts_ms":1794010924970,"type":"admin","action":"restore_entity","detail":"minecraft:armor_stand 'RigStand' died 2026-11-06T18:21:40.387-06:00 FORCE","player":"console"}
+{"ts":"2026-11-06T18:22:18.971-06:00","ts_ms":1794010938971,"type":"admin","action":"restore_inventory_preview","detail":"RigRoll snapshot 2026-11-06T18:22:11.888-06:00","player":"console"}
+{"ts":"2026-11-06T18:22:21.971-06:00","ts_ms":1794010941971,"type":"admin","action":"restore_inventory","detail":"RigRoll snapshot 2026-11-06T18:22:11.888-06:00","player":"console"}
+{"ts":"2026-11-06T18:22:27.971-06:00","ts_ms":1794010947971,"type":"admin","action":"restore_inventory","detail":"RigRoll snapshot 2026-11-06T18:22:11.888-06:00","player":"console"}
+{"ts":"2026-11-06T18:22:32.971-06:00","ts_ms":1794010952971,"type":"admin","action":"restore_inventory","detail":"RigRoll snapshot 2026-11-06T18:22:11.888-06:00 FORCE","player":"console"}
+{"ts":"2026-11-06T18:22:54.972-06:00","ts_ms":1794010974972,"type":"admin","action":"rollback","detail":"op-1794010974871: 14 blocks, 0 containers","player":"console"}
