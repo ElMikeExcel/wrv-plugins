@@ -1,0 +1,39 @@
+ExcelClaims 0.1.2 — INSTALLED Nov 7, 2026, 12:34–1:09 PM CST (harness-measured browser window 12:34–1:09 PM) by wrv-install-failsafe
+Server: Michael's Server (Shockbyte panel 2602e828-7192-4a75-add8-74861e5632d7)
+
+Gates:
+- Emptiness: list 0/10 at 12:35:26 PM and 12:36:46 PM CST; pre-shutdown list 0/10 at 12:49:16 PM
+- Pre-window census: ExcelClaims 0.1.1 — build EXC-CLAIMS-0.1.1-WRV-20261107-02-5a1e9c; Claims: 10 (1 admin, 0 subdivisions) · Player accounts: 11 — EXACT
+- Live config pre-stop expiration: check-interval-minutes: 60, chest-claim-days: 7, unused-claim-days: 14, all-claims-days-inactive: 60, except-when-owner-has-total-claim-blocks: 10000, except-when-owner-has-bonus-claim-blocks: 5000
+
+Backup FIRST (cap-at-6):
+- Fresh backup: "ExcelClaims pre-0.1.2 20261107" (Manual, 6.9 GB, created 12:40 PM, verified completed 12:49 PM); total 6 after
+- Prunee: oldest manual "ExcelClaims recovery 20261107" (Manual, 11/07 8:01 AM, 6.9 GB) deleted 12:40 PM. Daily newest (11/06) and two newest manuals ("ExcelClaims pre-0.1.1 20261107", "ExcelAutoSort pre-0.2.0 20261107") untouched.
+
+Jar swap:
+- 0.1.1 jar hash ff5ea0810d1df5866a423ac126e3145354bca25d2600cfc42a5536362b540706 EXACT; renamed aside to ExcelClaims-0.1.1.jar.held-20261107-pre-0.1.2
+- 0.1.2 jar placed 99,370 B; panel Compute checksum b4663fa3d377bafa06803f8b4d21294ac1ea6b720614a263cc5fb3d7ff120c5d EXACT
+
+Config:
+- Backup: plugins/GriefPrevention/config.yml.bak-20261107-pre-0.1.2
+- Rewritten expiration section as read back before Start:
+expiration:
+  check-interval-minutes: 60
+  default-days: never
+  players:
+
+Boot verify:
+- Panel Start 12:57 PM; Done (20.678s) at 12:58:14 PM CST
+- Enable: ExcelClaims 0.1.2 enabled: 10 claims, 11 player accounts, build EXC-CLAIMS-0.1.2-WRV-20261107-03-3b8f2d
+- Plugins 76 unchanged; SEVERE 0 attributable; Errors 0
+- ExcelGuildGate enabled: 3 of 5 seals broken, guild LOCKED — unchanged
+- No adapter-off / class-link errors; Protect / Landmarks / AuditLog loaded
+
+Post-install proof (hard gate):
+- At 1:03:39 PM (>5 min past boot): excelclaims status still Claims: 10 (1 admin, 0 subdivisions) · Player accounts: 11, build 0.1.2-03-3b8f2d
+- Log scan from enable line forward: NO "expiring claim" line (0), NO "expiration check skipped" line (0)
+- Spot-report Kailey (00000000-0000-0000-0009-01f40ccd59de): "[Info] Claim expiration for .coolgirlkail: never (server default)"
+- Spot-report Marvin (8399c623-786f-448c-8b11-f54504721819): "[Info] Claim expiration for GumGumJetPistol: never (server default)"
+
+Final: list 0/10 at 1:08:52 PM; server left ONLINE (outside maintenance window). No rollback needed.
+Still owed (parent, not executor): same-pass surfaces per packet (Guide knowledge + website canon for old expiration wording, ExcelWhatsNew BOTH surfaces, tips check, records close-out) + 0.1.0 packet Step-8 player proofs.
