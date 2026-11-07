@@ -1,0 +1,202 @@
+# ============================================================
+#  ExcelClaims — config
+#  Our own land claims for Wink Reyes Valley. (Iris / Mike)
+#
+#  HOW TO EDIT: every behavioral knob and every player-facing
+#  message lives in this file, grouped by section. Change a
+#  value, run /excelclaims reload (or restart), done. Adding a
+#  new knob later = add a line in the right section; nothing is
+#  buried in code. Values below are the live Wink Reyes Valley
+#  settings, carried over from the old claims setup 1:1.
+# ============================================================
+
+# ---- Worlds -------------------------------------------------
+# Mode per world: Survival = claims on, Disabled = claims off.
+# Add any world here by name; worlds not listed are Disabled.
+worlds:
+  world: Survival
+  world_nether: Disabled
+  world_the_end: Disabled
+
+# ---- Claim blocks -------------------------------------------
+claim-blocks:
+  # Blocks a brand-new player starts with.
+  initial: 100
+  # Blocks earned per hour of play.
+  accrued-per-hour: 100
+  # Earned blocks stop growing at this total (bonus blocks are separate).
+  max-accrued: 80000
+  # Minutes of standing still before accrual slows (0 = never slows).
+  idle-threshold-minutes: 0
+  # Percent of the normal rate earned while idle (only used when the
+  # idle threshold above is above 0).
+  idle-percent: 0
+  # Share of a deleted claim's blocks that come back (1.0 = all of them).
+  abandon-return-ratio: 1.0
+  # Most claims one player may hold (0 = no limit).
+  max-claims-per-player: 0
+  # Economy: price to BUY one claim block, and value when SELLING one.
+  # 0.0 = buying/selling is OFF (blocks come from playtime only).
+  purchase-cost: 0.0
+  sell-value: 0.0
+  # Cap on bonus blocks a player can hold from purchases (0 = no purchases).
+  max-bonus: 0
+
+# ---- Creating claims -----------------------------------------
+creation:
+  # Placing your first chest auto-claims a square around it with this
+  # radius (4 = a 9x9 claim). 0 turns the first-chest claim off.
+  automatic-new-player-claims-radius: 4
+  # ...but never auto-claim smaller than this many blocks of area if the
+  # square would be partly blocked (0 = skip instead).
+  automatic-new-player-claims-radius-minimum: 0
+  # Smallest side length / area a hand-made claim may have.
+  minimum-width: 5
+  minimum-area: 100
+  # Claims reach this many blocks below the lower corner you clicked.
+  extend-into-ground-distance: 5
+  # Radius used by a bare "/claim" with no number.
+  claim-default-radius: 4
+  # The claiming tool and the investigation tool.
+  modification-tool: GOLDEN_SHOVEL
+  investigation-tool: STICK
+
+# ---- Expiration ----------------------------------------------
+# One inactivity threshold, settable per player (0.1.2). A claim
+# expires when its owner has been away at least the threshold
+# number of days — counted from the newest evidence of the owner
+# being here. "never" means claims never expire, and a claim whose
+# owner was last seen at an unknown time never expires under any
+# setting. GriefPrevention only had global clocks; per-player
+# settings are ours. Set one in game with:
+#   /excelclaims expire <player> <days|never>
+# (no value after the name just reports their current setting).
+expiration:
+  # How often the expiration check runs.
+  check-interval-minutes: 60
+  # The threshold for everyone without their own entry below:
+  # "never", or a number of days. The safe default is never —
+  # expiration only ever happens where a number is set on purpose.
+  default-days: never
+  # Per-player thresholds — these win over the default above.
+  # One line per player: their UUID, then "never" or a day count.
+  players:
+    # 00000000-0000-0000-0000-000000000000: 30
+
+# ---- Protection inside claims --------------------------------
+protection:
+  # Nobody can take from containers they are not trusted for.
+  prevent-theft: true
+  # Animals and pets inside a claim can't be hurt by untrusted players.
+  protect-creatures: true
+  # Buttons, levers and pressure plates need Access trust.
+  prevent-buttons-switches: true
+  # Doors and gates: which kinds need Access trust to open.
+  lock-wooden-doors: false
+  lock-trap-doors: false
+  lock-fence-gates: true
+  # Throwing an ender pearl inside a claim needs Access trust...
+  ender-pearls-require-access-trust: true
+  # ...and a denied pearl is handed back.
+  refund-denied-ender-pearls: true
+  # Starting a raid inside a claim needs Build trust.
+  raid-triggers-require-build-trust: true
+  # Trading with a villager inside a claim needs Build trust.
+  villager-trading-requires-build-trust: true
+  # Hoppers may only move items in/out of a claim with Build trust.
+  hoppers-require-build-trust: false
+  # Reading a lectern inside a claim needs Access trust.
+  lectern-reading-requires-access-trust: true
+  # Slash commands that may only be used inside a claim by players
+  # with Access trust there (everyone else uses them outside claims).
+  commands-requiring-access-trust:
+    - /sethome
+
+# ---- PvP ------------------------------------------------------
+pvp:
+  # Players can't fight each other inside claims of each kind.
+  protect-players-in-player-claims: true
+  protect-players-in-admin-claims: true
+  protect-players-in-admin-subdivisions: true
+  # Seconds of "in combat" after a PvP hit (outside claims).
+  combat-timeout-seconds: 15
+  # Logging out while in combat drops your inventory where you stood.
+  punish-logout: true
+
+# ---- Nature and explosions ------------------------------------
+environment:
+  # Explosions never change blocks inside a claim...
+  block-land-claim-explosions: true
+  # ...and these two stop surface explosions from changing blocks
+  # inside claims even from outside.
+  block-surface-creeper-explosions: true
+  block-surface-other-explosions: true
+  # Fire inside claims: may it spread / may it destroy blocks.
+  fire-spreads-in-claims: false
+  fire-damages-in-claims: false
+  # Fire everywhere else: may it spread / may it destroy blocks.
+  fire-spreads: false
+  fire-destroys: false
+  # Pistons: CLAIMS_ONLY = a piston may only move blocks that stay
+  # inside its own claim (or fully outside claims). ALL = no rule.
+  piston-movement: CLAIMS_ONLY
+  # Endermen picking up blocks / silverfish breaking blocks / animals
+  # trampling crops / rabbits eating crops.
+  endermen-move-blocks: false
+  silverfish-break-blocks: false
+  creatures-trample-crops: false
+  rabbits-eat-crops: true
+
+# ---- Audit -----------------------------------------------------
+audit:
+  # Send claim trust changes to ExcelProtect's record (claim creates
+  # and deletes reach Protect on their own through its claim events).
+  publish-to-excelprotect: true
+
+# ---- Messages ---------------------------------------------------
+# Player-facing text. {name} style placeholders are filled in by the
+# plugin. Colors use the & codes you already know.
+messages:
+  no-claims-here: "&7There's no claim here."
+  claim-created: "&aLand claimed! You have {remaining} claim blocks left."
+  claim-created-auto: "&aYour chest is protected by a land claim. You have {remaining} claim blocks left."
+  claim-deleted: "&eClaim deleted. Its blocks are back in your pool."
+  claim-resized: "&aClaim resized. You have {remaining} claim blocks left."
+  not-enough-blocks: "&cYou don't have enough claim blocks for that. You need {needed} more."
+  claim-overlap: "&cThat spot overlaps another claim."
+  claim-too-small: "&cClaims must be at least {width} blocks wide and {area} blocks in area."
+  claim-outside-parent: "&cA subdivision has to fit inside its parent claim."
+  claim-subdivision-overlap: "&cThat overlaps another subdivision of this claim."
+  claim-limit: "&cYou've reached the claim limit."
+  not-your-claim: "&cThis isn't your claim."
+  no-permission: "&cYou don't have permission to do that here."
+  build-denied: "&cYou can't build here — this land is claimed by {owner}."
+  container-denied: "&cYou can't use that here — this land is claimed by {owner}."
+  access-denied: "&cYou can't use that here — this land is claimed by {owner}."
+  trust-added: "&a{name} now has {level} trust here."
+  trust-removed: "&e{name} no longer has trust here."
+  trust-cleared: "&eAll trust cleared here."
+  trust-self: "&cYou can't change your own trust."
+  player-not-found: "&cCouldn't find a player named {name}."
+  claimslist-header: "&aYou have {accrued} earned + {bonus} bonus claim blocks; {used} are in use, {remaining} left."
+  claimslist-line: "&7- {world} at {x}, {z} ({area} blocks){admin}"
+  claimslist-none: "&7You have no claims yet. Place a chest or use /claim to start."
+  corner-one: "&aFirst corner set. Right-click the opposite corner with your golden shovel."
+  corner-two-create: "&aLand claimed! You have {remaining} claim blocks left."
+  resizing: "&eResizing your claim — right-click the new corner."
+  subdivision-mode-on: "&aSubdivision mode ON — your shovel now carves plots inside a claim."
+  subdivision-mode-off: "&aSubdivision mode OFF."
+  admin-mode-on: "&aAdmin claim mode ON — claims you make belong to the server."
+  admin-mode-off: "&aAdmin claim mode OFF."
+  investigate: "&aClaim owned by {owner} — {area} blocks. Builders: {builders}. Containers: {containers}. Access: {accessors}. Managers: {managers}."
+  investigate-none: "&7No claim here — this is unclaimed land."
+  trapped-wait: "&eStay still for {seconds} seconds and you'll be moved outside this claim."
+  trapped-moved: "&aYou've been moved outside the claim."
+  trapped-not-stuck: "&7You're not trapped in a claim."
+  economy-disabled: "&cBuying and selling claim blocks is turned off on this server — blocks come from playing."
+  adjust-done: "&a{name} now has {accrued} earned and {bonus} bonus claim blocks."
+  ignoreclaims-on: "&aYou now ignore claim protection."
+  ignoreclaims-off: "&aClaim protection applies to you again."
+  transfer-done: "&aThis claim now belongs to {name}."
+  restrictsubclaim-on: "&aOnly the owner may create subdivisions in this claim."
+  restrictsubclaim-off: "&aTrusted players may create subdivisions in this claim again."
