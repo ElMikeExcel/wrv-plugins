@@ -1,0 +1,21 @@
+{"type":"file_header","generator":"ExcelProtect","version":"0.1.5","brand":"Excel — Wink Reyes Valley"}
+{"ts":"2026-11-06T19:02:17.338-06:00","ts_ms":1794013337338,"type":"rollback","action":"blocks","detail":"positions=3 applied=3 target=2026-11-06T19:02:17.139-06:00"}
+{"ts":"2026-11-06T19:02:17.341-06:00","ts_ms":1794013337341,"type":"rollback_op","op":"op-1794013337139","blocks":3,"containers":0,"undo_containers":0,"undo_file":"undo-op-1794013337139.jsonl"}
+{"ts":"2026-11-06T19:02:24.038-06:00","ts_ms":1794013344038,"type":"rollback","action":"blocks","detail":"positions=3 applied=3 target=+292278994-08-17T02:12:55.807-05:00"}
+{"ts":"2026-11-06T19:02:44.943-06:00","ts_ms":1794013364943,"type":"rollback","action":"blocks","detail":"positions=0 applied=0 target=2026-11-06T19:02:38.000-06:00"}
+{"ts":"2026-11-06T19:02:44.963-06:00","ts_ms":1794013364963,"world":"world","x":18,"y":110,"z":0,"type":"rollback","action":"container","detail":"restored from ts=2026-11-06T19:02:34.943-06:00 items=2"}
+{"ts":"2026-11-06T19:02:44.963-06:00","ts_ms":1794013364963,"type":"rollback_op","op":"op-1794013364872","blocks":0,"containers":1,"undo_containers":1,"undo_file":"undo-op-1794013364872.jsonl"}
+{"ts":"2026-11-06T19:02:51.939-06:00","ts_ms":1794013371939,"type":"rollback","action":"blocks","detail":"positions=0 applied=0 target=2026-11-06T19:02:51.838-06:00"}
+{"ts":"2026-11-06T19:02:51.941-06:00","ts_ms":1794013371941,"world":"world","x":18,"y":110,"z":0,"type":"rollback","action":"container","detail":"restored from ts=2026-11-06T19:02:40.841-06:00 items=1"}
+{"ts":"2026-11-06T19:02:51.941-06:00","ts_ms":1794013371941,"type":"rollback_op","op":"op-1794013371838","blocks":0,"containers":1,"undo_containers":1,"undo_file":"undo-op-1794013371838.jsonl"}
+{"ts":"2026-11-06T19:02:56.038-06:00","ts_ms":1794013376038,"type":"rollback","action":"blocks","detail":"positions=0 applied=0 target=+292278994-08-17T02:12:55.807-05:00"}
+{"ts":"2026-11-06T19:02:56.040-06:00","ts_ms":1794013376040,"world":"world","x":18,"y":110,"z":0,"type":"rollback","action":"container","detail":"restored from ts=2026-11-06T19:02:51.939-06:00 items=2"}
+{"ts":"2026-11-06T19:03:25.951-06:00","ts_ms":1794013405951,"world":"world","x":10.5,"y":110,"z":-6,"type":"rollback","action":"entity_restore","detail":"entity=minecraft:armor_stand name=RigStand from entity_death ts=2026-11-06T19:03:18.339-06:00"}
+{"ts":"2026-11-06T19:03:31.939-06:00","ts_ms":1794013411939,"world":"world","x":-1.5,"y":110,"z":-2.5,"type":"rollback","action":"entity_restore","detail":"entity=minecraft:wolf name=RigWolf from entity_death ts=2026-11-06T19:03:18.362-06:00"}
+{"ts":"2026-11-06T19:03:42.940-06:00","ts_ms":1794013422940,"world":"world","x":10.5,"y":110,"z":-6,"type":"rollback","action":"entity_restore","detail":"entity=minecraft:armor_stand name=RigStand from entity_death ts=2026-11-06T19:03:18.339-06:00 FORCE"}
+{"ts":"2026-11-06T19:03:59.940-06:00","ts_ms":1794013439940,"world":"world","x":0,"y":111,"z":0,"type":"rollback","action":"inventory_restore","detail":"death_id=1794013429856:d2549dbc-4e7f-37b3-8921-d5347f524ceb target=RigRoll inventory=4 ender=1"}
+{"ts":"2026-11-06T19:04:10.940-06:00","ts_ms":1794013450940,"world":"world","x":0,"y":111,"z":0,"type":"rollback","action":"inventory_restore","detail":"death_id=1794013429856:d2549dbc-4e7f-37b3-8921-d5347f524ceb target=RigRoll inventory=4 ender=1 FORCE"}
+{"ts":"2026-11-06T19:04:32.939-06:00","ts_ms":1794013472939,"type":"rollback","action":"blocks","detail":"positions=14 applied=14 target=2026-11-06T19:04:32.838-06:00"}
+{"ts":"2026-11-06T19:04:32.939-06:00","ts_ms":1794013472939,"type":"rollback_op","op":"op-1794013472838","blocks":14,"containers":0,"undo_containers":0,"undo_file":"undo-op-1794013472838.jsonl"}
+{"ts":"2026-11-06T19:05:02.961-06:00","ts_ms":1794013502961,"type":"import","source":"deathrecord","deaths":2,"burns":6,"skipped":0,"errors":0,"restored_burns":4,"restored_items":2,"lf_state":1}
+{"ts":"2026-11-06T19:05:22.940-06:00","ts_ms":1794013522940,"type":"import","source":"deathrecord","deaths":0,"burns":0,"skipped":8,"errors":0,"restored_burns":0,"restored_items":0,"lf_state":1}
