@@ -1,0 +1,30 @@
+name: ExcelAutoSort
+version: 0.2.0
+api-version: '1.21'
+main: com.winkreyes.excelautosort.ExcelAutoSort
+description: Our own auto-sort and chest filters — chests tidy themselves, and a chest can keep only what you choose, or throw away the junk, with a recovery box so nothing is ever lost. Plus Max Organization — all your chests around you in one view.
+authors: [Iris, Mike]
+softdepend: [GriefPrevention, ExcelProtect, PlaceholderAPI, floodgate, Vault]
+
+commands:
+  autosort:
+    description: Toggle auto-sorting of your chests, or set up a chest filter
+    usage: /autosort [status|chest|recover|max|admin]
+    aliases: [sort]
+
+permissions:
+  excelautosort.toggle:
+    description: Toggle auto-sort for yourself
+    default: true
+  excelautosort.chest:
+    description: Open the chest filter setup for a chest you may configure
+    default: true
+  excelautosort.recover:
+    description: Open your filter recovery box
+    default: true
+  excelautosort.maxorg:
+    description: Open Max Organization (rent or buy the unlock, then use the network view)
+    default: true
+  excelautosort.admin:
+    description: Staff tools (prune, reload) and filter setup inside admin claims
+    default: op

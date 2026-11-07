@@ -1,0 +1,63 @@
+# ExcelMenu 2.0 registry entry — ExcelAutoSort 0.2.0 "Max Organization".
+# STATE-DRIVEN (menu standard): the label/icon follow the player's
+# CURRENT entitlement via %autosort_maxorg% (OWNED / RENTED / OFF),
+# served by ExcelAutoSort's own PlaceholderAPI expansion. The action
+# opens /autosort max, which lands entitled players in the network
+# view and everyone else on the unlock screen — one entry, both
+# states served. If ExcelAutoSort is absent the placeholder is
+# unresolvable and the entry resolves to its default variant —
+# fail-closed.
+id: maxorg
+menu: server_menu
+group: settings
+order: 20
+order-bedrock: 210
+icon: GRAY_DYE
+label: '&7&lMax Organization: not unlocked'
+lore:
+  - '&7Open and manage all your chests'
+  - '&7around you at once — rent or buy'
+  - '&7Click to see it'
+action:
+  - '[player] autosort max'
+  - '[refresh]'
+requires-plugin: ExcelAutoSort
+requires-permission: excelautosort.maxorg
+status-placeholder: '%autosort_maxorg%'
+states:
+  'OWNED':
+    icon: LIME_DYE
+    label: '&a&lMax Organization: yours forever'
+    lore:
+      - '&7Every chest around you that you'
+      - '&7may set up, in one view'
+      - '&7Click to open your chests'
+    action:
+      - '[player] autosort max'
+      - '[refresh]'
+  'RENTED':
+    icon: LIME_DYE
+    label: '&a&lMax Organization: rented'
+    lore:
+      - '&7Every chest around you that you'
+      - '&7may set up, in one view'
+      - '&7Click to open your chests'
+    action:
+      - '[player] autosort max'
+      - '[refresh]'
+  'OFF':
+    icon: GRAY_DYE
+    label: '&7&lMax Organization: not unlocked'
+    lore:
+      - '&7Open and manage all your chests'
+      - '&7around you at once — rent or buy'
+      - '&7Click to see it'
+    action:
+      - '[player] autosort max'
+      - '[refresh]'
+  'default':
+    icon: GRAY_DYE
+    label: '&7&lMax Organization: unavailable'
+    lore:
+      - '&7The auto-sort plugin is unavailable'
+      - '&7Try again later or ask server staff'
