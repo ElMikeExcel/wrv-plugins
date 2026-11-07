@@ -1,0 +1,23 @@
+ExcelClaims 0.1.0 — INSTALLED Nov 7, 2026, 2:34–3:00 AM CST by wrv-install-failsafe inside the maintenance window (browser panel session; parent bookkeeping).
+
+GATE: OFFLINE arrival in-window (panel Offline 0/10 at 2:35 AM, prior stop 2:23:53 AM) — counts as empty in-window; pre-shutdown/final list 0/10 at 2:56:09 AM; .MikeExcel never online. Whitelist ON at boot (server.properties white-list=true).
+
+LIVE CENSUS (Step 1, before swap; each ClaimData yml opened individually):
+- Total claims: 10
+- Player accounts: 11
+- _nextClaimID: 25
+- Admin claims (empty Owner:): 1 (19.yml)
+- Subdivisions (Parent Claim ID != -1): 0
+
+BACKUP FIRST: "ExcelClaims pre-0.1.0 20261107" (11/07/2026 2:38 AM, 6.9 GB, Manual, verified completed). Cap-at-6 prune: oldest manual "ExcelProtect pre-0.1.7 20261106" (11/06/2026 7:51 PM) deleted before creation; Daily newest (11/06) + two newest manuals (ExcelAutoSort pre-0.1.0 20261107; Protect DeathRecord import 20261106) untouched; total 6 after.
+
+SWAP: live GriefPrevention-16.18.7.jar SHA-256 45e9907c61222e559ed2e099ffee0ede706a21243a31d7db549baf678708fdf0 renamed aside to GriefPrevention-16.18.7.jar.held-20261107-pre-excelclaims (hash re-verified identical; never deleted). ExcelClaims-0.1.0.jar placed, panel Compute checksum 838a85b717e5a5617d3dbd48f151efd03ded3269ce4d458dec070c4a2edfbee8 EXACT. plugins/GriefPreventionData/ UNTOUCHED.
+
+BOOT-VERIFY: Done (19.882s); enable line "ExcelClaims 0.1.0 enabled: 0 claims, 0 player accounts, build EXC-CLAIMS-0.1.0-WRV-20261107-01-7c1a3f" EXACT; SEVERE 0 attributable (Errors 0); guildgate LOCKED 3 of 5 unchanged; adapters engaged — Landmarks gp=ON (subdivisions), Protect READY gp=on, AuditLog READY, Magic "GriefPrevention found", TreeCleanup claim checks ON, Leaderboard Land Claimed available; no adapter-off or NoClassDefFound errors.
+PLUGIN COUNT NOTE: boot reports 76 plugins, not the packet's 77 — the packet figure predates the ExcelAutoSort install earlier the same night, which reduced the count 77 -> 76 (two jars out, one in). This swap is 1-for-1 (GP 16.18.7 out, ExcelClaims in as "GriefPrevention"), so 76 UNCHANGED is correct; no plugin missing from the boot list.
+
+RECONCILIATION GATE: PASS EXACT. `excelclaims import` -> "Imported 10 claims and 11 player accounts from GriefPreventionData." `excelclaims status` -> "Claims: 10 (1 admin, 0 subdivisions) · Player accounts: 11" — total 10=10, admin 1=1, subdivisions 0=0, accounts 11=11; re-rooted orphans 0. No rollback needed.
+
+END STATE: server returned to OFFLINE via panel Shut Down (stopped 2:56:16 AM), panel verified Offline 0/10, per in-window end state.
+
+STILL OWED (parent, not this entry): same-pass surfaces per packet (What's New website + in-game entry announcing ExcelClaims, rotation-tips brand-wording check, records/inventory update — plugin count is 76, name "GriefPrevention" now ours). Player proofs owed per packet Step 8: own-claim build/container + neighbor denial line, /claimslist parity, shovel resize visualization, spawn admin-claim protection, Landmark plot renter build (+ AutoSort filter-chest configure case now that AutoSort is live).
