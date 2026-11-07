@@ -1,0 +1,7 @@
+name: ProtectRigElites
+version: '0.1.7-rig'
+main: rig.RigElites
+api-version: '1.21'
+description: Rig-only driver for the ExcelProtect 0.1.7 Parity acceptance pass. NOT shipped.
+depend: [ExcelProtect]
+softdepend: [WorldEdit, EliteMobs]

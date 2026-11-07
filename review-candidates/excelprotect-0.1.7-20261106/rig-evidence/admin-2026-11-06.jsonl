@@ -1,0 +1,22 @@
+{"type":"file_header","generator":"ExcelProtect","version":"0.1.5","brand":"Excel — Wink Reyes Valley"}
+{"ts":"2026-11-06T19:02:14.239-06:00","ts_ms":1794013334239,"type":"admin","action":"rollback_preview","detail":"3 blocks, 0 containers, target=2026-11-06T19:02:14.142-06:00","player":"console"}
+{"ts":"2026-11-06T19:02:17.341-06:00","ts_ms":1794013337341,"type":"admin","action":"rollback","detail":"op-1794013337139: 3 blocks, 0 containers","player":"console"}
+{"ts":"2026-11-06T19:02:24.041-06:00","ts_ms":1794013344041,"type":"admin","action":"rollback_undo","detail":"op-1794013337139: 3 positions, 0 containers","player":"console"}
+{"ts":"2026-11-06T19:02:44.963-06:00","ts_ms":1794013364963,"type":"admin","action":"rollback","detail":"op-1794013364872: 0 blocks, 1 containers","player":"console"}
+{"ts":"2026-11-06T19:02:51.941-06:00","ts_ms":1794013371941,"type":"admin","action":"rollback","detail":"op-1794013371838: 0 blocks, 1 containers","player":"console"}
+{"ts":"2026-11-06T19:02:56.040-06:00","ts_ms":1794013376040,"type":"admin","action":"rollback_undo","detail":"op-1794013371838: 0 positions, 1 containers","player":"console"}
+{"ts":"2026-11-06T19:03:07.394-06:00","ts_ms":1794013387394,"type":"admin","action":"export","detail":"4 events -> export-20261106T1903073880600.jsonl filters=stream=blocks radius=30 at=0,110,0 world=world from=2026-11-06T19:01:03 to=2026-11-06T19:04:07","player":"console"}
+{"ts":"2026-11-06T19:03:09.841-06:00","ts_ms":1794013389841,"type":"admin","action":"export_error","detail":"bad filter from=banana (DateTimeParseException: Text 'banana' could not be parsed at index 0)","player":"console"}
+{"ts":"2026-11-06T19:03:11.839-06:00","ts_ms":1794013391839,"type":"admin","action":"rollback_error","detail":"bad filter from=banana (DateTimeParseException: Text 'banana' could not be parsed at index 0)","player":"console"}
+{"ts":"2026-11-06T19:03:22.938-06:00","ts_ms":1794013402938,"type":"admin","action":"restore_entity_preview","detail":"minecraft:armor_stand 'RigStand' died 2026-11-06T19:03:18.339-06:00","player":"console"}
+{"ts":"2026-11-06T19:03:25.938-06:00","ts_ms":1794013405938,"type":"admin","action":"restore_entity","detail":"minecraft:armor_stand 'RigStand' died 2026-11-06T19:03:18.339-06:00","player":"console"}
+{"ts":"2026-11-06T19:03:31.937-06:00","ts_ms":1794013411937,"type":"admin","action":"restore_entity","detail":"minecraft:wolf 'RigWolf' died 2026-11-06T19:03:18.362-06:00","player":"console"}
+{"ts":"2026-11-06T19:03:37.937-06:00","ts_ms":1794013417937,"type":"admin","action":"restore_entity","detail":"minecraft:armor_stand 'RigStand' died 2026-11-06T19:03:18.339-06:00","player":"console"}
+{"ts":"2026-11-06T19:03:42.938-06:00","ts_ms":1794013422938,"type":"admin","action":"restore_entity","detail":"minecraft:armor_stand 'RigStand' died 2026-11-06T19:03:18.339-06:00 FORCE","player":"console"}
+{"ts":"2026-11-06T19:03:56.943-06:00","ts_ms":1794013436943,"type":"admin","action":"restore_inventory_preview","detail":"RigRoll snapshot 2026-11-06T19:03:49.858-06:00","player":"console"}
+{"ts":"2026-11-06T19:03:59.938-06:00","ts_ms":1794013439938,"type":"admin","action":"restore_inventory","detail":"RigRoll snapshot 2026-11-06T19:03:49.858-06:00","player":"console"}
+{"ts":"2026-11-06T19:04:05.938-06:00","ts_ms":1794013445938,"type":"admin","action":"restore_inventory","detail":"RigRoll snapshot 2026-11-06T19:03:49.858-06:00","player":"console"}
+{"ts":"2026-11-06T19:04:10.938-06:00","ts_ms":1794013450938,"type":"admin","action":"restore_inventory","detail":"RigRoll snapshot 2026-11-06T19:03:49.858-06:00 FORCE","player":"console"}
+{"ts":"2026-11-06T19:04:32.939-06:00","ts_ms":1794013472939,"type":"admin","action":"rollback","detail":"op-1794013472838: 14 blocks, 0 containers","player":"console"}
+{"ts":"2026-11-06T19:05:02.962-06:00","ts_ms":1794013502962,"type":"admin","action":"import","detail":"deathrecord /home/hatch/workspace/protect-elites-build/rig/server/rigdeathrecord -> 2 deaths, 6 burns, 4 restored burns, 2 restored death items, 1 lf-state files","player":"console"}
+{"ts":"2026-11-06T19:05:22.940-06:00","ts_ms":1794013522940,"type":"admin","action":"import","detail":"deathrecord /home/hatch/workspace/protect-elites-build/rig/server/rigdeathrecord -> 0 deaths, 0 burns, 0 restored burns, 0 restored death items, 1 lf-state files","player":"console"}

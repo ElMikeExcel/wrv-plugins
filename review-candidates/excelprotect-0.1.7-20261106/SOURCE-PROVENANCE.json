@@ -1,0 +1,21 @@
+{
+  "plugin": "ExcelProtect",
+  "version": "0.1.7",
+  "date": "2026-11-06",
+  "jar": {
+    "file": "ExcelProtect-0.1.7.jar",
+    "bytes": 246038,
+    "sha256": "d7c852b5db14ea52d75a5532c582bb6ad2912c21c601715923c3e9dfb1e83124",
+    "drive_id": "1ASIo7y5urW_5a7ce3NQ_8d401TyYpOKL",
+    "drive_md5": "95ea5d11d9077dc393cde8437f6d7aa4"
+  },
+  "source_zip": {
+    "file": "excelprotect-0.1.7-source.zip",
+    "bytes": 742647,
+    "sha256": "640eb9861ece0c3b2f289a15b61d351783eb5b2ed23d79ae9643a1805ff1e669",
+    "drive_id": "1nDtWxYdBCdpjCV02MFDY20xccay_cUtu",
+    "drive_md5": "a61fdfb4facfc707c0f6e9691b31ed25"
+  },
+  "source_build_dir": "~/workspace/protect-elites-build/",
+  "notes": "Drive leg DONE + byte-verified Nov 6, 2026 (parent-backlog-driver 9:59 PM run, backlog Item 17). Package extracted from the source zip of record; INSTALLED.txt copied from the build root. Records correction carried by this record: the Nov 1 audit's Telemetry consumer claim was backwards \u2014 no in-server plugin reads ExcelTelemetry's files (its RewardGuardOrigin/EliteMobsReader classes read inbound); the only file consumer is the offline progress_report.py (Item 13b audit, ~/workspace/protect-rollout-item13b/)."
+}

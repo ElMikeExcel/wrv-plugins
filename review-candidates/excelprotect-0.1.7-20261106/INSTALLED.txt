@@ -1,0 +1,24 @@
+ExcelProtect 0.1.7 "Parity" — INSTALLED Nov 6, 2026 by wrv-install-failsafe
+
+Window: marker created Fri Nov 6, 2026, 7:33:48 PM CST (~/workspace/wrv-install-queue/WINDOW-IN-PROGRESS.txt, own marker; re-checked before Shut Down — own marker only); browser phases (harness-measured): Phase 1 read-only 7:34–7:37 PM, Phase 2 backup 7:38–7:53 PM, Phase 3a swap 7:54–8:02 PM, Phase 3b boot 8:03–8:18 PM CST. Panel: Shockbyte "Michael's Server" (2602e828-7192-4a75-add8-74861e5632d7).
+
+Emptiness gate: list 0/10 at 7:35:16 PM + 7:36:25 PM CST (Phase 1), again 0/10 at 7:55:28 PM (pre-swap) and pre-shutdown 0/10 at 8:04:39 PM CST. Server Online on arrival, left ONLINE 0/10.
+
+LIVE GATE: live plugins/ExcelProtect-0.1.6.jar = 234,451 B (228.96 KB panel) / SHA-256 097a4cbc836ef7252db3510770673c7173531eb900c5500d4d6d26c39566b028 — EXACT, verified by panel Compute checksum.
+
+BACKUP FIRST: "ExcelProtect pre-0.1.7 20261106" (11/06/2026 7:51 PM, 6.9 GB, Manual) created and verified completed. Cap-at-6: Phase 2's verified list of record (7:39 PM) was 6 backups; tonight's Daily Backup completed mid-phase (7:42 PM) bringing the total to 7, so two prunes were needed to end at ≤6 after creation. Pruned: (1) "pre-geyser-b1292-20261106" (11/06/2026 9:51 AM, 6.8 GB, Manual — oldest manual); (2) "Daily Backup" 11/03/2026 7:42 PM copy (6.8 GB, Interval — oldest Daily copy; pruned because the only other manuals were the two newest manual restore points, which are protected). NOT deleted: Daily Backup's newest copy (11/06/2026 7:42 PM) and the two newest manuals ("ExcelProtect pre-0.1.6 20261106", "ExcelCosmetics pre-0.1.3 20261106"). Final list total: 6. NOTE: Phase 1's initial backup-list read was wrong (invented "before changing excel-protect plugin" names, same failure as the 0.1.6 run) — caught and corrected by the Phase 2 verbatim re-read against manifest history; no action was taken on the bad list.
+
+Swap: live jar renamed aside to ExcelProtect-0.1.6.jar.bak-20261106-pre017 (never deleted); candidate placed as plugins/ExcelProtect-0.1.7.jar — 246,038 B (240.27 KB panel) / SHA-256 d7c852b5db14ea52d75a5532c582bb6ad2912c21c601715923c3e9dfb1e83124 EXACT (panel Compute checksum). Exactly one active ExcelProtect jar afterwards. Config untouched; data folder untouched.
+
+Boot: panel Shut Down 8:04:47 PM CST (never console stop), panel Start ~8:05:20 PM, Done (20.161s) at 8:05:49 PM.
+- READY line: "[ExcelProtect] READY version=0.1.7 dir=plugins/ExcelProtect gp=on vault=on mcMMO=on we=on retention-days=30"
+- Importer line present: "[ExcelProtect] importer: deathrecord honors restored marks + lost&found state migration (0.1.7)"
+- Kill parity line present: "[ExcelProtect] kill parity: elite/weapon/origin-class/damage-shares on entity_death (0.1.7)"
+- Recovery line present: "recovery: ON rollback=blocks+containers+undo(incl. containers) restore-entity restore-inventory (0.1.6)" — the trailing (0.1.6) is the recovery feature's own tag in its message text; READY + status confirm the running version is 0.1.7.
+- WorldEdit line: "worldedit logging: ON (WorldEdit edits recorded into the blocks stream, actor-attributed)"
+- GuildGate: "ExcelGuildGate enabled: 3 of 5 seals broken, guild LOCKED" (LOCKED 3 of 5, unchanged)
+- Plugins: 77. SEVERE: 0 (panel Errors 0; console search 0; latest.log find none). Only warnings: pre-existing GS4 query BindException + EliteMobs update notices.
+- Smoke: `excelprotect status` 8:17:05 PM → "version=0.1.7 gp=on vault=on mcmmo=on we=on dropped-total=0". Import NOT run (follow-on packet).
+- TPS 20.0, 20.0, 20.0 (8:17:15 PM). Final list 0/10 at 8:17:24 PM. Server left ONLINE.
+
+Proofs still owed per packet: (1) DeathRecord import as its own console packet per ~/workspace/protect-rollout-item13a/IMPORTER-PACKET.md with a FRESH census first (folder argument exactly plugins/ExcelDeathRecord); (2) a natural elite kill in family play whose entity_death line carries elite=true + elite_level; (3) the G3 one-day Protect-vs-Telemetry field diff before Telemetry retires. No same-pass player-facing surfaces (console/admin feature set).

@@ -1,0 +1,560 @@
+Starting org.bukkit.craftbukkit.Main
+2026-11-07T01:01:12.375929190Z ServerMain WARN Advanced terminal features are not available in this environment
+[01:01:12 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4.1+1-LTS; Eclipse Adoptium Temurin-25.0.4.1+1) on Linux 7.0.0-43-generic (amd64)
+[01:01:12 INFO]: [bootstrap] Loading Paper 26.3-231-main@8a170a3 (2026-10-30T01:53:29Z) for Minecraft 26.3
+[01:01:12 INFO]: [PluginInitializerManager] Initializing plugins...
+[01:01:13 INFO]: [PluginInitializerManager] Initialized 4 plugins
+[01:01:13 INFO]: [PluginInitializerManager] Bukkit plugins (4):
+ - EliteMobs (10.9.12), ExcelProtect (0.1.7), ProtectRigElites (0.1.7-rig), WorldEdit (7.4.6+7648-00664b0)
+[01:01:23 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[01:01:24 INFO]: [com.destroystokyo.paper.profile.PaperServicesDiscoveryService] Environment: Environment[discoveryUrl=https://discovery.minecraftservices.com/minecraft/client, name=PROD]
+[01:01:25 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 1,836.6ms
+[01:01:25 WARN]: Failed to connect
+com.mojang.authlib.exceptions.MinecraftClientException: Failed to read from https://discovery.minecraftservices.com/minecraft/client due to Unsupported or unrecognized SSL message
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readServiceResponse(MinecraftClient.java:151) ~[authlib-10.0.77.jar:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.getWithEtag(MinecraftClient.java:81) ~[authlib-10.0.77.jar:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.get(MinecraftClient.java:65) ~[authlib-10.0.77.jar:?]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.lambda$createDiscoverySupplier$1(MinecraftServicesDiscoveryService.java:76) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.RetryableFetch$1.run(RetryableFetch.java:42) ~[authlib-10.0.77.jar:26.3-231-8a170a3]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[?:?]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328) ~[?:?]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:309) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+Caused by: javax.net.ssl.SSLException: Unsupported or unrecognized SSL message
+	at java.base/sun.security.ssl.SSLSocketInputRecord.handleUnknownRecord(SSLSocketInputRecord.java:462) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.decode(SSLSocketInputRecord.java:175) ~[?:?]
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:111) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:490) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:190) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1379) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1305) ~[?:?]
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:493) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getResponseCode(HttpsURLConnectionImpl.java:307) ~[?:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readServiceResponse(MinecraftClient.java:130) ~[authlib-10.0.77.jar:?]
+	... 10 more
+	Suppressed: java.net.SocketException: Broken pipe
+		at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+		at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+		at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:402)
+		at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:418)
+		at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:448)
+		at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:821)
+		at java.base/java.net.Socket$SocketOutputStream.implWrite(Socket.java:1086)
+		at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1076)
+		at java.base/sun.security.ssl.SSLSocketOutputRecord.encodeAlert(SSLSocketOutputRecord.java:81)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:412)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:319)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:314)
+		at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:145) ~[?:?]
+		... 21 more
+[01:01:25 WARN]: Services are unavailable, unable to fetch uri for AUTHENTICATION/getPublicKeys
+[01:01:25 WARN]: Failed to connect
+com.mojang.authlib.exceptions.MinecraftClientException: Services are unavailable
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.getEndpoint(MinecraftServicesDiscoveryService.java:139) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.getUrl(MinecraftServicesDiscoveryService.java:125) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.lambda$getServicesKeySet$0(MinecraftServicesDiscoveryService.java:117) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.RetryableFetch$1.run(RetryableFetch.java:40) ~[authlib-10.0.77.jar:26.3-231-8a170a3]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[?:?]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328) ~[?:?]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:309) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+[01:01:25 WARN]: Services are unavailable, unable to fetch uri for AUTHENTICATION/getPublicKeys
+[01:01:25 WARN]: Failed to connect
+com.mojang.authlib.exceptions.MinecraftClientException: Services are unavailable
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.getEndpoint(MinecraftServicesDiscoveryService.java:139) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.getUrl(MinecraftServicesDiscoveryService.java:125) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.lambda$getServicesKeySet$0(MinecraftServicesDiscoveryService.java:117) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.RetryableFetch$1.run(RetryableFetch.java:40) ~[authlib-10.0.77.jar:26.3-231-8a170a3]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[?:?]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328) ~[?:?]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:309) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+[01:01:26 INFO]: Found new data pack paper, loading it automatically
+[01:01:28 INFO]: No existing world data, creating new world
+[01:01:31 INFO]: Loaded 1866 advancements
+[01:01:31 INFO]: Starting minecraft server version 26.3
+[01:01:31 WARN]: ****************************
+[01:01:31 WARN]: YOU ARE RUNNING THIS SERVER AS AN ADMINISTRATIVE OR ROOT USER. THIS IS NOT ADVISED.
+[01:01:31 WARN]: YOU ARE OPENING YOURSELF UP TO POTENTIAL RISKS WHEN DOING THIS.
+[01:01:31 WARN]: FOR MORE INFORMATION, SEE https://madelinemiller.dev/blog/root-minecraft-server/
+[01:01:31 WARN]: ****************************
+[01:01:31 INFO]: Loading properties
+[01:01:31 INFO]: This server is running Paper version 26.3-231-main@8a170a3 (2026-10-30T01:53:29Z) (Implementing API version 26.3.build.231-stable)
+[01:01:31 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[01:01:32 INFO]: Server Ping Player Sample Count: 12
+[01:01:32 INFO]: Using 4 threads for Netty based IO
+[01:01:33 INFO]: [MoonriseCommon] Paper is using 1 worker threads, 1 I/O threads
+[01:01:33 INFO]: Default game type: SURVIVAL
+[01:01:33 INFO]: Generating keypair
+[01:01:33 INFO]: Starting Minecraft server on *:25565
+[01:01:33 INFO]: Paper: Using libdeflate (Linux x86_64) compression from Velocity.
+[01:01:33 INFO]: Paper: Using OpenSSL 3.x.x (Linux x86_64) cipher from Velocity.
+[01:01:34 INFO]: [WorldEdit] Loading server plugin WorldEdit v7.4.6+7648-00664b0
+[01:01:35 INFO]: Got request to register class com.sk89q.worldedit.bukkit.BukkitServerInterface with WorldEdit [com.sk89q.worldedit.extension.platform.PlatformManager@4e6a8d69]
+[01:01:35 INFO]: [EliteMobs] Loading server plugin EliteMobs v10.9.12
+[01:01:35 INFO]: [EliteMobs] MagmaCore v1.29-SNAPSHOT initialized!
+[01:01:35 INFO]: [EliteMobs] Registered /logify command
+[01:01:35 INFO]: [EliteMobs] Registered /nightbreaklogin command
+[01:01:35 INFO]: [EliteMobs] Registered /nightbreaklogout command
+[01:01:35 INFO]: [EliteMobs] Registered /nightbreak command
+[01:01:35 INFO]: [EliteMobs] No account token found. Run /nightbreaklogin to link this server to a Nightbreak account.
+[01:01:35 INFO]: [ExcelProtect] Loading server plugin ExcelProtect v0.1.7
+[01:01:35 INFO]: [ProtectRigElites] Loading server plugin ProtectRigElites v0.1.7-rig
+[01:01:35 INFO]: [WorldEdit] Enabling WorldEdit v7.4.6+7648-00664b0
+[01:01:35 INFO]: Registering commands with com.sk89q.worldedit.bukkit.BukkitServerInterface
+[01:01:36 INFO]: WEPIF: Using the Bukkit Permissions API.
+[01:01:37 INFO]: Using com.sk89q.worldedit.bukkit.adapter.impl.v26_3.PaperweightAdapter as the Bukkit adapter
+[01:01:37 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[01:01:37 WARN]: The server will make no attempt to authenticate usernames. Beware.
+[01:01:37 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[01:01:37 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[01:01:37 INFO]: Preparing level "world"
+[01:01:39 INFO]: Selecting spawn point for level 'minecraft:overworld'...
+[01:01:47 INFO]: Selecting spawn point for level 'minecraft:the_nether'...
+[01:01:49 INFO]: Selecting spawn point for level 'minecraft:the_end'...
+[01:01:49 INFO]: Loading 0 persistent chunks for level 'minecraft:overworld'...
+[01:01:49 INFO]: Preparing spawn area: 100%
+[01:01:49 INFO]: Prepared spawn area in 9959 ms
+[01:01:49 INFO]: Loading 0 persistent chunks for level 'minecraft:the_nether'...
+[01:01:49 INFO]: Preparing spawn area: 100%
+[01:01:49 INFO]: Prepared spawn area in 1782 ms
+[01:01:49 INFO]: Loading 0 persistent chunks for level 'minecraft:the_end'...
+[01:01:49 INFO]: Preparing spawn area: 100%
+[01:01:49 INFO]: Prepared spawn area in 396 ms
+[01:01:49 INFO]: Done preparing level "world" (12.199s)
+[01:01:49 INFO]: [EliteMobs] Enabling EliteMobs v10.9.12
+[01:01:49 INFO]:  _____ _     _____ _____ ________  ______________  _____
+[01:01:49 INFO]: |  ___| |   |_   _|_   _|  ___|  \/  |  _  | ___ \/  ___|
+[01:01:49 INFO]: | |__ | |     | |   | | | |__ | .  . | | | | |_/ /\ `--.
+[01:01:49 INFO]: |  __|| |     | |   | | |  __|| |\/| | | | | ___ \ `--. \
+[01:01:49 INFO]: | |___| |_____| |_  | | | |___| |  | \ \_/ / |_/ //\__/ /
+[01:01:49 INFO]: \____/\_____/\___/  \_/ \____/\_|  |_/\___/\____/ \____/
+[01:01:49 INFO]: By MagmaGuy - v. 10.9.12
+[01:01:49 WARN]: [EliteMobs] Wands, staves, their enchantments, and the mage class require FreeMinecraftModels. These optional features are unavailable. Download: https://nightbreak.io/plugin/freeminecraftmodels/
+[01:01:49 INFO]: [EliteMobs] Exported nightbreak_rsp_defaults to plugins/EliteMobs/resource_pack for plugin EliteMobs.
+[01:01:49 INFO]: [EliteMobs] Supported server version detected: v26
+[01:01:50 INFO]: [ExcelProtect] Enabling ExcelProtect v0.1.7
+[01:01:51 INFO]: [ExcelProtect] [ExcelProtect] combat: Magic not present — spell attribution off (fail-soft)
+[01:01:51 INFO]: [ExcelProtect] [ExcelProtect] damage incidents: ON gap=2000ms near-death<=30% elitemobs=hooked
+[01:01:51 INFO]: [ExcelProtect] [ExcelProtect] damage dealt: ON gap=2000ms elitemobs=hooked
+[01:01:51 INFO]: [ExcelProtect] [ExcelProtect] healing incidents: ON gap=2000ms
+[01:01:51 INFO]: [ExcelProtect] [ExcelProtect] locations: ON sample=60s anchors=join,quit,teleport,world,respawn,gamemode
+[01:01:51 INFO]: [ExcelProtect] [ExcelProtect] clarity: ON delivery=next-tick chains=expiry 1800s ground-radius=5
+[01:01:51 INFO]: [ExcelProtect] [ExcelProtect] player timelines: ON (projection of the streams; streams stay canonical)
+[01:01:51 INFO]: [ExcelProtect] [ExcelProtect] worldedit logging: ON (WorldEdit edits recorded into the blocks stream, actor-attributed)
+[01:01:51 INFO]: [ExcelProtect] [ExcelProtect] recovery: ON rollback=blocks+containers+undo(incl. containers) restore-entity restore-inventory (0.1.6)
+[01:01:51 INFO]: [ExcelProtect] [ExcelProtect] importer: deathrecord honors restored marks + lost&found state migration (0.1.7)
+[01:01:51 INFO]: [ExcelProtect] [ExcelProtect] kill parity: elite/weapon/origin-class/damage-shares on entity_death (0.1.7)
+[01:01:51 INFO]: [ExcelProtect] [ExcelProtect] READY version=0.1.7 dir=plugins/ExcelProtect gp=off vault=off mcmmo=off we=on retention-days=30
+[01:01:51 INFO]: [ProtectRigElites] Enabling ProtectRigElites v0.1.7-rig
+[01:01:51 INFO]: [spark] Starting background profiler...
+[01:01:52 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[01:01:52 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[01:01:52 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[01:01:52 INFO]: Running delayed init tasks
+[01:01:52 INFO]: Done (41.620s)! For help, type "help"
+[01:01:52 ERROR]: [PaperVersionFetcher] Error while parsing version list
+javax.net.ssl.SSLException: Unsupported or unrecognized SSL message
+	at java.base/sun.security.ssl.SSLSocketInputRecord.handleUnknownRecord(SSLSocketInputRecord.java:462) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.decode(SSLSocketInputRecord.java:175) ~[?:?]
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:111) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:490) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:190) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1379) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1305) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:223) ~[?:?]
+	at com.destroystokyo.paper.PaperVersionFetcher.fetchMinecraftVersionList(PaperVersionFetcher.java:150) ~[paper-26.3.jar:?]
+	at com.destroystokyo.paper.PaperVersionFetcher.getUpdateStatusStartupMessage(PaperVersionFetcher.java:74) ~[paper-26.3.jar:?]
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1825) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+	Suppressed: java.net.SocketException: Connection reset by peer
+		at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+		at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+		at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:402)
+		at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:418)
+		at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:448)
+		at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:821)
+		at java.base/java.net.Socket$SocketOutputStream.implWrite(Socket.java:1086)
+		at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1076)
+		at java.base/sun.security.ssl.SSLSocketOutputRecord.encodeAlert(SSLSocketOutputRecord.java:81)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:412)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:319)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:314)
+		at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:145) ~[?:?]
+		... 15 more
+[01:01:52 ERROR]: [PaperVersionFetcher] Error while parsing version
+javax.net.ssl.SSLException: Unsupported or unrecognized SSL message
+	at java.base/sun.security.ssl.SSLSocketInputRecord.handleUnknownRecord(SSLSocketInputRecord.java:462) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.decode(SSLSocketInputRecord.java:175) ~[?:?]
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:111) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:490) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:190) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1379) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1305) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:223) ~[?:?]
+	at com.destroystokyo.paper.PaperVersionFetcher.fetchDistanceFromSiteApi(PaperVersionFetcher.java:209) ~[paper-26.3.jar:?]
+	at com.destroystokyo.paper.PaperVersionFetcher.getUpdateStatusStartupMessage(PaperVersionFetcher.java:76) ~[paper-26.3.jar:?]
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1825) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+	Suppressed: java.net.SocketException: Broken pipe
+		at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+		at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+		at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:402)
+		at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:418)
+		at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:448)
+		at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:821)
+		at java.base/java.net.Socket$SocketOutputStream.implWrite(Socket.java:1086)
+		at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1076)
+		at java.base/sun.security.ssl.SSLSocketOutputRecord.encodeAlert(SSLSocketOutputRecord.java:81)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:412)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:319)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:314)
+		at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:145) ~[?:?]
+		... 15 more
+[01:01:52 ERROR]: *** Error obtaining version information! Cannot fetch version info ***
+[01:01:52 INFO]: [EliteMobs] Language set to English - using plugin defaults
+[01:01:53 INFO]: [EliteMobs] Loaded 171 class-loot profiles (enabled).
+[01:01:55 INFO]: System chat: Set minecraft:overworld to 1000 tick(s)
+[01:01:55 INFO]: System chat: Set the weather to clear
+[01:01:56 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 586 ms to scan 1 urls, producing 1 keys and 47 values
+[01:01:58 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 22 ms to scan 1 urls, producing 1 keys and 16 values
+[01:02:03 INFO]: System chat: RigRoll joined the game
+[01:02:03 INFO]: RigRoll[embedded] logged in with entity id 3 at ([minecraft:overworld]0.0, 0.0, 0.0)
+[01:02:03 INFO]: [ProtectRigElites] RIGRESULT NOTE RIGJOIN at=1794013323143
+[01:02:03 WARN]: [EliteMobs] Failed to inject packet handler for player RigRoll: packet_handler
+[01:02:04 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 259 ms to scan 106 urls, producing 0 keys and 0 values
+[01:02:05 INFO]: [ProtectRigElites] RIGRESULT NOTE A placed: signData=minecraft:oak_sign[rotation=8,waterlogged=false] oldData=minecraft:bricks
+[01:02:05 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 19 ms to scan 1 urls, producing 1 keys and 104 values
+[01:02:09 INFO]: [EliteMobs] Loaded 104 skill bonus configurations.
+[01:02:09 INFO]: [EliteMobs] Resource pack exported to resource_pack folder.
+[01:02:10 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 32 ms to scan 1 urls, producing 5 keys and 72 values
+[01:02:10 INFO]: [ProtectRigElites] RIGRESULT NOTE A broken: sign + old block broken with events; revert block left standing
+[01:02:10 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 3 ms to scan 1 urls, producing 1 keys and 3 values
+[01:02:10 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 182 ms to scan 1 urls, producing 19 keys and 94 values
+[01:02:11 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 12 ms to scan 1 urls, producing 2 keys and 84 values
+[01:02:14 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect rollback preview radius=6 at=5,110,4 world=world
+[01:02:14 INFO]: [ExcelProtect] PREVIEW: would restore 3 block position(s) and 0 container(s) to 2026-11-06T19:02:14.142-06:00 — rerun without 'preview' to commit
+[01:02:15 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 21 ms to scan 1 urls, producing 1 keys and 69 values
+[01:02:17 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect rollback radius=6 at=5,110,4 world=world
+[01:02:17 INFO]: [ExcelProtect] rollback done: 3 blocks, 0 containers (op op-1794013337139 — undo with /excelprotect undo op-1794013337139)
+[01:02:18 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 7 ms to scan 1 urls, producing 1 keys and 13 values
+[01:02:19 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 5 ms to scan 1 urls, producing 2 keys and 64 values
+[01:02:20 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 7 ms to scan 1 urls, producing 1 keys and 5 values
+[01:02:21 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 97 ms to scan 106 urls, producing 0 keys and 0 values
+[01:02:21 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 3 ms to scan 1 urls, producing 1 keys and 7 values
+[01:02:21 INFO]: [EliteMobs] WorldGuard compatibility is not enabled!
+[01:02:22 INFO]: [EliteMobs] Opened database successfully
+[01:02:22 INFO]: [EliteMobs] [Skills] Created migration flag file.
+[01:02:22 WARN]: [EliteMobs] [Skills] =================================================
+[01:02:22 WARN]: [EliteMobs] [Skills] SKILL SYSTEM ACTIVATED FOR THE FIRST TIME
+[01:02:22 WARN]: [EliteMobs] [Skills] All players will start fresh with new skill data.
+[01:02:22 WARN]: [EliteMobs] [Skills] Old guild/prestige data is preserved but unused.
+[01:02:22 WARN]: [EliteMobs] [Skills] =================================================
+[01:02:22 INFO]: [EliteMobs] Initializing skill bonuses...
+[01:02:22 INFO]: [EliteMobs] Registered 104 skill bonuses.
+[01:02:22 INFO]: [EliteMobs] Registered location ownership provider: EliteMobs (plugin=EliteMobs)
+[01:02:22 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 3 ms to scan 1 urls, producing 1 keys and 1 values
+[01:02:22 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 2 ms to scan 1 urls, producing 1 keys and 8 values
+[01:02:23 WARN]: [EliteMobs] EliteMobs initialization failed!
+[01:02:23 WARN]: java.util.NoSuchElementException: packet_handler
+[01:02:23 WARN]: 	at io.netty.channel.DefaultChannelPipeline.getContextOrDie(DefaultChannelPipeline.java:1094)
+[01:02:23 WARN]: 	at io.netty.channel.DefaultChannelPipeline.internalAdd(DefaultChannelPipeline.java:179)
+[01:02:23 WARN]: 	at io.netty.channel.DefaultChannelPipeline.addBefore(DefaultChannelPipeline.java:246)
+[01:02:23 WARN]: 	at io.netty.channel.DefaultChannelPipeline.addBefore(DefaultChannelPipeline.java:240)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.easyminecraftgoals.ammunition.RangedAmmunition.inject(RangedAmmunition.java:195)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.easyminecraftgoals.ammunition.RangedAmmunition.start(RangedAmmunition.java:62)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.easyminecraftgoals.v26.NMSAdapter.grantOrdinaryAmmunition(NMSAdapter.java:58)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.advancedcombat.AdvancedCombatRuntime.start(AdvancedCombatRuntime.java:102)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.EventsRegistrer.registerPostInitializationEvents(EventsRegistrer.java:415)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.EliteMobs.lambda$onEnable$5(EliteMobs.java:283)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.magmacore.initialization.PluginInitializationManager.runInAttemptScope(PluginInitializationManager.java:456)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.magmacore.initialization.PluginInitializationManager.runSyncPhase(PluginInitializationManager.java:398)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.magmacore.initialization.PluginInitializationManager.lambda$runAsyncPhase$4(PluginInitializationManager.java:338)
+[01:02:23 WARN]: 	at org.bukkit.craftbukkit.scheduler.CraftTask.run(CraftTask.java:78)
+[01:02:23 WARN]: 	at org.bukkit.craftbukkit.scheduler.CraftScheduler.mainThreadHeartbeat(CraftScheduler.java:474)
+[01:02:23 WARN]: 	at net.minecraft.server.MinecraftServer.tickChildren(MinecraftServer.java:1751)
+[01:02:23 WARN]: 	at net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:1604)
+[01:02:23 WARN]: 	at net.minecraft.server.dedicated.DedicatedServer.tickServer(DedicatedServer.java:404)
+[01:02:23 WARN]: 	at net.minecraft.server.MinecraftServer.processPacketsAndTick(MinecraftServer.java:1662)
+[01:02:23 WARN]: 	at net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1332)
+[01:02:23 WARN]: 	at net.minecraft.server.MinecraftServer.lambda$spin$0(MinecraftServer.java:299)
+[01:02:23 WARN]: 	at java.base/java.lang.Thread.run(Thread.java:1474)
+[01:02:23 WARN]: [EliteMobs] Nightbreak unreachable for https://nightbreak.io/server/plugins/elitemobs/version: Unsupported or unrecognized SSL message — further network failures will be summarized once per 5 minutes.
+[01:02:23 WARN]: [EliteMobs] Failed to refresh the cached item stacks; items will keep the appearance they were first built with.
+[01:02:23 WARN]: java.lang.IllegalStateException: Failed to rebuild custom item enchanted_book_hunter.yml
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.items.customitems.CustomItem.lambda$buildCachedItemStacks$9(CustomItem.java:366)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.items.customitems.CacheRegenerationLifecycle.runIfCurrent(CacheRegenerationLifecycle.java:41)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.items.customitems.CustomItem.buildCachedItemStacks(CustomItem.java:360)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.items.customitems.CustomItem.rebuildCachedItemStacks(CustomItem.java:303)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.items.customitems.CustomItem.lambda$regenerateCachedItemStacks$6(CustomItem.java:278)
+[01:02:23 WARN]: 	at org.bukkit.craftbukkit.scheduler.CraftTask.run(CraftTask.java:78)
+[01:02:23 WARN]: 	at org.bukkit.craftbukkit.scheduler.CraftAsyncTask.run(CraftAsyncTask.java:57)
+[01:02:23 WARN]: 	at com.destroystokyo.paper.ServerSchedulerReportingWrapper.run(ServerSchedulerReportingWrapper.java:22)
+[01:02:23 WARN]: 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+[01:02:23 WARN]: 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
+[01:02:23 WARN]: 	at java.base/java.lang.Thread.run(Thread.java:1474)
+[01:02:23 WARN]: Caused by: java.lang.IllegalArgumentException: Unavailable custom enchantment: elitemobs:hunter
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.magmacore.enchantments.EnchantmentItems$Construction.applyCustom(EnchantmentItems.java:102)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.items.itemconstructor.ItemConstructor.commonFeatures(ItemConstructor.java:292)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.items.itemconstructor.ItemConstructor.constructItem(ItemConstructor.java:186)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.items.customitems.CustomItem.generateDefaultsItemStack(CustomItem.java:650)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.items.customitems.CustomItem.appendCachedItemStacks(CustomItem.java:394)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.items.customitems.CustomItem.appendCachedItemStacks(CustomItem.java:379)
+[01:02:23 WARN]: 	at EliteMobs-10.9.12.jar//com.magmaguy.elitemobs.items.customitems.CustomItem.lambda$buildCachedItemStacks$9(CustomItem.java:362)
+[01:02:23 WARN]: 	... 10 more
+[01:02:23 WARN]: [EliteMobs] Error during content version check: Unsupported or unrecognized SSL message
+[01:02:23 INFO]: [EliteMobs] Using local data for content version checks as remote server is unavailable.
+[01:02:23 WARN]: [EliteMobs] Error during plugin version check: Unsupported or unrecognized SSL message
+[01:02:23 INFO]: [EliteMobs] No player entry detected, generating new entry!
+[01:02:23 INFO]: [ProtectRigElites] RIGRESULT A_sign_roundtrip PASS data=minecraft:oak_sign[rotation=8,waterlogged=false] lines=[WRV, ROLLBACK, PROOF, 2026]
+[01:02:23 INFO]: [ProtectRigElites] RIGRESULT A_place_reverted PASS never-broken placed block after rollback=AIR
+[01:02:23 INFO]: [ProtectRigElites] RIGRESULT A_oldblock_restored PASS pre-existing block restored to minecraft:bricks
+[01:02:23 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect undo op-1794013337139
+[01:02:24 INFO]: [ExcelProtect] undid op-1794013337139: 3 position(s) restored
+[01:02:25 WARN]: Failed to connect
+com.mojang.authlib.exceptions.MinecraftClientException: Failed to read from https://discovery.minecraftservices.com/minecraft/client due to Unsupported or unrecognized SSL message
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readServiceResponse(MinecraftClient.java:151) ~[authlib-10.0.77.jar:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.getWithEtag(MinecraftClient.java:81) ~[authlib-10.0.77.jar:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.get(MinecraftClient.java:65) ~[authlib-10.0.77.jar:?]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.lambda$createDiscoverySupplier$1(MinecraftServicesDiscoveryService.java:76) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.RetryableFetch$1.run(RetryableFetch.java:42) ~[authlib-10.0.77.jar:26.3-231-8a170a3]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[?:?]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328) ~[?:?]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:309) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+Caused by: javax.net.ssl.SSLException: Unsupported or unrecognized SSL message
+	at java.base/sun.security.ssl.SSLSocketInputRecord.handleUnknownRecord(SSLSocketInputRecord.java:462) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.decode(SSLSocketInputRecord.java:175) ~[?:?]
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:111) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:490) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:190) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1379) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1305) ~[?:?]
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:493) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getResponseCode(HttpsURLConnectionImpl.java:307) ~[?:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readServiceResponse(MinecraftClient.java:130) ~[authlib-10.0.77.jar:?]
+	... 10 more
+	Suppressed: java.net.SocketException: Broken pipe
+		at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+		at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+		at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:402)
+		at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:418)
+		at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:448)
+		at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:821)
+		at java.base/java.net.Socket$SocketOutputStream.implWrite(Socket.java:1086)
+		at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1076)
+		at java.base/sun.security.ssl.SSLSocketOutputRecord.encodeAlert(SSLSocketOutputRecord.java:81)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:412)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:319)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:314)
+		at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:145) ~[?:?]
+		... 21 more
+[01:02:29 INFO]: [ProtectRigElites] RIGRESULT A_undo_roundtrip PASS after undo: sign=AIR old=AIR revert=STONE_BRICKS
+[01:02:32 INFO]: [ProtectRigElites] RIGRESULT NOTE B chest placed at 18,110,0
+[01:02:34 INFO]: [ProtectRigElites] RIGRESULT NOTE B txn1 closed (diamond x5 + mending book in)
+[01:02:40 INFO]: [ProtectRigElites] RIGRESULT NOTE B txn2 closed (diamonds out, book remains)
+[01:02:44 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect rollback radius=4 at=18,110,0 world=world to=2026-11-06T19:02:38
+[01:02:44 INFO]: [ExcelProtect] rollback done: 0 blocks, 1 containers (op op-1794013364872 — undo with /excelprotect undo op-1794013364872)
+[01:02:49 INFO]: [ProtectRigElites] RIGRESULT B_container_roundtrip PASS contents after to=<between> rollback=[DIAMOND x5, ENCHANTED_BOOK(mending)]
+[01:02:51 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect rollback radius=4 at=18,110,0 world=world
+[01:02:51 INFO]: [ExcelProtect] rollback done: 0 blocks, 1 containers (op op-1794013371838 — undo with /excelprotect undo op-1794013371838)
+[01:02:55 INFO]: [ProtectRigElites] RIGRESULT B_container_latest PASS contents after target=now rollback=[ENCHANTED_BOOK(mending)] (latest snapshot wins)
+[01:02:55 INFO]: [ProtectRigElites] RIGRESULT NOTE B2 undo file undo-op-1794013371838.jsonl container-line=true
+[01:02:55 INFO]: [ProtectRigElites] RIGRESULT B2_undo_file_captures_container PASS the op's undo file carries a container_transaction line with the pre-op contents
+[01:02:55 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect undo op-1794013371838
+[01:02:56 INFO]: [ExcelProtect] undid op-1794013371838: 0 position(s), 1 container(s) restored
+[01:03:01 INFO]: [ProtectRigElites] RIGRESULT B2_container_undo PASS contents after undo of the container rollback=[DIAMOND x5, ENCHANTED_BOOK(mending)] (pre-op contents restored — pre-0.1.6 undo left containers changed)
+[01:03:07 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect export stream=blocks radius=30 at=0,110,0 world=world from=2026-11-06T19:01:03 to=2026-11-06T19:04:07
+[01:03:07 INFO]: [ExcelProtect] [ExcelProtect] export: 4 events -> plugins/ExcelProtect/exports/export-20261106T1903073880600.jsonl
+[01:03:07 INFO]: [ExcelProtect] export: 4 events -> plugins/ExcelProtect/exports/export-20261106T1903073880600.jsonl
+[01:03:09 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect export from=banana
+[01:03:09 INFO]: [ExcelProtect] bad filter from=banana (DateTimeParseException: Text 'banana' could not be parsed at index 0) — export aborted. Times look like 2026-11-06T17:41:56 (or a bare date).
+[01:03:11 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect rollback radius=4 at=18,110,0 world=world from=banana
+[01:03:11 INFO]: [ExcelProtect] bad filter from=banana (DateTimeParseException: Text 'banana' could not be parsed at index 0) — rollback aborted (nothing was changed). Times look like 2026-11-06T17:41:56 (or a bare date).
+[01:03:14 INFO]: [ProtectRigElites] RIGRESULT NOTE F1 commands dispatched (verdicts from export file + admin stream analysis)
+[01:03:17 INFO]: [ProtectRigElites] RIGRESULT NOTE D entities spawned (stand dressed, wolf tamed to RigRoll)
+[01:03:18 INFO]: Named entity ArmorStand['RigStand'/260, uuid='b88740bc-ed90-4c05-ade9-f8fb9b35ce94', l='ServerLevel[world]', x=10.50, y=110.00, z=-6.00, cpos=[0, -1], tl=20, v=true] died: RigStand died
+[01:03:18 INFO]: Named entity Wolf['RigWolf'/261, uuid='6e994a4a-2a58-4394-976c-ddfac9cb1694', l='ServerLevel[world]', x=-1.50, y=110.00, z=-2.50, cpos=[-1, -1], tl=20, v=true] died: RigWolf died
+[01:03:18 INFO]: [ProtectRigElites] RIGRESULT NOTE D entities killed via setHealth(0) — real EntityDeathEvent
+[01:03:22 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect restore-entity preview hours=1 match=armor_stand
+[01:03:22 INFO]: [ExcelProtect] PREVIEW: would restore minecraft:armor_stand 'RigStand' died 2026-11-06T19:03:18.339-06:00 — rerun without 'preview' to commit
+[01:03:25 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect restore-entity hours=1 match=armor_stand
+[01:03:25 INFO]: [ExcelProtect] restored minecraft:armor_stand 'RigStand' at 10,110,-6 (fresh spawn — new uuid, full health, default AI)
+[01:03:29 INFO]: [ProtectRigElites] RIGRESULT D_entity_stand_restored PASS stand back with helmet=IRON_HELMET mainhand=WOODEN_SWORD
+[01:03:31 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect restore-entity hours=1 match=wolf
+[01:03:31 INFO]: [ExcelProtect] restored minecraft:wolf 'RigWolf' at -2,110,-3 (fresh spawn — new uuid, full health, default AI)
+[01:03:35 INFO]: [ProtectRigElites] RIGRESULT D_entity_wolf_restored FAIL no RigWolf wolf near death point or owner
+[01:03:37 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect restore-entity hours=1 match=armor_stand
+[01:03:37 INFO]: [ExcelProtect] already restored (staff: add force)
+[01:03:40 INFO]: [ProtectRigElites] RIGRESULT D_entity_onceonly PASS RigStand count after a second commit without force=1
+[01:03:42 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect restore-entity force hours=1 match=armor_stand
+[01:03:42 INFO]: [ExcelProtect] restored minecraft:armor_stand 'RigStand' at 10,110,-6 (fresh spawn — new uuid, full health, default AI)
+[01:03:45 INFO]: [ProtectRigElites] RIGRESULT D_entity_force PASS RigStand count after force commit=2
+[01:03:49 INFO]: [ProtectRigElites] RIGRESULT NOTE E death event fired with sword/apple/emerald/helmet + ender pearls carried
+[01:03:49 INFO]: System chat: RigRoll has made the advancement [Suit Up]
+[01:03:53 INFO]: [ProtectRigElites] RIGRESULT NOTE E inventories wiped and junked (dirt at inv 0 + inv 10 + ender 3)
+[01:03:56 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect restore-inventory RigRoll preview
+[01:03:56 INFO]: [ExcelProtect] PREVIEW: would REPLACE RigRoll's inventory with the death snapshot of 2026-11-06T19:03:49.858-06:00 — 4 inventory stacks, 1 ender-chest stacks — rerun without 'preview' to commit
+[01:03:59 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect restore-inventory RigRoll
+[01:03:59 INFO]: [ExcelProtect] inventory restored from the death snapshot of 2026-11-06T19:03:49.858-06:00: 4 inventory stacks, 1 ender-chest stacks (REPLACE — prior contents overwritten)
+[01:04:03 INFO]: [ProtectRigElites] RIGRESULT E_inventory_replace PASS slot0=DIAMOND_SWORDx1 slot5=APPLEx3 slot9=EMERALDx2 helmet=IRON_HELMETx1 slot10=empty ender0=ENDER_PEARLx7 ender3=empty
+[01:04:05 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect restore-inventory RigRoll
+[01:04:05 INFO]: [ExcelProtect] already restored (staff: add force)
+[01:04:08 INFO]: [ProtectRigElites] RIGRESULT E_inventory_onceonly PASS second commit without force: restored contents unchanged (slot5=APPLEx3 slot9=EMERALDx2 ender0=ENDER_PEARLx7)
+[01:04:10 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect restore-inventory RigRoll force
+[01:04:10 INFO]: [ExcelProtect] inventory restored from the death snapshot of 2026-11-06T19:03:49.858-06:00: 4 inventory stacks, 1 ender-chest stacks (REPLACE — prior contents overwritten)
+[01:04:13 INFO]: [ProtectRigElites] RIGRESULT E_inventory_force PASS after force commit slot0=DIAMOND_SWORDx1
+[01:04:18 INFO]: [ProtectRigElites] RIGRESULT NOTE C pad built: 25 stone bricks at y=110
+[01:04:21 INFO]: [ProtectRigElites] RIGRESULT NOTE C TNT primed above pad centre
+[01:04:26 WARN]: Failed to connect
+com.mojang.authlib.exceptions.MinecraftClientException: Failed to read from https://discovery.minecraftservices.com/minecraft/client due to Unsupported or unrecognized SSL message
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readServiceResponse(MinecraftClient.java:151) ~[authlib-10.0.77.jar:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.getWithEtag(MinecraftClient.java:81) ~[authlib-10.0.77.jar:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.get(MinecraftClient.java:65) ~[authlib-10.0.77.jar:?]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.lambda$createDiscoverySupplier$1(MinecraftServicesDiscoveryService.java:76) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.RetryableFetch$1.run(RetryableFetch.java:42) ~[authlib-10.0.77.jar:26.3-231-8a170a3]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[?:?]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328) ~[?:?]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:309) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+Caused by: javax.net.ssl.SSLException: Unsupported or unrecognized SSL message
+	at java.base/sun.security.ssl.SSLSocketInputRecord.handleUnknownRecord(SSLSocketInputRecord.java:462) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.decode(SSLSocketInputRecord.java:175) ~[?:?]
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:111) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455) ~[?:?]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:490) ~[?:?]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:190) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1379) ~[?:?]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1305) ~[?:?]
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:493) ~[?:?]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getResponseCode(HttpsURLConnectionImpl.java:307) ~[?:?]
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readServiceResponse(MinecraftClient.java:130) ~[authlib-10.0.77.jar:?]
+	... 10 more
+	Suppressed: java.net.SocketException: Connection reset by peer
+		at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+		at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+		at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:402)
+		at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:418)
+		at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:448)
+		at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:821)
+		at java.base/java.net.Socket$SocketOutputStream.implWrite(Socket.java:1086)
+		at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1076)
+		at java.base/sun.security.ssl.SSLSocketOutputRecord.encodeAlert(SSLSocketOutputRecord.java:81)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:412)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:319)
+		at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:314)
+		at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:145) ~[?:?]
+		... 21 more
+[01:04:29 INFO]: [ProtectRigElites] RIGRESULT NOTE C explosion broke 14/25 pad blocks
+[01:04:32 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect rollback radius=7 at=-16,110,0 world=world
+[01:04:32 INFO]: [ExcelProtect] rollback done: 14 blocks, 0 containers (op op-1794013472838 — undo with /excelprotect undo op-1794013472838)
+[01:04:37 INFO]: [ProtectRigElites] RIGRESULT C_explosion_rollback PASS pad blocks restored=25/25 (explosion had broken 14)
+[01:04:42 INFO]: [ProtectRigElites] RIGRESULT NOTE F WorldEdit EditSession closed (3 blocks set as RigRoll)
+[01:04:46 INFO]: [ProtectRigElites] RIGRESULT F_worldedit_applied PASS WE-set blocks present in world=3/3 (stream attribution verdict comes from the blocks-stream analysis)
+[01:04:54 INFO]: [ProtectRigElites] RIGRESULT G_fixtures_written PASS synthetic DeathRecord folder at /home/hatch/workspace/protect-elites-build/rig/server/rigdeathrecord
+[01:05:02 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect import deathrecord /home/hatch/workspace/protect-elites-build/rig/server/rigdeathrecord
+[01:05:02 INFO]: [ExcelProtect] import: 2 deaths, 6 burns, 0 skipped, 0 errors (restored-marked: 4 burns, 2 death items; lf-state: 1 player files)
+[01:05:14 INFO]: [ProtectRigElites] RIGRESULT G_import_restored_marks PASS restored-burn marks in restore-marks.json=4/4 missing=[] fully-restored death marked=true
+[01:05:14 INFO]: [ProtectRigElites] RIGRESULT G_import_lf_state PASS lostfound-players.json carries Kailey's migrated state (recoveries=3, free unused, epoch pinned)
+[01:05:22 INFO]: [ProtectRigElites] RIGRESULT NOTE CMD excelprotect import deathrecord /home/hatch/workspace/protect-elites-build/rig/server/rigdeathrecord
+[01:05:22 INFO]: [ExcelProtect] import: 0 deaths, 0 burns, 8 skipped, 0 errors (restored-marked: 0 burns, 0 death items; lf-state: 1 player files)
+[01:05:34 INFO]: System chat: Set minecraft:overworld to 18000 tick(s)
+[01:05:34 INFO]: [ProtectRigElites] RIGRESULT NOTE H1 zombie uuid=089e7d0d-a435-41d6-8c73-b45caa46ddb7 (dropped 21 blocks onto the pad, finished by RigRoll)
+[01:05:37 INFO]: System chat: RigRoll has made the advancement [Monster Hunter]
+[01:05:44 INFO]: [ProtectRigElites] RIGRESULT H_elite_registered PASS EntityTracker after EliteEntity conversion: isElite=true level=5
+[01:05:44 INFO]: [ProtectRigElites] RIGRESULT NOTE H2 zombie uuid=7522c036-d0ee-43b1-b946-64798d7fad21
+[01:05:48 INFO]: [ProtectRigElites] RIGRESULT NOTE H2 elite dead after rounds=6
+[01:06:25 WARN]: Services are unavailable, unable to fetch uri for AUTHENTICATION/getPublicKeys
+[01:06:25 WARN]: Failed to connect
+com.mojang.authlib.exceptions.MinecraftClientException: Services are unavailable
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.getEndpoint(MinecraftServicesDiscoveryService.java:139) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.getUrl(MinecraftServicesDiscoveryService.java:125) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.lambda$getServicesKeySet$0(MinecraftServicesDiscoveryService.java:117) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.RetryableFetch$1.run(RetryableFetch.java:40) ~[authlib-10.0.77.jar:26.3-231-8a170a3]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[?:?]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328) ~[?:?]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:309) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+[01:06:25 WARN]: Services are unavailable, unable to fetch uri for AUTHENTICATION/getPublicKeys
+[01:06:25 WARN]: Failed to connect
+com.mojang.authlib.exceptions.MinecraftClientException: Services are unavailable
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.getEndpoint(MinecraftServicesDiscoveryService.java:139) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.getUrl(MinecraftServicesDiscoveryService.java:125) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.MinecraftServicesDiscoveryService.lambda$getServicesKeySet$0(MinecraftServicesDiscoveryService.java:117) ~[paper-26.3.jar:26.3-231-8a170a3]
+	at com.mojang.authlib.services.RetryableFetch$1.run(RetryableFetch.java:40) ~[authlib-10.0.77.jar:26.3-231-8a170a3]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[?:?]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328) ~[?:?]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:309) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+[01:06:34 INFO]: [ProtectRigElites] RIGRESULT NOTE RIGDONE scenarios complete
+[01:06:40 INFO]: System chat: Stopping the server
+[01:06:40 INFO]: Stopping server
+[01:06:41 INFO]: [ProtectRigElites] Disabling ProtectRigElites v0.1.7-rig
+[01:06:41 INFO]: [ExcelProtect] Disabling ExcelProtect v0.1.7
+[01:06:41 INFO]: [EliteMobs] Disabling EliteMobs v10.9.12
+[01:06:41 INFO]: [WorldEdit] Disabling WorldEdit v7.4.6+7648-00664b0
+[01:06:41 INFO]: Unregistering com.sk89q.worldedit.bukkit.BukkitServerInterface from WorldEdit
+[01:06:41 INFO]: Saving players
+[01:06:41 INFO]: Saving worlds
+[01:06:41 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[01:06:41 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:overworld'
+[01:06:41 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:overworld'
+[01:06:41 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:overworld'
+[01:06:43 INFO]: [ChunkHolderManager] Saved 1089 block chunks, 121 entity chunks, 1 poi chunks in world 'minecraft:overworld' in 1.75s
+[01:06:43 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:overworld'
+[01:06:43 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:overworld'
+[01:06:43 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[01:06:43 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_nether'
+[01:06:43 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_nether'
+[01:06:43 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_nether'
+[01:06:43 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_nether' in 0.00s
+[01:06:43 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_nether'
+[01:06:43 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_nether'
+[01:06:43 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[01:06:43 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_end'
+[01:06:43 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_end'
+[01:06:43 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_end'
+[01:06:43 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_end' in 0.00s
+[01:06:43 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_end'
+[01:06:43 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_end'
+[01:06:43 INFO]: Waiting for all RegionFile I/O tasks to complete...
+[01:06:43 INFO]: All RegionFile I/O tasks to complete
+[01:06:43 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+[01:06:43 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
