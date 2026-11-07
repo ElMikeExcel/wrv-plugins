@@ -1,0 +1,18 @@
+ExcelClaims 0.1.1 — INSTALLED Nov 7, 2026, 10:04–10:37 AM CST by wrv-install-failsafe (panel session, browser-task measured run)
+Server: Shockbyte "Michael's Server", panel id 2602e828-7192-4a75-add8-74861e5632d7
+
+GATE: verified-empty outside the maintenance window — list 0/10 at 10:05:34 AM and 10:06:41 AM CST; third list 0/10 at 10:14:35 AM immediately before Shut Down. No player online at any check.
+
+PRE-WINDOW CENSUS (10:06 AM): excelclaims status = "ExcelClaims 0.1.0 — build EXC-CLAIMS-0.1.0-WRV-20261107-01-7c1a3f" / "Claims: 10 (1 admin, 0 subdivisions) · Player accounts: 11" — EXACT. Live config expiration values: chest-claim-days 99999, unused-claim-days 99999, all-claims-days-inactive 99999 (check-interval-minutes 60) — EXACT (recovery freeze confirmed).
+
+BACKUP FIRST (cap-at-6): 6 backups before. Pruned ONE oldest manual: "ExcelClaims pre-0.1.0 20261107" (11/07/2026 2:38 AM, 6.9 GB) — Daily newest (11/06) and the two newest manuals ("ExcelAutoSort pre-0.2.0 20261107", "ExcelClaims recovery 20261107") untouched. New backup "ExcelClaims pre-0.1.1 20261107" (11/07/2026 10:09 AM, 6.9 GB, Manual) verified completed; total after = 6.
+
+SWAP: live ExcelClaims-0.1.0.jar SHA-256 838a85b717e5a5617d3dbd48f151efd03ded3269ce4d458dec070c4a2edfbee8 renamed aside to ExcelClaims-0.1.0.jar.held-20261107-pre-0.1.1 (never deleted). Candidate ExcelClaims-0.1.1.jar placed 97,503 B; panel Compute checksum ff5ea0810d1df5866a423ac126e3145354bca25d2600cfc42a5536362b540706 EXACT. Config backed up to plugins/GriefPrevention/config.yml.bak-20261107-pre-0.1.1; live config edited ONLY on the three clock values (99999→7 chest, 99999→14 unused, 99999→60 all-claims) and read back verified 7/14/60 before Start. GriefPreventionData/, ClaimData, PlayerData, player-extra.yml untouched.
+
+BOOT-VERIFY: panel Start ~10:25 AM; Done (19.390s) at 10:26:10 AM CST. Enable line EXACT: "ExcelClaims 0.1.1 enabled: 10 claims, 11 player accounts, build EXC-CLAIMS-0.1.1-WRV-20261107-02-5a1e9c". Plugins 76 unchanged. Guildgate LOCKED 3 of 5 unchanged ("3 of 5 seals broken, guild LOCKED"). Adapters engaged: Landmarks gp=ON, Protect READY gp=on, AuditLog READY — no adapter-off or class-link errors. SEVERE 0 attributable (one unrelated Essentials unsupported-version ERROR, pre-existing). TPS 20.0/20.0/20.0.
+
+POST-INSTALL SWEEP PROOF (hard gate): at 10:35:28 AM (9m26s past enable) excelclaims status still 10 claims (1 admin, 0 subdivisions) / 11 accounts on build …02-5a1e9c. Boot log read from the enable line forward: NO "expiring claim" line for any live claim; no "expiration check skipped" line appeared in this boot either (check-interval-minutes is 60, so no due tick logged in-window — the count-hold is the proof of record). No rollback needed or performed.
+
+END STATE: final list 0/10 at 10:36:56 AM; server left ONLINE per outside-window end state.
+
+STILL OWED (parent, not this entry): records close-out — Route Sheet + Big Brain note the incident fix and restored clocks (7/14/60). Records publication (draft PR + Drive) per PUSH-NOTES-0.1.1.md is a parent/board-manager leg. The 0.1.0 packet's Step-8 player proofs remain owed and are NOT discharged by this window.
