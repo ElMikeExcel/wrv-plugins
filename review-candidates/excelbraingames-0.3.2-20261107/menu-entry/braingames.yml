@@ -1,0 +1,20 @@
+# ExcelMenu 2.0 registry entry — Brain Games compass door.
+# Ships with ExcelBrainGames; the install packet places this file into
+# plugins/ExcelMenu/entries/ and runs /excelmenu reload. Content follows the
+# registry pattern (config-first: editing this file changes the door, never
+# a rebuild). The action runs the plugin's own /games command, which opens
+# the game picker on both platforms.
+id: braingames
+menu: server_menu
+group: me
+order: 90
+order-bedrock: 900
+icon: BOOK
+label: '&d&lBrain Games'
+lore:
+  - '&7All six games: Word Search, Memory,'
+  - '&7Sudoku, Quick Math, Scramble, Riddle'
+  - '&7real money for finishing them'
+action:
+  - '[close]'
+  - '[player] games'

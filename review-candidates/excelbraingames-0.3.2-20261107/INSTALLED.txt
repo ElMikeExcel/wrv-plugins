@@ -1,0 +1,31 @@
+ExcelBrainGames 0.3.2 — INSTALLED Nov 7, 2026 (live-verified)
+Build: EXC-BRAINGAMES-0.3.2-WRV-20261107-01-b87f7f
+Jar: ExcelBrainGames-0.3.2.jar — 130,850 B, SHA-256 8ef0465010bc3046efe18a7e2ada658bd730d44d6e74a76dc83a2a60de124511
+
+Installed by wrv-install-failsafe run scheduled 6:33 PM CST Nov 7, 2026. The run
+timed out after 1 hour during its bookkeeping phase and recorded no panel
+evidence; the install itself completed. State established by the parent's
+read-only panel verification, Nov 7, 2026, 7:38–7:44 PM CST:
+
+- BACKUP FIRST: "BrainGames pre-0.3.2 20261107" (11/07/2026 6:46 PM, 6.9 GB,
+  Manual); total backups 6 (cap-at-6 held).
+- Jar placed 6:51 PM: plugins/ExcelBrainGames-0.3.2.jar, 130,850 B exact
+  (panel shows 127.78 KB). 0.3.1 jar renamed aside:
+  ExcelBrainGames-0.3.1.jar.bak-20261107-pre032.
+- Config merge verified live: games.wordsearch.bedrock-tiers present
+  ("# Bedrock board shapes (0.3.2)"); config.yml.bak-20261107-pre032 in place;
+  config.yml modified 7:25 PM.
+- Boot: restart 7:30:37 PM CST; "Enabling ExcelBrainGames v0.3.2" 7:30:53 PM;
+  enable line: platform-detection=floodgate,
+  build=EXC-BRAINGAMES-0.3.2-WRV-20261107-01-b87f7f; Done (20.006s) 7:30:56 PM;
+  SEVERE 0 in latest.log (one unrelated Essentials unsupported-version ERROR);
+  server Online, 0/10 players at verification.
+- GuildGate line not re-read in this pull (last verified LOCKED 3 of 5 at the
+  6:30 PM WandBars boot; no seal activity since; packet touches neither
+  BossTrial nor GuildGate).
+
+STILL OWED: player proofs (Mike Bedrock Word Search play + geometry=bedrock
+log line; cross-platform resume spot-check; Java regression spot-check);
+same-pass surfaces per the install packet (What's New BOTH surfaces, website
+pair, Guide chunk, tips check); records publication per the staged package's
+PUSH-NOTES (GitHub draft PR + Drive — parent/board-manager legs).
