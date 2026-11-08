@@ -1,0 +1,20 @@
+name: ExcelBrainGames
+version: 0.3.3
+authors: [Iris, Mike]
+main: com.winkreyes.excelbraingames.ExcelBrainGames
+api-version: "1.21"
+description: 'Brain Games for the family: tap-and-chat puzzle games in a menu. All six games live: Word Search (fresh generated grid, two-tap circling), Memory Match, Sudoku (fresh unique-solution puzzles, picture mode for kids, 9x9 two-view paging), Quick Math, Word Scramble and Riddle of the Day — the text trio runs on one shared question loop (tap choices or type answers in chat). Framework: /games menu + compass door, save/resume sessions, the shared $1,500/day cap with streak bonuses, Vault payouts, full console admin including riddle + setriddle. Kid tiers enabled: Mike hand-checked the kid word lists Nov 4, 2026; kid tiers pay grown-ups half. 0.3.1 Letter Tiles: Word Search and Sudoku cells and Quick Math kid choices carry letter/digit tiles (item_model component; Java resource pack + Geyser Bedrock mappings — a client without the pack sees the 0.3.0 items and names unchanged); Sudoku also prints its board as a bordered chat square at open and on its Show-board button, and Word Scramble kid choices print once per word in chat. Presentation only: logic, payouts, saves unchanged. 0.3.2 Word Search geometry: a round records the board geometry it was dealt in; Bedrock players (Floodgate softdep) are dealt a 5-wide stream board shaped for the phone — the Geyser wrap IS the board — with words longer than 5 letters running vertical or diagonal; same word lists, tiers and payouts on both platforms, Java boards unchanged, and a round always renders in its own dealt geometry. Sudoku unchanged (its chat square stands). 0.3.3 Sudoku box view: on Bedrock, Sudoku opens on a box picker (finished boxes marked) and shows one box at a time as a true visual square in the phone wrap — the board itself is the same on both platforms and Java keeps the full-board view; tapping a square prints its full row and column in chat, and numbers are entered from a 3x3 digit picker, so no tap ever needs counting.'
+depend: [Vault]
+softdepend: [floodgate]
+commands:
+  games:
+    description: Open the Brain Games menu, or run console admin commands
+    usage: /games — or /games admin [status|reset|resetday|setkid|reload] (console or braingames.admin)
+    aliases: [brain, puzzles]
+permissions:
+  braingames.play:
+    description: Open the Brain Games menu and play
+    default: true
+  braingames.admin:
+    description: Run /games admin (status, reset, resetday, setkid, reload) to help stuck players; the server console can always run it
+    default: op
