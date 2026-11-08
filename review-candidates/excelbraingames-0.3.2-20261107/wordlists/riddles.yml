@@ -1,0 +1,70 @@
+# Riddle of the Day list (SPEC section 8). One riddle per server day, the
+# same for everyone, drawn without repeat until the list cycles. Content
+# is config-first: add or edit riddles here and /games admin reload.
+# Family-safe; kid: true marks riddles a young kid can get (the daily
+# pick can prefer them on weekends, config games.riddle).
+riddles:
+  - question: "What has keys but can't open a single lock?"
+    answers: ["piano", "a piano"]
+    hint: "You play it, and it makes music."
+    kid: false
+  - question: "What gets wetter the more it dries?"
+    answers: ["towel", "a towel"]
+    hint: "You use it after a bath or a swim."
+    kid: true
+  - question: "What has a face and two hands but no arms or legs?"
+    answers: ["clock", "a clock"]
+    hint: "It tells you what time it is."
+    kid: true
+  - question: "What can you catch, but never throw?"
+    answers: ["cold", "a cold"]
+    hint: "It makes you sneeze."
+    kid: true
+  - question: "What has lots of teeth but cannot bite?"
+    answers: ["comb", "a comb"]
+    hint: "It lives in the bathroom and fixes your hair."
+    kid: true
+  - question: "What runs but never walks, has a mouth but never talks, has a bed but never sleeps?"
+    answers: ["river", "a river"]
+    hint: "Fish live in it."
+    kid: false
+  - question: "What has one eye but can't see?"
+    answers: ["needle", "a needle", "sewing needle"]
+    hint: "Thread goes through it."
+    kid: false
+  - question: "What comes down but never goes up?"
+    answers: ["rain", "the rain"]
+    hint: "Don't forget your umbrella."
+    kid: true
+  - question: "What has words but never speaks?"
+    answers: ["book", "a book"]
+    hint: "You read it before bed."
+    kid: true
+  - question: "What is full of holes but still holds water?"
+    answers: ["sponge", "a sponge"]
+    hint: "It helps wash the dishes."
+    kid: true
+  - question: "What has a neck but no head?"
+    answers: ["bottle", "a bottle"]
+    hint: "You drink from it."
+    kid: false
+  - question: "What gets bigger the more you take away from it?"
+    answers: ["hole", "a hole"]
+    hint: "You dig it with a shovel."
+    kid: false
+  - question: "What belongs to you, but everyone else uses it more than you do?"
+    answers: ["name", "your name", "my name"]
+    hint: "People say it to get your attention."
+    kid: false
+  - question: "What has legs but doesn't walk?"
+    answers: ["table", "a table", "chair", "a chair"]
+    hint: "You sit at it to eat dinner."
+    kid: true
+  - question: "What can fill a room but takes up no space?"
+    answers: ["light", "sunlight"]
+    hint: "Flip a switch and it is there."
+    kid: false
+  - question: "What goes up and down but doesn't move?"
+    answers: ["stairs", "staircase", "a staircase", "steps"]
+    hint: "You climb them to get to bed."
+    kid: false
