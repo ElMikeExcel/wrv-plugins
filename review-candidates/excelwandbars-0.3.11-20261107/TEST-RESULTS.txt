@@ -1,0 +1,28 @@
+ExcelWandBars 0.3.11 — test results (Nov 7, 2026)
+Build: EXC-WANDBARS-0.3.11-WRV-20261107-01-08465c
+Candidate: ExcelWandBars-0.3.11.jar — 533,344 B, SHA-256 08465c1403d080915fd13a2173ad5e2001f0a1d208b60484be1ed2aac200cd30 (built twice, byte-identical)
+
+BASE GATE: unmodified 0.3.10 tree rebuilt + repacked byte-identical to the shipped
+0.3.10 candidate (529,841 B, SHA-256 0afbf993282df6447533e3b3b753eca3c96fb0a4dcf741078b7c7b90973a8461) before any change.
+
+PURE SUITES (plain JVM, javac/java --release 25): 16 suites, 432 checks, 0 failed.
+  Carried from 0.3.10 (416 checks, all passing unchanged):
+    ArrangePlanTest 25, BarLoadoutNewTest 35, BarPositionTest 35, BookHoldPlanTest 51,
+    CooldownTagPlanTest 61, DragWritePlanTest 38, DragWriteTwoTapTest 13,
+    ExitSweepPlanTest 23, HoldReadPlanTest 11, JoinGuardPlanTest 14, PagerPlanTest 29,
+    SpellbookNewTest 13, SpellbookPager039Test 54, UnarmedDragPlanTest 14.
+  New in 0.3.11 (16 checks):
+    QuitClosePlanTest 8 — decide matrix: policy off / style off / no wand / bar down -> LEAVE; all favorable -> CLOSE.
+    JoinSweepPlanTest 8 — each input flipped -> false; all favorable -> true; already-swept -> false.
+
+RIG (Paper 26.3-235, Moon's lifecycle fixture, Probe0311): 39 checks, 0 failed, SEVERE 0.
+  (iii) ordinary join, bar closed: unchanged behavior; join-time compass scan finds the compass.
+  (i)   bar open at exit: closed AT the connection-close event (before any quit event);
+        quit-closes 1; items back; following relog needs no guard close; exactly one compass.
+  (iv)  mid-session relog with bar open: quit-closes 2; lands on normal hotbar; no duplicate compass.
+  (ii)  compass baked into page paint: join guard final check (LEAVE, engaged) runs the join sweep;
+        log: "Exit sweep: moved Compass x1 out of ExcelSynthetic's spell bar (page 1, slot 7)
+        into the wand's stored inventory"; after close + tidy exactly one compass remains,
+        in the real inventory; no compass in any page or stored inventory.
+  Evidence: build folder rig/evidence/probe0311-result-final.txt + boot6-feature-0311.console.log
+  (iteration results boot3/boot4/boot5 preserved alongside; probe-staging fixes only).
