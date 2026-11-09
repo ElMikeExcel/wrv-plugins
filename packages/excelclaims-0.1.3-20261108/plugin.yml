@@ -1,0 +1,117 @@
+# ExcelClaims 0.1.3 — our own claims plugin for Wink Reyes Valley.
+# COMPATIBILITY REGISTRATION: the Bukkit plugin name stays "GriefPrevention"
+# and the main class lives in the me.ryanhamshire.GriefPrevention package so
+# every house plugin (and Magic) that links, probes, or looks up the claims
+# API keeps working with zero rebuilds. Everything player-facing — messages,
+# help, the enable line — is ExcelClaims. See BUILD-RECORD.md §Facade.
+name: GriefPrevention
+version: 0.1.3
+api-version: '1.21'
+main: me.ryanhamshire.GriefPrevention.GriefPrevention
+description: ExcelClaims — our own land claims for Wink Reyes Valley (clean-room replacement for GriefPrevention, API-compatible with it).
+authors: [Iris, Mike]
+
+commands:
+  claim:
+    description: Claim the land around you
+    usage: /claim [radius]
+    permission: griefprevention.createclaims
+  claimslist:
+    description: Your claim blocks and where your claims are
+    usage: /claimslist
+  trust:
+    description: Give a player full build trust in your claim(s)
+    usage: /trust <player>
+  untrust:
+    description: Remove a player's trust from your claim(s)
+    usage: /untrust <player>
+  untrustall:
+    description: Remove every player's trust from your claim(s)
+    usage: /untrustall
+  containertrust:
+    description: Let a player use containers in your claim(s)
+    usage: /containertrust <player>
+  accesstrust:
+    description: Let a player enter and use doors and switches in your claim(s)
+    usage: /accesstrust <player>
+  permissiontrust:
+    description: Let a player manage trust in your claim(s)
+    usage: /permissiontrust <player>
+  trustlist:
+    description: List who is trusted in the claim you are standing in
+    usage: /trustlist
+  extendclaim:
+    description: Grow the claim you are standing in
+    usage: /extendclaim <blocks>
+  abandonclaim:
+    description: Delete the claim you stand in (no undo)
+    usage: /abandonclaim
+  abandontopclaim:
+    description: Delete the top-level claim you stand in, with its subdivisions
+    usage: /abandontopclaim
+  abandonallclaims:
+    description: Delete ALL of your claims (no undo)
+    usage: /abandonallclaims
+  subdivideclaims:
+    description: Toggle subdivision mode for your golden shovel
+    usage: /subdivideclaims
+  restrictsubclaim:
+    description: Toggle whether only you may create subdivisions in this claim
+    usage: /restrictsubclaim
+  trapped:
+    description: Escape if you are stuck inside a claim
+    usage: /trapped
+  buyclaimblocks:
+    description: Buy more claim blocks with server money
+    usage: /buyclaimblocks <amount>
+  sellclaimblocks:
+    description: Sell claim blocks back for server money
+    usage: /sellclaimblocks <amount>
+  ignoreclaims:
+    description: Toggle ignoring claim protection (staff building mode)
+    usage: /ignoreclaims
+    permission: griefprevention.adminclaims
+  adminclaims:
+    description: Toggle admin-claim mode for your golden shovel (staff)
+    usage: /adminclaims
+    permission: griefprevention.adminclaims
+  adjustclaimblocks:
+    description: Adjust a player's accrued claim blocks (staff)
+    usage: /adjustclaimblocks <player> <amount>
+    permission: griefprevention.adjustclaimblocks
+  adjustbonusclaimblocks:
+    description: Adjust a player's bonus claim blocks (staff)
+    usage: /adjustbonusclaimblocks <player> <amount>
+    permission: griefprevention.adjustclaimblocks
+  deleteclaim:
+    description: Delete the claim you are standing in (staff)
+    usage: /deleteclaim
+    permission: griefprevention.deleteclaims
+  deleteallclaims:
+    description: Delete ALL of a player's claims (staff)
+    usage: /deleteallclaims <player>
+    permission: griefprevention.deleteclaims
+  transferclaim:
+    description: Give the claim you are standing in to another player (staff)
+    usage: /transferclaim <player>
+    permission: griefprevention.transferclaim
+  excelclaims:
+    description: ExcelClaims status and staff tools
+    usage: /excelclaims [status|import|export|reload|expire]
+
+permissions:
+  griefprevention.createclaims:
+    description: Create land claims
+    default: true
+  griefprevention.adminclaims:
+    description: Create and manage admin claims; ignore claim protection
+    default: op
+  griefprevention.transferclaim:
+    description: Transfer claims between players
+    default: op
+  griefprevention.adjustclaimblocks:
+    description: Adjust players' claim blocks
+    default: op
+  griefprevention.deleteclaims:
+    description: Delete other players' claims
+    default: op
