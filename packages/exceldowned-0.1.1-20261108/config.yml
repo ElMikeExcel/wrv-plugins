@@ -1,0 +1,27 @@
+# ExcelDowned settings. Excel — Wink Reyes Valley (Iris / Mike).
+# Bleed-out window: Mike's call (DESIGN flag F1) — 5 minutes built.
+bleed-out-seconds: 300
+# Damage reaching a downed player is scaled by this factor, then eats the
+# bleed-out window at damage-seconds-per-point seconds per scaled HP.
+downed-damage-factor: 0.25
+damage-seconds-per-point: 1.0
+# Frozen health while downed (half a heart — visible, not zero).
+downed-health: 1.0
+# Resurrection brings the target back at this fraction of max health.
+revive-health-fraction: 0.5
+# PreCast gate range: a Resurrection cast may only start when a downed
+# party member is within this distance (nothing is spent otherwise).
+gate-range: 24.0
+# The revive itself resolves within this distance of the caster.
+revive-range: 20.0
+# /giveup two-step confirm window.
+giveup-window-seconds: 10
+# Deaggro scrub radius around a downed player.
+scrub-radius: 32.0
+# Slowness while downed, as a potion amplifier (4 = Slowness V, -75%
+# speed — "very slowly", not immobilized; identical on Java + Bedrock).
+slowness-amplifier: 4
+party:
+  # Rig/dev only: if ExcelTogether is absent, treat all online players
+  # as one party. NEVER enable in production.
+  fallback-all-online: false
