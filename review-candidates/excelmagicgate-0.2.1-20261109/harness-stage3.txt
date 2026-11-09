@@ -1,0 +1,425 @@
+# Spell logic tests — what happens if a player holds the button down forever?
+
+## ExcelMagicGate/stages/stage3/spells.yml
+Coverage: 175 enabled spells of 176 keys checked against checks 1, 2, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15 (passive/trigger spells excluded from cast-rate checks).
+
+| Spell | Check | Numbers (from config) | Severity | Why it matters |
+|---|---|---|---|---|
+| stormshackle | 1 sustainability | mana 10, cooldown 4000 ms -> drain 2.5/s <= regen 5/s at pool 60 | HIGH | damage output at max cast rate never drains mana at this pool tier |
+| stormshackle|2 | 1 sustainability | mana 8, cooldown 2500 ms -> drain 3.2/s <= regen 5/s at pool 60 | HIGH | damage output at max cast rate never drains mana at this pool tier |
+| stormshackle|3 | 1 sustainability | mana 6, cooldown 1000 ms -> drain 6.0/s <= regen 15/s at pool 100 | HIGH | damage output at max cast rate never drains mana at this pool tier |
+| whip | 1 sustainability | mana 40, cooldown 5000 ms -> drain 8.0/s <= regen 15/s at pool 100 | HIGH | damage output at max cast rate never drains mana at this pool tier |
+| wrv_spark | 1 sustainability | mana 15, cooldown 1500 ms -> drain 10.0/s <= regen 15/s at pool 100 | HIGH | damage output at max cast rate never drains mana at this pool tier |
+| anvil | 1 sustainability | mana 100, cooldown 20000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| arrow_ice | 1 sustainability | mana 0, cooldown 1000 ms -> drain 0.0/s <= regen 5/s at pool 60 | MEDIUM | zero mana cost: castable at full rate forever, mana is never a limiter |
+| arrow_light | 1 sustainability | mana 0, cooldown 1000 ms -> drain 0.0/s <= regen 5/s at pool 60 | MEDIUM | zero mana cost: castable at full rate forever, mana is never a limiter |
+| arrow_shock | 1 sustainability | mana 0, cooldown 1000 ms -> drain 0.0/s <= regen 5/s at pool 60 | MEDIUM | zero mana cost: castable at full rate forever, mana is never a limiter |
+| backflip | 1 sustainability | mana 20, cooldown 10000 ms -> drain 2.0/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| blink | 1 sustainability | mana 50, cooldown 10000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| blink (family) | 4 cooldown floors | cooldown across tiers: blink 10000 ms, blink|2 10000 ms, blink|3 7000 ms, blink|4 5000 ms, blink|5 3500 ms, blink|6 2000 ms | MEDIUM | cooldown shrinks 5x across tiers (10000 ms -> 2000 ms); top tier is a different spell in practice |
+| blink|2 | 1 sustainability | mana 50, cooldown 10000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| blink|3 | 1 sustainability | mana 50, cooldown 7000 ms -> drain 7.1/s <= regen 15/s at pool 100 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| blink|4 | 1 sustainability | mana 50, cooldown 5000 ms -> drain 10.0/s <= regen 15/s at pool 100 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| blink|5 | 1 sustainability | mana 50, cooldown 3500 ms -> drain 14.3/s <= regen 15/s at pool 100 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| chainlightning | 1 sustainability | mana 75, cooldown 20000 ms -> drain 3.8/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| chainlightning|2 | 1 sustainability | mana 75, cooldown 20000 ms -> drain 3.8/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| chainlightning|3 | 1 sustainability | mana 75, cooldown 20000 ms -> drain 3.8/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| dash | 1 sustainability | mana 100, cooldown 5000 ms -> drain 20.0/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| evade | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| fling | 1 sustainability | mana 60, cooldown 5000 ms -> drain 12.0/s <= regen 15/s at pool 100 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| fling (family) | 4 cooldown floors | cooldown across tiers: fling 5000 ms, fling|2 2000 ms, fling|3 1000 ms, fling|4 1000 ms | MEDIUM | cooldown shrinks 5x across tiers (5000 ms -> 1000 ms); top tier is a different spell in practice |
+| frost | 1 sustainability | mana 40, cooldown 8000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| frost|2 | 1 sustainability | mana 40, cooldown 8000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| frost|3 | 1 sustainability | mana 40, cooldown 8000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| frost|4 | 1 sustainability | mana 40, cooldown 7000 ms -> drain 5.7/s <= regen 15/s at pool 100 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| gather | 1 sustainability | mana 50, cooldown 15000 ms -> drain 3.3/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| glide | 1 sustainability | mana 100, cooldown 60000 ms -> drain 1.7/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| holylight | 1 sustainability | mana 150, cooldown 30000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| hulkleap | 1 sustainability | mana 50, cooldown 5000 ms -> drain 10.0/s <= regen 15/s at pool 100 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| lightning | 1 sustainability | mana 80, cooldown 45000 ms -> drain 1.8/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| lightning|2 | 1 sustainability | mana 80, cooldown 40000 ms -> drain 2.0/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| lightning|3 | 1 sustainability | mana 80, cooldown 35000 ms -> drain 2.3/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| magictorch | 4 cooldown floors | mana 0, NO cooldown key in config | MEDIUM | nothing paces this spell except mana (which is 0) |
+| magictorch | 9 zero-cost keys | mana 0, effective cooldown None, no cost of any kind | MEDIUM | nothing paces this spell at all: no mana, no item cost, no cooldown >= 1000 ms — castable at interaction rate forever |
+| missile | 1 sustainability | mana 20, cooldown 1000 ms -> drain 20.0/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| missile|2 | 1 sustainability | mana 20, cooldown 1000 ms -> drain 20.0/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| missile|3 | 1 sustainability | mana 20, cooldown 1000 ms -> drain 20.0/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| missile|4 | 1 sustainability | mana 20, cooldown 1000 ms -> drain 20.0/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| piggyback | 1 sustainability | mana 100, cooldown 20000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | summon output is mana-free at max rate; only the cooldown paces accumulation |
+| pull | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| push | 1 sustainability | mana 20, cooldown 5000 ms -> drain 4.0/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| push|2 | 1 sustainability | mana 20, cooldown 5000 ms -> drain 4.0/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| push|3 | 1 sustainability | mana 20, cooldown 5000 ms -> drain 4.0/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| push|4 | 1 sustainability | mana 20, cooldown 5000 ms -> drain 4.0/s <= regen 5/s at pool 60 | MEDIUM | sustained max-rate mobility at this pool tier; mana never throttles it |
+| rolldice | 9 zero-cost keys | mana 0, effective cooldown None, no cost of any kind | MEDIUM | nothing paces this spell at all: no mana, no item cost, no cooldown >= 1000 ms — castable at interaction rate forever |
+| skating | 9 zero-cost keys | mana 0, effective cooldown None, no cost of any kind | MEDIUM | nothing paces this spell at all: no mana, no item cost, no cooldown >= 1000 ms — castable at interaction rate forever |
+| smite | 1 sustainability | mana 100, cooldown 20000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| smite | 7 restriction gaps | damage-capable, category elemental, pvp_restricted=None (5/8 damage peers in category are restricted) | MEDIUM | can be used on players where its category peers cannot |
+| smite|2 | 1 sustainability | mana 100, cooldown 20000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| smite|2 | 7 restriction gaps | damage-capable, category elemental, pvp_restricted=None (5/8 damage peers in category are restricted) | MEDIUM | can be used on players where its category peers cannot |
+| smite|3 | 1 sustainability | mana 100, cooldown 20000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| smite|3 | 7 restriction gaps | damage-capable, category elemental, pvp_restricted=None (5/8 damage peers in category are restricted) | MEDIUM | can be used on players where its category peers cannot |
+| stormshackle | 5 toggle/stacking | activation mana 10, upkeep 6 mana/s <= regen 15/s at pool 100 | MEDIUM | channel never mana-starves: the effect can be held indefinitely once activated; only its reserve/duration mechanics limit it |
+| stormshackle (family) | 4 cooldown floors | cooldown across tiers: stormshackle 4000 ms, stormshackle|2 2500 ms, stormshackle|3 1000 ms, stormshackle|4 250 ms | MEDIUM | cooldown shrinks 16x across tiers (4000 ms -> 250 ms); top tier is a different spell in practice |
+| stormshackle|2 | 5 toggle/stacking | activation mana 8, upkeep 18 mana/s <= regen 25/s at pool 150 | MEDIUM | channel never mana-starves: the effect can be held indefinitely once activated; only its reserve/duration mechanics limit it |
+| stormshackle|3 | 5 toggle/stacking | activation mana 6, upkeep 30 mana/s <= regen 35/s at pool 200 | MEDIUM | channel never mana-starves: the effect can be held indefinitely once activated; only its reserve/duration mechanics limit it |
+| stormshackle|4 | 1 sustainability | mana 5, cooldown 250 ms -> drain 20.0/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| stormshackle|4 | 4 cooldown floors | mana 5, cooldown 250 ms | MEDIUM | sub-second cooldown at this tier: up to 4 casts/sec before mana is consulted |
+| stormshackle|4 | 5 toggle/stacking | activation mana 5, upkeep 30 mana/s <= regen 35/s at pool 200 | MEDIUM | channel never mana-starves: the effect can be held indefinitely once activated; only its reserve/duration mechanics limit it |
+| stream | 1 sustainability | mana 100, cooldown 5000 ms -> drain 20.0/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| stream|2 | 1 sustainability | mana 100, cooldown 5000 ms -> drain 20.0/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| stream|3 | 1 sustainability | mana 100, cooldown 5000 ms -> drain 20.0/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| stun | 1 sustainability | mana 15, cooldown 8000 ms -> drain 1.9/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| stun|2 | 1 sustainability | mana 15, cooldown 8000 ms -> drain 1.9/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| stun|3 | 1 sustainability | mana 15, cooldown 8000 ms -> drain 1.9/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| tamepet | 9 zero-cost keys | mana 0, effective cooldown None, no cost of any kind | MEDIUM | nothing paces this spell at all: no mana, no item cost, no cooldown >= 1000 ms — castable at interaction rate forever |
+| throwsword | 1 sustainability | mana 30, cooldown 10000 ms -> drain 3.0/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| torch (family) | 4 cooldown floors | cooldown across tiers: torch 10000 ms, torch|2 8000 ms, torch|3 5000 ms, torch|4 2000 ms | MEDIUM | cooldown shrinks 5x across tiers (10000 ms -> 2000 ms); top tier is a different spell in practice |
+| wave | 1 sustainability | mana 150, cooldown 30000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| wave|2 | 1 sustainability | mana 150, cooldown 30000 ms -> drain 5.0/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| wearskates | 9 zero-cost keys | mana 0, effective cooldown None, no cost of any kind | MEDIUM | nothing paces this spell at all: no mana, no item cost, no cooldown >= 1000 ms — castable at interaction rate forever |
+| workbench (family) | 4 cooldown floors | cooldown across tiers: workbench 20000 ms, workbench|2 10000 ms, workbench|3 5000 ms, workbench|4 2500 ms | MEDIUM | cooldown shrinks 8x across tiers (20000 ms -> 2500 ms); top tier is a different spell in practice |
+| wrv_frostbite | 1 sustainability | mana 10, cooldown 10000 ms -> drain 1.0/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| wrv_frostbite|2 | 1 sustainability | mana 12, cooldown 9000 ms -> drain 1.3/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| wrv_frostbite|3 | 1 sustainability | mana 14, cooldown 9000 ms -> drain 1.6/s <= regen 5/s at pool 60 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| wrv_spark|2 | 1 sustainability | mana 23, cooldown 1500 ms -> drain 15.3/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| wrv_spark|3 | 1 sustainability | mana 26, cooldown 1500 ms -> drain 17.3/s <= regen 25/s at pool 150 | MEDIUM | damage output at max cast rate never drains mana at this pool tier |
+| admission | 1 sustainability | mana 50, cooldown 10000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| admission|2 | 1 sustainability | mana 50, cooldown 10000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| archer | 1 sustainability | mana 60, cooldown 60000 ms -> drain 1.0/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+| archer|2 | 1 sustainability | mana 60, cooldown 60000 ms -> drain 1.0/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+| archer|3 | 1 sustainability | mana 60, cooldown 60000 ms -> drain 1.0/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+| arrow | 1 sustainability | mana 40, cooldown 1500 ms -> drain 26.7/s <= regen 35/s at pool 200 | LOW | damage output at max cast rate never drains mana at this pool tier |
+| arrow | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| arrow_ice | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| arrow_light | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| arrow_regular | 1 sustainability | mana 0, cooldown 1000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+| arrow_shock | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| arrow|2 | 1 sustainability | mana 40, cooldown 1500 ms -> drain 26.7/s <= regen 35/s at pool 200 | LOW | damage output at max cast rate never drains mana at this pool tier |
+| arrow|2 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| arrow|3 | 1 sustainability | mana 40, cooldown 1400 ms -> drain 28.6/s <= regen 35/s at pool 200 | LOW | damage output at max cast rate never drains mana at this pool tier |
+| arrow|3 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| arrow|4 | 1 sustainability | mana 40, cooldown 1350 ms -> drain 29.6/s <= regen 35/s at pool 200 | LOW | damage output at max cast rate never drains mana at this pool tier |
+| arrow|4 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| arrow|5 | 1 sustainability | mana 40, cooldown 1250 ms -> drain 32.0/s <= regen 35/s at pool 200 | LOW | damage output at max cast rate never drains mana at this pool tier |
+| arrow|5 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| arrow|6 | 1 sustainability | mana 40, cooldown 1150 ms -> drain 34.8/s <= regen 35/s at pool 200 | LOW | damage output at max cast rate never drains mana at this pool tier |
+| arrow|6 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| blessing | 1 sustainability | mana 150, cooldown 90000 ms -> drain 1.7/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| blink|6 | 1 sustainability | mana 50, cooldown 2000 ms -> drain 25.0/s <= regen 25/s at pool 150 | LOW | sustained max-rate mobility at this pool tier; mana never throttles it |
+| boomerang | 1 sustainability | mana 30, cooldown 1000 ms -> drain 30.0/s <= regen 35/s at pool 200 | LOW | damage output at max cast rate never drains mana at this pool tier |
+| boon | 1 sustainability | mana 15, cooldown 6000 ms -> drain 2.5/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| boon | 5 toggle/stacking | activation mana 15, upkeep 1 mana/s <= regen 5/s at pool 60 | LOW | channel never mana-starves: the effect can be held indefinitely once activated; only its reserve/duration mechanics limit it |
+| boon|2 | 1 sustainability | mana 12, cooldown 6000 ms -> drain 2.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| boon|2 | 5 toggle/stacking | activation mana 12, upkeep 0.75 mana/s <= regen 5/s at pool 60 | LOW | channel never mana-starves: the effect can be held indefinitely once activated; only its reserve/duration mechanics limit it |
+| boon|3 | 1 sustainability | mana 10, cooldown 6000 ms -> drain 1.7/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| boon|3 | 5 toggle/stacking | activation mana 10, upkeep 0.5 mana/s <= regen 5/s at pool 60 | LOW | channel never mana-starves: the effect can be held indefinitely once activated; only its reserve/duration mechanics limit it |
+| boon|4 | 1 sustainability | mana 5, cooldown 6000 ms -> drain 0.8/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| boon|4 | 5 toggle/stacking | activation mana 5, upkeep 0.25 mana/s <= regen 5/s at pool 60 | LOW | channel never mana-starves: the effect can be held indefinitely once activated; only its reserve/duration mechanics limit it |
+| bruiser | 1 sustainability | mana 80, cooldown 75000 ms -> drain 1.1/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+| bruiser|2 | 1 sustainability | mana 80, cooldown 75000 ms -> drain 1.1/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+| bubble | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| bubble|2 | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| cat | 1 sustainability | mana 30, cooldown 240000 ms -> drain 0.1/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+| chainlightning | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| chainlightning|2 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| chainlightning|3 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| cure | 1 sustainability | mana 20, cooldown 12000 ms -> drain 1.7/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| cure|2 | 1 sustainability | mana 20, cooldown 10000 ms -> drain 2.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| cure|3 | 1 sustainability | mana 20, cooldown 10000 ms -> drain 2.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| cure|4 | 1 sustainability | mana 20, cooldown 8000 ms -> drain 2.5/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| cure|5 | 1 sustainability | mana 20, cooldown 8000 ms -> drain 2.5/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| dash | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| eat_food | 1 sustainability | mana 0, cooldown 120000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+| extinguish | 1 sustainability | mana 30, cooldown 8000 ms -> drain 3.8/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| familiar | 1 sustainability | mana 50, cooldown 240000 ms -> drain 0.2/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+| feed | 1 sustainability | mana 30, cooldown 60000 ms -> drain 0.5/s <= regen 5/s at pool 60 | LOW | sustained healing at max rate is mana-free at this pool tier |
+| flare | 1 sustainability | mana 10, cooldown 2000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| flare|2 | 1 sustainability | mana 10, cooldown 1500 ms -> drain 6.7/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| flare|3 | 1 sustainability | mana 10, cooldown 1000 ms -> drain 10.0/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| flashheal | 4 cooldown floors | mana 15, NO cooldown key in config | LOW | nothing paces this spell except mana |
+| flashheal|2 | 4 cooldown floors | mana 19, NO cooldown key in config | LOW | nothing paces this spell except mana |
+| flashheal|3 | 4 cooldown floors | mana 24, NO cooldown key in config | LOW | nothing paces this spell except mana |
+| flashheal|4 | 4 cooldown floors | mana 35, NO cooldown key in config | LOW | nothing paces this spell except mana |
+| frost | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| frost|2 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| frost|3 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| frost|4 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| gasp | 1 sustainability | mana 10, cooldown 30000 ms -> drain 0.3/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| gills | 1 sustainability | mana 15, cooldown 30000 ms -> drain 0.5/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| greaterheal | 4 cooldown floors | mana 8, NO cooldown key in config | LOW | nothing paces this spell except mana |
+| greaterheal|2 | 4 cooldown floors | mana 9, NO cooldown key in config | LOW | nothing paces this spell except mana |
+| greaterheal|3 | 4 cooldown floors | mana 10, NO cooldown key in config | LOW | nothing paces this spell except mana |
+| grouprenewal | 1 sustainability | mana 90, cooldown 60000 ms -> drain 1.5/s <= regen 5/s at pool 60 | LOW | sustained healing at max rate is mana-free at this pool tier |
+| grouprenewal|2 | 1 sustainability | mana 100, cooldown 55000 ms -> drain 1.8/s <= regen 5/s at pool 60 | LOW | sustained healing at max rate is mana-free at this pool tier |
+| grouprenewal|3 | 1 sustainability | mana 110, cooldown 50000 ms -> drain 2.2/s <= regen 5/s at pool 60 | LOW | sustained healing at max rate is mana-free at this pool tier |
+| grow | 1 sustainability | mana 75, cooldown 30000 ms -> drain 2.5/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| growth | 1 sustainability | mana 100, cooldown 3000 ms -> drain 33.3/s <= regen 35/s at pool 200 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| growth|2 | 1 sustainability | mana 100, cooldown 3000 ms -> drain 33.3/s <= regen 35/s at pool 200 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| growth|3 | 1 sustainability | mana 100, cooldown 3000 ms -> drain 33.3/s <= regen 35/s at pool 200 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| growth|4 | 1 sustainability | mana 100, cooldown 3000 ms -> drain 33.3/s <= regen 35/s at pool 200 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| hat | 1 sustainability | mana 30, cooldown 10000 ms -> drain 3.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| hat|2 | 1 sustainability | mana 30, cooldown 10000 ms -> drain 3.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| hat|3 | 1 sustainability | mana 30, cooldown 10000 ms -> drain 3.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| heal | 1 sustainability | mana 12, cooldown 8000 ms -> drain 1.5/s <= regen 5/s at pool 60 | LOW | sustained healing at max rate is mana-free at this pool tier |
+| heal|2 | 1 sustainability | mana 12, cooldown 7000 ms -> drain 1.7/s <= regen 5/s at pool 60 | LOW | sustained healing at max rate is mana-free at this pool tier |
+| heal|3 | 1 sustainability | mana 15, cooldown 6000 ms -> drain 2.5/s <= regen 5/s at pool 60 | LOW | sustained healing at max rate is mana-free at this pool tier |
+| lift | 1 sustainability | mana 40, cooldown 2000 ms -> drain 20.0/s <= regen 25/s at pool 150 | LOW | sustained max-rate mobility at this pool tier; mana never throttles it |
+| mend | 4 cooldown floors | mana 4, NO cooldown key in config | LOW | nothing paces this spell except mana |
+| mend|2 | 4 cooldown floors | mana 6, NO cooldown key in config | LOW | nothing paces this spell except mana |
+| mend|3 | 4 cooldown floors | mana 8, NO cooldown key in config | LOW | nothing paces this spell except mana |
+| mend|4 | 4 cooldown floors | mana 12, NO cooldown key in config | LOW | nothing paces this spell except mana |
+| mend|5 | 4 cooldown floors | mana 17, NO cooldown key in config | LOW | nothing paces this spell except mana |
+| missile | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| missile|2 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| missile|3 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| missile|4 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| missile|5 | 1 sustainability | mana 30, cooldown 1000 ms -> drain 30.0/s <= regen 35/s at pool 200 | LOW | damage output at max cast rate never drains mana at this pool tier |
+| missile|5 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| music | 1 sustainability | mana 20, cooldown 120000 ms -> drain 0.2/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| peek | 1 sustainability | mana 30, cooldown 5000 ms -> drain 6.0/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| peek|2 | 1 sustainability | mana 30, cooldown 5000 ms -> drain 6.0/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| peek|3 | 1 sustainability | mana 30, cooldown 5000 ms -> drain 6.0/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| peek|4 | 1 sustainability | mana 30, cooldown 5000 ms -> drain 6.0/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| piggyback | 11 summon pacing | spawns skeleton; pig x2/cast; mana 100, cooldown 20000.0 ms -> sustained ~6.0 spawns/min at pool 100; undo=30000 | LOW | permanent summons accumulate faster than the ~1/min preparation pace packet #1 set for this class (wolf 100 mana/60 s, familiar 50 mana/300 s, cat 300 s cooldown); no config cap exists for SpawnEntity-class summons, so pacing is the only limiter |
+| piggyback | 2 summon caps | spawns skeleton; pig; tamed=False; mana 100, cooldown 20000.0 ms; undo=30000; NO cap key anywhere in parameters or spawn actions | LOW | pet/utility summons accumulate with no concurrent cap in config |
+| pollinate | 1 sustainability | mana 100, cooldown 20000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| recall | 1 sustainability | mana 0, cooldown 15000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+| recall_death | 1 sustainability | mana 0, cooldown 15000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+| recall|2 | 1 sustainability | mana 0, cooldown 15000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+| recall|3 | 1 sustainability | mana 0, cooldown 15000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+| recall|4 | 1 sustainability | mana 0, cooldown 15000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+| recall|5 | 1 sustainability | mana 0, cooldown 15000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+| reflect | 1 sustainability | mana 10, cooldown 3000 ms -> drain 3.3/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| reflect|2 | 1 sustainability | mana 10, cooldown 3000 ms -> drain 3.3/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| reflect|3 | 1 sustainability | mana 10, cooldown 3000 ms -> drain 3.3/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| reflect|4 | 1 sustainability | mana 10, cooldown 3000 ms -> drain 3.3/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| reflect|5 | 1 sustainability | mana 10, cooldown 3000 ms -> drain 3.3/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| repairequipment | 1 sustainability | mana 0, cooldown 1000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+| repairitem | 1 sustainability | mana 200, cooldown 1.8e+06 ms -> drain 0.1/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| rolldice | 4 cooldown floors | mana 0, NO cooldown key in config | LOW | nothing paces this spell except mana (which is 0) |
+| shell | 1 sustainability | mana 75, cooldown 5000 ms -> drain 15.0/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| shell|2 | 1 sustainability | mana 75, cooldown 5000 ms -> drain 15.0/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| shell|3 | 1 sustainability | mana 75, cooldown 5000 ms -> drain 15.0/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| shell|4 | 1 sustainability | mana 75, cooldown 5000 ms -> drain 15.0/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| skating | 4 cooldown floors | mana 0, NO cooldown key in config | LOW | nothing paces this spell except mana (which is 0) |
+| sparkle | 1 sustainability | mana 0, cooldown 30000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+| stash | 1 sustainability | mana 0, cooldown 2000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+| stun | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| stun|2 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| stun|3 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| superheal | 1 sustainability | mana 110, cooldown 45000 ms -> drain 2.4/s <= regen 5/s at pool 60 | LOW | sustained healing at max rate is mana-free at this pool tier |
+| tame | 1 sustainability | mana 100, cooldown 30000 ms -> drain 3.3/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| tamepet | 4 cooldown floors | mana 0, NO cooldown key in config | LOW | nothing paces this spell except mana (which is 0) |
+| throwmagictorch | 1 sustainability | mana 0, cooldown 1000 ms -> drain 0.0/s <= regen 5/s at pool 60 | LOW | zero mana cost: castable at full rate forever, mana is never a limiter |
+| torch | 1 sustainability | mana 50, cooldown 10000 ms -> drain 5.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| torch|2 | 1 sustainability | mana 50, cooldown 8000 ms -> drain 6.2/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| torch|3 | 1 sustainability | mana 50, cooldown 5000 ms -> drain 10.0/s <= regen 15/s at pool 100 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| torch|4 | 1 sustainability | mana 50, cooldown 2000 ms -> drain 25.0/s <= regen 25/s at pool 150 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| ward | 1 sustainability | mana 15, cooldown 6000 ms -> drain 2.5/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| wearskates | 4 cooldown floors | mana 0, NO cooldown key in config | LOW | nothing paces this spell except mana (which is 0) |
+| whip | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| wolf | 1 sustainability | mana 100, cooldown 60000 ms -> drain 1.7/s <= regen 5/s at pool 60 | LOW | summon output is mana-free at max rate; only the cooldown paces accumulation |
+| workbench | 1 sustainability | mana 50, cooldown 20000 ms -> drain 2.5/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| workbench|2 | 1 sustainability | mana 30, cooldown 10000 ms -> drain 3.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| workbench|3 | 1 sustainability | mana 10, cooldown 5000 ms -> drain 2.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| workbench|4 | 1 sustainability | mana 5, cooldown 2500 ms -> drain 2.0/s <= regen 5/s at pool 60 | LOW | utility effect is mana-free at max cast rate at this pool tier |
+| wrv_frostbite | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| wrv_frostbite|2 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| wrv_frostbite|3 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| wrv_spark | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| wrv_spark|2 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+| wrv_spark|3 | 7 restriction gaps | damage-capable, category combat, pvp_restricted=None (3/35 damage peers in category are restricted) | LOW | can be used on players where its category peers cannot |
+
+Findings: 225 (CRITICAL 0, HIGH 5, MEDIUM 74, LOW 146).
+Spells with no mechanical finding: 6 of 175.
+
+### Summon spells seen (check 2 detail)
+- cure|5: spawns villager; tamed=False; mana 20; cooldown 8000.0 ms; undo None; conversion=True; cap keys: NONE
+- piggyback: spawns skeleton; pig; tamed=False; mana 100; cooldown 20000.0 ms; undo 30000; conversion=False; cap keys: NONE
+- familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2; tamed=False; mana 50; cooldown 240000.0 ms; undo 20000; conversion=False; cap keys: [('summon_cap', 3)]
+- wolf: spawns wolf; tamed=True; mana 100; cooldown 60000.0 ms; undo None; conversion=False; cap keys: [('max_wolves', 5)]
+- cat: spawns cat; tamed=True; mana 30; cooldown 240000.0 ms; undo None; conversion=False; cap keys: [('summon_cap', 2)]
+- anvil: spawns falling_block; tamed=False; mana 100; cooldown 20000.0 ms; undo 30000; conversion=False; cap keys: NONE
+- archer: spawns skeleton; tamed=False; mana 60; cooldown 60000.0 ms; undo 90000; conversion=False; cap keys: [('summon_cap', 2)]
+- archer|2: spawns skeleton; tamed=False; mana 60; cooldown 60000.0 ms; undo 120000; conversion=False; cap keys: [('summon_cap', 2)]
+- archer|3: spawns skeleton; tamed=False; mana 60; cooldown 60000.0 ms; undo 150000; conversion=False; cap keys: [('summon_cap', 2), ('entity_parameters.entity_attributes.max_health', 30)]
+- bruiser: spawns husk; tamed=False; mana 80; cooldown 75000.0 ms; undo 120000; conversion=False; cap keys: [('summon_cap', 2)]
+- bruiser|2: spawns husk; tamed=False; mana 80; cooldown 75000.0 ms; undo 150000; conversion=False; cap keys: [('summon_cap', 2)]
+
+### Behavior-shape detail (checks 8-14)
+- bowpull: no references anywhere in this file
+- pacing: piggyback: spawns skeleton; pig x2/cast; mana 100, cooldown 20000.0 ms, undo 30000 -> sustained ~6.00 spawns/min at pool 100 (packet-#1 pace line: ~1/min)
+- pacing: familiar: spawns weighted table: chicken 30, cow 100, pig 100, mushroom_cow 15, bat 15, horse 5, snowman 5, iron_golem 2 x1/cast; mana 50, cooldown 240000.0 ms, undo 20000 -> sustained ~0.25 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
+- pacing: wolf: spawns wolf x1/cast; mana 100, cooldown 60000.0 ms, undo None -> sustained ~1.00 spawns/min at pool 100 (packet-#1 pace line: ~1/min)
+- pacing: cat: spawns cat x1/cast; mana 30, cooldown 240000.0 ms, undo None -> sustained ~0.25 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
+- pacing: archer: spawns skeleton x1/cast; mana 60, cooldown 60000.0 ms, undo 90000 -> sustained ~1.00 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
+- pacing: archer|2: spawns skeleton x1/cast; mana 60, cooldown 60000.0 ms, undo 120000 -> sustained ~1.00 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
+- pacing: archer|3: spawns skeleton x1/cast; mana 60, cooldown 60000.0 ms, undo 150000 -> sustained ~1.00 spawns/min at pool 60 (packet-#1 pace line: ~1/min)
+- pacing: bruiser: spawns husk x1/cast; mana 80, cooldown 75000.0 ms, undo 120000 -> sustained ~0.80 spawns/min at pool 100 (packet-#1 pace line: ~1/min)
+- pacing: bruiser|2: spawns husk x1/cast; mana 80, cooldown 75000.0 ms, undo 150000 -> sustained ~0.80 spawns/min at pool 100 (packet-#1 pace line: ~1/min)
+
+### MANUAL check 3 (summon semantics in Java, not config) — do not skip
+- familiar: spell class=None; cap keys in config: [('summon_cap', 3)] — cap behaviour must be verified in the class/rig, config alone cannot settle it.
+- wolf: spell class=WolfSpell; cap keys in config: [('max_wolves', 5)] — cap behaviour must be verified in the class/rig, config alone cannot settle it.
+- cat: spell class=None; cap keys in config: [('summon_cap', 2)] — cap behaviour must be verified in the class/rig, config alone cannot settle it.
+- archer: spell class=None; cap keys in config: [('summon_cap', 2)] — cap behaviour must be verified in the class/rig, config alone cannot settle it.
+- archer|2: spell class=None; cap keys in config: [('summon_cap', 2)] — cap behaviour must be verified in the class/rig, config alone cannot settle it.
+- archer|3: spell class=None; cap keys in config: [('summon_cap', 2), ('entity_parameters.entity_attributes.max_health', 30)] — cap behaviour must be verified in the class/rig, config alone cannot settle it.
+- bruiser: spell class=None; cap keys in config: [('summon_cap', 2)] — cap behaviour must be verified in the class/rig, config alone cannot settle it.
+- bruiser|2: spell class=None; cap keys in config: [('summon_cap', 2)] — cap behaviour must be verified in the class/rig, config alone cannot settle it.
+
+### MANUAL check 6 (value loops — judgment required) — do not skip
+- heal: value-touching actions []; mana 12, cooldown 8000.0 ms; earns 2 SP/cast -> up to 15 SP/min at max rate (before Magic's earns cooldown)
+- heal|2: value-touching actions []; mana 12, cooldown 7000.0 ms; earns 2 SP/cast -> up to 17 SP/min at max rate (before Magic's earns cooldown)
+- heal|3: value-touching actions []; mana 15, cooldown 6000.0 ms; earns 2 SP/cast -> up to 20 SP/min at max rate (before Magic's earns cooldown)
+- cure: value-touching actions []; mana 20, cooldown 12000.0 ms; earns 20 SP/cast -> up to 100 SP/min at max rate (before Magic's earns cooldown)
+- cure|2: value-touching actions []; mana 20, cooldown 10000.0 ms; earns 20 SP/cast -> up to 120 SP/min at max rate (before Magic's earns cooldown)
+- cure|3: value-touching actions []; mana 20, cooldown 10000.0 ms; earns 20 SP/cast -> up to 120 SP/min at max rate (before Magic's earns cooldown)
+- cure|4: value-touching actions ['Feed']; mana 20, cooldown 8000.0 ms; earns 20 SP/cast -> up to 150 SP/min at max rate (before Magic's earns cooldown)
+- cure|5: value-touching actions ['Feed', 'SpawnEntity']; mana 20, cooldown 8000.0 ms; earns 20 SP/cast -> up to 150 SP/min at max rate (before Magic's earns cooldown)
+- blessing: value-touching actions []; mana 150, cooldown 90000.0 ms; earns 8 SP/cast -> up to 5 SP/min at max rate (before Magic's earns cooldown)
+- boon: value-touching actions []; mana 15, cooldown 6000.0 ms; earns 6 SP/cast -> up to 60 SP/min at max rate (before Magic's earns cooldown)
+- boon|2: value-touching actions []; mana 12, cooldown 6000.0 ms; earns 6 SP/cast -> up to 60 SP/min at max rate (before Magic's earns cooldown)
+- boon|3: value-touching actions []; mana 10, cooldown 6000.0 ms; earns 6 SP/cast -> up to 60 SP/min at max rate (before Magic's earns cooldown)
+- boon|4: value-touching actions []; mana 5, cooldown 6000.0 ms; earns 6 SP/cast -> up to 60 SP/min at max rate (before Magic's earns cooldown)
+- superheal: value-touching actions ['Feed']; mana 110, cooldown 45000.0 ms; earns 20 SP/cast -> up to 27 SP/min at max rate (before Magic's earns cooldown)
+- feed: value-touching actions ['Feed']; mana 30, cooldown 60000.0 ms
+- extinguish: value-touching actions []; mana 30, cooldown 8000.0 ms; earns 4 SP/cast -> up to 30 SP/min at max rate (before Magic's earns cooldown)
+- shell: value-touching actions []; mana 75, cooldown 5000.0 ms; earns 2 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+- shell|2: value-touching actions []; mana 75, cooldown 5000.0 ms; earns 2 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+- shell|3: value-touching actions []; mana 75, cooldown 5000.0 ms; earns 2 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+- shell|4: value-touching actions []; mana 75, cooldown 5000.0 ms; earns 2 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+- recall: value-touching actions []; mana 0, cooldown 15000.0 ms; earns 5 SP/cast -> up to 20 SP/min at max rate (before Magic's earns cooldown)
+- recall|2: value-touching actions []; mana 0, cooldown 15000.0 ms; earns 5 SP/cast -> up to 20 SP/min at max rate (before Magic's earns cooldown)
+- recall|3: value-touching actions []; mana 0, cooldown 15000.0 ms; earns 5 SP/cast -> up to 20 SP/min at max rate (before Magic's earns cooldown)
+- recall|4: value-touching actions []; mana 0, cooldown 15000.0 ms; earns 5 SP/cast -> up to 20 SP/min at max rate (before Magic's earns cooldown)
+- recall|5: value-touching actions []; mana 0, cooldown 15000.0 ms; earns 5 SP/cast -> up to 20 SP/min at max rate (before Magic's earns cooldown)
+- recall_death: value-touching actions []; mana 0, cooldown 15000.0 ms; earns 5 SP/cast -> up to 20 SP/min at max rate (before Magic's earns cooldown)
+- stormshackle: value-touching actions []; mana 10, cooldown 4000.0 ms; earns 6 SP/cast -> up to 90 SP/min at max rate (before Magic's earns cooldown)
+- stormshackle|2: value-touching actions []; mana 8, cooldown 2500.0 ms; earns 6 SP/cast -> up to 144 SP/min at max rate (before Magic's earns cooldown)
+- stormshackle|3: value-touching actions []; mana 6, cooldown 1000.0 ms; earns 6 SP/cast -> up to 360 SP/min at max rate (before Magic's earns cooldown)
+- blink: value-touching actions []; mana 50, cooldown 10000.0 ms; earns 2 SP/cast -> up to 12 SP/min at max rate (before Magic's earns cooldown)
+- blink|2: value-touching actions []; mana 50, cooldown 10000.0 ms; earns 2 SP/cast -> up to 12 SP/min at max rate (before Magic's earns cooldown)
+- blink|3: value-touching actions []; mana 50, cooldown 7000.0 ms; earns 2 SP/cast -> up to 17 SP/min at max rate (before Magic's earns cooldown)
+- blink|4: value-touching actions []; mana 50, cooldown 5000.0 ms; earns 2 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+- blink|5: value-touching actions []; mana 50, cooldown 3500.0 ms; earns 2 SP/cast -> up to 34 SP/min at max rate (before Magic's earns cooldown)
+- blink|6: value-touching actions []; mana 50, cooldown 2000.0 ms; earns 2 SP/cast -> up to 60 SP/min at max rate (before Magic's earns cooldown)
+- torch: value-touching actions []; mana 50, cooldown 10000.0 ms; earns 2 SP/cast -> up to 12 SP/min at max rate (before Magic's earns cooldown)
+- torch|2: value-touching actions []; mana 50, cooldown 8000.0 ms; earns 2 SP/cast -> up to 15 SP/min at max rate (before Magic's earns cooldown)
+- torch|3: value-touching actions []; mana 50, cooldown 5000.0 ms; earns 2 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+- torch|4: value-touching actions []; mana 50, cooldown 2000.0 ms; earns 2 SP/cast -> up to 60 SP/min at max rate (before Magic's earns cooldown)
+- throwmagictorch: value-touching actions ['ThrowItem']; mana 0, cooldown 1000.0 ms
+- peek: value-touching actions []; mana 30, cooldown 5000.0 ms; earns 8 SP/cast -> up to 96 SP/min at max rate (before Magic's earns cooldown)
+- peek|2: value-touching actions []; mana 30, cooldown 5000.0 ms; earns 8 SP/cast -> up to 96 SP/min at max rate (before Magic's earns cooldown)
+- peek|3: value-touching actions []; mana 30, cooldown 5000.0 ms; earns 8 SP/cast -> up to 96 SP/min at max rate (before Magic's earns cooldown)
+- peek|4: value-touching actions []; mana 30, cooldown 5000.0 ms; earns 8 SP/cast -> up to 96 SP/min at max rate (before Magic's earns cooldown)
+- fling: value-touching actions []; mana 60, cooldown 5000.0 ms; earns 2 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+- fling|2: value-touching actions []; mana 80, cooldown 2000.0 ms; earns 2 SP/cast -> up to 60 SP/min at max rate (before Magic's earns cooldown)
+- fling|3: value-touching actions []; mana 100, cooldown 1000.0 ms; earns 2 SP/cast -> up to 120 SP/min at max rate (before Magic's earns cooldown)
+- fling|4: value-touching actions []; mana 120, cooldown 1000.0 ms; earns 2 SP/cast -> up to 120 SP/min at max rate (before Magic's earns cooldown)
+- lift: value-touching actions []; mana 40, cooldown 2000.0 ms; earns 5 SP/cast -> up to 150 SP/min at max rate (before Magic's earns cooldown)
+- dash: value-touching actions []; mana 100, cooldown 5000.0 ms; earns 8 SP/cast -> up to 96 SP/min at max rate (before Magic's earns cooldown)
+- backflip: value-touching actions []; mana 20, cooldown 10000.0 ms; earns 2 SP/cast -> up to 12 SP/min at max rate (before Magic's earns cooldown)
+- piggyback: value-touching actions ['SpawnEntity']; mana 100, cooldown 20000.0 ms
+- bubble: value-touching actions []; mana 10, cooldown 2000.0 ms; earns 5 SP/cast -> up to 150 SP/min at max rate (before Magic's earns cooldown)
+- bubble|2: value-touching actions []; mana 10, cooldown 2000.0 ms; earns 5 SP/cast -> up to 150 SP/min at max rate (before Magic's earns cooldown)
+- gasp: value-touching actions []; mana 10, cooldown 30000.0 ms; earns 2 SP/cast -> up to 4 SP/min at max rate (before Magic's earns cooldown)
+- stash: value-touching actions []; mana 0, cooldown 2000.0 ms; earns 1 SP/cast -> up to 30 SP/min at max rate (before Magic's earns cooldown)
+- repairitem: value-touching actions ['RepairItem']; mana 200, cooldown 1800000.0 ms
+- lightning: value-touching actions []; mana 80, cooldown 45000.0 ms; earns 2 SP/cast -> up to 3 SP/min at max rate (before Magic's earns cooldown)
+- lightning|2: value-touching actions []; mana 80, cooldown 40000.0 ms; earns 2 SP/cast -> up to 3 SP/min at max rate (before Magic's earns cooldown)
+- lightning|3: value-touching actions []; mana 80, cooldown 35000.0 ms; earns 2 SP/cast -> up to 3 SP/min at max rate (before Magic's earns cooldown)
+- chainlightning: value-touching actions []; mana 75, cooldown 20000.0 ms; earns 8 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+- chainlightning|2: value-touching actions []; mana 75, cooldown 20000.0 ms; earns 8 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+- chainlightning|3: value-touching actions []; mana 75, cooldown 20000.0 ms; earns 8 SP/cast -> up to 24 SP/min at max rate (before Magic's earns cooldown)
+- missile: value-touching actions []; mana 20, cooldown 1000.0 ms; earns 20 SP/cast -> up to 1200 SP/min at max rate (before Magic's earns cooldown)
+- missile|2: value-touching actions []; mana 20, cooldown 1000.0 ms; earns 15 SP/cast -> up to 900 SP/min at max rate (before Magic's earns cooldown)
+- missile|3: value-touching actions []; mana 20, cooldown 1000.0 ms; earns 10 SP/cast -> up to 600 SP/min at max rate (before Magic's earns cooldown)
+- missile|4: value-touching actions []; mana 20, cooldown 1000.0 ms; earns 7 SP/cast -> up to 420 SP/min at max rate (before Magic's earns cooldown)
+- missile|5: value-touching actions []; mana 30, cooldown 1000.0 ms; earns 20 SP/cast -> up to 1200 SP/min at max rate (before Magic's earns cooldown)
+- frost: value-touching actions []; mana 40, cooldown 8000.0 ms; earns 8 SP/cast -> up to 60 SP/min at max rate (before Magic's earns cooldown)
+- frost|2: value-touching actions []; mana 40, cooldown 8000.0 ms; earns 8 SP/cast -> up to 60 SP/min at max rate (before Magic's earns cooldown)
+- frost|3: value-touching actions []; mana 40, cooldown 8000.0 ms; earns 8 SP/cast -> up to 60 SP/min at max rate (before Magic's earns cooldown)
+- frost|4: value-touching actions []; mana 40, cooldown 7000.0 ms; earns 8 SP/cast -> up to 69 SP/min at max rate (before Magic's earns cooldown)
+- arrow: value-touching actions []; mana 40, cooldown 1500.0 ms; earns 8 SP/cast -> up to 320 SP/min at max rate (before Magic's earns cooldown)
+- arrow|2: value-touching actions []; mana 40, cooldown 1500.0 ms; earns 8 SP/cast -> up to 320 SP/min at max rate (before Magic's earns cooldown)
+- arrow|3: value-touching actions []; mana 40, cooldown 1400.0 ms; earns 8 SP/cast -> up to 343 SP/min at max rate (before Magic's earns cooldown)
+- arrow|4: value-touching actions []; mana 40, cooldown 1350.0 ms; earns 8 SP/cast -> up to 356 SP/min at max rate (before Magic's earns cooldown)
+- arrow|5: value-touching actions []; mana 40, cooldown 1250.0 ms; earns 8 SP/cast -> up to 384 SP/min at max rate (before Magic's earns cooldown)
+- arrow|6: value-touching actions []; mana 40, cooldown 1150.0 ms; earns 8 SP/cast -> up to 417 SP/min at max rate (before Magic's earns cooldown)
+- arrow_ice: value-touching actions []; mana 0, cooldown 1000.0 ms; earns 8 SP/cast -> up to 480 SP/min at max rate (before Magic's earns cooldown)
+- arrow_light: value-touching actions []; mana 0, cooldown 1000.0 ms; earns 8 SP/cast -> up to 480 SP/min at max rate (before Magic's earns cooldown)
+- arrow_shock: value-touching actions []; mana 0, cooldown 1000.0 ms; earns 8 SP/cast -> up to 480 SP/min at max rate (before Magic's earns cooldown)
+- arrow_regular: value-touching actions []; mana 0, cooldown 1000.0 ms; earns 2 SP/cast -> up to 120 SP/min at max rate (before Magic's earns cooldown)
+- flare: value-touching actions []; mana 10, cooldown 2000.0 ms; earns 1 SP/cast -> up to 30 SP/min at max rate (before Magic's earns cooldown)
+- flare|2: value-touching actions []; mana 10, cooldown 1500.0 ms; earns 1 SP/cast -> up to 40 SP/min at max rate (before Magic's earns cooldown)
+- flare|3: value-touching actions []; mana 10, cooldown 1000.0 ms; earns 1 SP/cast -> up to 60 SP/min at max rate (before Magic's earns cooldown)
+- stun: value-touching actions []; mana 15, cooldown 8000.0 ms; earns 10 SP/cast -> up to 75 SP/min at max rate (before Magic's earns cooldown)
+- stun|2: value-touching actions []; mana 15, cooldown 8000.0 ms; earns 10 SP/cast -> up to 75 SP/min at max rate (before Magic's earns cooldown)
+- stun|3: value-touching actions []; mana 15, cooldown 8000.0 ms; earns 10 SP/cast -> up to 75 SP/min at max rate (before Magic's earns cooldown)
+- wave: value-touching actions []; mana 150, cooldown 30000.0 ms; earns 8 SP/cast -> up to 16 SP/min at max rate (before Magic's earns cooldown)
+- wave|2: value-touching actions []; mana 150, cooldown 30000.0 ms; earns 8 SP/cast -> up to 16 SP/min at max rate (before Magic's earns cooldown)
+- push: value-touching actions []; mana 20, cooldown 5000.0 ms; earns 3 SP/cast -> up to 36 SP/min at max rate (before Magic's earns cooldown)
+- push|2: value-touching actions []; mana 20, cooldown 5000.0 ms; earns 3 SP/cast -> up to 36 SP/min at max rate (before Magic's earns cooldown)
+- push|3: value-touching actions []; mana 20, cooldown 5000.0 ms; earns 3 SP/cast -> up to 36 SP/min at max rate (before Magic's earns cooldown)
+- push|4: value-touching actions []; mana 20, cooldown 5000.0 ms; earns 3 SP/cast -> up to 36 SP/min at max rate (before Magic's earns cooldown)
+- pull: value-touching actions []; mana 10, cooldown 2000.0 ms; earns 4 SP/cast -> up to 120 SP/min at max rate (before Magic's earns cooldown)
+- stream: value-touching actions []; mana 100, cooldown 5000.0 ms; earns 4 SP/cast -> up to 48 SP/min at max rate (before Magic's earns cooldown)
+- stream|2: value-touching actions []; mana 100, cooldown 5000.0 ms; earns 4 SP/cast -> up to 48 SP/min at max rate (before Magic's earns cooldown)
+- stream|3: value-touching actions []; mana 100, cooldown 5000.0 ms; earns 4 SP/cast -> up to 48 SP/min at max rate (before Magic's earns cooldown)
+- growth: value-touching actions []; mana 100, cooldown 3000.0 ms; earns 8 SP/cast -> up to 160 SP/min at max rate (before Magic's earns cooldown)
+- growth|2: value-touching actions []; mana 100, cooldown 3000.0 ms; earns 8 SP/cast -> up to 160 SP/min at max rate (before Magic's earns cooldown)
+- growth|3: value-touching actions []; mana 100, cooldown 3000.0 ms; earns 8 SP/cast -> up to 160 SP/min at max rate (before Magic's earns cooldown)
+- growth|4: value-touching actions []; mana 100, cooldown 3000.0 ms; earns 8 SP/cast -> up to 160 SP/min at max rate (before Magic's earns cooldown)
+- grow: value-touching actions ['GrowEntity']; mana 75, cooldown 30000.0 ms; earns 8 SP/cast -> up to 16 SP/min at max rate (before Magic's earns cooldown)
+- pollinate: value-touching actions ['Brush', 'ThrowItem']; mana 100, cooldown 20000.0 ms; earns 3 SP/cast -> up to 9 SP/min at max rate (before Magic's earns cooldown)
+- hat: value-touching actions []; mana 30, cooldown 10000.0 ms; earns 1 SP/cast -> up to 6 SP/min at max rate (before Magic's earns cooldown)
+- hat|2: value-touching actions []; mana 30, cooldown 10000.0 ms; earns 1 SP/cast -> up to 6 SP/min at max rate (before Magic's earns cooldown)
+- hat|3: value-touching actions []; mana 30, cooldown 10000.0 ms; earns 1 SP/cast -> up to 6 SP/min at max rate (before Magic's earns cooldown)
+- familiar: value-touching actions ['SpawnEntity']; mana 50, cooldown 240000.0 ms
+- tame: value-touching actions []; mana 100, cooldown 30000.0 ms; earns 2 SP/cast -> up to 4 SP/min at max rate (before Magic's earns cooldown)
+- wolf: value-touching actions []; mana 100, cooldown 60000.0 ms; earns 2 SP/cast -> up to 2 SP/min at max rate (before Magic's earns cooldown)
+- cat: value-touching actions ['SpawnEntity']; mana 30, cooldown 240000.0 ms; earns 2 SP/cast -> up to 0 SP/min at max rate (before Magic's earns cooldown)
+- mend: value-touching actions []; mana 4, cooldown None ms
+- mend|2: value-touching actions []; mana 6, cooldown None ms
+- mend|3: value-touching actions []; mana 8, cooldown None ms
+- mend|4: value-touching actions []; mana 12, cooldown None ms
+- mend|5: value-touching actions []; mana 17, cooldown None ms
+- flashheal: value-touching actions []; mana 15, cooldown None ms
+- flashheal|2: value-touching actions []; mana 19, cooldown None ms
+- flashheal|3: value-touching actions []; mana 24, cooldown None ms
+- flashheal|4: value-touching actions []; mana 35, cooldown None ms
+- ward: value-touching actions []; mana 15, cooldown 6000.0 ms; earns 3 SP/cast -> up to 30 SP/min at max rate (before Magic's earns cooldown)
+- greaterheal: value-touching actions []; mana 8, cooldown None ms
+- greaterheal|2: value-touching actions []; mana 9, cooldown None ms
+- greaterheal|3: value-touching actions []; mana 10, cooldown None ms
+- stormshackle|4: value-touching actions []; mana 5, cooldown 250.0 ms; earns 6 SP/cast -> up to 1440 SP/min at max rate (before Magic's earns cooldown)
+- admission: value-touching actions []; mana 50, cooldown 10000.0 ms; earns 10 SP/cast -> up to 60 SP/min at max rate (before Magic's earns cooldown)
+- admission|2: value-touching actions []; mana 50, cooldown 10000.0 ms; earns 10 SP/cast -> up to 60 SP/min at max rate (before Magic's earns cooldown)
+- anvil: value-touching actions ['SpawnEntity']; mana 100, cooldown 20000.0 ms
+- eat_food: value-touching actions ['ModifyMana']; mana 0, cooldown 120000.0 ms
+- holylight: value-touching actions []; mana 150, cooldown 30000.0 ms; earns 8 SP/cast -> up to 16 SP/min at max rate (before Magic's earns cooldown)
+- music: value-touching actions []; mana 20, cooldown 120000.0 ms; earns 1 SP/cast -> up to 0 SP/min at max rate (before Magic's earns cooldown)
+- reflect: value-touching actions []; mana 10, cooldown 3000.0 ms; earns 5 SP/cast -> up to 100 SP/min at max rate (before Magic's earns cooldown)
+- reflect|2: value-touching actions []; mana 10, cooldown 3000.0 ms; earns 5 SP/cast -> up to 100 SP/min at max rate (before Magic's earns cooldown)
+- reflect|3: value-touching actions []; mana 10, cooldown 3000.0 ms; earns 5 SP/cast -> up to 100 SP/min at max rate (before Magic's earns cooldown)
+- reflect|4: value-touching actions []; mana 10, cooldown 3000.0 ms; earns 5 SP/cast -> up to 100 SP/min at max rate (before Magic's earns cooldown)
+- reflect|5: value-touching actions []; mana 10, cooldown 3000.0 ms; earns 5 SP/cast -> up to 100 SP/min at max rate (before Magic's earns cooldown)
+- rolldice: value-touching actions ['ThrowItem']; mana 0, cooldown None ms
+- whip: value-touching actions []; mana 40, cooldown 5000.0 ms; earns 6 SP/cast -> up to 72 SP/min at max rate (before Magic's earns cooldown)
+- wrv_spark: value-touching actions []; mana 15, cooldown 1500.0 ms; earns 6 SP/cast -> up to 240 SP/min at max rate (before Magic's earns cooldown)
+- wrv_spark|2: value-touching actions []; mana 23, cooldown 1500.0 ms; earns 6 SP/cast -> up to 240 SP/min at max rate (before Magic's earns cooldown)
+- wrv_spark|3: value-touching actions []; mana 26, cooldown 1500.0 ms; earns 6 SP/cast -> up to 240 SP/min at max rate (before Magic's earns cooldown)
+- wrv_frostbite: value-touching actions []; mana 10, cooldown 10000.0 ms; earns 6 SP/cast -> up to 36 SP/min at max rate (before Magic's earns cooldown)
+- wrv_frostbite|2: value-touching actions []; mana 12, cooldown 9000.0 ms; earns 6 SP/cast -> up to 40 SP/min at max rate (before Magic's earns cooldown)
+- wrv_frostbite|3: value-touching actions []; mana 14, cooldown 9000.0 ms; earns 6 SP/cast -> up to 40 SP/min at max rate (before Magic's earns cooldown)
+- archer: value-touching actions ['SpawnEntity']; mana 60, cooldown 60000.0 ms; earns 2 SP/cast -> up to 2 SP/min at max rate (before Magic's earns cooldown)
+- archer|2: value-touching actions ['SpawnEntity']; mana 60, cooldown 60000.0 ms; earns 2 SP/cast -> up to 2 SP/min at max rate (before Magic's earns cooldown)
+- archer|3: value-touching actions ['SpawnEntity']; mana 60, cooldown 60000.0 ms; earns 2 SP/cast -> up to 2 SP/min at max rate (before Magic's earns cooldown)
+- bruiser: value-touching actions ['SpawnEntity']; mana 80, cooldown 75000.0 ms; earns 2 SP/cast -> up to 2 SP/min at max rate (before Magic's earns cooldown)
+- bruiser|2: value-touching actions ['SpawnEntity']; mana 80, cooldown 75000.0 ms; earns 2 SP/cast -> up to 2 SP/min at max rate (before Magic's earns cooldown)
+- grouprenewal: value-touching actions []; mana 90, cooldown 60000.0 ms; earns 2 SP/cast -> up to 2 SP/min at max rate (before Magic's earns cooldown)
+- grouprenewal|2: value-touching actions []; mana 100, cooldown 55000.0 ms; earns 2 SP/cast -> up to 2 SP/min at max rate (before Magic's earns cooldown)
+- grouprenewal|3: value-touching actions []; mana 110, cooldown 50000.0 ms; earns 2 SP/cast -> up to 2 SP/min at max rate (before Magic's earns cooldown)
+

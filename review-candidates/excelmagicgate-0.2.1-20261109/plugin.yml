@@ -1,0 +1,19 @@
+name: ExcelMagicGate
+version: 0.2.1
+authors: [Iris, Mike]
+main: com.winkreyes.excelmagicgate.ExcelMagicGate
+api-version: "1.13"
+description: Automation bridge for the WRV Magic rollout (WRV-070). Watches ExcelGuildGate's seal count and, as each Magic stage becomes eligible, swaps Magic's config to that stage's curated packet, reloads Magic, runs the stage's LuckPerms grants and announces the unlock. New in 0.2.0 - stage-floor rank reconciliation (Item 33-b) — the bridge steps each mage's wand up to the applied stage's floor rank (stage 2 student, 3 apprentice, 4 and 5 master) through Magic's own ProgressionPath upgrade API on apply, join, wand activation and the watch sweep, preserving the bound wand, its owner and its spells; parked (Utility Pouch) wands are detected via ExcelPouch's PouchQuery and deferred to activation; /magicgate rank shows a player their rank, pool, regen and the floor. Dependencies - ExcelGuildGate provides the seal count, read through its public GuildGateAPI by reflection; Magic by NathanWolf is the spell engine whose six config files are swapped and reloaded via its own /magic reload command; LuckPerms receives the stage grant lists, executed verbatim as its console commands. Without ExcelGuildGate no stage is ever eligible; without Magic or LuckPerms an apply fails safe, advances nothing, and retries on the next watch tick.
+softdepend: [ExcelGuildGate, Magic, LuckPerms, ExcelPouch]
+commands:
+  magicgate:
+    description: Admin controls for the Magic stage bridge, plus /magicgate rank for players
+    usage: /magicgate <status|apply <stage>|reconcile [player]|rank>
+    permission: excelmagicgate.admin
+permissions:
+  excelmagicgate.admin:
+    description: Allows /magicgate admin commands and receives bridge warnings
+    default: op
+  excelmagicgate.rank:
+    description: Allows a player to read their own magic rank, mana pool, regen and the stage floor
+    default: true
