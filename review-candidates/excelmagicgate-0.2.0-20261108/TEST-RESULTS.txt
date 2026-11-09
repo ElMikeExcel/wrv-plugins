@@ -1,0 +1,17 @@
+ExcelMagicGate 0.2.0 — test + rig results (Nov 8, 2026)
+Unit suite (run-tests.sh, plain JVM, real stage packets): 158 checks, 0 failures.
+Deterministic double-build: two clean builds byte-identical
+(173,699 B / 2e576bf4055905ac1b76b5550e3c5efe6f88df8fe1b2a4c7f222a30a96fcfa4f).
+NOTE: the first lane's 173,689 B / c2800ac5... jar is SUPERSEDED (post-build
+source edit; see BUILD-RECORD.md divergence section) and is not installable.
+Stage packets vs 0.1.0: 42/42 files SHA-256 identical.
+Rig (Paper 26.2 + Magic 11.2.5 + WandBars 0.3.11, boot SEVERE 0):
+apply leg PASS, join leg PASS, Bedrock dotted-name PASS, bound-wand identity
+PASS (spells/binding preserved), WandBars re-open PASS (hotbar_count 3),
+pouch defer PASS + activation completion PASS (run 11 RigPouch6 on the
+superseded jar; RE-PROVEN run 12 on the shipped jar, RigPouch12, plus the
+join leg RigJoin12 and WandBars re-open, boot SEVERE 0),
+cast-after-upgrade PASS (run 7, RigCaster4 heal 12->14 from pool 200;
+run-11 cast anomaly disclosed in BUILD-RECORD.md).
+Full narrative: BUILD-RECORD.md. Evidence logs in ~/workspace/magicgate-floor-build/
+(rig-verdict-run11-20261108.log, rig-run10-partial-20261108.log, rig/server/logs/).

@@ -1,0 +1,77 @@
+# Wink Reyes Valley — Magic SEAL 3 — THE WONDER (CUMULATIVE packet)
+# LuckPerms grants. WRV-070.
+#
+# Run AFTER the install boot with this packet (see INSTALL-RUNBOOK.md).
+# Nodes are magic.cast.<spell> = true. No wildcards, ever: no magic.*,
+# no magic.cast.*, no negation list (locked spells do not exist in the
+# packet config, so there is nothing to negate).
+#
+# Honest note (same as Phase 1): in Magic 11.2.5's plugin.yml,
+# magic.cast.* ships with default: true; a player's real gate is
+# (a) the spell EXISTING (hard whitelist) and (b) their wand/path
+# knowing it. These grants are the declarative, auditable record.
+
+# DEFAULT group — all 59 path spells (seals 1..3 cumulative):
+lp group default permission set magic.cast.heal true
+lp group default permission set magic.cast.boon true
+lp group default permission set magic.cast.feed true
+lp group default permission set magic.cast.extinguish true
+lp group default permission set magic.cast.aqualung true
+lp group default permission set magic.cast.cure true
+lp group default permission set magic.cast.shell true
+lp group default permission set magic.cast.gills true
+lp group default permission set magic.cast.stormshackle true
+lp group default permission set magic.cast.superheal true
+lp group default permission set magic.cast.recall true
+lp group default permission set magic.cast.blessing true
+lp group default permission set magic.cast.recall_death true
+lp group default permission set magic.cast.torch true
+lp group default permission set magic.cast.peek true
+lp group default permission set magic.cast.workbench true
+lp group default permission set magic.cast.bubble true
+lp group default permission set magic.cast.backflip true
+lp group default permission set magic.cast.gasp true
+lp group default permission set magic.cast.magictorch true
+lp group default permission set magic.cast.throwmagictorch true
+lp group default permission set magic.cast.fling true
+lp group default permission set magic.cast.dash true
+lp group default permission set magic.cast.evade true
+lp group default permission set magic.cast.hulkleap true
+lp group default permission set magic.cast.piggyback true
+lp group default permission set magic.cast.repairitem true
+lp group default permission set magic.cast.repairequipment true
+lp group default permission set magic.cast.glide true
+lp group default permission set magic.cast.lift true
+lp group default permission set magic.cast.stash true
+lp group default permission set magic.cast.disposal true
+lp group default permission set magic.cast.blink true
+lp group default permission set magic.cast.missile true
+lp group default permission set magic.cast.frost true
+lp group default permission set magic.cast.arrow true
+lp group default permission set magic.cast.flare true
+lp group default permission set magic.cast.stun true
+lp group default permission set magic.cast.push true
+lp group default permission set magic.cast.pull true
+lp group default permission set magic.cast.sparkle true
+lp group default permission set magic.cast.stream true
+lp group default permission set magic.cast.grow true
+lp group default permission set magic.cast.familiar true
+lp group default permission set magic.cast.arrow_ice true
+lp group default permission set magic.cast.arrow_light true
+lp group default permission set magic.cast.arrow_shock true
+lp group default permission set magic.cast.arrow_regular true
+lp group default permission set magic.cast.wolf true
+lp group default permission set magic.cast.cat true
+lp group default permission set magic.cast.wave true
+lp group default permission set magic.cast.smite true
+lp group default permission set magic.cast.growth true
+lp group default permission set magic.cast.hat true
+lp group default permission set magic.cast.gather true
+lp group default permission set magic.cast.lightning true
+lp group default permission set magic.cast.chainlightning true
+lp group default permission set magic.cast.pollinate true
+lp group default permission set magic.cast.tame true
+
+# Verify afterwards:
+#   lp group default permission check magic.cast.heal   -> true
+#   lp group default permission check magic.cast.lava   -> undefined
