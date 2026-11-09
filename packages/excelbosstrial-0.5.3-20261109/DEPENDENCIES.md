@@ -1,0 +1,3 @@
+# Excel dependency manifest
+
+Test compiler: existing JDK 25 distribution; Java release target 21. Full compile classpath consists of the available Paper runtime library set, PlaceholderAPI 2.11.6, ExcelGuildGate 0.3.3 API JAR, and (0.3.4) the ExcelProtect 0.1.0 JAR (compile-only, for its publish API; the plugin itself stays a softdepend and is never bundled). DEPENDENCIES.sha256 records exact filenames and bytes used locally, without private paths. These binaries are excluded from publication. Paper/Bukkit, PlaceholderAPI and GuildGate remain their respective authors' work; referencing an API is not a claim to authorship. A dependency-complete reproduction requires obtaining the matching trusted artifacts; no offline standalone build is claimed.
