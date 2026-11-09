@@ -1,0 +1,14 @@
+ExcelMagicGate 0.2.1 — test + harness results (Nov 9, 2026)
+Unit suite (run-tests.sh, plain JVM, real stage packets): 158 checks, 0 failures.
+Full output: TEST-OUTPUT.txt in this package ("ExcelMagicGateTest: passed=158 failed=0").
+Deterministic double-build: two clean builds byte-identical
+(192,747 B / 7110bfdcff48ef1bb6f68ff779276eb25a1118680ccaddbe6dc629fdc8121c5a).
+Spell logic harness on the refreshed jar templates (harness-stage{2,3,4,5}.txt):
+stage2 123 findings / CRITICAL 0; stage3 225 / 0; stage4 278 / 0; stage5 278 / 0;
+checks 8/10/12/13 = 0 on every stage — gate PASS (VERDICT §5.2c).
+Stage packets vs 0.1.0: 34/42 files byte-identical; the 8 changed files are BY DESIGN
+(stage{2,3,4,5} spells.yml replaced with the Nov 8 composed-install finals +
+stage{2,3,4,5} grants.txt refreshed 40/68/82/115) — supersession carried in SOURCE.md.
+No rig run for 0.2.1 (no code-path changes; 0.2.0 rig verdict stands).
+Install boot proof (parent hand window Nov 9, 2026, 2:30–2:46 PM CST): Enabling v0.2.1,
+build EXC-MAGICGATE-0.2.1-WRV-20261109-01-d34112, Done 20.081s, SEVERE 0, LOCKED 4 of 5.
