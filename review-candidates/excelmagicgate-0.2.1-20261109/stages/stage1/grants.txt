@@ -1,0 +1,41 @@
+# Wink Reyes Valley - Magic Phase 1 (HEALER RELEASE)
+# LuckPerms grants for the DEFAULT group. WRV-070.
+#
+# Run these console commands once, AFTER the Phase 1 install boot
+# (see INSTALL-RUNBOOK.md step 6). Exactly 13 nodes: magic.cast.<spell>
+# for each Phase 1 player spell, nothing else. No wildcards, ever:
+# no magic.*, no magic.cast.*, no negation list (there is nothing to
+# negate - locked spells do not exist in the packet config).
+#
+# Honest note on what this layer does: in Magic 11.2.5's plugin.yml,
+# magic.cast.* ships with default: true, and a player's real gate is
+# (a) the spell EXISTING (hard whitelist) and (b) their wand/path
+# knowing it. These explicit grants are the declarative record of who
+# may cast what, they keep the default group correct if Magic ever
+# changes its permission defaults, and they make the Phase 1 list
+# auditable with one command:
+#   lp group default permission info
+#
+# The node format was verified live on the scratch stack (REPORT.md):
+#   lp group default permission check magic.cast.heal
+# resolves through LuckPerms 5.5.87 (the exact live version).
+
+lp group default permission set magic.cast.heal true
+lp group default permission set magic.cast.cure true
+lp group default permission set magic.cast.blessing true
+lp group default permission set magic.cast.boon true
+lp group default permission set magic.cast.superheal true
+lp group default permission set magic.cast.feed true
+lp group default permission set magic.cast.extinguish true
+lp group default permission set magic.cast.aqualung true
+lp group default permission set magic.cast.gills true
+lp group default permission set magic.cast.shell true
+lp group default permission set magic.cast.recall true
+lp group default permission set magic.cast.recall_death true
+lp group default permission set magic.cast.stormshackle true
+
+# Rollback for this layer (full Magic removal):
+#   lp group default permission unset magic.cast.heal
+#   ... (repeat for all 13) - or, if the group carries nothing else
+#   from this packet, the grants die with the Phase 1 rollback pass
+#   described in INSTALL-RUNBOOK.md.
