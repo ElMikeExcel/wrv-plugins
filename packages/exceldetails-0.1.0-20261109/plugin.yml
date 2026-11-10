@@ -1,0 +1,21 @@
+name: ExcelDetails
+version: 0.1.0
+api-version: '1.21'
+main: com.winkreyes.exceldetails.ExcelDetails
+description: A live damage meter in the Details! mold — damage done, damage taken and healing on your sidebar, updating while the fight happens, riding under the EliteMobs party box when you are in one.
+authors: [Iris, Mike]
+website: https://winkreyesvalley.online
+
+commands:
+  details:
+    description: The damage meter — toggle it, switch windows, clear the segment
+    usage: /details [on|off|toggle|window <damage|taken|healing>|next|clear|reset|status]
+    aliases: [dmeter]
+
+permissions:
+  exceldetails.use:
+    description: Use the damage meter
+    default: true
+  exceldetails.admin:
+    description: Staff tools (settings reload)
+    default: op
