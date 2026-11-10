@@ -1,0 +1,43 @@
+ExcelWandBars 0.3.14 — test results (Nov 10, 2026, build close-out)
+
+Pure suites: 20 suites, 577 checks, 0 failed.
+  ArrangePlanTest 25 · BarLoadoutNewTest 35 · BarPositionTest 35 · BookHoldPlanTest 51
+  CooldownDisplayPlanTest 20 · CooldownTagPlanTest 61 · DragWritePlanTest 38
+  DragWriteTwoTapTest 13 · ExitSweepPlanTest 23 · FormContrastTest 70 (new)
+  HoldReadPlanTest 11 · JoinGuardPlanTest 14 · JoinSweepPlanTest 8
+  PagerDefault0312Test 27 · PagerPlanTest 29 · QuitClosePlanTest 8
+  SlotGuardPlanTest 28 · SpellbookNewTest 13 · SpellbookPager039Test 54
+  UnarmedDragPlanTest 14
+  (The 19 carried 0.3.13 suites are byte-identical test files, 507 checks,
+  all green against the 0.3.14 tree; FormContrastTest adds the 70 contrast
+  checks, including the exact photographed rows: a locked Summon entry
+  "Tame Pet" / Apprentice renders as section-0 + "Tame Pet - unlocks at
+  Apprentice" with no section-7 anywhere and visible length unchanged.)
+
+Renderer probe (desk, real Cumulus classes from Geyser-Spigot.jar):
+  rig-probe/FormProbe built a SimpleFormImpl through the patched
+  BedrockForms.buildSimple, the caller passing the OLD section-7 labels:
+    BUTTON: Wolf
+    BUTTON: <SS>0Tame Pet - unlocks at Apprentice
+    BUTTON: <SS>0Cat - unlocks at Apprentice
+    BUTTON: Back to groups
+    BUTTON: Close
+  (<SS> = the section sign, escaped for print.) The renderer rewrote the
+  pale ink to black inside the real form object; plain labels untouched.
+
+Base gate: 0.3.13 rebuilt from the src0313 tree with the 0.3.13 toolchain
+  came out byte-identical to the shipped jar (544,853 B, SHA-256
+  7278f09ed160236b54c02d9dfaa590feeb1ba25027c901b3a17217848a1327e3).
+
+Artifact: SHA-256 c87f6005f92539993d05ec8f9f52726a0b3c99a129c36f94153f7fd723774d63,
+  545,907 B, 247 entries. Built twice from the same sources: class trees
+  identical, both repacks byte-identical to the staged jar.
+  Entry delta vs 0.3.13: BedrockForms, BuildInfo, SpellbookText (+2 inner
+  classes, javap-proven bytecode-identical, debug metadata only),
+  plugin.yml, excel-build.txt changed; core/FormContrast added;
+  config.yml and spellbook.yml byte-identical to 0.3.13's.
+
+Not proven: the Bedrock player proof (Mike reopening the Summon form,
+  locked rows readable idle and selected) is post-install evidence and
+  is named as owed in MANIFEST-ENTRY-DRAFT.md. No live boot was run
+  (desk-only commission).
