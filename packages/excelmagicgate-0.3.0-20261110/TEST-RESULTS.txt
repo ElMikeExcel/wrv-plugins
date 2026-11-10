@@ -1,0 +1,23 @@
+ExcelMagicGate 0.3.0 — test results (2026-11-10)
+
+Unit suite (run-tests.sh, full output in TEST-OUTPUT.txt):
+  ExcelMagicGateTest: passed=253 failed=0
+  Covers: all carried 0.2.1 regression sections; EarnedRank boundaries and
+  ceiling-min; CeilingPlan matrix incl. DEMOTE / DEMOTE_HELD / pouch-defer;
+  CreditPolicy decision chain (family gates, heal gate, strict + correlated
+  damage, pair window, cap 49/50/51); EarnedStore codec + Chicago day roll;
+  config-vs-code-defaults agreement (101 probe families); DESIGN S10
+  spell-logic simulations (fling forever -> 0, mend full-health -> 0,
+  mend hurt -> 50/day cap, wall damage -> 0, penned mob -> 50/day,
+  hit-trade -> pair window K=5, boon spam -> 50/day, critical passive -> 0).
+Placement reproduction over the 11 Nov 9 mage.dat fixtures: EXACT match to
+  DESIGN S8 (Jester 11,231 Master; Marvin 2,178 Master; Mike 1,210
+  Apprentice; Kailey 12; Rylie 0; Racimbio 11).
+Deterministic double-build: byte-identical (SHA-256 515fe1c3...f88018).
+Stage packets vs live 0.2.1: byte-identical (diff -r clean) — no spell
+  config touched, spell-audit harness N/A by scope.
+Rig (Paper 26.2 + Magic 11.2.5, 3 boots): demotion seam PROVEN (Java,
+  dotted Bedrock name, pouch-deferred), step-up, live threshold crossing,
+  credit battery, lore property seam verified, auto-upgrade guard,
+  persistence across restart. 0 SEVERE, 0 MagicGate WARN/ERROR.
+  Full verdict: RIG-VERDICT.md.

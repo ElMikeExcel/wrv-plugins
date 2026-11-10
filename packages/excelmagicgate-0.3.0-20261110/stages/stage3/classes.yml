@@ -1,0 +1,79 @@
+#
+# Wink Reyes Valley - Magic Phase 1 (HEALER RELEASE) mage classes.
+# WRV-070. Paired with config.yml: load_default_classes: false
+# -> defaults/classes.defaults.yml is NOT loaded.
+#
+# The "base" storage class and the "vanilla" attribute class are copied
+# VERBATIM from Magic 11.2.5 defaults/classes.defaults.yml (they define
+# storage mappings and vanilla attribute baselines; no spells).
+#
+# The shipped defaults also define classes that grant spells OUTSIDE the
+# path system: mage starts with missile, battle_mage adds fire/push,
+# archer_mage adds arrow_poison. Those classes are absent here. The mage
+# class below keeps its shipped shape (parent caster, path beginner,
+# 50 mana / 5 regen) but grants NO spells of its own: every spell a mage
+# has comes from the curated path and wand, which carry only Phase 1.
+# broomrider and the locked join-effect classes (butterfly, crown, tail)
+# are not carried over.
+#
+
+base:
+  storage:
+    path: subclass
+    mana_max: path
+    mana_regeneration: path
+    mana: mana_regeneration
+    mana_timestamp: mana_regeneration
+    spell_levels: class
+    spells: class
+    brushes: class
+    hotbar_count: subclass
+    attributes: mage,wand
+
+vanilla:
+  health_scale: 0
+  entity_attributes:
+    generic_max_health:
+      value: 20
+      operation: base
+    generic_follow_range:
+      value: 0
+      operation: base
+    generic_knockback_resistance:
+      value: 0
+      operation: base
+    generic_movement_speed:
+      value: 0.1
+      operation: base
+    generic_attack_damage:
+      value: 2
+      operation: base
+    generic_armor:
+      value: 0
+      operation: base
+    generic_armor_toughness:
+      value: 0
+      operation: base
+    generic_attack_knockback:
+      value: 0
+      operation: base
+    generic_attack_speed:
+      value: 4
+      operation: base
+    generic_luck:
+      value: 0
+      operation: base
+    generic_flying_speed:
+      value: 0.4
+      operation: base
+
+caster:
+  inherit: base
+  locked: false
+mage:
+  parent: caster
+  locked: false
+  effect_color: random
+  path: beginner
+  mana_max: 50
+  mana_regeneration: 5

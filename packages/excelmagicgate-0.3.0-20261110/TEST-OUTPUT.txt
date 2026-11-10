@@ -1,0 +1,257 @@
+== ExcelMagicGate tests: 19 sources
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+PASS plan: seal 1 fallen, stage 0 applied -> APPLY 1
+PASS plan: two seals between ticks -> APPLY straight to 3 (cumulative packets)
+PASS plan: eligible == applied -> NONE (idempotent)
+PASS plan: fresh install at 0 seals -> NONE
+PASS plan: seals drop below applied (revoke) -> WARN_DOWNGRADE, never downgrade
+PASS plan: 4 seals vs stage 5 applied -> WARN_DOWNGRADE
+PASS plan: master switch off -> NONE even with all seals fallen
+PASS plan: seal source unavailable -> UNAVAILABLE
+PASS plan: eligible count clamped to stage 5
+PASS plan: everything applied -> NONE
+PASS plan: clampStage bounds
+PASS grants: comments and blanks skipped, order kept
+PASS grants: no builder group -> no pre-commands
+PASS grants: builder list counts only real commands
+PASS grants: builder grants trigger one creategroup pre-command (comment alone would not)
+PASS grants: comment-only file (stage 0) parses to zero commands
+PASS grants: null input parses to zero commands
+PASS grants: surrounding whitespace trimmed
+PASS packets: stage 0 grants.txt exists
+PASS packets: stage 0 grant count == 0 (got 0)
+PASS packets: stage 0 has no pre-commands
+PASS packets: stage 1 grants.txt exists
+PASS packets: stage 1 grant count == 13 (got 13)
+PASS packets: stage 1 has no pre-commands
+PASS packets: stage 2 grants.txt exists
+PASS packets: stage 2 grant count == 40 (got 40)
+PASS packets: stage 2 has no pre-commands
+PASS packets: stage 3 grants.txt exists
+PASS packets: stage 3 grant count == 68 (got 68)
+PASS packets: stage 3 has no pre-commands
+PASS packets: stage 4 grants.txt exists
+PASS packets: stage 4 grant count == 82 (got 82)
+PASS packets: stage 4 pre-command creates the builder group
+PASS packets: stage 5 grants.txt exists
+PASS packets: stage 5 grant count == 115 (got 115)
+PASS packets: stage 5 has no pre-commands
+PASS packets: stage 1 grants magic.cast.heal
+PASS packets: stage 1 does NOT grant chainlightning (seal 3 spell)
+PASS packets: stage 5 never grants lava (permanently locked shelf)
+PASS packets: stage 0 ships config.yml
+PASS packets: stage 0 ships spells.yml
+PASS packets: stage 0 ships paths.yml
+PASS packets: stage 0 ships wands.yml
+PASS packets: stage 0 ships classes.yml
+PASS packets: stage 0 ships messages.yml
+PASS packets: stage 1 ships config.yml
+PASS packets: stage 1 ships spells.yml
+PASS packets: stage 1 ships paths.yml
+PASS packets: stage 1 ships wands.yml
+PASS packets: stage 1 ships classes.yml
+PASS packets: stage 1 ships messages.yml
+PASS packets: stage 2 ships config.yml
+PASS packets: stage 2 ships spells.yml
+PASS packets: stage 2 ships paths.yml
+PASS packets: stage 2 ships wands.yml
+PASS packets: stage 2 ships classes.yml
+PASS packets: stage 2 ships messages.yml
+PASS packets: stage 3 ships config.yml
+PASS packets: stage 3 ships spells.yml
+PASS packets: stage 3 ships paths.yml
+PASS packets: stage 3 ships wands.yml
+PASS packets: stage 3 ships classes.yml
+PASS packets: stage 3 ships messages.yml
+PASS packets: stage 4 ships config.yml
+PASS packets: stage 4 ships spells.yml
+PASS packets: stage 4 ships paths.yml
+PASS packets: stage 4 ships wands.yml
+PASS packets: stage 4 ships classes.yml
+PASS packets: stage 4 ships messages.yml
+PASS packets: stage 5 ships config.yml
+PASS packets: stage 5 ships spells.yml
+PASS packets: stage 5 ships paths.yml
+PASS packets: stage 5 ships wands.yml
+PASS packets: stage 5 ships classes.yml
+PASS packets: stage 5 ships messages.yml
+PASS packets: stage 0 spells contain the stormshackle canary
+PASS packets: stage 1 grants magic.cast.cure
+PASS packets: NO stage grants magic.commands.wand.restore (console-only reissue)
+PASS applier: all steps pass -> success
+PASS applier: steps run in contract order (floor reconcile between grants and persist)
+PASS applier: floor failure -> appliedStage does not advance (idempotent reconcile retries safely)
+PASS applier: swap failure reports the failed step
+PASS applier: swap failure -> stage NOT persisted, no announcement
+PASS applier: grants failure -> appliedStage does not advance
+PASS applier: backup failure aborts before any change
+PASS applier: reload failure stops before grants
+PASS applier: announcement failure after persist is a warning, not a failed apply
+PASS applier: persist failure is a failed apply (will retry)
+PASS state: null map -> fresh defaults
+PASS state: codec round-trip preserves fields
+PASS state: garbage values fall back to defaults
+PASS state: appliedStage clamped to 0..5
+PASS state: string numbers accepted
+PASS messages: stage 1 = The Healer
+PASS messages: stage 2 = The Pathfinder
+PASS messages: stage 3 = The Wonder
+PASS messages: stage 4 = The Masons
+PASS messages: stage 5 = Schools Open
+PASS messages: stage 0 has no announcement
+PASS messages: out-of-range stage has no announcement
+PASS messages: stage 1 defaults are complete
+PASS messages: stage 2 defaults are complete
+PASS messages: stage 3 defaults are complete
+PASS messages: stage 4 defaults are complete
+PASS messages: stage 5 defaults are complete
+PASS messages: one-field override keeps the other defaults
+PASS messages: blank override falls back to the default
+PASS messages: broadcast list override replaces default lines
+PASS messages: resolve(stage 0) is null
+PASS floor: stage 0 -> beginner
+PASS floor: stage 1 -> beginner (the stage-1 earn stays earned)
+PASS floor: stage 2 -> student
+PASS floor: stage 3 -> apprentice
+PASS floor: stage 4 -> master
+PASS floor: stage 5 -> master (SATURATES - no rank above master; the stage-5 band growth cannot re-arm the trap)
+PASS floor: out-of-range stages clamp
+PASS floor: beginner frame 50/5
+PASS floor: student frame 100/15 (Mike's frozen numbers)
+PASS floor: apprentice frame 150/25
+PASS floor: master frame 200/35, hotbar 3 (the WandBars re-read case)
+PASS floor: hotbar counts 1/2/2 below master
+PASS floor: beginner -> master is 3 ordered steps
+PASS floor: student -> master is 2 steps (Mike's live case at stage 4)
+PASS floor: at floor -> no steps
+PASS floor: above floor -> no steps (never steps down)
+PASS floor: apprentice vs stage-1 floor -> no steps (earned-ahead is kept)
+PASS floor: fromKey parses the four ranks, unknown keys are null (never guessed)
+PASS floor: frame verification is exact
+PASS floor: build fingerprint present (Layer B)
+PASS plan: carried student wand at stage 4 -> STEP x2
+PASS plan: carried beginner wand at stage 4 -> STEP x3 (a wand issued today)
+PASS plan: master at stage 4 -> ALREADY
+PASS plan: apprentice above a student floor -> ALREADY (no downgrade)
+PASS plan: wand parked in pouch -> DEFERRED to activation (PouchQuery is query-only)
+PASS plan: no live wand and no pouch report -> DEFERRED to activation
+PASS plan: unknown path key -> SKIP (never guessed, never mutated)
+PASS plan: beginner at stage 1 floor beginner -> ALREADY (stage-1 earn preserved)
+PASS bands: stage 1 beginner band == 4 (got 4)
+PASS bands: stage 1 student band == 4 (got 4)
+PASS bands: stage 1 apprentice band == 2 (got 2)
+PASS bands: stage 1 master band == 2 (got 2)
+PASS bands: stage 2 beginner band == 10 (got 10)
+PASS bands: stage 2 student band == 13 (got 13)
+PASS bands: stage 2 apprentice band == 6 (got 6)
+PASS bands: stage 2 master band == 3 (got 3)
+PASS bands: stage 3 beginner band == 17 (got 17)
+PASS bands: stage 3 student band == 23 (got 23)
+PASS bands: stage 3 apprentice band == 11 (got 11)
+PASS bands: stage 3 master band == 7 (got 7)
+PASS bands: stage 4 beginner band == 17 (got 17)
+PASS bands: stage 4 student band == 23 (got 23)
+PASS bands: stage 4 apprentice band == 11 (got 11)
+PASS bands: stage 4 master band == 7 (got 7)
+PASS bands: stage 5 beginner band == 21 (got 21)
+PASS bands: stage 5 student band == 30 (got 30)
+PASS bands: stage 5 apprentice band == 20 (got 20)
+PASS bands: stage 5 master band == 28 (got 28)
+PASS bands: stage-5 student growth to 30 is covered by floor saturation at master
+PASS earned: LOCKED thresholds 100 / 400 / 2000 (Mike, Nov 9 2026)
+PASS earned: 0 -> beginner
+PASS earned: 99 -> beginner
+PASS earned: 100 -> student
+PASS earned: 399 -> student
+PASS earned: 400 -> apprentice
+PASS earned: 1999 -> apprentice
+PASS earned: 2000 -> master
+PASS earned: above 2000 stays master
+PASS earned: master-earned at stage 0 ceiling -> beginner
+PASS earned: master-earned at stage 2 ceiling -> student
+PASS earned: master-earned at stage 3 ceiling -> apprentice
+PASS earned: master-earned at stage 4/5 ceiling -> master
+PASS earned: below ceiling -> the earned rank itself
+PASS earned: 0 -> 100 to student
+PASS earned: 99 -> 1 to student
+PASS earned: 100 -> 300 to apprentice
+PASS earned: Mike's placement 1210 -> 790 to master (DESIGN.md S8)
+PASS earned: Kailey's placement 12 -> 88 to student (DESIGN.md S8)
+PASS earned: at master there is no next rank
+PASS earned: next-rank chain
+PASS ceiling: beginner wand, student earned -> STEP_UP x1
+PASS ceiling: beginner wand, master earned + ceiling -> STEP_UP x3
+PASS ceiling: master earned under student ceiling -> target student
+PASS ceiling: at target -> AT_TARGET
+PASS ceiling: master wand, apprentice earned (Mike 1210) -> DEMOTE x1
+PASS ceiling: master wand, beginner earned -> DEMOTE x3
+PASS ceiling: demotion disabled -> DEMOTE_HELD (named, never silent)
+PASS ceiling: master earned under a student ceiling -> DEMOTE to ceiling
+PASS ceiling: pouch-parked demotion -> DEFERRED to activation
+PASS ceiling: pouch-parked step-up -> DEFERRED to activation
+PASS ceiling: no live wand demotion -> DEFERRED to activation
+PASS ceiling: unknown path key -> SKIP (never guessed, never mutated)
+PASS ceiling: oneDown chain ends at beginner
+PASS ceiling: stepsTo arbitrary target
+PASS credit: tier key -> base family normalization
+PASS credit: all DESIGN S3 no-credit families excluded (47 listed)
+PASS credit: fling excluded at any tier (the type specimen)
+PASS credit: heal-gate set incl. feed CREDITED (Marvin placement swing)
+PASS credit: stormshackle damage-gated (actions, not its utility category)
+PASS credit: projectile families correlated-gated
+PASS credit: uncertain-table defaults (push target-gate, dash damage-gate)
+PASS credit: summons/buffs degrade to success-only + daily cap by design
+PASS credit: fling|4 successful cast -> DENIED (excluded family)
+PASS credit: fizzled heal -> DENIED (not success)
+PASS credit: Repeat sub-context echo -> DENIED (count once per real cast)
+PASS credit: heal on a full-health target -> DENIED (no regain observed)
+PASS credit: heal that landed -> CREDIT
+PASS credit: damage into a wall -> DENIED (no targeted entity)
+PASS credit: damage on a mob -> CREDIT
+PASS credit: projectile with correlated hit -> CREDIT
+PASS credit: projectile with no hit evidence -> DENIED
+PASS credit: daily count 49 -> the 50th cast CREDITs
+PASS credit: daily count 50 -> DENIED (cap reached)
+PASS credit: daily count 51 -> DENIED
+PASS credit: 5th pair credit inside window -> CREDIT
+PASS credit: 6th pair credit inside window -> DENIED (hit-trade bound)
+PASS credit: mob targets are never pair-windowed (farming mobs is playing)
+PASS store: fresh store is empty, placement not done
+PASS store: placement seeds once and never overwrites
+PASS store: credits accrue to total + today's family bucket
+PASS store: a stale bucket reads as 0 (Chicago day roll)
+PASS store: day roll clears the bucket, never the lifetime total
+PASS store: codec round-trip preserves placement + totals + placed component
+PASS store: garbage rows fall back to defaults (tolerant load)
+PASS store: fallback seed is marked as not-a-placement (placed_total 0)
+PASS logic: fling held forever -> 0 credit (excluded family)
+PASS logic: mend on full-health target forever -> 0 credit (heal gate)
+PASS logic: mend spam on hurt target -> exactly 50 credits/day (family cap)
+PASS logic: damage into a wall forever -> 0 credit (no target)
+PASS logic: damage at a penned mob -> exactly 50 credits/day (family cap)
+PASS logic: hit-trade loop -> pair window stops yield at K=5 per window
+PASS logic: boon spam -> exactly 50 credits/day (cap is the bound)
+PASS logic: passive proc (critical) -> 0 credit by family
+PASS config: shipped config.yml exists
+PASS config: earning section present
+PASS config: earning enabled by default
+PASS config: demotion-enabled true (ships only with the rig demotion proof)
+PASS config: locked thresholds 100/400/2000 in shipped config
+PASS config: daily cap 50 per family in shipped config
+PASS config: shipped classification agrees with packet defaults on 101 probe families
+PASS placement: fixtures dir exists
+PASS placement: 11 fixture files (got 11)
+PASS placement: 00000000-0000-0000-0009-0000066e35d3 is a zero-cast record
+PASS placement: 00000000-0000-0000-0009-01f05d0d739d raw=0 credited=0 (expected 0/0) -> beginner
+PASS placement: 00000000-0000-0000-0009-01f40ccd59de raw=12 credited=12 (expected 12/12) -> beginner
+PASS placement: 00000000-0000-0000-0009-01f44deb46fa is a zero-cast record
+PASS placement: 00000000-0000-0000-0009-01feb74ea7be raw=1232 credited=1210 (expected 1232/1210) -> apprentice
+PASS placement: 1621dd27-86a8-4007-a00e-8ae90b691f65 is a zero-cast record
+PASS placement: 6f7a4d59-80ae-4f46-a68d-8397d1e60f8d is a zero-cast record
+PASS placement: 7401bc22-d42a-4492-a451-374bd12d9e2c is a zero-cast record
+PASS placement: 8399c623-786f-448c-8b11-f54504721819 raw=3734 credited=2178 (expected 3734/2178) -> master
+PASS placement: aad1b617-f5db-4357-acff-b5a5204a46d2 raw=11 credited=11 (expected 11/11) -> beginner
+PASS placement: e739fb4d-7cec-48f4-8a2b-7c25e27d8b9e raw=17821 credited=11231 (expected 17821/11231) -> master
+PASS placement: locked placements hold (Jester+Marvin Master, Mike Apprentice, Kailey below Student)
+ExcelMagicGateTest: passed=253 failed=0

@@ -1,0 +1,200 @@
+# ExcelMagicGate (WRV-070) - bridge settings.
+#
+# Master switch. When false the seal watch never applies anything
+# automatically; /magicgate status still answers and an operator can
+# still run /magicgate apply by hand.
+enabled: true
+
+# How often the seal watch checks ExcelGuildGate's seal count, in
+# seconds. A player joining also triggers one check.
+poll-seconds: 60
+
+# Stage-floor rank reconciliation (0.2.0, Item 33-b). Mana pool and
+# regen ride a mage's path RANK in Magic; the floor steps each mage's
+# wand UP to the applied stage's floor rank (stage 2 = student,
+# 3 = apprentice, 4 and 5 = master) through Magic's own upgrade API,
+# so a stage's frame never waits on completing a rank band that a
+# later stage packet enlarged. The floor never steps anyone down.
+floor-reconcile:
+  # Master switch for every reconcile leg below.
+  enabled: true
+  # Step online mages as part of a stage apply.
+  on-apply: true
+  # Step a mage on join (covers players who were offline at apply).
+  on-join: true
+  # Re-check online mages on every seal-watch tick (read-only when a
+  # mage is already at the floor; completes steps deferred while a
+  # wand was parked in the Utility Pouch or not carried).
+  sweep-on-watch-tick: true
+
+# Magic Rank earning system (0.3.0, spec approved by Mike Nov 9, 2026;
+# design: magic-rank-packet-20261110/DESIGN.md). Ranks are EARNED by
+# total credited cast count only; the seal stages set the CEILING a
+# player may hold (the stage-floor table above, read as a ceiling).
+# A credited cast is one that does real work: pure movement, passive
+# procs and cosmetic utility never credit; heals credit only when a
+# target actually regained health; damage credits only when a
+# non-caster entity was hit; everything else is bounded by the
+# per-family daily cap. The classification below IS the credited
+# definition - it lives here, not in code, so a ruling can be
+# corrected without a rebuild. Changes bind future credit only;
+# placements are a one-time record and are never recomputed.
+earning:
+  # Master switch for credit accrual + earned enforcement. When
+  # false, no casts credit and the reconciler keeps 0.2.x behaviour
+  # (the stage floor as a pure floor, nobody stepped down).
+  enabled: true
+  # Bring a wand DOWN to its earned target when it reads above it
+  # (the switch-over placement rule: no free legacy Master). Ships
+  # true only with the build's rig demotion proof on record; set
+  # false to hold legacy ranks frozen while earning accrues.
+  demotion-enabled: true
+  # Locked thresholds - credited casts per rank (Mike, Nov 9, 2026).
+  thresholds:
+    student: 100
+    apprentice: 400
+    master: 2000
+  # Layer-3 catch-all: max credited casts per spell FAMILY per day
+  # (tiers share one bucket; day rolls on America/Chicago).
+  daily-cap-per-family: 50
+  # Hit-trade bound: max damage credits one caster may earn against
+  # the SAME player target inside the rolling window. Mob targets
+  # are never pair-windowed - farming mobs is playing the game.
+  pair-window-max: 5
+  pair-window-minutes: 10
+  # How often the credited ledger (earned.yml) is flushed to disk.
+  flush-seconds: 30
+  # Wand lore display mode: auto (property seam, append fallback),
+  # property, append, or off (action-bar + /magicgate rank remain).
+  lore: auto
+  # NO CREDIT - movement / teleport families (no work target).
+  no-credit-families:
+    - fling
+    - blink
+    - backflip
+    - evade
+    - glide
+    - hulkleap
+    - skating
+    - recall
+    - recall_death
+    - gather
+    # NO CREDIT - passives (proc events, not deliberate casts).
+    - critical
+    - aqualung
+    - healing
+    # NO CREDIT - cosmetic / idle / zero-work-target utility.
+    - rolldice
+    - music
+    - sparkle
+    - hat
+    - wearskates
+    - peek
+    - torch
+    - magictorch
+    - throwmagictorch
+    - workbench
+    - stash
+    - disposal
+    - admission
+    - repairitem
+    - repairequipment
+    - platform
+    - tent
+    - tiny_house
+    - giant_house
+    - sponge
+    - harden
+    - rubberize
+    - growth
+    - pollinate
+    - grow
+    - flare
+    - day
+    - night
+    - time
+    - weather
+    - localrain
+    - restorelocalweather
+    - eat_food
+    - gasp
+  # HEAL GATE - credit only when a target actually regained health.
+  # feed is here on purpose: a targeted support spell with a work
+  # target and a 60s cooldown - and crediting it is the only reading
+  # consistent with the locked placements (DESIGN.md S3).
+  heal-gate-families:
+    - heal
+    - mend
+    - flashheal
+    - greaterheal
+    - superheal
+    - grouprenewal
+    - layonhands
+    - holylight
+    - feed
+  # DAMAGE (strict) - credit only when a non-caster entity was hit.
+  damage-strict-families:
+    - chainlightning
+    - earth
+    - frost
+    - fury
+    - lightning
+    - masterattack
+    - powerstone
+    - smite
+    - stormshackle
+    - stream
+    - stun
+    - sweep
+    - wave
+    - whip
+    - wrv_frostbite
+    - wrv_spark
+    - anvil
+    - dash
+  # DAMAGE (projectile) - strict, or a correlated damage event.
+  damage-correlated-families:
+    - arrow
+    - arrow_ice
+    - arrow_light
+    - arrow_regular
+    - arrow_shock
+    - arrowrain
+    - boomerang
+    - missile
+    - throwsword
+  # TARGET GATE - control spells; credit only with a real target.
+  target-gate-families:
+    - push
+    - pull
+    - force
+
+# The unlock announcement (fired once, when a stage applies).
+announce:
+  # Sound played to every online player, as a Minecraft sound key.
+  sound: ui.toast.challenge_complete
+  volume: 1.0
+  pitch: 1.0
+
+# Per-stage announcement text. The built-in defaults (from the WRV-070
+# roadmap) are used for anything not set here; uncomment and edit to
+# override a field. Placeholders: {stage}, {name}, {unlocks}.
+# Color codes use '&'.
+#messages:
+#  stages:
+#    1:
+#      name: The Healer
+#      title: "&6&lThe Healer"
+#      subtitle: "&eMagic returns to the valley"
+#      unlocks: "Heal, Cure, Blessing, Boon and Storm Shackle"
+#      broadcast:
+#        - "&6— Magic returns: &fThe Healer &6—"
+#        - "&eStage {stage} of 5 is open. New magic: &f{unlocks}&e."
+#    2:
+#      name: The Pathfinder
+#    3:
+#      name: The Wonder
+#    4:
+#      name: The Masons
+#    5:
+#      name: "The Guild Opens, the Schools Open"

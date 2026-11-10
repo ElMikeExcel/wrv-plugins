@@ -1,0 +1,19 @@
+name: ExcelMagicGate
+version: 0.3.0
+authors: [Iris, Mike]
+main: com.winkreyes.excelmagicgate.ExcelMagicGate
+api-version: "1.13"
+description: Automation bridge for the WRV Magic rollout (WRV-070). Watches ExcelGuildGate's seal count and, as each Magic stage becomes eligible, swaps Magic's config to that stage's curated packet, reloads Magic, runs the stage's LuckPerms grants and announces the unlock. New in 0.3.0 - the Magic Rank earning system (spec approved Nov 9, 2026) — ranks are earned by total credited cast count only (Student 100, Apprentice 400, Master 2,000 credited casts) and the seal stages now set the CEILING a player may hold rather than a floor; a credited cast is one that does real work (movement, passive and cosmetic families never credit; heals credit only when a target actually regained health; damage only when a non-caster entity was hit; a per-family daily cap bounds the rest), tracked in MagicGate's own earned.yml ledger. The reconciler steps each mage's wand UP toward min(earned, ceiling) through Magic's own ProgressionPath upgrade API and, at switch-over placement, DOWN to the earned rank through the reflective path/frame seam (rig-proven), on apply, join, wand activation and the watch sweep, preserving the bound wand, its owner and its spells; parked (Utility Pouch) wands are detected via ExcelPouch's PouchQuery and deferred to activation in both directions; the wand's own lore carries rank, credited casts, next rank and the world ceiling, and /magicgate rank shows the same. Dependencies - ExcelGuildGate provides the seal count, read through its public GuildGateAPI by reflection; Magic by NathanWolf is the spell engine whose six config files are swapped and reloaded via its own /magic reload command; LuckPerms receives the stage grant lists, executed verbatim as its console commands. Without ExcelGuildGate no stage is ever eligible; without Magic or LuckPerms an apply fails safe, advances nothing, and retries on the next watch tick.
+softdepend: [ExcelGuildGate, Magic, LuckPerms, ExcelPouch]
+commands:
+  magicgate:
+    description: Admin controls for the Magic stage bridge, plus /magicgate rank for players
+    usage: /magicgate <status|apply <stage>|reconcile [player]|rank>
+    permission: excelmagicgate.admin
+permissions:
+  excelmagicgate.admin:
+    description: Allows /magicgate admin commands and receives bridge warnings
+    default: op
+  excelmagicgate.rank:
+    description: Allows a player to read their own magic rank, mana pool, regen, credited casts and the stage ceiling
+    default: true
