@@ -1,0 +1,158 @@
+# ExcelAutoSort — configuration
+# Every player-facing sentence the plugin speaks lives in this file
+# (the house config-first rule), so wording can change without a
+# rebuild. The behavioral switches are at the top; the words are
+# below them under messages:.
+# Adding something later (Mike's config posture, Nov 6, 2026): put a
+# new knob in the section it belongs to and comment what it does and
+# what changing it means; put new sentences under messages:. Nothing
+# else needs restructuring — the file is meant to grow by addition.
+
+sort:
+  # Which containers tidy themselves for players with sorting on.
+  # These four are the set the old AutoSort handled — the parity set.
+  types: [CHEST, BARREL, ENDER_CHEST, SHULKER_BOX]
+  # The names read out in the "Sorting enabled for: ..." line.
+  type-names:
+    CHEST: Chest
+    BARREL: Barrel
+    ENDER_CHEST: Ender Chest
+    SHULKER_BOX: Shulker Box
+
+filter:
+  # Hoppers feeding a filter chest get filtered too — farms are the
+  # headline use, so this ships ON (decided Nov 6, 2026). Turn it off
+  # here if a redstone farm ever needs the chest left alone; no
+  # rebuild needed. Removals by hopper are written down as hopper
+  # removals and land in the chest owner's recovery box.
+  hoppers: true
+  # If this list is ever non-empty, hopper filtering happens ONLY in
+  # these worlds. Empty = every world.
+  hopper-worlds: []
+
+recovery:
+  # How long a removed stack waits in the recovery box before it is
+  # really gone: 7 days (decided Nov 6, 2026 — the family plays
+  # heaviest on weekends, and 24 hours was too easy to miss).
+  hours: 168
+  # The most stacks one player's box can hold — three double chests'
+  # worth. Past the cap, the oldest entries go first, and every one
+  # of those is written down too.
+  max-stacks: 162
+
+selector:
+  # Chest kinds shown per page of the setup screen.
+  page-size: 28
+
+max-org:
+  # Max Organization (the 0.2.0 feature): rent or buy the ability to
+  # open and manage every chest around you that you may set up, all
+  # in one view. The view stores nothing — it is a window onto the
+  # real chests — so a rent lapse can never lose an item.
+  enabled: true
+  # Rent: this much money for this many days. When the days run out
+  # the ability turns off; renting again turns it back on at once.
+  # Nothing is ever charged on its own — every rent is a fresh,
+  # confirmed purchase.
+  rent-price: 1000
+  rent-days: 30
+  # Buy: this much money, once, and the ability is permanent. Rent
+  # already paid never counts toward this — the player wording says
+  # so before any charge.
+  buy-price: 15000
+  # How far the network reaches from where the player stands, in
+  # blocks (a chest whose center is farther than this never appears).
+  radius: 16
+  # Stacks shown per page of the network view (54-slot screen, the
+  # bottom row is buttons — keep this at 45 or below).
+  page-size: 45
+
+messages:
+  sort-enabled: "Sorting &aenabled&r for: {types}"
+  sort-disabled: "Sorting &cdisabled"
+  not-for-console: "This command is not available for non-players."
+  no-permission: "&cYou don't have permission for that."
+  usage:
+    - "&eExcelAutoSort — /autosort toggles sorting of your chests"
+    - "&e/autosort chest — set up the filter on the chest you are looking at"
+    - "&e/autosort recover — open your filter recovery box"
+    - "&e/autosort max — Max Organization: all your chests around you at once"
+    - "&e/autosort status — your auto-sort state"
+    - "&e/autosort admin prune|reload|status|revoke|grant — staff tools"
+  status-sort: "&eAuto-sort: &f{state}"
+  status-chests: "&eFilter chests you set up: &f{count}"
+  status-buffer: "&eRecovery box: &f{count} stacks waiting"
+  status-maxorg: "&eMax Organization: &f{state}"
+  gui-maxorg-title: "Max Organization"
+  gui-maxorg-confirm-title: "Unlock Max Organization?"
+  gui-network-title: "My chests around me"
+  maxorg-info-title: "&eMax Organization"
+  maxorg-state-owned: "Yours forever — Max Organization is on"
+  maxorg-state-rented: "Rented — {time} left"
+  maxorg-state-lapsed: "Your rent ran out — Max Organization is off until you rent again"
+  maxorg-state-none: "Max Organization isn't unlocked yet"
+  maxorg-pitch:
+    - "Open and manage all your chests around you at once."
+    - "Rent: {rent} for {days} days — when it runs out the ability just turns off; re-rent anytime. Nothing is ever auto-charged."
+    - "Buy: {buy} once — yours forever. Rent you already paid does not count toward buying."
+  maxorg-rent-button: "&eRent — {rent} for {days} days"
+  maxorg-buy-button: "&eBuy — {buy}, yours forever"
+  maxorg-owned-note: "&aYours forever — no rent, no expiry"
+  maxorg-open-network: "&aOpen my chests"
+  maxorg-confirm-rent:
+    - "Rent Max Organization for {price} — {days} days from now."
+    - "When it runs out the ability turns off. Nothing is held or lost — it just stops until you rent again."
+  maxorg-confirm-buy:
+    - "Buy Max Organization for {price} — yours forever, no expiry."
+    - "Rent you already paid does not count toward this price."
+  maxorg-confirm-charge: "&aCharge me {price}"
+  maxorg-confirm-how: "&eNothing charged. Run &f/autosort max {kind} --confirm&e to go ahead."
+  maxorg-rented: "&aMax Organization is yours for {time}. Stand among your chests and open it any time."
+  maxorg-bought: "&aMax Organization is yours forever. Stand among your chests and open it any time."
+  maxorg-already-owned: "&eYou already own Max Organization — it's yours forever."
+  maxorg-insufficient: "&cYou don't have {price} — nothing was charged."
+  maxorg-economy-down: "&cThe server money system isn't answering right now — nothing was charged. Try again in a bit."
+  maxorg-disabled: "&eMax Organization is turned off on this server right now."
+  maxorg-network-empty-title: "&eNo chests in reach"
+  maxorg-network-empty:
+    - "None of your chests are within reach here."
+    - "Stand closer to your storage and try again."
+  maxorg-network-info: "&e{chests} chests in reach"
+  maxorg-deposit-button: "&aPut my things away"
+  maxorg-deposited: "&aPut away {count} items into {chests} chests."
+  maxorg-deposited-none: "&eNothing you are carrying fits these chests right now."
+  maxorg-unplaced: "&eNo chest here would take: {items} — still with you."
+  maxorg-chest-gone: "&eThat chest isn't in your network anymore — the view has been refreshed."
+  maxorg-no-room: "&eNo room in your inventory for that right now."
+  form-maxorg-button: "Max Organization"
+  look-at-chest: "&eLook at a chest or barrel and try again."
+  bad-material: "&cThat is not an item name I know: {name}"
+  hand-empty: "&eYour hand is empty — hold the item you want to add."
+  edit-applied: "&a{item}: {state} the list."
+  edit-noop: "&e{item} is already {state} the list."
+  confirm-needed: "&eThat change would remove these from the chest right now:"
+  confirm-how: "&eNothing changed. Run it again with &f--confirm&e to move those to your recovery box."
+  armed: "&aFilter on: {mode}"
+  swept: "&eMoved {count} items to your recovery box."
+  claimed: "&aClaimed {count} stacks from your recovery box."
+  gui-selector-title: "Chest filter"
+  gui-confirm-title: "Turn the filter on?"
+  gui-picker-title: "Add from my inventory"
+  gui-recovery-title: "Filter recovery box"
+  mode-off: "Filter: OFF"
+  mode-whitelist: "Keep only these (whitelist)"
+  mode-blacklist: "Throw away these (blacklist)"
+  confirm-whitelist: "Keep only the {count} kinds on the list. Anything else put in this chest will be removed to the recovery box."
+  confirm-blacklist: "Throw away the {count} kinds on the list. Everything else put in this chest stays."
+  confirm-off: "The filter is off. This chest removes nothing."
+  confirm-on: "&aTurn the filter on"
+  confirm-sweep: "&aMove those to my recovery box and turn the filter on"
+  confirm-not-yet: "&cNot yet"
+  add-from-hand: "&eAdd from my hand"
+  add-from-inventory: "&eAdd from my inventory"
+  recovery-button: "&eRecovery box — {count} waiting"
+  recovery-empty: "Nothing is waiting in your recovery box."
+  claim-all: "&aClaim everything"
+  done: "&aDone"
+  info-title: "&eThis chest's filter"
+  form-list-button: "Filter list & mode"
