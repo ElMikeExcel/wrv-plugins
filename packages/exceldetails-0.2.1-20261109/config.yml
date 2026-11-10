@@ -1,0 +1,23 @@
+# ExcelDetails — the meter's knobs. Excel — Wink Reyes Valley.
+# build: EXC-DETAILS-0.2.0-WRV-20261109-01-c84f19 (stamped again into data.yml on first save)
+
+# How often the sidebar re-renders, in ticks. Ten ticks is half a
+# second: fast enough that numbers visibly move mid-fight, slow
+# enough that an idle server pays nothing for the meter's watching.
+refresh-ticks: 10
+
+# A segment stays open while anyone's combat is younger than this.
+# Eight seconds of quiet closes the segment, files it as the last
+# segment, and folds its numbers into the overall totals.
+combat-timeout-seconds: 8
+
+# Ranked rows PER SECTION (0.2.0: damage done / damage taken /
+# healing stack as sections in one box). The whole box — standalone
+# or piggybacked under an EliteMobs party — never exceeds the
+# sidebar's 15-line ceiling; sections shed rows to fit.
+max-rows: 6
+
+# Say it in the console when a segment closes. Real fights only:
+# a segment that saw a single stray event (or was emptied by
+# /details clear) closes and merges silently (0.2.0 churn fix).
+announce-segments: true
