@@ -1,0 +1,39 @@
+ExcelMagicGate 0.3.0 AMENDED — test results
+Build: EXC-MAGICGATE-0.3.0-WRV-20261110-02-d2a310
+Jar: ExcelMagicGate-0.3.0.jar, 243,572 bytes, SHA-256 4cab2689d073a2a4e7141a31c24fd1a05cd7011fdf846a2fd84193e5a1836384
+Double-build: byte-identical (second clean build, same SHA-256).
+
+Unit suite (run-tests.sh, JDK 25): 276 checks, 0 failed.
+Full per-check output: TEST-OUTPUT.txt.
+
+Carried from the unamended 0.3.0 build (253 checks): 0.2.1 regression
+suite (ceiling basis, step ladder, frame table, placement parser,
+state persistence, floor spell keys, canonical ranks), EarnedRank
+thresholds, CeilingPlan, CreditPolicy (classification, gating,
+caps), EarnedStore round trip, config classification agreement,
+stage packet manifests, DESIGN section 10 credit-logic simulation
+(20 scripted cast scripts), placement reproduction over the 11 real
+Nov 9 mage-pull fixtures.
+
+New in the amendment (23 checks): WandInventorySync pure logic
+(base-key normalization, expected-set accumulation up to the target
+rank, above-rank exclusion, tier-key held matching, idempotence,
+grant-slot assignment after the wand's current max), supplemental
+grants config agreement (shipped config == code defaults), and the
+placement grant pass over the REAL Nov 9 fixtures — Jester's master
+wand gains exactly the six summoning-tree spells (tame already held,
+not re-granted); Marvin's apprentice wand at his placed Master rank
+gains 14 spells incl. tame at slots 80-93 after his max 79, while at
+an Apprentice target it gains only archer/bruiser/disposal (no tame,
+no master tree tier); Mike's student wand at placed Apprentice gains
+13 spells incl. archer/bruiser and no master spells; every
+post-grant second sweep is empty.
+
+Rig (Paper 26.2 + Magic 11.2.5, stage 4): inventory sync PROVEN —
+46-spell master fill incl. all six summoning spells + tame, verified
+on the wand; apprentice fill excludes master spells; pouch-parked
+wand untouched through a sweep, filled on activation; second sweep
+"in sync"; restart persistence verified in both mage-file
+representations (parsed spell_inventory + item custom_data). Zero
+SEVERE, zero INCOMPLETE in the repaired-book boots. Full text:
+RIG-VERDICT.md (the boot-1 stale-book caveat is recorded there).
