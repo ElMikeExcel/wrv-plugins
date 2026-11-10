@@ -1,0 +1,25 @@
+ExcelWandBars 0.3.13 — test results (Nov 8, 2026, build close-out)
+
+Pure suites: 19 suites, 507 checks, 0 failed.
+  ArrangePlanTest 25 · BarLoadoutNewTest 35 · BarPositionTest 35 · BookHoldPlanTest 51
+  CooldownDisplayPlanTest 20 (new) · CooldownTagPlanTest 61 · DragWritePlanTest 38
+  DragWriteTwoTapTest 13 · ExitSweepPlanTest 23 · HoldReadPlanTest 11 · JoinGuardPlanTest 14
+  JoinSweepPlanTest 8 · PagerDefault0312Test 27 · PagerPlanTest 29 · QuitClosePlanTest 8
+  SlotGuardPlanTest 28 · SpellbookNewTest 13 · SpellbookPager039Test 54 · UnarmedDragPlanTest 14
+  (The 18 carried 0.3.12 suites are byte-identical test files, 487 checks, all green
+  against the 0.3.13 tree; CooldownDisplayPlanTest adds the 20 accuracy checks.)
+
+Rig (Paper 26.3-235, ProbeCd, Moon's lifecycle fixture + Magic 11.2.5): five runs —
+phase A (stock 0.3.12) and phase B (0.3.13 candidate) reproduce the cooldown
+conviction table identically (base key gates at 7,638 ms while the variant-resolved
+lookup reads 0 from ~2 s); candidate boots clean, SEVERE 0 in every phase-B run.
+  Evidence: build-cooldown-accuracy/investigation/evidence/ (phase-a-stock-0312-result.txt,
+  phase-b-final-result.txt, phase-b-final-console.log) — investigation tree not packaged,
+  same as the 0.3.12 package's rig/. Rig gap (wand inventory never opened in the fixture;
+  name-tag render unproven on the desk rig) is stated in BUILD-RECORD.md §3 — the deciding
+  evidence is the post-install player proof.
+
+Artifact: SHA-256 7278f09ed160236b54c02d9dfaa590feeb1ba25027c901b3a17217848a1327e3,
+  544,853 B. Built twice from the same sources with one differing pair of entries
+  (the two new plan classes, line-number metadata from a comment edit — same sizes,
+  same entry set); the staged jar is the final-sources build (BUILD-RECORD.md §4).

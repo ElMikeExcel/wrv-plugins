@@ -1,0 +1,8 @@
+# ExcelWandBars 0.3.13 — push notes (legs for the parent / board-manager)
+
+Staged Nov 9, 2026 (records catch-up, mirroring the 0.3.12 package). The staging lane ran NO connector writes. Remaining legs, all pre-approved recording work (Mike, Nov 4: recording stuff needs no approval):
+
+1. **Drive deposit** (shared Drive "Minecraft WRV" folder, per the standing layout): the installed jar `ExcelWandBars-0.3.13.jar` (544,853 B, SHA-256 `7278f09ed160236b54c02d9dfaa590feeb1ba25027c901b3a17217848a1327e3`) + a zip of this package's `src/` tree, with this package's SOURCE.md alongside (build `EXC-WANDBARS-0.3.13-WRV-20261108-01-41cd07`; base gate + hashes in BUILD-RECORD.md). Byte-verify both deposits after upload. No passwords/tokens/IPs in anything uploaded.
+2. **GitHub record PR** in `ElMikeExcel/wrv-plugins`: draft PR carrying this package (same shape as the 0.3.12 record), left OPEN as a draft, never merged.
+3. **Install** — DONE: parent hand window Nov 8, 2026, 11:27–11:44 PM CST; marker at `~/workspace/wandbars-ux-build/build-cooldown-accuracy/INSTALLED.txt` (copy in this package). 0.3.13 is a superset of 0.3.12 and installed instead of it (PACKET-DRAFT.md sequence 2); the 0.3.12 packet is superseded.
+4. **Same-pass surfaces at install close-out:** What's New note on BOTH surfaces (website section + in-game `ExcelWhatsNew/changelog.yml`) and a Guide knowledge line for the cooldown display ("the name tag is the real cooldown; the number on the icon is time until castable and can include mana wait"). Tips check at close-out. Post-install player proofs (Heal tag vs reminder; mana-starved Flash Heal no-tag; Familiar 4:00→0:01 both platforms; pager/slot-guard set from 0.3.12) remain owed to players.
