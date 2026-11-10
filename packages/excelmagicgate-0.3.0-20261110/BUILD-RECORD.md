@@ -1,0 +1,128 @@
+# ExcelMagicGate 0.3.0 — Build Record
+
+Date: 2026-11-10. Design of record: `magic-rank-packet-20261110/DESIGN.md`
+(read fully; implemented as written). Base tree: the LIVE 0.2.1 tree
+(`magicgate-template-refresh-20261109/ExcelMagicGate/` — plugin.yml 0.2.1,
+build `EXC-MAGICGATE-0.2.1-WRV-20261109-01-fb0d91`, jar 192,747 B /
+`7110bfdc6f603ec987a7f8aaa0595e5dba11f883f909194cd6b65d00e38043fa2f`).
+The stale 0.2.0 tree in `magicgate-floor-build/` was NOT used (its stage4
+book is a 142-key subset of the live 222-key book — verified: all five stage
+packets in this build are byte-identical to the live 0.2.1 packets, diff -r
+clean).
+
+## Artifact
+
+- Jar: `ExcelMagicGate-0.3.0.jar` — **237,422 B**, SHA-256
+  `515fe1c3194e56da734d5bdab257badef3e5074e1ac415ed11a375f100f88018`
+- Build ID: `EXC-MAGICGATE-0.3.0-WRV-20261110-01-5af7d1` (excel-build.txt
+  verified inside the jar; plugin.yml version 0.3.0 verified).
+- **Deterministic double-build: PASS** — second clean build byte-identical,
+  same SHA-256.
+
+## What 0.3.0 adds (all per DESIGN.md)
+
+- **Earned ranks** (Mike's Nov 9 lock): target = min(earned rank, stage
+  ceiling); thresholds Student 100 / Apprentice 400 / Master 2,000 credited
+  casts, totals only. New pure logic: `EarnedRank`, `CeilingPlan`.
+- **Credit feed**: `MagicCreditHook` registers Magic's PreCast/Cast/
+  PathUpgrade events reflectively from Magic's own classloader. Policy in
+  `CreditPolicy` + config `earning:` block (the §3 classification ships as
+  config, not constants): no-credit movement/utility/passive families;
+  heal-family effect gates via observed CUSTOM `EntityRegainHealthEvent`
+  (WandBars RankUpHook pattern: PreCast timestamp, amount > 0, base context
+  only); damage families strict (non-caster targeted entity / non-caster
+  projectile target) + correlated (real damage by the caster's projectile
+  within 3 s) + player-target pair window (5 credits / pair / 10 min);
+  feed credited on regain OR food-increase; daily cap 50 per family per
+  player (America/Chicago day); unknown/new families default to credited
+  success-only.
+- **Demotion** (the §6 seam): `MagicFloorHook.demote()` — activate wand, per
+  step setPath(lower) on wand + active properties + mage class,
+  setManaMax/setManaRegeneration written explicitly per step, mana clamped,
+  per-step re-read verification of path AND frame from the wand, stall-cold
+  on any mismatch, spells never touched. Kill switch
+  `earning.demotion_enabled` (ships **true** — rig-proven, see below).
+  Pouch/serialized wands defer untouched (DEMOTE_HELD / deferred outcomes);
+  auto-upgrade guard via PathUpgradeEvent + 60 s sweep backstop.
+- **Wand lore**: `WandLoreHook` — property seam (`lore` wand property,
+  sentinel-delimited `§0§r` block) chosen by live verification on the rig,
+  append seam implemented as fallback; `earning.lore_seam: auto`.
+- **earned.yml** store (`EarnedStore`): placement rows + live accrual,
+  fallback Mage-API seeding for unplaced players, 30 s debounced flush +
+  onDisable save, Chicago-midnight daily roll.
+- With `earning.enabled: false` the plugin is behavior-identical to 0.2.1
+  (legacy ceiling-floor mode; regression-covered by the carried test suite).
+
+## Classification note (one empirical correction to the design text)
+
+DESIGN §3 says the no-credit set has 46 families; enumerating its own list
+against the live spell configs gives 47 (7 of them — skating, healing,
+disposal, sponge, grow, localrain, restorelocalweather — carry zero fixture
+casts, so placements are unaffected). The shipped config carries the 47 as
+enumerated in §3's text. Two fixture families appear in NO design list
+(piggyback, walls) and take the design's own default (credited, success-only)
+— required for Mike's locked placement to reproduce (his 1,210 includes
+piggyback's 7).
+
+## Tests
+
+- **253 checks, 0 failures** (`run-tests.sh`, full output TEST-OUTPUT.txt):
+  all carried 0.2.1 regression sections + EarnedRank boundaries, ceiling-min
+  at every stage, CeilingPlan matrix (incl. DEMOTE / DEMOTE_HELD /
+  pouch-defer both directions), CreditPolicy decision chain (family gates,
+  heal gate, strict/correlated damage, pair window, cap 49/50/51),
+  EarnedStore codec + day roll, config-vs-code-defaults agreement (101 probe
+  families), and the §10 spell-logic simulations (fling held forever -> 0;
+  mend on full health -> 0, on hurt ally -> exactly 50/day; wall damage -> 0;
+  penned mob -> 50/day; two-player hit-trade -> pair window K=5; boon spam ->
+  50/day; critical passive -> 0).
+- **Placement reproduction: EXACT.** PlacementCalculator over the 11 Nov 9
+  mage.dat fixtures under the shipped classification: Jester 17,821 raw ->
+  11,231 credited (Master), Marvin 3,734 -> 2,178 (Master), Mike 1,232 ->
+  1,210 (Apprentice), Kailey 12 -> 12 (below Student), Rylie 0, Racimbio
+  11 -> 11, five files empty — DESIGN §8's expected table, byte-for-byte the
+  placements Mike locked. `placement/earned.yml` (11 players) generated by
+  the shipped codec from the fixtures.
+- Spell logic tests (spell-audit harness): NOT APPLICABLE — no spell config
+  touched (stage packets byte-identical to 0.2.1); the §10 simulations above
+  stand in as the logic tests for the credit rules.
+
+## Rig verdict (summary — full text in RIG-VERDICT.md)
+
+**The demotion seam is PROVEN end-to-end** (the build's hard gate):
+master -> student (Java), master -> beginner (dotted Bedrock name),
+pouch-parked wand untouched then demoted on extraction, demotions persisted
+in Magic's own mage files across a restart, WandBars re-read clean at the
+shrunken hotbar, spells byte-identical after every demotion. Step-up,
+threshold crossing (99 -> 100 live), fallback seeding, credit battery
+(boon/missile/heal credited; backflip/full-health heal denied), lore property
+seam VERIFIED and durable, auto-upgrade guard corrected via the
+PathUpgradeEvent leg. Zero SEVERE, zero MagicGate WARN/ERROR in 3 boots.
+
+Rig side findings for the packet: (a) tier variants above a demoted rank fail
+to cast at Magic level once the wand carries a path (missile|3 evidence,
+§11 Q3); (b) Renewal (HoT heal) can under-credit when its first tick lands
+after the cast window (§11 Q5-adjacent); (c) the rig's old WandBars 0.3.11
+throws pre-existing NoClassDefFoundError for its own wrv.magic.* helpers —
+unrelated to this plugin.
+
+## Fingerprint (per FINGERPRINT-STANDARD.md)
+
+See FINGERPRINTS.md in the records package. Layer A clean (no foreign
+attribution; own package/voice only). Layer B build ID above. Layer C: all
+0.2.1 natural markers carried (state.yml dialect untouched, stage packet
+templates byte-identical, message voice) + new natural markers: earned.yml
+schema dialect (`credited_total` / `placed_total` / `per_family`), the
+`earning:` config phrasing, and the credit/rank message voice ("earned rank
+student (100 credited casts)", "demoted master -> student ... spells
+untouched"). **Registry row: NOT written by this build** — the 0.2.1 build
+ID was likewise never entered in FINGERPRINT-REGISTRY.md (only a tracker
+line exists); registry filing is left to the supervisor's records leg with
+the rest of the MANIFEST filing, per this task's scope.
+
+## Scope compliance
+
+Built and rig-proven only. NOT installed, NOT published to GitHub or Drive,
+MANIFEST entry NOT filed (draft staged as MANIFEST-ENTRY-DRAFT.md). The
+supervisor owns those legs. Install packet: INSTALL-PACKET.md (carries the
+placement STOP gate and the earned.yml pre-write procedure).
