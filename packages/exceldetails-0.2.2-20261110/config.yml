@@ -1,0 +1,42 @@
+# ExcelDetails — the meter's knobs. Excel — Wink Reyes Valley.
+# build: EXC-DETAILS-0.2.2-WRV-20261110-01-b22e10 (stamped again into data.yml on first save)
+
+# How often the sidebar re-renders, in ticks. Ten ticks is half a
+# second: fast enough that numbers visibly move mid-fight, slow
+# enough that an idle server pays nothing for the meter's watching.
+refresh-ticks: 10
+
+# A segment stays open while anyone's combat is younger than this.
+# Eight seconds of quiet closes the segment, files it as the last
+# segment, and folds its numbers into the overall totals.
+combat-timeout-seconds: 8
+
+# Ranked rows PER SECTION (0.2.0: damage done / damage taken /
+# healing stack as sections in one box). The whole box — standalone
+# or piggybacked under an EliteMobs party — never exceeds the
+# sidebar's 15-line ceiling; sections shed rows to fit.
+max-rows: 6
+
+# Say it in the console when a segment closes. Real fights only:
+# a segment that saw a single stray event (or was emptied by
+# /details clear) closes and merges silently (0.2.0 churn fix).
+announce-segments: true
+
+# Boss display scale (0.2.2): damage done to a seal boss (wither,
+# elder guardian, warden, ender dragon) renders in ExcelBossTrial's
+# pop-up space — the live final damage is recovered through
+# BossTrial's intake factor and multiplied by BossTrial's OWN live
+# feedback.display-scale (read from BossTrial's config at runtime,
+# never copied here). Off = boss damage shows as raw final damage,
+# the pre-0.2.2 behavior. Only damage DONE to the boss scales;
+# damage taken and healing always stay true HP.
+boss-display-scale: true
+
+# EliteMobs bucket (0.2.2): damage done to an EliteMobs-tracked
+# elite — and any single damage event beyond every real HP pool
+# on the server — is tracked in a separate EM bucket instead of
+# the ranked rows, so EM's simulated numbers never render as
+# meaningless millions. The bucket is visible on /details status
+# and never merges into the overall totals. Off = every event
+# records in the ranked rows as before.
+elite-bucket: true
