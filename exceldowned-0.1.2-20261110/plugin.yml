@@ -1,0 +1,21 @@
+name: ExcelDowned
+version: 0.1.2
+api-version: '1.21'
+main: com.winkreyes.exceldowned.ExcelDowned
+description: Lethal damage becomes a downed state instead of death; the Resurrection spell brings a downed party member back at 50% health. Giving up is a button confirm (Java menu / Bedrock form), with the typed two-step as fallback. Staff can revive or clear a downed player from console (/downed revive|clear, exceldowned.admin).
+authors: [Iris, Mike]
+depend: [Magic]
+softdepend: [ExcelTogether, Geyser-Spigot, floodgate]
+
+commands:
+  giveup:
+    description: While downed, give up and die on the spot (button confirm, typed two-step fallback)
+    usage: /giveup
+  downed:
+    description: Check downed status; staff can inspect a player, reload settings, or revive/clear a downed player
+    usage: /downed [player|reload|revive <player>|clear <player>]
+
+permissions:
+  exceldowned.admin:
+    description: Staff tools (status inspection, settings reload, console revive/clear of a downed player)
+    default: op
