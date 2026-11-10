@@ -1,0 +1,20 @@
+# ExcelDetails — the meter's knobs. Excel — Wink Reyes Valley.
+# build: EXC-DETAILS-0.1.0-WRV-20261109-01-a47f0c (stamped again into data.yml on first save)
+
+# How often the sidebar re-renders, in ticks. Ten ticks is half a
+# second: fast enough that numbers visibly move mid-fight, slow
+# enough that an idle server pays nothing for the meter's watching.
+refresh-ticks: 10
+
+# A segment stays open while anyone's combat is younger than this.
+# Eight seconds of quiet closes the segment, files it as the last
+# segment, and folds its numbers into the overall totals.
+combat-timeout-seconds: 8
+
+# Ranked rows per window in the standalone box. The piggyback box
+# under an EliteMobs party shrinks itself to whatever room the
+# party lines leave — this is only the standalone ceiling.
+max-rows: 6
+
+# Say it in the console when a segment closes.
+announce-segments: true
