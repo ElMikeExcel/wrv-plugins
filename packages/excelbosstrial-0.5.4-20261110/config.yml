@@ -1,0 +1,1002 @@
+# ExcelBossTrial 0.3.2 - the seal-boss rules of Wink Reyes Valley.
+# 0.3.2 adds MILESTONE BEATS (the per-chapter milestones: blocks -
+# a broadcast line + one pulse surge at 75/50/25% of the pool
+# remaining, once per threshold per encounter; the warden's lines
+# are its progress display) and moves the dragon's add-wave
+# thresholds into config (dragon.adds.wave-thresholds - they were
+# code constants before 0.3.2; the defaults are those constants).
+# 0.3.1 adds the FIGHT RECORD (the fight-tracking: block - a
+# per-player damage + healing table at every verdict and elder
+# progress point) and the elder PER-ELDER epic retune + trio
+# escalation (elder-guardian.scaling + elder-guardian.trio).
+# 0.3.0 added the damage-INTAKE governor (pools far above the
+# platform health ceiling, scaled through the intake: block), the
+# EPIC retune (long fights are the point - see the scaling blocks),
+# attrition PRESSURE (per-chapter pressure: blocks), the REPEAT
+# system (repeat: block - broken seals can be re-fought daily for
+# the repeat slate), the auto-present outcome log + retry
+# (team-rewards.presentation), and the raid companion payments
+# (loot.raid + raid-standard:). Every balance value is a key.
+# Every rule below is the settled design (Oct 18, 2026,
+# SEAL-INTEGRITY-RESEARCH.md) and every rule is individually
+# disable-able: a chapter off, a gate off, or a cap at 0 degrades
+# that one rule toward vanilla and touches nothing else.
+# 0.2 adds PARTICIPANT GROWTH ("the boss rallies" - the scaling:
+# blocks; spec BOSSTRIAL-0.2-SPEC-2026-10-20.md) and SEAL LOOT
+# (the loot: block), the first-attempt doctrine, decisions
+# settled Oct 20, 2026. A config carried over from 0.1.0 without
+# the new blocks runs the settled 0.2 defaults from code.
+
+# Master switch. Off = the plugin watches nothing and vetoes nothing
+# (GuildGate then credits the vanilla way). The dragon chapter has
+# its own switch under dragon.enabled.
+enabled: true
+
+intake:
+  # The platform clamps MAX_HEALTH at 1,024 (rig-measured on
+  # Paper 26.3-235): a boss's real health bar never exceeds this
+  # cap, and incoming damage is scaled by (cap / configured pool)
+  # so the EFFECTIVE pool is the configured one. Pools at or
+  # under the cap run exactly as they always did.
+  entity-cap: 1024
+
+credit:
+  # A seal credits only if player-attributed damage (melee, arrows,
+  # player-lit explosions, tamed pets) reached this fraction of the
+  # boss's max HP. No near-miss mercy.
+  share-threshold: 0.7
+  # At the death, at least one encounter participant (dealt damage
+  # to the boss OR took damage from it) must be alive, in the same
+  # world, within this many blocks - or no credit.
+  presence-range: 128
+  # After a non-crediting kill, that seal cannot be earned for this
+  # long (server-wide; persists across restarts; shown in
+  # /guildgate status and /bosstrial status).
+  cooldown-hours: 6
+
+spoils:
+  # Seal-boss loot multiplies by the number of champions standing in
+  # range at the death (the dragon's XP scales instead) - but only
+  # on a kill that EARNS the seal: a refused kill drops plain
+  # vanilla loot, however many champions stood by (spoils follow
+  # the verdict, design record Oct 19, 2026). EliteMobs loot and raid
+  # drops are never touched.
+  enabled: true
+  max-multiplier: 5
+
+# Elite sprinkle (0.3.3) - master keys. The per-chapter blocks
+# live under <chapter>.sprinkle and every chapter ships DISABLED;
+# this master switch is the one-edit kill for the whole feature.
+# 0.5.4: two more PER-CHAPTER keys live in the chapter blocks -
+# knockback-resistance (forced onto each spawn after conversion;
+# absent = the conversion's own attribute, and only the elder
+# ships a value) and stagger-ticks (the ring's spawn spread;
+# absent or 0 = the instant ring).
+sprinkle:
+  enabled: true
+  # LEGACY (0.3.3, retired 0.4.0): the stamp multipliers and
+  # chance ceiling of the old per-stamp roll. Parsed for config
+  # compatibility; the cadence sprinkle never reads them.
+  stamp-multipliers: [0.75, 1.0, 1.25]
+  chance-ceiling: 0.90
+  # A fired wave is announced - one line per wave.
+  # {chapter} is the boss's name, {count} the elites spawned.
+  announce-text: "&4The seal fights back&7 - {count} elite reinforcements join the battle against {chapter}!"
+
+wither:
+  enabled: true
+  share-gate: true
+  presence: true
+  caps:
+    # No single damage event may take more than this off the wither.
+    # 45 (0.3.0 epic slate) sits above every legitimate single hit
+    # (the strongest tops out near 31) while burst stacking trims.
+    per-event-damage: 45
+    # All explosion damage pools against this budget per server tick.
+    explosion-per-tick: 60
+  # While the wither's credit cooldown runs, summoning is blocked
+  # entirely; a refused summon never consumes the skulls.
+  scaling:
+    # EPIC slate (0.3.0): pool at 4 champions = 6,600 + 3 x 5,100
+    # = 21,900 effective HP (the bar rides the intake cap; the
+    # pool is what the ledger judges). Growth never reverses.
+    enabled: true
+    base-health: 6600
+    per-extra-damager: 5100
+    max-damagers-counted: 5
+  pressure:
+    # Attrition (0.3.0): the wither leans on the group at 1.25x
+    # outgoing, ramping +6%/min to a x2 ramp cap (peak ~minute 17,
+    # then it HOLDS), plus a 2.0 MAGIC pulse every 20 s to hot
+    # participants. enabled=false retires the whole axis.
+    enabled: true
+    outgoing-multiplier: 1.25
+    pulse-damage: 2.0
+    pulse-interval-seconds: 20
+    pulse-hot-seconds: 30
+    ramp-per-minute: 0.06
+    ramp-max: 2.0
+    # 0.3.7: the pulse honors TrainingWheels - a protected
+    # player's pulse is scaled by their shield factor (the
+    # pulse is source-less MAGIC damage, so TrainingWheels'
+    # own listener never sees it; BossTrial applies the
+    # factor itself, through the seam). Settled ON; false
+    # restores the pre-0.3.7 full pulse for everyone.
+    pulse-respect-training-wheels: true
+    # 0.5.3 (Item 39 R1): read for every chapter, but only
+    # the WARDEN chapter can deal a sonic boom, so the key
+    # is inert here. Shipped false (see the warden block).
+    apply-to-sonic-boom: false
+
+  milestones:
+    # Milestone beats (0.3.2): at 75/50/25% of the pool remaining,
+    # a broadcast line + one extra pulse surge, once per threshold
+    # per encounter. surge-multiplier scales the surge against this
+    # chapter's pulse-damage (1.0 = one extra pulse; 0 = no surge).
+    # An empty text silences that threshold's line; enabled: false
+    # retires the whole feature for this chapter.
+    enabled: true
+    surge-multiplier: 1.0
+    text-75: "&5{name} &7reels - a quarter of the fight is spent."
+    text-50: "&5{name} &7staggers - half the fight is spent."
+    text-25: "&5{name} &7falters - three quarters spent. The end is in sight."
+
+  sprinkle:
+    # Elite sprinkle (0.4.0 cadence shape; 0.3.3 was a per-stamp
+    # roll): every milestone stamp (75/50/25% of the pool
+    # remaining) owes a wave, and a timed wave falls every
+    # cadence-seconds on top of that, cycling the waves rotation.
+    # A wave that finds max-alive adds already standing is
+    # DEFERRED, never spent - it fires when room opens. Only
+    # max-per-fight retires the sprinkle. The adds pay NOTHING
+    # (their loot flags are closed at conversion) and are removed
+    # when the fight ends. chance/count/types are legacy keys of
+    # the retired roll - parsed, never read. Ships DISABLED.
+    enabled: false
+    chance: 0.35
+    count: 2
+    levels: [20, 22, 24]
+    max-alive: 5
+    max-per-fight: 24
+    leash-radius: 40.0
+    types: [WITHER_SKELETON, WITHER_SKELETON]
+    cadence-seconds: 150
+    # The wither rotation (Mike's ruling, Nov 8, 2026): a ghast
+    # overhead (aerial), piglin pressure on the ground, then
+    # wither skeletons - pressure classes, cycled.
+    waves:
+      - types: [GHAST]
+        count: 1
+        placement: aerial
+      - types: [ZOMBIFIED_PIGLIN]
+        count: 3
+        placement: ring
+      - types: [WITHER_SKELETON]
+        count: 2
+        placement: ring
+
+  # Boss taunts (0.4.0 rebuild; Mike, Nov 8, 2026): when the
+  # wither EATS - kills a non-player mob and regains health
+  # from the kill (the vanilla kill-heal) - it speaks one of
+  # these lines in chat to the fight's participants. The
+  # FIRST eat of a fight always speaks; after that, at most
+  # one line per taunt-cooldown-seconds, however many eats
+  # land in between. A line never repeats back-to-back. The
+  # boss bar is never touched. Deleting every line (an empty
+  # list) silences the chapter; other chapters ship silent -
+  # add a taunts: list under their chapter to arm them.
+  taunt-cooldown-seconds: 25
+  taunts:
+    - "MORE."
+    - "Your little offerings only make me stronger."
+    - "I hunger. Send me more."
+    - "Every soul you send me is mine."
+    - "Feed me, champions."
+    - "Their strength is mine now."
+    - "You brought me a feast."
+    - "I will devour this world, one gift at a time."
+    - "More meat for the storm."
+    - "Yes… feed the storm."
+
+  # Boss voice (0.5.2): the taunts' CLIPS, index-aligned with
+  # the taunts list above - entry i is the sound of line i
+  # (eat_01 = "MORE.", eat_05 = "Feed me, champions."). The
+  # clip is the pack event wrv:bosstrial.wither.<slug>, played
+  # positionally at the boss to the fight's participants when
+  # the line speaks; the chat line stays as the subtitle. An
+  # empty slot (or a list shorter than taunts) leaves that
+  # line chat-only - logged once, never an error. Keep the
+  # two lists the same length and in the same order.
+  taunt-sounds:
+    - "eat_01"
+    - "eat_02"
+    - "eat_03"
+    - "eat_04"
+    - "eat_05"
+    - "eat_06"
+    - "eat_07"
+    - "eat_08"
+    - "eat_09"
+    - "eat_10"
+
+  # feedback: (0.3.6) per-chapter overrides of the global
+  # feedback: block - absent keys inherit the globals.
+  #   pool-numbers: true
+  #   damage-total: actionbar
+
+elder-guardian:
+  enabled: true
+  share-gate: true
+  presence: true
+  caps:
+    # 45 (0.3.0 epic slate; the elder exception - explosions cap
+    # at the same 45, the monument fight stays readable).
+    per-event-damage: 45
+    explosion-per-tick: 45
+  # The seal needs ALL THREE elder guardians of ONE monument, each
+  # individually fought for. An elder whose kill did not count
+  # respawns at its home after this long, so the trio stays
+  # completable.
+  respawn-hours: 6
+  repeat:
+    # After a trio completes (any verdict that finishes it), the
+    # COUNTED elders turn over and fresh ones surface after this
+    # long - the repeat elder fight's generation clock.
+    respawn-hours: 6
+  scaling:
+    # PER-ELDER EPIC slate (0.3.1, Mike Nov 1, 2026: EVERY elder
+    # is a 15+ minute fight, not just the trio as a whole - the
+    # 0.3.0 slate priced the whole trio at ~17 minutes, ~5-6 per
+    # elder). Pool at 4 champions = 7,800 + 3 x 3,100 = 17,100
+    # effective HP per elder: ~15 min at the family's strongest
+    # observed pace (~19 HP/s), ~17 min at the typical ~17 HP/s.
+    # Solo 7,800; duo 10,900; trio-party 14,000; five 20,200.
+    # The trio's third elder escalates further - see trio: below.
+    enabled: true
+    base-health: 7800
+    per-extra-damager: 3100
+    max-damagers-counted: 5
+  trio:
+    # Trio-position escalation (0.3.1, Mike Nov 1, 2026): the
+    # elder trio's LAST, seal-completing elder is harder than the
+    # two before it. Multipliers apply to the scaling pool above
+    # (base and per-extra alike) by the elder's position in its
+    # monument's trio - position 1 = first counted kill pending,
+    # 3 = the completing kill. Settled defaults: 1.0 / 1.0 / 1.3
+    # (the third elder at 4 champions: 17,100 x 1.3 = 22,230,
+    # ~19-22 min). Applies to first-break and repeat generations
+    # alike - a completed trio's next generation starts again at
+    # position 1. Positions beyond the list reuse its last entry.
+    position-multipliers: [1.0, 1.0, 1.3]
+  pressure:
+    # Elders: no outgoing multiplier (their numbers do the work);
+    # the pulse + ramp still apply.
+    enabled: true
+    outgoing-multiplier: 1.0
+    pulse-damage: 2.0
+    pulse-interval-seconds: 20
+    pulse-hot-seconds: 30
+    ramp-per-minute: 0.06
+    ramp-max: 2.0
+    # 0.3.7: the pulse honors TrainingWheels - a protected
+    # player's pulse is scaled by their shield factor (the
+    # pulse is source-less MAGIC damage, so TrainingWheels'
+    # own listener never sees it; BossTrial applies the
+    # factor itself, through the seam). Settled ON; false
+    # restores the pre-0.3.7 full pulse for everyone.
+    pulse-respect-training-wheels: true
+    # 0.5.3 (Item 39 R1): read for every chapter, but only
+    # the WARDEN chapter can deal a sonic boom, so the key
+    # is inert here. Shipped false (see the warden block).
+    apply-to-sonic-boom: false
+  reflect:
+    # Spike reflect (0.3.5): vanilla guardians/elder guardians return
+    # 3 HP (Hard) on every melee hit while their spikes are out. In a
+    # vanilla fight that is nothing; against a governed pool in the
+    # tens of thousands it is a melee-only tax that grows with the
+    # pool - and the attrition ramp used to double it late-fight.
+    # This multiplier applies to spike reflect dealt BY a tracked
+    # seal elder during an encounter, INSTEAD of the pressure scale
+    # (reflect is never ramped). 1.0 = exact vanilla; 0.0 = reflect
+    # retired for seal elders (settled, Mike Nov 2, 2026 - melee,
+    # ranged and magic all stay viable). Monument guardians, sprinkle
+    # adds and everything outside a seal encounter are never touched.
+    multiplier: 0.0
+
+  relay:
+    # The monument answers (Packet B, E-1): when an elder of a
+    # monument trio is COUNTED (progress 1 or 2 of 3), each
+    # surviving elder of the same monument with an open fight
+    # owes a sprinkle wave and fires its milestone surge, under
+    # the messages.elder-relay broadcast. The trio's escalation
+    # becomes an event, not just a thicker third bar.
+    enabled: true
+
+  voice:
+    # Boss voice (0.5.2): this chapter's clip slugs - the pack
+    # event is wrv:bosstrial.elder.<slug>, played positionally
+    # at the boss to the encounter's participants on the
+    # seam's real event (open = first damage, beats = the
+    # 75/50/25% milestone stamps, relay = the monument answers
+    # at trio progress 1/2, lastdoor = the last elder standing,
+    # verdict = an elder falls). An empty value silences that
+    # seam; the chat lines stay as subtitles throughout.
+    open: "open"
+    beat-75: "beat75"
+    beat-50: "beat50"
+    beat-25: "beat25"
+    relay: "relay"
+    lastdoor: "lastdoor"
+    verdict: "verdict"
+
+  milestones:
+    # Milestone beats (0.3.2): at 75/50/25% of the pool remaining,
+    # a broadcast line + one extra pulse surge, once per threshold
+    # per encounter. surge-multiplier scales the surge against this
+    # chapter's pulse-damage (1.0 = one extra pulse; 0 = no surge).
+    # An empty text silences that threshold's line; enabled: false
+    # retires the whole feature for this chapter.
+    enabled: true
+    surge-multiplier: 1.0
+    text-75: "&3{name} &7falters - a quarter of the fight is spent."
+    text-50: "&3{name} &7staggers - half the fight is spent."
+    text-25: "&3{name} &7reels - three quarters spent. The tide is turning."
+
+  sprinkle:
+    # Elite sprinkle (0.4.0 cadence shape): waves per elder (each
+    # elder is its own encounter) - milestone stamps owe a wave
+    # and the cadence adds one every cadence-seconds. Aquatic
+    # types only - the fight is underwater inside the monument.
+    # Ships DISABLED.
+    enabled: false
+    chance: 0.30
+    count: 2
+    levels: [18, 20, 22]
+    max-alive: 5
+    max-per-fight: 24
+    leash-radius: 24.0
+    types: [GUARDIAN, DROWNED]
+    cadence-seconds: 150
+    # Melee feel (0.5.4, the elder sprinkle melee fix - per-chapter
+    # keys, any chapter may opt in): knockback-resistance is forced
+    # onto every sprinkle spawn AFTER its EliteMobs conversion -
+    # -1.0 applies at the attribute floor 0.0 (full vanilla
+    # knockback; negative reads "as knockable as the game
+    # allows"); deleting the key leaves the elder on this same
+    # shipped default, and chapters without the key keep the
+    # conversion's own attribute untouched. stagger-ticks spreads
+    # the wave's ring spawns evenly across the window (first add
+    # immediate, last at the window's end) instead of landing the
+    # whole ring in one tick; 0 retires the stagger.
+    knockback-resistance: -1.0
+    stagger-ticks: 40
+    waves:
+      - types: [GUARDIAN, DROWNED]
+        count: 2
+        placement: ring
+
+  # feedback: (0.3.6) per-chapter overrides of the global
+  # feedback: block - absent keys inherit the globals.
+  #   pool-numbers: true
+  #   damage-total: actionbar
+
+protect-emit:
+  # The ExcelProtect emitter (0.3.4): at every verdict the
+  # fight record's full per-player table is ALSO published to
+  # ExcelProtect, which records its combat fight summary and
+  # its audit seal verdict from it; elder trio progress points
+  # publish as fight progress records; and chapter state
+  # changes (a fight started, a fight ended, an elder respawn
+  # scheduled, an elder respawned) publish as boss-state
+  # records so Protect can answer boss status. The emitter is
+  # an observer only - nothing in any fight, verdict or reward
+  # path reads anything back, and with ExcelProtect absent the
+  # plugin runs exactly as before (these keys then change
+  # nothing; the records still land in fights/ as always).
+  # Master switch for the whole emitter.
+  enabled: true
+  # The verdict fight tables + elder progress records.
+  fight-tables: true
+  # The boss-state records (fight started / ended, elder
+  # respawn scheduled / respawned).
+  state-changes: true
+
+feedback:
+  # Damage feedback (0.3.6, the feel patch): DISPLAY ONLY - the
+  # governor scales every governed hit before it touches the
+  # entity, so the vanilla boss bar moves less than a pixel per
+  # hit and gear progression was invisible in the fight (a wood
+  # sword and a Sharpness V netherite sword both read as "about
+  # 1"). The ledger always kept the true numbers; now the player
+  # sees them: the boss bar title carries the true pool numbers
+  # on every chapter, and each champion's action bar carries
+  # their own last hit + running damage total. Fight math,
+  # pools, verdicts and rewards are untouched - with every key
+  # off the plugin behaves exactly as 0.3.5. Any player can opt
+  # out for their own screen with /bosstrial feedback off.
+  # The boss bar title shows "{name} - {remaining} / {total}"
+  # in true pool HP (the warden gains the bar vanilla never
+  # gave it; the dragon's numbers are per phase).
+  pool-numbers: true
+  # Per-player damage totals: "off" | actionbar. (Quote the
+  # off if you write it - YAML reads a bare off as a boolean;
+  # the plugin accepts either shape, but the quoted form is
+  # the one that means the same thing to every YAML reader.)
+  damage-total: actionbar
+  # Title shape: {name}, {remaining}, {total}.
+  title-format: "{name} — {remaining} / {total}"
+  # Action-bar shape: {last} (this hit, in ENTITY HP - what the
+  # boss's bar lost), {total} (your fight total, in POOL HP -
+  # the same space as the title's {total}). The two spaces are
+  # named in the line itself (0.4.0, PM-4: on the big pools the
+  # unnamed pair read as a contradiction).
+  damage-total-format: "{last} hit · {total} pool damage total"
+  # Bar title while the pool is spent and the verdict blow is
+  # falling (0.4.0, PM-5): {name} only - a named state, never a
+  # frozen "0 / total" on a boss that is still standing.
+  exhausted-format: "{name} — FALLING…"
+  # Display scale (Packet B, Item 35 - Mike's Nov 8, 2026
+  # amendment): ONE number space (pool space - hits still sum
+  # to the pool), rendered x1000 on every player-facing
+  # pool-space surface: per-hit feedback, running totals, the
+  # post-fight stats pop-up, and the boss bar's pool figures.
+  # At the settled pools' intake factors the unscaled ladder
+  # (wooden 4 / diamond 7 / netherite 8) rendered as ~0.2/0.4/
+  # 0.5 - invisible progression; at x1000 the Wither's reads
+  # 187 / 328 / 374. Internal ledger/governor math is
+  # UNCHANGED - this is display only. 1 = unscaled display.
+  display-scale: 1000
+  # Boss bar audience: fight participants, plus any online
+  # player within this many blocks of the boss.
+  viewer-range: 64
+  # Minimum milliseconds between action-bar totals per player.
+  damage-total-min-interval-ms: 500
+  # The bar sweep's cadence: titles and audiences reconcile at
+  # most this often per encounter (hits always refresh at once;
+  # this also bounds how fast the dragon's title picks up a
+  # phase flip between hits).
+  title-tick-ms: 1000
+
+fight-tracking:
+  # The fight record (0.3.1): at every verdict (CREDIT / DENY)
+  # and every elder trio progress point, the encounter's
+  # per-player table is written twice - a structured file under
+  # the plugin's fights/ folder, and log lines complete enough
+  # to rebuild the record from latest.log alone. Per player:
+  # damage dealt to the boss, damage taken, healing done,
+  # healing received. Healing counts EFFECTIVE healing only
+  # (capped at the health actually missing). Healing DONE is
+  # attributed only where a real source exists - a Magic
+  # heal-spell cast naming its caster and target; everything
+  # else lands in healing-received plus a clearly labeled
+  # unattributed bucket. Healing with no encounter open is
+  # ignored. Tracking observes only - verdicts, rewards, pools
+  # and ledger math never read it. Off = no records, no healing
+  # feed, fights exactly as 0.3.0.
+  enabled: true
+  # Fight-record files kept in fights/ (newest kept; the names
+  # sort chronologically). 0 = keep every record.
+  record-retention: 200
+  # A heal-spell cast claim absorbs the heal's regain events on
+  # its target within this many milliseconds of the cast (Magic
+  # fires the regain inside the cast itself; the window covers
+  # event-order jitter only).
+  heal-claim-window-ms: 1000
+  # Magic spell keys that count as heal casts for attribution
+  # (base keys - leveled variants like heal|2 fold to heal).
+  magic-heal-spells: [heal, superheal]
+  # Unattributed damage (no responsible player) at or above
+  # this many pool HP in one hit earns a throttled console line
+  # naming its cause class (0.4.0, PM-9). The damage always
+  # counted - it advances the pool and is accounted as 'other'
+  # in the fight record; this only makes the big ones visible.
+  unattributed-log-threshold: 10
+  # The post-fight stats surface (0.4.1, backlog item 9 of the
+  # Wither-night packet): when an encounter closes, every
+  # participant still online is shown their own line from the
+  # fight record (damage dealt in POOL space - the boss bar's
+  # numbers - their share of the party's damage, healing done,
+  # damage taken) plus the party's accounting line (players /
+  # other / boss healed / net). Chat for Java, a Floodgate
+  # form for Bedrock. The pop-up respects /bosstrial feedback
+  # off (automatic surfaces obey the display opt-out); the
+  # stats command does not - asking is asking. The healing
+  # column ships because the 0.4.0 healing-attribution proof
+  # passed (Protect read heals back credited to the healer);
+  # before that proof this surface carried no healing figure
+  # at all. Off = closes stay silent; records still written.
+  stats-popup: true
+  # /bosstrial stats (public, like the status view): re-shows
+  # the caller's most recent fight record - the full table
+  # with the player / other / boss-healed split, read back
+  # from the fights/ files. Off = the command reports itself
+  # disabled.
+  stats-command: true
+
+warden:
+  enabled: true
+  share-gate: true
+  presence: true
+  caps:
+    per-event-damage: 45
+    explosion-per-tick: 60
+  # Height rule (Mike, Oct 19, 2026 - this supersedes the Oct 18
+  # "no engagement rule" note): damage counts toward the warden
+  # seal's share only when the responsible player stood within
+  # this many blocks VERTICALLY of the warden when the hit landed.
+  # A sky-tower bow kill still lands every arrow and can still
+  # kill - it just earns no seal (the hits count like unattributed
+  # damage). Melee at the warden's own level is in-band by design;
+  # the warden's sonic boom answers hole-camping. 0 disables.
+  share-height-band: 12
+  scaling:
+    # EPIC slate (0.3.0) - the finale seal, the longest fight:
+    # pool at 4 champions = 7,200 + 3 x 4,800 = 21,600 effective
+    # HP, at 5 champions 26,400.
+    enabled: true
+    base-health: 7200
+    per-extra-damager: 4800
+    max-damagers-counted: 5
+  pressure:
+    enabled: true
+    # 0.5.3 (Item 39 R2): the retune ships as the default -
+    # outgoing 1.0 (was 1.25) and ramp-max 1.5 (was 2.0), so
+    # past-cap melee reads base 67.5 (about 18 HP through
+    # Protection IV netherite): hard hits, no one-shots.
+    outgoing-multiplier: 1.0
+    pulse-damage: 2.0
+    pulse-interval-seconds: 20
+    pulse-hot-seconds: 30
+    ramp-per-minute: 0.06
+    ramp-max: 1.5
+    # 0.3.7: the pulse honors TrainingWheels - a protected
+    # player's pulse is scaled by their shield factor (the
+    # pulse is source-less MAGIC damage, so TrainingWheels'
+    # own listener never sees it; BossTrial applies the
+    # factor itself, through the seam). Settled ON; false
+    # restores the pre-0.3.7 full pulse for everyone.
+    pulse-respect-training-wheels: true
+    # 0.5.3 (Item 39 R1): the sonic boom is EXEMPT from the
+    # pressure scale - it reads its exact vanilla 15 HP at
+    # every fight point (the ramp would otherwise carry it
+    # to 22.5 past the cap, a standing one-shot). Shipped
+    # false = the retune is the default behavior; true
+    # restores the pre-0.5.3 pressure-scaled boom.
+    apply-to-sonic-boom: false
+
+  milestones:
+    # Milestone beats (0.3.2): at 75/50/25% of the pool remaining,
+    # a broadcast line + one extra pulse surge, once per threshold
+    # per encounter. surge-multiplier scales the surge against this
+    # chapter's pulse-damage (1.0 = one extra pulse; 0 = no surge).
+    # An empty text silences that threshold's line; enabled: false
+    # retires the whole feature for this chapter.
+    enabled: true
+    surge-multiplier: 1.0
+    text-75: "&8The Warden &7falters - a quarter of the fight is spent."
+    text-50: "&8The Warden &7staggers - half the fight is spent."
+    text-25: "&8The Warden &7reels - three quarters spent. The deep is losing its grip."
+
+  voice:
+    # Boss voice (0.5.2): this chapter's clip slugs - the pack
+    # event is wrv:bosstrial.warden.<slug>, played positionally
+    # at the boss to the encounter's participants on the seam's
+    # real event (open = first damage, boom = a sonic boom
+    # lands - rate-limited to the taunt cooldown above, the
+    # two boom clips alternating - beats = the 75/50/25%
+    # milestone stamps, verdict = the warden falls). An empty
+    # value silences that seam; the chat lines stay as
+    # subtitles throughout.
+    open: "open"
+    boom: "boom"
+    boom-alt: "boom_alt"
+    beat-75: "beat75"
+    beat-50: "beat50"
+    beat-25: "beat25"
+    verdict: "verdict"
+
+  sprinkle:
+    # Elite sprinkle (0.4.0 cadence shape): milestone stamps owe
+    # a wave and the cadence adds one every cadence-seconds; a
+    # wave sends one skeleton and one zombie in at the rotation's
+    # level. Ships DISABLED.
+    enabled: false
+    chance: 0.40
+    count: 2
+    levels: [22, 24, 26]
+    max-alive: 5
+    max-per-fight: 24
+    leash-radius: 32.0
+    types: [SKELETON, ZOMBIE]
+    cadence-seconds: 150
+    waves:
+      - types: [SKELETON, ZOMBIE]
+        count: 2
+        placement: ring
+
+  # feedback: (0.3.6) per-chapter overrides of the global
+  # feedback: block - absent keys inherit the globals. The
+  # warden's numbered bar is the only boss bar it has ever had.
+  #   pool-numbers: true
+  #   damage-total: actionbar
+
+# The dragon chapter: ExcelDragonTrial 0.1.2's two-phase machine,
+# ported whole, plus the shared presence rule (no share gate - the
+# two-phase machine is the dragon's gate) and XP spoils above.
+dragon:
+  enabled: true
+  presence: true
+  apply-to-resummons: true
+  phase1:
+    # EPIC slate (0.3.0): phase 1 = 6,000, phase 2 = 14,000 -
+    # 20,000 effective HP across the trial (both phases ride the
+    # intake cap on the entity bar).
+    max-health: 6000
+  phase2:
+    max-health: 14000
+    damage-multiplier: 1.5
+    aggression-interval-seconds: 7
+    aggression-chance: 0.6
+  transition:
+    invulnerable-seconds: 3
+    broadcast-server-wide: false
+  caps:
+    per-event-damage: 45
+    explosion-per-tick: 60
+    block-crystal-placement: true
+  pressure:
+    # The dragon's outgoing pressure is its own phase-2 damage
+    # multiplier (1.5x, above) - this block's outgoing stays 1.0
+    # so the two never stack; the pulse + ramp still apply.
+    enabled: true
+    outgoing-multiplier: 1.0
+    pulse-damage: 2.0
+    pulse-interval-seconds: 20
+    pulse-hot-seconds: 30
+    ramp-per-minute: 0.06
+    ramp-max: 2.0
+    # 0.3.7: the pulse honors TrainingWheels - a protected
+    # player's pulse is scaled by their shield factor (the
+    # pulse is source-less MAGIC damage, so TrainingWheels'
+    # own listener never sees it; BossTrial applies the
+    # factor itself, through the seam). Settled ON; false
+    # restores the pre-0.3.7 full pulse for everyone.
+    pulse-respect-training-wheels: true
+    # 0.5.3 (Item 39 R1): read for every chapter, but only
+    # the WARDEN chapter can deal a sonic boom, so the key
+    # is inert here. Shipped false (see the warden block).
+    apply-to-sonic-boom: false
+
+  milestones:
+    # Milestone beats (0.3.2): at 75/50/25% of the pool remaining,
+    # a broadcast line + one extra pulse surge, once per threshold
+    # per encounter. surge-multiplier scales the surge against this
+    # chapter's pulse-damage (1.0 = one extra pulse; 0 = no surge).
+    # An empty text silences that threshold's line; enabled: false
+    # retires the whole feature for this chapter.
+    enabled: true
+    surge-multiplier: 1.0
+    text-75: "&5{name} &7falters - a quarter spent."
+    text-50: "&5{name} &7staggers - half spent."
+    text-25: "&5{name} &7reels - three quarters spent."
+
+  sprinkle:
+    # Elite sprinkle (0.4.0 cadence shape; ARMED by Packet B,
+    # Item 35, D-4): PHASE 2 ONLY - the cadence is gated on the
+    # chapter's phase seam in code, and the fountain is the
+    # encounter's fixed anchor from battle registration. Each
+    # phase-2 milestone stamp owes a wave and the cadence adds
+    # one every cadence-seconds; a wave sends four elite
+    # endermen in at the fountain. The elites are removed at
+    # the verdict. This REPLACES the chapter's private
+    # Sealbound adds (dragon.adds below, retired in the same
+    # merge - phase 2 never has zero add systems, and never
+    # has two).
+    enabled: true
+    chance: 0.30
+    count: 2
+    levels: [18, 20, 22]
+    max-alive: 10
+    max-per-fight: 40
+    leash-radius: 48.0
+    types: [ENDERMAN, ENDERMAN]
+    cadence-seconds: 180
+    waves:
+      - types: [ENDERMAN]
+        count: 4
+        placement: ring
+  # feedback: (0.3.6) per-chapter overrides of the global
+  # feedback: block - absent keys inherit the globals. The
+  # dragon's title numbers are per phase (phase pool + phase
+  # damage), so the total flips at the phase boundary.
+  #   pool-numbers: true
+  #   damage-total: actionbar
+  flip-crystals:
+    # Crystal re-light at the flip (Packet B, D-2): when the
+    # phase flip fires, the trial re-lights this many end
+    # crystals on towers that currently have none (random pick
+    # among bare towers), never holding more than max-live
+    # live trial crystals. The skyline changes at the halfway
+    # mark and phase 2 re-opens the crystal game (the dragon
+    # heals again - entity-health judging keeps that honest).
+    # The placement lock above still stands: players cannot
+    # PLACE crystals mid-trial; only the trial re-lights.
+    count: 4
+    max-live: 6
+  voice:
+    # Boss voice (0.5.2): this chapter's clip slugs - the pack
+    # event is wrv:bosstrial.dragon.<slug>, played positionally
+    # at the dragon to the battle's participants on the seam's
+    # real event (open = battle registration, flip = the phase
+    # flip, beats = the per-phase 75/50/25% milestone stamps -
+    # beat-50-phase2 is the phase-2 50% stamp's own clip -
+    # addwave = a phase-2 add wave spawns, verdict = the
+    # dragon falls). An empty value silences that seam; the
+    # chat lines stay as subtitles throughout.
+    open: "open"
+    flip: "flip"
+    beat-75: "beat75"
+    beat-50: "beat50"
+    beat-25: "beat25"
+    beat-50-phase2: "beat50p2"
+    addwave: "addwave"
+    verdict: "verdict"
+  adds:
+    # RETIRED by Packet B (D-4, same merge that armed the
+    # sprinkle above): the chapter's private vanilla endermen
+    # duplicated the sprinkle with weaker mobs. The code stays
+    # in the jar, fail-soft off - nothing is deleted. (Packet A
+    # had raised these as the interim phase-2 pressure; the
+    # sprinkle replaces them atomically.)
+    enabled: false
+    per-wave: 3
+    max-alive: 9
+    # The phase-2 health fractions (of the phase-2 bar remaining)
+    # at which add waves spawn, high to low (0.3.2 - code constants
+    # before; these defaults ARE the old constants, so the shipped
+    # behavior is unchanged until someone tunes them).
+    wave-thresholds: [0.75, 0.50, 0.25]
+    name: "&5Sealbound Enderman"
+  messages:
+    title: "&5&lThe Seal Resists"
+    subtitle: "&fThe dragon refuses to fall."
+    chat: "&5The dragon's death-cry shatters against the first seal - and it rises again, wreathed in the valley's old anger."
+
+# Seal loot (0.2, spec section 4): curated TROPHY-tier drops on
+# CREDIT kills only. The signature pool pays ONCE per seal, on
+# the kill that breaks it (elder: the trio-completing kill);
+# bonus rolls pay one per champion beyond the first standing at
+# the death (cap +4), materials and curios only. Curated stacks
+# are never multiplied by the spoils rule. durability is the
+# fraction of durability the item KEEPS (0.6 = pre-worn to ~60%).
+loot:
+  enabled: true
+  wither:
+    signature:
+      - {material: DIAMOND_SWORD, count: 1, name: "Gravewhisper", enchants: {smite: 5, sharpness: 2, looting: 2, unbreaking: 3, mending: 1}, durability: 0.6}
+      - {material: WITHER_ROSE, count: 2}
+    bonus:
+      - {material: WITHER_ROSE, count: 1, weight: 40}
+      - {material: COAL, count: 8, weight: 30}
+      - {material: BONE_BLOCK, count: 2, weight: 30}
+    # Jackpot rows (0.3.0): drawn only on REPEAT clears, combined
+    # with the bonus table, rolls = bonus rolls + jackpot extras.
+    jackpot:
+      - {material: NETHERITE_SCRAP, count: 1, weight: 10}
+      - {material: DIAMOND, min: 2, max: 4, weight: 20}
+  elder-guardian:
+    signature:
+      - {material: TIDE_ARMOR_TRIM_SMITHING_TEMPLATE, count: 1}
+      - {material: HEART_OF_THE_SEA, count: 1}
+      - {material: TRIDENT, count: 1, name: "Monument's Answer", enchants: {impaling: 5, loyalty: 3, unbreaking: 3, mending: 1}, durability: 0.5}
+      - {material: WET_SPONGE, count: 4}
+    bonus:
+      - {material: PRISMARINE_CRYSTALS, count: 4, weight: 50}
+      - {material: WET_SPONGE, count: 2, weight: 30}
+      - {material: NAUTILUS_SHELL, count: 1, weight: 20}
+    jackpot:
+      - {material: HEART_OF_THE_SEA, count: 1, weight: 10}
+      - {material: NAUTILUS_SHELL, min: 1, max: 2, weight: 20}
+  warden:
+    signature:
+      - {material: DIAMOND_LEGGINGS, count: 1, name: "Hushwalkers", enchants: {protection: 4, swift_sneak: 3, unbreaking: 3, mending: 1}, durability: 0.6}
+      - {material: ECHO_SHARD, count: 4}
+      - {material: RECOVERY_COMPASS, count: 1}
+      - {material: DISC_FRAGMENT_5, count: 3}
+    bonus:
+      - {material: ECHO_SHARD, min: 1, max: 2, weight: 50}
+      - {material: AMETHYST_SHARD, count: 4, weight: 30}
+      - {material: SCULK_CATALYST, count: 1, weight: 20}
+    jackpot:
+      - {material: ECHO_SHARD, min: 2, max: 4, weight: 20}
+      - {material: DISC_FRAGMENT_5, min: 1, max: 2, weight: 15}
+  dragon:
+    # Signature (0.2.5, spec 4.6 amendment): "First Breath" -
+    # one elytra per champion standing at the fall, on the
+    # credited kill that breaks the dragon seal, once per seal.
+    # Every credit kill (0.2.11, B-3): breath-base bottles and
+    # crystals end crystals PER CHAMPION, stored as personal
+    # claims - never pooled drops. breath-per-champion and
+    # breath-cap are kept for the no-roster fallback only (a
+    # credit kill with nobody on record pays the old pooled
+    # drops: base + per-champion beyond the first, capped).
+    signature:
+      - {material: ELYTRA, count: 1, name: "First Breath", enchants: {unbreaking: 3, mending: 1}, durability: 1.0}
+    breath-base: 4
+    breath-per-champion: 2
+    breath-cap: 12
+    crystals: 2
+    jackpot:
+      - {material: DRAGON_BREATH, min: 2, max: 4, weight: 25}
+      - {material: END_CRYSTAL, count: 1, weight: 10}
+  # The raid's repeat draw (0.3.0, companion spec): the raid has
+  # no signature table of its own here - its signature is the
+  # minted Village Standard (raid-standard: block). Repeat raid
+  # clears roll bonus + jackpot per winner, paid through claims.
+  raid:
+    bonus:
+      - {material: EMERALD, min: 4, max: 8, weight: 40}
+      - {material: GOLDEN_APPLE, count: 1, weight: 15}
+    jackpot:
+      - {material: TOTEM_OF_UNDYING, count: 1, weight: 5}
+      - {material: EMERALD, min: 8, max: 16, weight: 20}
+
+messages:
+  deny-share: "&c{name} has fallen, but the seal does not break: only {pct}% of the killing damage was dealt by players, and a seal costs {need}%. The seal cannot be earned for {cooldown}. It stood at {pool} health, facing {champions} champion(s)."
+  deny-share-height: "&c{name} has fallen, but the seal does not break: blows struck from too far above or below it do not count. This seal only counts blows landed at the warden's own level, within 12 blocks up or down. Counted damage was {pct}%, and a seal costs {need}%. The seal cannot be earned for {cooldown}. It stood at {pool} health, facing {champions} champion(s)."
+  deny-share-range: "&c{name} has fallen, but the seal does not break: blows struck from beyond the warden's reach do not count - if it could not boom you, it does not count. This seal only counts blows landed within 14 blocks of it. Counted damage was {pct}%, and a seal costs {need}%. The seal cannot be earned for {cooldown}. It stood at {pool} health, facing {champions} champion(s)."
+  deny-share-cage: "&c{name} has fallen, but the seal does not break: it died caged. For the whole final stretch it was penned where it could not move or strike back, and it never landed a blow - and a wither that dies caged earns no seal, however honest the blows. The seal cannot be earned for {cooldown}. It stood at {pool} health, facing {champions} champion(s)."
+  deny-presence: "&c{name} has fallen, but the seal does not break: the fight was real ({pct}% player damage), yet no champion who fought it was still standing near when it fell. The seal cannot be earned for {cooldown}. It stood at {pool} health, facing {champions} champion(s)."
+  deny-cooldown: "&e{name} has fallen, but the seal is still cooling down ({left} left) after an earlier unearned kill. This fight was real - the seal simply cannot break yet."
+  rally: "&6{name} feels {ordinal} champion's blow - and swells with rage. Its health rises to {pool}."
+  spoils: "&6{count} champions fought - loot x{mult}!"
+  spoils-dragon: "&6{count} champions fought - dragon XP x{mult}!"
+  elder-progress: "&6Elder seal: {n} of 3 - an elder guardian of this monument has fallen to a true fight."
+  elder-relay: "&3The monument answers &7- its remaining guardians swell with rage."
+  elder-trio: "&6Elder seal: 3 of 3 - every elder guardian of the monument has fallen to true fights. The curse is lifted!"
+  summon-blocked: "&cThe Wither cannot be summoned while its seal cools down ({left} left) after an unearned kill. Your skulls are safe."
+  attempt: "&eSeal attempt! &f{player} &ehas challenged &f{name}&e."
+  attempt-ongoing: "&eSeal attempt under way: &f{player} &eis challenging &f{name}&e right now."
+  deny-headline: "&cSeal attempt failed: &f{name}&c's seal holds."
+  credit-headline: "&aSeal attempt succeeded: &f{name}&a's seal is BROKEN!"
+  cooldown-status: "&eSeal cooldowns: &f{list}&e. Check anytime with &f{command}&e."
+  # Repeat system (0.3.0).
+  repeat-credit-headline: "&a{name} falls again - a repeat clear! The seal stands; the spoils are yours."
+  deny-repeat-window: "&e{name} has fallen, but its repeat spoils are still resting: they return in {left}. The seal stands."
+  rewards-waiting: "&eYour boss rewards are waiting in &f/bossrewards&e."
+
+# Seal announcements (ExcelBossTrial 0.2.3, installed Oct 22, 2026):
+# 48h window from install boot; re-arm by moving `until` forward + /bosstrial reload.
+announcements:
+  enabled: true
+  until: 1792903841586
+  cooldown-interval-minutes: 60
+  rally-cooldown-seconds: 300
+  status-command: "/guildgate status"
+
+# XP band governor feed (ExcelBossTrial 0.2.4, block appended
+# Oct 23, 2026 per the 0.2.4 packet Step 2 — visibility only;
+# the code default is ON when this block is absent).
+xp-governor:
+  enabled: true
+
+
+# Offline team reward candidate: no world is implicitly authorized for block placement.
+# Populate only after verifying that GP + spawn/world-border checks cover that world's protection stack.
+# Missing/unknown policy always leaves rewards in the personal menu.
+team-rewards:
+  markers:
+    reviewed-world-uuids: []
+    # Exact Bukkit loaded-world names only; optional alternative to UUIDs, not aliases.
+    # Do not select the same world in both lists. Guild remains excluded.
+    reviewed-world-names: []
+  # Auto-present (0.2.11, B-2): the rewards menu opens itself once per
+  # earned batch - at the verdict that stored it, and at the first join
+  # that finds it waiting - after these delays. Balance values, not
+  # constants: raise them if the moment feels rushed.
+  presentation:
+    verdict-delay-seconds: 2
+    join-delay-seconds: 3
+    # An AUTO present also applies the Excel invisibility potion:
+    # the plugin's own invisibility effect for the review window
+    # (review-frames.max-seconds), server-side - nothing is taken
+    # from the player's inventory and nothing need be carried.
+    # Manual opens never get it. Set false to present without it.
+    excel-invisibility-potion: true
+    # Outcome discipline (0.3.0, SPEC 5): every auto-present attempt
+    # logs its named outcome, and a TRANSIENT skip (player gone,
+    # wrong gamemode, a container open, a Magic inventory state)
+    # retries every retry-seconds until the batch presents or
+    # retry-max-minutes closes the window. Settled: 30 s / 10 min.
+    retry-seconds: 30
+    retry-max-minutes: 10
+    outcome-logging: true
+  # Immunity frames (0.2.11, B-2): while an AUTO-presented menu is open
+  # the owner can neither take nor deal damage nor interact, for at
+  # most max-seconds; closing early leaves close-grace-seconds of
+  # damage-in-only protection, and dealing damage ends the grace
+  # instantly. Manual opens (/bossrewards, markers) never get frames.
+  review-frames:
+    max-seconds: 60
+    close-grace-seconds: 1
+
+# Console commands (0.2.11): grantclaim throws an owed reward into a
+# player's personal claims (/bosstrial grantclaim <player> <material>
+# <count>) - the remediation path, since claims wait out offline
+# players and full inventories by design. Console or the
+# excelbosstrial.admin node only; every attempt is audit-logged.
+commands:
+  grantclaim-enabled: true
+
+# The REPEAT system (0.3.0, SPEC section 2/4): a broken seal can be
+# re-fought once its repeat window lapses (24h, per-seal overrides
+# under each chapter's repeat.reset-hours where present). A repeat
+# clear pays the repeat slate - deliberately richer than a first
+# break's per-kill rows: cash per champion, XP accelerants, jackpot
+# rolls over bonus+jackpot, a REFORGED signature (one tier deep),
+# war-chest services, a flex cosmetic, clear-count titles, and
+# support recognition. The underdog factor U(n) = clamp(4/n, 1, 2)
+# scales jackpot counts and accelerants for small groups only.
+repeat:
+  enabled: true
+  reset-hours: 24
+  signature-enabled: true
+  announce: true
+  rewards:
+    cash-per-champion: 5000
+    jackpot:
+      extra-rolls: 2
+    accelerants:
+      mcmmo-xp: 5000
+      # Which mcMMO skill the accelerant lands in (adapter-probed).
+      mcmmo-skill: SWORDS
+      magiclevel-xp: 250
+    war-chest:
+      death-protection-premium: true
+      claimfly-hours: 2
+      # Ships DISABLED: ExcelDeathRecord has no voucher redeem
+      # path yet, and the load-guard keeps the row off (with a log
+      # line) even if this is set true early.
+      lost-and-found-voucher-enabled: false
+  healer-recognition:
+    enabled: true
+  # Flex cosmetics: one named tribute item per repeat clear,
+  # per chapter (material names; delete a row to retire it).
+  cosmetics:
+    wither: WITHER_ROSE
+    elder-guardian: PRISMARINE_SHARD
+    warden: ECHO_SHARD
+    dragon: DRAGON_BREATH
+    raid: EMERALD
+  # Clear-count titles: a claim-stored name tag the moment a
+  # champion's repeat clear count for a seal crosses the row.
+  titles:
+    - {seal: wither, clears: 3, title: "Witherworn"}
+    - {seal: wither, clears: 5, title: "Gravewhisper's Bane"}
+    - {seal: elder_guardian, clears: 2, title: "Tidecaller"}
+    - {seal: elder_guardian, clears: 4, title: "Monument Breaker"}
+    - {seal: warden, clears: 3, title: "Hushwalker"}
+    - {seal: warden, clears: 5, title: "The Deep Listens"}
+    - {seal: ender_dragon, clears: 2, title: "Twice-Breathed"}
+    - {seal: ender_dragon, clears: 4, title: "End's Familiar"}
+    - {seal: raid, clears: 3, title: "Village Proven"}
+    - {seal: raid, clears: 5, title: "Twice-Triumphant"}
+
+# The Village Standard (0.3.0, raid companion): the minted raid
+# signature - a shield-base standard for the offhand, paid to
+# every raid winner on the first break AND every repeat clear.
+# Aura: speed + attack-speed (Haste) for holder and allies in
+# radius. The damage reduction protects the HOLDER only;
+# damage-reduction-scope: aura widens it by edit when settled.
+raid-standard:
+  enabled: true
+  name: "The Village Standard"
+  unbreaking-level: 3
+  mending: true
+  max-damage: 2048
+  aura-radius-blocks: 50
+  aura-speed-amplifier: 0
+  aura-haste-amplifier: 0
+  aura-duration-ticks: 40
+  damage-reduction: 0.15
+  damage-reduction-scope: holder

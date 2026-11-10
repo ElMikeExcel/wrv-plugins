@@ -1,0 +1,23 @@
+ExcelBossTrial 0.5.4 — test results (Nov 10, 2026, desk lane)
+
+Base proof: pristine rebuild of the untouched 0.5.3 tree is
+byte-identical to the shipped 0.5.3 jar (440,242 B /
+09c5eb0e4e0860855c6a28e07d703a6627a778bbca5c6a9dacf431c7a0cf35e8);
+suite 2,435 checks / 0 failures / 85 harnesses (tally.py method).
+
+Candidate suite via package.sh, BOTH deterministic builds:
+2,471 checks / 0 failures / 86 harnesses. Delta vs base +36
+checks / +1 harness = SprinkleMeleeTest 23 (new) +
+SprinkleSettingsTest +9 (29 -> 38) + PluginYmlParseTest +4
+(44 -> 48), exactly the new pins.
+
+Double-build: work/pkg1.jar = work/pkg2.jar = candidate
+443,874 B / aa9db99da0ce22c5bc0af15b01906cbbce5f97e89432af111cb979cb75b169c2,
+byte-identical.
+
+Rig boot (desk rig, candidate jar, elder block at live
+values + the new keys): Enabling v0.5.4, Build line exact,
+sprinkle line carries "[melee: kb -1.0 stagger 40t]" on the
+elder, no sprinkle-config clamp WARNING, SEVERE 0.
+Log: build-054/work/rig-boot.log (41,717 B /
+208a26f139faa70cd3b9f1a67c10d231a7e456a34924b35329888230c816dfdf).
