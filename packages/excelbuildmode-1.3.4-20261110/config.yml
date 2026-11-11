@@ -1,0 +1,36 @@
+# PILOT 1.2: installed as a jar swap only; the live config file on the server is
+# preserved across the swap. Entry still requires the private allowlist,
+# verified cohort replicas and provisioned recovery storage (private install data).
+# Construction-only pilot profile: reward-provider registration is NOT an entry
+# requirement. Earning while building is suppressed by the session jobs.use denial
+# plus input gates (combat, projectiles, fishing, NPCs, harvesting, stripping).
+# Set false only for the strict reward-provider profile.
+pilot-construction-only: true
+guard-accidental-transfers: true
+# In Build Mode allow /buildmode, optional chat/help, and the fixed WorldEdit subset.
+# Does not intercept plugin-internal economy calls, console commands or every custom GUI.
+guard-commands: true
+# Keep ordinary private chat, replies, /help and /list usable. No shop/main-menu GUI exemption.
+allow-chat-help-commands: true
+# Requires a separately installed, tested WorldEdit. In-memory attachment only;
+# does not remove permissions inherited from other plugins/groups. Since 1.3 the
+# session attachment grants the full WorldEdit ability set (worldedit.*) while
+# Build Mode is active — never an always-on grant; entry still refuses a player
+# who already holds WorldEdit access from another source.
+temporary-worldedit: false
+# Big paste (1.3.2): a builder holding the excelbuildmode.bigpaste permission
+# gets their WorldEdit session block-change limit raised to this value while
+# their Build Mode session's WorldEdit grant is in effect (entry and relog-
+# restore alike). Everyone else keeps the WorldEdit config default (live:
+# 5000). -1 means unlimited; a positive value is a hard cap. The built-in
+# default when this key is absent is 1000000 — the jar swap does NOT need a
+# config edit, and the live config file is preserved across the swap.
+big-paste:
+  block-change-limit: 1000000
+# Private installation data only. Empty by default; permission wildcards never bypass this list.
+# Each UUID must also be in both verified private cohort replicas outside the snapshot directory.
+eligible-builder-uuids: []
+storage:
+  maximum-retained-bytes: 134217728
+  maximum-retained-sessions: 2048
+  minimum-free-bytes: 536870912
