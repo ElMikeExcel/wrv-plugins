@@ -1,0 +1,39 @@
+ExcelBossTrial 0.5.5 — test results (Nov 10, 2026, desk lane)
+
+Tally method (this lane): sum every harness result line of the
+forms ": N passed, M failed", ": N checks, M failures",
+"PASS N actual API...", "N reviewed-world resolver checks
+pass", "PASS N checks; actual temp files..." and
+"ComponentTest: N checks passed" in the package.sh log
+(work/tally.py). The two exhaustive surrogate harnesses
+(ClaimSessionTest, InventoryPlanTest) count as harnesses but
+their check counts are excluded, as in prior lanes. NOTE: the
+0.5.4 record's published 2,471 / 86 used a tally variant that
+was not preserved in the tree; this lane's method reads the
+untouched base as 2,502 / 90, so the candidate delta below is
+same-method and exact.
+
+Base proof: pristine rebuild of the untouched 0.5.4 tree is
+byte-identical to the shipped 0.5.4 jar (443,874 B /
+aa9db99da0ce22c5bc0af15b01906cbbce5f97e89432af111cb979cb75b169c2);
+suite 2,502 checks / 0 failures / 90 harnesses (this tally).
+
+Candidate suite via package.sh, BOTH deterministic builds:
+2,588 checks / 0 failures / 92 harnesses. Delta vs base +86
+checks / +2 harnesses = FirstBreakRewardsTest 56 (new) +
+FirstBreakConfigTest 21 (new) + PluginYmlParseTest +9
+(48 -> 57), exactly the new pins.
+
+Double-build: work/pkg1.jar = work/pkg2.jar = candidate
+455,307 B / eade52aa49ab6eb46acc09dd5deed1c23b601be0b1aa5092f947f3cb89aaf0cb,
+byte-identical.
+
+Rig boot (desk rig, candidate jar, rig config untouched -
+the first-break layer runs on its code defaults): Enabling
+v0.5.5, Build line exact, Repeat layer line unchanged,
+First-break line exact ("cash $10000/champion replacing the
+repeat rate, jackpot +2 rolls, title Sealbreakers, EM kit 9
+rows; warden unpaid"), SEVERE 0. Log: work/rig-boot.log
+(35,339 B / 371169ef277e4f9f4270868719e74a7a70b1591459837d787b7d265816a5eee5).
+The rig set has no verdict-driving script, so the payment
+path is unit-proven, not rig-exercised - see BUILD-RECORD.md.
