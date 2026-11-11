@@ -1,0 +1,24 @@
+name: ExcelBuildMode
+version: '1.3.4'
+main: com.winkreyes.buildmode.paper.ExcelBuildMode
+api-version: '26.2'
+loadbefore: [Jobs, mcMMO, EliteMobs]
+softdepend: [WorldEdit, LuckPerms, Essentials, MenuJoin, ExcelDeathProtection]
+description: Trusted self-only Build Mode with durable Survival recovery. 1.1 adds the construction-only pilot profile (session Jobs denial plus early input gates). 1.3 fixes the logout/login desync (logging off in Build Mode returns to Build Mode on relog) and grants the full WorldEdit ability set (worldedit.*) while Build Mode is active. 1.3.2 adds big paste - holders of excelbuildmode.bigpaste get a raised WorldEdit block-change limit while their Build Mode session is active. 1.3.3 adds excelbuildmode.reviewed - a reviewed builder may keep standing WorldEdit permissions and still use Build Mode. 1.3.3 (console-admin build) adds the console admin surface - /buildmode admin status <player> and /buildmode admin off <player> (excelbuildmode.admin) inspect a session and force its Survival restore from console or by an operator. 1.3.4 is the combined rebuild carrying BOTH the reviewed exemption and the console admin surface.
+commands:
+  buildmode:
+    description: Choose Build Mode or Play Normally for yourself; operators may inspect and force-restore a player's session with the admin forms.
+    usage: /buildmode [on|off|status|admin status <player>|admin off <player>]
+permissions:
+  excelbuildmode.use:
+    description: May enter self-only Build Mode.
+    default: false
+  excelbuildmode.bigpaste:
+    description: Inside Build Mode, this builder's WorldEdit block-change limit is raised to the big-paste cap so large pastes and copies succeed in session. Not a WorldEdit node; safe to hold permanently.
+    default: false
+  excelbuildmode.reviewed:
+    description: Reviewed builder. Keeps standing WorldEdit permissions outside Build Mode and may still enter Build Mode (skips the outside-WorldEdit entry refusal and the exit residual-permission probe). Not a WorldEdit node.
+    default: false
+  excelbuildmode.admin:
+    description: May run /buildmode admin status <player> and /buildmode admin off <player> - inspect a player's Build Mode session and force its Survival restore. Also usable from the server console.
+    default: op
