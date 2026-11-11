@@ -1,0 +1,148 @@
+# Summoning tree — Magic messages.yml ADDITION for ExcelSummons
+# 0.1.4 (Mike, Nov 10, 2026, 10:34 AM — "SUMMON REFUSALS MUST
+# EXPLAIN THEMSELVES": no silent refusals, no bare "you can't do
+# that right now" for summons; FIX-PACKET-DESIGN §4 as amended).
+#
+# INSTALL: merge the `spells:` section below into Magic's
+# messages.yml (append under the existing top level — messages.yml
+# currently ships as the stock template with NO spells section, so
+# this creates it) in the same window as the ExcelSummons 0.1.4
+# jar + the modifiers addition. No existing key is edited and
+# spells.default is NOT touched: every entry is a PER-SPELL
+# override, which Magic resolves before the default (the
+# mechanism is Magic's own — messages.defaults.yml itself ships
+# per-spell overrides, e.g. peek's no_target).
+#
+# What each key covers (defaults verified in Magic 11.2.5
+# messages.defaults.yml, spells.default):
+#   no_target              default '' — SILENT. Every summon
+#                          spell targets LivingEntity with
+#                          allow_max_range: false, so a cast at
+#                          empty ground could fail with NO text
+#                          at all. Now names the target rule.
+#   living_entity_required default "A living entity is required"
+#                          — now names the spell + the 32-block
+#                          range every summon spell shares.
+#   insufficient_resources default "Not enough $cost" — keeps
+#                          the engine's $cost interpolation (the
+#                          one numeric this path supports) and
+#                          adds the reserve explanation + the
+#                          /summons list pointer. NOTE: Magic
+#                          config has NO placeholder for current
+#                          usable mana or held-reserve percent —
+#                          see the build record's remainders.
+#   cooldown               default "You must wait $time" — the
+#                          $time interpolation already names the
+#                          remaining time; the override names the
+#                          spell so a shared wand's cooldown is
+#                          attributable.
+#   insufficient_permission default "You can't do that right now"
+#                          — the generic bucket Marvin hit. It
+#                          also covers genuine rank/path locks,
+#                          so each spell's text names BOTH its
+#                          own limit (the summon-specific cause)
+#                          and the unlock possibility, honestly.
+#   fail                   default "Something went wrong!" — now
+#                          names the spell and states nothing was
+#                          spent.
+# Tier keys (archer|2, archer|3, bruiser|2) are listed
+# explicitly with their base family's texts: whether Magic's
+# message lookup falls back from a tier key to its base is
+# UNVERIFIED from config alone, so the packet does not rely on it.
+# Channel prefixes mirror the defaults (a: = action bar where
+# the default uses one; target keys stay in chat).
+#
+# Spell facts (staged live book + summons packet deltas):
+# costs mana — wolf 100 · familiar 50 · cat 30 · mount 100 ·
+# archer 60 · bruiser 80 · guardian 150 · revenant 120 ·
+# ghast 150. Cooldowns — wolf/archer 60s · bruiser 75s ·
+# guardian 180s · familiar/cat/revenant 240s · mount/ghast
+# 300s. All summon spells: range 32, LivingEntity target.
+#
+# Excel — Wink Reyes Valley (Iris / Mike).
+
+spells:
+  wolf:
+    no_target: "Wolf found no target — summons need a living creature within 32 blocks in front of you. Aim at one and cast again."
+    living_entity_required: "Wolf requires a living target within 32 blocks — aim at a creature and cast again."
+    insufficient_resources: "a:&cNot enough mana for Wolf — it costs &4$cost&c. Summons and toggles holding reserve shrink your usable pool — /summons list shows what is held."
+    cooldown: "a:&eWolf is still recharging — you must wait &6$time"
+    insufficient_permission: "a:&eWolf can't be cast right now — Wolf's own limit is 5 wolves: if 5 of yours are already out (including any waiting at home), one must leave first. /summons list shows your summons."
+    fail: "&cWolf failed unexpectedly — nothing was spent. Try again; if it repeats, tell an operator what you were casting at."
+  familiar:
+    no_target: "Familiar found no target — summons need a living creature within 32 blocks in front of you. Aim at one and cast again."
+    living_entity_required: "Familiar requires a living target within 32 blocks — aim at a creature and cast again."
+    insufficient_resources: "a:&cNot enough mana for Familiar — it costs &4$cost&c. Summons and toggles holding reserve shrink your usable pool — /summons list shows what is held."
+    cooldown: "a:&eFamiliar is still recharging — you must wait &6$time"
+    insufficient_permission: "a:&eFamiliar can't be cast right now — its own limit is 3: if 3 of yours are already out, one must leave first; it may also not be unlocked for your rank yet. /summons list shows your summons."
+    fail: "&cFamiliar failed unexpectedly — nothing was spent. Try again; if it repeats, tell an operator what you were casting at."
+  cat:
+    no_target: "Cat found no target — summons need a living creature within 32 blocks in front of you. Aim at one and cast again."
+    living_entity_required: "Cat requires a living target within 32 blocks — aim at a creature and cast again."
+    insufficient_resources: "a:&cNot enough mana for Cat — it costs &4$cost&c. Summons and toggles holding reserve shrink your usable pool — /summons list shows what is held."
+    cooldown: "a:&eCat is still recharging — you must wait &6$time"
+    insufficient_permission: "a:&eCat can't be cast right now — its own limit is 2: if 2 of yours are already out, one must leave first; it may also not be unlocked for your rank yet. /summons list shows your summons."
+    fail: "&cCat failed unexpectedly — nothing was spent. Try again; if it repeats, tell an operator what you were casting at."
+  mount:
+    no_target: "Mount found no target — summons need a living creature within 32 blocks in front of you. Aim at one and cast again."
+    living_entity_required: "Mount requires a living target within 32 blocks — aim at a creature and cast again."
+    insufficient_resources: "a:&cNot enough mana for Mount — it costs &4$cost&c. Summons and toggles holding reserve shrink your usable pool — /summons list shows what is held."
+    cooldown: "a:&eMount is still recharging — you must wait &6$time"
+    insufficient_permission: "a:&eMount can't be cast right now — you can only have 1 mount, and it may not be unlocked for your rank yet. /summons list shows your summons."
+    fail: "&cMount failed unexpectedly — nothing was spent. Try again; if it repeats, tell an operator what you were casting at."
+  archer:
+    no_target: "Archer found no target — summons need a living creature within 32 blocks in front of you. Aim at one and cast again."
+    living_entity_required: "Archer requires a living target within 32 blocks — aim at a creature and cast again."
+    insufficient_resources: "a:&cNot enough mana for Archer — it costs &4$cost&c. Summons and toggles holding reserve shrink your usable pool — /summons list shows what is held."
+    cooldown: "a:&eArcher is still recharging — you must wait &6$time"
+    insufficient_permission: "a:&eArcher can't be cast right now — its own limit is 2: if 2 of yours are already out, one must leave first; it may also not be unlocked for your rank yet. /summons list shows your summons."
+    fail: "&cArcher failed unexpectedly — nothing was spent. Try again; if it repeats, tell an operator what you were casting at."
+  'archer|2':
+    no_target: "Archer found no target — summons need a living creature within 32 blocks in front of you. Aim at one and cast again."
+    living_entity_required: "Archer requires a living target within 32 blocks — aim at a creature and cast again."
+    insufficient_resources: "a:&cNot enough mana for Archer — it costs &4$cost&c. Summons and toggles holding reserve shrink your usable pool — /summons list shows what is held."
+    cooldown: "a:&eArcher is still recharging — you must wait &6$time"
+    insufficient_permission: "a:&eArcher can't be cast right now — its own limit is 2: if 2 of yours are already out, one must leave first; it may also not be unlocked for your rank yet. /summons list shows your summons."
+    fail: "&cArcher failed unexpectedly — nothing was spent. Try again; if it repeats, tell an operator what you were casting at."
+  'archer|3':
+    no_target: "Archer found no target — summons need a living creature within 32 blocks in front of you. Aim at one and cast again."
+    living_entity_required: "Archer requires a living target within 32 blocks — aim at a creature and cast again."
+    insufficient_resources: "a:&cNot enough mana for Archer — it costs &4$cost&c. Summons and toggles holding reserve shrink your usable pool — /summons list shows what is held."
+    cooldown: "a:&eArcher is still recharging — you must wait &6$time"
+    insufficient_permission: "a:&eArcher can't be cast right now — its own limit is 2: if 2 of yours are already out, one must leave first; it may also not be unlocked for your rank yet. /summons list shows your summons."
+    fail: "&cArcher failed unexpectedly — nothing was spent. Try again; if it repeats, tell an operator what you were casting at."
+  bruiser:
+    no_target: "Bruiser found no target — summons need a living creature within 32 blocks in front of you. Aim at one and cast again."
+    living_entity_required: "Bruiser requires a living target within 32 blocks — aim at a creature and cast again."
+    insufficient_resources: "a:&cNot enough mana for Bruiser — it costs &4$cost&c. Summons and toggles holding reserve shrink your usable pool — /summons list shows what is held."
+    cooldown: "a:&eBruiser is still recharging — you must wait &6$time"
+    insufficient_permission: "a:&eBruiser can't be cast right now — its own limit is 2: if 2 of yours are already out, one must leave first; it may also not be unlocked for your rank yet. /summons list shows your summons."
+    fail: "&cBruiser failed unexpectedly — nothing was spent. Try again; if it repeats, tell an operator what you were casting at."
+  'bruiser|2':
+    no_target: "Bruiser found no target — summons need a living creature within 32 blocks in front of you. Aim at one and cast again."
+    living_entity_required: "Bruiser requires a living target within 32 blocks — aim at a creature and cast again."
+    insufficient_resources: "a:&cNot enough mana for Bruiser — it costs &4$cost&c. Summons and toggles holding reserve shrink your usable pool — /summons list shows what is held."
+    cooldown: "a:&eBruiser is still recharging — you must wait &6$time"
+    insufficient_permission: "a:&eBruiser can't be cast right now — its own limit is 2: if 2 of yours are already out, one must leave first; it may also not be unlocked for your rank yet. /summons list shows your summons."
+    fail: "&cBruiser failed unexpectedly — nothing was spent. Try again; if it repeats, tell an operator what you were casting at."
+  guardian:
+    no_target: "Guardian found no target — summons need a living creature within 32 blocks in front of you. Aim at one and cast again."
+    living_entity_required: "Guardian requires a living target within 32 blocks — aim at a creature and cast again."
+    insufficient_resources: "a:&cNot enough mana for Guardian — it costs &4$cost&c. Summons and toggles holding reserve shrink your usable pool — /summons list shows what is held."
+    cooldown: "a:&eGuardian is still recharging — you must wait &6$time"
+    insufficient_permission: "a:&eGuardian can't be cast right now — its own limit is 1: if yours is already out, it must leave first; it may also not be unlocked for your rank yet. /summons list shows your summons."
+    fail: "&cGuardian failed unexpectedly — nothing was spent. Try again; if it repeats, tell an operator what you were casting at."
+  revenant:
+    no_target: "Revenant found no target — summons need a living creature within 32 blocks in front of you. Aim at one and cast again."
+    living_entity_required: "Revenant requires a living target within 32 blocks — aim at a creature and cast again."
+    insufficient_resources: "a:&cNot enough mana for Revenant — it costs &4$cost&c. Summons and toggles holding reserve shrink your usable pool — /summons list shows what is held."
+    cooldown: "a:&eRevenant is still recharging — you must wait &6$time"
+    insufficient_permission: "a:&eRevenant can't be cast right now — its own limit is 1: if yours is already out, it must leave first; it may also not be unlocked for your rank yet. /summons list shows your summons."
+    fail: "&cRevenant failed unexpectedly — nothing was spent. Try again; if it repeats, tell an operator what you were casting at."
+  ghast:
+    no_target: "Ghast found no target — summons need a living creature within 32 blocks in front of you. Aim at one and cast again."
+    living_entity_required: "Ghast requires a living target within 32 blocks — aim at a creature and cast again."
+    insufficient_resources: "a:&cNot enough mana for Ghast — it costs &4$cost&c. Summons and toggles holding reserve shrink your usable pool — /summons list shows what is held."
+    cooldown: "a:&eGhast is still recharging — you must wait &6$time"
+    insufficient_permission: "a:&eGhast can't be cast right now — its own limit is 1: if yours is already out, it must leave first; it may also not be unlocked for your rank yet. /summons list shows your summons."
+    fail: "&cGhast failed unexpectedly — nothing was spent. Try again; if it repeats, tell an operator what you were casting at."

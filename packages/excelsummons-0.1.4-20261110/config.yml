@@ -1,0 +1,167 @@
+# ExcelSummons — bridge config.
+# The cap and duration numbers below MIRROR the summon_cap /
+# summon_duration_ms annotation keys on the spells in Magic's
+# spells.yml (packet-summons-20261108). One number, two readers: the
+# logic harness reads the spells; this bridge enforces from here.
+# If they ever disagree, the spells packet and this file are both
+# wrong until they match again.
+
+# Summon concurrency (0.1.4, Mike, Nov 10, 2026): active spell
+# summons are COUNTED TOGETHER — combat + companion + pack
+# branches in one total (the mount is not counted; its own
+# per-spell cap of 1 still binds) — and the total is RANK-SCALED
+# by the caster's EARNED magic rank (10:35 AM ruling; ladder
+# LOCKED by Mike 10:37 AM the same morning: Beginner 1 ·
+# Student 2 · Apprentice 3 · Master 5 — Student is 2 in his
+# final ladder, not the 1 of his first sketch). The rank is read
+# from MagicGate's earned.yml credited total through the locked
+# thresholds (Student 100 / Apprentice 400 / Master 2,000 casts);
+# a rank that cannot be read fails to the LOWEST rung here.
+# These values are configuration: changing a rung is a config
+# edit in the install window, never a rebuild. This map REPLACES
+# the retired per-caster-combat-cap (any combat-only count is
+# <= the total, so a separate combat cap could never bind
+# first). The server ceiling below stays combat-only.
+summon-cap-by-rank:
+  beginner: 1
+  student: 2
+  apprentice: 3
+  master: 5
+server-combat-ceiling: 12
+
+# Party target-sharing: summons may join a fight a party member of
+# their caster is already in (read-only ExcelTogether adapter).
+# Player protection never depends on this setting.
+party-target-sharing: true
+
+# Retaliation memory (0.1.1, Mike's party rule): when a player who
+# is KNOWN to be outside the caster's party hits a summon, that
+# player becomes the summon's one recorded aggressor — the only
+# player it may target or damage. The memory lasts this long after
+# the aggressor's last hit (each hit refreshes it), and clears
+# sooner if the aggressor dies, logs off, leaves the summon's
+# engage radius or world, or joins the party. Party members, the
+# caster, and anyone whose party status cannot be determined take
+# NO damage to the summon and are never recorded — protection is
+# the fail-soft direction, always.
+aggressor-memory-ms: 30000
+
+# How far (blocks) a summon will engage a valid target, and how far
+# from its caster it may stand idle before it is brought home.
+engage-radius: 32.0
+leash-distance: 32.0
+
+# Guardian taunt (0.1.2, Mike's tank ruling): on the target tick, a
+# living Guardian re-points any hostile within this radius whose
+# current target is the Guardian's owner or a party member at
+# itself. Only party-engaged hostiles qualify — taunt steals
+# fights, it never starts them. Guardian only; no other summon
+# taunts.
+guardian-taunt-radius: 16.0
+
+# Guardian tank skin (0.1.2): the fraction of ALL damage a Guardian
+# record does not take (0.40 = it takes 60%). The bridge half of
+# the tank build; the spell half is the max_health attribute in the
+# packet's guardian delta. Together: ~500 effective HP against
+# stage-4 attention, healable at full value.
+guardian-damage-reduction: 0.40
+
+# Mana-reserve upkeep (0.1.2, Mike's anti-spam ruling; widened
+# 0.1.4, Mike, Nov 10, 2026 — "companions hold mana too"): while
+# a summon lives, it holds this percentage of its caster's mana
+# pool, applied as a Magic modifier (the modifiers additions
+# define the templates — the keys are count-tiered:
+# wrv_summon_reserve_archer, ..._archer2, ..._wolf5, ...).
+# Released on every despawn path (re-derived from the registry
+# after every mutation). The ceiling caps the summons' own total
+# — ALL branches together (a full combat set lands at 70 of 75;
+# the mount counts toward this total even though it is excluded
+# from the summon COUNT cap above); the floor guarantees at
+# least this much of the caster's BASE pool stays usable no
+# matter what else (Cloak, toggles) is holding mana. Companion
+# prices (0.1.4 design §2.2): wolf 10 (it fights — priced like
+# the archer), familiar 5 and cat 5 (utility only — the minimum
+# legible hold), mount 10 (cap 1 bounds its total hold).
+reserve-ceiling-percent: 75
+reserve-floor-percent: 20
+summon-reserve-percent:
+  archer: 10
+  bruiser: 15
+  guardian: 25
+  revenant: 20
+  ghast: 25
+  wolf: 10
+  familiar: 5
+  cat: 5
+  mount: 10
+
+# Tick periods: target engine ~2s, lifetime/adoption sweep ~5s.
+target-tick-ticks: 40
+sweep-ticks: 100
+
+# Managed spell families. Tiers (archer|2) are listed individually
+# because their durations differ; a tier with no row of its own falls
+# back to its family base row. enforce-cap is false only for wolf:
+# its builtin class already owns the cap of 5 — the bridge registers
+# wolves for attribution and leaves their cap alone.
+summon-spells:
+  archer:
+    branch: combat
+    cap: 2
+    duration-ms: 90000
+    enforce-cap: true
+  archer|2:
+    branch: combat
+    cap: 2
+    duration-ms: 120000
+    enforce-cap: true
+  archer|3:
+    branch: combat
+    cap: 2
+    duration-ms: 150000
+    enforce-cap: true
+  bruiser:
+    branch: combat
+    cap: 2
+    duration-ms: 120000
+    enforce-cap: true
+  bruiser|2:
+    branch: combat
+    cap: 2
+    duration-ms: 150000
+    enforce-cap: true
+  guardian:
+    branch: combat
+    cap: 1
+    duration-ms: 180000
+    enforce-cap: true
+  revenant:
+    branch: combat
+    cap: 1
+    duration-ms: 180000
+    enforce-cap: true
+  ghast:
+    branch: combat
+    cap: 1
+    duration-ms: 120000
+    enforce-cap: true
+  mount:
+    branch: mount
+    cap: 1
+    duration-ms: 0
+    enforce-cap: true
+  familiar:
+    branch: companion
+    cap: 3
+    duration-ms: 0
+    enforce-cap: true
+  cat:
+    branch: companion
+    cap: 2
+    duration-ms: 0
+    enforce-cap: true
+  wolf:
+    branch: pack
+    cap: 5
+    duration-ms: 0
+    enforce-cap: false
