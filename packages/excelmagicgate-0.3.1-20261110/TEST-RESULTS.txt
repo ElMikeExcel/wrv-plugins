@@ -1,0 +1,34 @@
+ExcelMagicGate 0.3.1 — test results
+Build: EXC-MAGICGATE-0.3.1-WRV-20261110-01-7a0311
+Jar: ExcelMagicGate-0.3.1.jar, 243885 bytes, SHA-256 454186c0dd145a57af08757d88b4de92cbd55551c5bdd71bc5677806e9bf42a2
+Double-build: byte-identical (second clean build, same SHA-256).
+
+Unit suite (run-tests.sh, JDK 25): 284 checks, 0 failed.
+Full per-check output: TEST-OUTPUT.txt.
+
+Carried from the amended 0.3.0 build (276 checks): 0.2.1 regression
+suite (ceiling basis, step ladder, frame table, placement parser,
+state persistence, floor spell keys, canonical ranks), EarnedRank
+thresholds, CeilingPlan, CreditPolicy (classification, gating,
+caps), EarnedStore round trip, config classification agreement,
+stage packet manifests, DESIGN section 10 credit-logic simulation,
+placement reproduction over the 11 real Nov 9 mage-pull fixtures,
+WandInventorySync pure logic + supplemental-grants config
+agreement + the placement grant pass over the REAL Nov 9 fixtures.
+
+New in 0.3.1 (8 checks, testWandLore): the milestone lines render
+exactly ("Milestones: Student 100 · Apprentice 400" /
+"· Master 2,000"); a lore block for 1,210 credited casts contains
+the credited count, the next-rank gap (790 to go) and all three
+milestone numbers (100 / 400 / 2,000) in one joined string; the
+milestone lines are the block's last two lines; beginner (12,
+88 to go), master (2,500, top-rank) and ceiling-held blocks each
+still carry the count and all milestones.
+
+Rig (Paper 26.2 + Magic 11.2.5, stage 4): milestone lore PROVEN
+on a live wand — RigSyncAppr (500 credited) read Rank / Credited
+casts 500 / Next: Master — 1,500 to go / Milestones: Student 100 ·
+Apprentice 400 / · Master 2,000; lore property seam verified;
+carried step-up + 35-spell apprentice inventory grant verified;
+zero SEVERE in the final boot. Full text: RIG-VERDICT.md (the
+boot-2 single-line wrap finding is recorded there).
