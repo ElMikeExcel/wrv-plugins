@@ -1,0 +1,43 @@
+# ExcelTrainingDummy — configuration
+# Excel — Wink Reyes Valley. The dummy's health pool is virtual: the
+# entity never takes real damage, so a dummy can never pay XP, drop
+# loot, or hand out boss credit. These numbers only steer the tests.
+
+# Health tiers (hit points of practice pool per dummy).
+tiers:
+  practice: 1000
+  dungeon: 5000
+  seal: 20000
+
+# How many dummies may stand at once.
+caps:
+  per-player: 5
+  server: 25
+
+# Putting dummies away.
+despawn:
+  # A dummy nobody has touched for this long is removed on its own.
+  # (Logging out always takes your dummies with you, right away.)
+  idle-minutes: 10
+
+# Endless mode: the pool is a lap. When a lap finishes, the report
+# prints and the dummy resets to full after this many seconds.
+endless:
+  reset-seconds: 5
+
+# Hazardous mode: the dummy pulses damage at its owner while it
+# stands. The pulse only reaches an owner standing nearby.
+hazard:
+  pulse-ticks: 40
+  range-blocks: 20
+  damage:
+    light: 2
+    medium: 4
+    intense: 8
+
+# Boss-armor preset: when a dummy wears it, every number in its
+# checkpoints and reports is shown multiplied by this factor — the
+# same x1000 display scale the seal bosses use, so practice numbers
+# read like fight-night numbers. Presentation only; tests stay raw.
+boss-armor:
+  display-scale-factor: 1000
