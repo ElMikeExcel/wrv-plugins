@@ -1,0 +1,47 @@
+ExcelMagicGate 0.3.2 — test results
+Build: EXC-MAGICGATE-0.3.2-WRV-20261112-01-9c032b
+Jar: ExcelMagicGate-0.3.2.jar, 247078 bytes, SHA-256 895cf91dfd28bcca0c493dc2ef69fcc903257001ea1790bb70fcae3b0a81fb68
+Double-build: byte-identical (second clean build, same SHA-256).
+
+Base discipline: the 0.3.1 base tree (magicgate-031-build) was
+rebuilt BEFORE any edit and reproduced the shipped 0.3.1 jar
+byte-identically (SHA-256 454186c0dd145a57af08757d88b4de92cbd55551c5bdd71bc5677806e9bf42a2);
+its SHA256SUMS also verified on disk.
+
+Unit suite (run-tests.sh, JDK 25): 293 checks, 0 failed.
+Full per-check output: TEST-OUTPUT.txt.
+
+Carried from 0.3.1 (284 checks): the full 0.2.1 regression suite,
+EarnedRank, CeilingPlan, CreditPolicy, EarnedStore, config
+agreement, DESIGN §10 credit-logic simulations, placement
+reproduction over the 11 real Nov 9 mage-pull fixtures,
+WandInventorySync + the fixture grant pass, and the 0.3.1 wand-lore
+milestone checks.
+
+New in 0.3.2 (9 checks, testSpellTemplateGate):
+- partition of a mixed batch: valid keys (anvil/heal/mend) stay
+  grantable in order; dead keys (zzdeadspell/notaspell) are skipped
+  in order;
+- the WARNING line names the dead key + the player and carries the
+  verdict "has no template in Magic — skipped, wand data/config
+  mismatch" verbatim;
+- a simulated sync over the partition completes: grantable keys are
+  granted and verify held on re-read; the dead key is never granted
+  (absent from the held set and the granted list) and is the only
+  key still missing afterwards;
+- completion accounting starts "3 granted" and reports the skipped
+  keys separately ("2 skipped", naming zzdeadspell);
+- an all-dead batch partitions to zero grantable (the sync's
+  early-return path);
+- fail-open: a resolver that throws, and a null resolver, both
+  leave every key grantable — a broken probe never blocks a grant;
+- an empty batch partitions empty.
+
+Rig (Paper 26.3-214 + Magic 11.2.5, stage 4): the dead-key gate
+PROVEN live — see RIG-VERDICT.md. Boot C: WARNING names
+'zzdeadspell', 35 valid spells granted + verified, accounting line
+reports 1 skipped separately, zero getMode NPE lines, SEVERE 0.
+Boot B: the mutated Mike mage fixture replayed (step-up +
+34-spell grant, clean). Boot A: forceAddSpell refuses a dead key
+itself (returns false, no throw) — dead keys arrive via data only,
+which is why the gate works on the grant-candidate path.
