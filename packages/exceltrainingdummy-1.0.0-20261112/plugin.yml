@@ -1,0 +1,20 @@
+name: ExcelTrainingDummy
+version: 1.0.0
+main: com.winkreyes.exceltrainingdummy.ExcelTrainingDummy
+api-version: '1.21'
+author: WinkReyesValley
+description: "Training dummies for Wink Reyes Valley, copied from WoW's Dummy Dome and Guild Wars 2's training golems: spawn 1 / 3 / 5 from a menu, Practice / Dungeon / Seal health tiers plus Endless laps, DPS checkpoints at each 25% of the pool and a full report on the finish, a boss-armor display-scale preset, a hazardous mode (Light / Medium / Intense, stops at 1 HP unless you flip Lethal), and an execute preset that starts the dummy at 25% HP. The pool is virtual - the dummy never really dies, so it pays no XP, drops no loot, and earns no boss credit. Menus on Java, forms on Bedrock, same reports in chat either way."
+softdepend: [floodgate, Geyser-Spigot, ExcelMenu, ExcelBedrockMenu, GriefPrevention]
+commands:
+  dummy:
+    description: Open the Training Dummy spawn menu, or use a subcommand (spawn/removeall/status/version/reload).
+    usage: /dummy [menu|spawn 1|3|5 [practice|dungeon|seal]|removeall|status|version|reload]
+    permission: exceltrainingdummy.use
+    aliases: [exceldummy, trainingdummy]
+permissions:
+  exceltrainingdummy.use:
+    description: Use training dummies (/dummy menu, spawning, tapping your own dummies).
+    default: true
+  exceltrainingdummy.admin:
+    description: Admin surface - /dummy reload, and spawning dummies inside admin claims (staff training zones).
+    default: op
