@@ -1,0 +1,143 @@
+[36m╷[0m
+[36m├─[0m [36mJUnit Platform Suite[0m [32m✔[0m
+[36m├─[0m [36mJUnit Jupiter[0m [32m✔[0m
+[36m│  ├─[0m [36mPurchaseReviewMenuTest[0m [32m✔[0m
+[36m│  │  ├─[0m [34mcloseBeforeScheduledOpenCancelsIt()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mnewerMenuMakesOldQueuedConfirmInert()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mzeroBalanceAndOneCentShortAreNotRoundedAway()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mtoppingUpAfterFailureRequiresRequoteThenConfirm()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mdeathBeforeQueuedConfirmRetiresItsToken()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mqueuedOpenDoesNotOverrideNewerNavigation()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mrefreshRetiresInvalidPendingReviewBeforeCallback()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mopeningBasicShowsOnePriceBalanceAndProjectedRemainderWithoutPayment()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mnewerViewWithoutCloseEventRetiresQueuedReviewToken()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mdraggingAcrossOrWithinReviewIsCancelled()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mopeningPremiumShowsOnePotionAndThirtyThousand()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mconfirmChargesOnceDespiteRepeatedClickPackets()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mexactBalanceMayConfirmOnceAndLeavesZero()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mtimeoutRefreshRequiresNewDistinctConfirm()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mrepeatedBuyCommandsAlwaysQuoteNeverPay()[0m [32m✔[0m
+[36m│  │  ├─[0m [34minitiallyPoorPlayerCanRefreshThenBuyAfterDeposit()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mcloseCancelsQueuedConfirmAndItsToken()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mwrongPlayerCannotActOnOwnersReview()[0m [32m✔[0m
+[36m│  │  ├─[0m [34munrelatedInventoryIsIgnored()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mshutdownClosesOwnedReviewAndPreventsQueuedActions()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mquitCancelsQueuedAction()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mfullPremiumInventoryBlocksReviewPurchase()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mforbiddenClickTypesAndBottomClicksCannotBuyOrMoveItems()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mlatestQueuedProductWinsWithoutOpeningStaleReview()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mpreviewedPriceChangeDisablesOldConfirm()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mbackSupersedesQueuedButUnexecutedConfirm()[0m [32m✔[0m
+[36m│  │  ├─[0m [34munknownBalancesAreNotPresentedAsZeroOrNaN()[0m [32m✔[0m
+[36m│  │  ├─[0m [34minsufficientBothTiersShowsExactShortfallAndDisabledConfirm()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mchangedPriceRequiresFreshReviewEvenBeforeRefreshTick()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mbalanceDroppingAtConfirmDisablesAndShowsFreshShortfall()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mexpiryBetweenClickAndExecutionCannotCharge()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mbackReturnsToShopAndCancelsWithoutCharge()[0m [32m✔[0m
+[36m│  │  ├─[0m [34meligibilityChangeBeforeConfirmNeverCharges()[0m [32m✔[0m
+[36m│  │  └─[0m [34mpreviewNeverExtendsExpiry()[0m [32m✔[0m
+[36m│  ├─[0m [36mPremiumApiProbeTest[0m [32m✔[0m
+[36m│  │  ├─[0m [34mprobedMethodIsPublicStaticWithIntSecondParameter()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mbossTrialInvokeShapesReturnFalseCleanlyWhenPluginIsDown()[0m [32m✔[0m
+[36m│  │  └─[0m [34mprobeFindsTheApiClassByBossTrialsFirstName()[0m [32m✔[0m
+[36m│  ├─[0m [36mPurchaseJournalTest[0m [32m✔[0m
+[36m│  │  ├─[0m [34mdiskWriteFailurePoisonsJournal()[0m [32m✔[0m
+[36m│  │  ├─[0m [34meveryNonterminalPhaseRemainsUnresolvedAfterRestart()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mforcedAppendRoundTripsAndPreservesUnfinishedIntent()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mplayerOrPriceCannotChangeWithinTransaction()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mrefundCompletionAndDeclineAreTerminal()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mtruncatedTailFailsClosed()[0m [32m✔[0m
+[36m│  │  ├─[0m [34millegalTransitionPoisonsJournalAndBlocksFurtherWrites()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mimmutableSnapshotsDoNotChangeAfterAppend()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mcompletionRemovesPendingButPreservesAudit()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mterminalTransactionsCannotBeReplayed()[0m [32m✔[0m
+[36m│  │  └─[0m [34mchecksumCorruptionFailsClosed()[0m [32m✔[0m
+[36m│  ├─[0m [36mPremiumCreditsTest[0m [32m✔[0m
+[36m│  │  ├─[0m [34mrearmWithEmptyBankDoesNothing()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mrearmAfterConsumedDeathSpendsOneBankedCredit()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mzeroAndNegativeAmountsAreRejected()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mrevokeRemovesUpToTheBankAndNeverGoesNegative()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mcreditWhileBasicActiveAlsoBanksRatherThanOverwriting()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mbankCapIsRespectedAndFullBankRejectsFurtherCredit()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mcreditWhileProtectedBanksInFull()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mfullCycleCreditDeathRearmDeathLeavesPlayerUnprotected()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mcreditWhileUnprotectedActivatesAndBanksNothingForOne()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mcreditThreeWhileProtectedBanksThree()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mnoRearmWhenAutoRearmDisabled()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mcreditThreeWhileUnprotectedActivatesOneAndBanksTwo()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mbundledConfigCarriesThePremiumDefaults()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mamountIsClampedToMaxPerCall()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mdisabledSeamRejectsCreditWithoutStateChange()[0m [32m✔[0m
+[36m│  │  └─[0m [34mnoRearmWhenProtectionWasNotUsed()[0m [32m✔[0m
+[36m│  ├─[0m [36mResourceConfigurationTest[0m [32m✔[0m
+[36m│  │  ├─[0m [34mmenuIsAnUnassignedTemplateWithoutIndependentMoneyActions()[0m [32m✔[0m
+[36m│  │  ├─[0m [34mpluginDescriptorParsesAndNamesTheCandidate()[0m [32m✔[0m
+[36m│  │  └─[0m [34mnewPriceKeysAreExplicitAndLegacyPriceIsAbsent()[0m [32m✔[0m
+[36m│  └─[0m [36mPurchaseCoordinatorTest[0m [32m✔[0m
+[36m│     ├─[0m [34mconfirmWithoutAQuoteRequiresAnotherDistinctConfirmation()[0m [32m✔[0m
+[36m│     ├─[0m [34minterruptedPurchaseLocksSamePlayerAfterRestartWithoutReplaying()[0m [32m✔[0m
+[36m│     ├─[0m [34mverifiedRollbackPrecedesRefundAndIntentExistsAtBothMoneyCalls()[0m [32m✔[0m
+[36m│     ├─[0m [34mconcurrentReviewCallsCannotInterfereWithAnInProgressConfirmation()[0m [32m✔[0m
+[36m│     ├─[0m [34minsufficientFundsNeverArmsOrCharges()[0m [32m✔[0m
+[36m│     ├─[0m [34mjournalFailureAfterDebitStopsDeliveryAndRefund()[0m [32m✔[0m
+[36m│     ├─[0m [34mallConfirmationPrecheckFailuresConsumeThePreviousToken()[0m [32m✔[0m
+[36m│     ├─[0m [34minvalidBalanceAndReadExceptionFailWithoutCharge()[0m [32m✔[0m
+[36m│     ├─[0m [34mexactExpiryRearmsWithoutCharge()[0m [32m✔[0m
+[36m│     ├─[0m [34mquoteAndPreviewRespectCooldownAndLockedState()[0m [32m✔[0m
+[36m│     ├─[0m [34minvalidPricesNeverArmOrReachProvider()[0m [32m✔[0m
+[36m│     ├─[0m [34mrepeatedQuotesNeverChargeAndReplacePreviousExpiry()[0m [32m✔[0m
+[36m│     ├─[0m [34motherPlayersCannotConsumeConfirmation()[0m [32m✔[0m
+[36m│     ├─[0m [34mnullDeliveryNeverRefunds()[0m [32m✔[0m
+[36m│     ├─[0m [34mcancelConsumesConfirmation()[0m [32m✔[0m
+[36m│     ├─[0m [34mbalanceRecheckedOnConfirmationAndFailedTokenConsumed()[0m [32m✔[0m
+[36m│     ├─[0m [34mexpiryIsRecheckedAfterSlowProviderPrechecks()[0m [32m✔[0m
+[36m│     ├─[0m [34mfailedRefundIntentWritePreventsDeposit()[0m [32m✔[0m
+[36m│     ├─[0m [34mthrowingProviderAfterDebitLocksAndNeverRetries()[0m [32m✔[0m
+[36m│     ├─[0m [34mwriteFailureBeforeWithdrawalPreventsAllMoneyCalls()[0m [32m✔[0m
+[36m│     ├─[0m [34mconfirmPriceOrProductChangeReturnsFreshReviewWithoutDebit()[0m [32m✔[0m
+[36m│     ├─[0m [34mdeliveryExceptionNeverAssumesRollbackOrRefunds()[0m [32m✔[0m
+[36m│     ├─[0m [34mnullWithdrawalResponseLocks()[0m [32m✔[0m
+[36m│     ├─[0m [34mrefundExceptionAfterCreditLocksAndNeverDoubleRefunds()[0m [32m✔[0m
+[36m│     ├─[0m [34mbackwardClockRequiresFreshConfirmationForExplicitApi()[0m [32m✔[0m
+[36m│     ├─[0m [34mpreviewFailuresDoNotConsumeAnExistingQuote()[0m [32m✔[0m
+[36m│     ├─[0m [34mrefundFailureLocksAndNeverRetries()[0m [32m✔[0m
+[36m│     ├─[0m [34mresponseBalanceMustMatchFreshObservedBalance()[0m [32m✔[0m
+[36m│     ├─[0m [34mdifferentPlayerCannotUseOrConsumeAQuote()[0m [32m✔[0m
+[36m│     ├─[0m [34mjournalFailureAfterDeliveryDoesNotRefundDeliveredItem()[0m [32m✔[0m
+[36m│     ├─[0m [34mpremiumChargesThirtyThousandAndDeliversOnce()[0m [32m✔[0m
+[36m│     ├─[0m [34mknownProviderDeclineHasNoDeliveryOrRefund()[0m [32m✔[0m
+[36m│     ├─[0m [34munknownDeliveryNeverRefunds()[0m [32m✔[0m
+[36m│     ├─[0m [34mbasicChargesFifteenThousandAndActivatesOnce()[0m [32m✔[0m
+[36m│     ├─[0m [34mpreviewChecksJournalHealthWithoutConsumingTheQuote()[0m [32m✔[0m
+[36m│     ├─[0m [34mrepeatedClicksAndCrossProductClickHitOneSecondCooldown()[0m [32m✔[0m
+[36m│     ├─[0m [34mmalformedWithdrawalAmountLocks()[0m [32m✔[0m
+[36m│     ├─[0m [34mpreviewsNeverRefreshAQuoteExpiry()[0m [32m✔[0m
+[36m│     ├─[0m [34mbackwardClockRearmsWithoutCharge()[0m [32m✔[0m
+[36m│     ├─[0m [34mfailedRefundCompletionWriteNeverRetriesDeposit()[0m [32m✔[0m
+[36m│     ├─[0m [34mallEntryPointsShareTheReentrantGuardDuringPreviewAndPurchase()[0m [32m✔[0m
+[36m│     ├─[0m [34mdeclineAfterDebitLocksWithoutRefund()[0m [32m✔[0m
+[36m│     ├─[0m [34mpriceChangeRequiresFreshConfirmation()[0m [32m✔[0m
+[36m│     ├─[0m [34mreentrantProviderCallbackCannotUseConsumedToken()[0m [32m✔[0m
+[36m│     ├─[0m [34minsufficientResultsExposeBothTierPricesAndBalancesWithoutArming()[0m [32m✔[0m
+[36m│     ├─[0m [34mconcurrentRequestsCannotRepeatWithdrawal()[0m [32m✔[0m
+[36m│     ├─[0m [34mpreviewNeverPrimesAPurchase()[0m [32m✔[0m
+[36m│     ├─[0m [34mquoteFailureInvalidatesEarlierConfirmation()[0m [32m✔[0m
+[36m│     ├─[0m [34mproductChangeRequiresFreshConfirmation()[0m [32m✔[0m
+[36m│     ├─[0m [34minventoryAndActiveEligibilityCheckedBeforeArmingAndConfirming()[0m [32m✔[0m
+[36m│     └─[0m [34mquotedProductCanBeConfirmedAfterAnyReadOnlyPreview()[0m [32m✔[0m
+[36m└─[0m [36mJUnit Vintage[0m [32m✔[0m
+
+Test run finished after 5922 ms
+[         9 containers found      ]
+[         0 containers skipped    ]
+[         9 containers started    ]
+[         0 containers aborted    ]
+[         9 containers successful ]
+[         0 containers failed     ]
+[       118 tests found           ]
+[         0 tests skipped         ]
+[       118 tests started         ]
+[         0 tests aborted         ]
+[       118 tests successful      ]
+[         0 tests failed          ]
+
