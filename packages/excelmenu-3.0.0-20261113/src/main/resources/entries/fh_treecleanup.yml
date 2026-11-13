@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: fh_treecleanup
+menu: commands_menu
+group: fixes_help
+order: 40
+order-bedrock: 510
+icon: OAK_SAPLING
+label: '&a&l/treecleanup'
+lore:
+  - '&7Tidy floating treetops after you chop'
+  - '&8Fixes & Help'
+action:
+  - '[message] &7Type it in chat: &e/treecleanup on &7or &e/treecleanup off'

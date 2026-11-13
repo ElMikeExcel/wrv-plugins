@@ -1,0 +1,18 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: halloween
+menu: server_menu
+group: help
+order: 60
+order-bedrock: 185
+icon: JACK_O_LANTERN
+label: '&6&lHalloween'
+lore:
+  - '&7The Halloween event is live through Nov 5'
+  - '&7Witching Hour: 7 PM - 2 AM Central'
+  - '&7Tap for your scare stats'
+action:
+  - '[close]'
+  - '[player] halloween stats'
+visible-from: 2026-10-31
+visible-until: 2026-11-05

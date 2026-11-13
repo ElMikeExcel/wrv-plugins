@@ -1,0 +1,38 @@
+name: ExcelMenu
+version: 3.0.0
+main: com.winkreyes.excelmenu.bukkit.ExcelMenu
+api-version: '1.13'
+author: WinkReyesValley
+description: 'ExcelMenu 2.0 (Phase 2) — ONE menu plugin for Java + Bedrock. The Server Menu and the commands catalogue are registry data (entries/ + layouts/ under plugins/ExcelMenu/), resolved per viewer and rendered as a Java chest GUI or a Bedrock Cumulus form through the unified platform bridge; the remaining menus load as definitions (menus/) and render the same way. Phase 2 unifies the fleet: /menu, /servercommands, /serverwebsite, /tpmenu and /childproofmenu are registered here, the BedrockMenu dynamic screens (teleport picker with direction choice, childproof picker, Ask text box, Skills & Perks, website) are ported in, and the teleport_confirm_* definitions retired into the confirmation-gate service. ExcelBedrockMenu is no longer used.'
+softdepend: [PlaceholderAPI, Vault, Geyser-Spigot, floodgate, Essentials, ExcelSkillsPanel]
+commands:
+  excelmenu:
+    description: ExcelMenu 2.0 admin — list menus and registry entries, open a menu, resolve entries for yourself, reload everything.
+    usage: /excelmenu list|open <menu> [player]|entries [menu]|reload
+  dm:
+    description: DeluxeMenus compatibility alias (list/open/reload) so the fleet's existing "dm open ..." dispatches keep working.
+    usage: /dm list|open <menu> [player]|reload
+  menu:
+    description: Open the Server Menu.
+    usage: /menu
+  servercommands:
+    description: Open the Server Commands catalogue, or print one group in chat.
+    usage: /servercommands [group]
+    aliases: [cmds]
+  serverwebsite:
+    description: Show the server website address (clickable links on Java, spelled out on Bedrock).
+    usage: /serverwebsite
+  tpmenu:
+    description: Pick a player to teleport to — or ask them to come to you.
+    usage: /tpmenu
+  childproofmenu:
+    description: Pick a player to childproof in the claim you are standing in (doors and buttons only).
+    usage: /childproofmenu [help]
+  rearrange:
+    description: Rearrange the Server Menu into your own order (per-player; reset returns to the default).
+    usage: /rearrange
+permissions:
+  excelmenu.admin:
+    default: op
+
+# ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)

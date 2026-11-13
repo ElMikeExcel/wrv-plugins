@@ -1,0 +1,337 @@
+{
+ "source": "/home/hatch/workspace/excelbedrockmenu-1.5.28/src/com/winkreyes/excelbedrockmenu/ExcelBedrockMenu.java",
+ "buttons": [
+  "Spawn",
+  "Teleport to a player",
+  "Party",
+  "Utility Pouch",
+  "Spellbook",
+  "Excel Shop",
+  "My Cosmetics",
+  "Adventurers Guild",
+  "Jobs & Money",
+  "Skills & Perks",
+  "Leaderboard",
+  "Lost & Found",
+  "Trash Bin",
+  "My Boss Rewards",
+  "Server Info",
+  "Server Commands",
+  "Server Website",
+  "What's New",
+  "Ask the Guide",
+  "Halloween Scares — your switches",
+  "Wand controls",
+  "Auto-sort my chests: on/off",
+  "Maker's mark and Gear stats",
+  "Auto-open on join",
+  "Silk Touch Warnings",
+  "Aim Assist"
+ ],
+ "commands": [
+  "spawn",
+  "tpmenu",
+  "excelparty",
+  "pouch",
+  "spellinfo",
+  "shop",
+  "cosmetics",
+  "ag",
+  "jobs browse",
+  "skillsperks",
+  "leaderboard",
+  "lostfound",
+  "trash",
+  "bossrewards",
+  "motd",
+  "servercommands",
+  "serverwebsite",
+  "whatsnew",
+  "ask",
+  "scares",
+  "wandstyle",
+  "autosort",
+  "mark",
+  "menujoin",
+  "silkwarnings",
+  "aimassist"
+ ],
+ "catalog_groups": [
+  "Getting Around",
+  "Money & Jobs",
+  "Skills & Levels",
+  "Shops & Trading",
+  "Claims & Land",
+  "Guild & Quests",
+  "Server Info",
+  "Your Items & Help"
+ ],
+ "catalog": [
+  [
+   {
+    "display": "/menu",
+    "run": "menu",
+    "description": "Open the server menu"
+   },
+   {
+    "display": "/spawn",
+    "run": "spawn",
+    "description": "Teleport back to the village spawn"
+   },
+   {
+    "display": "/tpmenu",
+    "run": "tpmenu",
+    "description": "Pick a player to send a teleport request to"
+   },
+   {
+    "display": "/tpa <player>",
+    "run": null,
+    "description": "Ask to teleport to a player"
+   },
+   {
+    "display": "/tpaccept",
+    "run": "tpaccept",
+    "description": "Accept a request (/tpdeny says no)"
+   },
+   {
+    "display": "/warps",
+    "run": "warps",
+    "description": "List the server warps (/warp <name> to go)"
+   }
+  ],
+  [
+   {
+    "display": "/balance",
+    "run": "balance",
+    "description": "See how much money you have"
+   },
+   {
+    "display": "/pay <player> <amount>",
+    "run": null,
+    "description": "Send money to another player"
+   },
+   {
+    "display": "/balancetop",
+    "run": "balancetop",
+    "description": "The richest players on the server"
+   },
+   {
+    "display": "/jobs",
+    "run": "jobs browse",
+    "description": "Browse jobs and join one"
+   },
+   {
+    "display": "/jobs stats",
+    "run": "jobs stats",
+    "description": "Your job levels, XP and pay rates"
+   },
+   {
+    "display": "/jobs join <job>",
+    "run": null,
+    "description": "Join a job by name (or browse with /jobs)"
+   }
+  ],
+  [
+   {
+    "display": "/mcstats",
+    "run": "mcstats",
+    "description": "Your mcMMO skill levels"
+   },
+   {
+    "display": "/mctop",
+    "run": "mctop",
+    "description": "The top mcMMO players"
+   },
+   {
+    "display": "/<skill name>",
+    "run": null,
+    "description": "Inspect one skill: /mining, /swords, /axes, /fishing and more"
+   },
+   {
+    "display": "/party",
+    "run": "party",
+    "description": "Your mcMMO party: members, chat and invites"
+   },
+   {
+    "display": "/leaderboard",
+    "run": "leaderboard",
+    "description": "Top players on every board"
+   }
+  ],
+  [
+   {
+    "display": "/shop",
+    "run": "shop",
+    "description": "Open the Excel Shop"
+   },
+   {
+    "display": "/cosmetics",
+    "run": "cosmetics",
+    "description": "See your colors, effects and sets, and equip them"
+   },
+   {
+    "display": "/excelshop setup",
+    "run": "excelshop setup",
+    "description": "Start the guided setup for your own chest shop"
+   },
+   {
+    "display": "/excelshop manage",
+    "run": "excelshop manage",
+    "description": "Manage your own chest shop"
+   },
+   {
+    "display": "/deathprotection status",
+    "run": "deathprotection status",
+    "description": "See if your items are protected from death"
+   },
+   {
+    "display": "/mobveil status",
+    "run": "mobveil status",
+    "description": "See how much Mob Veil time you have left"
+   }
+  ],
+  [
+   {
+    "display": "/claim",
+    "run": "claim",
+    "description": "Claim the land around you"
+   },
+   {
+    "display": "/claimslist",
+    "run": "claimslist",
+    "description": "Your claim blocks and where your claims are"
+   },
+   {
+    "display": "/trust <player>",
+    "run": null,
+    "description": "Give a player full access to your claims"
+   },
+   {
+    "display": "/childproofmenu",
+    "run": "childproofmenu",
+    "description": "Pick a player: doors and buttons only in this claim"
+   },
+   {
+    "display": "/unchildproof <player>",
+    "run": null,
+    "description": "Remove that player from the claim you stand in"
+   },
+   {
+    "display": "/extendclaim <blocks>",
+    "run": null,
+    "description": "Grow the claim you are standing in"
+   },
+   {
+    "display": "/buyclaimblocks <amount>",
+    "run": null,
+    "description": "Buy more claim blocks with server money"
+   },
+   {
+    "display": "/trapped",
+    "run": "trapped",
+    "description": "Escape if you are stuck inside a claim"
+   },
+   {
+    "display": "/abandonclaim",
+    "run": null,
+    "description": "Delete the claim you stand in (no undo)"
+   }
+  ],
+  [
+   {
+    "display": "/ag",
+    "run": "ag",
+    "description": "Teleport to the Adventurers Guild"
+   },
+   {
+    "display": "/seals",
+    "run": "seals",
+    "description": "Road to the Guild: the five seals quest (also /road)"
+   },
+   {
+    "display": "/em",
+    "run": "em",
+    "description": "EliteMobs: your elite level, gear skills and menus"
+   },
+   {
+    "display": "/em party",
+    "run": null,
+    "description": "Dungeon parties: add create, invite or ready"
+   }
+  ],
+  [
+   {
+    "display": "/motd",
+    "run": "motd",
+    "description": "Server info and news"
+   },
+   {
+    "display": "/list",
+    "run": "list",
+    "description": "See who is online right now"
+   },
+   {
+    "display": "/msg <player> <message>",
+    "run": null,
+    "description": "Send a private message (/r replies)"
+   },
+   {
+    "display": "/playermap",
+    "run": "playermap",
+    "description": "How player maps work and who is on them"
+   },
+   {
+    "display": "/compass",
+    "run": "compass",
+    "description": "Get a new server menu compass"
+   },
+   {
+    "display": "/pouch",
+    "run": "pouch",
+    "description": "Park your menu compass and Magic wand; contents survive death"
+   },
+   {
+    "display": "/menujoin",
+    "run": "menujoin",
+    "description": "Turn the auto-open menu on or off"
+   },
+   {
+    "display": "/servercommands",
+    "run": "servercommands",
+    "description": "This command list"
+   },
+   {
+    "display": "/serverwebsite",
+    "run": "serverwebsite",
+    "description": "Get the server website address"
+   },
+   {
+    "display": "/whatsnew",
+    "run": "whatsnew",
+    "description": "What's new on the server, with the new commands (also /news)"
+   }
+  ],
+  [
+   {
+    "display": "/lostfound",
+    "run": "lostfound",
+    "description": "Get back your own stuff lost to lava, fire, the void or a despawn in the last 7 days"
+   },
+   {
+    "display": "/trash",
+    "run": "trash",
+    "description": "Throw items away. /trash undo works for 5 minutes"
+   },
+   {
+    "display": "/mark",
+    "run": "mark",
+    "description": "Choose crafted/found name labels and gear-stat display"
+   },
+   {
+    "display": "/ask",
+    "run": "ask",
+    "description": "Ask the Guide anything about the server"
+   }
+  ]
+ ]
+}

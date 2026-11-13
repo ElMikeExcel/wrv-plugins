@@ -1,0 +1,160 @@
+# ExcelMenu definition: commands_menu_page2
+# Added 2026-10-23 (menu coverage packet): second Server Commands page carrying
+# the M1–M5 entries from the three-surface coverage audit
+# (~/workspace/coverage-audit/COVERAGE-AUDIT-2026-10-23.md §4b). commands_menu is
+# full at 54 slots, so these entries live here, reached from commands_menu
+# slot 53 ("More Commands"). Packet: ~/workspace/excelmenu/coverage-packet-2026-10-23/
+# Amended 2026-10-26 (parity fixes, Mike's rule Oct 26 12:10 AM CDT). Base = live 5a99229def61c2ca.
+# Packet: /workspace/batch-next/parity-fixes-20261026/. New group "Your Items & Help" on row 2
+# (slots 9-13, were empty): /lostfound, /trash, /mark, /ask. The Bedrock Server Commands list gets the
+# same group with the same commands (ExcelBedrockMenu 1.5.23). /cosmetics was already here (slot 4).
+# No existing item changed (ExcelMenuStats counts by item id).
+format: 1
+title: '&6&lMore Server Commands'
+size: 27
+items:
+  hdr_gq:
+    material: BELL
+    slot: 0
+    name: '&6&lGuild & Quests'
+    lore:
+    - '&8Command group'
+  # ---------------------------------------------------------------------------
+  # HELD: M1 gq_bosstrial (slot 1 stays EMPTY on purpose).
+  # Oct 26, 2026 (Mike, 8:59 AM CDT): hide the button. The live file had the entry
+  # active even though this note said it was held, so it showed on Java page 2.
+  # Background: the Oct 23 hold was because /bosstrial status was admin-only in
+  # ExcelBossTrial 0.2.5. BossTrial 0.2.6+ made the status view public, but a
+  # non-op run of "/bosstrial status" has still not been verified. Bedrock has no
+  # matching button (ExcelBedrockMenu's Server Commands list has no bosstrial row).
+  # Un-HOLD = Mike's go + a verified non-op run, then uncomment the block below
+  # (already in final shipped shape) and run excelmenu reload.
+  # gq_bosstrial:
+  #   material: NETHER_STAR
+  #   slot: 1
+  #   name: '&a&l/bosstrial status'
+  #   lore:
+  #   - '&7Seal boss pools and any credit cooldown running'
+  #   - '&8Guild & Quests'
+  #   clicks:
+  #     left:
+  #     - '[player] bosstrial status'
+  # ---------------------------------------------------------------------------
+  hdr_st:
+    material: CHEST
+    slot: 2
+    name: '&6&lShops & Trading'
+    lore:
+    - '&8Command group'
+  st_buildmode:
+    material: BRICKS
+    slot: 3
+    name: '&a&l/buildmode'
+    lore:
+    - '&7Start or end a build session'
+    - '&8Shops & Trading'
+    clicks:
+      left:
+      - '[message] &7Type it in chat: &e/buildmode on &7or &e/buildmode off'
+  st_cosmetics:
+    material: AMETHYST_SHARD
+    slot: 4
+    name: '&a&l/cosmetics'
+    lore:
+    - '&7See your colors, effects and sets, and equip them'
+    - '&8Shops & Trading'
+    clicks:
+      left:
+      - '[player] cosmetics'
+  hdr_si:
+    material: BOOK
+    slot: 5
+    name: '&6&lServer Info'
+    lore:
+    - '&8Command group'
+  si_emotes:
+    material: PLAYER_HEAD
+    slot: 6
+    name: '&a&lEmotes'
+    lore:
+    - '&7Wave, hug, shrug and more, right in chat'
+    - '&8Server Info'
+    clicks:
+      left:
+      - '[message] &7Type them in chat: &e/wave&7, &e/hug&7, &e/shrug&7, &e/tableflip&7, &e/highfive'
+  hdr_fh:
+    material: RECOVERY_COMPASS
+    slot: 7
+    name: '&6&lFixes & Help'
+    lore:
+    - '&8Command group'
+  fh_treecleanup:
+    material: OAK_SAPLING
+    slot: 8
+    name: '&a&l/treecleanup'
+    lore:
+    - '&7Tidy floating treetops after you chop'
+    - '&8Fixes & Help'
+    clicks:
+      left:
+      - '[message] &7Type it in chat: &e/treecleanup on &7or &e/treecleanup off'
+  # ---------------------------------------------------------------------------
+  hdr_yi:
+    material: BUNDLE
+    slot: 9
+    name: '&6&lYour Items & Help'
+    lore:
+    - '&8Command group'
+  yi_lostfound:
+    material: RECOVERY_COMPASS
+    slot: 10
+    name: '&a&l/lostfound'
+    lore:
+    - '&7Get back your own stuff lost to lava, fire,'
+    - '&7the void or a despawn in the last 7 days'
+    - '&7Shows the price before you pay'
+    - '&8Your Items & Help'
+    clicks:
+      left:
+      - '[player] lostfound'
+  yi_trash:
+    material: CAULDRON
+    slot: 11
+    name: '&a&l/trash'
+    lore:
+    - '&7Throw items away. Changed your mind?'
+    - '&7/trash undo works for 5 minutes'
+    - '&8Your Items & Help'
+    clicks:
+      left:
+      - '[player] trash'
+  yi_mark:
+    material: NAME_TAG
+    slot: 12
+    name: '&a&l/mark'
+    lore:
+    - '&7Choose if things you craft say'
+    - '&7"Crafted by" with your name'
+    - '&8Your Items & Help'
+    clicks:
+      left:
+      - '[message] &7Type it in chat: &e/mark off &7or &e/mark on&7. &e/mark stats off &7hides the counters. Or click Maker''s mark in the compass menu.'
+  yi_ask:
+    material: OAK_SIGN
+    slot: 13
+    name: '&a&l/ask'
+    lore:
+    - '&7Ask the Guide anything about the server'
+    - '&8Your Items & Help'
+    clicks:
+      left:
+      - '[message] &7Type &e/ask &7and your question in chat, or start a message with &eGuide,'
+  back:
+    material: ARROW
+    slot: 26
+    name: '&c&lBack to Commands'
+    clicks:
+      left:
+      - '[openguimenu] commands_menu'
+      right:
+      - '[openguimenu] commands_menu'

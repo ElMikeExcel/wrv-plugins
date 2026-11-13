@@ -1,0 +1,149 @@
+# GROUPED SECTIONS — Nov 12, 2026 (Mike's design): the Bedrock form
+# becomes GROUPED — a section picker (Travel / Me / Shops / Help /
+# Settings / Chest Organization), one form per section. Java is
+# untouched: the chest renders pages/slots and never reads 'form'.
+# The four Toggles switches fold back into group 'settings' so the
+# Settings form lists pages then switches; on Java their slots merge
+# back into the settings list [46,47,49,50,51,52] and the LEVER pane
+# at 48 stays as the visual divider tonight's split created.
+# TOGGLES SPLIT — Nov 12, 2026 (Mike's direction + his own arrangement in
+# the menu organizer widget): the four on/off switches (autosort,
+# silkwarnings, aimassist, autojoin) leave 'settings' for a new 'toggles'
+# group. The Java Settings row splits in place: Settings keeps slots
+# [46,47] for its two pages (Maker's Mark, Details), the deliberate hole
+# at 48 becomes the Toggles header pane (a LEVER), and toggles takes
+# [49,50,51,52] — four switches, four slots, exact fit, arrow at 53
+# untouched. The Settings header lore moves to the Toggles pane, where
+# it is true. Bedrock flat form ignores slots; the tail weights were
+# un-mixed in the entries (Settings pages -> Toggles -> Chest Tools).
+# ExcelMenu 2.0 layout definition: server_menu (the compass root).
+# The layout is the menu's CHROME — title, chest size, header panes and
+# the exact slots each group's entries fill, in resolver order. The
+# entries themselves are data files under entries/ (one per door).
+# Converted in Phase 1 from the live server_menu.yml definition
+# (SHA-256 132442bf... since the Nov 1, 2026 re-base; originally
+# 86b51650...): header panes and slot positions reproduce the
+# old Java menu EXACTLY, including the deliberate hole at slot 39 in
+# the Settings row (autojoin sits at 40 today; the slot list simply
+# does not offer 39). The Help slot list already offered slot 34, so
+# the re-based halloween_scares entry needed no layout change.
+#
+# FIX — Nov 1, 2026 (me-group-fix): the 'me' group outgrew its row.
+# The live registry carries NINE 'me' doors — the Phase 1 eight plus
+# magiclevel (order 15, placed live the morning of Nov 1, 2026) —
+# against eight slots, so the chest renderer refused the whole menu
+# for Java players ("group 'me' has 8 slot(s) but entry
+# 'boss_rewards' (and possibly more) resolved"). The page grows
+# 45 -> 54 and 'me' wraps onto a second row in the commands_menu
+# idiom (header pane once, the group's slots flow across rows):
+# 10-17 plus 18-25, so boss_rewards renders at 18, directly under
+# the Me header. Shops / Help / Settings shift down exactly one row
+# with their internal layout unchanged — the Settings hole moves
+# with its row (39 -> 48; autojoin now sits at 49). Travel and the
+# first Me row keep their exact slots. No entry file changes, and
+# Bedrock forms never read slot lists, so Bedrock is untouched.
+#
+# FIX — Nov 7, 2026 (servermenu-settings-fix): the 'settings' group
+# outgrew its row the same way 'me' did. The Nov 3 toggle fix left
+# exactly seven switches for seven slots [46,47,49,50,51,52,53],
+# then the ExcelAutoSort installs added three DOORS to the group —
+# chestfilter (15) and filterrecover (16) on Nov 7, 2:05 AM, and
+# maxorg (20) on Nov 7, 9:07 AM — nine resolved entries against
+# seven slots, so the chest renderer refused the whole compass
+# menu for Java players ("group 'settings' has 7 slot(s) but entry
+# 'aimassist' (and possibly more) resolved"; Marv's report, Nov 7).
+# The row cannot grow: the page is already 54 (the chest maximum)
+# and the Settings row offers only the eight cells 46-53 beside its
+# header at 45 — filling the deliberate hole at 48 still leaves
+# nine doors for eight slots. So the group SPLITS along its own
+# header lore ("Your on/off switches"), in the commands_menu idiom:
+# the six switches (autosort, makersmark_settings, wandstyle,
+# silkwarnings, aimassist, autojoin) stay in 'settings' on page 1
+# — autojoin is still last — and the three AutoSort doors move to
+# a new 'chest_tools' group on a new page 2 (their entry files
+# change only their group: line;
+# orders and Bedrock weights untouched). The page-2 door is an
+# ARROW at slot 53 — the commands_menu 'More Commands' position —
+# and page 2 carries the mirror 'Back' arrow at 53. config.yml
+# gains chest_tools in the server_menu group order (after settings)
+# and a group colour of "&8", the settings colour, so Bedrock flat
+# form buttons keep their exact current labels. The settings slot
+# list gives up exactly one cell — 53, now the arrow — and reads
+# [46,47,49,50,51,52]: six slots for six switches, the hole at 48
+# untouched, so a future seventh switch fails LOUDLY (the founding
+# rule) instead of silently painting over the arrow. Every other
+# group, slot list and fixed pane on page 1 is byte-identical.
+id: server_menu
+title: '&6&lServer Menu'
+form: grouped
+form-title: 'Server Menu'
+form-content: 'What would you like to do?'
+form-picker-content: 'What would you like to do? Pick a section:'
+groups:
+  travel: { name: 'Travel' }
+  me: { name: 'Me' }
+  shops: { name: 'Shops' }
+  help: { name: 'Help' }
+  settings: { name: 'Settings' }
+  chest_tools: { name: 'Chest Organization' }
+pinned: [spawn, tpmenu]
+
+pages:
+  - size: 54
+    fixed:
+      - slot: 0
+        material: LIGHT_BLUE_STAINED_GLASS_PANE
+        name: '&b&lTravel'
+        lore: ['&7Get around the valley']
+      - slot: 9
+        material: LIME_STAINED_GLASS_PANE
+        name: '&a&lMe'
+        lore: ['&7Your skills, magic, money and stuff']
+      - slot: 27
+        material: YELLOW_STAINED_GLASS_PANE
+        name: '&e&lShops'
+        lore: ['&7Spend your Jobs money']
+      - slot: 36
+        material: ORANGE_STAINED_GLASS_PANE
+        name: '&6&lHelp'
+        lore: ['&7News, answers and commands']
+      - slot: 45
+        material: GRAY_STAINED_GLASS_PANE
+        name: '&7&lSettings'
+        lore: ['&7Maker''s Mark and Details settings']
+      - slot: 48
+        material: LEVER
+        name: '&f&lToggles'
+        lore: ['&7Your on/off switches']
+      - slot: 53
+        material: ARROW
+        name: '&a&lChest Organization'
+        lore: ['&7Filter setup, recovery box and Max Organization', '&8Server Menu']
+        page: 2
+    slots:
+      travel: [1, 2, 3, 4, 5, 6, 7, 8]
+      me: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+      shops: [28, 29, 30, 31, 32, 33, 34, 35]
+      help: [37, 38, 39, 40, 41, 42, 43, 44]
+      settings: [46, 47, 49, 50, 51, 52]
+  - size: 54
+    title: '&6&lChest Organization'
+    fixed:
+      - slot: 0
+        material: CHEST
+        name: '&e&lChest Organization'
+        lore: ['&7Filter setup, recovery box', '&7and Max Organization']
+      - slot: 17
+        material: COMPARATOR
+        name: '&b&lRearrange Menu'
+        lore: ['&7Put the menu doors in your own order', '&8Runs /rearrange']
+        action: ['[player] rearrange']
+      - slot: 53
+        material: ARROW
+        name: '&c&lBack to Server Menu'
+        lore: []
+        page: 1
+    slots:
+      chest_tools: [1, 2, 3, 4, 5, 6, 7, 8]
+
+# ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
