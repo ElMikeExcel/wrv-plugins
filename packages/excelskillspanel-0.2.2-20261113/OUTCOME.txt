@@ -1,0 +1,25 @@
+OUTCOME — ExcelSkillsPanel 0.2.2 install (wrv-install-failsafe, Nov 13, 2026)
+Entry: ## INSTALLED — ExcelSkillsPanel 0.2.2 (Menu Programme Items 12 + 13: no Class line; header follows the carried wand)
+Run: scheduled 15:03 CST (file-and-fire; supervisor run 309 filing).
+Lane: PC LANE — window-start probe passed attempt 1 (DESKTOP-IL05DQR; rclone lsd listed "1. Michael's Server"). No fallback used. No PC-trouble notice owed.
+
+Placed artifact (pull-back EXACT, verified before restart):
+- plugins/ExcelSkillsPanel-0.2.2.jar: 62,142 B / SHA-256 374ad117f2cd1676f3a68dff9ad2b3180e7d575e4457149d91bbe5e28665563e
+Preservation (.bak in place, pull-back verified):
+- plugins/ExcelSkillsPanel-0.2.1.jar.bak-20261113-pre022: 57,652 B / SHA-256 ce430d1f0166d7557e181ceae85ca3fe6a84285adaeef92787140a6493bbb45c (outgoing 0.2.1 jar)
+Fresh-pull live gates (window re-pull, all EXACT vs G1 receipts): live 0.2.1 jar 57,652 B / ce430d1f…; exactly one live ExcelSkillsPanel jar (0.2.1) before the swap, no 0.2.2 live. Candidate staged on the PC first (hash EXACT), pushed as ExcelSkillsPanel-0.2.2.jar.staged-20261113, moved to the live name at swap; staged file gone, exactly one SkillsPanel jar live after the swap.
+
+Boot "Done" line (verbatim, from pulled logs/latest.log, 111,165 B / 04c87b35…):
+[21:48:09] [Server thread/INFO]: Done (22.360s)! For help, type "help"
+Enable lines (verbatim):
+[21:48:02] [ExcelSkillsPanel] Enabling ExcelSkillsPanel v0.2.2
+[21:48:02] [ExcelSkillsPanel] ExcelSkillsPanel 0.2.2 awake (build EXC-SKILLSPANEL-0.2.2-WRV-20261113-01-c7d2e9); providers: mcmmo, magic
+SEVERE: 0 in the raw log. No "does not match the verified table" warning (0 matches). Panel showed 2 [Error] lines in the boot window — ServerMain terminal-features WARN and Essentials unsupported-version — both pre-existing environment/version lines, none attributable to ExcelSkillsPanel.
+Plugin count: unchanged — boot plugin list 87 entries and 87 Enabling lines, identical to the pre-install 13:34 boot (house "84" = 87 minus the 3 offline/diagnostic plugins). Guild: [ExcelGuildGate] ExcelGuildGate enabled: 4 of 5 seals broken, guild LOCKED — unchanged.
+
+Window backup: "ExcelSkillsPanel-0.2.2 pre-install1113" — created 3:09 PM CST, verified completed, 7.5 GB. (Panel Name field caps at 38 chars; the requested "ExcelSkillsPanel-0.2.2 pre-install 1113" is 39, so the space before 1113 was dropped per the approved option — full date preserved.) Cap-at-6 prunee: "pre-ExcelMenu-3.0.0-20261113" (oldest manual, 11/13 7:18 AM). Total backups after: 6. Two newest manual restore points + newest Daily Backup untouched.
+Arrival online: 0/10 (list twice ~15:06–15:07, + fresh gate pair ~15:44–15:45 after the 34-minute backup, + final pre-shutdown list 0/10). Departure online: 0/10.
+End state: server left ONLINE (daytime, outside the 2:00–6:00 AM window).
+Restart: Shut Down ~3:47 PM, Offline 3:47:04 PM, Start 3:47:45 PM, Done 3:48:09 PM.
+
+Still owed (not this window's work): Mike's /skillpanel proof — open /skillpanel while holding food (wand NOT in hand) on Java + Bedrock: Rank Apprentice, Next rank Master, Mana 150/150, regen 25, Credited casts 1,215, no Class line. Same-pass surfaces (Guide skills-panel chunk, website pair, What's New BOTH surfaces, broadcaster tips check, in-game menus check) + records publication (wrv-plugins draft PR, G2 duplicate check first) — supervisor legs.

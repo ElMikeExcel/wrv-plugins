@@ -1,0 +1,17 @@
+name: ExcelSkillsPanel
+version: 0.2.2
+api-version: '1.21'
+main: com.winkreyes.excelskillspanel.ExcelSkillsPanel
+description: The unified Skills panel — a character header (Power Level + the full Magic block) and per-skill rows with levels and XP progress bars, on Java chests and Bedrock forms. An mcMMO companion built on mcMMO's public API through a provider seam.
+authors: [Iris, Mike]
+softdepend: [mcMMO, Magic, ExcelMagicLevel, ExcelGuildGate, PlaceholderAPI, Geyser-Spigot, floodgate]
+
+commands:
+  skillpanel:
+    description: Open your Skills panel (header + per-skill levels and XP bars)
+    usage: /skillpanel
+
+permissions:
+  excelskillspanel.use:
+    description: Open the Skills panel
+    default: true
