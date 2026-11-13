@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: gq_em
+menu: commands_menu
+group: guild_quests
+order: 30
+order-bedrock: 350
+icon: ZOMBIE_HEAD
+label: '&a&l/em'
+lore:
+  - '&7EliteMobs: your elite level, gear skills and menus'
+  - '&8Guild & Quests'
+action:
+  - '[player] em'

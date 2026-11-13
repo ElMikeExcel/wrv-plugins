@@ -1,0 +1,62 @@
+# ExcelMenu 2.0 layout definition: server_menu (the compass root).
+# The layout is the menu's CHROME — title, chest size, header panes and
+# the exact slots each group's entries fill, in resolver order. The
+# entries themselves are data files under entries/ (one per door).
+# Converted in Phase 1 from the live server_menu.yml definition
+# (SHA-256 132442bf... since the Nov 1, 2026 re-base; originally
+# 86b51650...): header panes and slot positions reproduce the
+# old Java menu EXACTLY, including the deliberate hole at slot 39 in
+# the Settings row (autojoin sits at 40 today; the slot list simply
+# does not offer 39). The Help slot list already offered slot 34, so
+# the re-based halloween_scares entry needed no layout change.
+#
+# FIX — Nov 1, 2026 (me-group-fix): the 'me' group outgrew its row.
+# The live registry carries NINE 'me' doors — the Phase 1 eight plus
+# magiclevel (order 15, placed live the morning of Nov 1, 2026) —
+# against eight slots, so the chest renderer refused the whole menu
+# for Java players ("group 'me' has 8 slot(s) but entry
+# 'boss_rewards' (and possibly more) resolved"). The page grows
+# 45 -> 54 and 'me' wraps onto a second row in the commands_menu
+# idiom (header pane once, the group's slots flow across rows):
+# 10-17 plus 18-25, so boss_rewards renders at 18, directly under
+# the Me header. Shops / Help / Settings shift down exactly one row
+# with their internal layout unchanged — the Settings hole moves
+# with its row (39 -> 48; autojoin now sits at 49). Travel and the
+# first Me row keep their exact slots. No entry file changes, and
+# Bedrock forms never read slot lists, so Bedrock is untouched.
+id: server_menu
+title: '&6&lServer Menu'
+form: flat
+form-title: 'Server Menu'
+form-content: 'What would you like to do?'
+pages:
+  - size: 54
+    fixed:
+      - slot: 0
+        material: LIGHT_BLUE_STAINED_GLASS_PANE
+        name: '&b&lTravel'
+        lore: ['&7Get around the valley']
+      - slot: 9
+        material: LIME_STAINED_GLASS_PANE
+        name: '&a&lMe'
+        lore: ['&7Your skills, magic, money and stuff']
+      - slot: 27
+        material: YELLOW_STAINED_GLASS_PANE
+        name: '&e&lShops'
+        lore: ['&7Spend your Jobs money']
+      - slot: 36
+        material: ORANGE_STAINED_GLASS_PANE
+        name: '&6&lHelp'
+        lore: ['&7News, answers and commands']
+      - slot: 45
+        material: GRAY_STAINED_GLASS_PANE
+        name: '&7&lSettings'
+        lore: ['&7Your on/off switches']
+    slots:
+      travel: [1, 2, 3, 4, 5, 6, 7, 8]
+      me: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+      shops: [28, 29, 30, 31, 32, 33, 34, 35]
+      help: [37, 38, 39, 40, 41, 42, 43, 44]
+      settings: [46, 47, 49, 50, 51, 52, 53]
+
+# ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)

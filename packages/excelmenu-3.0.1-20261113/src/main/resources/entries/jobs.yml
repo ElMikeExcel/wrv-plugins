@@ -1,0 +1,15 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: jobs
+menu: server_menu
+group: me
+order: 30
+order-bedrock: 80
+icon: IRON_PICKAXE
+label: '&a&lJobs & Money'
+lore:
+  - '&7Browse the jobs that pay you'
+  - '&7and join one'
+action:
+  - '[close]'
+  - '[player] jobs browse'

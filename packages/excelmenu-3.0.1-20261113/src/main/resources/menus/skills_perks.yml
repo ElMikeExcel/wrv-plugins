@@ -1,0 +1,67 @@
+# ExcelMenu definition: skills_perks
+# Migrated 2026-10-20 from DeluxeMenus gui_menus/skills_perks.yml
+# (source SHA-256 f7a6bf7bb8482365f143521e2a4ed7aa93e0f5db1b270c352da735d87fbae470; provenance in ~/workspace/excelmenu/dm-source/PROVENANCE.md)
+format: 1
+title: '&6&lSkills & Perks'
+size: 27
+items:
+  mcmmo:
+    material: EXPERIENCE_BOTTLE
+    slot: 4
+    name: '&a&lmcMMO Skills'
+    lore:
+    - '&7Live now: 19 skills, 83 perks'
+    - '&7Levels run 1 to 1,000'
+    - '&7New perks announce in chat'
+    - '&7the moment you unlock them'
+    clicks:
+      left:
+      - '[player] mcstats'
+      - '[close]'
+  check:
+    material: PAPER
+    slot: 11
+    name: '&a&lCheck Your Skills'
+    lore:
+    - '&7Click to run /mcstats'
+    - '&7Type /mining (any skill name)'
+    - '&7for that skill''s own page'
+    - '&7/mctop shows the leaderboards'
+    clicks:
+      left:
+      - '[player] mcstats'
+      - '[close]'
+  magic:
+    material: BLAZE_ROD
+    slot: 13
+    name: '&8&lMagic (Sealed)'
+    lore:
+    - '&7Coming with the Adventurers'
+    - '&7Guild seals (0 of 5 today)'
+    - '&7See the full tree on the'
+    - '&7website Skill Trees page'
+  website:
+    material: COMPASS
+    slot: 15
+    name: '&a&lSkill Trees Website'
+    lore:
+    - '&7Every ladder, every level'
+    - '&7Tap for the address'
+    clicks:
+      left:
+      - '[json] {"text":"» Skill Trees: elmikeexcel.github.io/winkreyesvalley/#skill-trees","color":"aqua","underlined":true,"clickEvent":{"action":"open_url","value":"https://elmikeexcel.github.io/winkreyesvalley/#skill-trees"},"hoverEvent":{"action":"show_text","value":"Open the Skill Trees page"}}'
+      - '[message] &bhttps://elmikeexcel.github.io/winkreyesvalley/#skill-trees'
+  back:
+    material: ARROW
+    slot: 18
+    name: '&7&lBack to Server Menu'
+    clicks:
+      left:
+      - '[openguimenu] server_menu'
+  close:
+    material: BARRIER
+    slot: 22
+    name: '&c&lClose'
+    clicks:
+      left:
+      - '[close]'

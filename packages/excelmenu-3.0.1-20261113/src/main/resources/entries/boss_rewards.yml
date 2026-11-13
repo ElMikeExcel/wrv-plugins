@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: boss_rewards
+menu: server_menu
+group: me
+order: 80
+order-bedrock: 130
+icon: CHEST
+label: '&6&lMy Boss Rewards'
+lore:
+  - '&7Collect your earned personal boss rewards'
+  - '&7Claims wait if your inventory is full'
+  - '&7Close your wand hotbar before collecting'
+action:
+  - '[close]'
+  - '[player] bossrewards'

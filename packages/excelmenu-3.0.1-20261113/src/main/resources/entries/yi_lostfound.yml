@@ -1,0 +1,18 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: yi_lostfound
+menu: commands_menu
+group: your_items_help
+order: 10
+order-bedrock: 520
+icon: RECOVERY_COMPASS
+label: '&a&l/lostfound'
+lore:
+  - '&7Get back your own stuff lost to lava, fire,'
+  - '&7the void or a despawn in the last 14 days'
+  - '&7Shows the price before you pay'
+  - '&8Your Items & Help'
+action:
+  - '[player] lostfound'

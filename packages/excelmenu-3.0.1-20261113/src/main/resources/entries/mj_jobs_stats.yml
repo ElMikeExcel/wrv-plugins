@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: mj_jobs_stats
+menu: commands_menu
+group: money_jobs
+order: 50
+order-bedrock: 100
+icon: BOOK
+label: '&a&l/jobs stats'
+lore:
+  - '&7Your job levels, XP and pay rates'
+  - '&8Money & Jobs'
+action:
+  - '[player] jobs stats'
