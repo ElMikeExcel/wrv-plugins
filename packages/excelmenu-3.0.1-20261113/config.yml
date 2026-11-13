@@ -1,0 +1,89 @@
+# ExcelMenu 2.0 — settings. Every value here is a knob
+# (adjustability law): presentation and behaviour change by editing
+# this file and running /excelmenu reload, never by rebuilding.
+
+registry:
+  # Zone the entries' visible-from / visible-until dates are read in.
+  zone: America/Chicago
+  # The standard plain message a guarded entry falls back to when its
+  # plugin is absent, its permission is missing, or its state cannot
+  # be read (Amendment A — one message, applied uniformly).
+  unavailable-message: "&eThat isn't available right now."
+  # Definition files the loader must never serve again because the
+  # registry conversion retired them. commands_menu_page2's rows are
+  # commands_menu registry entries now; if the old file is still on
+  # disk it is skipped with a log line, not served as a stale copy.
+  retired-definitions:
+    - commands_menu_page2
+    - teleport_confirm_spawn
+    - teleport_confirm_spawncmd
+    - teleport_confirm_guild
+    - teleport_confirm_home
+    - halloween
+    - halloween_scares
+
+forms:
+  # How long a registry form's session token stays answerable
+  # (seconds). A response after this, after a world change, or after
+  # a newer form replaced it is dropped (DESIGN-2.0 §2.5).
+  session-ttl-seconds: 300
+
+# Row sequence per menu: Java packing follows this order, and entries
+# whose group is not listed sort after the listed ones.
+groups:
+  server_menu:
+    - travel
+    - me
+    - shops
+    - help
+    - settings
+    - chest_tools
+  commands_menu:
+    - getting_around
+    - money_jobs
+    - skills_levels
+    - shops_trading
+    - claims_land
+    - guild_quests
+    - server_info
+    - fixes_help
+    - your_items_help
+
+# Bedrock form button colour per group (ExcelBedrockMenu 1.5.21's
+# group colouring, as data). Server Menu palette approved by Mike
+# Nov 13, 2026 (ExcelMenu 3.0.1 — "give this some color again"):
+# Travel GREEN, Me LIGHT PURPLE, Shops GOLD, Help RED. Blue is
+# owned by the Spawn + Teleport pins (see pin-color below) and is
+# never a section colour. Settings YELLOW and Chest Organization
+# DARK GRAY are the build's picks for the two sections Mike did
+# not name — distinct, non-blue, listed in the 3.0.1 build record
+# for his veto. The catalogue's groups intentionally have no
+# colour: its group forms list one group at a time and its buttons
+# were always plain (1.5.27).
+group-colors:
+  travel: "&a"
+  me: "&d"
+  shops: "&6"
+  help: "&c"
+  settings: "&e"
+  chest_tools: "&8"
+
+# Colour of the root PIN buttons (Spawn + Teleport to a player).
+# Blue is owned by the pins (Mike, Nov 13, 2026): the pins keep
+# dark blue exactly as they render today, even though Travel
+# itself is green now. Change this, not the section colours,
+# to recolour the pins.
+pin-color: "&1"
+
+# ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
+spawn:
+  x: -784
+  z: -272
+  
+
+# Per-player menu rearrange (ExcelMenu 3.0, DESIGN 3.7): the editor +
+# the stored-order merge. Code defaults are on / [server_menu], so this
+# block is documentation of the knobs, not a hard dependency.
+rearrange:
+  enabled: true        # master switch for the editor + prefs merge
+  menus: [server_menu] # layouts the editor serves (v1: one)
