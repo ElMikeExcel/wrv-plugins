@@ -1,0 +1,18 @@
+name: ExcelSummons
+version: 0.1.7
+api-version: '1.21'
+main: com.winkreyes.excelsummons.ExcelSummons
+description: The summoning tree's bridge — a persistent summon-to-owner registry that carries attribution, allegiance, explosion safety, and enforced lifetimes for Magic's summoned mobs.
+authors: [Iris, Mike]
+depend: [Magic]
+softdepend: [ExcelTogether]
+
+commands:
+  summons:
+    description: See your registered summons (list or menu page), dismiss your mount, all combat summons, or your cast pets, staff tools
+    usage: /summons [list|menu|dismiss [all|pets]|admin reload|admin list <player>|admin dismiss <player> [all|pets]]
+
+permissions:
+  excelsummons.admin:
+    description: Staff tools (settings reload, inspect or dismiss another player's summons)
+    default: op
