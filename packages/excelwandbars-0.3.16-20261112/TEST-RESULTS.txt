@@ -1,0 +1,119 @@
+ExcelWandBars 0.3.16 — test results (Nov 12, 2026, build close-out)
+
+Base gate (pre-change proof): ExcelWandBars 0.3.15 rebuilt from its
+own sources (the build-0.3.15 tree, copied untouched into this build
+folder) with the house toolchain (Temurin JDK 25.0.5+8, work/cp.txt,
+repack.py from the shipped 0.3.14 jar + the 0.3.15 shipped resources)
+came out BYTE-IDENTICAL to the shipped 0.3.15 jar: 550,474 B, SHA-256
+61b278b46d8708dff04eb08a0e99a87ee25ac78b19310eeb10ba0b2411b700f2
+(basecheck/rebuilt-0.3.15.jar vs ../build-0.3.15/ExcelWandBars-0.3.15.jar,
+cmp clean). Only then were the 0.3.16 changes applied.
+
+Pure suites: 22 suites, 643 checks, 0 failed.
+  ArrangePlanTest 25 · BarLoadoutNewTest 35 · BarPositionTest 35 ·
+  BookHoldPlanTest 51 · CooldownDisplayPlanTest 20 ·
+  CooldownTagPlanTest 61 · DragWritePlanTest 38 ·
+  DragWriteTwoTapTest 13 · ExitSweepPlanTest 23 · FormContrastTest 70 ·
+  HoldReadPlanTest 11 · JoinGuardPlanTest 14 · JoinSweepPlanTest 8 ·
+  PagerDefault0312Test 27 · PagerPlanTest 29 · QuitClosePlanTest 8 ·
+  SlotGuardPlanTest 28 · SpellbookNewTest 13 ·
+  SpellbookPager039Test 54 · UnarmedDragPlanTest 14 ·
+  VerifyRetryPlanTest 47 (carried) · ApplyCoalescePlanTest 19 (new)
+  (The 21 carried suites are byte-identical test files to 0.3.15's,
+  624 checks, all green against the 0.3.16 tree. ApplyCoalescePlanTest
+  covers the F4 coalesce truth table — retries never coalesce — and
+  the self-echo window: echo at +0/+1/+2 ticks, admitted at +3, and
+  defeated at every tick by a fresh pick/tap stamp after the apply.)
+
+F5 rig gates (rig-probe/HotbarCounterRig, 40 checks, ALL PASS):
+  The fixture is Mike's actual saved student-wand item, transcribed
+  mechanically from the round-1 evidence pull (hotbar_count 3,
+  hotbar_inventory_count 2, the item's own 80-spell list, its
+  spell_inventory map) with his saved 21-slot loadout from the same
+  round's loadouts pull; the real BarLoadout + FlexibleBarLayout
+  reproduce the saved map exactly (fixture sanity, 4 checks). The
+  Magic side is a line-faithful port of Magic 11.2.5-baa3d91
+  Wand.buildInventory / updateHotbarCount / checkHotbarCount /
+  addToInventory / updateSlot, reduced to spell items.
+  Controls first: a bare rebuild of the desynced fixture FAILS
+  layoutFor.ok, leaves built hotbar page 3 physically empty, and
+  scrambles spell_inventory exactly as diagnosed (first divergence
+  "repairequipment at 24, want 16"); a 0.3.15-form configure (node
+  writes hotbar_count only — transcribed and asserted) leaves the
+  item's hotbar_inventory_count at 2 and the next rebuild fails
+  identically. The rig therefore reproduces the Nov 12 failure
+  before it proves the fix.
+  F5.1 PASS — after the 0.3.16 configure (node carries
+    hotbar_count=3 AND hotbar_inventory_count=3), a Magic-style
+    rebuild verifies layoutFor.ok TRUE, the built hotbar page 3
+    physically contains the 7 page-3 spells (repairequipment,
+    wrv_spark, cure, shell, repairitem, cloak, earth) with the exit
+    column empty, and the rebuilt spell_inventory equals the
+    desired map exactly (80/80 placed, no spill, no re-offset).
+  F5.2 PASS — the re-saved item (built wand's counters + map written
+    back) still carries hic == hc == 3, and a second full
+    rebuild-from-item is the same fixed point (ok, page 3
+    populated, map verbatim).
+  F5.3 PASS — sneak bars (perPage 8, same code path): desynced
+    control fails with page 3 empty; after the 0.3.16 configure the
+    layout verifies, page 3 physically holds cure, shell,
+    repairitem, cloak, earth, and the fixed point survives the
+    second rebuild with re-saved hic == hc == 3.
+  F5.4 PASS — original untouched, three ways: (a) an original-style
+    apply on the fixture item writes NO hotbar_count /
+    hotbar_inventory_count keys (asserted on the configure node);
+    (b) with a genuinely stale (cross-page) layout, original's
+    0.3.16 node is key-for-key 0.3.15's — F1 writes nothing new for
+    original; (c) for tapbar the ONLY new node key vs 0.3.15 is
+    hotbar_inventory_count (F1's exact blast radius).
+  F5.5 PASS — event-loop replay of the Nov 12 storm pattern at the
+    decision level (real ApplyGuard, VerifyRetryPlan,
+    ApplyCoalescePlan): join APPLIED; the join apply's own
+    activation echo skipped; settle apply RETRYING; 6 echoes inside
+    the 2-tick window all skipped; 3 + 1 later re-entries coalesced
+    to ALREADY with no token and no second chain; retries run
+    forced to the cap (FAILED, chain terminates); a genuine
+    activation with a fresh pick stamp inside the window is
+    ADMITTED and runs its apply. Totals: zero "retry already
+    pending", THROTTLED 0 (gate: at most 1), guard tokens spent
+    only on the 3 real applies. F5.5b: in a clean world, 6 rapid
+    genuine activations still cap at 4 admitted + 2 THROTTLED —
+    ApplyGuard(4, 10_000) is unchanged (F4c).
+  The carried 0.3.15 rig (VerifyRaceRig, 21 checks) also still
+  passes against the 0.3.16 tree.
+
+F1 audit (grep over the built tree): exactly ONE configure site
+writes the layout — StyleHook's layoutWritten block (hotbar_count,
+the new hotbar_inventory_count alongside it, the spell_inventory
+section). RankUpHook's template upgrade list is the only other
+counter write (both counters, template-guarded, as specced).
+LoadoutHook grows no configure node of its own. Wiring evidence
+(javap on the shipped classes): StyleHook.applyInternal delegates
+to ApplyCoalescePlan.coalesce, onWandActivated to
+ApplyCoalescePlan.selfEcho, TapBarHook carries the tryOpen /
+tryOpenInner / logTryOpenRefusal split and lastInputAt.
+
+Double-build: two clean compiles -> class trees identical; two
+repacks -> byte-identical jars.
+
+Artifact: ExcelWandBars-0.3.16.jar — 553,302 B, SHA-256
+897e589c93be86161400755f233cdcf10324c0ea9d2b021fb2690a5ef17a5055,
+251 entries, build id EXC-WANDBARS-0.3.16-WRV-20261112-01-6a4cab
+(verified inside the jar: BuildInfo constant, excel-build.txt,
+plugin.yml version 0.3.16 + the 0.3.16 note). config.yml and
+spellbook.yml byte-identical to 0.3.15's — JAR-ONLY change.
+
+Limits of this proof (honest): the rig proves the decision cores
+the jar ships and a faithful port of Magic's build algorithm; the
+wand, the item, and the scheduler are simulated, and no Bukkit
+server, Magic, or Bedrock client ran here. Two modelling notes:
+(1) the verify's curPages is read from the wand's hotbar_count
+property (3 on the fixture), so the rig's pre-fix failure shows in
+the spell map and the empty page 3 — the live log's pages=2/3
+display remains the diagnosis's one unpinned sub-step, and F2's
+new hic=/firstDiff= detail is what pins it in the wild;
+(2) template-merged properties are not modelled — the fixture
+item carries both counters explicitly, which is the diagnosed
+state. Mike's live Bedrock proof (tap bar opens on first hold,
+spells selectable) remains the acceptance evidence for tracker
+row 61. No live boot was run (desk-only commission).
