@@ -1,0 +1,658 @@
+package com.winkreyes.excelwandbars;
+
+import com.elmakers.mine.bukkit.api.event.LoadEvent;
+import com.elmakers.mine.bukkit.api.event.WandActivatedEvent;
+import com.elmakers.mine.bukkit.api.magic.Mage;
+import com.elmakers.mine.bukkit.api.magic.MagicAPI;
+import com.elmakers.mine.bukkit.api.wand.Wand;
+import com.elmakers.mine.bukkit.api.wand.WandTemplate;
+import com.winkreyes.excelwandbars.core.ApplyCoalescePlan;
+import com.winkreyes.excelwandbars.core.ApplyGuard;
+import com.winkreyes.excelwandbars.core.VerifyRetryPlan;
+import com.winkreyes.excelwandbars.core.StylePrefs;
+import com.winkreyes.excelwandbars.core.StyleProfile;
+import com.winkreyes.excelwandbars.core.WandStyle;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * 0.2.0 wand style opt-in. Every player gets CLASSIC wand controls unless
+ * they pick Spell bars with /wandstyle. The choice is saved per player in
+ * plugins/ExcelWandBars/styles.yml and put back on the wand they hold:
+ * whenever Magic activates a wand (join, hold, a new or re-issued wand,
+ * respawn) and after every Magic load (ExcelMagicGate seal stage applies
+ * dispatch "magic reload").
+ *
+ * Applying uses the same sequence as Magic's own "/wandp <player> configure"
+ * (close the bar, save, configure the item, deactivate, re-check), which was
+ * tested working on the box for the per-wand chest override (STEPS step 8).
+ * Only rank wands (template inherits base_wand, not an excluded template)
+ * that the player may use are touched. Only keys whose EFFECTIVE value
+ * differs are written, so on a chest-mode base_wand a classic player's wand
+ * is left exactly as Magic made it.
+ */
+final class StyleHook implements Listener {
+    enum Result { APPLIED, ALREADY, NO_WAND, NOT_RANK_WAND, NOT_OWNER, THROTTLED, DISABLED, FAILED, RETRYING }
+
+    private final ExcelWandBars plugin;
+    private final MagicAPI api;
+    private final StylePrefs prefs = new StylePrefs();
+    private final StyleProfile profile = new StyleProfile();
+    private final ApplyGuard guard = new ApplyGuard(4, 10_000);
+    private final BedrockForms forms;
+    private final File file;
+    private boolean enabled = true;
+    private boolean barsBedrockOnly = true;
+    /** 0.2.5 parity: Sneak bars for Java too (new key, so an older config.yml with bars-bedrock-only: true still opens it). */
+    private boolean sneakBarsJava = true;
+    private String inheritKey = "base_wand";
+    private final Set<String> excluded = new HashSet<>();
+    private long applied = 0;
+
+    StyleHook(ExcelWandBars plugin, MagicAPI api) {
+        this.plugin = plugin;
+        this.api = api;
+        this.forms = new BedrockForms(plugin.getLogger());
+        this.file = new File(plugin.getDataFolder(), "styles.yml");
+    }
+
+    // ------------------------------------------------------------------ settings + storage
+
+    void loadSettings(ConfigurationSection c) {
+        enabled = c == null || c.getBoolean("enabled", true);
+        barsBedrockOnly = c == null || c.getBoolean("bars-bedrock-only", true);
+        sneakBarsJava = c == null || c.getBoolean("sneak-bars-java", true);
+        WandStyle d = c == null ? null : WandStyle.parse(c.getString("default", "classic"));
+        prefs.setDefault(d == null ? WandStyle.CLASSIC : d);
+        inheritKey = c == null ? "base_wand" : c.getString("rank-wand-inherits", "base_wand");
+        // 0.2.5 pages (new keys; an older config.yml without them gets these defaults).
+        pagesEnabled = c == null || c.getBoolean("pages.enabled", true);
+        perPageTap = com.winkreyes.excelwandbars.core.PageLayout.clampPerPage(c == null ? 7 : c.getInt("pages.tap-bar-per-page", 7));
+        perPageBars = com.winkreyes.excelwandbars.core.PageLayout.clampPerPage(c == null ? 8 : c.getInt("pages.sneak-bars-per-page", 8));
+        excluded.clear();
+        // Missing section or key (e.g. a 0.1.0 config.yml kept on upgrade) = the builder wand stays excluded.
+        List<String> ex = c != null && c.isSet("exclude-templates") ? c.getStringList("exclude-templates") : List.of("masons");
+        for (String s : ex) excluded.add(s.toLowerCase(Locale.ROOT));
+        if (c != null) {
+            for (WandStyle st : WandStyle.values()) {
+                ConfigurationSection s = c.getConfigurationSection("controls." + st.key());
+                if (s == null) continue;
+                for (String k : s.getKeys(false)) {
+                    if (!profile.set(st, k, s.getString(k))) plugin.getLogger().warning("wand-style.controls." + st.key() + "." + k + " is not a control key, ignored");
+                }
+            }
+        }
+    }
+
+    void loadPrefs() {
+        Map<String, String> raw = new LinkedHashMap<>();
+        if (file.exists()) {
+            YamlConfiguration y = YamlConfiguration.loadConfiguration(file);
+            ConfigurationSection s = y.getConfigurationSection("players");
+            if (s != null) for (String k : s.getKeys(false)) raw.put(k, s.getString(k));
+        }
+        int bad = prefs.load(raw);
+        if (bad > 0) plugin.getLogger().warning("styles.yml: " + bad + " unreadable line(s) skipped");
+    }
+
+    private void savePrefs() {
+        YamlConfiguration y = new YamlConfiguration();
+        y.options().setHeader(List.of(
+                "ExcelWandBars wand style choices (written by the plugin; /wandstyle).",
+                "Only players who used /wandstyle are listed; everyone else gets the default.",
+                "Default: " + prefs.defaultStyle().key()));
+        for (Map.Entry<String, String> e : prefs.save().entrySet()) y.set("players." + e.getKey(), e.getValue());
+        try {
+            plugin.getDataFolder().mkdirs();
+            File tmp = new File(plugin.getDataFolder(), "styles.yml.tmp");
+            y.save(tmp);
+            if (!tmp.renameTo(file)) { java.nio.file.Files.move(tmp.toPath(), file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING); }
+        } catch (IOException ex) {
+            plugin.getLogger().warning("Could not save styles.yml: " + ex.getMessage());
+        }
+    }
+
+    void persist() { savePrefs(); }
+
+    /** Short console view of the held wand's controls (rig test + admins). */
+    String describe(Player p) {
+        Mage mage = api.getMage(p);
+        Wand w = mage == null ? null : mage.getActiveWand();
+        if (w == null) return "none";
+        Map<String, String> e = effective(w);
+        return w.getTemplateKey() + " rank=" + isRankWand(w) + " mode=" + e.get("mode") + " right_click=" + e.get("right_click")
+                + " right_click_sneak=" + e.get("right_click_sneak") + " drop=" + e.get("drop") + " quick_cast=" + e.get("quick_cast")
+                + " matches=" + profile.changes(e, styleOf(p)).isEmpty()
+                + " saved=" + savedStyle(p).key() + " bedrock=" + plugin.isBedrock(p)
+                + " open=" + w.isInventoryOpen() + " active=" + w.getActiveSpellKey()
+                + " left_click=" + e.get("left_click") + " | " + describeLayout(p);
+    }
+
+    boolean enabled() { return enabled; }
+    StylePrefs prefs() { return prefs; }
+    long applied() { return applied; }
+    boolean barsBedrockOnly() { return barsBedrockOnly && !sneakBarsJava; }
+    /** What the player picked (or the default), before the Bedrock-only rule. */
+    WandStyle savedStyle(Player p) { return prefs.get(p.getUniqueId()); }
+    /** May this player use Sneak bars? (0.2.1: Bedrock only.) */
+    boolean barsAllowed(Player p) { return !barsBedrockOnly() || plugin.isBedrock(p); }
+    /**
+     * The style that is put on the wand. 0.2.1: Sneak bars is Bedrock only,
+     * so a Java player always gets Classic, even with "bars" saved (their
+     * saved choice is kept and comes back if they join from Bedrock).
+     */
+    WandStyle styleOf(Player p) {
+        WandStyle s = prefs.get(p.getUniqueId());
+        return s == WandStyle.BARS && !barsAllowed(p) ? WandStyle.CLASSIC : s;
+    }
+
+    // ------------------------------------------------------------------ events
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onWandActivated(WandActivatedEvent event) {
+        Mage mage = event.getMage();
+        if (mage == null || !mage.isPlayer()) return;
+        Player p = mage.getPlayer();
+        if (p == null) return;
+        // 0.3.16 (F4): our own apply's deactivate + checkWand re-fires this
+        // event. An activation that is only that echo — within
+        // ApplyCoalescePlan's window of our apply, and no fresh player
+        // pick/tap since — is never scheduled, so it can never re-enter
+        // as a billable apply. A real pick or tap in between defeats it.
+        UUID id = p.getUniqueId();
+        Integer selfTick = lastSelfApplyTick.get(id);
+        if (selfTick != null) {
+            long input = plugin.tapBar() == null ? 0L : plugin.tapBar().lastInputAt(p);
+            if (ApplyCoalescePlan.selfEcho(Bukkit.getCurrentTick(), selfTick, input, lastSelfApplyMs.getOrDefault(id, 0L))) {
+                if (plugin.debug()) plugin.getLogger().info("Wand style activation for " + p.getName() + " is this plugin's own apply echo; skipped");
+                return;
+            }
+        }
+        // Next tick: never re-configure a wand inside Magic's own activation call.
+        Bukkit.getScheduler().runTask(plugin, () -> applySafe(p, "activate"));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onMagicLoad(LoadEvent event) {
+        // ExcelMagicGate's seal apply and "magic load" both end here; Magic
+        // re-reads templates, so check every online player's held wand after it settles.
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            for (Player p : Bukkit.getOnlinePlayers()) applySafe(p, "magic load");
+        }, 40L);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onJoin(PlayerJoinEvent event) {
+        Player p = event.getPlayer();
+        // Magic skips its activation event while the mage is still loading, so check after join too.
+        Bukkit.getScheduler().runTaskLater(plugin, () -> applySafe(p, "join"), 30L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> applySafe(p, "join"), 100L);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onRespawn(PlayerRespawnEvent event) {
+        Player p = event.getPlayer();
+        Bukkit.getScheduler().runTaskLater(plugin, () -> applySafe(p, "respawn"), 20L);
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        UUID id = event.getPlayer().getUniqueId();
+        guard.forget(id);
+        verifyRetryPending.remove(id);
+        applyInFlight.remove(id);
+        lastSelfApplyTick.remove(id);
+        lastSelfApplyMs.remove(id);
+    }
+
+    // ------------------------------------------------------------------ apply
+
+    private void applySafe(Player p, String why) {
+        if (p == null || !p.isOnline()) return;
+        try {
+            Result r = applyInternal(p, false, why, 0, false);
+            if (plugin.debug() || r == Result.APPLIED || r == Result.THROTTLED || r == Result.FAILED || r == Result.RETRYING) {
+                plugin.getLogger().info("Wand style " + styleOf(p).key() + " for " + p.getName() + " (" + why + "): " + r + verdictDetail(r));
+            }
+        } catch (Throwable t) {
+            plugin.getLogger().warning("Wand style error for " + p.getName() + " (" + why + "): " + t);
+        }
+    }
+
+    /** 0.3.15: the branch detail applyInternal left for a FAILED / RETRYING verdict line, or "". */
+    private String verdictDetail(Result r) {
+        if (r != Result.FAILED && r != Result.RETRYING) return "";
+        String d = lastApplyDetail;
+        return d == null || d.isEmpty() ? "" : " [" + d + "]";
+    }
+
+    Map<String, String> effective(Wand w) {
+        Map<String, String> eff = new LinkedHashMap<>();
+        for (String k : StyleProfile.KEYS) {
+            Object v = w.getProperty(k);
+            eff.put(k, v == null ? null : String.valueOf(v));
+        }
+        return eff;
+    }
+
+    boolean isRankWand(Wand w) {
+        String key = w.getTemplateKey();
+        if (key == null) return false;
+        if (excluded.contains(key.toLowerCase(Locale.ROOT))) return false;
+        if (inheritKey == null || inheritKey.isEmpty()) return true;
+        WandTemplate t = w.getTemplate();
+        for (int depth = 0; t != null && depth < 32; depth++, t = t.getParent()) {
+            if (inheritKey.equalsIgnoreCase(t.getKey())) return true;
+        }
+        return false;
+    }
+
+    /** Put the player's chosen style on the wand they hold (the active wand only). Main thread only. */
+    Result apply(Player p) { return applyInternal(p, false, null, 0, false); }
+
+    /** Forced apply with its trigger named (0.3.15: the trigger drives the close rule). */
+    Result apply(Player p, boolean force, String why) { return applyInternal(p, force, why, 0, false); }
+
+    /** 0.2.9: a player's own spell bar change: apply now (the repeat guard is for event loops, not for menu taps). */
+    private boolean preserveCurrentLayout = true;
+    Result applyNow(Player p, String why) {
+        boolean previous = preserveCurrentLayout;
+        preserveCurrentLayout = !"spell bar change".equals(why);
+        try {
+            Result r = applyInternal(p, true, why, 0, false);
+            if (plugin.debug() || r == Result.APPLIED || r == Result.FAILED || r == Result.RETRYING) plugin.getLogger().info("Wand style " + styleOf(p).key() + " for " + p.getName() + " (" + why + "): " + r + verdictDetail(r));
+            return r;
+        } catch (Throwable t) {
+            plugin.getLogger().warning("Wand style error for " + p.getName() + " (" + why + "): " + t);
+            return Result.FAILED;
+        } finally {
+            preserveCurrentLayout = previous;
+        }
+    }
+
+    /** 0.2.9: run apply a little later (after a rank-up has added spells to the wand). */
+    void applyLater(Player p, String why, long ticks) {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> applySafe(p, why), ticks);
+    }
+
+    Result apply(Player p, boolean force) { return applyInternal(p, force, null, 0, false); }
+
+    /** 0.3.15: players with a verify retry already scheduled (at most one per player). */
+    private final Set<UUID> verifyRetryPending = new HashSet<>();
+    /** 0.3.15: branch detail for the verdict line of the apply that just ran (main thread only). */
+    private String lastApplyDetail;
+    /** 0.3.16 (F4): players whose apply is running right now (re-entry guard; main thread only). */
+    private final Set<UUID> applyInFlight = new HashSet<>();
+    /** 0.3.16 (F4): server tick / wall-clock ms of our last committed apply per player (echo detection). */
+    private final Map<UUID, Integer> lastSelfApplyTick = new java.util.HashMap<>();
+    private final Map<UUID, Long> lastSelfApplyMs = new java.util.HashMap<>();
+
+    /**
+     * The apply itself. Only the player's ACTIVE (held) wand is ever
+     * touched: {@code mage.getActiveWand()} at entry, and the rebuilt
+     * active wand again for the verify — no inventory wand is read or
+     * written here, and the loadout observe/layout calls receive that
+     * same held wand.
+     *
+     * 0.3.15 (verify race, diagnosis Nov 12, 2026): the post-write
+     * verify no longer fails on its first reading. When the only
+     * differences left are what this very pass just wrote, the verdict
+     * is RETRYING and one delayed re-check/re-apply is scheduled (see
+     * {@link VerifyRetryPlan}); the inventory close follows the plan's
+     * rule too, so a bar-open chain and every retry leave the player's
+     * open spell bar alone. Retries run forced: the first apply already
+     * paid an ApplyGuard token, and the plan's per-chain cap (plus one
+     * pending retry per player) is this path's storm guard.
+     */
+    /**
+     * 0.3.16 (F4): coalescing wrapper. A fresh apply that arrives while a
+     * verify retry is already pending for the player, or while an apply
+     * for the player is in flight, returns ALREADY before any ApplyGuard
+     * token is spent — the pending pass re-reads the then-current wand,
+     * so the duplicate would only repeat its work (and on Nov 12 it
+     * overlapped chains instead: "retry already pending"). Retries are
+     * never coalesced; they own the pending flag.
+     */
+    Result applyInternal(Player p, boolean force, String why, int retryCount, boolean isRetry) {
+        UUID id = p.getUniqueId();
+        if (ApplyCoalescePlan.coalesce(isRetry, verifyRetryPending.contains(id), applyInFlight.contains(id))) return Result.ALREADY;
+        applyInFlight.add(id);
+        try {
+            return applyInternalBody(p, force, why, retryCount, isRetry);
+        } finally {
+            applyInFlight.remove(id);
+        }
+    }
+
+    private Result applyInternalBody(Player p, boolean force, String why, int retryCount, boolean isRetry) {
+        lastApplyDetail = null;
+        if (!enabled) return Result.DISABLED;
+        Mage mage = api.getMage(p);
+        Wand w = mage == null ? null : mage.getActiveWand();
+        if (w == null) return Result.NO_WAND;
+        if (!isRankWand(w)) return Result.NOT_RANK_WAND;
+        if (!w.canUse(p)) return Result.NOT_OWNER;
+        WandStyle style = styleOf(p);
+        // 0.2.9: seed this player's own spell bar the first time, and place spells the wand
+        // learned since (chat lines only in the hotbar styles; Classic and Cycle update quietly).
+        LoadoutHook lo = loadouts();
+        if (lo != null && com.winkreyes.excelwandbars.core.ExitSlotPolicy.pagesRequired(style, pagesEnabled)) lo.observe(p, w, style.inventory());
+        Map<String, String> need = profile.changes(effective(w), style);
+        Layout lay = layoutFor(p, w, style);
+        if (need.isEmpty() && (lay == null || lay.ok)) return Result.ALREADY;
+        if (!force && !guard.allow(p.getUniqueId(), System.currentTimeMillis())) return Result.THROTTLED;
+        // 0.3.16 (F4): this apply is now committed to the configure churn
+        // below (close -> save -> configure -> deactivate -> checkWand).
+        // Stamp it BEFORE the churn: the WandActivatedEvent our own
+        // deactivate + checkWand fires arrives synchronously, inside that
+        // churn, and onWandActivated must already see the stamp to
+        // recognise the echo.
+        lastSelfApplyTick.put(p.getUniqueId(), Bukkit.getCurrentTick());
+        lastSelfApplyMs.put(p.getUniqueId(), System.currentTimeMillis());
+        // Same order as Magic's WandCommandExecutor.onWandConfigure, except the
+        // 0.3.15 close: only a pass that will change something, whose trigger is
+        // not a bar-open activation, and which is not a verify retry may close
+        // the wand inventory (VerifyRetryPlan.shouldCloseInventory).
+        if (plugin.tapBar() != null) plugin.tapBar().cancelCrouchHold(p);
+        if (VerifyRetryPlan.shouldCloseInventory(true, why, isRetry)) w.closeInventory();
+        w.saveState();
+        ConfigurationSection node = new MemoryConfiguration();
+        for (Map.Entry<String, String> e : need.entrySet()) node.set(e.getKey(), e.getValue());
+        boolean layoutWritten = lay != null && !lay.ok;
+        if (layoutWritten) {
+            // 0.2.5: every unlocked spell on the hotbar pages (packed, same order), enough pages for them.
+            // 0.2.9: with bar-loadout on, the player's own bar; every other spell is parked after the last page (Spellbook).
+            // 0.3.17 (Shape A): WandBars writes ONLY the spell map now —
+            // neither page counter. hotbar_count belongs to the player's
+            // Magic path (paths.yml: beginner 1, student 2, master 3) and
+            // path properties outrank wand writes at read time, while
+            // hotbar_inventory_count is re-derived from the effective
+            // hotbar_count inside every Magic buildInventory. The 0.3.16
+            // F1 writes of both counters (here and in RankUpHook) could
+            // therefore never take effect — the fossil values they left
+            // on the wand were read back as evidence and chased for a
+            // day. lay.packed is already sized to the effective count
+            // (see layoutFor), so the map alone is the whole write.
+            node.createSection("spell_inventory", new LinkedHashMap<String, Object>(lay.packed));
+            layouts++;
+        }
+        w.configure(node);
+        w.deactivate();
+        mage.checkWand();
+        applied++;
+        Wand now = mage.getActiveWand();
+        // A vanished wand keeps the pre-0.3.15 reading (nothing to verify against).
+        Map<String, String> residual = now == null ? Map.of() : profile.changes(effective(now), style);
+        Layout after = now == null ? null : layoutFor(p, now, style);
+        boolean layoutBad = after != null && !after.ok;
+        VerifyRetryPlan.Verdict v = VerifyRetryPlan.verdict(new HashSet<>(need.keySet()), residual.keySet(), layoutWritten, layoutBad, retryCount);
+        if (v == VerifyRetryPlan.Verdict.APPLIED) return Result.APPLIED;
+        // 0.3.15: name the failing branch and the wand on every non-clean verdict.
+        String template = now != null && now.getTemplateKey() != null ? now.getTemplateKey() : w.getTemplateKey();
+        StringBuilder detail = new StringBuilder("branch=").append(VerifyRetryPlan.branch(!residual.isEmpty(), layoutBad).name().toLowerCase(Locale.ROOT).replace("_and_", "+"));
+        if (!residual.isEmpty()) detail.append(" residual=").append(residual);
+        if (layoutBad) detail.append(" layout: ").append(describeLayout(p));
+        detail.append(" template=").append(template);
+        if (v == VerifyRetryPlan.Verdict.RETRY) {
+            boolean scheduled = scheduleVerifyRetry(p, retryCount + 1);
+            detail.append(scheduled
+                    ? " retry " + (retryCount + 1) + "/" + VerifyRetryPlan.MAX_RETRIES + " in " + VerifyRetryPlan.RETRY_DELAY_TICKS + "t"
+                    : " retry already pending");
+            lastApplyDetail = detail.toString();
+            return Result.RETRYING;
+        }
+        lastApplyDetail = detail.toString();
+        return Result.FAILED;
+    }
+
+    /**
+     * 0.3.15: schedule the one delayed re-check/re-apply for a raced
+     * verify. Returns false when a retry is already pending for this
+     * player (the pending pass re-reads the then-current wand, so a
+     * second schedule would only double the work). The retry carries
+     * its chain count with it; at {@link VerifyRetryPlan#MAX_RETRIES}
+     * the verdict is FAILED and the chain ends.
+     */
+    private boolean scheduleVerifyRetry(Player p, int nextRetry) {
+        if (!verifyRetryPending.add(p.getUniqueId())) return false;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            verifyRetryPending.remove(p.getUniqueId());
+            if (!p.isOnline()) return;
+            try {
+                Result r = applyInternal(p, true, "verify retry", nextRetry, true);
+                if (plugin.debug() || r == Result.APPLIED || r == Result.FAILED || r == Result.RETRYING) {
+                    plugin.getLogger().info("Wand style " + styleOf(p).key() + " for " + p.getName() + " (verify retry " + nextRetry + "): " + r + verdictDetail(r));
+                }
+            } catch (Throwable t) {
+                plugin.getLogger().warning("Wand style error for " + p.getName() + " (verify retry " + nextRetry + "): " + t);
+            }
+        }, VerifyRetryPlan.RETRY_DELAY_TICKS);
+        return true;
+    }
+
+    // ------------------------------------------------------------------ 0.2.5 pages
+
+    private int perPageTap = 7, perPageBars = 8;
+    String pagesSummary() {
+        if (pagesEnabled && loadouts() != null) return "own spell bar per player ON (" + plugin.loadouts().size + " slots, " + perPageTap + " per page Tap bar / original, " + perPageBars + " Sneak bars)";
+        return pagesEnabled ? "all spells on the bar in pages ON (" + perPageTap + " per page Tap bar / original, " + perPageBars + " Sneak bars)" : "pages OFF except reserved-exit Tap bar";
+    }
+    private boolean pagesEnabled = true;
+    private long layouts = 0;
+    long layouts() { return layouts; }
+
+    /** What the wand's hotbar pages should be for this style (null = chest style or paging off). */
+    static final class Layout {
+        Map<String, Integer> packed; int pages; int curPages; boolean ok; int spells; int inBook;
+        /** 0.3.16 (F2): the wand configuration's own hotbar_inventory_count ("absent" when unset). */
+        String hic;
+        /** 0.3.16 (F2): first spell whose actual slot differs from packed (null when the maps match). */
+        String firstDiffSpell; Integer firstDiffActual; Integer firstDiffWant; boolean mapMatch;
+    }
+
+    /**
+     * 0.3.16 (F2): record what the wand itself carries — its
+     * hotbar_inventory_count and the first divergence between its
+     * actual spell map and the desired packed map — so a non-clean
+     * verdict line reads the wand's state directly instead of leaving
+     * it to inference (round 2's pages=2/3 had to be inferred).
+     */
+    private void observe(Layout l, com.elmakers.mine.bukkit.wand.Wand impl, Map<String, Integer> cur) {
+        Object hic = impl.getProperty("hotbar_inventory_count");
+        l.hic = hic == null ? "absent" : String.valueOf(hic);
+        l.mapMatch = true;
+        for (Map.Entry<String, Integer> e : l.packed.entrySet()) {
+            Integer actual = cur.get(e.getKey());
+            if (actual == null || !actual.equals(e.getValue())) {
+                l.mapMatch = false;
+                l.firstDiffSpell = e.getKey();
+                l.firstDiffActual = actual;
+                l.firstDiffWant = e.getValue();
+                return;
+            }
+        }
+    }
+
+    LoadoutHook loadouts() {
+        LoadoutHook lo = plugin.loadouts();
+        return lo != null && lo.enabled ? lo : null;
+    }
+    boolean pagesOn(Player p) { return com.winkreyes.excelwandbars.core.ExitSlotPolicy.pagesRequired(styleOf(p), pagesEnabled); }
+    int perPageFor(WandStyle style) { return com.winkreyes.excelwandbars.core.ExitSlotPolicy.perPage(style, perPageTap, perPageBars); }
+
+    Layout layoutFor(Player p, Wand w, WandStyle style) {
+        if (style == null || !style.inventory() || !com.winkreyes.excelwandbars.core.ExitSlotPolicy.pagesRequired(style, pagesEnabled)) return null;
+        if (!(w instanceof com.elmakers.mine.bukkit.wand.Wand impl)) return null;
+        Map<String, Integer> cur = new java.util.HashMap<>();
+        for (Map.Entry<String, Integer> e : impl.getSpellInventory().entrySet()) cur.put(e.getKey().toLowerCase(Locale.ROOT), e.getValue());
+        int per = perPageFor(style);
+        Layout l = new Layout();
+        // 0.3.17 (Shape A): the target is the wand's EFFECTIVE page count —
+        // Magic's path-resolved getHotbarCount() (beginner 1, student 2,
+        // master 3). The layout is packed to fit exactly that many pages;
+        // spells past the last page park in the book region. The old code
+        // packed for the loadout's own page demand (3 for a full 21-slot
+        // bar) and then demanded the wand match it: on any wand whose path
+        // grants fewer pages the spell map could never line up with the
+        // inventory Magic actually built, verification never passed, and
+        // the tap bar never opened (Nov 12, Mike's student wand, 2 vs 3).
+        int effective = Math.max(1, impl.getHotbarCount());
+        l.curPages = effective;
+        l.pages = effective;
+        LoadoutHook lo = loadouts();
+        if (lo != null && p != null) {
+            com.winkreyes.excelwandbars.core.BarLoadout.Layout bl = lo.layout(p, w, per, effective);
+            l.packed = bl.slots;
+            l.spells = bl.onBar;
+            l.inBook = bl.inBook;
+            if (style == WandStyle.TAPBAR) l.packed = com.winkreyes.excelwandbars.core.FlexibleBarLayout.preserve(l.packed, preserveCurrentLayout ? cur : java.util.Map.of(), effective);
+            // Fixed point by construction: the packed map is built inside
+            // the effective page budget Magic itself will use, so a wand
+            // whose spell map equals it verifies — no page-count term is
+            // left to disagree (pages is now the budget, not a demand).
+            l.ok = com.winkreyes.excelwandbars.core.PageLayout.same(cur, l.packed);
+            observe(l, impl, cur);
+            return l;
+        }
+        l.packed = com.winkreyes.excelwandbars.core.PageLayout.packCapped(cur, impl.getBaseSpells(), per, effective);
+        l.spells = l.packed.size();
+        if (style == WandStyle.TAPBAR) l.packed = com.winkreyes.excelwandbars.core.FlexibleBarLayout.preserve(l.packed, preserveCurrentLayout ? cur : java.util.Map.of(), effective);
+        l.ok = com.winkreyes.excelwandbars.core.PageLayout.same(cur, l.packed);
+        observe(l, impl, cur);
+        return l;
+    }
+
+    String describeLayout(Player p) {
+        Mage mage = api.getMage(p);
+        Wand w = mage == null ? null : mage.getActiveWand();
+        if (w == null) return "no wand";
+        Layout l = layoutFor(p, w, styleOf(p));
+        if (l == null) return "no pages (" + styleOf(p).key() + ")";
+        return (loadouts() != null ? "loadout on-bar=" + l.spells + " book=" + l.inBook : "spells=" + l.spells) + " pages=" + l.curPages + "/" + l.pages + " ok=" + l.ok + " packed=" + l.packed
+                + " hic=" + l.hic
+                + (l.ok ? "" : l.mapMatch ? " mapMatch=true" : " firstDiff=" + l.firstDiffSpell + " at " + (l.firstDiffActual == null ? "none" : l.firstDiffActual) + ", want " + l.firstDiffWant);
+    }
+
+    /** Remove the plugin's control keys from the held wand so its template rules again (admin rollback aid). */
+    int clearOverrides(Player p) {
+        Mage mage = api.getMage(p);
+        Wand w = mage == null ? null : mage.getActiveWand();
+        if (w == null || !isRankWand(w)) return -1;
+        w.closeInventory();
+        w.saveState();
+        int n = 0;
+        for (String k : StyleProfile.KEYS) if (w.removeProperty(k)) n++;
+        w.deactivate();
+        mage.checkWand();
+        return n;
+    }
+
+    // ------------------------------------------------------------------ player side
+
+    static List<String> howTo(WandStyle s) { return com.winkreyes.excelwandbars.core.ControlsText.howTo(s, false); }
+
+    /** 0.2.2: Bedrock players read tap / press and hold, never "click". */
+    List<String> howTo(WandStyle s, Player p) { return com.winkreyes.excelwandbars.core.ControlsText.howTo(s, plugin.isBedrock(p)); }
+
+    /** Set and apply. Returns the message lines for the player. */
+    List<String> choose(Player p, WandStyle s) {
+        List<String> out = new ArrayList<>();
+        if (s == WandStyle.BARS && !barsAllowed(p)) {
+            out.add("Sneak bars are for Bedrock players (phone, tablet, console).");
+            out.add("On Java your wand uses Classic or Cycle: right click picks the next spell, left click casts.");
+            return out;
+        }
+        if (plugin.tips() != null) plugin.tips().ack(p); // picking a style = the wand tip is understood
+        boolean changed = prefs.set(p.getUniqueId(), s);
+        if (changed || prefs.hasChoice(p.getUniqueId())) savePrefs();
+        Result r = apply(p);
+        out.add("Wand controls: " + s.label() + (changed ? "" : " (already set)") + ".");
+        out.addAll(howTo(s, p));
+        if (s == WandStyle.BARS) out.add("Like Classic better? Switch back any time.");
+        if (s == WandStyle.CYCLE) out.add("Want the spell list back? Pick Classic. Your spells: /spellbook.");
+        if (s == WandStyle.TAPBAR) out.add(plugin.isBedrock(p) ? "Best on a phone or tablet. Your items are kept safe while the spell bar is up." : "Your items are kept safe while the spell bar is up.");
+        if (s == WandStyle.ORIGINAL) out.add("This is how the wand first worked. Your items are kept safe while the spell bar is up.");
+        if (r == Result.NO_WAND || r == Result.NOT_RANK_WAND) out.add("Your wand switches the next time you hold it.");
+        else if (r == Result.THROTTLED) out.add("Hold your wand again in a few seconds to finish switching.");
+        else if (r == Result.RETRYING) out.add("Your wand is still switching — hold it a moment.");
+        else if (r == Result.FAILED) out.add("Your wand did not switch. Tell Mike.");
+        out.add(barsAllowed(p) ? "Change any time: /wandstyle or Wand controls in the compass menu." : "See this again: /wandstyle");
+        return out;
+    }
+
+    /** /wandstyle with no argument: Bedrock form, or clickable chat for Java (Classic only). */
+    void openChooser(Player p) {
+        WandStyle cur = styleOf(p);
+        if (!barsAllowed(p)) {
+            // Java: every style but Sneak bars (Bedrock only). One line each.
+            p.sendMessage(Component.text("Wand controls (now: " + com.winkreyes.excelwandbars.core.ControlsText.shortName(cur, false) + "). Click one:", NamedTextColor.GOLD));
+            for (WandStyle s : com.winkreyes.excelwandbars.core.ControlsText.chooserOrder(false)) {
+                p.sendMessage(Component.text(" [" + com.winkreyes.excelwandbars.core.ControlsText.buttonName(s, false) + "]" + (s == cur ? " (now)" : ""), NamedTextColor.AQUA)
+                        .hoverEvent(HoverEvent.showText(Component.text(String.join("\n", howTo(s)))))
+                        .clickEvent(ClickEvent.runCommand("/wandstyle " + s.typed()))
+                        .append(Component.text(" " + com.winkreyes.excelwandbars.core.ControlsText.oneLine(s, false), NamedTextColor.YELLOW)));
+            }
+            p.sendMessage(Component.text(" Sneak bars are for Bedrock players.", NamedTextColor.GRAY));
+            return;
+        }
+        // 0.2.4: five buttons, name on line 1 and a one-line description on line 2.
+        final boolean bedrock = plugin.isBedrock(p);
+        final WandStyle[] order = com.winkreyes.excelwandbars.core.ControlsText.chooserOrder(true).toArray(new WandStyle[0]);
+        List<String> buttons = new ArrayList<>();
+        for (WandStyle s : order) buttons.add(com.winkreyes.excelwandbars.core.ControlsText.button(s, cur, bedrock));
+        String content = com.winkreyes.excelwandbars.core.ControlsText.chooserContent(cur, bedrock, true);
+        java.util.function.IntConsumer cb = id -> {
+            if (id < 0 || id >= order.length) return;
+            WandStyle pick = order[id];
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (!p.isOnline()) return;
+                for (String line : choose(p, pick)) p.sendMessage(Component.text(line, NamedTextColor.YELLOW));
+            });
+        };
+        lastChooser.put(p.getUniqueId(), new java.util.AbstractMap.SimpleEntry<>(buttons, content));
+        lastChooserCb.put(p.getUniqueId(), cb);
+        boolean sent = BedrockForms.isBedrock(p) && forms.simple(p, "Wand controls", content, buttons, cb);
+        if (sent) return;
+        // No form (Geyser missing, or an admin test player): clickable chat.
+        p.sendMessage(Component.text(com.winkreyes.excelwandbars.core.ControlsText.chooserHeading(cur.label(), plugin.isBedrock(p)), NamedTextColor.GOLD));
+        for (WandStyle s : order) {
+            p.sendMessage(Component.text(" [" + com.winkreyes.excelwandbars.core.ControlsText.buttonName(s, bedrock) + "]" + (s == cur ? " (now)" : ""), NamedTextColor.AQUA)
+                    .hoverEvent(HoverEvent.showText(Component.text(String.join("\n", howTo(s, p)))))
+                    .clickEvent(ClickEvent.runCommand("/wandstyle " + s.typed()))
+                    .append(Component.text(" " + com.winkreyes.excelwandbars.core.ControlsText.oneLine(s, bedrock), NamedTextColor.YELLOW)));
+        }
+    }
+
+    /** 0.2.3 rig aid: the last Wand controls chooser built for a player (buttons, text). */
+    private final Map<UUID, Map.Entry<List<String>, String>> lastChooser = new java.util.HashMap<>();
+    Map.Entry<List<String>, String> lastChooser(Player p) { return lastChooser.get(p.getUniqueId()); }
+    private final Map<UUID, java.util.function.IntConsumer> lastChooserCb = new java.util.HashMap<>();
+    /** Rig aid: run the chooser's button handler as if the player tapped button n (same code as the form). */
+    boolean chooserTap(Player p, int n) { java.util.function.IntConsumer cb = lastChooserCb.get(p.getUniqueId()); if (cb == null) return false; cb.accept(n); return true; }
+    void forgetChooser(Player p) { lastChooser.remove(p.getUniqueId()); lastChooserCb.remove(p.getUniqueId()); }
+}
+
