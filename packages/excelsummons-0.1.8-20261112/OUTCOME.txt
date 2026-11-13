@@ -1,0 +1,30 @@
+ExcelSummons 0.1.8 — INSTALLED Nov 12, 2026, wrv-install-failsafe run scheduled 19:15 CST (manual fire; window 19:16–19:43 CST).
+
+Entry id (MANIFEST heading): ## PENDING — ExcelSummons 0.1.8 (Bedrock form-buttons fix — Geyser-only Cumulus response path — + main-page out-counts: mounts / cast pets / combat out) — filed Nov 12, 2026, parent Iris; GATED (jar swap, full gates)
+
+Lane: PC LANE, probe passed attempt 1 (DESKTOP-IL05DQR; rclone lsd listed "1. Michael's Server"); NO fallback. Panel used only for the window backup + Shut Down/Start (browser worker performed the restart; its report died in a model truncation, so the boot was verified directly from the fresh-pulled live logs/latest.log via the PC lane — verification, not re-install).
+
+Gates (all fresh PC pulls, EXACT):
+- Live predecessor plugins/ExcelSummons-0.1.7.jar = 90,538 B / SHA-256 2fc1a226f11a25d4d54e5b11ce0f663a9bec1500f3ae79ff0f4cd60ed4475d56
+- plugins/ExcelSummons/config.yml = SHA-256 659d9e2c643189c9f65e243c1eb8517c7f5d4775a7cad5ed9cb2502662f3c3a9 (packet premise)
+- plugins/ExcelMenu/entries/summons.yml EXISTS (1,862 B); no menu change, registry stays 94
+- Candidate = 92,387 B / SHA-256 835419aaeff434b61e6be2f5cda1340233299e11262feebf96206cdd00bb8841 (verified locally, on the PC staging copy, and as the remote pre-staged file)
+
+Emptiness: RCON list = 0/10 twice before the swap, 0/10 again immediately before the swap/Shut Down.
+Window backup: "Summons 0.1.8 pre-install 1112" (7.5 GB, completed, created 7:21 PM CST panel time); cap-at-6 pruned oldest manual "WandBars 0.3.16 pre-install 1112" (11/12/2026 1:36 PM, 7.5 GB); final total 6; no Daily Backup deleted, two newest manuals untouched.
+
+Swap: predecessor renamed in place to plugins/ExcelSummons-0.1.7.jar.bak-20261112 (90,538 B, verified in remote listing); candidate placed as plugins/ExcelSummons-0.1.8.jar.
+Placed artifact hash as placed (pull-back): 92,387 B / SHA-256 835419aaeff434b61e6be2f5cda1340233299e11262feebf96206cdd00bb8841 — EXACT.
+
+Boot verification (live logs/latest.log, boot 19:32 CST):
+- Done line verbatim: [01:32:53] [Server thread/INFO]: Done (21.596s)! For help, type "help"  (log clock UTC; 19:32:53 CST)
+- [ExcelSummons] Loading server plugin ExcelSummons v0.1.8; Enabling ExcelSummons v0.1.8
+- Enable line verbatim: "ExcelSummons 0.1.8 enabled (build EXC-SUMMONS-0.1.8-WRV-20261112-01-f8d6ba); registry holds 272 summon(s)."
+- PluginInitializerManager: Initialized 83 plugins
+- ExcelGuildGate: "ExcelGuildGate enabled: 4 of 5 seals broken, guild LOCKED"
+- SEVERE count in boot log: 0
+- Console smoke: /summons menu from console returned the players-only line ("The summons menu is for players — console: /summons admin list <player>."), no stack trace.
+
+Arrival online count: 0/10. Departure online count: 0/10. Server left ONLINE.
+Proof owed: Mike's live Bedrock tap test (Adopted pets sub-page opens, confirm form, Keep/Back, out-counts on main page) — the packet's acceptance.
+Same-pass surfaces still owed (supervisor/parent legs, per packet): What's New entry for 0.1.8 on BOTH surfaces, Guide knowledge/intents note, website Summons section, wrv-plugins record draft PR + Drive deposit, Jester Discord note.
