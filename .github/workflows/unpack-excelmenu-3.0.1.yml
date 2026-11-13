@@ -2,6 +2,9 @@ name: Unpack ExcelMenu 3.0.1 record package
 
 on:
   workflow_dispatch:
+  push:
+    branches: [record/excelmenu-3.0.1-20261113]
+    paths: [.github/workflows/unpack-excelmenu-3.0.1.yml]
 
 permissions:
   contents: write
