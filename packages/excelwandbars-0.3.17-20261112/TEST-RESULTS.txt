@@ -1,0 +1,52 @@
+ExcelWandBars 0.3.17 — test results (Nov 12, 2026, build close-out)
+
+Base gate (pre-change proof): the unmodified 0.3.16 sources, copied
+from build-0.3.16, compiled with the house toolchain (Temurin JDK
+25.0.5+8, work/cp.txt) and repacked, came out BYTE-IDENTICAL to the
+shipped 0.3.16 jar: 553,302 B, SHA-256
+897e589c93be86161400755f233cdcf10324c0ea9d2b021fb2690a5ef17a5055
+(basecheck/rebuilt-0.3.16.jar vs basecheck/shipped-0.3.16.jar, cmp
+clean). Only then were the 0.3.17 changes applied.
+
+Pure suites: 23 suites, 669 checks, 0 failed.
+  ApplyCoalescePlanTest 19 · ArrangePlanTest 25 · BarLoadoutNewTest 35 ·
+  BarPositionTest 35 · BookHoldPlanTest 51 · CooldownDisplayPlanTest 20 ·
+  CooldownTagPlanTest 61 · DragWritePlanTest 38 · DragWriteTwoTapTest 13 ·
+  ExitSweepPlanTest 23 · FormContrastTest 70 · HoldReadPlanTest 11 ·
+  JoinGuardPlanTest 14 · JoinSweepPlanTest 8 · PagerDefault0312Test 27 ·
+  PagerPlanTest 29 · QuitClosePlanTest 8 · SlotGuardPlanTest 28 ·
+  SpellbookNewTest 13 · SpellbookPager039Test 54 ·
+  UnarmedDragPlanTest 14 · VerifyRetryPlanTest 47 ·
+  ShapeAPageCapTest 26 (NEW)
+  (The 22 carried suites are byte-identical test files to 0.3.16's,
+  643 checks, all green against the 0.3.17 tree, UNCHANGED — none
+  asserted the 3-page demand or the F1 counter write, because the pure
+  suites exercise the core classes through the uncapped 2-arg layout
+  APIs whose behavior Shape A preserves exactly; see BUILD-NOTES
+  STEP 4 for the full re-basing statement. ShapeAPageCapTest covers
+  the capped APIs: student cap 2 on Mike's fixture shape (21-slot
+  loadout, 80 spells — 14 on-bar, page-3 picks parked 16–22 in slot
+  order, 80/80 accounted, no collisions), master cap 3 = the legacy
+  uncapped layout byte-for-byte, beginner cap 1, sneak perPage 8
+  under cap 2, packCapped == pack() at cap >= demand, and the
+  same-map verifier fixed point.)
+
+Real-Magic rig (the evidence of record for the layout gates):
+RIG-RESULTS.md — PC test-server mirror, shipped 0.3.16 first
+reproduced the live failure (verify FAILED pages=2/3, tryOpen
+refusing), then 0.3.17 passed STEP 2 (student 2/2 + tap bar opens +
+fixed point across relog/churn + 80/80 saved-spell accounting) and
+STEP 3 (master 3/3 + opens, beginner 1/1 + opens, sneak bars 2/2,
+ORIGINAL 2/2).
+
+NOT used as evidence: the 0.3.16 desk sim (rig-probe/
+HotbarCounterRig) — disqualified for this defect class by
+DIAGNOSIS-ROUND3 (it never ran a real Wand object); retired, not
+re-based. It is not in this build folder's rig record.
+
+Jar: candidate-a and candidate-b byte-identical (repack.py from the
+shipped 0.3.16 jar): 553,827 B, SHA-256
+949e9cd48790cd10bb2861ce32f4cc3442410aee219e91bbc48f6cb526330c9b.
+10 entries differ from shipped 0.3.16. The FIRST candidate
+(db07038a…, broken plugin.yml YAML) was rejected by the mirror and
+is NOT a deliverable — see BUILD-NOTES.
