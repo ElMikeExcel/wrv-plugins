@@ -1,0 +1,172 @@
+# STAGING REPORT — ExcelWandBars 0.3.15 records package
+
+Staged Nov 12, 2026 by the board supervisor run 257 records lane,
+mirroring the 0.3.14 package shape. Package folder:
+`~/workspace/records-catchup-20261103/packages/excelwandbars-0.3.15-20261112/`
+Nothing was published by this staging lane (no GitHub, no Drive,
+no MANIFEST edit, nothing outside this package folder).
+
+## Status — honest record (supervisor correction, Nov 12, 2026)
+
+ExcelWandBars 0.3.15 installed on Nov 12, 2026 (parent hand
+window, PC lane) and booted clean — Done (20.651s), 83 plugins,
+SEVERE 0; see INSTALLED.txt and BUILD-RECORD.md section 6.
+BUT Mike's live Bedrock tap-bar proof FAILED on Nov 12, 2026 at
+~12:58 PM CST ("Still the same"). The verify-race change in this
+build is therefore NOT player-proven and is not described as
+working or reliable anywhere in this package. A round-2
+diagnosis found the real root cause to be a
+`hotbar_inventory_count` desync; an ExcelWandBars 0.3.16 fix
+follows. Publication of this package is HELD until 0.3.16 lands
+and Mike's live proof passes, and the supervisor releases it
+(see the HELD line at the top of PUSH-NOTES.md).
+
+## Package contents
+
+- Total files in package (including this report): 130
+- Files listed in the table below: 129 (every file except this report itself)
+- `src/` tree: 95 files, extracted from `ExcelWandBars-0.3.15-src.zip` (mirrors the 0.3.14 package, which carries extracted `src/`)
+- `tests/` tree: 21 files (20 carried suites + `VerifyRetryPlanTest.java`)
+- Jar: `ExcelWandBars-0.3.15.jar` — 550,474 B, SHA-256 `61b278b46d8708dff04eb08a0e99a87ee25ac78b19310eeb10ba0b2411b700f2`, build `EXC-WANDBARS-0.3.15-WRV-20261112-01-9bc99f`
+- Jar inclusion convention (from the 0.3.14 package): the GitHub record leg EXCLUDES the jar; the Drive leg is where the jar itself is deposited. Both legs are HELD (above).
+
+## Verification
+
+- `sha256sum -c SHA256SUMS` result: **128 entries checked, 128 OK, 0 failed, exit 0**.
+- SHA256SUMS covers every file in the package except SHA256SUMS
+  itself and this STAGING-REPORT.md (both excluded to avoid
+  self-reference; this report is listed in FILE-LIST.txt).
+- FILE-LIST.txt lists all 130 files in the package.
+
+## Files (path — size B — SHA-256)
+
+- `./BUILD-RECORD.md` — 9875 — `a0057a6c6b23487811079cfd5094a3e9a122e47ff0a6a1c618aa94db64917ca1`
+- `./ExcelWandBars-0.3.15-src.zip` — 278555 — `24188dd8d98c2cc65b9408c9a1e8d1cf2b6a6b33a34a2c4203364e5bb8b75fc6`
+- `./ExcelWandBars-0.3.15.jar` — 550474 — `61b278b46d8708dff04eb08a0e99a87ee25ac78b19310eeb10ba0b2411b700f2`
+- `./FILE-LIST.txt` — 6198 — `3d8a91409b123565fc8d3b1f33db5571ddf28c144348606dacb7a9d89c63780d`
+- `./INSTALLED.txt` — 269 — `9ac0d61cebc5faf69c40dd975537a1584437c7827597102417879ee257fdea8f`
+- `./PUSH-NOTES.md` — 2827 — `497533f0eb87f956cf236dc145258bbb64ec876897ba6b3152a2085303d7d1f2`
+- `./README.md` — 1346 — `fc468c43c8519c082edda94b6af5e73ac085abe0321f72155c3480fd9f33eae5`
+- `./SHA256SUMS` — 14613 — `13834e83da013bd2ceed93444880efe663ea492a850f0160ea3c0ccbdf52728e`
+- `./SOURCE.md` — 1990 — `b737c503ae1be6b4cce892dfe28582033a44083a4c8ee36fd44fba4a99ea343a`
+- `./TEST-RESULTS.txt` — 4006 — `d68dd0e0918b7072161f5b4f9077514643b62dcbd96c2175e2ccbb8f50b5f6b5`
+- `./config.yml` — 27089 — `ec8766d182748f6c411ac16d44940b96657cb2fc8946764b82b14ed0ac3eb6dd`
+- `./plugin.yml` — 7993 — `585a426c0bffd5c87934d55a98acd926f0614cf238a851050de4084d0c9658e0`
+- `./repack.py` — 3024 — `8a42d67356829696e60dc24e3dcd9d5fafc218a8eb447cbe95a666e988591760`
+- `./src/com/winkreyes/excelwandbars/AppliedMagicStage.java` — 1873 — `9bcbd641725234ac3de209a671237949bb2af9d5560e4a049531e9d911426e74`
+- `./src/com/winkreyes/excelwandbars/ArrangeHook.java` — 45611 — `e16341033843908dd3eba547bd0711b1a48eebcfcc2d66850f3dd413c7c3d5f1`
+- `./src/com/winkreyes/excelwandbars/BedrockForms.java` — 4549 — `c857fdba723d8232eac57fd4ecd78d4f368ddb96a20bf08ebef95dd764921369`
+- `./src/com/winkreyes/excelwandbars/BuildInfo.java` — 966 — `a2d33c382384a9f8022d6f2548818a266755e98f5ab5c035048de5427efbbf42`
+- `./src/com/winkreyes/excelwandbars/CompassGuard.java` — 6544 — `09f0e74ae8d1e2a4eb5a8a618561f5269b2aa96a6d404360dcdfb62ae88456e9`
+- `./src/com/winkreyes/excelwandbars/CurrentPlayerPracticeProviders.java` — 9673 — `2231ff76cd004bb84d6eab627be4145685ba40a77b10d4d719bbdd94ce56e992`
+- `./src/com/winkreyes/excelwandbars/ExcelWandBars.java` — 51663 — `acaad141631025ff1b2c92b06fced309ff03e4a06b445b6f391d1e08c078965e`
+- `./src/com/winkreyes/excelwandbars/ExitSweep.java` — 5669 — `2a71f895d490eb46742ffc6146bf5ccb226d9f05fd4f4103535f20270fc08c12`
+- `./src/com/winkreyes/excelwandbars/FirstObservationCoordinator.java` — 17971 — `3037a415112d843299f841649c8d414ec484de8341e83bf60603c0493240a753`
+- `./src/com/winkreyes/excelwandbars/FlexibleInventoryGuard.java` — 2975 — `948c7c4565a1edc4a51f207212aa23e818b4a16430b7f8449533e24aa5c796d1`
+- `./src/com/winkreyes/excelwandbars/GeyserHoldHook.java` — 6617 — `0973336da1fc891e0855dbc83bd50218ca5751c9dbe20355961c3e7ce7330a81`
+- `./src/com/winkreyes/excelwandbars/GeyserTapHook.java` — 4149 — `3fc450110eb09a8c8d7b6bc194a6d0d6712f66e4f92e9b8b76147ea81bca985d`
+- `./src/com/winkreyes/excelwandbars/LegacyWandBaselines.java` — 2814 — `ccfb20c258eb2ae4fe2c130b34041c632f6aa6e7fe3a6c8419436f46d3db093b`
+- `./src/com/winkreyes/excelwandbars/LoadoutHook.java` — 32697 — `7bf91aa309d059c5fb92df69cc71b195e2748acc4009ab71bfee8dc3d9023ab3`
+- `./src/com/winkreyes/excelwandbars/MagicHook.java` — 85205 — `d05508580d5be2c9934596c09e99c66e8a3efd1275358589f4a99aab15f69bf0`
+- `./src/com/winkreyes/excelwandbars/ManagedMagicRuntime.java` — 10435 — `4dea159de6e6c96957041ab9835c3666e4cdb0eed39ed668dab8b0cc6708c309`
+- `./src/com/winkreyes/excelwandbars/MigrationTouchGuard.java` — 1885 — `d7d0173b8e64ab2aebeaf798787c71faabeba2f1983b703e45a0f243ce3729bd`
+- `./src/com/winkreyes/excelwandbars/NameTagHook.java` — 22255 — `ffca14195f139a9e413ff7d0bcaa158d27ffe2e61ded34b36e2002bd1a3e6259`
+- `./src/com/winkreyes/excelwandbars/NativePracticeAdmission.java` — 5653 — `4a63e70d4cf6b1884178429b087f9df450abc72e29ded7abcec19012f8cbcb74`
+- `./src/com/winkreyes/excelwandbars/OwnedPracticeLifecycle.java` — 4766 — `b8d5bd9cb68063e3ca802235aac25ceac707565728fc519e9637f72a04624fa1`
+- `./src/com/winkreyes/excelwandbars/PagerHook.java` — 28087 — `74f2b8fba719d55cdde89074c8731412c136cc1f8a938fdde9a3acccb8bedd6d`
+- `./src/com/winkreyes/excelwandbars/PracticeBootstrap.java` — 4037 — `9152f4f1827ff252ccd6dcdfc083bb1977c45ebdf3b20453417bc9377dd2c5e7`
+- `./src/com/winkreyes/excelwandbars/PracticeBootstrapConfig.java` — 3337 — `ae2acd5b07676d149d5d9e41589aca365951263a79b556d010b112cdda9e436a`
+- `./src/com/winkreyes/excelwandbars/PracticeDisplayBridge.java` — 2069 — `9b5a2ffb9e730e449d6eff57a02bd0f9ff6141e6941741ffb536fc7d5d58a4ba`
+- `./src/com/winkreyes/excelwandbars/PracticeIdentityJournal.java` — 9682 — `930563ad2429163355b58f7b115ba730751b1f880e7c6648f61489093c2806fc`
+- `./src/com/winkreyes/excelwandbars/PreparedPracticeFactory.java` — 11747 — `8e8ca4c8ee548d34add5a675b5bd49110f8cbd8003279b24f52b297b1814a5fc`
+- `./src/com/winkreyes/excelwandbars/PresentedSweep.java` — 8541 — `46ca59164892fee13974dc4d36d59bd340084db40264d2697782d40ae1327c7d`
+- `./src/com/winkreyes/excelwandbars/QuitCloseHook.java` — 1499 — `886dd3fc57ab6422ce720b5a1b90bde0c0748b0aa74029010848fa4eb3894313`
+- `./src/com/winkreyes/excelwandbars/RankUpHook.java` — 48451 — `80f72b7b918c56307373fd0abdf2ee8f633d865f8e199f0458de7449987549b7`
+- `./src/com/winkreyes/excelwandbars/RenderedExitGuard.java` — 724 — `f574c274ca573f262721ab5f87a8cbfa8caa1d92ad24309e6f1d0116fcf5b9f2`
+- `./src/com/winkreyes/excelwandbars/SharedHistoryAttachment.java` — 2284 — `b6c129ca2da709da006cff47f57f06f3d28cb848b541d1313b1a4cf2e1c705ef`
+- `./src/com/winkreyes/excelwandbars/SourceAwarePracticeBinding.java` — 1906 — `11f844010949645f1fe0edbd3159960b065327f532596fa0154ab4c71201c1dd`
+- `./src/com/winkreyes/excelwandbars/SpellScreen.java` — 9026 — `0b38f79460007129ae1d64ee41b15f9d4d8bae7fe993f0c96d2698cac75b6620`
+- `./src/com/winkreyes/excelwandbars/SpellTipHook.java` — 8792 — `a599b01b6d8228d82b253135b9b346a5f48c0512c1e3378f7801c6f7bacab3ef`
+- `./src/com/winkreyes/excelwandbars/StoredNativeRanks.java` — 2684 — `7a13a68363a8f760ee2f52156fd8d2cfbc32c641ad6dea98106535f4963c1d77`
+- `./src/com/winkreyes/excelwandbars/StyleHook.java` — 31087 — `d46c8bc737f428bf83b42c58928d46695c97ae77b6f48cb9d3ba50cf68f6c418`
+- `./src/com/winkreyes/excelwandbars/TapBarHook.java` — 75280 — `379859b97952aafcc326383f7aecc328504f889fea42dfed81d56deeea4fe0b8`
+- `./src/com/winkreyes/excelwandbars/TeamUsefulTargets.java` — 1330 — `74915868a5be79279bf0330087c70ef2ed3e9c2d66866fc12976d07cc4ed9522`
+- `./src/com/winkreyes/excelwandbars/TipHook.java` — 9257 — `2960858157314844b267be48765de0230642eb266d18eff6253979ed2ceda849`
+- `./src/com/winkreyes/excelwandbars/WandSlotHook.java` — 12596 — `87749b25df5eccc84dfde685a06e8a3d3cb89a25330c50f8990ea9f781fd0571`
+- `./src/com/winkreyes/excelwandbars/core/ApplyGuard.java` — 1242 — `90a07ba0cfca15837efe35faac6655683bffdaa395ed821a8e7bfc35a5d4c833`
+- `./src/com/winkreyes/excelwandbars/core/ArrangePlan.java` — 7718 — `f9a77ffb0980ddfb40a073d5d232d163f16c3b12ecb7a4d0df80977b09a78a2c`
+- `./src/com/winkreyes/excelwandbars/core/BarLoadout.java` — 13403 — `ac5dbb9653dde0209f28ba5454700b74f36c58303eba42c80707b2ef200e13a7`
+- `./src/com/winkreyes/excelwandbars/core/BarPosition.java` — 2369 — `3ceeed14607b90a95304896e579768974449434a12ea98bc8a7a0854487c8d53`
+- `./src/com/winkreyes/excelwandbars/core/BarText.java` — 1161 — `94e155cefd94c2b740e78027b4ec076dcd02db4c587fa81777675e957c513652`
+- `./src/com/winkreyes/excelwandbars/core/BookHoldPlan.java` — 6196 — `5d8c413a7cd863dccf2d8dec85953e9d1dd6d44442b324ada9ec743432b25d30`
+- `./src/com/winkreyes/excelwandbars/core/CompassDedupe.java` — 1061 — `16977859450af599c3b90db2ae07cc9c887844cdd6d5ae303da734e575e3a020`
+- `./src/com/winkreyes/excelwandbars/core/ControlsText.java` — 8406 — `92f48bab7d0d53ba44004f94b7907200faa49ca49b06d0f2f1dcd8fc3f7ceb2c`
+- `./src/com/winkreyes/excelwandbars/core/CooldownDisplayPlan.java` — 4655 — `5428a8c0164f41340d7d98e021f44cf3836e0323eb23b23833950eb16a6a41cc`
+- `./src/com/winkreyes/excelwandbars/core/CooldownTagPlan.java` — 5044 — `bac6bea82d54dbf8248b72551a494c8b5f1e6d69e1ff2679a7711fefb29f0727`
+- `./src/com/winkreyes/excelwandbars/core/CrouchHoldGate.java` — 2203 — `85b9b9aaac48660d34f4e40af1dfced9b7fda88772fce7d1afcc24d06e1d7328`
+- `./src/com/winkreyes/excelwandbars/core/DragWritePlan.java` — 11473 — `c66ece26567b8ef7383a98b6f934916664b3bfcaff1e3bea803c0a32ce798e9a`
+- `./src/com/winkreyes/excelwandbars/core/Durations.java` — 1043 — `bf40b06a5d1fa22509bd533ebad157bb9319f5c36e2d04694741f855978649a1`
+- `./src/com/winkreyes/excelwandbars/core/EarnMath.java` — 3299 — `73a8e4ab495d56921d93648ea710485f6e3fdc2db164e2855efc375ae778859f`
+- `./src/com/winkreyes/excelwandbars/core/EarnedBarGate.java` — 1950 — `33480d203b1fa9a1f9941355e97fa26fe21ba4666c9a201d5410467e71b5cb86`
+- `./src/com/winkreyes/excelwandbars/core/ExitSlotPolicy.java` — 644 — `ecc66725a564f9bbde18097b8ca3f97074ed4b4e31e904050e318fc2d8ef93cc`
+- `./src/com/winkreyes/excelwandbars/core/ExitSweepPlan.java` — 1861 — `0b289c1292b01ac576a2d422323302fe593aa0aff146768752a0ee9d516ed881`
+- `./src/com/winkreyes/excelwandbars/core/FlexibleBarLayout.java` — 2791 — `4c93cdc9430e7a30c9d779f2a585a394c19f1c28de112c5a05df91b44585dade`
+- `./src/com/winkreyes/excelwandbars/core/FlipGate.java` — 3243 — `4590227bb4daf40f06662a15a1b5fb250b9155d9e88d0bfc171323092a1fac41`
+- `./src/com/winkreyes/excelwandbars/core/FormContrast.java` — 2685 — `448bf99e3d2f1c1294aa7f3a9631dc1677629da3345b40602543096ac5553a9a`
+- `./src/com/winkreyes/excelwandbars/core/HoldReadPlan.java` — 2318 — `d1a05caecfe57bd6613ea796fd18758b4e84429d4ec5f5031777c11daeb83ce5`
+- `./src/com/winkreyes/excelwandbars/core/JoinGuardPlan.java` — 2541 — `e1bbbd5b3a3c8e8926609170d9efb5682d71cbe61d4e4a29e47637d132114865`
+- `./src/com/winkreyes/excelwandbars/core/JoinSweepPlan.java` — 2010 — `fd0a3f0e959246cd7f9fc90e9308376929c0d765bdb76bb5a65fee9d20f127ac`
+- `./src/com/winkreyes/excelwandbars/core/LoadoutText.java` — 9507 — `0145881791a270490bedbfcb88dad23588399bfd60c07a73563c87a3968e1607`
+- `./src/com/winkreyes/excelwandbars/core/PageLayout.java` — 3515 — `41aeb41678d99a223a308624eeb45dbb328427ea8e2182b5777d99b31d0c225f`
+- `./src/com/winkreyes/excelwandbars/core/PagerPlan.java` — 8526 — `1c30d865ff97e4cd78ce56eec067ee75fd3c6b607fd0b57eeb9438a78ba9009a`
+- `./src/com/winkreyes/excelwandbars/core/PracticeDisplay.java` — 1531 — `b98fe7f2a4902c4155c81c4486acb307dac78b66e1c68536c67c82397953eca5`
+- `./src/com/winkreyes/excelwandbars/core/ProgressGate.java` — 1903 — `2560b12831af223f0f0a6de3f94b8d5dc1e1a6fc86c994c9ea81984ad0266be0`
+- `./src/com/winkreyes/excelwandbars/core/ProgressText.java` — 5980 — `8a51629e6aec44b12b6dd00d203c1fc8c44de7df13bd5269b7aeab5c8c498165`
+- `./src/com/winkreyes/excelwandbars/core/QuitClosePlan.java` — 2529 — `908f4ec922f9128196afb56d7b559ba13b606935cae4a45f20dde3d453796a20`
+- `./src/com/winkreyes/excelwandbars/core/RankLadder.java` — 2723 — `62cac1728e33d986db5cfb522c9dd858915ab9696f534e2cd47daabde49bf9cb`
+- `./src/com/winkreyes/excelwandbars/core/RankText.java` — 2263 — `707d7a2771399329f19951b37d336a6b8c42cbc1ef63c6b0ec1ae883d804438e`
+- `./src/com/winkreyes/excelwandbars/core/SharedSpAward.java` — 686 — `596926e05f62205589cc98b2ce94e723d66369a7dd9aa88d208f93b5b54f2136`
+- `./src/com/winkreyes/excelwandbars/core/SharedSpShadow.java` — 4781 — `f27ae2d5b9f54ee9691cc03f914559836c4dd0e2e6089f0353ca383eca2e3c4a`
+- `./src/com/winkreyes/excelwandbars/core/SlotGuardPlan.java` — 7480 — `5a11adb31cbabb63ad01da8c96a193b885a265227173bd2fe875c59451b16e17`
+- `./src/com/winkreyes/excelwandbars/core/SpellEffects.java` — 30062 — `97bff8d3009526b6252e8e07f117882ebd00ce16e9e8fccbfc97ebaa463186ba`
+- `./src/com/winkreyes/excelwandbars/core/SpellFacts.java` — 2840 — `5b9d632fa2d84bf087550d516e7d33bd11dbbcd103d2895402376fe7569ddcaa`
+- `./src/com/winkreyes/excelwandbars/core/SpellInfoText.java` — 6824 — `2d96529f58bbe6c7bc65dbe07ae53b290cab4c15b624d43274c0b14cdc1c2838`
+- `./src/com/winkreyes/excelwandbars/core/SpellTip.java` — 4412 — `a3ccf5f18dbe744c61cf5fc8361363960813ad44eca7d64d0bee55bc215b087a`
+- `./src/com/winkreyes/excelwandbars/core/SpellbookGroups.java` — 6168 — `fd8aa3da1d01d3b29b8a6f13bece87c4d1b7bfc61eac9a5f34db1a409308192f`
+- `./src/com/winkreyes/excelwandbars/core/SpellbookText.java` — 15282 — `5c7f5c3b12576bcb5d59914ae6bd793fc517e3f2a4b6e61057f74fe39fbb941e`
+- `./src/com/winkreyes/excelwandbars/core/StylePrefs.java` — 2456 — `b6d84304089c97a303d1a4c701080a0284d765e36ff553351c2dc4f07f406d19`
+- `./src/com/winkreyes/excelwandbars/core/StyleProfile.java` — 9031 — `94072a49550417c16f1ecccc3cde55c77c7fe8baa285a3b99d1c599ad027ca8d`
+- `./src/com/winkreyes/excelwandbars/core/TipGate.java` — 7362 — `3a63e7d976a36308735ef8f36de34a9481d398409d669c382c5d338920f6f749`
+- `./src/com/winkreyes/excelwandbars/core/UnarmedDragPlan.java` — 2401 — `32d46012ae564e9da9a3e29b1ac74def51356cfd8d01f77ef58e1248eae48901`
+- `./src/com/winkreyes/excelwandbars/core/VerifyRetryPlan.java` — 5481 — `fc803ab63238224c08178313bae0e3be08688af819e9cdbf9b68e926c2ffe4f4`
+- `./src/com/winkreyes/excelwandbars/core/WandSlotPlan.java` — 5696 — `a48215e51f68ac042da17c9bd3cba58fb722c9b9c57a45d783fe14ec034f5f3e`
+- `./src/com/winkreyes/excelwandbars/core/WandStyle.java` — 5009 — `d303ee691a6e0c0b8061482aa8d9d4797f3eb426ce0e20254a4c3599af9acb19`
+- `./src/wrv/magic/evidence/EvidenceFingerprint.java` — 2973 — `2215b7550e8e11b11caa4b96e27f194a3bcc7fcc8d3d1d8c70575e84203f1c12`
+- `./src/wrv/magic/evidence/IssuedUsefulSinkV2.java` — 4209 — `d52c140e97d995343b356c755917208f595babb90ae22e644d626875e6d826aa`
+- `./src/wrv/magic/evidence/PracticeConsumerAckV2.java` — 5492 — `e59227f62a95629dbd94aac17c9e3fe8f431cb11a825068f35f086873be6f421`
+- `./src/wrv/magic/retention/AuthenticatedWindow.java` — 14260 — `065a38478e859e685fbcf9e93d08803214dcb55f2c1f650371a7f6b24b24b9cb`
+- `./src/wrv/magic/retention/BoundedPractice.java` — 15965 — `f76ec7e235648fd39333c9b7a602b332a02ed08e1468003680e4645a9ae36ab5`
+- `./src/wrv/sp/route/NativeCastRouteAdapter.java` — 6138 — `4db267733b4e09fcb3754550ac0ea983dab6994d66fcc2e0aa08aec59245d520`
+- `./src/wrv/sp/route/SingleSpRoute.java` — 5903 — `411bd735948b1ab868efa451b1c538c63f0159e0e055cb00e01f3e8f3557ae86`
+- `./tests/ArrangePlanTest.java` — 3983 — `5178b493a207fdf42966ec436d3ccde97457dcbb97d86fbee33899dfe0638eca`
+- `./tests/BarLoadoutNewTest.java` — 3707 — `51f5187220b1a41072c09c907542b572ebf3d2a090ce3255bb92faf8738750b8`
+- `./tests/BarPositionTest.java` — 4550 — `7cc84314df03dbc201dc5432355e4c4793812fb83f6328c49f3be3407349dc0d`
+- `./tests/BookHoldPlanTest.java` — 4777 — `50a238f4cf525622ec3ad6080e9ea9921032da05076db3ff5d4d3c8c450e20d7`
+- `./tests/CooldownDisplayPlanTest.java` — 4273 — `a21aefd6aa035b1eeeefe0e507bc1cd5d90da10ce3eac0fea035e1bbcd0fee0e`
+- `./tests/CooldownTagPlanTest.java` — 4903 — `61b0aabb0a9f8dbd77e34045c26aaa8f782da59468d62388c8f28bd9b803bc01`
+- `./tests/DragWritePlanTest.java` — 5769 — `d8e620f688f2fa1e07d93fad5cd92883fa81aa078615ff4481605ba31783db2d`
+- `./tests/DragWriteTwoTapTest.java` — 3782 — `b012c2b1941fbbfbcd758a6117782cc33cd876b4bf5452c70c99558c1e866f20`
+- `./tests/ExitSweepPlanTest.java` — 2798 — `ee8afd191313371c4514794e27bf6b1f0b3ab7aaab2d2bb15ece4b1b4c22213a`
+- `./tests/FormContrastTest.java` — 3803 — `0b2f87d007b219c41a701af0d16c01878e98f604b3eba3aff5b6efff970e0123`
+- `./tests/HoldReadPlanTest.java` — 1651 — `d7f4d31747167d92a7e42b465136381dedcbc14714be292f0eae706d0c9e970c`
+- `./tests/JoinGuardPlanTest.java` — 2344 — `0a81d97d108ebc516233a0d54a56dfb14911286ad3d7d47c99e86a330b7477d5`
+- `./tests/JoinSweepPlanTest.java` — 1531 — `fed2e18ba75e3af573307ee7c76344597503fbc33a938741b0549095423c99b4`
+- `./tests/PagerDefault0312Test.java` — 3673 — `febcb15a7cf55b00749f94291322a11523d91e834a6d481823ded72b6c510f2a`
+- `./tests/PagerPlanTest.java` — 2438 — `7000a8779daa5a12d1e455bfb987ad89a41e8538fd048148021a89048d0f8fdd`
+- `./tests/QuitClosePlanTest.java` — 1546 — `89e2cc8a435482d1b2df3563250837361a32875d73000ab1a9742a1b103417c7`
+- `./tests/SlotGuardPlanTest.java` — 5097 — `7b2740e5b0dd62c8143963e2b981fc78731d7bcae9e2016f0ddd7b00dbe11948`
+- `./tests/SpellbookNewTest.java` — 2207 — `a5f7ecdff5f470bd6c2c79f56e33d8f2864eade775b8061171ba8740ea64e406`
+- `./tests/SpellbookPager039Test.java` — 8256 — `4114b55fe722b0662ffbc16d7e58be9cfba60b22fd892ae71969e4bac7c70ba8`
+- `./tests/UnarmedDragPlanTest.java` — 2205 — `9e7f8a8688f167d508f2d39180ffd935a1dd1819a100c11b044e0cfef6cd846b`
+- `./tests/VerifyRetryPlanTest.java` — 4962 — `d2c6a9aed621dad5042a4c1bde05cb6899a14362c6dec87509a6f52d97155064`
+- `./STAGING-REPORT.md` — this report (excluded from SHA256SUMS, see Verification)
