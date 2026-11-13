@@ -1,0 +1,71 @@
+ExcelWandBars 0.3.15 — test results (Nov 12, 2026, build close-out)
+
+Base gate (pre-change proof): ExcelWandBars 0.3.14 rebuilt from the
+drive 0.3.14 sources (src tree verified identical to
+ExcelWandBars-0.3.14-src.zip) with the 0.3.14 toolchain (Temurin JDK
+25.0.5+8, work/cp.txt, repack.py from the shipped 0.3.13 jar +
+0.3.14 resources) came out BYTE-IDENTICAL to the shipped jar:
+545,907 B, SHA-256
+c87f6005f92539993d05ec8f9f52726a0b3c99a129c36f94153f7fd723774d63
+(basecheck/rebuilt-0.3.14.jar vs basecheck/shipped-0.3.14.jar, cmp
+clean). Only then were the 0.3.15 changes applied.
+
+Pure suites: 21 suites, 624 checks, 0 failed.
+  ArrangePlanTest 25 · BarLoadoutNewTest 35 · BarPositionTest 35 · BookHoldPlanTest 51
+  CooldownDisplayPlanTest 20 · CooldownTagPlanTest 61 · DragWritePlanTest 38
+  DragWriteTwoTapTest 13 · ExitSweepPlanTest 23 · FormContrastTest 70
+  HoldReadPlanTest 11 · JoinGuardPlanTest 14 · JoinSweepPlanTest 8
+  PagerDefault0312Test 27 · PagerPlanTest 29 · QuitClosePlanTest 8
+  SlotGuardPlanTest 28 · SpellbookNewTest 13 · SpellbookPager039Test 54
+  UnarmedDragPlanTest 14 · VerifyRetryPlanTest 47 (new)
+  (The 20 carried 0.3.14 suites are byte-identical test files, 577
+  checks, all green against the 0.3.15 tree. VerifyRetryPlanTest
+  covers the spec numbers (10 ticks, max 2), Mike's exact 4-key case
+  (RETRY at retries 0 and 1, FAILED at 2), partial stale reads,
+  foreign-key residuals failing at once, both layout-branch gates,
+  branch naming, and the full close-rule matrix.)
+
+Rig proof (desk): rig-probe/VerifyRaceRig drives the REAL compiled
+StyleProfile + VerifyRetryPlan classes through StyleHook's decision
+sequence against a simulated wand whose item lags the write (the
+diagnosed race), starting from the ORIGINAL profile set with TAPBAR
+as the target (fixture-verified diff = the diagnosis's 4 keys).
+21 checks, all passed:
+  A (race, then item settles during the delay): pass 1 -> RETRY (not
+    FAILED), exactly 1 retry scheduled, 0 closes on the bar-open
+    chain; the retry's re-check finds the style in effect and needs
+    no second write.
+  B (item never settles, bar-open chain): RETRY, RETRY, FAILED —
+    retries capped at 2, chain terminates, 0 closes in the whole
+    chain including the FAILED pass.
+  B2 (same, join chain): the first deliberate pass closes once
+    (Magic's sequence); both retries incl. the FAILED pass close 0.
+  C (foreign diff: 'mode' flips mid-apply): FAILED immediately, no
+    retry; the residual is exactly the foreign key.
+  D (layout branch): layout just written + still bad -> RETRY;
+    layout bad but not written by this apply -> FAILED.
+Wiring evidence (compiled artifact, javap on the shipped classes):
+  StyleHook.applyInternal calls VerifyRetryPlan.shouldCloseInventory
+  immediately before its only Wand.closeInventory (the second
+  closeInventory in the class is clearOverrides, unchanged);
+  scheduleVerifyRetry calls BukkitScheduler.runTaskLater with the
+  long constant 10 (VerifyRetryPlan.RETRY_DELAY_TICKS, inlined).
+
+Double-build: two clean compiles -> class trees identical; two
+repacks -> byte-identical jars.
+
+Artifact: ExcelWandBars-0.3.15.jar — 550,474 B, SHA-256
+61b278b46d8708dff04eb08a0e99a87ee25ac78b19310eeb10ba0b2411b700f2,
+250 entries, build id EXC-WANDBARS-0.3.15-WRV-20261112-01-9bc99f
+(verified inside the jar: BuildInfo constant, excel-build.txt,
+plugin.yml version 0.3.15 + the 0.3.15 note). config.yml and
+spellbook.yml byte-identical to 0.3.14's — JAR-ONLY change.
+
+Limits of this proof (honest): the rig proves the decision core the
+jar ships and StyleHook's delegation to it; the wand, the item lag
+and the scheduler are simulated, and no Bukkit server, Magic, or
+Bedrock client ran here. Whether Magic's rebuild actually settles
+within 10 ticks on Mike's live Bedrock session, and whether the tap
+bar now stays up, are the post-install live proof (Mike's Bedrock
+proof is the acceptance evidence for tracker row 61). No live boot
+was run (desk-only commission).
