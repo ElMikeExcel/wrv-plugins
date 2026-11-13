@@ -1,0 +1,42 @@
+# ExcelMenu 2.0 registry entry — Summons door for the Server Menu.
+# Staged Nov 12, 2026 with the ExcelSummons 0.1.7 packet (Mike's
+# compass Summons page commission, Nov 12, 2026 ~5:55 PM CST);
+# placed into plugins/ExcelMenu/entries/ in the same gated window
+# as the ExcelSummons-0.1.7.jar, then /excelmenu reload (registry
+# 93 -> 94).
+# Pattern: the Training Dummy / Details Settings entries (plain
+# entry, requires-plugin guard, [close] then [player] command).
+# WEIGHTS FROM THE RUN-229 LIVE CENSUS (Nov 12, 2026; entry files
+# in ~/workspace/magic-break-diagnosis-20261112/pull-bm229/entries/)
+# — the install packet REQUIRES a fresh G1 census pull at window
+# time; if the me group's weights moved, re-derive, do not ship
+# these numbers blind:
+#   me group live members — skills 10/90, magiclevel 15/95,
+#   spellbook 20/40, wandstyle 25/45, jobs 30/80, leaderboard
+#   40/100, lostfound 50/110, utility_pouch 60/30, trash 70/120,
+#   boss_rewards 80/130, landmarks 85/135, braingames 90/145
+#   (Java order / order-bedrock).
+#   Placement: immediately AFTER Wand controls (Mike's
+#   commission: "after Wand controls").
+#   order: 27 — free step between wandstyle (25) and jobs (30).
+#   order-bedrock: 62 — midpoint between wandstyle (45) and jobs
+#     (80); the midpoint pattern is the Training Dummy door
+#     precedent (order-bedrock 225 between 220 and 230).
+# requires-plugin follows the magiclevel/trainingdummy precedent:
+# the door only renders while ExcelSummons is loaded.
+id: summons
+menu: server_menu
+group: me
+order: 27
+order-bedrock: 62
+icon: SPAWNER
+label: '&d&lMy Summons'
+lore:
+  - '&7Your cast summons and the mana'
+  - '&7they hold — dismiss from here'
+  - '&7Adopted pets live on their own page'
+  - '&7Same as typing &e/summons menu'
+action:
+  - '[close]'
+  - '[player] summons menu'
+requires-plugin: ExcelSummons
