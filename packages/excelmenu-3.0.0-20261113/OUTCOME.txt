@@ -1,0 +1,27 @@
+OUTCOME — ExcelMenu 3.0.0 (pins + per-player rearrange)
+Entry id (MANIFEST heading): ## PENDING — ExcelMenu 3.0.0 (pins + per-player rearrange) — filed Nov 13, 2026, board supervisor run 292 continuation
+Installed by: wrv-install-failsafe run scheduled Fri 2026-11-13 07:10:47 CST (parent manual fire, file-and-fire)
+Lane: PC LANE — window-start probe passed attempt 1 (hostname DESKTOP-IL05DQR + rclone lsd shockbyte: listed "1. Michael's Server"); no fallback used.
+Window: marker created 07:13:23 CST; arrival Online 0/10; departure Online 0/10; server Online at end (outside maintenance window, was Online on arrival).
+Emptiness gate: RCON list 0/10 at 07:13 CST and 0/10 at ~07:16 CST; final pre-shutdown list 0/10; panel pre-restart check 0/10 at 07:32 CST.
+Live gates (fresh PC pulls 07:14 CST, all EXACT): live jar 287,906 B / c6da29ba25f11c91f6e6a5c14932908a0bdaf192979241bd5e80e9bd3dea834a; config.yml 2,218 B / d14d9cb14f3bf53552a57bdda25b5d13ad813ea3ce492bd31ef07e4958283eb7; layouts/server_menu.yml 6,959 B / fceb14331f02036dd0d9e6283b061a7d4acbd3094d658bd1ab9f37425a76e510; layouts/commands_menu.yml 4,956 B / 146db1d91c4d34c49d7f43c1fd55f2eb80a6979215365b29442848ea47403bcb; entries/skills.yml 438 B / ccc527640bbc3f142be9fd2a5fc6cc85b1ebae4a2181a218bc8b77d3915743f1; entries/magiclevel.yml 2,778 B / 6d367005f4d91f3dcbbcb6ee634e4e036b9c279ec9ed4a8e1b5849f81d0e81c1; menus/skills_perks.yml 1,957 B / 5df3f0a3fbe5b73ca69047c387cc1e293ce3882a2705d4cb199b6aee591e4c72; entries census 94 .yml; exactly one live ExcelMenu jar.
+In-place .baks (all re-pull EXACT to the live gates): ExcelMenu-2.0.0.jar.bak-20261113-pre300, config.yml.bak-20261113-pre300, layouts/server_menu.yml.bak-20261113-pre300, menus/skills_perks.yml.bak-20261113-pre300, entries/magiclevel.yml.bak-20261113-pre300.
+Window backup: pre-ExcelMenu-3.0.0-20261113 (created 07:18 CST, verified completed 07:28 CST, 7.5 GB). Cap-at-6: pruned oldest manual "Skills011 Menu201 pre-install 1113" before creation; total after = 6. Daily Backup newest copy and the two newest manuals preserved.
+Placed artifacts (as placed; pre-restart AND post-restart pull-backs both EXACT):
+- plugins/ExcelMenu-2.0.0.jar (3.0.0 content under the same live filename) — 329,425 B / 306607babd772894a9f8cc53eb35bd5514561154d55509ebe1dbb08ce970df51
+- plugins/ExcelMenu/config.yml — 2,564 B / 910c2f834215ded57a4f24576f06eba6f8f5fb8017227f63106fba2d5f31c3be
+- plugins/ExcelMenu/layouts/server_menu.yml — 7,182 B / 9af8ddefa386837c1a6e8073be5e1a14285e0679f8bc4158571e819e13a27f6d
+- plugins/ExcelMenu/menus/skills_perks.yml — 1,969 B / 236f1cd26bbb1294d3f342d9fa93b3c5a34565689eb4da94e3e87bf5da08bfe0
+Deletion: plugins/ExcelMenu/entries/magiclevel.yml deleted; entries census 93 after swap AND still 93 after the restart (no resurrection); magiclevel.yml.bak-20261113-pre300 kept.
+Restart: panel Shut Down ~07:32 CST (Offline verified 07:33 CST), panel Start ~07:33 CST, Online by 07:34 CST. Console stop never used. Marker re-checks before Shut Down and before Start: only this run's own marker present.
+Boot "Done" line verbatim: Done (21.582s)! For help, type "help"
+Enable line verbatim (latest.log): [ExcelMenu] ExcelMenu 3.0.0 enabled (Phase 2: unified - registry, definitions and the /menu family in one plugin; ExcelBedrockMenu is retired). 93 entries, 2 registry menus, 13 definition menus live.
+Bridge: platform bridge self-check — Geyser reflection surface PRESENT.
+SEVERE: 0 (latest.log scan + panel Errors 0).
+TPS after settle: 20.0, 20.0, 20.0 (RCON tps).
+Guild: ExcelGuildGate enabled: 4 of 5 seals broken, guild LOCKED — unchanged.
+Console smokes: /rearrange -> "/rearrange is a player command."; /magiclevel -> ExcelMagicLevel usage line (typed command still answers).
+Arrival online count: 0/10. Departure online count: 0/10.
+Note: the swap exec call was interrupted by a service restart mid-call; live state was verified before any retry and the swap had in fact landed in full — verification, not re-install, was the recovery (no step was repeated).
+Proof still owed: Mike's five DESIGN §7 player proofs (Bedrock pins, Rearrange + relog + reset, Skills panel Bedrock + Java, Magic Level door gone / typed command answers).
+Same-pass surfaces still owed (supervisor legs, NOT part of this install): Guide §5.4 re-point + rearrange chunk, website pair, What's New BOTH surfaces, tips checked, records (G2 + claim line, Drive, draft PR; website PR merged + G3).

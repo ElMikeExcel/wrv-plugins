@@ -1,0 +1,14 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: skills
+menu: server_menu
+group: me
+order: 10
+order-bedrock: 90
+icon: ENCHANTED_BOOK
+label: '&a&lSkills & Perks'
+lore:
+  - '&7Your mcMMO stats and every'
+  - '&7perk ladder, in game and on the website'
+action:
+  - '[openguimenu] skills_perks'

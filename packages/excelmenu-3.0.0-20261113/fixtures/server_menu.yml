@@ -1,0 +1,481 @@
+# ExcelMenu definition: server_menu
+# Amended 2026-10-31 (ExcelHalloweenToggles packet): 'halloween_scares' entry (Help row, slot 34, beside the Halloween entry) opening the halloween_scares submenu.
+# Amended 2026-10-31 (Halloween menu entry, same-pass surfaces): 'halloween' entry (Help row, slot 33).
+# Migrated 2026-10-20 from DeluxeMenus gui_menus/server_menu.yml
+# (source SHA-256 31a12723a17a79b0dec9c5da132ad387d4845bc431cd7c1f1bae628bc819996f; provenance in ~/workspace/excelmenu/dm-source/PROVENANCE.md)
+# Amended 2026-10-23 (menu coverage packet): 'ask' entry (Valley Guide pointer).
+# Amended 2026-10-25 (What's New packet): 'whatsnew' entry.
+# Rebuilt 2026-10-25 (compass cleanup, Mike: "just start going through this list and get them done",
+# Oct 25 3:53 PM CDT). Base = live 4d98d94c387da75f. Packet: /workspace/batch-next/compass-cleanup-20261025/
+#  * 5 rows, one row per job: Travel, Me, Shops, Help, Settings. Column 0 is a label pane.
+#  * Every live button kept with the SAME item id (ExcelMenuStats counts by item id).
+#  * Re-merged from the Oct 24 spellbook packet: spellbook (/spellinfo) and autosort (/autosort).
+#  * New Java buttons for live commands Bedrock already has: tpmenu, jobs browse, leaderboard.
+#  * New buttons for live features with no menu entry yet: lostfound, cosmetics, and the
+#    staged ExcelMakersMark 0.1.0 toggles (makersmark_on/off, gearstats_on/off, from makersmark/MENU-ENTRY.yml).
+#  * Removed as its own button: mcMMO Stats (still 2 taps away in Skills & Perks, and /mcstats).
+#  * No Mail button (Mike, Oct 25 3:53 PM CDT: not needed).
+# Amended 2026-10-26 (parity fixes, Mike's rule Oct 26 12:10 AM CDT: "always do onto one as you would
+# do the other"). Base = live e18910e4f226e46f. Packet: /workspace/batch-next/parity-fixes-20261026/
+#  * New Settings button 'wandstyle' (slot 41, was empty): runs /wandstyle, the same command as the
+#    Bedrock compass button "Wand controls: Classic or Sneak bars". No other item changed.
+# Amended 2026-10-26 (ExcelWandBars 0.2.5): the wandstyle lore lists all 5 styles (Sneak bars is on
+#    Java too now, "Tap to cycle" is now "Tap to pick"). Lore only, nothing else changed.
+format: 1
+title: '&6&lServer Menu'
+size: 45
+items:
+  # ---------------- Row 1: TRAVEL ----------------
+  hdr_travel:
+    material: LIGHT_BLUE_STAINED_GLASS_PANE
+    slot: 0
+    name: '&b&lTravel'
+    lore:
+    - '&7Get around the valley'
+  spawn:
+    material: COMPASS
+    slot: 1
+    name: '&a&lSpawn'
+    lore:
+    - '&7Teleport to spawn'
+    - '&7(asks Yes or Cancel first)'
+    clicks:
+      left:
+      - '[openguimenu] teleport_confirm_spawn'
+  guild_locked:
+    material: BELL
+    slot: 2
+    priority: 1
+    name: '&8&lAdventurers Guild'
+    lore:
+    - '&7Sealed by the five challenges'
+    - '&7Tap to see the Road to the Guild'
+    view-requirement:
+      requirements:
+      - id: guild_locked
+        type: string-equals
+        input: '%guildgate_unlocked%'
+        output: 'false'
+    clicks:
+      left:
+      - '[player] seals'
+  guild_open:
+    material: BELL
+    slot: 2
+    priority: 2
+    name: '&a&lAdventurers Guild'
+    lore:
+    - '&7Teleport to the EliteMobs'
+    - '&7guild hall'
+    view-requirement:
+      requirements:
+      - id: guild_unlocked
+        type: string-equals
+        input: '%guildgate_unlocked%'
+        output: 'true'
+    clicks:
+      left:
+      - '[openguimenu] teleport_confirm_guild'
+  tpmenu:
+    material: ENDER_PEARL
+    slot: 3
+    name: '&a&lTeleport to a player'
+    lore:
+    - '&7Pick a player and send'
+    - '&7them a teleport request'
+    clicks:
+      any:
+      - '[close]'
+      - '[player] tpmenu'
+  party:
+    material: PLAYER_HEAD
+    slot: 4
+    name: '&a&lParty'
+    lore:
+    - '&7Invite family to a party'
+    - '&7and see who is in yours'
+    clicks:
+      left:
+      - '[player] excelparty'
+  # ---------------- Row 2: ME ----------------
+  hdr_me:
+    material: LIME_STAINED_GLASS_PANE
+    slot: 9
+    name: '&a&lMe'
+    lore:
+    - '&7Your skills, magic, money and stuff'
+  skills:
+    material: ENCHANTED_BOOK
+    slot: 10
+    name: '&a&lSkills & Perks'
+    lore:
+    - '&7Your mcMMO stats and every'
+    - '&7perk ladder, in game and on the website'
+    clicks:
+      left:
+      - '[openguimenu] skills_perks'
+  spellbook:
+    material: WRITABLE_BOOK
+    slot: 11
+    name: '&d&lSpellbook'
+    lore:
+    - '&7Your Magic wand''s spells:'
+    - '&7cost, cooldown, range and rank'
+    - '&7Works while you hold this compass'
+    clicks:
+      any:
+      - '[close]'
+      - '[player] spellinfo'
+  jobs:
+    material: IRON_PICKAXE
+    slot: 12
+    name: '&a&lJobs & Money'
+    lore:
+    - '&7Browse the jobs that pay you'
+    - '&7and join one'
+    clicks:
+      any:
+      - '[close]'
+      - '[player] jobs browse'
+  leaderboard:
+    material: BEACON
+    slot: 13
+    name: '&a&lLeaderboard'
+    lore:
+    - '&7Who is on top in the valley'
+    clicks:
+      any:
+      - '[close]'
+      - '[player] leaderboard'
+  lostfound:
+    material: BUNDLE
+    slot: 14
+    name: '&a&lLost & Found'
+    lore:
+    - '&7Bring back something you lost'
+    - '&7to lava, fire, the void or despawning'
+    - '&7Shows the price before you pay'
+    clicks:
+      any:
+      - '[close]'
+      - '[player] lostfound'
+  utility_pouch:
+    material: CHEST
+    slot: 15
+    name: '&6Utility Pouch'
+    lore:
+    - '&7Park your Server Menu compass'
+    - '&7and your Magic wand here.'
+    clicks:
+      any:
+      - '[player] pouch'
+      - '[close]'
+  trash:
+    material: CAULDRON
+    slot: 16
+    name: '&a&lTrash Bin'
+    lore:
+    - '&7Throw items away.'
+    - '&7Changed your mind? Recover within 5 min.'
+    clicks:
+      left:
+      - '[close]'
+      - '[player] trash'
+  # ---------------- Row 3: SHOPS ----------------
+  hdr_shops:
+    material: YELLOW_STAINED_GLASS_PANE
+    slot: 18
+    name: '&e&lShops'
+    lore:
+    - '&7Spend your Jobs money'
+  shop:
+    material: EMERALD
+    slot: 19
+    name: '&a&lExcel Shop'
+    lore:
+    - '&7Spend your Jobs money'
+    - '&7on useful items'
+    clicks:
+      left:
+      - '[player] shop'
+      right:
+      - '[player] shop'
+  cosmetics:
+    material: AMETHYST_SHARD
+    slot: 20
+    name: '&d&lMy Cosmetics'
+    lore:
+    - '&7See and wear the cosmetics you own'
+    clicks:
+      any:
+      - '[close]'
+      - '[player] cosmetics'
+  # ---------------- Row 4: HELP ----------------
+  hdr_help:
+    material: ORANGE_STAINED_GLASS_PANE
+    slot: 27
+    name: '&6&lHelp'
+    lore:
+    - '&7News, answers and commands'
+  whatsnew:
+    material: NETHER_STAR
+    slot: 28
+    name: '&e&lWhat''s New'
+    lore:
+    - '&7The newest changes'
+    - '&7and new commands'
+    clicks:
+      left:
+      - '[close]'
+      - '[player] whatsnew'
+  ask:
+    material: OAK_SIGN
+    slot: 29
+    name: '&a&lAsk the Guide'
+    lore:
+    - '&7Type /ask and your question in chat'
+    - '&7The Guide answers from the server''s own pages'
+    clicks:
+      left:
+      - '[message] &7Type &e/ask &7and your question in chat, or start a message with &eGuide,'
+  commands:
+    material: KNOWLEDGE_BOOK
+    slot: 30
+    name: '&a&lServer Commands'
+    lore:
+    - '&7Every command you can use'
+    clicks:
+      left:
+      - '[openguimenu] commands_menu'
+  info:
+    material: BOOK
+    slot: 31
+    name: '&a&lServer Info'
+    lore:
+    - '&7What runs on this server'
+    clicks:
+      left:
+      - '[player] motd'
+  website:
+    material: ENDER_EYE
+    slot: 32
+    name: '&a&lServer Website'
+    lore:
+    - '&7Guides, commands and news'
+    - '&7Tap for the address'
+    clicks:
+      left:
+      - '[json] {"text":"» Server Website: elmikeexcel.github.io/winkreyesvalley","color":"aqua","underlined":true,"clickEvent":{"action":"open_url","value":"https://elmikeexcel.github.io/winkreyesvalley/"},"hoverEvent":{"action":"show_text","value":"Open the server website"}}'
+      - '[message] &bhttps://elmikeexcel.github.io/winkreyesvalley/'
+      - '[message] &7Short, easy to type: &btinyurl.com/winkreyesvalley'
+  halloween:
+    material: JACK_O_LANTERN
+    slot: 33
+    name: '&6&lHalloween'
+    lore:
+    - '&7The Halloween event is live through Nov 5'
+    - '&7Witching Hour: 7 PM - 2 AM Central'
+    - '&7Tap for your scare stats'
+    clicks:
+      any:
+      - '[close]'
+      - '[player] halloween stats'
+  halloween_scares:
+    material: CARVED_PUMPKIN
+    slot: 34
+    name: '&6&lHalloween Scares — your switches'
+    lore:
+    - '&7Pick which Halloween scares can find you:'
+    - '&7pumpkin hat, Slenderman, Herobrine and more'
+    - '&7The event runs through Nov 5'
+    clicks:
+      any:
+      - '[openguimenu] halloween_scares'
+  # ---------------- Row 5: SETTINGS ----------------
+  hdr_settings:
+    material: GRAY_STAINED_GLASS_PANE
+    slot: 36
+    name: '&7&lSettings'
+    lore:
+    - '&7Your on/off switches'
+  autosort:
+    material: HOPPER
+    slot: 37
+    name: '&e&lAuto-sort my chests: on/off'
+    lore:
+    - '&7Tidies your chests, barrels, shulker'
+    - '&7boxes and ender chest when you open them'
+    - '&7Click to switch it on or off'
+    - '&7Chat tells you which it is now'
+    clicks:
+      any:
+      - '[close]'
+      - '[player] autosort'
+  makersmark_settings:
+    material: NAME_TAG
+    slot: 38
+    name: '&7&lMaker''s Mark settings'
+    lore:
+    - '&7Crafted / found signatures and gear counters'
+    - '&7Choose your on/off settings'
+    clicks:
+      any:
+      - '[openguimenu] makersmark_settings'
+  autojoin_on:
+    material: LIME_DYE
+    slot: 40
+    priority: 1
+    name: '&a&lAuto-open on join: ✔ ON'
+    lore:
+    - '&7This menu opens when you join'
+    - '&7Click to turn it off'
+    view-requirement:
+      requirements:
+      - id: menujoin_on
+        type: string-equals
+        input: '%menujoin_status%'
+        output: 'ON'
+    clicks:
+      left:
+      - '[player] menujoin'
+      - '[refresh]'
+  autojoin_off:
+    material: GRAY_DYE
+    slot: 40
+    priority: 2
+    name: '&7&lAuto-open on join: &c&l✘ OFF'
+    lore:
+    - '&7This menu stays closed when you join'
+    - '&7Click to turn it on'
+    view-requirement:
+      requirements:
+      - id: menujoin_off
+        type: string-equals
+        input: '%menujoin_status%'
+        output: 'OFF'
+    clicks:
+      left:
+      - '[player] menujoin'
+      - '[refresh]'
+  wandstyle:
+    material: BLAZE_ROD
+    slot: 41
+    name: '&e&lWand controls'
+    lore:
+    - '&7Pick how your Magic wand works:'
+    - '&7Classic, Sneak bars, Cycle,'
+    - '&7Tap to pick or Tap bar'
+    - '&7Click to choose, switch any time'
+    - '&7Same as typing &e/wandstyle'
+    clicks:
+      any:
+      - '[close]'
+      - '[player] wandstyle'
+
+
+  # OFFLINE proposal: Me row, following the existing personal inventory tools.
+  boss_rewards:
+    material: CHEST
+    slot: 17
+    name: '&6&lMy Boss Rewards'
+    lore:
+    - '&7Collect your earned personal boss rewards'
+    - '&7Claims wait if your inventory is full'
+    - '&7Close your wand hotbar before collecting'
+    clicks:
+      any:
+      - '[close]'
+      - '[player] bossrewards'
+  # Offline ExcelSilkWatch addition; existing Maker slots 38/39 are untouched.
+  silkwarnings_on:
+    material: LIME_DYE
+    slot: 42
+    priority: 1
+    name: '&a&lSilk Touch Warnings: ON'
+    lore:
+    - '&7Warn when storing Silk Touch items'
+    - '&7or shulkers containing them in your ender chest'
+    - '&7Click to turn notifications OFF'
+    view-requirement:
+      requirements:
+      - id: silkwarnings_on
+        type: string-equals
+        input: '%silkwarnings_status%'
+        output: 'ON'
+    clicks:
+      left:
+      - '[player] excelsilkwatch:silkwarnings off'
+      - '[refresh]'
+  silkwarnings_off:
+    material: GRAY_DYE
+    slot: 42
+    priority: 2
+    name: '&7&lSilk Touch Warnings: OFF'
+    lore:
+    - '&7Notifications only; your items move normally'
+    - '&7Click to turn notifications ON'
+    view-requirement:
+      requirements:
+      - id: silkwarnings_off
+        type: string-equals
+        input: '%silkwarnings_status%'
+        output: 'OFF'
+    clicks:
+      left:
+      - '[player] excelsilkwatch:silkwarnings on'
+      - '[refresh]'
+  silkwarnings_unavailable:
+    material: GRAY_DYE
+    slot: 42
+    priority: 3
+    name: '&7&lSilk Touch Warnings: unavailable'
+    lore:
+    - '&7Warning plugin or status bridge is unavailable'
+    - '&7Try again later or ask server staff'
+  # ExcelAimAssist addition (0.1.4); mirrors the Silk Touch Warnings trio
+  # above — the button reads %aimassist_status% and flips the CURRENT state.
+  aimassist_on:
+    material: LIME_DYE
+    slot: 43
+    priority: 1
+    name: '&a&lAim Assist: ON'
+    lore:
+    - '&7Shots bend toward a hostile mob'
+    - '&7you are already aiming at'
+    - '&7Click to turn aim assist OFF'
+    view-requirement:
+      requirements:
+      - id: aimassist_on
+        type: string-equals
+        input: '%aimassist_status%'
+        output: 'ON'
+    clicks:
+      left:
+      - '[player] excelaimassist:aimassist off'
+      - '[refresh]'
+  aimassist_off:
+    material: GRAY_DYE
+    slot: 43
+    priority: 2
+    name: '&7&lAim Assist: OFF'
+    lore:
+    - '&7Bows, crossbows and thrown tridents'
+    - '&7Click to turn aim assist ON'
+    view-requirement:
+      requirements:
+      - id: aimassist_off
+        type: string-equals
+        input: '%aimassist_status%'
+        output: 'OFF'
+    clicks:
+      left:
+      - '[player] excelaimassist:aimassist on'
+      - '[refresh]'
+  aimassist_unavailable:
+    material: GRAY_DYE
+    slot: 43
+    priority: 3
+    name: '&7&lAim Assist: unavailable'
+    lore:
+    - '&7Aim assist plugin or status bridge is unavailable'
+    - '&7Try again later or ask server staff'

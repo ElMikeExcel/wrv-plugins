@@ -1,0 +1,43 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: autojoin
+menu: server_menu
+group: settings
+order: 30
+order-bedrock: 220
+icon: LIME_DYE
+label: '&a&lAuto-open on join: ✔ ON'
+lore:
+  - '&7This menu opens when you join'
+  - '&7Click to turn it off'
+action:
+  - '[player] menujoin'
+  - '[refresh]'
+status-placeholder: '%menujoin_status%'
+states:
+  'ON':
+    icon: LIME_DYE
+    label: '&a&lAuto-open on join: ✔ ON'
+    lore:
+      - '&7This menu opens when you join'
+      - '&7Click to turn it off'
+    action:
+      - '[player] menujoin'
+      - '[refresh]'
+  'OFF':
+    icon: GRAY_DYE
+    label: '&7&lAuto-open on join: &c&l✘ OFF'
+    lore:
+      - '&7This menu stays closed when you join'
+      - '&7Click to turn it on'
+    action:
+      - '[player] menujoin'
+      - '[refresh]'
+  'default':
+    icon: GRAY_DYE
+    label: '&7&lAuto-open on join'
+    lore:
+      - '&7This menu opens when you join'
+    action:
+      - '[player] menujoin'
+      - '[refresh]'

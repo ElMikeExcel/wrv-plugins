@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: fh_aimassist
+menu: commands_menu
+group: fixes_help
+order: 30
+order-bedrock: 500
+icon: BOW
+label: '&a&l/aimassist'
+lore:
+  - '&7Aim assist for bows, crossbows and thrown tridents'
+  - '&8Fixes & Help'
+action:
+  - '[message] &7Type it in chat: &e/aimassist on &7or &e/aimassist off'
