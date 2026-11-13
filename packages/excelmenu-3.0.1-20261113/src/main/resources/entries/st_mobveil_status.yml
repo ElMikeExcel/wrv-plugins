@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: st_mobveil_status
+menu: commands_menu
+group: shops_trading
+order: 60
+order-bedrock: 220
+icon: GLASS_BOTTLE
+label: '&a&l/mobveil status'
+lore:
+  - '&7Your veil status — buy at the spawn shop or /mobveil buy'
+  - '&8Shops & Trading'
+action:
+  - '[player] mobveil status'

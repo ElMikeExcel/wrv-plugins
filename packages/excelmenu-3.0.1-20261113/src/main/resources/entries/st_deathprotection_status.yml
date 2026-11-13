@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: st_deathprotection_status
+menu: commands_menu
+group: shops_trading
+order: 50
+order-bedrock: 210
+icon: TOTEM_OF_UNDYING
+label: '&a&l/deathprotection status'
+lore:
+  - '&7Your protection status — buy at the spawn shop or /deathprotection buy'
+  - '&8Shops & Trading'
+action:
+  - '[player] deathprotection status'

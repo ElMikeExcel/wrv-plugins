@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: mj_pay_player_amount
+menu: commands_menu
+group: money_jobs
+order: 20
+order-bedrock: 70
+icon: SUNFLOWER
+label: '&a&l/pay <player> <amount>'
+lore:
+  - '&7Send money to another player'
+  - '&8Money & Jobs'
+action:
+  - '[message] &7Type it in chat: &e/pay <player> <amount>'
