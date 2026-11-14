@@ -1,0 +1,11 @@
+--- src/wrv/magic/retention/AuthenticatedWindow.java	2026-11-12 19:23:54.542611963 +0000
++++ /home/hatch/workspace/wandbars-fsync-fix-20261114/tree-0.3.18/src/wrv/magic/retention/AuthenticatedWindow.java	2026-11-14 08:05:09.330402508 +0000
+@@ -62,7 +62,7 @@
+  public synchronized long watermark()throws IOException{ready();return state.watermark;}
+  private void commit(State next)throws IOException{
+   ready();byte[] bytes=encode(next);Path tmp=Files.createTempFile(path.getParent(),"issuer-",".tmp");try{
+-   fault.at("before-write");try(FileChannel ch=FileChannel.open(tmp,WRITE,TRUNCATE_EXISTING)){java.nio.ByteBuffer b=java.nio.ByteBuffer.wrap(bytes);while(b.hasRemaining())ch.write(b);ch.force(true);}fault.at("before-move");ready();Files.move(tmp,path,StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);fault.at("after-move");try(FileChannel dir=FileChannel.open(path.getParent(),READ)){dir.force(true);}if(!Arrays.equals(bytes,Files.readAllBytes(path)))throw new IOException("readback mismatch");expected=bytes;state=next;
++   fault.at("before-write");try(FileChannel ch=FileChannel.open(tmp,WRITE,TRUNCATE_EXISTING)){java.nio.ByteBuffer b=java.nio.ByteBuffer.wrap(bytes);while(b.hasRemaining())ch.write(b);ch.force(true);}fault.at("before-move");ready();Files.move(tmp,path,StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);fault.at("after-move");try(FileChannel dir=FileChannel.open(path.getParent(),READ)){dir.force(true);}catch(AccessDeniedException|UnsupportedOperationException ignored){/* Directory fsync is best-effort (0.3.18): Windows refuses directory channels, so a refusal must not fail the commit; the file itself was already forced before the move. Other failures propagate. */}if(!Arrays.equals(bytes,Files.readAllBytes(path)))throw new IOException("readback mismatch");expected=bytes;state=next;
+   }catch(IOException|RuntimeException e){uncertain=true;throw new IOException("durable issuance uncertain; close/reconcile",e);}finally{Files.deleteIfExists(tmp);}
+  }
+  private byte[] encode(State s)throws IOException{
