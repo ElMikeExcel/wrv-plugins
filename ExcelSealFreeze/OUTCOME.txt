@@ -1,0 +1,12 @@
+Entry: ## PENDING - EM wipe + ExcelSealFreeze 0.1.0 (P-SEALFREEZE-1)
+Installed by: wrv-install-failsafe, run scheduled 2026-11-14 04:03 CST (PC LANE, probe PASS attempt 1, no fallback)
+Placed artifacts:
+- plugins/EliteMobs/data/player_data.db (wiped) 28672 B / SHA-256 541cebeb2d72db1e316fb9dbb0fd6c8b6b5ef6b1ffca03ecf3c45e1785edbe3e (pull-back verified on the live path; post-start pull identical)
+- plugins/ExcelSealFreeze-0.1.0.jar 20456 B / SHA-256 d3610948d7a3d1bcdd150d1a61c9e27743d7dfdb7cb86cad23a434383c7ee925 (placed pull-back EXACT to candidate)
+- plugins/EliteMobs/EconomySettings.yml (D50 rider) 9546 B / SHA-256 ea7ca609ec447998b050c4954e87ff497fd288773b4169935db4e67823b147f5 (enableCurrencyShower: false, useVault: true; .bak-20261114-sealfreeze on server = original dbec1c1e...)
+Boot Done line: Done (22.524s)! For help, type "help"
+Window backup: "SealFreeze pre-install 1114" (11/14/2026 4:08 AM, 7.5 GB, Manual, completed); cap-at-6 prunee: "TravelGreen pre-install 1113"
+Arrival online: server OFFLINE at arrival (maintenance window; panel 0/10; stopped 03:54:14 CST)
+Departure online: 0/10 at final RCON list before return-to-offline shutdown
+Verification: V1 11 rows; V2 0 nonzero; V3 Deaths/Gambling sums (18, 0.0, 0) preserved; V4/V5 dump hashes identical pre/post; V6 integrity ok; V7 boot clean (SEVERE 0, GuildGate LOCKED 4 of 5, EM database opened); V8 /sealfreeze status armed: true, baseline players 11, seal unlocked: false; baseline.txt all-zero x11; first clamp cycle rowsRead=11 rowsClamped=0 last error none; V8R post-start EconomySettings grep enableCurrencyShower: false
+DB backups on server: player_data.db.prewipe-20261114-0413 and player_data.db.preswap-20261114-0413 (both b9d251a0e61e5ecc7d1bea552f1fa86ffbae1b4941826c56df9f5c8074b4da4f); off-server copy in ~/workspace/sealfreeze-window-20261114-0403/stopped-pull/

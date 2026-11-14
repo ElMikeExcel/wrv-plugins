@@ -1,0 +1,26 @@
+PASS policy: all-zero baseline clamps every gained field
+PASS policy: update SQL shape
+PASS policy: value below baseline (negative score from deaths) is untouched
+PASS policy: current == baseline is untouched
+PASS policy: null baseline means zero baseline (freeze-era joiner)
+PASS policy: empty diff produces no SQL
+PASS policy: per-column independence (only Kills clamps)
+PASS policy: currency cents clamp independently of the double
+PASS sealflag: locked state reads locked
+PASS sealflag: broken count reads 4 of 5
+PASS sealflag: unlocked state reads unlocked
+PASS sealflag: broken count reads 5 of 5
+PASS sealflag: nested lookalike 'unlocked' does not lift the freeze
+PASS sealflag: unlockTimestamp alone does not lift the freeze
+PASS sealflag: null/empty text reads locked (fail-safe)
+PASS baseline: round-trip preserves rows
+PASS baseline: malformed lines are skipped, good rows survive
+PASS engine: reads all 11 real rows
+PASS engine: real values match the G4 record (Jester 22 / Marvin 23)
+PASS engine: clamp cycle clamps exactly the gaining row
+PASS engine: clamp cycle clamps exactly the 6 gained columns
+PASS engine: gains fully returned to baseline
+PASS engine: score losses (deaths) are NOT clamped back up
+PASS engine: Deaths column untouched on every row
+PASS engine: single-row clamp restores the one row
+ALL CHECKS PASSED
