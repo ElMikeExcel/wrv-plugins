@@ -1,0 +1,6 @@
+# ExcelEliteMobsAbilityBedrockBridge configuration.
+#
+# debug-log-fires: when true, every ability fire attempted through the
+# bridge (player, slot, outcome) is written to the server console. Useful
+# while proving the bridge in live guild content; leave off in normal use.
+debug-log-fires: false

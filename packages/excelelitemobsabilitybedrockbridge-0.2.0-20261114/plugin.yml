@@ -1,0 +1,16 @@
+name: ExcelEliteMobsAbilityBedrockBridge
+version: 0.2.0
+author: Argus
+main: com.winkreyes.exceleitemobsabilitybedrockbridge.ExcelEliteMobsAbilityBedrockBridge
+api-version: "1.13"
+description: Bedrock bridge for EliteMobs class abilities. EliteMobs only lets Java players fire class abilities (F-key gesture layer); this plugin gives Bedrock players a simple form whose buttons call EliteMobs' own ability entry point, so EliteMobs still enforces class, cost, targeting and threat. Adds no costs, cooldowns or targeting of its own.
+softdepend: [EliteMobs, Geyser-Spigot, floodgate]
+commands:
+  abilities:
+    description: Open your EliteMobs class abilities (Bedrock bridge form). Operators - /abilities status shows the EliteMobs and Geyser link state from console.
+    usage: /abilities or /abilities status
+    aliases: [classabilities]
+permissions:
+  exceleitemobsabilitybedrockbridge.admin:
+    description: View ExcelEliteMobsAbilityBedrockBridge global status from console or in game (/abilities status).
+    default: op

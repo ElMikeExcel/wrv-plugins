@@ -1,0 +1,35 @@
+OUTCOME - ExcelEliteMobsAbilityBedrockBridge 0.2.0 (swap-with-rename of ExcelAbilityBridge 0.1.1)
+Entry: ## PENDING - ExcelEliteMobsAbilityBedrockBridge 0.2.0 (Nov 14, 2026) - SWAP-WITH-RENAME, GATED
+Installed by: wrv-install-failsafe, run scheduled 2026-11-14 14:33 CST
+Window: 14:36-15:12 CST, Nov 14, 2026 (daytime gated window; server verified empty)
+Lane: PC LANE - window-start probe PASS attempt 1 (hostname DESKTOP-IL05DQR 14:34 CST; rclone lsd shockbyte: listed "1. Michael's Server"); no fallback used. Panel used only for the window backup and Shut Down/Start. Own WINDOW-IN-PROGRESS marker created 14:36:21 CST, re-checked before Shut Down (own marker only) and again before Start (own marker only).
+
+Placed artifacts (pull-back verified, verify_hash PASS in SCRIPT-OUTPUT.txt):
+- plugins/ExcelEliteMobsAbilityBedrockBridge-0.2.0.jar = 32,339 B / SHA-256 c28f95a1a893075bc046f622c59ca598c3f45422d1691fb9b073aef9ede74f8f
+- plugins/ExcelEliteMobsAbilityBedrockBridge/config.yml = 297 B / SHA-256 a99d7fbe87fdc0f20979d38b6213ef784d357f74c45a84d912637ffa3d3a78e1 (live config copied, header line only changed per packet step 4; byte-identical to the candidate's bundled config; debug-log-fires value false carried over)
+Held aside / untouched:
+- plugins/ExcelAbilityBridge-0.1.1.jar renamed to plugins/ExcelAbilityBridge-0.1.1.jar.held-20261114 (never deleted, not loadable, not co-resident)
+- plugins/ExcelAbilityBridge/ old data folder left in place untouched (config.yml pull-back post-swap still 281 B / 3b9a11930dd1a5511b717dbcf59621c371cc6e4eae771c0f37d7312e55ab5a08)
+
+Window backup: "Bridge rename pre-install 1433" - created 11/14/2026 2:41 PM CST, 7.7 GB, Manual, verified completed. CAP-AT-6: initial total 6, pruned ONE oldest manual backup before creation: "ProtectRefresh pre-install 1114" (11/14/2026 10:42 AM, 7.7 GB, Manual); final total 6 (3 manual + 3 Daily/Interval); Daily Backup newest copy (11/13) and the two newest manual restore points preserved. backup_cap_check PASS on the retained listing (landing-1433/backups-final-listing.txt).
+
+Gates (all PASS, fresh PC-lane pulls, verbatim blocks in SCRIPT-OUTPUT.txt - 28 blocks, all PASS):
+- Live-jar gate EXACT: plugins/ExcelAbilityBridge-0.1.1.jar = 30,606 B / 62076c1541673fd0d1ffb22be46be401d2475c297ce9f71423c645e7dc323e55; live config = 281 B / 3b9a11930dd1a5511b717dbcf59621c371cc6e4eae771c0f37d7312e55ab5a08; guild state = 1,015 B / 79e4470255edc5522db555e6ee935c301a5b74776fed45f3aa1f45220879b4c0 (live_pull_check x3).
+- Census pre-swap: exactly one AbilityBridge jar live (the 0.1.1), zero ExcelEliteMobsAbilityBedrockBridge jars/folders (verify_counts x2).
+- Emptiness: RCON list 0/10 at 14:35:01 and 14:36:08 CST (Essentials format, raw captures list-1/list-2), vanilla minecraft:list 0/10 at 14:37:15 and 14:38:49 CST (emptiness_check PASS x2), pre-Shut Down list 0/10 at 14:50 CST (PASS). Arrival 0/10, departure 0/10.
+- Candidate local hash EXACT before staging (verify_hash PASS).
+
+Swap (server OFFLINE, panel Shut Down 14:51 CST, stopped 14:51:21 CST): rclone moveto old jar to .held-20261114; copyto candidate jar; copyto migrated config into the new data folder. Pre-boot script verify: new jar present once, old jar only as .held, both data folders present with exactly config.yml each, placed pull-backs EXACT.
+
+Boot (panel Start 14:54 CST; Online by 14:56 CST):
+- Done line verbatim: [20:55:16] [Server thread/INFO]: Done (24.373s)! For help, type "help" (14:55:16 CST; retained in landing-1433/latest.log, 116,779 B / e7cefa4a2aa4696fa5ba5b8563e6f5eb97f1638ba6970b54b36c4f51e54c9119)
+- boot_log_scan PASS: Done present, SEVERE 0 (whole log), guild_locked 4 of 5 - boot line: "[ExcelGuildGate] ExcelGuildGate enabled: 4 of 5 seals broken, guild LOCKED"
+- Enabling ExcelEliteMobsAbilityBedrockBridge v0.2.0 = 1; Enabling ExcelAbilityBridge v0.1.1 = 0; ACS line present once: "EliteMobs class system (ACS) is up - Bedrock ability bridge online: /abilities"; plugin list: ExcelEliteMobsAbilityBedrockBridge (0.2.0) once, ExcelAbilityBridge (0.1.1) zero.
+- RCON abilities status first line verbatim: "ExcelEliteMobsAbilityBedrockBridge status: enabled (v0.2.0)"; Config line shows debug-log-fires OFF; Permissions line names exceleitemobsabilitybedrockbridge.admin - NOTE: that is the node exactly as declared in the placed jar's plugin.yml (and the mirror rig's in-jar verification); a few packet prose lines spell the node with an extra "l" (excelelitemobs...) - prose discrepancy in the packet, live state is internally consistent with the jar. Records leg should use the in-jar spelling.
+- RCON bare abilities: "The ability bridge is for players in game." verbatim.
+End state: server ONLINE (outside maintenance window), 0/10 at departure.
+
+Marker: ~/workspace/abilitybridge-rename-build-20261114/INSTALLED.txt (verify_marker PASS, plugin/version asserted).
+Evidence inputs retained in landing-1433/: pull-g1/ (gate pulls), pull-post/ (placed pull-backs + post census), latest.log, list captures (raw + clean + vanilla + pre-shutdown + departure), backups-final-listing.txt, SCRIPT-OUTPUT.txt (verbatim bundle blocks), swap/verify scripts and outputs, RCON captures.
+
+Still owed (supervisor legs, NOT this window): same-pass surfaces (What's New BOTH surfaces, Guide knowledge regen, website pair - candidates staged in surfaces-staging-r346/), records package + draft PR in wrv-plugins + Drive jar/source deposit (prep done, RECORDS-PREP-R347.md). Proof owed after install: Bedrock /abilities fire by Kailey (.coolgirlkail), which also discharges R7.
