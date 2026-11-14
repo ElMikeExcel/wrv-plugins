@@ -1,0 +1,112 @@
+STEP: live-pull-live-jar
+EXPECTED: path=plugins/ExcelAbilityBridge-0.1.1.jar size=30606 sha256=62076c1541673fd0d1ffb22be46be401d2475c297ce9f71423c645e7dc323e55
+ACTUAL: path=plugins/ExcelAbilityBridge-0.1.1.jar size=30606 sha256=62076c1541673fd0d1ffb22be46be401d2475c297ce9f71423c645e7dc323e55 lane=rclone pulled_at=2026-11-14T14:38:10-06:00
+RESULT: PASS
+STEP: live-pull-live-config
+EXPECTED: path=plugins/ExcelAbilityBridge/config.yml size=281 sha256=3b9a11930dd1a5511b717dbcf59621c371cc6e4eae771c0f37d7312e55ab5a08
+ACTUAL: path=plugins/ExcelAbilityBridge/config.yml size=281 sha256=3b9a11930dd1a5511b717dbcf59621c371cc6e4eae771c0f37d7312e55ab5a08 lane=rclone pulled_at=2026-11-14T14:38:10-06:00
+RESULT: PASS
+STEP: live-pull-guild-state
+EXPECTED: path=plugins/ExcelGuildGate/state.yml size=1015 sha256=79e4470255edc5522db555e6ee935c301a5b74776fed45f3aa1f45220879b4c0
+ACTUAL: path=plugins/ExcelGuildGate/state.yml size=1015 sha256=79e4470255edc5522db555e6ee935c301a5b74776fed45f3aa1f45220879b4c0 lane=rclone pulled_at=2026-11-14T14:38:14-06:00
+RESULT: PASS
+STEP: emptiness-vanilla-a
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: emptiness-vanilla-b
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: candidate-jar-local
+EXPECTED: size=32339 sha256=c28f95a1a893075bc046f622c59ca598c3f45422d1691fb9b073aef9ede74f8f
+ACTUAL: size=32339 sha256=c28f95a1a893075bc046f622c59ca598c3f45422d1691fb9b073aef9ede74f8f
+RESULT: PASS
+STEP: census-old-jar-once
+EXPECTED: count=1 pattern=ExcelAbilityBridge-0.1.1.jar mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: census-new-name-zero
+EXPECTED: count=0 pattern=ExcelEliteMobsAbilityBedrockBridge mode=occurrences
+ACTUAL: count=0
+RESULT: PASS
+STEP: backup-cap-final
+EXPECTED: total<=6
+ACTUAL: total=6 daily=3 manual=3 prune_needed=0
+RESULT: PASS
+STEP: emptiness-pre-shutdown
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: placed-jar-pullback
+EXPECTED: size=32339 sha256=c28f95a1a893075bc046f622c59ca598c3f45422d1691fb9b073aef9ede74f8f
+ACTUAL: size=32339 sha256=c28f95a1a893075bc046f622c59ca598c3f45422d1691fb9b073aef9ede74f8f
+RESULT: PASS
+STEP: placed-config-pullback
+EXPECTED: size=297 sha256=a99d7fbe87fdc0f20979d38b6213ef784d357f74c45a84d912637ffa3d3a78e1
+ACTUAL: size=297 sha256=a99d7fbe87fdc0f20979d38b6213ef784d357f74c45a84d912637ffa3d3a78e1
+RESULT: PASS
+STEP: post-new-jar-once
+EXPECTED: count=1 pattern=ExcelEliteMobsAbilityBedrockBridge-0.2.0.jar mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: post-old-jar-held-once
+EXPECTED: count=1 pattern=ExcelAbilityBridge-0.1.1.jar.held-20261114 mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: post-old-jar-name-substring-once
+EXPECTED: count=1 pattern=ExcelAbilityBridge-0.1.1.jar mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: boot-scan-bridge-020
+EXPECTED: done=present severe=0 guild_locked=4of5
+ACTUAL: done=present severe=0 guild_locked=4of5
+RESULT: PASS
+STEP: boot-enabling-new
+EXPECTED: count=1 pattern=Enabling ExcelEliteMobsAbilityBedrockBridge v0.2.0 mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: boot-enabling-old-zero
+EXPECTED: count=0 pattern=Enabling ExcelAbilityBridge v0.1.1 mode=occurrences
+ACTUAL: count=0
+RESULT: PASS
+STEP: boot-acs-online-line
+EXPECTED: count=1 pattern=Bedrock ability bridge online: /abilities mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: boot-severe-zero
+EXPECTED: count=0 pattern=SEVERE mode=occurrences
+ACTUAL: count=0
+RESULT: PASS
+STEP: boot-pluginlist-new-once
+EXPECTED: count=1 pattern=ExcelEliteMobsAbilityBedrockBridge (0.2.0) mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: boot-pluginlist-old-zero
+EXPECTED: count=0 pattern=ExcelAbilityBridge (0.1.1) mode=occurrences
+ACTUAL: count=0
+RESULT: PASS
+STEP: rcon-status-first-line
+EXPECTED: count=1 pattern=ExcelEliteMobsAbilityBedrockBridge status: enabled (v0.2.0) mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: rcon-status-config-off
+EXPECTED: count=1 pattern=debug-log-fires OFF mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: rcon-status-permission-node-injar
+EXPECTED: count=1 pattern=exceleitemobsabilitybedrockbridge.admin mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: rcon-bare-abilities
+EXPECTED: count=1 pattern=The ability bridge is for players in game. mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: emptiness-departure
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: marker-installed-txt
+EXPECTED: present plugin=ExcelEliteMobsAbilityBedrockBridge version=0.2.0
+ACTUAL: present entry=PENDING - ExcelEliteMobsAbilityBedrockBridge 0.2.0 (Nov 14, 2026) - SWAP-WITH-RENAME, GATED held_aside=plugins/ExcelAbilityBridge-0.1.1.jar.held-20261114 (old jar, never deleted); plugins/ExcelAbilityBridge/ old data folder left in place untouched installed=2026-11-14 14:55 CST (boot Done 14:55:16 CST) lane=PC LANE (Homebase rclone/RCON; panel for backup + Shut Down/Start only) outcome=~/workspace/abilitybridge-rename-build-20261114/landing-1433/OUTCOME.txt placed_config: plugins/ExcelEliteMobsAbilityBedrockBridge/config.yml=297 B / a99d7fbe87fdc0f20979d38b6213ef784d357f74c45a84d912637ffa3d3a78e1 placed_jar: plugins/ExcelEliteMobsAbilityBedrockBridge-0.2.0.jar=32339 B / c28f95a1a893075bc046f622c59ca598c3f45422d1691fb9b073aef9ede74f8f plugin=ExcelEliteMobsAbilityBedrockBridge proof_owed=Bedrock /abilities fire by Kailey (.coolgirlkail) - player-class proof, also discharges R7 first real Bedrock fire script_output=~/workspace/abilitybridge-rename-build-20261114/landing-1433/SCRIPT-OUTPUT.txt (27 blocks, all PASS) version=0.2.0 window_backup=Bridge rename pre-install 1433
+RESULT: PASS
