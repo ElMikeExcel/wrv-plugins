@@ -1,0 +1,11 @@
+--- src/com/winkreyes/excelwandbars/PracticeIdentityJournal.java	2026-11-12 19:23:54.534149368 +0000
++++ /home/hatch/workspace/wandbars-fsync-fix-20261114/tree-0.3.18/src/com/winkreyes/excelwandbars/PracticeIdentityJournal.java	2026-11-14 08:05:09.332563916 +0000
+@@ -92,7 +92,7 @@
+    byte[] written=all.toByteArray();temp=Files.createTempFile(path.getParent(),".excel-practice-original-",".tmp");
+    try(var ch=FileChannel.open(temp,StandardOpenOption.WRITE)){var buffer=ByteBuffer.wrap(written);while(buffer.hasRemaining())ch.write(buffer);ch.force(true);}
+    fault.at("before-move");ready();Files.move(temp,path,StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);
+-   try(var dir=FileChannel.open(path.getParent(),StandardOpenOption.READ)){dir.force(true);}
++   try(var dir=FileChannel.open(path.getParent(),StandardOpenOption.READ)){dir.force(true);}catch(AccessDeniedException|UnsupportedOperationException ignored){/* Directory fsync is best-effort (0.3.18): Windows refuses directory channels, so a refusal must not fail the persist; the file itself was already forced before the move. Other failures propagate. */}
+    fault.at("after-move");if(!Arrays.equals(written,Files.readAllBytes(path)))throw new IOException("identity journal readback mismatch");
+    disk=written;entries.clear();entries.putAll(proposed);
+   }catch(IOException e){uncertain=true;throw e;}finally{if(temp!=null)Files.deleteIfExists(temp);}

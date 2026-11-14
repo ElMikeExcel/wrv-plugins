@@ -1,0 +1,11 @@
+--- src/com/winkreyes/excelwandbars/BuildInfo.java	2026-11-12 23:42:51.778701332 +0000
++++ /home/hatch/workspace/wandbars-fsync-fix-20261114/tree-0.3.18/src/com/winkreyes/excelwandbars/BuildInfo.java	2026-11-14 08:05:09.330402508 +0000
+@@ -16,7 +16,7 @@
+ public final class BuildInfo {
+     private BuildInfo() {}
+ 
+-    public static final String BUILD_ID = "EXC-WANDBARS-" + "0.3.17-WRV-" + "20261112-01-9d0b77";
++    public static final String BUILD_ID = "EXC-WANDBARS-" + "0.3.18-WRV-" + "20261114-01-e17db9";
+ 
+     public static String buildId() { return BUILD_ID; }
+ }
