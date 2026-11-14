@@ -1,0 +1,14 @@
+name: ExcelSealFreeze
+version: 0.1.0
+author: Iris
+main: com.winkreyes.excelsealfreeze.ExcelSealFreeze
+api-version: "1.21"
+description: WRV seal-5 freeze (Mike's law, Nov 14 2026) - holds EliteMobs progression (level, skill XP, currency, score, kills) at the post-wipe baseline until GuildGate reports the fifth seal broken, then disarms itself. Never blocks play; clamp-only-down; fail-safe on any database error.
+commands:
+  sealfreeze:
+    description: ExcelSealFreeze admin (status, arm, disarm, clampnow)
+    usage: /sealfreeze [status|arm|disarm|clampnow]
+permissions:
+  excelsealfreeze.admin:
+    description: Admin use of ExcelSealFreeze
+    default: op

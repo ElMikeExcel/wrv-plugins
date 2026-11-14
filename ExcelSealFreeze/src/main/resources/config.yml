@@ -1,0 +1,12 @@
+# ExcelSealFreeze configuration. Paths are relative to the plugins/ folder.
+# EliteMobs' SQLite player database.
+em-db-path: EliteMobs/data/player_data.db
+# ExcelGuildGate's persisted state; the top-level "unlocked" flag in this
+# file is the freeze's release signal (fifth seal broken = guild open).
+seal-state-path: ExcelGuildGate/state.yml
+# How often the clamp cycle runs while armed (seconds). Join/quit clamps
+# run additionally for the joining/leaving player.
+clamp-interval-seconds: 60
+# SQLite busy timeout per cycle (ms). If EliteMobs holds the database past
+# this, the cycle is skipped and retried next interval - never forced.
+busy-timeout-ms: 2000
