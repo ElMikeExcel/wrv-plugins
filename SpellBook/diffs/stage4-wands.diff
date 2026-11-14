@@ -1,0 +1,18 @@
+--- a/plugins/ExcelMagicGate/stages/stage4/wands.yml
++++ b/plugins/ExcelMagicGate/stages/stage4/wands.yml
+@@ -291,6 +291,7 @@
+   - flashheal
+   - ward
+   - greaterheal
++  - grouprenewal
+   - wrv_frostbite
+   - wrv_spark
+ master:
+@@ -408,6 +409,7 @@
+   - ward
+   - greaterheal
+   - layonhands
++  - resurrection
+   - wrv_frostbite
+   - wrv_spark
+ masons:
