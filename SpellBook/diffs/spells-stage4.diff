@@ -1,0 +1,58 @@
+--- a/plugins/ExcelMagicGate/stages/stage4/spells.yml
++++ b/plugins/ExcelMagicGate/stages/stage4/spells.yml
+@@ -7124,6 +7124,7 @@
+   costs:
+     mana: 100
+ tamepet:
++  name: Pet Heal
+   actions:
+     cast:
+     - class: CheckEntity
+@@ -8158,6 +8159,7 @@
+   name: Frostbite
+   earns_cooldown_scale: 1
+ archer:
++  name: Archer
+   icon: bow
+   category: elemental
+   worth: 50
+@@ -8219,6 +8221,7 @@
+       entity_attributes:
+         max_health: 30
+ bruiser:
++  name: Bruiser
+   icon: stone_sword
+   category: elemental
+   worth: 60
+@@ -8272,6 +8275,7 @@
+       entity_attributes:
+         attack_damage: 5
+ guardian:
++  name: Guardian
+   icon: iron_ingot
+   category: elemental
+   worth: 100
+@@ -8311,6 +8315,7 @@
+   costs:
+     mana: 150
+ revenant:
++  name: Revenant
+   icon: wither_skeleton_skull
+   category: elemental
+   worth: 120
+@@ -8352,6 +8357,7 @@
+   costs:
+     mana: 120
+ ghast:
++  name: Ghast
+   icon: ghast_tear
+   category: elemental
+   worth: 150
+@@ -8389,6 +8395,7 @@
+   costs:
+     mana: 150
+ mount:
++  name: Mount
+   icon: saddle
+   category: elemental
+   worth: 100

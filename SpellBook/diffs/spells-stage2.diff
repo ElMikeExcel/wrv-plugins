@@ -1,0 +1,18 @@
+--- a/plugins/ExcelMagicGate/stages/stage2/spells.yml
++++ b/plugins/ExcelMagicGate/stages/stage2/spells.yml
+@@ -3087,6 +3087,7 @@
+     duration: 500
+     allowed: ice,blue_ice,frosted_ice,packed_ice
+ tamepet:
++  name: Pet Heal
+   actions:
+     cast:
+     - class: CheckEntity
+@@ -3959,6 +3960,7 @@
+   name: Frostbite
+   earns_cooldown_scale: 1
+ archer:
++  name: Archer
+   icon: bow
+   category: elemental
+   worth: 50

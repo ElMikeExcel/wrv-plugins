@@ -1,0 +1,63 @@
+--- a/plugins/ExcelWandBars/spellbook.yml
++++ b/plugins/ExcelWandBars/spellbook.yml
+@@ -18,6 +18,8 @@
+       - flashheal
+       - greaterheal
+       - layonhands
++      - grouprenewal
++      - resurrection
+   defense:
+     name: Defense
+     spells:
+@@ -38,7 +40,6 @@
+       - missile
+       - frost
+       - arrow
+-      - flare
+       - stun
+       - push
+       - pull
+@@ -55,7 +56,6 @@
+       - throwsword
+       - whip
+       - critical
+-      - counterspell
+       - arrowrain
+       - sweep
+       - powerstone
+@@ -64,6 +64,8 @@
+       - tendril
+       - shrink
+       - masterattack
++      - earth
++      - anvil
+   movement:
+     name: Movement
+     spells:
+@@ -88,10 +90,16 @@
+       - wolf
+       - cat
+       - tame
++      - archer
++      - bruiser
++      - guardian
++      - revenant
++      - ghast
++      - mount
++      - tamepet
+   building:
+     name: Building
+     spells:
+-      - earth
+       - platform
+       - walls
+       - sponge
+@@ -132,6 +140,7 @@
+       - eat_food
+       - rolldice
+       - admission
+-      - anvil
+       - music
++      - flare
++      - counterspell
+ other-name: Other
