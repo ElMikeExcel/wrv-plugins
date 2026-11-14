@@ -1,0 +1,53 @@
+# ExcelExpansions 0.1.1 config - carried notes preserved exactly
+watcher:
+  # Dynamic rows carry no invented floor: floor TBD at build as a config setting, default unset.
+  dynamic-floor: null
+  cadence-hours: 6
+  active-window-hours: 336
+  active-floor: 3
+  timezone: America/Chicago
+in-band-source:
+  # LOCK-PREP #16: DB has no combat-level column (proven). Mike, Nov 14 2026: the
+  # watcher reads ExcelExpansions' own level store (below); its band signal is a
+  # NAMED EM field, never an invented or XP-converted number. Which signal is
+  # canonical (store signal vs /em profile vs guild rank) is the rig-owed decision.
+  source: "STORE"
+  note: "ExcelExpansions level store; band signal = EliteMobs PlayerData.HighestLevelKilled (EM stores no combat-level column - proven, #16). Canonical-source decision rig-owed."
+level-store:
+  # ExcelExpansions' own persistent per-player level store (Mike, Nov 14 2026).
+  # Fields: HighestLevelKilled + Score (EliteMobs PlayerData, read-only) and
+  # lastActive (Bukkit OfflinePlayer.getLastSeen / join / quit) for the 14-day
+  # ACTIVE window. Refresh: on enable, on join, on quit, and periodically.
+  em-db-path: "EliteMobs/data/player_data.db"
+  refresh-minutes: 15
+  file: "level-store.txt"
+seasonal:
+  # LOCK-PREP #10 SETTLED - SEASONAL WINDOWS LOCKED (Mike, Nov 14 2026): calendar months/occasions only, NO exact open/close dates (SEASONAL-WINDOWS-LOCKED.md)
+  north-pole: { window: "December" }
+  fireworks: { window: "New Year turn" }
+  the-hallowed-haunt: { window: "October" }
+  craftenmines-harvester-event: { window: "October" }
+proposal:
+  # 0.1.1 (DESIGN 3 + 7.12): a tap is honoured only from Mike. The host
+  # authenticates BEFORE ReleaseService runs: console always; a player whose
+  # UUID is listed here; or an op when allow-op is true. A presented token
+  # must match the live proposal's token - that is the stale-card guard; a
+  # WRONG token is rejected from anyone, console included.
+  # UUIDs as keyed in EM PlayerData (G4 pull, 2026-11-14): MikeExcel (Java)
+  # and .MikeExcel (Bedrock, Floodgate-prefixed).
+  mike-uuids:
+    - "7401bc22-d42a-4492-a451-374bd12d9e2c"
+    - "00000000-0000-0000-0009-01feb74ea7be"
+  allow-op: true
+  # The proposer tick rides watcher.cadence-hours (DESIGN 2.6: every 6 hours),
+  # plus one tick ~1 minute after enable and one shortly after each tap.
+release:
+  # 0.1.1 (DESIGN 1.2 + 5): the live release-state overlay (due / proposed /
+  # released / retirement-proposed / retired-seasonal + audit fields + the
+  # per-episode tap token), persisted beside the level store.
+  state-file: "release-state.txt"
+  # The flip (DESIGN 5 step 1) sets the anchored isEnabled flag in each row's
+  # content_package files under plugins/; every changed file first gets a
+  # sibling backup (<file>.bak-excelexpansions) and writes go through a temp
+  # file + move. Whether the flip takes effect on an EM reload or needs a
+  # restart (DESIGN 7 item 8) is a rig-owed confirmation - not assumed here.

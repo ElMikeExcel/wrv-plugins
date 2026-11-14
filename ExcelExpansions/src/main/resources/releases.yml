@@ -1,0 +1,1262 @@
+# ExcelExpansions releases - canonical watcher manifest (YAML)
+# Source: EXCELEXPANSIONS-MANIFEST-FINAL.md (57 rows, FINAL / LOCKED Nov 14 2026; 38932 B / sha256 d51e0111...)
+# Generated for 0.1.1 from the FINAL manifest (data of record): watcher fields identical to the draft;
+# final prose carried (lock header, #16 level-store wording, #10 seasonal lock wording on M-30..M-33).
+# content_files per row: EM/BS/FMM/Cannon content_package paths (relative to plugins/), cross-checked
+# against the G4 pull parsed_content_packages.csv - every listed file exists in the pull.
+# Carried notes preserved verbatim in config.yml / row notes: LOCK-PREP #5 #7 #10 #15 #16
+releases:
+  - id: "M-01"
+    slug: "adventurers-guild-hub"
+    display_name: "Adventurers Guild Hub"
+    unit_type: "utility"
+    phase: "0"
+    phase_order: 1
+    band_min: null
+    band_max: null
+    band_kind: "hub"
+    band_source: "none - hub is the front door, not band-gated by design"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "released"
+    parked_state: "verified-inert"
+    band_note: ""
+    pack: "Adventurers Guild Hub + Wood League Arena — adventurers_guild_hub.yml"
+    band_text: "BAND-TBD — no band in pack (HUB type, no contentLevel); hub is the front door, not band-gated. Source that supplies it: none — watcher excludes this row from band evaluation by design"
+    content_files: [EliteMobs/content_packages/adventurers_guild_hub.yml]
+    trigger_text: "Named gate: Warden kill (Prologue gate above). Fires as half of the DECIDED opening wave (see M-02)"
+  - id: "M-02"
+    slug: "primis"
+    display_name: "Primis"
+    unit_type: "headline"
+    phase: "1"
+    phase_order: 1
+    band_min: 0
+    band_max: 20
+    band_kind: "fixed"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Primis — primis_meta_pack.yml + primis_adventure.yml (world em_primis); rides: primis_blood_temple_sanctum.yml (Blood Temple), primis_gladius_invasion_dungeon.yml (Gladius Invasion) — sub-pieces ride this row, not double-counted"
+    band_text: "0–20 fixed (meta + adventure name, pack-read). Sub-values pack-read: Blood Temple contentLevel 20; Gladius contentLevel 1, name [lvl 000–020]"
+    content_files: [EliteMobs/content_packages/primis_meta_pack.yml, EliteMobs/content_packages/primis_adventure.yml, EliteMobs/content_packages/primis_blood_temple_sanctum.yml, EliteMobs/content_packages/primis_gladius_invasion_dungeon.yml]
+    trigger_text: "DECIDED opening wave with M-01 (Mike, Nov 13) — fires on Prologue gate + S-7 setup; no majority evaluation (fixed band would be out-levelled by waiting)"
+  - id: "M-03"
+    slug: "the-catacombs"
+    display_name: "The Catacombs"
+    unit_type: "headline"
+    phase: "2"
+    phase_order: 1
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "The Catacombs — catacombs_lair.yml"
+    band_text: "Dynamic (contentLevel −1, [Dynamic] in pack name; chosen at entry)"
+    content_files: [EliteMobs/content_packages/catacombs_lair.yml]
+    trigger_text: "Majority-in-band (dynamic: majority at/above watcher floor — floor TBD at build) → watcher proposes → Mike taps go"
+  - id: "M-04"
+    slug: "the-sewers"
+    display_name: "The Sewers"
+    unit_type: "headline"
+    phase: "2"
+    phase_order: 2
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "LOCK-PREP #5: verify no internal Sewers area in em_primis after S-7 setup, before Sewers release. Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "The Sewers (standalone) — sewers_minidungeon.yml (world em_sewer_maze)"
+    band_text: "Dynamic (contentLevel −1, [Dynamic] in pack name; chosen at entry). Pack setup text \"around level 25\" is descriptive text, NOT a band — not used as one"
+    content_files: [EliteMobs/content_packages/sewers_minidungeon.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD at build) → watcher proposes → Mike taps go. SEQUENCED CHECK (#5, below) must clear before this row's release"
+  - id: "M-05"
+    slug: "the-invasion"
+    display_name: "The Invasion"
+    unit_type: "headline"
+    phase: "2"
+    phase_order: 3
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "The Invasion (standalone minidungeon) — invasion_minidungeon.yml (world em_invasion)"
+    band_text: "Dynamic (contentLevel −1, [Dynamic] in pack name; chosen at entry; rushers dial entry level up)"
+    content_files: [EliteMobs/content_packages/invasion_minidungeon.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD at build) → watcher proposes → Mike taps go"
+  - id: "M-06"
+    slug: "story-mode-chapter-one"
+    display_name: "Story Mode Chapter One"
+    unit_type: "headline"
+    phase: "3"
+    phase_order: 1
+    band_min: 10
+    band_max: 55
+    band_kind: "fixed"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Story Mode Chapter One (meta-pack, ONE releasable unit) — free_story_mode_dungeon_meta_pack.yml; members in authored order: The Climb, The Cave, The Mines, The Bridge, The City, The Palace, The Quarry, The Deep Mines, The Nether Wastes, The Nether Bell (each member .yml rides this row)"
+    band_text: "10–55 (meta-pack name [010-055], pack-read; members Dynamic, contentLevel −1 each)"
+    content_files: [EliteMobs/content_packages/free_story_mode_dungeon_meta_pack.yml, EliteMobs/content_packages/the_climb_dungeon.yml, EliteMobs/content_packages/the_cave_sanctum.yml, EliteMobs/content_packages/the_mines_dungeon.yml, EliteMobs/content_packages/the_bridge_sanctum.yml, EliteMobs/content_packages/the_city_dungeon.yml, EliteMobs/content_packages/the_palace_sanctum.yml, EliteMobs/content_packages/the_quarry_dungeon.yml, EliteMobs/content_packages/the_deep_mines_dungeon.yml, EliteMobs/content_packages/the_nether_wastes_dungeon.yml, EliteMobs/content_packages/the_nether_bell_sanctum.yml]
+    trigger_text: "Majority-in-band → watcher proposes → Mike taps go; phase order enforced — releases as one headline unit, members run in authored order as levels climb 10–55"
+  - id: "M-07"
+    slug: "steamworks"
+    display_name: "Steamworks"
+    unit_type: "filler"
+    phase: "3"
+    phase_order: 2
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Steamworks — steamworks_lair.yml"
+    band_text: "Dynamic (contentLevel −1, [Dynamic] in pack name; chosen at entry)"
+    content_files: [EliteMobs/content_packages/steamworks_lair.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD at build) → watcher proposes → Mike taps go; fires inside Phase 3 or later, never before"
+  - id: "M-08"
+    slug: "the-oasis"
+    display_name: "The Oasis"
+    unit_type: "headline"
+    phase: "4"
+    phase_order: 1
+    band_min: 20
+    band_max: 55
+    band_kind: "fixed"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "The Oasis — oasis_meta_pack.yml + oasis_adventure.yml (world em_oasis); finale rides: oasis_pyramid_sanctum.yml (Pyramid)"
+    band_text: "20–55 fixed (meta + adventure name, pack-read); Pyramid contentLevel 55 (pack-read finale)"
+    content_files: [EliteMobs/content_packages/oasis_meta_pack.yml, EliteMobs/content_packages/oasis_adventure.yml, EliteMobs/content_packages/oasis_pyramid_sanctum.yml]
+    trigger_text: "Majority-in-band → watcher proposes → Mike taps go; phase order enforced. FIXED-BAND URGENCY: a majority approaching 55 is surfaced in the proposal (past 55 it goes flat)"
+  - id: "M-09"
+    slug: "knights-castle"
+    display_name: "Knight's Castle"
+    unit_type: "filler"
+    phase: "4"
+    phase_order: 2
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Knight's Castle — knights_castle_lair.yml"
+    band_text: "Dynamic (contentLevel −1, [Dynamic] in pack name)"
+    content_files: [EliteMobs/content_packages/knights_castle_lair.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4 order"
+  - id: "M-10"
+    slug: "hallosseum"
+    display_name: "Hallosseum"
+    unit_type: "filler"
+    phase: "4"
+    phase_order: 3
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Hallosseum — hallosseum_lair.yml"
+    band_text: "Dynamic (contentLevel −1, [Dynamic] in pack name)"
+    content_files: [EliteMobs/content_packages/hallosseum_lair.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4 order"
+  - id: "M-11"
+    slug: "goblin-kingdom"
+    display_name: "Goblin Kingdom"
+    unit_type: "headline"
+    phase: "4"
+    phase_order: 4
+    band_min: null
+    band_max: null
+    band_kind: "fixed"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: ["free-minecraft-models"]
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Goblin Kingdom (realm) — goblin_kingdom.yml (world GoblinKingdom_vf)"
+    band_text: "BAND-TBD — pack carries contentLevel 1 and NO band in name or fields (pack-read finding). Source that must supply it: realm config / contents beyond the content_package layer at this row's contents check — never the store listing"
+    content_files: [EliteMobs/content_packages/goblin_kingdom.yml]
+    trigger_text: "Majority-in-band once band is supplied → proposal → Mike tap; Phase 4 order; FMM prerequisite (met, see chapter head)"
+  - id: "M-12"
+    slug: "yggdrasil"
+    display_name: "Yggdrasil"
+    unit_type: "headline"
+    phase: "4"
+    phase_order: 5
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: ["free-minecraft-models"]
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Yggdrasil (realm) — yggdrasil_realm.yml"
+    band_text: "Dynamic (contentLevel −1, [Dynamic] in pack name)"
+    content_files: [EliteMobs/content_packages/yggdrasil_realm.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4 order; FMM prerequisite (met)"
+  - id: "M-13"
+    slug: "bone-monastery"
+    display_name: "Bone Monastery"
+    unit_type: "filler"
+    phase: "4"
+    phase_order: 6
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Bone Monastery — bone_monastery_dungeon.yml (filler)"
+    band_text: "Dynamic (contentLevel −1)"
+    content_files: [EliteMobs/content_packages/bone_monastery_dungeon.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4, by theme between headline beats"
+  - id: "M-14"
+    slug: "dark-cathedral"
+    display_name: "Dark Cathedral"
+    unit_type: "filler"
+    phase: "4"
+    phase_order: 7
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Dark Cathedral — dark_cathedral_lair.yml (filler)"
+    band_text: "Dynamic (contentLevel −1)"
+    content_files: [EliteMobs/content_packages/dark_cathedral_lair.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4 filler"
+  - id: "M-15"
+    slug: "beasts-sanctuary"
+    display_name: "Beasts Sanctuary"
+    unit_type: "filler"
+    phase: "4"
+    phase_order: 8
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Beasts Sanctuary — beasts_sanctuary_lair.yml (filler)"
+    band_text: "Dynamic (contentLevel −1)"
+    content_files: [EliteMobs/content_packages/beasts_sanctuary_lair.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4 filler"
+  - id: "M-16"
+    slug: "the-ruins"
+    display_name: "The Ruins"
+    unit_type: "filler"
+    phase: "4"
+    phase_order: 9
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "The Ruins — the_ruins.yml (filler)"
+    band_text: "Dynamic (contentLevel −1)"
+    content_files: [EliteMobs/content_packages/the_ruins.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4 filler"
+  - id: "M-17"
+    slug: "under-grove"
+    display_name: "Under Grove"
+    unit_type: "filler"
+    phase: "4"
+    phase_order: 10
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Under Grove — under_grove_lair.yml (filler)"
+    band_text: "Dynamic (contentLevel −1)"
+    content_files: [EliteMobs/content_packages/under_grove_lair.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4 filler"
+  - id: "M-18"
+    slug: "colosseum"
+    display_name: "Colosseum"
+    unit_type: "filler"
+    phase: "4"
+    phase_order: 11
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Colosseum — the_colosseum_lair.yml (filler)"
+    band_text: "Dynamic (contentLevel −1)"
+    content_files: [EliteMobs/content_packages/the_colosseum_lair.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4 filler"
+  - id: "M-19"
+    slug: "frost-palace"
+    display_name: "Frost Palace"
+    unit_type: "filler"
+    phase: "4"
+    phase_order: 12
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Frost Palace — frost_palace_sanctum.yml (filler)"
+    band_text: "Dynamic (contentLevel −1)"
+    content_files: [EliteMobs/content_packages/frost_palace_sanctum.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4 filler"
+  - id: "M-20"
+    slug: "dark-spire"
+    display_name: "Dark Spire"
+    unit_type: "filler"
+    phase: "4"
+    phase_order: 13
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Dark Spire — the_dark_spire.yml (filler)"
+    band_text: "Dynamic (contentLevel −1)"
+    content_files: [EliteMobs/content_packages/the_dark_spire.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4 filler"
+  - id: "M-21"
+    slug: "pirate-ship"
+    display_name: "Pirate Ship"
+    unit_type: "filler"
+    phase: "4"
+    phase_order: 14
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Pirate Ship — pirate_ship_minidungeon.yml (filler)"
+    band_text: "Dynamic (contentLevel −1)"
+    content_files: [EliteMobs/content_packages/pirate_ship_minidungeon.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4 filler"
+  - id: "M-22"
+    slug: "airship"
+    display_name: "Airship"
+    unit_type: "filler"
+    phase: "4"
+    phase_order: 15
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Airship — the_airship.yml (filler)"
+    band_text: "Dynamic (contentLevel −1)"
+    content_files: [EliteMobs/content_packages/the_airship.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4 filler"
+  - id: "M-23"
+    slug: "craftenmines-laboratory"
+    display_name: "Craftenmine's Laboratory"
+    unit_type: "filler"
+    phase: "4"
+    phase_order: 16
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Craftenmine's Laboratory — craftenmines_lab_sanctum.yml (filler)"
+    band_text: "Dynamic (contentLevel −1)"
+    content_files: [EliteMobs/content_packages/craftenmines_lab_sanctum.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap; Phase 4 filler. Craftenmine item packs M-44/M-45 ride this row's beats as support (never released alone)"
+  - id: "M-24"
+    slug: "iron-league-arena"
+    display_name: "Iron League Arena"
+    unit_type: "headline"
+    phase: "5"
+    phase_order: 1
+    band_min: 50
+    band_max: 100
+    band_kind: "fixed-band"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Iron League Arena — iron_league_arena.yml (50 waves)"
+    band_text: "50–100 fixed (pack name [lvl 050-100], pack-read)"
+    content_files: [EliteMobs/content_packages/iron_league_arena.yml]
+    trigger_text: "Majority-in-band → watcher proposes (with wall flag) → Mike taps go"
+  - id: "M-25"
+    slug: "enchantment-challenges-free"
+    display_name: "Enchantment Challenges (free tier)"
+    unit_type: "utility"
+    phase: "5"
+    phase_order: 2
+    band_min: 0
+    band_max: 200
+    band_kind: "utility-range"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Enchantment Challenges, free tier — free_enchantment_challenges.yml (meta) + enchantment_challenge_1..20_sanctum.yml"
+    band_text: "0–200 each (sanctum names [lvl 000-200], pack-read; contentLevel 1 each). Utility range — run per enchanting need, not in story sequence"
+    content_files: [EliteMobs/content_packages/free_enchantment_challenges.yml, EliteMobs/content_packages/enchantment_challenge_1_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_2_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_3_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_4_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_5_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_6_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_7_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_8_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_9_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_10_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_11_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_12_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_13_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_14_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_15_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_16_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_17_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_18_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_19_sanctum.yml, EliteMobs/content_packages/enchantment_challenge_20_sanctum.yml]
+    trigger_text: "Majority-in-band → proposal → Mike tap; utility rows may be dipped into whenever gear demands once released"
+  - id: "M-26"
+    slug: "enchantment-challenges-premium"
+    display_name: "Enchantment Challenges (premium tier)"
+    unit_type: "utility"
+    phase: "5"
+    phase_order: 3
+    band_min: null
+    band_max: null
+    band_kind: "utility-range"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Enchantment Challenges, premium tier — premium_enchantment_challenges.yml (meta)"
+    band_text: "BAND-TBD — premium meta carries NO band in the G4 pull (no name band, no contentLevel). Source that must supply it: the premium tier's member sanctum files / meta containedPackages contents check. The free tier's 0–200 is NOT copied onto this row"
+    content_files: [EliteMobs/content_packages/premium_enchantment_challenges.yml]
+    trigger_text: "Majority-in-band once band is supplied → proposal → Mike tap; optional tier, Phase 5"
+  - id: "M-27"
+    slug: "diamond-league-arena"
+    display_name: "Diamond League Arena"
+    unit_type: "headline"
+    phase: "6"
+    phase_order: 1
+    band_min: 100
+    band_max: 150
+    band_kind: "fixed-band"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Diamond League Arena — diamond_league_arena.yml (50 waves)"
+    band_text: "100–150 fixed (pack name [lvl 100-150], pack-read)"
+    content_files: [EliteMobs/content_packages/diamond_league_arena.yml]
+    trigger_text: "Majority-in-band → watcher proposes → Mike taps go"
+  - id: "M-28"
+    slug: "vampire-manor"
+    display_name: "Vampire Manor"
+    unit_type: "headline"
+    phase: "6"
+    phase_order: 2
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "LOCK-PREP #9: store ~120-140 is authored intent only, NOT the watcher value. Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Vampire Manor — vampire_manor_lair.yml"
+    band_text: "Dynamic (contentLevel −1, [Dynamic] in pack name; chosen at entry). The store's ~120–140 is authored intent ONLY and is NOT the watcher value (LOCK-PREP #9, VERIFIED)"
+    content_files: [EliteMobs/content_packages/vampire_manor_lair.yml]
+    trigger_text: "Majority-in-band (dynamic floor TBD) → proposal → Mike tap"
+  - id: "M-29"
+    slug: "binder-of-worlds"
+    display_name: "Binder of Worlds"
+    unit_type: "headline"
+    phase: "7"
+    phase_order: 1
+    band_min: null
+    band_max: null
+    band_kind: "fixed-band"
+    band_source: "pack-read: G4 pull 2026-11-14 - discrepancy stands (name lvl 100; contentLevel 50; levelSync 205/200/195)"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "LOCK-PREP #8: band discrepancy stands - name [lvl 100]; contentLevel 50; levelSync 205/200/195. No single band asserted; surfaced at Mike tap decision."
+    pack: "Binder of Worlds — binder_of_worlds_sanctum.yml"
+    band_text: "Pack-read values, discrepancy STANDS (LOCK-PREP #8, VERIFIED): name [lvl 100]; contentLevel 50; difficulty levelSync 205/200/195. Official store's recommended 200 is NOT a pack value. The watcher records these contents-check values and surfaces the discrepancy at Mike's tap decision — no single band is asserted in this draft"
+    content_files: [EliteMobs/content_packages/binder_of_worlds_sanctum.yml]
+    trigger_text: "Majority-in-band → watcher proposes WITH the band discrepancy surfaced → Mike taps go; LAST in phase order — nothing releases after it"
+  - id: "M-30"
+    slug: "north-pole"
+    display_name: "North Pole"
+    unit_type: "seasonal"
+    phase: "seasonal"
+    phase_order: 1
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: true
+    season_window_opens: "December"
+    season_window_label: "December - the holidays"
+    home_phase: "3"
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "North Pole — north_pole_minidungeon.yml (OWNED)"
+    band_text: "Dynamic (contentLevel −1, [Dynamic] in pack name)"
+    content_files: [EliteMobs/content_packages/north_pole_minidungeon.yml]
+    trigger_text: "Window: December (LOCKED calendar month, no exact dates). Fires on window + watcher proposal → Mike tap; retires on second tap at window close; may release twice (next year)"
+  - id: "M-31"
+    slug: "fireworks"
+    display_name: "Fireworks"
+    unit_type: "seasonal"
+    phase: "seasonal"
+    phase_order: 2
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: true
+    season_window_opens: "New Year turn"
+    season_window_label: "The New Year turn"
+    home_phase: "3"
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Fireworks — fireworks_lair.yml (OWNED)"
+    band_text: "Dynamic (contentLevel −1, [Dynamic] in pack name)"
+    content_files: [EliteMobs/content_packages/fireworks_lair.yml]
+    trigger_text: "Window: the New Year turn (LOCKED occasion, no exact dates). Opens at the turn on Mike's tap; retires after (second tap)"
+  - id: "M-32"
+    slug: "the-hallowed-haunt"
+    display_name: "The Hallowed Haunt"
+    unit_type: "seasonal"
+    phase: "seasonal"
+    phase_order: 3
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: true
+    season_window_opens: "October"
+    season_window_label: "October"
+    home_phase: "3"
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "The Hallowed Haunt — the_hallowed_haunt_dynamic_dungeon.yml"
+    band_text: "Dynamic (contentLevel −1, [Dynamic] in pack name)"
+    content_files: [EliteMobs/content_packages/the_hallowed_haunt_dynamic_dungeon.yml]
+    trigger_text: "Window: October (LOCKED calendar month, no exact dates). Proposed TOGETHER with M-33 in one October card → Mike tap; retires on second tap at window close"
+  - id: "M-33"
+    slug: "craftenmines-harvester-event"
+    display_name: "Craftenmine's Harvester Event"
+    unit_type: "seasonal"
+    phase: "seasonal"
+    phase_order: 4
+    band_min: null
+    band_max: null
+    band_kind: "dynamic"
+    band_source: "pack-read: G4 pull 2026-11-14 (LOCK-PREP #2 VERIFIED)"
+    seasonal: true
+    season_window_opens: "October"
+    season_window_label: "October"
+    home_phase: "unassigned"
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "LOCK-PREP #15: bench row - phase: unassigned, no bands; never DUE until Mike assigns a phase. Dynamic (chosen at entry, 5-level steps); watcher floor TBD at build - config watcher.dynamic-floor, default unset."
+    pack: "Craftenmine's Harvester Event — NO content_package found live"
+    band_text: "BAND-TBD — no pack exists in the G4 pull to read a band from. Source that must supply it: Drive EliteMobs library listing, then a contents check if the pack is captured there"
+    content_files: []
+    trigger_text: "Window (story placement): October (LOCKED calendar month, no exact dates), with M-32. BUT phase: unassigned (see #15 carry) — as an unassigned row it has NO releasable content until captured, so it cannot fire; the October card proposes M-32 alone until then"
+  - id: "M-34"
+    slug: "echoes-of-the-past"
+    display_name: "Echoes Of The Past"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 1
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "LOCK-PREP #15: bench row - phase: unassigned, no bands; never DUE until Mike assigns a phase."
+    pack: "Echoes of the Past — bs echoes_of_the_past.yml"
+    band_text: "BAND-TBD — BS pack, no band fields. Source: contents check if ever phased"
+    content_files: [BetterStructures/content_packages/echoes_of_the_past.yml]
+    trigger_text: "phase: unassigned — never DUE until Mike assigns a phase (#15 mapped live)"
+  - id: "M-35"
+    slug: "adventure-pack-premium"
+    display_name: "Adventure Pack Premium"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 2
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "LOCK-PREP #15: bench row - phase: unassigned, no bands; never DUE until Mike assigns a phase."
+    pack: "Adventure-pack premium set — bs adventure_pack.yml"
+    band_text: "BAND-TBD — no band fields. Source: contents check if ever phased"
+    content_files: [BetterStructures/content_packages/adventure_pack.yml]
+    trigger_text: "phase: unassigned — never DUE until Mike assigns a phase"
+  - id: "M-36"
+    slug: "shrines-and-caves-sets"
+    display_name: "Shrines And Caves Sets"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 3
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "LOCK-PREP #15: bench row - phase: unassigned, no bands; never DUE until Mike assigns a phase."
+    pack: "Shrines set + caves-and-lost-civilizations set — bs free_elite_shrines.yml + 101_premium_shrines.yml + caves_and_lost_civilizations_free.yml + caves_and_lost_civilizations_premium.yml"
+    band_text: "BAND-TBD — no band fields. Source: contents check if ever phased"
+    content_files: [BetterStructures/content_packages/free_elite_shrines.yml, BetterStructures/content_packages/101_premium_shrines.yml, BetterStructures/content_packages/caves_and_lost_civilizations_free.yml, BetterStructures/content_packages/caves_and_lost_civilizations_premium.yml]
+    trigger_text: "phase: unassigned — never DUE until Mike assigns a phase"
+  - id: "M-37"
+    slug: "event-megapacks-1-2"
+    display_name: "Event Megapacks 1 2"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 4
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "LOCK-PREP #15: bench row - phase: unassigned, no bands; never DUE until Mike assigns a phase."
+    pack: "Event Megapacks 1–2 — no package found live"
+    band_text: "BAND-TBD — no pack to read. Source: Drive EliteMobs library listing, then contents check if captured"
+    content_files: []
+    trigger_text: "phase: unassigned — never DUE until Mike assigns a phase (#15)"
+  - id: "M-38"
+    slug: "goblin-events"
+    display_name: "Goblin Events"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 5
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "LOCK-PREP #15: bench row - phase: unassigned, no bands; never DUE until Mike assigns a phase."
+    pack: "Goblin events — free_goblins_event_pack.yml"
+    band_text: "BAND-TBD — EM meta/event pack, no band fields. Source: contents check if ever phased"
+    content_files: [EliteMobs/content_packages/free_goblins_event_pack.yml]
+    trigger_text: "phase: unassigned — never DUE until Mike assigns a phase (#15 mapped live)"
+  - id: "M-39"
+    slug: "goblin-models"
+    display_name: "Goblin Models"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 6
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "LOCK-PREP #15: bench row - phase: unassigned, no bands; never DUE until Mike assigns a phase."
+    pack: "Goblin models — no separate package found live"
+    band_text: "BAND-TBD — no pack to read. Source: Drive EliteMobs library listing, then contents check if captured"
+    content_files: []
+    trigger_text: "phase: unassigned — never DUE until Mike assigns a phase (#15)"
+  - id: "M-40"
+    slug: "towers-sets"
+    display_name: "Towers Sets"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 7
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: "LOCK-PREP #15: bench row - phase: unassigned, no bands; never DUE until Mike assigns a phase."
+    pack: "Towers sets (EternalTD / Rising Sun / From the Depths) — no package found live"
+    band_text: "BAND-TBD — no pack to read. Source: Drive EliteMobs library listing, then contents check if captured"
+    content_files: []
+    trigger_text: "phase: unassigned — never DUE until Mike assigns a phase (#15)"
+  - id: "M-41"
+    slug: "betterstructures-bundled-world-packs"
+    display_name: "Betterstructures Bundled World Packs"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 8
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "BetterStructures bundled world packs — 103_default_structures.yml + exploration_pack.yml + dungeoneering_modules_free.yml + dungeoneering_modules_premium.yml (shrines/caves/adventure/echoes packages are rows M-34–M-36; membership per G4: 10 BS packages enabled as shipped + 2 parked Tommyknockers = 12)"
+    band_text: "BAND-TBD — BS packs, no band fields. Source: n/a — world texture, not banded content"
+    content_files: [BetterStructures/content_packages/103_default_structures.yml, BetterStructures/content_packages/exploration_pack.yml, BetterStructures/content_packages/dungeoneering_modules_free.yml, BetterStructures/content_packages/dungeoneering_modules_premium.yml]
+    trigger_text: "No watcher trigger — already part of the world's texture, enabled as shipped. Whether they park under the storyline is a release-discussion decision for Mike (LOCK-PREP #13: data VERIFIED, decision is Mike's, not a data gap)"
+  - id: "M-42"
+    slug: "fmm-driftjelly-penguin-packs"
+    display_name: "Fmm Driftjelly Penguin Packs"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 9
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "FMM Driftjelly + Penguin packs — driftjelly_colours_pack.yml + driftjelly_pet_pack.yml + penguin_colours_pack.yml + penguin_pet_pack.yml"
+    band_text: "BAND-TBD — FMM packs, no band fields. Source: n/a until content exists"
+    content_files: [FreeMinecraftModels/content_packages/driftjelly_colours_pack.yml, FreeMinecraftModels/content_packages/driftjelly_pet_pack.yml, FreeMinecraftModels/content_packages/penguin_colours_pack.yml, FreeMinecraftModels/content_packages/penguin_pet_pack.yml]
+    trigger_text: "No trigger — NO BEAT EXISTS until content is captured (LOCK-PREP #14, VERIFIED: registrations enabled but NO driftjelly/penguin folders in the FMM models listing — stub at the models layer)"
+  - id: "M-43"
+    slug: "basic-furniture-pack"
+    display_name: "Basic Furniture Pack"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 10
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Basic Furniture Pack v3 — basic_furniture_pack.yml (FMM) — furniture → the shops"
+    band_text: "BAND-TBD — FMM pack, no band fields. Source: n/a — release is shop listings, not a banded release"
+    content_files: [FreeMinecraftModels/content_packages/basic_furniture_pack.yml]
+    trigger_text: "No band trigger. Hangs off Chapter One home life. Release = the follow-on packet's shop listings: verify how players obtain/place pieces, pick the sellable set, price it into ExcelShops (supervisor chain, still queued). The pack is the beat; the shop listings are its release"
+  - id: "M-44"
+    slug: "craftenmine-weapons-item-pack"
+    display_name: "Craftenmine Weapons Item Pack"
+    unit_type: "support"
+    phase: "unassigned"
+    phase_order: 11
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Craftenmine Weapons Item Pack v2 — craftenmines_weapons_item_pack.yml (FMM)"
+    band_text: "BAND-TBD — item pack, no band fields. Source: n/a — typed support"
+    content_files: [FreeMinecraftModels/content_packages/craftenmines_weapons_item_pack.yml]
+    trigger_text: "Support — rides the Craftenmine headlines that need it (M-23, M-33 beats); never watcher-released alone"
+  - id: "M-45"
+    slug: "craftenmine-tools-item-pack"
+    display_name: "Craftenmine Tools Item Pack"
+    unit_type: "support"
+    phase: "unassigned"
+    phase_order: 12
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Craftenmine Tools Item Pack v2 — craftenmine_tools_item_pack.yml (FMM)"
+    band_text: "BAND-TBD — item pack, no band fields. Source: n/a — typed support"
+    content_files: [FreeMinecraftModels/content_packages/craftenmine_tools_item_pack.yml]
+    trigger_text: "Support — rides Craftenmine headlines; never released alone"
+  - id: "M-46"
+    slug: "tommyknockers-modules-free"
+    display_name: "Tommyknockers Modules Free"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 13
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Tommyknockers Modules Free v2 — tommyknockers_modules_free.yml (BS)"
+    band_text: "BAND-TBD — BS module pack, no band fields. Source: n/a — world-structure texture"
+    content_files: [BetterStructures/content_packages/tommyknockers_modules_free.yml]
+    trigger_text: "No band trigger defined in sources — world-structure content seeding the overworld between Chapters Two–Four; release mechanics follow the release discussion"
+  - id: "M-47"
+    slug: "tommyknockers-modules-premium"
+    display_name: "Tommyknockers Modules Premium"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 14
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Tommyknockers Modules Premium v2 — tommyknockers_modules_premium.yml (BS)"
+    band_text: "BAND-TBD — no band fields. Source: n/a"
+    content_files: [BetterStructures/content_packages/tommyknockers_modules_premium.yml]
+    trigger_text: "As M-46"
+  - id: "M-48"
+    slug: "wooden-chest"
+    display_name: "Wooden Chest"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 15
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Wooden Chest v1 — rc-held wooden_chest.yml"
+    band_text: "BAND-TBD — held pack, no band fields. Source: n/a while dormant"
+    content_files: []
+    trigger_text: "DORMANT — no trigger. Any future role needs a fresh Mike decision (LOCK-PREP #11, VERIFIED)"
+  - id: "M-49"
+    slug: "angelic-chest"
+    display_name: "Angelic Chest"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 16
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Angelic Chest (bonus) — rc-held angelic_chest.yml"
+    band_text: "BAND-TBD — held pack, no band fields. Source: n/a while dormant"
+    content_files: []
+    trigger_text: "DORMANT — as M-48"
+  - id: "M-50"
+    slug: "free-cannon-model"
+    display_name: "Free Cannon Model"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 17
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "Free Cannon Model v2 — cannonrtp.yml (CannonRTP)"
+    band_text: "BAND-TBD — model pack, no band fields. Source: n/a — utility beat"
+    content_files: [CannonRTP/content_packages/cannonrtp.yml]
+    trigger_text: "No release trigger is defined in the sources — flagged for the release discussion. Packages stay registered; no cannons exist in-world yet"
+  - id: "M-51"
+    slug: "cannonrtp-premium-cannon-model"
+    display_name: "Cannonrtp Premium Cannon Model"
+    unit_type: "filler"
+    phase: "unassigned"
+    phase_order: 18
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "CannonRTP Premium Cannon Model (bonus) — cannonrtp_premium.yml"
+    band_text: "BAND-TBD — no band fields. Source: n/a"
+    content_files: [CannonRTP/content_packages/cannonrtp_premium.yml]
+    trigger_text: "As M-50"
+  - id: "M-52"
+    slug: "betterstructures-prop-pack"
+    display_name: "Betterstructures Prop Pack"
+    unit_type: "support"
+    phase: "unassigned"
+    phase_order: 19
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "BetterStructures Prop Pack — betterstructures_prop_pack.yml (FMM)"
+    band_text: "BAND-TBD — prop pack, no band fields. Source: n/a — support"
+    content_files: [FreeMinecraftModels/content_packages/betterstructures_prop_pack.yml]
+    trigger_text: "Support — never proposed, never released alone"
+  - id: "M-53"
+    slug: "elitemobs-prop-pack"
+    display_name: "Elitemobs Prop Pack"
+    unit_type: "support"
+    phase: "unassigned"
+    phase_order: 20
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "EliteMobs Prop Pack — elitemobs_prop_pack.yml (FMM)"
+    band_text: "BAND-TBD — prop pack, no band fields. Source: n/a — support"
+    content_files: [FreeMinecraftModels/content_packages/elitemobs_prop_pack.yml]
+    trigger_text: "Support — never proposed, never released alone"
+  - id: "M-54"
+    slug: "fmm-resource-pack"
+    display_name: "Fmm Resource Pack"
+    unit_type: "support"
+    phase: "unassigned"
+    phase_order: 21
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "FreeMinecraftModels resource pack (compiled live, Nov 13)"
+    band_text: "BAND-TBD — support artifact, no band. Source: n/a"
+    content_files: []
+    trigger_text: "Support artifact — every FMM beat above stands on it; never a watcher release"
+  - id: "M-55"
+    slug: "betterstructures-host"
+    display_name: "Betterstructures Host"
+    unit_type: "support"
+    phase: "unassigned"
+    phase_order: 22
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "BetterStructures 2.7.12 (host plugin)"
+    band_text: "BAND-TBD — host plugin, no band. Source: n/a"
+    content_files: []
+    trigger_text: "Support — host; never a watcher release"
+  - id: "M-56"
+    slug: "resurrectionchest-host"
+    display_name: "Resurrectionchest Host"
+    unit_type: "support"
+    phase: "unassigned"
+    phase_order: 23
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "ResurrectionChest 2.3.10 (host plugin)"
+    band_text: "BAND-TBD — host plugin, no band. Source: n/a"
+    content_files: []
+    trigger_text: "Support (held) — host for dormant rows M-48/M-49; restoring it needs a fresh Mike decision"
+  - id: "M-57"
+    slug: "cannonrtp-host"
+    display_name: "Cannonrtp Host"
+    unit_type: "support"
+    phase: "unassigned"
+    phase_order: 24
+    band_min: null
+    band_max: null
+    band_kind: "none"
+    band_source: "PENDING-CONTENTS-CHECK"
+    seasonal: false
+    season_window_opens: null
+    season_window_label: null
+    home_phase: null
+    requires: []
+    released_state: "unreleased"
+    parked_state: "registered-not-set-up"
+    band_note: ""
+    pack: "CannonRTP 1.2.9 (host plugin)"
+    band_text: "BAND-TBD — host plugin, no band. Source: n/a"
+    content_files: []
+    trigger_text: "Support — host for M-50/M-51; never a watcher release"

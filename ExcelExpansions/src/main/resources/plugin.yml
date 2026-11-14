@@ -1,0 +1,15 @@
+name: ExcelExpansions
+version: 0.1.1
+author: Iris
+main: com.winkreyes.excelexpansions.ExcelExpansions
+api-version: "1.21"
+description: WRV release watcher + tap-card proposer + releaser (DESIGN Nov 11 2026) - evaluates the 57-row storyline manifest against its own level store; a pack DUE on majority-in-band gets ONE proposal card, Mike taps go, the flip enables it. Seasonal exception on LOCKED windows. Never auto-releases.
+commands:
+  excelexpansions:
+    description: ExcelExpansions status, manifest list, rundown, and release tap
+    usage: /excelexpansions [status|list|store|rundown|tap <row id> <token>]
+    aliases: [expansions]
+permissions:
+  excelexpansions.admin:
+    description: Admin use of ExcelExpansions
+    default: op

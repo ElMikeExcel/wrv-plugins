@@ -1,0 +1,93 @@
+PASS row count = 57
+PASS M-01 present opening wave
+PASS M-02 Primis 0-20 fixed
+PASS seasonal count = 4
+PASS seasonal windows LOCKED months/occasions #10
+PASS bench rows unassigned no bands #15
+PASS dynamic rows no invented band_min
+PASS M-29 no single band asserted
+PASS M-11 BAND-TBD not evaluable
+PASS active roster 336h includes recent, excludes 15d-old
+PASS majority 2/3 in band -> DUE (Primis, floor unset irrelevant fixed)
+PASS phase order blocks later row
+PASS floor of 3: 2 actives -> NOT_DUE
+PASS unknown level counts not in band (TBD source)
+PASS dynamic floor unset -> NOT_EVALUABLE
+PASS seasonal North Pole Dec -> SEASONAL_DUE
+PASS seasonal North Pole Nov -> NOT_DUE
+PASS support never
+PASS unassigned never
+PASS M-01 released stays released
+PASS level store round-trip (named EM sources, no invented level)
+PASS store source: no entry -> unknown (not in band)
+PASS store source: activity-only entry -> still unknown
+PASS store source: EM signal read -> band signal = HighestLevelKilled 22
+PASS store touch: lastActive never moves backwards
+PASS store touch: newer activity advances lastActive, signals retained
+PASS store merge: null-signal read retains last-known values (never wiped)
+PASS EM DB reader: 11 PlayerData rows from pulled player_data.db
+PASS EM DB reader: Jester_Turtle HLK 22 / Score 3674 (matches LOCK-PREP #16)
+PASS EM DB reader: GumGumJetPistol HLK 23 / Score 858 (matches LOCK-PREP #16)
+PASS EM DB reader: Floodgate UUIDs keyed as-is (.MikeExcel HLK 12)
+PASS content_files wired from FINAL manifest (M-02 = 4 files, M-03 catacombs)
+PASS M-33 has no content files (never flippable until captured)
+PASS proposer: DUE pack produces ONE tap-card proposal
+PASS tap card carries the typed tap command + token
+PASS proposer: row recorded proposed with the same token
+PASS proposer: untapped stays due SILENTLY (second tick posts nothing)
+PASS pendingCard re-delivers the SAME episode (same token, delivery not a new proposal)
+PASS flipText flips the anchored flag only (decoy comment untouched)
+PASS flipText already-set returns the same text
+PASS flipText no anchored flag -> null
+PASS tap with NO live proposal is rejected, nothing flips
+PASS tap with a WRONG (stale) token is rejected, nothing flips
+PASS tap on the live proposal RELEASES the parked fixture pack
+PASS fixture pack flipped enabled+open: anchored flag true, decoy comment untouched, backup written
+PASS state advanced to released with the Mike-tap audit line
+PASS double-tap returns ALREADY_RELEASED and flips nothing again
+PASS flip with a missing content file FAILS and the row stays proposed
+PASS seasonal: released pack out of window produces ONE retirement proposal
+PASS retirement tap flips the pack back to disabled (retired-seasonal)
+PASS release state round-trip (released row + audit fields survive restart)
+RESULT pass=51 fail=0
+PASS proposer: DUE row produces exactly one RELEASE proposal
+PASS proposer: band label + tap command carry the episode token
+PASS proposer: state advanced to proposed with token stored
+PASS proposer: untapped stays silent - no re-spam, proposed_at unchanged
+PASS proposer: lapsed majority keeps the proposal, lapse noted (DESIGN 2.3)
+PASS proposer: fewer than 3 active - no proposal, row untouched
+PASS proposer: second DUE row recorded due behind the in-flight headline, no card
+PASS proposer: after the headline tap lands, the recorded-due row proposes
+PASS proposer: released rows are never re-proposed
+PASS proposer: pendingCard rebuilds the live episode only
+PASS releaser: anchored flag flips, other lines untouched
+PASS releaser: comment lookalikes never touched
+PASS releaser: comment-only file has no flag
+PASS releaser: already at target returns the same text
+PASS releaser: non-boolean flag value rejected
+PASS releaser: CRLF line endings preserved
+PASS releaser: flip succeeds, file enabled, backup holds the original
+PASS releaser: re-flip converges as ALREADY_SET (idempotent)
+PASS releaser: missing file fails the flip as a whole
+PASS seasonal: window-open proposal fires with an EMPTY roster (no floor, no band test)
+PASS seasonal: tap releases and flips the pack on
+PASS seasonal: window close proposes retirement exactly once
+PASS seasonal: retirement tap flips the pack off and retires it
+PASS seasonal: retired pack proposes again at its next window (DESIGN 4.2)
+PASS tap: wrong token rejected, nothing flips, row stays proposed
+PASS tap: in-game tap without a token rejected
+PASS tap: console may tap without a token (trusted surface)
+PASS tap: double-tap returns ALREADY_RELEASED and flips nothing
+PASS tap: no live proposal - rejected
+PASS tap: row with no content files - NO_CONTENT, stays proposed
+PASS tap: a missing file fails the flip - row stays proposed for retry
+PASS state: save/load round-trip preserves the entry
+PASS state: notes are pipe/newline-sanitised on save
+PASS state: stateOf falls back to the row's bundled initial state
+PASS manifest: 57 rows load from the built resources
+PASS manifest: M-02 Primis carries its 4 content files
+PASS manifest: M-06 Story carries meta + 10 dungeon/sanctum files
+PASS manifest: M-25 Enchantment carries meta + 20 sanctum files
+PASS manifest: 47 rows carry content files; the 10 empty rows can never be proposed (unassigned / support / the unassigned-by-verdict Harvester)
+PASS manifest: every content path is a content_packages path under a known host plugin
+RESULT pass=40 fail=0
