@@ -1,0 +1,20 @@
+--- work/complete-source/src/com/winkreyes/makersmark/history/HistoryLedger.java	1970-01-01 00:00:00.000000000 +0000
++++ ExcelMakersMark/src/com/winkreyes/makersmark/history/HistoryLedger.java	2026-11-14 07:09:30.527683838 +0000
+@@ -162,8 +162,16 @@
+             Files.delete(temporary);forceDirectory(parent);
+         }catch(IOException|RuntimeException e){throw e;} // Preserve temp/target evidence on uncertain failure.
+     }
+-    private static void forceDirectory(Path parent)throws IOException{
++    /** Best-effort directory durability. The file-level force(true) calls are
++     *  the mandatory durability gate and always run before this. Syncing the
++     *  containing directory additionally persists the directory entry, but
++     *  some platforms refuse directory channels outright (Windows Java NIO
++     *  throws AccessDeniedException on FileChannel.open of a directory), so
++     *  a directory-force failure must never fail the save it follows.
++     *  Package-private as a test seam. */
++    static void forceDirectory(Path parent){
+         try(FileChannel directory=FileChannel.open(parent,StandardOpenOption.READ)){directory.force(true);}
++        catch(IOException refused){/* Directory sync is best-effort; the file fsync already ran. */}
+     }
+ 
+     private void checkInputs(List<Expected> inputs,UUID own){
