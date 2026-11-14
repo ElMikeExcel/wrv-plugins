@@ -1,0 +1,997 @@
+Starting org.bukkit.craftbukkit.Main
+2026-11-14T17:02:58.267156500Z ServerMain WARN Advanced terminal features are not available in this environment
+[11:02:58 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.5+8-LTS; Eclipse Adoptium Temurin-25.0.5+8) on Windows 11 10.0 (amd64)
+[11:02:58 INFO]: [bootstrap] Loading Paper 26.3-245-main@cd1c3b6 (2026-11-09T01:11:19Z) for Minecraft 26.3
+[11:02:58 INFO]: [PluginInitializerManager] Initializing plugins...
+[11:02:58 INFO]: [PluginInitializerManager] Initialized 83 plugins
+[11:02:58 INFO]: [PluginInitializerManager] Bukkit plugins (83):
+ - AutoBroadcaster (1.4.0), CMILib (1.6.1.2), Chunky (1.5.3), CoreProtect (24.1), DecentHolograms (2.10.2), EliteMobs (10.9.12), Essentials (2.22.0), EssentialsSpawn (2.22.0), ExcelAbilityBridge (0.1.1), ExcelAcrobatics (1.2-candidate), ExcelAimAssist (0.1.5), ExcelAttunement (0.1.8), ExcelAuditLog (0.2.0), ExcelAutoSort (0.2.1), ExcelBossTrial (0.5.6), ExcelBrainGames (0.3.3), ExcelBuildMode (1.3.5), ExcelChunks (0.1.1), ExcelClaimFly (0.1.0), ExcelCosmetics (0.1.3), ExcelDeathProtection (0.1.3), ExcelDeathRecord (0.3.0), ExcelDetails (0.2.2), ExcelDowned (0.1.2), ExcelEliteLadder (0.2.1), ExcelExpansions (0.1.0), ExcelGuide (0.3.4), ExcelGuildGate (0.4.0), ExcelItemInsight (0.1.0), ExcelLandmarks (0.1.0), ExcelLeaderboard (1.3.1), ExcelMagicGate (0.3.1), ExcelMagicLevel (0.2.0), ExcelMakersMark (0.1.6-lookup-prefilter-OFFLINE), ExcelMenu (2.0.0), ExcelMenuJoin (1.4.4), ExcelMenuStats (0.2.2), ExcelMobVeil (0.1.0), ExcelNoPhantoms (1.2.0), ExcelPartyDrops (0.1.0), ExcelPlayerMap (0.2.1), ExcelPouch (0.1.1), ExcelProtect (0.1.9), ExcelQuartermaster (0.3.1), ExcelRaidBuff (0.1.2), ExcelRestartCountdown (1.2.0), ExcelRewardGuard (1.7), ExcelSealAlerts (0.1.2-runtime-diagnostic-OFFLINE), ExcelSealFreeze (0.1.0), ExcelSealLog (1.0.0), ExcelShopVillager (1.1.0), ExcelShops (1.3.9), ExcelSilkWatch (0.1.3-offline), ExcelSummons (0.1.5), ExcelTelemetry (0.1.1), ExcelTips (0.1.0), ExcelTogether (0.5.3), ExcelTrainingWheels (0.1.3), ExcelTrash (0.3.0), ExcelTreeCleanup (0.1.1), ExcelVaults (0.1.1), ExcelWandBars (0.3.18), ExcelWaypoints (0.1.0), ExcelWealthBoard (1.4.0), ExcelWeekendXP (1.2.0), ExcelWhatsNew (0.1.1), ExcelWitherSkulls (0.1.0), ExcelZombieCharge (0.1.0), Geyser-Spigot (2.12.1-SNAPSHOT), GriefPrevention (0.1.3), Jobs (5.2.6.3), LuckPerms (5.5.87), Magic (11.2.5-baa3d91), PlaceholderAPI (2.12.3), ProtectRig (1.0), Shopkeepers (2.28.1), Vault (2.0.0), ViaBackwards (5.12.2), ViaVersion (5.12.2), WRVWandDiagnostic (0.1.0-offline-diagnostic), WorldEdit (7.4.6+7648-00664b0), floodgate (2.2.5-SNAPSHOT (b141-81b65cc)), mcMMO (2.3.003-WRV-XP-2-ExcelShare-1)
+[11:03:01 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[11:03:01 INFO]: [com.destroystokyo.paper.profile.PaperServicesDiscoveryService] Environment: Environment[discoveryUrl=https://discovery.minecraftservices.com/minecraft/client, name=PROD]
+[11:03:01 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 290.1ms
+[11:03:02 INFO]: Loaded 1866 advancements
+[11:03:03 INFO]: Starting minecraft server version 26.3
+[11:03:03 INFO]: Loading properties
+[11:03:03 INFO]: This server is running Paper version 26.3-245-main@cd1c3b6 (2026-11-09T01:11:19Z) (Implementing API version 26.3.build.245-stable)
+[11:03:03 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[11:03:03 INFO]: Server Ping Player Sample Count: 12
+[11:03:03 INFO]: Using 4 threads for Netty based IO
+[11:03:03 INFO]: [MoonriseCommon] Paper is using 4 worker threads, 1 I/O threads
+[11:03:03 INFO]: [ca.spottedleaf.moonrise.common.util.FMA] FMA supported: true as determined by performance comparison test
+[11:03:03 INFO]: Default game type: SURVIVAL
+[11:03:03 INFO]: Generating keypair
+[11:03:03 INFO]: Starting Minecraft server on *:25566
+[11:03:03 INFO]: Paper: Using Java compression from Velocity.
+[11:03:03 INFO]: Paper: Using Java cipher from Velocity.
+[11:03:04 INFO]: [SpigotLibraryLoader] [CoreProtect] Loading 1 libraries... please wait
+[11:03:04 INFO]: [SpigotLibraryLoader] [CoreProtect] Loaded library C:\Users\MikeExcel\wrv-testserver\server\libraries\org\duckdb\duckdb_jdbc\1.4.5.0\duckdb_jdbc-1.4.5.0.jar
+[11:03:04 INFO]: [ViaVersion] Loading server plugin ViaVersion v5.12.2
+[11:03:04 INFO]: [ViaVersion] ViaVersion 5.12.2 is now loaded. Registering protocol transformers and injecting...
+[11:03:04 INFO]: [ViaBackwards] Loading translations...
+[11:03:04 INFO]: [ViaBackwards] Registering protocols...
+[11:03:04 INFO]: [LuckPerms] Loading server plugin LuckPerms v5.5.87
+[11:03:05 INFO]: [LuckPerms] Loading configuration...
+[11:03:05 INFO]: [Vault] Loading server plugin Vault v2.0.0
+[11:03:05 INFO]: [Essentials] Loading server plugin Essentials v2.22.0
+[11:03:05 INFO]: [ExcelDeathProtection] Loading server plugin ExcelDeathProtection v0.1.3
+[11:03:05 INFO]: [WorldEdit] Loading server plugin WorldEdit v7.4.6+7648-00664b0
+[11:03:05 INFO]: Got request to register class com.sk89q.worldedit.bukkit.BukkitServerInterface with WorldEdit [com.sk89q.worldedit.extension.platform.PlatformManager@6b9aa432]
+[11:03:05 INFO]: [floodgate] Loading server plugin floodgate v2.2.5-SNAPSHOT (b141-81b65cc)
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.geysermc.floodgate.shadow.com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper (file:/C:/Users/MikeExcel/wrv-testserver/server/plugins/floodgate.jar)
+WARNING: Please consider reporting this to the maintainers of class org.geysermc.floodgate.shadow.com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[11:03:05 INFO]: [floodgate] Took 253ms to boot Floodgate
+[11:03:05 INFO]: [PlaceholderAPI] Loading server plugin PlaceholderAPI v2.12.3
+[11:03:06 INFO]: [GriefPrevention] Loading server plugin GriefPrevention v0.1.3
+[11:03:06 INFO]: [ExcelBuildMode] Loading server plugin ExcelBuildMode v1.3.5
+[11:03:06 INFO]: [Geyser-Spigot] Loading server plugin Geyser-Spigot v2.12.1-SNAPSHOT
+[11:03:06 INFO]: [Geyser-Spigot] Loading extensions...
+[11:03:06 INFO]: [Geyser-Spigot] Loaded 0 extension(s)
+[11:03:06 INFO]: [Magic] Loading server plugin Magic v11.2.5-baa3d91
+[11:03:06 INFO]: [Magic] Finding modern compatibility layer for server version 26.3.0
+[11:03:06 INFO]: [Magic] Found Paper version of asBukkitMirror, will use via reflection
+[11:03:06 INFO]: [Magic] Async chunk loading API found
+[11:03:06 INFO]: [Magic] Chat component API found
+[11:03:06 INFO]: [mcMMO] Loading server plugin mcMMO v2.3.003-WRV-XP-2-ExcelShare-1
+[11:03:06 INFO]: [EliteMobs] Loading server plugin EliteMobs v10.9.12
+[11:03:06 INFO]: [EliteMobs] MagmaCore v1.29-SNAPSHOT initialized!
+[11:03:06 INFO]: [EliteMobs] Registered /logify command
+[11:03:06 INFO]: [EliteMobs] Registered /nightbreaklogin command
+[11:03:06 INFO]: [EliteMobs] Registered /nightbreaklogout command
+[11:03:06 INFO]: [EliteMobs] Registered /nightbreak command
+[11:03:06 INFO]: [EliteMobs] No account token found. Run /nightbreaklogin to link this server to a Nightbreak account.
+[11:03:06 INFO]: [CMILib] Loading server plugin CMILib v1.6.1.2
+[11:03:06 INFO]: [ExcelProtect] Loading server plugin ExcelProtect v0.1.9
+[11:03:06 INFO]: [CoreProtect] Loading server plugin CoreProtect v24.1
+[11:03:06 INFO]: [Jobs] Loading server plugin Jobs v5.2.6.3
+[11:03:06 INFO]: [ExcelBossTrial] Loading server plugin ExcelBossTrial v0.5.6
+[11:03:06 INFO]: [ExcelGuildGate] Loading server plugin ExcelGuildGate v0.4.0
+[11:03:06 INFO]: [ExcelMenu] Loading server plugin ExcelMenu v2.0.0
+[11:03:06 INFO]: [ExcelWandBars] Loading server plugin ExcelWandBars v0.3.18
+[11:03:06 INFO]: [AuditLog] Loading server plugin ExcelAuditLog v0.2.0
+[11:03:06 INFO]: [ExcelRaidBuff] Loading server plugin ExcelRaidBuff v0.1.2
+[11:03:06 INFO]: [ExcelRewardGuard] Loading server plugin ExcelRewardGuard v1.7
+[11:03:06 INFO]: [ExcelTogether] Loading server plugin ExcelTogether v0.5.3
+[11:03:06 INFO]: [ExcelTogether] ExcelTogether: party-repair Magic actions registered (ExcelPartyRepair, ExcelRepairItem).
+[11:03:06 INFO]: [SealLog] Loading server plugin ExcelSealLog v1.0.0
+[11:03:06 INFO]: [ExcelPouch] Loading server plugin ExcelPouch v0.1.1
+[11:03:06 INFO]: [Shopkeepers] Loading server plugin Shopkeepers v2.28.1
+[11:03:06 INFO]: [Shopkeepers] Compatibility provider loaded: 26_3_R1_paper
+[11:03:06 INFO]: [Shopkeepers] Paper compatibility provider loaded.
+[11:03:06 INFO]: [Shopkeepers] Loading config.
+[11:03:06 INFO]: [Shopkeepers] Loading language file: language-en-default.yml
+[11:03:06 INFO]: [Shopkeepers] Registering defaults.
+[11:03:06 INFO]: [Shopkeepers] Loaded all plugin classes (204 ms).
+[11:03:06 INFO]: [ExcelPlayerMap] Loading server plugin ExcelPlayerMap v0.2.1
+[11:03:06 INFO]: [ExcelTips] Loading server plugin ExcelTips v0.1.0
+[11:03:06 INFO]: [ExcelShops] Loading server plugin ExcelShops v1.3.9
+[11:03:06 INFO]: [WRVWandDiagnostic] Loading server plugin WRVWandDiagnostic v0.1.0-offline-diagnostic
+[11:03:06 INFO]: [ViaBackwards] Loading server plugin ViaBackwards v5.12.2
+[11:03:06 INFO]: [ProtectRig] Loading server plugin ProtectRig v1.0
+[11:03:06 INFO]: [Broadcaster] Loading server plugin AutoBroadcaster v1.4.0
+[11:03:06 INFO]: [ExcelZombieCharge] Loading server plugin ExcelZombieCharge v0.1.0
+[11:03:06 INFO]: [ExcelWitherSkulls] Loading server plugin ExcelWitherSkulls v0.1.0
+[11:03:06 INFO]: [ExcelWhatsNew] Loading server plugin ExcelWhatsNew v0.1.1
+[11:03:06 INFO]: [ExcelWeekendXP] Loading server plugin ExcelWeekendXP v1.2.0
+[11:03:06 INFO]: [ExcelWealthBoard] Loading server plugin ExcelWealthBoard v1.4.0
+[11:03:06 INFO]: [ExcelWaypoints] Loading server plugin ExcelWaypoints v0.1.0
+[11:03:06 INFO]: [ExcelVaults] Loading server plugin ExcelVaults v0.1.1
+[11:03:06 INFO]: [ExcelTreeCleanup] Loading server plugin ExcelTreeCleanup v0.1.1
+[11:03:06 INFO]: [ExcelTrash] Loading server plugin ExcelTrash v0.3.0
+[11:03:06 INFO]: [ExcelTrainingWheels] Loading server plugin ExcelTrainingWheels v0.1.3
+[11:03:06 INFO]: [ExcelTelemetry] Loading server plugin ExcelTelemetry v0.1.1
+[11:03:06 INFO]: [ExcelSummons] Loading server plugin ExcelSummons v0.1.5
+[11:03:06 INFO]: [ExcelSilkWatch] Loading server plugin ExcelSilkWatch v0.1.3-offline
+[11:03:06 INFO]: [ExcelShopVillager] Loading server plugin ExcelShopVillager v1.1.0
+[11:03:06 INFO]: [ExcelSealFreeze] Loading server plugin ExcelSealFreeze v0.1.0
+[11:03:06 INFO]: [SealAlerts] Loading server plugin ExcelSealAlerts v0.1.2-runtime-diagnostic-OFFLINE
+[11:03:06 INFO]: [ExcelRestartCountdown] Loading server plugin ExcelRestartCountdown v1.2.0
+[11:03:06 INFO]: [ExcelQuartermaster] Loading server plugin ExcelQuartermaster v0.3.1
+[11:03:06 INFO]: [ExcelPartyDrops] Loading server plugin ExcelPartyDrops v0.1.0
+[11:03:06 INFO]: [ExcelNoPhantoms] Loading server plugin ExcelNoPhantoms v1.2.0
+[11:03:06 INFO]: [ExcelMobVeil] Loading server plugin ExcelMobVeil v0.1.0
+[11:03:06 INFO]: [MenuStats] Loading server plugin ExcelMenuStats v0.2.2
+[11:03:06 INFO]: [ExcelMenuJoin] Loading server plugin ExcelMenuJoin v1.4.4
+[11:03:06 INFO]: [ExcelMakersMark] Loading server plugin ExcelMakersMark v0.1.6-lookup-prefilter-OFFLINE
+[11:03:06 INFO]: [ExcelMagicLevel] Loading server plugin ExcelMagicLevel v0.2.0
+[11:03:06 INFO]: [ExcelMagicGate] Loading server plugin ExcelMagicGate v0.3.1
+[11:03:06 INFO]: [ExcelLeaderboard] Loading server plugin ExcelLeaderboard v1.3.1
+[11:03:06 INFO]: [ExcelLandmarks] Loading server plugin ExcelLandmarks v0.1.0
+[11:03:06 INFO]: [ExcelItemInsight] Loading server plugin ExcelItemInsight v0.1.0
+[11:03:06 INFO]: [ExcelGuide] Loading server plugin ExcelGuide v0.3.4
+[11:03:06 INFO]: [ExcelExpansions] Loading server plugin ExcelExpansions v0.1.0
+[11:03:06 INFO]: [ExcelEliteLadder] Loading server plugin ExcelEliteLadder v0.2.1
+[11:03:06 INFO]: [ExcelDowned] Loading server plugin ExcelDowned v0.1.2
+[11:03:06 INFO]: [ExcelDetails] Loading server plugin ExcelDetails v0.2.2
+[11:03:06 INFO]: [ExcelDeathRecord] Loading server plugin ExcelDeathRecord v0.3.0
+[11:03:06 INFO]: [ExcelCosmetics] Loading server plugin ExcelCosmetics v0.1.3
+[11:03:06 INFO]: [ExcelClaimFly] Loading server plugin ExcelClaimFly v0.1.0
+[11:03:06 INFO]: [ExcelChunks] Loading server plugin ExcelChunks v0.1.1
+[11:03:06 INFO]: [ExcelBrainGames] Loading server plugin ExcelBrainGames v0.3.3
+[11:03:06 INFO]: [ExcelAutoSort] Loading server plugin ExcelAutoSort v0.2.1
+[11:03:06 INFO]: [ExcelAttunement] Loading server plugin ExcelAttunement v0.1.8
+[11:03:06 INFO]: [ExcelAimAssist] Loading server plugin ExcelAimAssist v0.1.5
+[11:03:06 INFO]: [ExcelAcrobatics] Loading server plugin ExcelAcrobatics v1.2-candidate
+[11:03:06 INFO]: [ExcelAbilityBridge] Loading server plugin ExcelAbilityBridge v0.1.1
+[11:03:06 INFO]: [EssentialsSpawn] Loading server plugin EssentialsSpawn v2.22.0
+[11:03:06 INFO]: [DecentHolograms] Loading server plugin DecentHolograms v2.10.2
+[11:03:06 INFO]: [Chunky] Loading server plugin Chunky v1.5.3
+[11:03:06 INFO]: [LuckPerms] Enabling LuckPerms v5.5.87
+[11:03:07 INFO]:         __    
+[11:03:07 INFO]:   |    |__)   LuckPerms v5.5.87
+[11:03:07 INFO]:   |___ |      Running on Bukkit - Paper
+[11:03:07 INFO]: 
+[11:03:07 INFO]: [LuckPerms] Loading storage provider... [H2]
+[11:03:07 INFO]: [LuckPerms] Loading internal permission managers...
+[11:03:07 INFO]: [LuckPerms] Performing initial data load...
+[11:03:07 INFO]: [LuckPerms] Successfully enabled. (took 1146ms)
+[11:03:07 INFO]: [Vault] Enabling Vault v2.0.0
+[11:03:07 INFO]: [Vault] [Permission] SuperPerms loaded as backup permission system.
+[11:03:07 INFO]: [Vault] Enabled Version 2.0.0
+[11:03:07 INFO]: [LuckPerms] Registered Vault permission & chat hook.
+[11:03:07 INFO]: [WorldEdit] Enabling WorldEdit v7.4.6+7648-00664b0
+[11:03:07 INFO]: Registering commands with com.sk89q.worldedit.bukkit.BukkitServerInterface
+[11:03:08 INFO]: WEPIF: Vault detected! Using Vault for permissions
+[11:03:08 INFO]: Using com.sk89q.worldedit.bukkit.adapter.impl.v26_3.PaperweightAdapter as the Bukkit adapter
+[11:03:08 INFO]: [Magic] Enabling Magic v11.2.5-baa3d91
+[11:03:08 INFO]: [Magic] EffectLib initialized
+[11:03:08 INFO]: [Magic] Loaded 0 attributes
+[11:03:08 INFO]: [Magic] Wand crafting is enabled
+[11:03:08 INFO]: [Magic] Skin-based spell icons disabled
+[11:03:08 INFO]: [Magic] Registered attributes: [target_fall_distance, minecraft:wind_charged, regeneration, respiration, projectile_protection, bowpower, degrees, seconds, channeling, target_pitch, humidity, pitch, sharpness, darkness, jump, health_max, efficiency, target_luck, target_light, absorption, blindness, target_armor, loyalty, minecraft:weaving, slow_digging, silk_touch, fire_resistance, unluck, invisibility, target_health_max, moon, air_max, slow, light, mana_max, bowpull, damage, minecraft:trial_omen, weeks, swift_sneak, mending, epoch, protection, air, fast_digging, lure, punch, temperature, frost_walker, movement_speed_bps, power, riptide, health_boost, levitation, increase_damage, air_percentage, density, poison, health, target_temperature, binding_curse, yaw, mana, glowing, target_health, target_humidity, days, infinity, impaling, bad_omen, luck, thorns, hero_of_the_village, target_hunger, smite, minecraft:raid_omen, location_x, unbreaking, location_y, target_mana, feather_falling, attack_damage, knockback, lunge, fire_aspect, luck_of_the_sea, knockback_resistance, saturation, conduit_power, location_z, target_air, bane_of_arthropods, soul_speed, night_vision, level, minutes, water_breathing, fall_distance, quick_charge, multishot, aqua_affinity, hunger, slow_falling, difficulty, armor, wind_burst, fulltime, blast_protection, confusion, damage_dealt, harm, piercing, fire_protection, target_yaw, dolphins_grace, speed, weakness, damage_resistance, heal, target_mana_max, minecraft:breath_of_the_nautilus, minecraft:oozing, breach, hours, fortune, health_percentage, looting, minecraft:infested, velocity, sweeping_edge, target_air_max, movement_speed, play_time, depth_strider, xp, target_location_x, pi, target_location_y, vanishing_curse, target_knockback_resistance, target_location_z, time, flame, wither]
+[11:03:08 INFO]: [Magic] Loaded 194 icons
+[11:03:09 INFO]: [Magic] Loaded 12 effect lists
+[11:03:09 INFO]: [Magic] Loaded 1273 items
+[11:03:09 INFO]: [Magic] Loaded 11 wands
+[11:03:09 INFO]: [Magic] Loaded 2 kits
+[11:03:09 INFO]: [Magic] Loaded 4 classes
+[11:03:09 INFO]: [Magic] Loaded 1028 classes
+[11:03:09 INFO]: [Magic] Loaded 53 mob templates
+[11:03:09 INFO]: [Magic] Loaded 8 automata templates
+[11:03:09 INFO]: [Magic] Loaded 0 customized worlds
+[11:03:09 INFO]: Environment: Environment[discoveryUrl=https://discovery.minecraftservices.com/minecraft/client, name=PROD]
+[11:03:09 INFO]: [Magic] Activated BStats
+[11:03:09 INFO]: [Magic] MobArena not found
+[11:03:09 INFO]: [Magic] LibsDisguises not found, magic mob disguises will not be available
+[11:03:09 INFO]: [Magic] ModelEngine integration disabled
+[11:03:09 INFO]: Magic checking resource pack for updates: http://rp.elmakers.com/Magic-RP-26.1.zip
+[11:03:09 INFO]: Preparing level "world"
+[11:03:09 INFO]: Loading 0 persistent chunks for level 'minecraft:overworld'...
+[11:03:09 INFO]: Prepared spawn area in 2 ms
+[11:03:09 INFO]: Loading 0 persistent chunks for level 'minecraft:the_nether'...
+[11:03:09 INFO]: Prepared spawn area in 0 ms
+[11:03:09 INFO]: Loading 0 persistent chunks for level 'minecraft:the_end'...
+[11:03:09 INFO]: Preparing spawn area: 100%
+[11:03:09 INFO]: Prepared spawn area in 1 ms
+[11:03:09 INFO]: Done preparing level "world" (0.584s)
+[11:03:09 INFO]: [ViaVersion] Enabling ViaVersion v5.12.2
+[11:03:09 INFO]: [ViaVersion] ViaVersion detected server version: 26.3 (777)
+[11:03:09 WARN]: [ViaVersion] The Vanilla protocol of Minecraft 1.20.5-1.21.4 is easily exploitable. If you don't need to support these versions, consider adding them to block-versions in the ViaVersion config: "1.20.5-1.20.6", "1.21-1.21.1", "1.21.2-1.21.3", "1.21.4"
+[11:03:10 INFO]: [Essentials] Enabling Essentials v2.22.0
+[11:03:10 ERROR]: [Essentials] You are running an unsupported server version!
+[11:03:10 INFO]: [Essentials] Attempting to convert old kits in config.yml to new kits.yml
+[11:03:10 INFO]: [Essentials] No kits found to migrate.
+[11:03:10 INFO]: [Essentials] Selected Paper 1.13+ Tile Entity Provider as the provider for TileEntityProvider
+[11:03:10 INFO]: [Essentials] Selected Paper Material Tag Provider as the provider for MaterialTagProvider
+[11:03:10 INFO]: [Essentials] Selected 1.12.2+ Player Locale Provider as the provider for PlayerLocaleProvider
+[11:03:10 INFO]: [Essentials] Selected 1.21.4+ Sync Commands Provider as the provider for SyncCommandsProvider
+[11:03:10 INFO]: [Essentials] Selected Paper Tick Count Provider as the provider for TickCountProvider
+[11:03:10 INFO]: [Essentials] Selected 1.11+ Item Unbreakable Provider as the provider for ItemUnbreakableProvider
+[11:03:10 INFO]: [Essentials] Selected 1.13+ Spawn Egg Provider as the provider for SpawnEggProvider
+[11:03:10 INFO]: [Essentials] Selected 1.20.5+ Banner Data Provider as the provider for BannerDataProvider
+[11:03:10 INFO]: [Essentials] Selected 1.14+ Sign Data Provider as the provider for SignDataProvider
+[11:03:10 INFO]: [Essentials] Selected Reflection Formatted Command Alias Provider as the provider for FormattedCommandAliasProvider
+[11:03:10 INFO]: [Essentials] Selected Paper Container Provider as the provider for ContainerProvider
+[11:03:10 INFO]: [Essentials] Selected 1.17.1+ World Info Provider as the provider for WorldInfoProvider
+[11:03:10 INFO]: [Essentials] Selected 1.21+ InventoryView Interface ABI Provider as the provider for InventoryViewProvider
+[11:03:10 INFO]: [Essentials] Selected 1.8.3+ Spawner Item Provider as the provider for SpawnerItemProvider
+[11:03:10 INFO]: [Essentials] Selected 1.12+ Spawner Block Provider as the provider for SpawnerBlockProvider
+[11:03:10 INFO]: [Essentials] Selected Paper Server State Provider as the provider for ServerStateProvider
+[11:03:10 INFO]: [Essentials] No provider found for BiomeKeyProvider, but it is nullable
+[11:03:10 INFO]: [Essentials] Selected Paper Serialization Provider as the provider for SerializationProvider
+[11:03:10 INFO]: [Essentials] Selected 1.20.6+ Potion Meta Provider as the provider for PotionMetaProvider
+[11:03:10 INFO]: [Essentials] Selected Legacy Biome Name Provider as the provider for BiomeNameProvider
+[11:03:10 INFO]: [Essentials] Selected Reflection Online Mode Provider as the provider for OnlineModeProvider
+[11:03:10 INFO]: [Essentials] Selected 1.14.4+ Persistent Data Container Provider as the provider for PersistentDataProvider
+[11:03:10 INFO]: [Essentials] Selected Paper Known Commands Provider as the provider for KnownCommandsProvider
+[11:03:10 INFO]: [Essentials] Selected 1.20.4+ Damage Event Provider as the provider for DamageEventProvider
+[11:03:10 INFO]: [Essentials] Loaded 46312 items from items.json.
+[11:03:10 INFO]: [Essentials] Using locale en_US
+[11:03:10 INFO]: [Essentials] ServerListPingEvent: Spigot iterator API
+[11:03:10 INFO]: [Essentials] Starting Metrics. Opt-out using the global bStats config.
+[11:03:10 INFO]: [Essentials] Using Vault based permissions (LuckPerms)
+[11:03:10 INFO]: [ExcelDeathProtection] Enabling ExcelDeathProtection v0.1.3
+[11:03:10 INFO]: [ExcelDeathProtection] ExcelDeathProtection 0.1.3: basic $15,000.00, premium $30,000.00
+[11:03:10 INFO]: [floodgate] Enabling floodgate v2.2.5-SNAPSHOT (b141-81b65cc)
+[11:03:10 INFO]: [PlaceholderAPI] Enabling PlaceholderAPI v2.12.3
+[11:03:10 INFO]: [PlaceholderAPI] Fetching available expansion information...
+[11:03:10 INFO]: [GriefPrevention] Enabling GriefPrevention v0.1.3
+[11:03:10 INFO]: [GriefPrevention] ExcelClaims 0.1.3 enabled: 11 claims, 16 player accounts, build EXC-CLAIMS-0.1.3-WRV-20261108-04-bd9ff4
+[11:03:10 INFO]: [ExcelBuildMode] Enabling ExcelBuildMode v1.3.5
+[11:03:10 WARN]: [ExcelBuildMode] ExcelBuildMode 1.3.5 PILOT: construction-only profile. Reward-provider admission is OFF by configuration; earning is suppressed by the session jobs.use denial and the pilot input gates. Logging off in Build Mode returns to Build Mode on relog (1.3). 1.3.1: //schem load/save/list/formats allowed in session (the 1.3 guard cancelled them). 1.3.2: big paste - excelbuildmode.bigpaste holders get a raised WorldEdit block-change limit in session (big-paste.block-change-limit, default 1000000); //limit stays blocked, everyone else keeps the WorldEdit config default. 1.3.3: console admin - /buildmode admin status <player> and /buildmode admin off <player> (excelbuildmode.admin, console allowed) inspect a session and force its Survival restore through the standard recovery path. 1.3.4: combined rebuild - the reviewed-builder exemption rides alongside the console admin surface: a holder of excelbuildmode.reviewed keeps standing WorldEdit permissions and still uses Build Mode (the outside-WorldEdit entry refusal and the exit residual-permission probe are skipped). Trust-based building, not a security boundary. 1.3.5: durable-store directory sync is best-effort - a platform that refuses directory channels (Windows) no longer disables storage; the file-level sync is unchanged.
+[11:03:10 INFO]: [Geyser-Spigot] Enabling Geyser-Spigot v2.12.1-SNAPSHOT
+[11:03:11 INFO]: [mcMMO] Enabling mcMMO v2.3.003-WRV-XP-2-ExcelShare-1
+[11:03:11 INFO]: [mcMMO] Loaded 0 level up command(s) from level_up_commands.yml
+[11:03:11 INFO]: [mcMMO] Loaded 28 of 28 Excavation treasures from treasures.yml.
+[11:03:11 INFO]: [mcMMO] Loaded 10 of 10 Hylian_Luck treasures from treasures.yml.
+[11:03:11 INFO]: [mcMMO] Loaded 71 of 71 Fishing treasures from fishing_treasures.yml.
+[11:03:11 INFO]: [mcMMO] Loaded 55 of 55 Shake treasures from fishing_treasures.yml.
+[11:03:11 INFO]: [mcMMO] Loaded 232 of 232 Alchemy potions.
+[11:03:12 INFO]: [PlaceholderAPI] Successfully registered internal expansion: mcmmo [2.3.003-WRV-XP-2-ExcelShare-1]
+[11:03:12 INFO]: [EliteMobs] Enabling EliteMobs v10.9.12
+[11:03:12 INFO]:  _____ _     _____ _____ ________  ______________  _____
+[11:03:12 INFO]: |  ___| |   |_   _|_   _|  ___|  \/  |  _  | ___ \/  ___|
+[11:03:12 INFO]: | |__ | |     | |   | | | |__ | .  . | | | | |_/ /\ `--.
+[11:03:12 INFO]: |  __|| |     | |   | | |  __|| |\/| | | | | ___ \ `--. \
+[11:03:12 INFO]: | |___| |_____| |_  | | | |___| |  | \ \_/ / |_/ //\__/ /
+[11:03:12 INFO]: \____/\_____/\___/  \_/ \____/\_|  |_/\___/\____/ \____/
+[11:03:12 INFO]: By MagmaGuy - v. 10.9.12
+[11:03:12 WARN]: [EliteMobs] Wands, staves, their enchantments, and the mage class require FreeMinecraftModels. These optional features are unavailable. Download: https://nightbreak.io/plugin/freeminecraftmodels/
+[11:03:12 INFO]: [EliteMobs] Supported server version detected: v26
+[11:03:12 INFO]: [CMILib] Enabling CMILib v1.6.1.2
+[11:03:12 INFO]: Server version detection by new method: v26_3_0 Legacy: false Mojang Mappings: true
+[11:03:12 INFO]: Server version: v26_3_0 - 26.3.0 - paper  26.3-245-cd1c3b6 (MC: 26.3)
+[11:03:12 INFO]: [PlaceholderAPI] Successfully registered internal expansion: cmil [1.6.1.2]
+[11:03:12 INFO]: PlaceholderAPI hooked.
+[11:03:12 INFO]: Updated (EN) language file. Took 16ms
+[11:03:12 INFO]: [ExcelProtect] Enabling ExcelProtect v0.1.9
+[11:03:12 INFO]: [ExcelProtect] [ExcelProtect] combat: Magic CastEvent feed hooked (spell attribution on)
+[11:03:12 INFO]: [ExcelProtect] [ExcelProtect] damage incidents: ON gap=2000ms near-death<=30% elitemobs=hooked
+[11:03:12 INFO]: [ExcelProtect] [ExcelProtect] damage dealt: ON gap=2000ms elitemobs=hooked
+[11:03:12 INFO]: [ExcelProtect] [ExcelProtect] healing incidents: ON gap=2000ms
+[11:03:12 INFO]: [ExcelProtect] [ExcelProtect] locations: ON sample=60s anchors=join,quit,teleport,world,respawn,gamemode
+[11:03:12 INFO]: [ExcelProtect] [ExcelProtect] clarity: ON delivery=next-tick chains=expiry 1800s ground-radius=5
+[11:03:12 INFO]: [ExcelProtect] [ExcelProtect] player timelines: ON (projection of the streams; streams stay canonical)
+[11:03:12 INFO]: [ExcelProtect] [ExcelProtect] worldedit logging: ON (WorldEdit edits recorded into the blocks stream, actor-attributed)
+[11:03:12 INFO]: [ExcelProtect] [ExcelProtect] recovery: ON rollback=blocks+containers+undo(incl. containers) restore-entity restore-inventory (0.1.6)
+[11:03:12 INFO]: [ExcelProtect] [ExcelProtect] importer: deathrecord honors restored marks + lost&found state migration (0.1.7)
+[11:03:12 INFO]: [ExcelProtect] [ExcelProtect] kill parity: elite/weapon/origin-class/damage-shares on entity_death (0.1.7)
+[11:03:12 INFO]: [ExcelProtect] [ExcelProtect] READY version=0.1.9 dir=plugins\ExcelProtect gp=on vault=on mcmmo=on we=on retention-days=30
+[11:03:12 INFO]: [CoreProtect] Enabling CoreProtect v24.1
+[11:03:12 INFO]: [CoreProtect] Development branch detected, skipping patch scripts.
+[11:03:13 INFO]: [CoreProtect] CoreProtect Community Edition has been successfully enabled! 
+[11:03:13 INFO]: [CoreProtect] Using SQLite for data storage.
+[11:03:13 INFO]: --------------------
+[11:03:13 INFO]: [CoreProtect] Enjoy CoreProtect? Join our Discord!
+[11:03:13 INFO]: [CoreProtect] Discord: www.coreprotect.net/discord/
+[11:03:13 INFO]: --------------------
+[11:03:13 INFO]: [Jobs] Enabling Jobs v5.2.6.3
+[11:03:13 INFO]: ------------- Jobs -------------
+[11:03:13 INFO]: [PlaceholderAPI] Successfully registered internal expansion: jobsr [5.2.6.3]
+[11:03:13 INFO]: PlaceholderAPI hooked.
+[11:03:13 INFO]: Connected to database (SqLite)
+[11:03:13 INFO]: Loaded 8 titles
+[11:03:13 INFO]: Loaded 2 restricted areas!
+[11:03:13 INFO]: Loaded 53 protected blocks timers
+[11:03:13 INFO]: Loaded 1816 custom item names
+[11:03:13 INFO]: Loaded 93 custom entity names
+[11:03:13 INFO]: Loaded 2 custom MythicMobs names
+[11:03:13 INFO]: Loaded 43 custom enchant names
+[11:03:13 INFO]: Loaded 46 custom enchant names
+[11:03:13 INFO]: Loaded 16 custom color names
+[11:03:13 INFO]: Update shops items icon section and use 'ItemStack' instead
+[11:03:13 INFO]: Loaded 4 shop items
+[11:03:13 INFO]: Loaded 1 quests for Explorer
+[11:03:13 INFO]: Loaded 1 quests for Builder
+[11:03:13 INFO]: Loaded 1 quests for Farmer
+[11:03:13 INFO]: Loaded 1 quests for Crafter
+[11:03:13 INFO]: Loaded 1 quests for Fisherman
+[11:03:13 INFO]: Loaded 1 quests for Miner
+[11:03:13 INFO]: Loaded 1 quests for Brewer
+[11:03:13 INFO]: Loaded 1 quests for Woodcutter
+[11:03:13 INFO]: Loaded 1 quests for Hunter
+[11:03:13 INFO]: Loaded 1 quests for Digger
+[11:03:13 INFO]: Loaded 1 quests for Enchanter
+[11:03:13 INFO]: Loaded 1 quests for Weaponsmith
+[11:03:13 INFO]: Loaded 12 jobs
+[11:03:13 INFO]: Loaded 0 boosted items
+[11:03:13 INFO]: Loaded 21 furnace for reassigning.
+[11:03:13 INFO]: Loaded 3 brewing for reassigning.
+[11:03:13 INFO]: Loaded 8 blastfurnace for reassigning.
+[11:03:13 INFO]: Loaded 7 smoker for reassigning.
+[11:03:13 INFO]: Started database save task.
+[11:03:13 INFO]: Started buffered payment thread.
+[11:03:13 INFO]: Loaded 1 schedulers!
+[11:03:13 INFO]: Preloaded 16 players data in 0.01
+[11:03:13 INFO]: mcMMO detected.
+[11:03:13 INFO]: Registering listeners...
+[11:03:13 INFO]: Registered mcMMO 2.x listener.
+[11:03:13 INFO]: Listeners registered successfully
+[11:03:13 INFO]: Plugin has been enabled successfully.
+[11:03:13 INFO]: ------------------------------------
+[11:03:13 INFO]: [ExcelBossTrial] Enabling ExcelBossTrial v0.5.6
+[11:03:13 INFO]: [ExcelBossTrial] State loaded: cooldowns [], monuments 8, elder seal open, signatures paid [ender_dragon, elder_guardian], signature generations {ender_dragon=0, elder_guardian=0}, repeat windows [elder_guardian], credited seals [ender_dragon, elder_guardian].
+[11:03:13 INFO]: [ExcelBossTrial] Reviewed personal-marker world: world -> 21afaafc-bd09-49c6-9c70-e8b441e2baa6
+[11:03:13 INFO]: [ExcelBossTrial] Reviewed personal-marker world: world_nether -> f266180a-d38c-4f0a-b8be-a77902505452
+[11:03:13 INFO]: [ExcelBossTrial] Reviewed personal-marker world: world_the_end -> 5634ee96-6edd-435d-964b-61c47ba916a4
+[11:03:13 INFO]: [ExcelBossTrial] GuildGate credit hook: ON (boss seals credit only on approval).
+[11:03:13 INFO]: [ExcelBossTrial] Dragon chapter awake (ExcelDragonTrial 0.1.2 port): two-phase dragon ENABLED (phase1 4000 HP, phase2 16000 HP, damage x1.5). caps: per-event <= 45 HP | explosion <= 60 HP/tick | crystal placement locked during battle.
+[11:03:13 INFO]: [ExcelBossTrial] Raid repeat adapter: ON (GuildGate raid events pay through BossTrial claims).
+[11:03:13 INFO]: [ExcelBossTrial] Repeat layer: ON (window 24.0h base, signature generations on, cash $5000/champion, jackpot +2 rolls).
+[11:03:13 INFO]: [ExcelBossTrial] First-break layer: ON (warden only, cash $10000/champion replacing the repeat rate, jackpot +2 rolls, title "Sealbreakers", EM kit 9 rows; warden unpaid).
+[11:03:13 INFO]: [ExcelBossTrial] Cash taper: ON (lifetime per-player per-seal counts; clear #1 warden $10000 / others $5000, clear #2 $5000, clear #3+ $2000; cash only - accelerants, jackpot +2 rolls and the war chest pay in full).
+[11:03:13 INFO]: [ExcelBossTrial] Seal cycle: cycle 1, 0 of 5 this cycle, guild opened latch unset, personal first-break extras paid for 0 player-seal pair(s).
+[11:03:13 INFO]: [ExcelBossTrial] Elder progress expiry: ON (24.0h from the first counted elder; partial trios respawn)
+[11:03:13 INFO]: [ExcelBossTrial] Seal-cycle listener: inert (no cycle-built GuildGate event class; BossTrial's own credit paths carry the cycle mirror).
+[11:03:13 INFO]: [ExcelBossTrial] Build: EXC-BOSSTRIAL-0.5.6-WRV-20261111-01-3c9e56
+[11:03:13 INFO]: [ExcelBossTrial] ExcelBossTrial 0.5.6 awake: ENABLED (share gate 70% of max HP, presence 128 blocks, cooldown 6h 0m).
+[11:03:13 INFO]: [ExcelBossTrial] XP band governor feed: ON (governed hits plant band verdicts; a listener such as ExcelRewardGuard may scale their mcMMO XP - out-of-band pays 25% there)
+[11:03:13 INFO]: [ExcelBossTrial] Fight tracking: ON (per-player damage + healing records land in fights/ at every verdict and elder progress point; Magic heal-spell feed ON)
+[11:03:13 INFO]: [ExcelBossTrial] Milestone beats: ON (75/50/25% of the pool remaining: a broadcast line + one pulse surge per threshold, once per encounter - the warden's lines are its progress display; per-chapter keys under <chapter>.milestones)
+[11:03:13 INFO]: [ExcelBossTrial] Damage feedback: ON (boss bar title carries the true pool numbers; per-player damage totals on the action bar; display scale x1000.0 (feedback.display-scale); /bosstrial feedback off opts a player out; display only - fight math untouched)
+[11:03:13 INFO]: [ExcelBossTrial] Elite sprinkle: master ON; wither ARMED (cadence 120s, cap 140); elder_guardian ARMED (cadence 120s, cap 60) [melee: kb -1.0 stagger 40t]; warden off; ender_dragon ARMED (cadence 180s, cap 40) (phase 2 only) - chapters ship dark until armed in <chapter>.sprinkle; EliteMobs seam: resolved
+[11:03:13 INFO]: [ExcelBossTrial] Boss taunts: The Wither ARMED (10 lines, 25s cooldown), An Elder Guardian silent, The Warden silent, The Ender Dragon silent.
+[11:03:13 INFO]: [ExcelBossTrial] Boss voice: The Wither ARMED (10 clips), An Elder Guardian ARMED (7 clips), The Warden ARMED (7 clips), The Ender Dragon ARMED (8 clips) - positional at the boss, participants only; raid clips ride the packs inert (GuildGate packet, later).
+[11:03:13 INFO]: [ExcelBossTrial] ExcelProtect emit: ON (adapter bound; fight tables ON, state changes ON; verdicts and boss state publish to ExcelProtect)
+[11:03:13 INFO]: [ExcelBossTrial] pulse shield: ExcelTrainingWheels seam UNBOUND (plugin not present) - pulse at full amount
+[11:03:13 INFO]: [ExcelGuildGate] Enabling ExcelGuildGate v0.4.0
+[11:03:13 INFO]: [PlaceholderAPI] Successfully registered internal expansion: guildgate [0.4.0]
+[11:03:13 INFO]: [ExcelGuildGate] Hooked into PlaceholderAPI (%guildgate_unlocked%, %guildgate_seals_broken%, %guildgate_seals_total%).
+[11:03:13 INFO]: [ExcelGuildGate] ExcelGuildGate enabled: 4 of 5 seals broken, guild LOCKED
+[11:03:13 INFO]: [ExcelGuildGate] Join catch-up: on, 16 players tracked.
+[11:03:13 INFO]: [ExcelGuildGate] Narration: on, catch-up replay on, guide delay 2s (pack sounds wrv:guildgate.seal1..5)
+[11:03:13 INFO]: [ExcelGuildGate] Java narrator pack: on (pack 'https://elmikeexcel.github.io/winkreyesvalley/packs/wrv-guildgate-narrator-pack.zip', 5 lifetime offers per player; an accept or the last offer ends the asking), 11 players with saved pack state
+[11:03:13 INFO]: [ExcelGuildGate] Raid omen floor: the raid seal requires Bad Omen level 5 (config sealRequirements.raidOmenLevel).
+[11:03:13 INFO]: [ExcelGuildGate] Raid repeat: on, window 24h 0m (repeat floor: Bad Omen level 5)
+[11:03:13 INFO]: [ExcelGuildGate] Raid pressure: on (health x3.5, attack x1.25, wave ramp +0.1/wave, pulse 2.0 HP per 20s while hot)
+[11:03:13 INFO]: [ExcelMenu] Enabling ExcelMenu v2.0.0
+[11:03:13 INFO]: [ExcelMenu] ExcelMenu registry: 91 entries live — registry diff: +91 added (aimassist, ask, autojoin, autosort, boss_rewards, braingames, chestfilter, cl_abandonclaim, cl_buyclaimblocks_amount, cl_childproofmenu, cl_claim, cl_claimslist, cl_extendclaim_blocks, cl_trapped, cl_trust_player, cl_unchildproof_player, commands, cosmetics, details_settings, excelshop, fh_aimassist, fh_chunks, fh_places, fh_treecleanup, filterrecover, ga_menu, ga_spawn, ga_tpa_player, ga_tpaccept, ga_tpmenu, ga_warps, gq_ag, gq_em, gq_em_party, gq_seals, guild, halloween, halloween_scares, info, jobs, landmarks, leaderboard, lostfound, magiclevel, makersmark_settings, maxorg, mj_balance, mj_balancetop, mj_jobs, mj_jobs_join_job, mj_jobs_stats, mj_pay_player_amount, party, shop, si_compass, si_emotes, si_list, si_menujoin, si_motd, si_msg_player_message, si_playermap, si_pouch, si_servercommands, si_serverwebsite, si_whatsnew, silkwarnings, skills, sl_leaderboard, sl_mcstats, sl_mctop, sl_party, sl_skill_name, spawn, spellbook, st_buildmode, st_cosmetics, st_deathprotection_status, st_excelshop_manage, st_excelshop_setup, st_mobveil_status, st_shop, tpmenu, trash, utility_pouch, wandstyle, website, whatsnew, yi_ask, yi_lostfound, yi_mark, yi_trash), -0 removed, ~0 changed, 0 unchanged
+[11:03:13 INFO]: [ExcelMenu] ExcelMenu layouts: 2 live: commands_menu, server_menu
+[11:03:13 INFO]: [ExcelMenu] ExcelMenu: definition 'server_menu' not loaded — registry-owned or retired (Phase 1 conversion); the file is inert and can be removed.
+[11:03:13 INFO]: [ExcelMenu] ExcelMenu: definition 'teleport_confirm_guild' not loaded — registry-owned or retired (Phase 1 conversion); the file is inert and can be removed.
+[11:03:13 INFO]: [ExcelMenu] ExcelMenu: definition 'teleport_confirm_home' not loaded — registry-owned or retired (Phase 1 conversion); the file is inert and can be removed.
+[11:03:13 INFO]: [ExcelMenu] ExcelMenu: definition 'teleport_confirm_spawn' not loaded — registry-owned or retired (Phase 1 conversion); the file is inert and can be removed.
+[11:03:13 INFO]: [ExcelMenu] ExcelMenu: definition 'teleport_confirm_spawncmd' not loaded — registry-owned or retired (Phase 1 conversion); the file is inert and can be removed.
+[11:03:13 INFO]: [ExcelMenu] ExcelMenu self-check: loaded 13 menus: basics_menu, details_settings, makersmark_settings, skills_perks, spawnshop, spawnshop_building, spawnshop_cosmetics_colors, spawnshop_cosmetics_sets, spawnshop_enchanting, spawnshop_food, spawnshop_potions_protection, spawnshop_safe_blocks, spawnshop_travel_animals
+[11:03:13 INFO]: [ExcelMenu] ExcelMenu: registered command /shop -> spawnshop
+[11:03:13 INFO]: [ExcelMenu] ExcelMenu: registered command /basicsmenu -> basics_menu
+[11:03:13 INFO]: [ExcelMenu] ExcelMenu platform bridge self-check: Geyser reflection surface PRESENT — Bedrock detection live; fallback is the chest GUI.
+[11:03:13 INFO]: [ExcelMenu] ExcelMenu 2.0.0 enabled (Phase 2: unified — registry, definitions and the /menu family in one plugin; ExcelBedrockMenu is retired). 91 entries, 2 registry menus, 13 definition menus live.
+[11:03:13 INFO]: [ExcelWandBars] Enabling ExcelWandBars v0.3.18
+[11:03:13 INFO]: [ExcelWandBars] Own spell bar per player ON (21 slots, new spell lines ON, max 3, new tab ON, 0 unacked across 0 player(s), 0 player(s) saved).
+[11:03:13 INFO]: [ExcelWandBars] Arrange mode ON (timeout 90 s), hold-to-read ON (800 ms, Bedrock screens), drag signpost ON, drag-write ON, positions "Bar {bar} · Slot {slot}".
+[11:03:13 INFO]: [ExcelWandBars] Spell inventory pager buttons ON (grid slots 34/35, target list, flips 0, protected 0, sweeps 0, displaced 0, leaks stripped 0).
+[11:03:13 INFO]: [ExcelWandBars] Cooldown name tag ON (accuracy, threshold 60s, tagged 0, refreshed 0, restored 0, sweeps 0, storage cleanups 0, stale 0).
+[11:03:13 INFO]: [ExcelWandBars] Rank-up by casting ON.
+[11:03:13 INFO]: [ExcelWandBars] Build EXC-WANDBARS-0.3.18-WRV-20261114-01-e17db9 (ExcelWandBars, Wink Reyes Valley).
+[11:03:13 INFO]: [ExcelWandBars] Sneak bar flip ON (debounce 250 ms), spell book ON, skip worlds [em_adventurers_guild, goblinkingdom_vf] prefixes [em_], compass guard ON [menujoin:menu_compass, excelmenujoin:menu_compass]
+[11:03:13 INFO]: [ExcelWandBars] Wand style switch ON (default classic, 0 player choice(s) saved, sneak bars everyone, own spell bar per player ON (21 slots, 7 per page Tap bar / original, 8 Sneak bars))
+[11:03:13 INFO]: [ExcelWandBars] Tap bar / Tap to pick (original): open on hold ON, empty slot closes ON, idle close 15s (original only, Tap bar stays up), close before other inventory ON, Tap bar slot-hold shows spell info ON (world taps never open Book; slot hold after a tap reads within 1500 ms), icon lore Spell Book text, Tap to pick: tap picks (quick_cast manual), right click handled (Java open / items back, Bedrock hold casts once), Tap bar tap the wand: toggle (guard 700 ms, source Geyser no Geyser translator), tap echo guard: fresh input within 1000 ms or a confirming re-tap, crouch + hold book: ON (400 ms on Bukkit signals; protocol fast path kept), exit sweep ON
+[11:03:13 INFO]: [ExcelWandBars] Wand slot ON (slot 9, styles original, tapbar, quiet after click 3000 ms, sweep every 20 ticks)
+[11:03:13 INFO]: [ExcelWandBars] Spell screen: Bedrock Classic spell list as a form ON, progress line ON (min gap 4000 ms, skip during stance true), Spell Book tip ON (until OK, 0 player(s) tracked)
+[11:03:13 INFO]: [ExcelWandBars] Wand tip ON (first 15 wand uses until OK, 5 player(s) tracked)
+[11:03:13 INFO]: [AuditLog] Enabling ExcelAuditLog v0.2.0
+[11:03:13 INFO]: [AuditLog] [AuditLog] READY version=0.2.0 economy=EssentialsX Economy dir=plugins/ExcelAuditLog sources=auditlog,shop,menu,trash,death,burn,seal,coreprotect(api 13)
+[11:03:13 INFO]: [ExcelRaidBuff] Enabling ExcelRaidBuff v0.1.2
+[11:03:13 INFO]: [ExcelRaidBuff] ExcelRaidBuff 0.1.2 awake: ENABLED (HP x1.00/1.50/1.90/2.40/3.00, DMG x1.00/1.15/1.25/1.35/1.45, late-wave HP x1.25 on final 2; elites ON share 0%/8%/15%/22%/28%, EM seam AVAILABLE, level cap 150; reveal ON quiet 180s; expiry ON cap 6h)
+[11:03:13 INFO]: [ExcelRewardGuard] Enabling ExcelRewardGuard v1.7
+[11:03:13 INFO]: [ExcelRewardGuard] Provenance marking ON: spawner, spawn-egg and Nether-portal mobs are marked at birth and stay marked.
+[11:03:13 INFO]: [ExcelRewardGuard] Farm rates: Jobs 33% (config jobs-farm-rate: 0.33), mcMMO 33% (config mcmmo-farm-rate: 0.33); 0 = block that path's farm rewards like 1.0, 1 = no reduction on that path.
+[11:03:13 INFO]: [ExcelRewardGuard] Seal-step state restored from seal-step-state.txt (18 entries).
+[11:03:13 INFO]: [ExcelRewardGuard] Seal step ON: Jobs money +5% per seal flat (no fade); Jobs XP and mcMMO XP +10% per seal faded by the gap to par (par = top-3 mean mcMMO power, measured live and pinned per seal). Composition: base x farm rate (if farmed) x step. Magic SP is never stepped; the step is invisible to players.
+[11:03:13 INFO]: [ExcelRewardGuard] Fall-softened kill detection ON: a mob whose cumulative fall damage reaches 50% of its max health counts as farmed and earns the same farm rates above (config farm-fall-damage-percent: 50).
+[11:03:13 INFO]: [ExcelRewardGuard] Audit log OFF (config audit-log: false); adjustments are counted but not recorded per kill.
+[11:03:13 INFO]: [ExcelRewardGuard] Boss band governor ON: ExcelBossTrial verdict feed connected; out-of-band governed hits pay 25% mcMMO XP in real time (config boss-band-rate: 0.25), in-band hits pay full. Silent: no player-facing text; the seal step and farm rates compose as before.
+[11:03:13 INFO]: [ExcelRewardGuard] Jobs reward scaling ACTIVE: marked kills earn 33% of their Jobs money, points and XP (each channel scaled exactly once; jobs-farm-rate: 0.33).
+[11:03:13 INFO]: [ExcelRewardGuard] mcMMO reward scaling ACTIVE: marked kills earn 33% of their mcMMO XP (kill XP scaled before multipliers and party share; mcmmo-farm-rate: 0.33).
+[11:03:13 INFO]: [ExcelRewardGuard] EliteMobs found: verdict logging only. EliteMobs 10.9.8 has no cancellable reward event, so the guard cannot reduce its coin showers; its own anti-exploit caps still apply.
+[11:03:13 INFO]: [ExcelRewardGuard] Seal step status: GuildGate seals 4 of 5; par 2195.3; money step x1.2, XP step up to x1.4 at power 0, fading to x1 at par.
+[11:03:13 INFO]: [ExcelRewardGuard] Vanilla XP drops are never modified by this plugin.
+[11:03:13 INFO]: [ExcelTogether] Enabling ExcelTogether v0.5.3
+[11:03:13 INFO]: [ExcelTogether] ExcelTogether: PartyLookup service published (party share consumers can connect).
+[11:03:13 INFO]: [ExcelTogether] ExcelTogether 0.5.3 enabled: x1.25 money and XP, bonus-mode PARTY, radius 50.0 blocks, parties up to 5, invites last 60s, compass click invite ON. Bedrock forms: Geyser found. Jobs sharing: 100%, idle limit 120s. mcMMO XP sharing: ON (100%, skipped for parties where mcMMO XP share is EQUAL). mcMMO party link: ON (mcMMO 2.3.003-WRV-XP-2-ExcelShare-1, hand joins mirrored by event + poll). Bedrock form % escape ON. Range indicator: action bar changes (hold 2000 ms, reminder 30s), gain lines at most every 5s, cue hysteresis 3s. Party friendly fire: BLOCKED (pets on, potions on). Party drops: x2 when 3+ party members are within 50 blocks, cap 150 boosted kills/hour. hp refresh: objective 'hp'. EliteMobs mesh: ON (poll ~2s, login materialize ON, invites mirrored, EM-door leave ends the party). PartyLookup service: published. Magic party repair: ON (ExcelPartyRepair + ExcelRepairItem registered), repair confirm ON (10s window, 4h 0m lockout).
+[11:03:13 INFO]: [SealLog] Enabling ExcelSealLog v1.0.0
+[11:03:13 INFO]: [SealLog] READY version=1.0.0
+[11:03:13 INFO]: [ExcelPouch] Enabling ExcelPouch v0.1.1
+[11:03:13 INFO]: [ExcelPouch] ExcelPouch enabled: 2 pocket(s), allowlist [magic_wand, menu_compass], wand key 'wand'.
+[11:03:13 INFO]: [Shopkeepers] Enabling Shopkeepers v2.28.1
+[11:03:13 INFO]: [Shopkeepers] Loading the data of 1 shopkeepers ...
+[11:03:13 INFO]: [ExcelPlayerMap] Enabling ExcelPlayerMap v0.2.1
+[11:03:13 INFO]: [ExcelPlayerMap] Native player-map enhancement enabled. Only newly activated ordinary maps and their unlocked zoom descendants are enrolled.
+[11:03:13 INFO]: [ExcelTips] Enabling ExcelTips v0.1.0
+[11:03:13 INFO]: [ExcelTips] ExcelTips 0.1.0: 29 tips (29 switched on), 13 players on file.
+[11:03:13 INFO]: [ExcelShops] Enabling ExcelShops v1.3.9
+[11:03:13 INFO]: [ExcelShops] ExcelShops data check: EXISTING_TARGET
+[11:03:13 INFO]: [ExcelShops] ExcelShops purchases available.
+[11:03:13 INFO]: [ExcelShops] ExcelShops enabled. Legacy ChestShop confirmation: unavailable/absent. Economy: EssentialsX Economy
+[11:03:13 INFO]: [WRVWandDiagnostic] Enabling WRVWandDiagnostic v0.1.0-offline-diagnostic
+[11:03:13 INFO]: [ViaBackwards] Enabling ViaBackwards v5.12.2
+[11:03:13 INFO]: [ProtectRig] Enabling ProtectRig v1.0
+[11:03:13 INFO]: [ProtectRig] [PRIG] mode=probe
+[11:03:13 INFO]: [Broadcaster] Enabling AutoBroadcaster v1.4.0
+[11:03:13 INFO]: [Broadcaster] AutoBroadcaster enabled successfully!
+[11:03:13 INFO]: [ExcelZombieCharge] Enabling ExcelZombieCharge v0.1.0
+[11:03:13 INFO]: [ExcelZombieCharge] ExcelZombieCharge enabled: charge ON, speed x1.50 (+0.5) for 60 ticks, refreshed per qualifying hit, victim types [ZOMBIE_VILLAGER, PIGLIN_BRUTE, ZOMBIFIED_PIGLIN, ZOMBIE, DROWNED, HUSK, PIGLIN]
+[11:03:13 INFO]: [ExcelWitherSkulls] Enabling ExcelWitherSkulls v0.1.0
+[11:03:13 INFO]: [ExcelWitherSkulls] ExcelWitherSkulls enabled: top-up ON, target skull chance 25.0% (realized 24.44% with no Looting), EliteMobs seam BOUND
+[11:03:13 INFO]: [ExcelWhatsNew] Enabling ExcelWhatsNew v0.1.1
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-11-excelshops-console-admin: long line "Staff can now check a player's shops fro..." (186 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-11-lightning-second-strike-timing: long line "Lightning at its highest tier strikes tw..." (195 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-11-lightning-second-strike-timing: long line "Damage is unchanged: each strike still h..." (165 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-11-excelmagicgate-wand-milestones: long line "Your lore already showed your credited c..." (186 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-11-excelabilitybridge-console-admin: long line "Staff can now check the ability bridge f..." (247 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-11-excelrewardguard-console-admin: long line "Staff can now check the reward guard fro..." (290 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-11-excelsummons-mana-holds-cap: long line "Your companions and your mount now hold ..." (202 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-11-excelsummons-mana-holds-cap: long line "Your summon limit now grows with your ea..." (252 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-11-excelsummons-mana-holds-cap: long line "When a summon cannot be cast, the messag..." (208 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-11-excelpouch-console-admin: long line "Staff can now look after a player's pouc..." (198 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-10-excelquartermaster-console-admin: long line "Staff can now check a player's voice-pac..." (170 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-10-excelaimassist-console-admin: long line "Staff can now check and fix a player's a..." (209 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-10-exceltreecleanup-console-admin: long line "Staff can now check and fix a player's t..." (208 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-10-excelmenujoin-console-admin: long line "Staff can now check and fix a player's j..." (210 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-10-excelbuildmode-console-rescue: long line "If a player gets stuck in Build Mode, st..." (197 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-10-bosstrial-warden-firstbreak: long line "The first time the Warden seal breaks, e..." (194 chars, keep it short)
+[11:03:13 WARN]: [ExcelWhatsNew] changelog.yml: 2026-11-10-bosstrial-warden-firstbreak: long line "First break only: extra jackpot rolls, t..." (168 chars, keep it short)
+[11:03:13 INFO]: [ExcelWhatsNew] ExcelWhatsNew 0.1.1: 83 news entries (newest 2026-11-11-excelshops-console-admin), 2 players on file, 17 warnings (/whatsnew check).
+[11:03:13 INFO]: [ExcelWeekendXP] Enabling ExcelWeekendXP v1.2.0
+[11:03:13 INFO]: [mcMMO] §6(§amcMMO §3Admin§6) §7§e[Server] §7has started or modified an XP rate event with global multiplier 1.2x
+[11:03:13 INFO]: (mcMMO) You have set the global XP rate multiplier to 1.2x
+[11:03:13 INFO]: [ExcelWeekendXP] Weekend detected: dispatched mcMMO 1.2x XP-rate command; verified vanilla XP event multiplier 1.2x.
+[11:03:13 INFO]: [ExcelWeekendXP] ExcelWeekendXP scheduler enabled: America/Chicago, every 30 minutes.
+[11:03:13 INFO]: [ExcelWealthBoard] Enabling ExcelWealthBoard v1.4.0
+[11:03:13 INFO]: [ExcelWealthBoard] ExcelWealthBoard enabled (join popup mode, no sidebar).
+[11:03:13 INFO]: [ExcelWaypoints] Enabling ExcelWaypoints v0.1.0
+[11:03:13 INFO]: [ExcelWaypoints] ExcelWaypoints 0.1.0 enabled. 3 saved places loaded. Bedrock forms: Geyser found
+[11:03:13 INFO]: [ExcelVaults] Enabling ExcelVaults v0.1.1
+[11:03:13 INFO]: [ExcelVaults] ExcelVaults enabled: normal 24h, ominous 72h after seal 2 (seals 4 of 5, ominous OPEN), reopen-now $750 scaling to min $50 / $3,000 scaling to min $200, 31 cooldowns on 20 vaults, Bedrock forms on (tap opens reopen window), audit on.
+[11:03:13 INFO]: [ExcelTreeCleanup] Enabling ExcelTreeCleanup v0.1.1
+[11:03:13 INFO]: [ExcelTreeCleanup] ExcelTreeCleanup enabled: ON, remnant max 3 logs, flood cap 512, 0 saved player toggle(s), GriefPrevention claim checks ON
+[11:03:13 INFO]: [ExcelTrash] Enabling ExcelTrash v0.3.0
+[11:03:13 INFO]: [ExcelTrash] ExcelTrash 0.3.0 enabled; undo window 5 minutes; chest mode on; two-tap OK; close-action=return
+[11:03:13 INFO]: [ExcelTrainingWheels] Enabling ExcelTrainingWheels v0.1.3
+[11:03:13 INFO]: [ExcelTrainingWheels] ExcelTrainingWheels enabled: shield ON (1 protected), door hold ON, iron siege ON (threshold 60s, cap 8), door tiers ON (copper 45s).
+[11:03:13 INFO]: [ExcelTrainingWheels] shield compensation: seal 4, elite factor 0.1064 (dealt x2.35, base factor 0.25, source: GuildGate)
+[11:03:13 INFO]: [ExcelTrainingWheels] raid compensation: ExcelRaidBuff seam BOUND - buffed-raider melee is divided by the stored buff factor (the quarter holds at every omen level).
+[11:03:13 INFO]: [ExcelTrainingWheels] boss compensation: ExcelBossTrial seam BOUND - seal-boss takes are divided by the boss's current outgoing scale (the quarter holds at every ramp point).
+[11:03:13 INFO]: [ExcelTelemetry] Enabling ExcelTelemetry v0.1.1
+[11:03:13 INFO]: [ExcelTelemetry] ExcelTelemetry 0.1.1 awake: observing (kills=true, deaths=true, bosses=true, mcMMO=true, advancements=true). Data folder: plugins\ExcelTelemetry
+[11:03:13 INFO]: [ExcelSummons] Enabling ExcelSummons v0.1.5
+[11:03:13 INFO]: [ExcelSummons] ExcelSummons 0.1.5 enabled (build EXC-SUMMONS-0.1.5-WRV-20261111-06-c7d315); registry holds 242 summon(s).
+[11:03:13 INFO]: [ExcelSilkWatch] Enabling ExcelSilkWatch v0.1.3-offline
+[11:03:13 INFO]: [PlaceholderAPI] Successfully registered internal expansion: silkwarnings [0.1.3-offline]
+[11:03:13 INFO]: [ExcelSilkWatch] Warning-only observer enabled: native ender chests, bounded shulker contents, persistent player toggle.
+[11:03:13 INFO]: [ExcelShopVillager] Enabling ExcelShopVillager v1.1.0
+[11:03:13 INFO]: [ExcelShopVillager] ExcelShopVillager enabled: tap a 'Spawn Shop' villager to open the shop.
+[11:03:13 INFO]: [ExcelSealFreeze] Enabling ExcelSealFreeze v0.1.0
+[11:03:13 INFO]: [ExcelSealFreeze] ExcelSealFreeze enabled. Armed=false, sealUnlocked=false, sealsBroken=4.
+[11:03:13 INFO]: [SealAlerts] Enabling ExcelSealAlerts v0.1.2-runtime-diagnostic-OFFLINE
+[11:03:13 INFO]: [SealAlerts] READY version=0.1.2-runtime-diagnostic-OFFLINE taps=[ExcelSealLog, ExcelGuildGate, ExcelBossTrial] webhook=configured batch=600s heartbeat=08:00 America/Chicago
+[11:03:13 INFO]: [ExcelRestartCountdown] Enabling ExcelRestartCountdown v1.2.0
+[11:03:14 INFO]: [ExcelRestartCountdown] ExcelRestartCountdown enabled. Use /restartwarn [reason] to start a 2-minute countdown.
+[11:03:14 INFO]: [ExcelQuartermaster] Enabling ExcelQuartermaster v0.3.1
+[11:03:14 INFO]: [ExcelQuartermaster] ExcelQuartermaster enabled: 'Old Quartermaster' will tell his tales (11 tales, anchor on: world -783,81,-299 r10, cooldown 8s, 5 players with saved progress).
+[11:03:14 INFO]: [ExcelQuartermaster] Bedrock presentation: dialogue on, voice on ('wrv:quartermaster.tale<N>', 11 recorded clips), dialogue advance cooldown 2s.
+[11:03:14 INFO]: [ExcelQuartermaster] Java parity: voice on (pack 'https://elmikeexcel.github.io/winkreyesvalley/packs/wrv-quartermaster-voice-java.zip'), sneak-trade fix on, 11 players with saved pack state.
+[11:03:14 INFO]: [ExcelQuartermaster] Shopkeepers trade redirect: available
+[11:03:14 INFO]: [ExcelQuartermaster] Wand issue: on (template 'beginner', 3 issued on record, seals 4, Magic present, Seal 1 tales 3).
+[11:03:14 INFO]: [ExcelPartyDrops] Enabling ExcelPartyDrops v0.1.0
+[11:03:14 INFO]: [ExcelPartyDrops] ExcelPartyDrops enabled: ON, radius 50.0 blocks, step 0.5, multiplier cap 3.0, participant cap 5, EliteMobs hooked
+[11:03:14 INFO]: [ExcelNoPhantoms] Enabling ExcelNoPhantoms v1.2.0
+[11:03:14 INFO]: [ExcelNoPhantoms] ExcelNoPhantoms 1.2.0 enabled: mode=event, event ENDED — Phantom Debt: ENDED — wards hold for good.
+[11:03:14 INFO]: [ExcelMobVeil] Enabling ExcelMobVeil v0.1.0
+[11:03:14 INFO]: [ExcelMobVeil] ExcelMobVeil 0.1.0: $2,000.00; each drink adds eight real-time minutes. Attacking ends all time. Scripted bosses and area damage remain possible.
+[11:03:14 INFO]: [MenuStats] Enabling ExcelMenuStats v0.2.2
+[11:03:14 INFO]: [MenuStats] [MenuStats] READY version=0.2.2 menus=18 failed=0
+[11:03:14 INFO]: [ExcelMenuJoin] Enabling ExcelMenuJoin v1.4.4
+[11:03:14 INFO]: [PlaceholderAPI] Successfully registered internal expansion: menujoin [1.4.4]
+[11:03:14 INFO]: [ExcelMenuJoin] Hooked into PlaceholderAPI (%menujoin_status%).
+[11:03:14 INFO]: [ExcelMenuJoin] ExcelMenuJoin enabled.
+[11:03:14 INFO]: [ExcelMakersMark] Enabling ExcelMakersMark v0.1.6-lookup-prefilter-OFFLINE
+[11:03:14 INFO]: [ExcelMakersMark] Milestone credit uses ExcelRewardGuard fall threshold 50% and ordinary SPAWNER origin; actual kills unchanged.
+[11:03:14 INFO]: [ExcelMakersMark] Milestone credit uses ExcelRewardGuard fall threshold 50% and ordinary SPAWNER origin; actual kills unchanged.
+[11:03:14 INFO]: [PlaceholderAPI] Successfully registered internal expansion: makersmark [0.1.6-lookup-prefilter-OFFLINE]
+[11:03:14 INFO]: [ExcelMakersMark] PlaceholderAPI placeholders %makersmark_mark% / %makersmark_stats%: registered
+[11:03:14 INFO]: [ExcelMakersMark] ExcelMakersMark 0.1.6-lookup-prefilter-OFFLINE enabled (signing on, stats on, Magic check on, tips via built-in)
+[11:03:14 INFO]: [ExcelMagicLevel] Enabling ExcelMagicLevel v0.2.0
+[11:03:14 INFO]: [PlaceholderAPI] Successfully registered internal expansion: excelmagiclevel [0.2.0]
+[11:03:14 INFO]: [ExcelMagicLevel] ExcelMagicLevel: PlaceholderAPI expansion registered (%excelmagiclevel_*%).
+[11:03:14 INFO]: [ExcelMagicLevel] ExcelMagicLevel 0.2.0 awake: 1000 Magic Levels, 67168 XP to cap, cap boosts mana pool +23.75% / regen +23.75% / cast cost -9.5%; share: party; modifier templates in sync.
+[11:03:14 INFO]: [ExcelMagicGate] Enabling ExcelMagicGate v0.3.1
+[11:03:14 INFO]: [ExcelMagicGate] Credit hook registered (PreCast/Cast/PathUpgrade observed reflectively from Magic's classloader).
+[11:03:14 INFO]: [ExcelMagicGate] ExcelMagicGate enabled: applied stage 4 of 5, watching ExcelGuildGate seals every 60s; build EXC-MAGICGATE-0.3.1-WRV-20261110-01-7a0311; stage ceiling master
+[11:03:14 INFO]: [ExcelMagicGate] Earning: ON — 16 players tracked, placement done 2026-11-10 (mage-pull-20261110), demotion ENABLED, lore seam: auto (undecided — no live wand refreshed yet).
+[11:03:14 INFO]: [ExcelMagicGate] Wand inventory sync: ON — the reconcile grants missing current-rank path spells (standing sync; the switch-over placement pass is each player's first reconcile after install).
+[11:03:14 INFO]: [ExcelLeaderboard] Enabling ExcelLeaderboard v1.3.1
+[11:03:14 INFO]: [ExcelLeaderboard] ExcelLeaderboard: Richest category available (Vault).
+[11:03:14 INFO]: [ExcelLeaderboard] ExcelLeaderboard: offline stats cache reads C:\Users\MikeExcel\wrv-testserver\server\world\players\stats
+[11:03:14 INFO]: [ExcelLeaderboard] ExcelLeaderboard enabled; first board refresh in 3 seconds.
+[11:03:14 INFO]: [ExcelLandmarks] Enabling ExcelLandmarks v0.1.0
+[11:03:14 INFO]: [ExcelLandmarks] ExcelLandmarks 0.1.0 enabled: spots=0, gp=ON (subdivisions), protect-attribution=ON, floodgate-forms=ON, rent-period=30d, grace=7d
+[11:03:14 INFO]: [ExcelItemInsight] Enabling ExcelItemInsight v0.1.0
+[11:03:14 INFO]: [ExcelItemInsight] ExcelItemInsight 0.1.0 enabled — dictionary: 43 enchantments, registry coverage 43/43.
+[11:03:14 INFO]: [ExcelGuide] Enabling ExcelGuide v0.3.4
+[11:03:14 INFO]: [ExcelGuide] Valley Guide awake: knowledge 68c10117 (216 chunks), 85 intents, 0 learned answers, 0 cached answers, 1 approved player answers, 0 waiting for /guide review.
+[11:03:14 INFO]: [ExcelGuide] AI fallback: ON (provider Groq, model llama-3.3-70b-versatile, log ai.log, ambient hint off).
+[11:03:14 INFO]: [ExcelGuide] Delayed chat answers: ON (delay 45s, AI late, reply public, player answers auto-approve on thanks).
+[11:03:14 INFO]: [ExcelExpansions] Enabling ExcelExpansions v0.1.0
+[11:03:14 INFO]: [ExcelExpansions] ExcelExpansions 0.1.0: 57 manifest rows loaded; IN-BAND source: ExcelExpansions level store (band signal: EliteMobs PlayerData.HighestLevelKilled; canonical-source decision rig-owed, #16); level store: 16 players; dynamic floor: unset (TBD at build)
+[11:03:14 INFO]: [ExcelEliteLadder] Enabling ExcelEliteLadder v0.2.1
+[11:03:14 INFO]: [ExcelEliteLadder] ExcelEliteLadder enabled: applied step S4, ladder table: ladder.yml (config), watching ExcelGuildGate seals every 30s, reload with players online off (waits for an empty server), elite speed: ON (amplifier 0, duration permanent)
+[11:03:14 INFO]: [ExcelDowned] Enabling ExcelDowned v0.1.2
+[11:03:14 INFO]: [ExcelDowned] ExcelDowned: custom Magic action 'Resurrect' registered.
+[11:03:14 INFO]: [ExcelDowned] ExcelDowned 0.1.2 ready — build EXC-DOWNED-0.1.2-WRV-20261110-01-d0wn3d; sessions restored: 0; bleed-out 300s; downed factor 0.25
+[11:03:14 INFO]: [ExcelDetails] Enabling ExcelDetails v0.2.2
+[11:03:14 INFO]: [PlaceholderAPI] Successfully registered internal expansion: details [0.2.2]
+[11:03:14 INFO]: [ExcelDetails] ExcelDetails: PlaceholderAPI expansion registered (%details_show_damage%, %details_show_taken%, %details_show_healing%).
+[11:03:14 INFO]: [ExcelDetails] ExcelDetails READY version=0.2.2 build=EXC-DETAILS-0.2.2-WRV-20261110-01-b22e10 refresh=10t timeout=8s rows=6
+[11:03:14 INFO]: [ExcelDeathRecord] Enabling ExcelDeathRecord v0.3.0
+[11:03:14 INFO]: [ExcelDeathRecord] ExcelDeathRecord 0.3.0 enabled — death ledger + Burn Ledger watching; restore ready (menu + typed), bedrock-forms=ready, display-zone=America/Chicago, log=restores.csv
+[11:03:14 INFO]: [ExcelCosmetics] Enabling ExcelCosmetics v0.1.3
+[11:03:14 INFO]: [ExcelCosmetics] ExcelCosmetics: loaded cosmetic state for 4 player(s)
+[11:03:14 INFO]: [ExcelCosmetics] ExcelCosmetics enabled: 28 colors, 7 effects, 5 sets, emote pack ready; economy linked via Vault (Excel)
+[11:03:14 INFO]: [ExcelClaimFly] Enabling ExcelClaimFly v0.1.0
+[11:03:14 INFO]: [ExcelClaimFly] ExcelClaimFly enabled: price $1,000, 30 min pass, cap 120 min, combat pause ON, owner only, Bedrock forms on.
+[11:03:14 INFO]: [ExcelChunks] Enabling ExcelChunks v0.1.1
+[11:03:14 INFO]: [ExcelChunks] ExcelChunks enabled: /chunks view resync ON (item radius 96 blocks, cooldown 10s)
+[11:03:14 INFO]: [ExcelBrainGames] Enabling ExcelBrainGames v0.3.3
+[11:03:14 INFO]: [ExcelBrainGames] ExcelBrainGames: floodgate detected — Bedrock players get the 5-wide Word Search board and the Sudoku box view.
+[11:03:14 INFO]: [ExcelBrainGames] ExcelBrainGames 0.3.3 enabled: games=[word-search, memory-match, sudoku, quick-math, word-scramble, riddle], kid-tiers=ENABLED, daily-cap=$1,500.00, wordlists=10 files / 6 themes, riddles=16, economy=EssentialsX Economy, platform-detection=floodgate, build=EXC-BRAINGAMES-0.3.3-WRV-20261107-01-3bfc61
+[11:03:14 INFO]: [ExcelAutoSort] Enabling ExcelAutoSort v0.2.1
+[11:03:14 INFO]: [ExcelAutoSort] ExcelAutoSort: ExcelProtect audit sink BOUND (stream: items)
+[11:03:14 INFO]: [PlaceholderAPI] Successfully registered internal expansion: autosort [0.2.1]
+[11:03:14 INFO]: [ExcelAutoSort] ExcelAutoSort 0.2.1 awake: sort parity engine on (Barrel, Chest, Ender Chest, Shulker Box), filter chests 0, recovery entries 0, protect sink BOUND, gp rights BOUND, max-org on (economy BOUND, entitlements 0), build EXC-AUTOSORT-0.2.1-WRV-20261109-01-c36331
+[11:03:14 INFO]: [ExcelAttunement] Enabling ExcelAttunement v0.1.8
+[11:03:14 INFO]: [ExcelAttunement] Using spell table override: plugins\ExcelAttunement\spell-classes.txt
+[11:03:14 INFO]: [ExcelAttunement] Guild ward: EliteMobs world registry found (read-only), plus the world-name rules.
+[11:03:14 INFO]: [ExcelAttunement] Magic found: cast interception ON (PreCastEvent block + CastEvent attunement).
+[11:03:14 INFO]: [ExcelAttunement] ExcelAttunement enabled: ON, window 30s, combat context 10s, spell table 107 spells.
+[11:03:14 INFO]: [ExcelAttunement] Stance lock: weapon-lock ON, wand-lock ON, actionbar ON (live ON), sounds ON.
+[11:03:14 INFO]: [ExcelAttunement] Guild ward (Magic off in the EliteMobs worlds): ON.
+[11:03:14 INFO]: [ExcelAttunement] Arena locks: ON (sealed near a live dragon: glide (stopped on entry), fling, hulkleap, lift (+ targets in zone), blink; zone radius 200 around 0,0 in THE_END; unknown dragon state = locked).
+[11:03:14 INFO]: [ExcelAimAssist] Enabling ExcelAimAssist v0.1.5
+[11:03:14 INFO]: [PlaceholderAPI] Successfully registered internal expansion: aimassist [0.1.5]
+[11:03:14 INFO]: [ExcelAimAssist] Hooked into PlaceholderAPI (%aimassist_status%).
+[11:03:14 INFO]: [ExcelAimAssist] ExcelAimAssist enabled: ON, cone 15.0 deg, range 40.0 blocks, aim height 0.6, drop compensation ON, target lead ON (max 5.0 blocks, min target speed 0.5 blocks/sec), 2 saved player toggle(s)
+[11:03:14 INFO]: [ExcelAcrobatics] Enabling ExcelAcrobatics v1.2-candidate
+[11:03:14 INFO]: [ExcelAcrobatics] ExcelAcrobatics enabled: water landings pay Acrobatics XP (base rate 600.0 per damage point, style up to +100%).
+[11:03:14 INFO]: [ExcelAbilityBridge] Enabling ExcelAbilityBridge v0.1.1
+[11:03:14 INFO]: [ExcelAbilityBridge] EliteMobs class system (ACS) is still starting - Bedrock ability bridge standing by; it comes online automatically when ACS is up.
+[11:03:14 INFO]: [EssentialsSpawn] Enabling EssentialsSpawn v2.22.0
+[11:03:14 INFO]: [EssentialsSpawn] Starting Metrics. Opt-out using the global bStats config.
+[11:03:14 INFO]: [DecentHolograms] Enabling DecentHolograms v2.10.2
+[11:03:14 INFO]: [DecentHolograms] Detected PAPER 26.3, using NMS module v26_2.
+[11:03:14 INFO]: [DecentHolograms] Loading default attribute values...
+[11:03:14 INFO]: [DecentHolograms] Loaded 23 default attribute values!
+[11:03:14 INFO]: [DecentHolograms] Loading displays...
+[11:03:14 INFO]: [DecentHolograms] Loaded 0 displays!
+[11:03:14 INFO]: [NBTAPI] [NBTAPI] Found Minecraft: 26.3.build.245! Trying to find NMS support
+[11:03:14 INFO]: [NBTAPI] [NBTAPI] NMS support 'MC26_3' loaded!
+[11:03:14 INFO]: [NBTAPI] [NBTAPI] Using the plugin 'DecentHolograms' to create a bStats instance!
+[11:03:14 INFO]: [DecentHolograms] NBT-API loaded successfully.
+[11:03:14 INFO]: [Chunky] Enabling Chunky v1.5.3
+[11:03:14 INFO]: [spark] Starting background profiler...
+[11:03:14 INFO]: [spark] The async-profiler engine is not supported for your os/arch (windows11/amd64), so the built-in Java engine will be used instead.
+[11:03:14 INFO]: [PlaceholderAPI] Placeholder expansion registration initializing...
+[11:03:15 INFO]: [Geyser-Spigot] ******************************************
+[11:03:15 INFO]: [Geyser-Spigot] 
+[11:03:15 INFO]: [Geyser-Spigot] Loading Geyser version 2.12.1-b1298 (git-master-c8758b8)
+[11:03:15 INFO]: [Geyser-Spigot] 
+[11:03:15 INFO]: [Geyser-Spigot] ******************************************
+[11:03:15 INFO]: [Geyser-Spigot] Registered 199 custom block overrides.
+[11:03:15 INFO]: [Geyser-Spigot] Registered 2 custom block item overrides.
+[11:03:15 INFO]: [Geyser-Spigot] Registered 7 custom blocks.
+[11:03:16 INFO]: [Geyser-Spigot] Registered 206 custom items
+[11:03:17 INFO]: [Geyser-Spigot] Started Geyser on UDP port 20795
+[11:03:17 INFO]: [org.cloudburstmc.netty.channel.nethernet.signaling.AdvertisedAddresses] Advertised address winkreyes.duckdns.org resolves to 157.85.90.174
+[11:03:17 INFO]: [Geyser-Spigot] Built-in signaling started on http://0.0.0.0:20795, with NetherNet on UDP port 25623
+[11:03:17 INFO]: [Geyser-Spigot] Done (2.232s)! Run /geyser help for help!
+[11:03:17 INFO]: Starting remote control listener
+[11:03:17 INFO]: Thread RCON Listener started
+[11:03:17 INFO]: RCON running on 0.0.0.0:25511
+[11:03:17 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[11:03:17 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[11:03:17 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[11:03:17 INFO]: Running delayed init tasks
+[11:03:17 INFO]: [Essentials] Essentials found a compatible payment resolution method: Vault Compatibility Layer (v2.0.0)!
+[11:03:17 INFO]: [Essentials] Fetching version information...
+[11:03:17 INFO]: [ViaVersion] Finished mapping loading, shutting down loader executor.
+[11:03:17 INFO]: [CoreProtect] WorldEdit logging successfully initialized.
+[11:03:17 INFO]: [Jobs] Successfully linked with Vault. (Essentials)
+[11:03:17 INFO]: [Jobs] Successfully linked with Vault. (LuckPerms)
+[11:03:17 INFO]: [ExcelDeathRecord] ExcelDeathRecord [Lost & Found]: first-use tip handed to ExcelTips (registered).
+[11:03:17 INFO]: [ExcelDeathRecord] ExcelDeathRecord [Lost & Found]: ON, price $10,000, first one free under $10,000, window 14 days, cooldown less than a minute, economy=EssentialsX Economy, despawn-log-types=11
+[11:03:17 INFO]: [ExcelAcrobatics] ExcelAcrobatics: mcMMO award API verified (public static void com.gmail.nossr50.api.ExperienceAPI.addModifiedXP(org.bukkit.entity.Player,java.lang.String,int)).
+[11:03:17 INFO]: [Magic] Vault found, 'currency' cost types available
+[11:03:17 INFO]: [Magic] Registered currencies: item,mana,xp,health,currency,sp,levels,hunger
+[11:03:17 INFO]: New version of CMILib was detected. Please update it (1.6.1.2 -> 1.6.1.3)
+[11:03:17 INFO]: [Magic] Loaded 221 spells
+[11:03:17 INFO]: [Magic] Loaded 5 progression paths
+[11:03:17 INFO]: [Magic] Loaded 2 crafting recipes
+[11:03:17 INFO]: [Magic] LogBlock not found
+[11:03:17 INFO]: [Magic] Integrating with Essentials for vanish detection
+[11:03:17 INFO]: [Magic] Integrating with Essentials for Recall warps
+[11:03:17 INFO]: [Magic] Essentials found, hooked up custom item handler
+[11:03:17 INFO]: [Magic] Factions not found
+[11:03:17 INFO]: [Magic] WorldGuard not found, region protection and pvp checks will not be used.
+[11:03:17 INFO]: [Magic] Towny not found, region protection and pvp checks will not be used.
+[11:03:17 INFO]: [Magic] Lockette nor LockettePro found, will not integrate.
+[11:03:17 INFO]: [Magic] GriefPrevention found, will respect claim build permissions for construction spells
+[11:03:17 INFO]: [Magic] NoCheatPlus not found, will not integrate.
+[11:03:17 INFO]: [Magic] dynmap not found, not integrating.
+[11:03:17 INFO]: [Magic] Citizens not found, Magic trait unavailable.
+[11:03:17 INFO]: [PlaceholderAPI] Successfully registered internal expansion: magic [11.2.5-baa3d91]
+[11:03:17 INFO]: [Magic] PlaceholderAPI integration enabled. Available placeholders:
+[11:03:17 INFO]: [Magic] magic_path, magic_class, magic_wand, magic_spell, magic_mana, magic_mana_max, magic_sp, magic_spell_count
+[11:03:17 INFO]: [Magic] All magic attributes also available with a magic_ prefix
+[11:03:17 INFO]: [Magic] Add to messages/placeholders to add custom placeholders
+[11:03:17 INFO]: [Magic] LightAPI not found, Light action will not work
+[11:03:17 INFO]: [Magic] Loaded 0 arenas
+[11:03:17 INFO]: [Magic] Finished loading configuration
+[11:03:17 INFO]: Resource pack has not changed, using hash L5KamYZmXfEmkIqyACsowEkjUVg= (1782146172000 <= 1782146172000)
+[11:03:18 INFO]: Done (20.161s)! For help, type "help"
+[11:03:18 INFO]: [Magic] Finished loading data.
+[11:03:18 INFO]: [PlaceholderAPI] Successfully registered external expansion: player [2.0.9]
+[11:03:18 INFO]: [PlaceholderAPI] Successfully registered external expansion: vault [1.8.3]
+[11:03:18 INFO]: 2 placeholder hook(s) registered!
+[11:03:18 INFO]: [EliteMobs] Language set to English - using plugin defaults
+[11:03:18 INFO]: *** Currently you are 6 builds behind ***
+[11:03:18 INFO]: *** It is highly recommended to download the latest build from https://papermc.io/downloads/paper ***
+[11:03:18 INFO]: [EliteMobs] Loaded 171 class-loot profiles (enabled).
+[11:03:18 INFO]: [ExcelWandBars] Tap bar crouch hold: Geyser hook installed.
+[11:03:18 INFO]: [ExcelWandBars] Tap bar tap the wand: Geyser hook installed.
+[11:03:18 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 24 ms to scan 1 urls, producing 1 keys and 47 values
+[11:03:18 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 8 ms to scan 1 urls, producing 1 keys and 16 values
+[11:03:19 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 9 ms to scan 106 urls, producing 0 keys and 0 values
+[11:03:19 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 6 ms to scan 1 urls, producing 1 keys and 104 values
+[11:03:19 INFO]: [EliteMobs] Loaded 104 skill bonus configurations.
+[11:03:19 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 6 ms to scan 1 urls, producing 5 keys and 72 values
+[11:03:19 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 3 ms to scan 1 urls, producing 1 keys and 3 values
+[11:03:20 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 24 ms to scan 1 urls, producing 19 keys and 94 values
+[11:03:20 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 5 ms to scan 1 urls, producing 2 keys and 84 values
+[11:03:20 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 3 ms to scan 1 urls, producing 1 keys and 69 values
+[11:03:20 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 2 ms to scan 1 urls, producing 1 keys and 13 values
+[11:03:20 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 5 ms to scan 1 urls, producing 2 keys and 64 values
+[11:03:20 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 2 ms to scan 1 urls, producing 1 keys and 5 values
+[11:03:20 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 6 ms to scan 106 urls, producing 0 keys and 0 values
+[11:03:20 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 2 ms to scan 1 urls, producing 1 keys and 7 values
+[11:03:20 INFO]: [EliteMobs] WorldGuard compatibility is not enabled!
+[11:03:20 INFO]: [EliteMobs] [(EliteMobs] Vault detected.
+[11:03:20 WARN]: [EliteMobs] Vault preference detected. This is not the recommended setting. Ask the dev or check the wiki as to why.
+[11:03:20 INFO]: [EliteMobs] Opened database successfully
+[11:03:20 INFO]: [EliteMobs] [Skills] Skill system migration already complete.
+[11:03:20 INFO]: [EliteMobs] Initializing skill bonuses...
+[11:03:20 INFO]: [EliteMobs] Registered 104 skill bonuses.
+[11:03:20 INFO]: [PlaceholderAPI] Successfully registered internal expansion: elitemobs [10.9.12]
+[11:03:20 INFO]: [EliteMobs] Loading world em_adventurers_guild !
+[11:03:20 INFO]: [EliteMobs] Creating world em_adventurers_guild !
+[11:03:20 INFO]: Loading 0 persistent chunks for level 'minecraft:em_adventurers_guild'...
+[11:03:20 INFO]: Prepared spawn area in 1 ms
+[11:03:20 INFO]: [EliteMobs] Successfully loaded world em_adventurers_guild !
+[11:03:20 INFO]: [EliteMobs] Registered location ownership provider: EliteMobs (plugin=EliteMobs)
+[11:03:20 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 2 ms to scan 1 urls, producing 1 keys and 1 values
+[11:03:20 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 1 ms to scan 1 urls, producing 1 keys and 8 values
+[11:03:21 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 5 ms to scan 106 urls, producing 0 keys and 0 values
+[11:03:21 INFO]: [com.magmaguy.elitemobs.shaded.reflections.Reflections] Reflections took 5 ms to scan 106 urls, producing 0 keys and 0 values
+[11:03:21 INFO]: [EliteMobs] EliteMobs fully initialized!
+[11:03:21 INFO]: [ExcelLeaderboard] ExcelLeaderboard: Jobs category available (Jobs.getPlayerManager).
+[11:03:21 INFO]: [ExcelLeaderboard] ExcelLeaderboard: EliteMobs present but no currency API verified; Elite Coins category hidden.
+[11:03:21 INFO]: [ExcelLeaderboard] ExcelLeaderboard: Land Claimed category available (GriefPrevention).
+[11:03:21 INFO]: [EliteMobs] Latest public release is 10.9.14
+[11:03:21 INFO]: [EliteMobs] Your version is 10.9.12
+[11:03:21 WARN]: [EliteMobs] [EliteMobs] A newer version of this plugin is available for download!
+[11:03:21 INFO]: [EliteMobs] Parsed 60 content versions from Nightbreak API
+[11:03:21 WARN]: [EliteMobs] Content §2Adventurers Guild Hub! is outdated! You should go download the updated version! Your version: 26 / remote version: 27 / Link: https://nightbreak.io/plugin/elitemobs/#the-adventurers-guild
+[11:03:22 INFO]: [ExcelWandBars] Spell Book groups ON (spellbook.yml, 8 groups, 105 spells listed, 106 on the rank wands now), locked spells shown.
+[11:03:22 WARN]: [ExcelWandBars] Spell Book: 1 spell(s) on the rank wands are in no group, shown under "Other": tamepet. Add them to spellbook.yml, then /wandbars reload.
+[11:03:22 INFO]: [ExcelMagicGate] Rank reconcile (watch sweep: stage 4 ceiling master, online checked 0, stepped up 0, demoted 0, demotions pending 0, mage-data census 16 files)
+[11:03:22 INFO]: [ExcelAbilityBridge] EliteMobs class system (ACS) is up - Bedrock ability bridge online: /abilities
+[11:03:23 INFO]: [ExcelLeaderboard] ExcelLeaderboard: mcMMO Power category available (ExperienceAPI.getPowerLevelOffline).
+[11:03:29 INFO]: [ExcelProtect] version=0.1.9 gp=on vault=on mcmmo=on we=on dropped-total=0
+[11:03:29 INFO]: [ProtectRig] [PRIG] console dispatch 'excelprotect status' -> true
+[11:03:29 INFO]: [ProtectRig] [PRIG] RIGOBS OBS setup -- arena built at 5000,100,5000 lava pit at 5021,101,5021
+[11:03:30 WARN]: [ViaVersion] Could not find UserConnection for logging-in player b5f24b17-0688-389d-877d-767c23066dd8
+[11:03:30 INFO]: [ExcelMagicGate] Rank reconcile: seeded RigAlpha's credited total from the live Mage API (0 credited casts, no placement row existed).
+[11:03:30 INFO]: [ExcelMagicGate] Rank reconcile DEFERRED for RigAlpha: bound wand is not a live carried item — the move to their earned target (beginner) completes on wand activation (held-item / join / sweep legs).
+[11:03:30 INFO]: [ExcelMagicGate] Rank reconcile (watch sweep: stage 4 ceiling master, online checked 1, stepped up 0, demoted 0, demotions pending 0, mage-data census 16 files)
+[11:03:30 ERROR]: Could not pass event PlayerJoinEvent to DecentHolograms v2.10.2
+eu.decentsoftware.holograms.nms.api.DecentHologramsNmsException: Failed to modify player's pipeline. player: RigAlpha
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.v26_2.NmsAdapterImpl.throwFailedToModifyPipelineException(NmsAdapterImpl.java:109) ~[?:?]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.v26_2.NmsAdapterImpl.executeOnPipeline(NmsAdapterImpl.java:102) ~[?:?]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.v26_2.NmsAdapterImpl.executeOnPipelineInEventLoop(NmsAdapterImpl.java:77) ~[?:?]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.v26_2.NmsAdapterImpl.registerPacketListener(NmsAdapterImpl.java:53) ~[?:?]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.NmsPacketListenerService.registerListener(NmsPacketListenerService.java:46) ~[?:?]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.NmsPlayerListener.onPlayerJoin(NmsPlayerListener.java:18) ~[?:?]
+	at org.bukkit.plugin.RegisteredListener.callEvent(RegisteredListener.java:71) ~[paper-api-26.3.build.245-stable.jar:?]
+	at io.papermc.paper.plugin.manager.PaperEventManager.callEvent(PaperEventManager.java:52) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at io.papermc.paper.plugin.manager.PaperPluginManagerImpl.callEvent(PaperPluginManagerImpl.java:131) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at org.bukkit.plugin.SimplePluginManager.callEvent(SimplePluginManager.java:627) ~[paper-api-26.3.build.245-stable.jar:?]
+	at net.minecraft.server.players.PlayerList.placeNewPlayer(PlayerList.java:245) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at ProtectRig.jar//protectrig.ProtectRig.fakePlayer(ProtectRig.java:132) ~[?:?]
+	at ProtectRig.jar//protectrig.ProtectRig.lambda$probePhases$0(ProtectRig.java:746) ~[?:?]
+	at ProtectRig.jar//protectrig.ProtectRig.lambda$pump$0(ProtectRig.java:104) ~[?:?]
+	at org.bukkit.craftbukkit.scheduler.CraftTask.run(CraftTask.java:78) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at org.bukkit.craftbukkit.scheduler.CraftScheduler.mainThreadHeartbeat(CraftScheduler.java:474) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at net.minecraft.server.MinecraftServer.tickChildren(MinecraftServer.java:1751) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:1604) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at net.minecraft.server.dedicated.DedicatedServer.tickServer(DedicatedServer.java:404) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at net.minecraft.server.MinecraftServer.processPacketsAndTick(MinecraftServer.java:1662) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1332) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at net.minecraft.server.MinecraftServer.lambda$spin$0(MinecraftServer.java:299) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+Caused by: java.util.NoSuchElementException: packet_handler
+	at io.netty.channel.DefaultChannelPipeline.getContextOrDie(DefaultChannelPipeline.java:1094) ~[netty-transport-4.2.16.Final.jar:4.2.16.Final]
+	at io.netty.channel.DefaultChannelPipeline.internalAdd(DefaultChannelPipeline.java:179) ~[netty-transport-4.2.16.Final.jar:4.2.16.Final]
+	at io.netty.channel.DefaultChannelPipeline.addBefore(DefaultChannelPipeline.java:246) ~[netty-transport-4.2.16.Final.jar:4.2.16.Final]
+	at io.netty.channel.DefaultChannelPipeline.addBefore(DefaultChannelPipeline.java:240) ~[netty-transport-4.2.16.Final.jar:4.2.16.Final]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.v26_2.NmsAdapterImpl.lambda$registerPacketListener$0(NmsAdapterImpl.java:57) ~[?:?]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.v26_2.NmsAdapterImpl.executeOnPipeline(NmsAdapterImpl.java:95) ~[?:?]
+	... 21 more
+[11:03:30 ERROR]: [EliteMobs] Cannot enable native ammunition for b5f24b17-0688-389d-877d-767c23066dd8: java.util.NoSuchElementException: packet_handler
+[11:03:30 INFO]: System chat: RigAlpha joined the game
+[11:03:30 INFO]: RigAlpha[/127.0.0.1:25577] logged in with entity id 1 at ([minecraft:overworld]0.0, 0.0, 0.0)
+[11:03:30 WARN]: [ViaVersion] Could not find UserConnection for logging-in player e166a387-94d3-37d9-b4f1-e303524ef806
+[11:03:30 INFO]: [ExcelMagicGate] Rank reconcile: seeded RigBravo's credited total from the live Mage API (0 credited casts, no placement row existed).
+[11:03:30 INFO]: [ExcelMagicGate] Rank reconcile DEFERRED for RigBravo: bound wand is not a live carried item — the move to their earned target (beginner) completes on wand activation (held-item / join / sweep legs).
+[11:03:30 INFO]: [ExcelMagicGate] Rank reconcile (watch sweep: stage 4 ceiling master, online checked 2, stepped up 0, demoted 0, demotions pending 0, mage-data census 16 files)
+[11:03:30 ERROR]: Could not pass event PlayerJoinEvent to DecentHolograms v2.10.2
+eu.decentsoftware.holograms.nms.api.DecentHologramsNmsException: Failed to modify player's pipeline. player: RigBravo
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.v26_2.NmsAdapterImpl.throwFailedToModifyPipelineException(NmsAdapterImpl.java:109) ~[?:?]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.v26_2.NmsAdapterImpl.executeOnPipeline(NmsAdapterImpl.java:102) ~[?:?]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.v26_2.NmsAdapterImpl.executeOnPipelineInEventLoop(NmsAdapterImpl.java:77) ~[?:?]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.v26_2.NmsAdapterImpl.registerPacketListener(NmsAdapterImpl.java:53) ~[?:?]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.NmsPacketListenerService.registerListener(NmsPacketListenerService.java:46) ~[?:?]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.NmsPlayerListener.onPlayerJoin(NmsPlayerListener.java:18) ~[?:?]
+	at org.bukkit.plugin.RegisteredListener.callEvent(RegisteredListener.java:71) ~[paper-api-26.3.build.245-stable.jar:?]
+	at io.papermc.paper.plugin.manager.PaperEventManager.callEvent(PaperEventManager.java:52) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at io.papermc.paper.plugin.manager.PaperPluginManagerImpl.callEvent(PaperPluginManagerImpl.java:131) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at org.bukkit.plugin.SimplePluginManager.callEvent(SimplePluginManager.java:627) ~[paper-api-26.3.build.245-stable.jar:?]
+	at net.minecraft.server.players.PlayerList.placeNewPlayer(PlayerList.java:245) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at ProtectRig.jar//protectrig.ProtectRig.fakePlayer(ProtectRig.java:132) ~[?:?]
+	at ProtectRig.jar//protectrig.ProtectRig.lambda$probePhases$0(ProtectRig.java:747) ~[?:?]
+	at ProtectRig.jar//protectrig.ProtectRig.lambda$pump$0(ProtectRig.java:104) ~[?:?]
+	at org.bukkit.craftbukkit.scheduler.CraftTask.run(CraftTask.java:78) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at org.bukkit.craftbukkit.scheduler.CraftScheduler.mainThreadHeartbeat(CraftScheduler.java:474) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at net.minecraft.server.MinecraftServer.tickChildren(MinecraftServer.java:1751) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:1604) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at net.minecraft.server.dedicated.DedicatedServer.tickServer(DedicatedServer.java:404) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at net.minecraft.server.MinecraftServer.processPacketsAndTick(MinecraftServer.java:1662) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1332) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at net.minecraft.server.MinecraftServer.lambda$spin$0(MinecraftServer.java:299) ~[paper-26.3.jar:26.3-245-cd1c3b6]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+Caused by: java.util.NoSuchElementException: packet_handler
+	at io.netty.channel.DefaultChannelPipeline.getContextOrDie(DefaultChannelPipeline.java:1094) ~[netty-transport-4.2.16.Final.jar:4.2.16.Final]
+	at io.netty.channel.DefaultChannelPipeline.internalAdd(DefaultChannelPipeline.java:179) ~[netty-transport-4.2.16.Final.jar:4.2.16.Final]
+	at io.netty.channel.DefaultChannelPipeline.addBefore(DefaultChannelPipeline.java:246) ~[netty-transport-4.2.16.Final.jar:4.2.16.Final]
+	at io.netty.channel.DefaultChannelPipeline.addBefore(DefaultChannelPipeline.java:240) ~[netty-transport-4.2.16.Final.jar:4.2.16.Final]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.v26_2.NmsAdapterImpl.lambda$registerPacketListener$0(NmsAdapterImpl.java:57) ~[?:?]
+	at DecentHolograms-2.10.2.jar//eu.decentsoftware.holograms.nms.v26_2.NmsAdapterImpl.executeOnPipeline(NmsAdapterImpl.java:95) ~[?:?]
+	... 21 more
+[11:03:30 ERROR]: [EliteMobs] Cannot enable native ammunition for e166a387-94d3-37d9-b4f1-e303524ef806: java.util.NoSuchElementException: packet_handler
+[11:03:30 INFO]: System chat: RigBravo joined the game
+[11:03:30 INFO]: RigBravo[/127.0.0.1:25577] logged in with entity id 2 at ([minecraft:overworld]0.0, 0.0, 0.0)
+[11:03:30 INFO]: [ProtectRig] [PRIG] RIGOBS OBS players-up -- probe boot players up
+[11:03:30 WARN]: [EliteMobs] Failed to inject packet handler for player RigAlpha: packet_handler
+[11:03:30 WARN]: [EliteMobs] Failed to inject packet handler for player RigBravo: packet_handler
+[11:03:31 INFO]: [ExcelDetails] ExcelDetails: ExcelTogether party seam BOUND (PartyManager.partyOf + Party.members) — display scoping counts Together parties.
+[11:03:31 INFO]: [ExcelDetails] ExcelDetails: EliteMobs party seam BOUND (PartyManager.getParty + Party.getMembers) — display scoping counts EM parties.
+[11:03:31 INFO]: [ExcelEliteLadder] Elite speed applied (spawn): CREEPER at world -1367,-29,-337 — on (Speed I, permanent).
+[11:03:31 INFO]: [ExcelEliteLadder] Elite speed applied (spawn): CREEPER at world -1387,-35,-332 — on (Speed I, permanent).
+[11:03:31 INFO]: [EliteMobs] No player entry detected, generating new entry!
+[11:03:31 INFO]: [EliteMobs] No player entry detected, generating new entry!
+[11:03:31 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:32 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:32 INFO]: [ExcelGuildGate] Narrator pack offered to RigAlpha (Java delivery, offer 1 of 5).
+[11:03:32 INFO]: [ExcelGuildGate] Narrator pack offered to RigBravo (Java delivery, offer 1 of 5).
+[11:03:32 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-item-break -- MONITOR sees PlayerItemBreakEvent player=RigAlpha item=WOODEN_PICKAXE cancelled=false
+[11:03:32 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-synth-break -- post-call cancelled=false
+[11:03:32 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:33 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=OAK_FENCE cancelled=true
+[11:03:33 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:33 INFO]: [ExcelBossTrial] BossRewards auto-present: RigAlpha -> FOREIGN_INVENTORY.
+[11:03:33 INFO]: [ExcelBossTrial] BossRewards auto-present: RigBravo -> FOREIGN_INVENTORY.
+[11:03:34 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-wear -- leather cap damage=53/55 equipped; zombie staged
+[11:03:35 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:35 ERROR]: [ExcelGuildGate] State persistence uncertain; further writes blocked: C:\Users\MikeExcel\wrv-testserver\server\plugins\ExcelGuildGate
+[11:03:35 ERROR]: [ExcelGuildGate] State write blocked after uncertain recovery/persistence; restart/readback required.
+[11:03:35 INFO]: [ExcelDetails] ExcelDetails: EliteMobs seam BOUND (EntityTracker.isEliteMob) — elite damage routes to the EM bucket.
+[11:03:35 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-wear-hit -- hit1 helmet=LEATHER_HELMET
+[11:03:35 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:36 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-item-break -- MONITOR sees PlayerItemBreakEvent player=RigAlpha item=LEATHER_HELMET cancelled=false
+[11:03:36 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-wear-hit -- hit2 helmet=AIR
+[11:03:36 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:37 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:37 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-wear-hit -- hit3 helmet=AIR
+[11:03:37 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:38 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-wear-hit -- hit4 helmet=AIR
+[11:03:38 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:38 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=OAK_FENCE cancelled=true
+[11:03:39 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:39 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=OAK_FENCE cancelled=true
+[11:03:40 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:40 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:41 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-wear-final -- helmet after 4 hits: AIR damage=-1
+[11:03:41 INFO]: [ExcelProtect] version=0.1.9 gp=on vault=on mcmmo=on we=on dropped-total=0
+[11:03:41 INFO]:   snapshots: pending=0 dropped=0 failed=0
+[11:03:41 INFO]:   damage: pending=0 dropped=0 failed=0
+[11:03:41 INFO]:   entities: pending=0 dropped=0 failed=0
+[11:03:41 INFO]:   players: pending=0 dropped=0 failed=0
+[11:03:41 INFO]:   locations: pending=0 dropped=0 failed=0
+[11:03:41 INFO]:   combat: pending=0 dropped=0 failed=0
+[11:03:41 INFO]:   items: pending=0 dropped=0 failed=0
+[11:03:41 INFO]:   timelines: files=3 projected=23 dropped=0 failures=0
+[11:03:41 INFO]: [ProtectRig] [PRIG] console dispatch 'excelprotect status' -> true
+[11:03:41 INFO]: [ProtectRig] [PRIG] RIGOBS DONE mode=probe
+[11:03:42 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:42 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:42 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:44 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:44 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:45 INFO]: [ProtectRig] [PRIG] RIGOBS OBS probe-burn -- MONITOR sees BlockBurnEvent block=GLOW_LICHEN cancelled=true
+[11:03:46 INFO]: Stopping server
+[11:03:46 INFO]: [Chunky] Disabling Chunky v1.5.3
+[11:03:46 INFO]: [DecentHolograms] Disabling DecentHolograms v2.10.2
+[11:03:46 INFO]: [EssentialsSpawn] Disabling EssentialsSpawn v2.22.0
+[11:03:46 INFO]: [ExcelAbilityBridge] Disabling ExcelAbilityBridge v0.1.1
+[11:03:46 INFO]: [ExcelAcrobatics] Disabling ExcelAcrobatics v1.2-candidate
+[11:03:46 INFO]: [ExcelAimAssist] Disabling ExcelAimAssist v0.1.5
+[11:03:46 INFO]: [ExcelAttunement] Disabling ExcelAttunement v0.1.8
+[11:03:46 INFO]: [ExcelAutoSort] Disabling ExcelAutoSort v0.2.1
+[11:03:46 INFO]: [ExcelBrainGames] Disabling ExcelBrainGames v0.3.3
+[11:03:46 INFO]: [ExcelChunks] Disabling ExcelChunks v0.1.1
+[11:03:46 INFO]: [ExcelChunks] ExcelChunks disabled.
+[11:03:46 INFO]: [ExcelClaimFly] Disabling ExcelClaimFly v0.1.0
+[11:03:46 INFO]: [ExcelCosmetics] Disabling ExcelCosmetics v0.1.3
+[11:03:46 INFO]: [ExcelDeathRecord] Disabling ExcelDeathRecord v0.3.0
+[11:03:46 INFO]: [ExcelDetails] Disabling ExcelDetails v0.2.2
+[11:03:46 INFO]: [ExcelDowned] Disabling ExcelDowned v0.1.2
+[11:03:46 INFO]: [ExcelEliteLadder] Disabling ExcelEliteLadder v0.2.1
+[11:03:46 INFO]: [ExcelExpansions] Disabling ExcelExpansions v0.1.0
+[11:03:46 INFO]: [ExcelGuide] Disabling ExcelGuide v0.3.4
+[11:03:46 INFO]: [ExcelItemInsight] Disabling ExcelItemInsight v0.1.0
+[11:03:46 INFO]: [ExcelLandmarks] Disabling ExcelLandmarks v0.1.0
+[11:03:46 INFO]: [ExcelLeaderboard] Disabling ExcelLeaderboard v1.3.1
+[11:03:46 INFO]: [ExcelMagicGate] Disabling ExcelMagicGate v0.3.1
+[11:03:46 INFO]: [ExcelMagicLevel] Disabling ExcelMagicLevel v0.2.0
+[11:03:46 INFO]: [ExcelMakersMark] Disabling ExcelMakersMark v0.1.6-lookup-prefilter-OFFLINE
+[11:03:46 WARN]: [ExcelMakersMark] Could not save players.yml: Temporary preference file could not replace players.yml; original retained
+[11:03:46 INFO]: [ExcelMenuJoin] Disabling ExcelMenuJoin v1.4.4
+[11:03:46 INFO]: [MenuStats] Disabling ExcelMenuStats v0.2.2
+[11:03:46 INFO]: [ExcelMobVeil] Disabling ExcelMobVeil v0.1.0
+[11:03:46 INFO]: [ExcelNoPhantoms] Disabling ExcelNoPhantoms v1.2.0
+[11:03:46 INFO]: [ExcelPartyDrops] Disabling ExcelPartyDrops v0.1.0
+[11:03:46 INFO]: [ExcelQuartermaster] Disabling ExcelQuartermaster v0.3.1
+[11:03:46 INFO]: [ExcelRestartCountdown] Disabling ExcelRestartCountdown v1.2.0
+[11:03:46 INFO]: [SealAlerts] Disabling ExcelSealAlerts v0.1.2-runtime-diagnostic-OFFLINE
+[11:03:46 INFO]: [ExcelSealFreeze] Disabling ExcelSealFreeze v0.1.0
+[11:03:46 INFO]: [ExcelShopVillager] Disabling ExcelShopVillager v1.1.0
+[11:03:46 INFO]: [ExcelSilkWatch] Disabling ExcelSilkWatch v0.1.3-offline
+[11:03:46 INFO]: [ExcelSummons] Disabling ExcelSummons v0.1.5
+[11:03:46 INFO]: [ExcelSummons] ExcelSummons disabled; registry saved with 242 persistent summon(s).
+[11:03:46 INFO]: [ExcelTelemetry] Disabling ExcelTelemetry v0.1.1
+[11:03:47 INFO]: [ExcelTrainingWheels] Disabling ExcelTrainingWheels v0.1.3
+[11:03:47 INFO]: [ExcelTrash] Disabling ExcelTrash v0.3.0
+[11:03:47 INFO]: [ExcelTreeCleanup] Disabling ExcelTreeCleanup v0.1.1
+[11:03:47 INFO]: [ExcelVaults] Disabling ExcelVaults v0.1.1
+[11:03:47 INFO]: [ExcelWaypoints] Disabling ExcelWaypoints v0.1.0
+[11:03:47 INFO]: [ExcelWealthBoard] Disabling ExcelWealthBoard v1.4.0
+[11:03:47 INFO]: [ExcelWeekendXP] Disabling ExcelWeekendXP v1.2.0
+[11:03:47 INFO]: [ExcelWhatsNew] Disabling ExcelWhatsNew v0.1.1
+[11:03:47 INFO]: [ExcelWitherSkulls] Disabling ExcelWitherSkulls v0.1.0
+[11:03:47 INFO]: [ExcelZombieCharge] Disabling ExcelZombieCharge v0.1.0
+[11:03:47 INFO]: [Broadcaster] Disabling AutoBroadcaster v1.4.0
+[11:03:47 INFO]: [Broadcaster] AutoBroadcaster disabled.
+[11:03:47 INFO]: [ProtectRig] Disabling ProtectRig v1.0
+[11:03:47 INFO]: [ViaBackwards] Disabling ViaBackwards v5.12.2
+[11:03:47 INFO]: [WRVWandDiagnostic] Disabling WRVWandDiagnostic v0.1.0-offline-diagnostic
+[11:03:47 INFO]: [ExcelShops] Disabling ExcelShops v1.3.9
+[11:03:47 WARN]: A manual (plugin-induced) save has been detected while server is configured to auto-save. This may affect performance.
+[11:03:47 INFO]: [ExcelTips] Disabling ExcelTips v0.1.0
+[11:03:47 INFO]: [ExcelPlayerMap] Disabling ExcelPlayerMap v0.2.1
+[11:03:47 INFO]: [Shopkeepers] Disabling Shopkeepers v2.28.1
+[11:03:47 INFO]: [ExcelPouch] Disabling ExcelPouch v0.1.1
+[11:03:47 INFO]: [SealLog] Disabling ExcelSealLog v1.0.0
+[11:03:47 INFO]: [ExcelTogether] Disabling ExcelTogether v0.5.3
+[11:03:47 INFO]: [ExcelRewardGuard] Disabling ExcelRewardGuard v1.7
+[11:03:47 INFO]: [ExcelRaidBuff] Disabling ExcelRaidBuff v0.1.2
+[11:03:47 INFO]: [AuditLog] Disabling ExcelAuditLog v0.2.0
+[11:03:47 INFO]: [ExcelWandBars] Disabling ExcelWandBars v0.3.18
+[11:03:47 INFO]: [ExcelWandBars] Geyser wand tap: restored
+[11:03:47 INFO]: [ExcelMenu] Disabling ExcelMenu v2.0.0
+[11:03:47 INFO]: [ExcelGuildGate] Disabling ExcelGuildGate v0.4.0
+[11:03:47 INFO]: [ExcelBossTrial] Disabling ExcelBossTrial v0.5.6
+[11:03:47 INFO]: [Jobs] Disabling Jobs v5.2.6.3
+[11:03:47 WARN]: [ExcelBuildMode] Jobs stopped. Pilot Build sessions do not depend on reward providers; entry and recovery continue under the construction-only profile.
+[11:03:47 INFO]: ------------- Jobs -------------
+[11:03:47 INFO]: Cleared boss bar cache
+[11:03:47 INFO]: Database save task shutdown!
+[11:03:47 INFO]: Buffered payment thread shutdown.
+[11:03:47 INFO]: Saved player data
+[11:03:47 INFO]: Closed database connection
+[11:03:47 INFO]: ------------------------------------
+[11:03:47 INFO]: [CoreProtect] Disabling CoreProtect v24.1
+[11:03:47 INFO]: [CoreProtect] WorldEdit logging successfully disabled.
+[11:03:47 INFO]: [CoreProtect] Finishing up data logging. Please wait...
+[11:03:47 INFO]: [CoreProtect] Success! Disabled CoreProtect v24.1
+[11:03:47 INFO]: [ExcelProtect] Disabling ExcelProtect v0.1.9
+[11:03:47 INFO]: [CMILib] Disabling CMILib v1.6.1.2
+[11:03:47 INFO]: [EliteMobs] Disabling EliteMobs v10.9.12
+[11:03:47 WARN]: [ExcelBuildMode] EliteMobs stopped. Pilot Build sessions do not depend on reward providers; entry and recovery continue under the construction-only profile.
+[11:03:47 INFO]: [EliteMobs] Starting EliteMobs shutdown sequence...
+[11:03:47 INFO]: [EliteMobs] Saving EliteMobs databases...
+[11:03:47 INFO]: [EliteMobs] All done! Good night.
+[11:03:47 INFO]: [mcMMO] Disabling mcMMO v2.3.003-WRV-XP-2-ExcelShare-1
+[11:03:47 INFO]: [PlaceholderAPI] Unregistered placeholder expansion mcmmo
+[11:03:47 INFO]: [PlaceholderAPI] Reason: required plugin mcMMO was disabled.
+[11:03:47 WARN]: [ExcelBuildMode] mcMMO stopped. Pilot Build sessions do not depend on reward providers; entry and recovery continue under the construction-only profile.
+[11:03:47 INFO]: [mcMMO] Server shutdown has been executed, saving and cleaning up data...
+[11:03:47 INFO]: [mcMMO] Saving mmoPlayers... (2)
+[11:03:47 INFO]: [mcMMO] Finished save operation for 2 players!
+[11:03:47 INFO]: [Magic] Disabling Magic v11.2.5-baa3d91
+[11:03:47 INFO]: [PlaceholderAPI] Unregistered placeholder expansion magic
+[11:03:47 INFO]: [PlaceholderAPI] Reason: required plugin Magic was disabled.
+[11:03:47 INFO]: [Geyser-Spigot] Disabling Geyser-Spigot v2.12.1-SNAPSHOT
+[11:03:47 INFO]: [Geyser-Spigot] Shutting down Geyser.
+[11:03:48 INFO]: [Geyser-Spigot] Geyser shutdown successfully.
+[11:03:48 INFO]: [ExcelBuildMode] Disabling ExcelBuildMode v1.3.5
+[11:03:48 INFO]: [GriefPrevention] Disabling GriefPrevention v0.1.3
+[11:03:48 INFO]: [PlaceholderAPI] Disabling PlaceholderAPI v2.12.3
+[11:03:48 INFO]: [floodgate] Disabling floodgate v2.2.5-SNAPSHOT (b141-81b65cc)
+[11:03:48 INFO]: [WorldEdit] Disabling WorldEdit v7.4.6+7648-00664b0
+[11:03:48 INFO]: Unregistering com.sk89q.worldedit.bukkit.BukkitServerInterface from WorldEdit
+[11:03:48 INFO]: [ExcelDeathProtection] Disabling ExcelDeathProtection v0.1.3
+[11:03:48 INFO]: [Essentials] Disabling Essentials v2.22.0
+[11:03:48 INFO]: [Vault] Disabling Vault v2.0.0
+[11:03:48 INFO]: [LuckPerms] Disabling LuckPerms v5.5.87
+[11:03:48 INFO]: [LuckPerms] Starting shutdown process...
+[11:03:48 INFO]: [LuckPerms] Closing storage...
+[11:03:48 INFO]: [LuckPerms] Goodbye!
+[11:03:48 INFO]: [ViaVersion] Disabling ViaVersion v5.12.2
+[11:03:48 INFO]: [ViaVersion] ViaVersion has been disabled; uninjected the platform and shut down the scheduler.
+[11:03:48 INFO]: [Geyser-Spigot] The skin uploader has been closed
+[11:03:53 ERROR]: Nag author(s): '[]' of 'ExcelLeaderboard v1.3.1' about the following: This plugin is not properly shutting down its async tasks when it is being shut down. This task may throw errors during the final shutdown logs and might not complete before process dies.
+[11:03:53 INFO]: Saving players
+[11:03:53 INFO]: Saving worlds
+[11:03:53 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[11:03:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:overworld'
+[11:03:53 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:overworld'
+[11:03:53 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:overworld'
+[11:03:53 INFO]: [ChunkHolderManager] Saved 0 block chunks, 175 entity chunks, 0 poi chunks in world 'minecraft:overworld' in 0.04s
+[11:03:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:overworld'
+[11:03:53 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:overworld'
+[11:03:53 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[11:03:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_nether'
+[11:03:53 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_nether'
+[11:03:53 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_nether'
+[11:03:53 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_nether' in 0.00s
+[11:03:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_nether'
+[11:03:53 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_nether'
+[11:03:53 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[11:03:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_end'
+[11:03:53 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_end'
+[11:03:53 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_end'
+[11:03:53 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_end' in 0.00s
+[11:03:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_end'
+[11:03:53 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_end'
+[11:03:53 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:em_adventurers_guild
+[11:03:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:em_adventurers_guild'
+[11:03:53 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:em_adventurers_guild'
+[11:03:53 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:em_adventurers_guild'
+[11:03:53 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:em_adventurers_guild' in 0.00s
+[11:03:53 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:em_adventurers_guild'
+[11:03:53 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:em_adventurers_guild'
+[11:03:53 INFO]: Waiting for all RegionFile I/O tasks to complete...
+[11:03:53 INFO]: All RegionFile I/O tasks to complete
+[11:03:53 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+[11:03:53 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+BOOT-I4-WRAPPER-DONE

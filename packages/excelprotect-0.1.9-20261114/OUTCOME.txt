@@ -1,0 +1,75 @@
+OUTCOME - ExcelProtect 0.1.9 (P-PROTECT-I4-1, item-break fix)
+Entry: ## PENDING - ExcelProtect 0.1.9 (P-PROTECT-I4-1, item-break fix)
+Installed by: wrv-install-failsafe, run scheduled 2026-11-14 12:03 CST
+Window: 12:06-12:46 CST, Nov 14, 2026
+Lane: PC LANE - window-start probe PASS attempt 1 (hostname
+DESKTOP-IL05DQR; rclone lsd shockbyte: listed "1. Michael's Server");
+no fallback used. Panel used only for the window backup and
+Shut Down/Start. Own WINDOW-IN-PROGRESS marker created 12:06:39 CST,
+re-checked before Shut Down (own marker only) and before Start.
+
+Placed artifact: plugins/ExcelProtect-0.1.9.jar
+= 269,208 B / SHA-256
+893892889318ae2d5ffc08846a55b92d0b83bab4140d9a6f46d9f91f4cf6b626
+(pull-back verified, verify_hash PASS in SCRIPT-OUTPUT.txt).
+Outgoing jar preserved on-server as
+plugins/ExcelProtect-0.1.8.jar.bak-20261114-pre019
+(268,894 B, pull-back EXACT vs gate hash). Exactly one active
+ExcelProtect jar after placement (census re-read post-swap).
+Candidate was pre-staged inert as
+plugins/ExcelProtect-0.1.9.jar.staged-20261114 and moved into place
+after BACKUP FIRST + gates; one mid-swap tool interruption occurred
+(service restart) and the swap was verified fully applied from live
+state before any further action - nothing was re-run blind.
+
+Window backup: "ExcelProtect 0.1.9 pre-install 1114" - created
+12:12 PM CST, 7.7 GB, verified completed in the Backups list.
+CAP-AT-6: initial total 6, pruned ONE oldest manual backup before
+creation: "FMM Primis pre-install 1114" (11/14/2026 8:38 AM, 7.5 GB);
+final total 6 (3 manual + 3 Daily); Daily newest + two newest
+manuals preserved. backup_cap_check PASS on the retained listing
+(window-1203/backups-final-listing.txt).
+
+Gates (all PASS, fresh PC-lane pulls, blocks in SCRIPT-OUTPUT.txt):
+- Live jar EXACT: 268,894 B / 73373b90...19a (live_pull_check).
+- Config pre-swap EXACT: 13,164 B / 543da9f9...e51; post-boot pull
+  byte-identical (config untouched, per packet).
+- Emptiness: RCON minecraft:list 0/10 twice (12:06, 12:08 CST),
+  0/10 again pre-Shut Down (12:32 CST); panel 0/10 at Shut Down.
+  (A player session ended 12:27:46 CST per panel console; all gate
+  readings themselves were 0/10.)
+
+Boot (panel Shut Down 12:34 CST, stopped 12:34:51 CST; Start
+12:43 CST): Done line verbatim: Done (23.817s)! For help, type "help"
+(12:43:35 CST). "Enabling ExcelProtect v0.1.9"; READY version=0.1.9
+retention-days=30; Initialized 88 plugins (unchanged); SEVERE 0 for
+the whole boot (boot_log_scan PASS); "max_damage" count 0.
+ExcelGuildGate line verbatim:
+"ExcelGuildGate enabled: 4 of 5 seals broken, guild LOCKED"
+(unchanged vs pre-window read).
+
+Post-install: items stream present post-boot
+(plugins/ExcelProtect/items-2026-11-14.jsonl, 10,653 B at pull);
+post-boot log holds 0 "max_damage" lines (verify_counts PASS) -
+the supervisor close-out reads for P-PROTECT-I4-1.
+
+Arrival online: 0/10. Departure online: 1/10 (GumGumJetPistol
+joined 12:44:15 CST, after the boot completed). End state: server
+left ONLINE (outside the maintenance window).
+
+Script bundle: SCRIPT-OUTPUT.txt beside this file - 17 verbatim
+blocks, all RESULT: PASS (live_pull_check x2, emptiness_check x3,
+verify candidate, backup_cap_check, verify_hash held-aside +
+placed + config-post, boot_log_scan, verify_counts x5,
+verify_marker). Retained inputs in window-1203/ (gate/, placed/,
+post/, list-1..4, backups-final-listing.txt).
+
+Still owed (not window gates):
+- Same-pass surface: ONE Guide knowledge row version bump
+  (ExcelProtect 0.1.8 -> 0.1.9, All-plugins row) as a TEXT live-edit,
+  filed by the supervisor in the same pass per the packet; this jar
+  window does not close that leg. All other surfaces checked
+  NO CHANGE in the packet. A staged surfaces folder exists in the
+  packet folder (surfaces-staging-r341) - supervisor to file/land it.
+- Supervisor close-out of P-PROTECT-I4-1 from the boot lines +
+  item_break stream reads above.
