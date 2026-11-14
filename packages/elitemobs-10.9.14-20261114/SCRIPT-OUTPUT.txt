@@ -1,0 +1,88 @@
+SCRIPT-OUTPUT - EliteMobs 10.9.14 landing, wrv-install-failsafe run scheduled 2026-11-14 11:03 CST
+Verbatim bundle blocks (tools in ~/workspace/wrv-install-queue/tools/). Retained inputs in window-1114/ (gate3/, post/, list captures, backups listing).
+Note: gate emptiness was read via RCON Essentials-format list (raw captures list-1..list-4, all 0/10, retained); the bundle emptiness blocks below run on the retained vanilla minecraft:list captures taken in the same window (list-5/list-6, 60s+ apart, departure state).
+
+STEP: live-pull-live-jar
+EXPECTED: path=plugins/EliteMobs-10.9.10.jar size=14303365 sha256=3d796000d1d1073dab3dfebbdeddf2a23b6a2e93a1a02ec8515a6ca6afdb9954
+ACTUAL: path=plugins/EliteMobs-10.9.10.jar size=14303365 sha256=3d796000d1d1073dab3dfebbdeddf2a23b6a2e93a1a02ec8515a6ca6afdb9954 lane=rclone pulled_at=2026-11-14T17:09:08Z
+RESULT: PASS
+STEP: live-pull-itemsettings
+EXPECTED: path=plugins/EliteMobs/ItemSettings.yml size=16076 sha256=3bbfe8110a46123bd252c81ed1138e5c497368a17fd6d7afc15d3652afe11729
+ACTUAL: path=plugins/EliteMobs/ItemSettings.yml size=16076 sha256=3bbfe8110a46123bd252c81ed1138e5c497368a17fd6d7afc15d3652afe11729 lane=rclone pulled_at=2026-11-14T17:09:09Z
+RESULT: PASS
+STEP: live-pull-economysettings
+EXPECTED: path=plugins/EliteMobs/EconomySettings.yml size=9546 sha256=ea7ca609ec447998b050c4954e87ff497fd288773b4169935db4e67823b147f5
+ACTUAL: path=plugins/EliteMobs/EconomySettings.yml size=9546 sha256=ea7ca609ec447998b050c4954e87ff497fd288773b4169935db4e67823b147f5 lane=rclone pulled_at=2026-11-14T17:08:59Z
+RESULT: PASS
+STEP: live-pull-mobcombatsettings
+EXPECTED: path=plugins/EliteMobs/MobCombatSettings.yml size=14529 sha256=e3a384d02784dc31f0d091d5dbd89544e58b803de0f04b9bf98da62ea2bdd375
+ACTUAL: path=plugins/EliteMobs/MobCombatSettings.yml size=14529 sha256=e3a384d02784dc31f0d091d5dbd89544e58b803de0f04b9bf98da62ea2bdd375 lane=rclone pulled_at=2026-11-14T17:09:09Z
+RESULT: PASS
+STEP: live-pull-em-config
+EXPECTED: path=plugins/EliteMobs/config.yml size=8419 sha256=8e4d72bfaaa12f9f4d4a04866317eee4077382cccc28fb1b11a8344ac319ff26
+ACTUAL: path=plugins/EliteMobs/config.yml size=8419 sha256=8e4d72bfaaa12f9f4d4a04866317eee4077382cccc28fb1b11a8344ac319ff26 lane=rclone pulled_at=2026-11-14T17:09:10Z
+RESULT: PASS
+STEP: live-pull-spigot
+EXPECTED: path=spigot.yml size=5057 sha256=deb4066ed063fb56bef783322c102a9f84af3bc5b7dfd2a5fa476ed1ccb703cb
+ACTUAL: path=spigot.yml size=5057 sha256=deb4066ed063fb56bef783322c102a9f84af3bc5b7dfd2a5fa476ed1ccb703cb lane=rclone pulled_at=2026-11-14T17:09:15Z
+RESULT: PASS
+STEP: verify-staged-candidate
+EXPECTED: size=14563211 sha256=4a6bc4a74e382942e39961e9a25a231deb46cea34379d40bc63ae9a9328c44bd
+ACTUAL: size=14563211 sha256=4a6bc4a74e382942e39961e9a25a231deb46cea34379d40bc63ae9a9328c44bd
+RESULT: PASS
+STEP: backup-cap-final
+EXPECTED: total<=6
+ACTUAL: total=6 daily=3 manual=3 prune_needed=0
+RESULT: PASS
+STEP: verify-placed-jar-pullback
+EXPECTED: size=14563211 sha256=4a6bc4a74e382942e39961e9a25a231deb46cea34379d40bc63ae9a9328c44bd
+ACTUAL: size=14563211 sha256=4a6bc4a74e382942e39961e9a25a231deb46cea34379d40bc63ae9a9328c44bd
+RESULT: PASS
+STEP: boot-log-scan-post
+EXPECTED: done=present severe=0 guild_locked=4of5
+ACTUAL: done=present severe=0 guild_locked=4of5
+RESULT: PASS
+STEP: verify-severe-zero
+EXPECTED: count=0 pattern=SEVERE mode=occurrences
+ACTUAL: count=0
+RESULT: PASS
+STEP: verify-em-version-line
+EXPECTED: count=1 pattern=Enabling EliteMobs v10.9.14 mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: verify-world-primis
+EXPECTED: count>=1 pattern=Successfully loaded world em_primis mode=occurrences
+ACTUAL: count=2
+RESULT: PASS
+STEP: verify-world-arena
+EXPECTED: count>=1 pattern=Successfully loaded world em_primis_elementals_arena mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: gate-itemsettings-key
+EXPECTED: count=1 pattern=flatDropRateV3: 0.0 mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: post-itemsettings-key
+EXPECTED: count=1 pattern=flatDropRateV3: 0.0 mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: verify-bridge-online
+EXPECTED: count=1 pattern=Bedrock ability bridge online mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: verify-sealfreeze-armed
+EXPECTED: count=1 pattern=ExcelSealFreeze resumed ARMED mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: emptiness-vanilla-a
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: emptiness-vanilla-b
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: verify-installed-marker
+EXPECTED: present plugin=EliteMobs version=10.9.14
+ACTUAL: present entry=PENDING - EliteMobs 10.9.14 (jar update, content 10.9.12 -> 10.9.14) installed=2026-11-14 11:23 CST (boot Done 11:23:58 CST) lane=PC LANE (Homebase rclone/RCON; panel for backup + Shut Down/Start only) placed_jar: plugins/EliteMobs-10.9.10.jar=14563211 B / 4a6bc4a74e382942e39961e9a25a231deb46cea34379d40bc63ae9a9328c44bd plugin=EliteMobs version=10.9.14 window_backup=EM 10.9.14 pre-install 1114
+RESULT: PASS
