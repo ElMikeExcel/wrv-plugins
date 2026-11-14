@@ -1,0 +1,12 @@
+INSTALLED Nov 14, 2026 - wrv-install-failsafe run scheduled 06:03 CST (chained window, one restart for all five gated entries)
+Entry: ## PENDING - ExcelBuildMode 1.3.5 (filed Nov 14, 2026, board supervisor run 334)
+Placed artifact (pull-back verified EXACT): plugins/ExcelBuildMode-1.3.5.jar - 99,879 B / aa2d35fd4c2fb2a1839c33d2153f96be52c06c02e5e75ec144d27f1911ab8a66
+Predecessor held aside: plugins/ExcelBuildMode-1.3.4.jar.bak-20261114-pre135 - 99,073 B / 39d86f3bc76ee7f28ff5bd428e1c8add9d07d5f9bedda5d1a84551c36f7464d3 (fresh-pull gate EXACT; census exactly one loadable jar before and after; data dirs review-holds/build-return/recovery present)
+Boot verify: Enabling ExcelBuildMode v1.3.5 x1; "storage is unavailable" x0
+Proof owed: live build-mode session (Mike or Kailey) with no storage ERRORs. Surfaces owed per packet (supervisor legs).
+Window backup: "Fsync chain pre-install 1114" (Shockbyte panel, 7.5 GB, verified completed) - cap-at-6 prunee: "GoldenShovel pre-install 1113" (oldest manual; Daily Backup newest copy and two newest manuals untouched; final total 6)
+Arrival online: 0/10 - Departure online: 0/10 - server left ONLINE (outside maintenance window)
+Boot Done line (verbatim, latest.log): [12:18:04] [Server thread/INFO]: Done (22.517s)! For help, type "help"
+Guild: ExcelGuildGate enabled: 4 of 5 seals broken, guild LOCKED (unchanged)
+SEVERE total in boot log: 0 - AccessDeniedException: 0
+Lane: PC LANE (probe PASS attempt 1: hostname DESKTOP-IL05DQR + rclone lsd shockbyte: listed "1. Michael's Server"); panel used only for the window backup + Shut Down (06:17 CST) / Start (06:17 CST, Online 06:18 CST); no console stop used.
