@@ -1,0 +1,116 @@
+OUTCOME - EliteMobs 10.9.14 (content 10.9.12 -> 10.9.14)
+Entry: ## PENDING - EliteMobs 10.9.14 (jar update, content 10.9.12 -> 10.9.14)
+Installed by: wrv-install-failsafe, run scheduled 2026-11-14 11:03 CST
+Window: 11:05-11:35 CST, Nov 14, 2026 (daytime gated window per packet;
+closes well before the evening Warden muster)
+Lane: PC LANE - window-start probe PASS attempt 1 (hostname
+DESKTOP-IL05DQR; rclone lsd shockbyte: listed "1. Michael's Server");
+no fallback used. Panel used only for the window backup and
+Shut Down/Start. Own WINDOW-IN-PROGRESS marker created 11:05:55 CST,
+re-checked before Shut Down (own marker only) and before Start.
+
+Acquisition: PRIMARY route - RCON /em downloadpluginupdate staged
+plugins/update/EliteMobs-10.9.10.jar (14,563,211 B, 11:17:53 CST);
+staged bytes pull-back hash EXACT vs candidate and plugin.yml inside
+reads version 10.9.14; the restart applied it from the update folder
+(update folder empty after boot). /em applypluginupdate NOT used.
+Outgoing jar preserved on-server as
+plugins/EliteMobs-10.9.10.jar.held-20261114-pre-em10914
+(14,303,365 B) and as the retained gate-3 pull in window-1114/gate3/.
+
+Placed artifact: plugins/EliteMobs-10.9.10.jar (same live filename)
+= 14,563,211 B / SHA-256
+4a6bc4a74e382942e39961e9a25a231deb46cea34379d40bc63ae9a9328c44bd
+(pull-back verified, verify_hash PASS in SCRIPT-OUTPUT.txt).
+
+Window backup: "EM 10.9.14 pre-install 1114" - created 11:13 AM CST,
+7.7 GB, verified completed in the Backups list. CAP-AT-6: initial
+total 6, pruned ONE oldest manual backup before creation:
+"pre-wn013-summons019-20261114-0633" (11/14/2026 6:38 AM, 7.5 GB);
+final total 6 (3 manual + 3 Daily); Daily newest + two newest
+manuals preserved. backup_cap_check PASS on the retained listing
+(window-1114/backups-final-listing.txt).
+
+Gates (all PASS, fresh PC-lane pulls, blocks in SCRIPT-OUTPUT.txt):
+- Live jar EXACT: 14,303,365 B / 3d796000...9954 (live_pull_check).
+- All five G1 files EXACT vs RECEIPTS.md (ItemSettings, Economy,
+  MobCombat, config, spigot).
+- Tuned keys exact pre and post: flatDropRateV3 0.0;
+  enableCurrencyShower false; currencyShowerTierMultiplier 0.5;
+  spigot maxHealth.max 100000000.
+- Emptiness: RCON list 0/10 twice (11:05:57, 11:09:45 CST), 0/10
+  again pre-Shut Down, panel 0/10, departure RCON 0/10; bundle
+  emptiness blocks PASS on retained vanilla minecraft:list captures
+  (list-5/list-6) - the Essentials-format RCON captures (list-1..4)
+  are retained raw; emptiness_check.py does not parse that wording.
+- GuildGate state LOCKED 4 of 5 (warden unbroken); SealFreeze
+  ARMED, 11-player all-zero baseline; player_data.db 11 rows, all
+  progression + currency fields 0 (Deaths history untouched, per
+  wipe scope); ExcelExpansions level store 11 rows zeroed, M-02
+  release state still "proposed"; FMM baseline FreeMinecraftModels
+  2.15.0 recorded from the pre-boot log.
+
+Boot (panel Shut Down 11:22:50 CST stopped; Start 11:23:33 CST):
+Done line verbatim: Done (23.759s)! For help, type "help"
+(11:23:58 CST). "Enabling EliteMobs v10.9.14"; /em version (RCON)
+reports 10.9.14; "EliteMobs fully initialized!"; SEVERE 0 for the
+whole boot (boot_log_scan PASS). ExcelGuildGate line verbatim:
+"ExcelGuildGate enabled: 4 of 5 seals broken, guild LOCKED".
+
+Post-install verification (packet steps 1-8):
+1. /em version = 10.9.14; Done present. PASS
+2. Tuned keys re-read EXACT (above). Other drift: EconomySettings,
+   MobCombatSettings, spigot.yml byte-identical to gate-3 pulls;
+   ItemSettings.yml changed ONLY in one bundled-default comment
+   line (the $itemMaterial comment wording, +31 B, no value
+   change); EliteMobs config.yml gained ONE additive default key
+   (autoUpdateTranslations: true, +29 B). No other drift. PASS
+3. Guild LOCKED 4 of 5 (state file byte-identical); SealFreeze
+   ARMED, baseline byte-identical, boot line "ExcelSealFreeze
+   resumed ARMED (baseline of 11 players)"; player_data.db
+   byte-identical (11 rows zeroed); Expansions level store
+   byte-identical, re-seeded from zeros (boot: "level store: 11
+   players"); M-02 proposal state unchanged (still proposed -
+   Mike's tap at 5/5). PASS
+4. Worlds loaded: em_primis, em_primis_elementals_arena,
+   em_adventurers_guild - all "Successfully loaded world" in the
+   boot log; ValidWorlds.yml byte-identical (em_primis + arena
+   true). Primis content census: no census counter exists in the
+   boot log; the Primis install's 17/17 census stands from this
+   morning's S-7 install record, with all three EM worlds loading
+   clean on the new jar. PASS (census carried, noted)
+5. Archiver: ZERO files moved - no new batch folder under
+   plugins/MagmaCore/outdated files/EliteMobs (only the Oct 20 and
+   Oct 31 batches exist); the boot's only language pass was
+   "Updated (EN) language file. Took 20ms". PASS
+6. ExcelAbilityBridge enabled; boot line "EliteMobs class system
+   (ACS) is up - Bedrock ability bridge online: /abilities"
+   (17:24:08 UTC log time); no degradation/stand-down line. PASS
+7. Spellcaster/FMM: FreeMinecraftModels v2.15.0 "Fully
+   initialized!", "Loaded 12 custom item definition(s)", FMM Shop
+   initialized; no missing-content lock line in the boot log.
+   /em class info is a player-only command (console returns "This
+   command must be run as a player!"), so the in-game class check
+   rides the post-5/5 player proofs. PASS by log
+8. ExcelSealFreeze, ExcelExpansions, ExcelGuildGate, ExcelBossTrial
+   all enabled in the boot log; plugin list shows EliteMobs
+   (10.9.14); SEVERE 0 attributable to the whole window. PASS
+
+Arrival online: 0/10. Departure online: 0/10. End state: server
+left ONLINE (outside the maintenance window).
+
+Script bundle: SCRIPT-OUTPUT.txt beside this file - 21 verbatim
+blocks, all RESULT: PASS (live_pull_check x6, verify_hash staged +
+placed, backup_cap_check, boot_log_scan, verify_counts x8,
+emptiness_check x2, verify_marker). Retained inputs in
+window-1114/ (gate3/, post/, list-1..6, backups-final-listing.txt,
+staged-update-EliteMobs.jar, latest-after-download.log).
+
+Still owed (not window gates):
+- Post-5/5 player proofs per packet: Bedrock native sneak-gesture
+  fire + /abilities form fire side by side; Cleric Mend in Primis;
+  ExcelDetails meter sanity.
+- Same-pass surfaces (supervisor/main-agent leg): What's New entry
+  + Guide chunk text from the packet; website plugin table version
+  cell 10.9.12 -> 10.9.14 (both files); records draft PR in
+  wrv-plugins with packet + OUTCOME; Drive deposit of the jar.
