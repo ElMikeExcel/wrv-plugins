@@ -1,0 +1,12 @@
+INSTALLED Nov 14, 2026 - wrv-install-failsafe run scheduled 06:03 CST (chained window, one restart for all five gated entries)
+Entry: ## PENDING - ExcelShops 1.3.9 (filed Nov 14, 2026, board supervisor run 334)
+Placed artifact (pull-back verified EXACT): plugins/ExcelShops-1.3.9.jar - 266,677 B / 9473f1ed369a09512b689eed5a23c588fb3e9c20e8c251558a1ac56ed7ea8e73
+Predecessor held aside: plugins/ExcelShops-1.3.8.jar.bak-20261114-pre139 - 266,417 B / b8a1b8fd9a56f420accdb066a3ae3e9c6989638668cadd2f5497a52117a4adb9 (fresh-pull gate EXACT; census exactly one loadable jar before and after)
+Boot verify: Enabling ExcelShops v1.3.9 x1; "ExcelShops purchases available" x1; "protection-only" x0; "Session proof not eligible" x0
+Proof owed: live shop purchase/browse session with no storage ERRORs. Surfaces owed per packet (supervisor legs).
+Window backup: "Fsync chain pre-install 1114" (Shockbyte panel, 7.5 GB, verified completed) - cap-at-6 prunee: "GoldenShovel pre-install 1113" (oldest manual; Daily Backup newest copy and two newest manuals untouched; final total 6)
+Arrival online: 0/10 - Departure online: 0/10 - server left ONLINE (outside maintenance window)
+Boot Done line (verbatim, latest.log): [12:18:04] [Server thread/INFO]: Done (22.517s)! For help, type "help"
+Guild: ExcelGuildGate enabled: 4 of 5 seals broken, guild LOCKED (unchanged)
+SEVERE total in boot log: 0 - AccessDeniedException: 0
+Lane: PC LANE (probe PASS attempt 1: hostname DESKTOP-IL05DQR + rclone lsd shockbyte: listed "1. Michael's Server"); panel used only for the window backup + Shut Down (06:17 CST) / Start (06:17 CST, Online 06:18 CST); no console stop used.
