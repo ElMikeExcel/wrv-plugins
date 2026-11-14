@@ -1,0 +1,96 @@
+== CONTROL: base (pre-fix) files ==
+  base spellbook listings: {'healing': 10, 'defense': 8, 'damage': 32, 'movement': 14, 'summon': 4, 'building': 9, 'world': 6, 'utility': 22} total=105
+PASS  base listings total 105
+PASS  base group counts match audit S7  [{'healing': 10, 'defense': 8, 'damage': 32, 'movement': 14, 'summon': 4, 'building': 9, 'world': 6, 'utility': 22}]
+  base beginner    known= 26  healing=3 defense=4 damage=10 movement=1 summon=0 building=0 world=0 utility=8 other=0
+  base student     known= 58  healing=5 defense=6 damage=18 movement=8 summon=3 building=1 world=0 utility=16 other=1
+  base apprentice  known= 80  healing=8 defense=6 damage=25 movement=12 summon=4 building=1 world=0 utility=21 other=3
+  base master      known=112  healing=10 defense=8 damage=32 movement=14 summon=4 building=9 world=6 utility=22 other=7
+PASS  CONTROL Master: 112 known, Summon 4, Other 7  [(112, {'healing': 10, 'defense': 8, 'utility': 22, 'movement': 14, 'damage': 32, 'summon': 4, 'building': 9, 'other': 7, 'world': 6})]
+PASS  CONTROL Apprentice: 80 known, Summon 4, Other 3 (== Nov 14 screenshots)  [(80, {'healing': 8, 'defense': 6, 'utility': 21, 'movement': 12, 'damage': 25, 'summon': 4, 'building': 1, 'other': 3})]
+== POST-FIX: staged files ==
+  staged spellbook listings: {'healing': 12, 'defense': 8, 'damage': 32, 'movement': 14, 'summon': 11, 'building': 8, 'world': 6, 'utility': 23} total=114
+PASS  staged listings total 114 (105 + 7 summon + 2 healing)
+PASS  staged group counts by counting  [{'healing': 12, 'defense': 8, 'damage': 32, 'movement': 14, 'summon': 11, 'building': 8, 'world': 6, 'utility': 23}  NOTE: audit S7/S10 print Utility 24; counting gives 23 (22 -anvil +flare +counterspell). Audit arithmetic slip; counted value stands.]
+PASS  no duplicate listings in staged spellbook
+PASS  Summon group == full 11-spell family  [['archer', 'bruiser', 'cat', 'familiar', 'ghast', 'guardian', 'mount', 'revenant', 'tame', 'tamepet', 'wolf']]
+PASS  Healing gains exactly grouprenewal + resurrection
+PASS  Damage: -flare -counterspell +earth +anvil
+PASS  Building: -earth only
+PASS  Utility: -anvil +flare +counterspell
+  staged beginner    known= 26  healing=3 defense=4 damage=9 movement=1 summon=0 building=0 world=0 utility=9 other=0
+  staged student     known= 58  healing=5 defense=6 damage=18 movement=8 summon=4 building=0 world=0 utility=17 other=0
+  staged apprentice  known= 81  healing=9 defense=6 damage=25 movement=12 summon=7 building=0 world=0 utility=22 other=0
+  staged master      known=114  healing=12 defense=8 damage=32 movement=14 summon=11 building=8 world=6 utility=23 other=0
+PASS  POST Master: 114 known, Summon 11, Other 0, Healing 12  [(114, {'healing': 12, 'defense': 8, 'utility': 23, 'movement': 14, 'damage': 32, 'summon': 11, 'world': 6, 'building': 8})]
+PASS  POST Apprentice: 81 known (80 + grouprenewal), Summon 7, Other 0  [(81, {'healing': 9, 'defense': 6, 'utility': 22, 'movement': 12, 'damage': 25, 'summon': 7})]
+PASS  POST Student: 58 known, Summon 4 (cat/familiar/wolf/archer), Other 0  [(58, {'healing': 5, 'defense': 6, 'utility': 17, 'movement': 8, 'damage': 18, 'summon': 4})]
+PASS  POST Beginner: 26 known, Other 0  [(26, {'healing': 3, 'defense': 4, 'utility': 9, 'movement': 1, 'damage': 9})]
+  summon family in Other: before=['archer', 'bruiser', 'ghast', 'guardian', 'mount', 'revenant', 'tamepet'] after=[]
+PASS  summon family in Other after fix: none
+== DELTA PURITY ==
+PASS  spellbook diff: exactly the F1/F2 spell lines (+13/-4)  [+13/-4]
+PASS  live-spells.yml: only name: additions, zero deletions (+7)  [['name: Pet Heal', 'name: Archer', 'name: Bruiser', 'name: Guardian', 'name: Revenant', 'name: Ghast', 'name: Mount']]
+PASS  live-spells.yml: archer name == 'Archer'
+PASS  live-spells.yml: bruiser name == 'Bruiser'
+PASS  live-spells.yml: guardian name == 'Guardian'
+PASS  live-spells.yml: revenant name == 'Revenant'
+PASS  live-spells.yml: ghast name == 'Ghast'
+PASS  live-spells.yml: mount name == 'Mount'
+PASS  live-spells.yml: tamepet name == 'Pet Heal'
+PASS  live-spells.yml: top-level key count unchanged  [222 -> 222]
+PASS  stage2-spells.yml: only name: additions, zero deletions (+2)  [['name: Pet Heal', 'name: Archer']]
+PASS  stage2-spells.yml: archer name == 'Archer'
+PASS  stage2-spells.yml: bruiser stays absent (stage-gated)
+PASS  stage2-spells.yml: guardian stays absent (stage-gated)
+PASS  stage2-spells.yml: revenant stays absent (stage-gated)
+PASS  stage2-spells.yml: ghast stays absent (stage-gated)
+PASS  stage2-spells.yml: mount stays absent (stage-gated)
+PASS  stage2-spells.yml: tamepet name == 'Pet Heal'
+PASS  stage2-spells.yml: top-level key count unchanged  [109 -> 109]
+PASS  stage3-spells.yml: only name: additions, zero deletions (+3)  [['name: Pet Heal', 'name: Archer', 'name: Bruiser']]
+PASS  stage3-spells.yml: archer name == 'Archer'
+PASS  stage3-spells.yml: bruiser name == 'Bruiser'
+PASS  stage3-spells.yml: guardian stays absent (stage-gated)
+PASS  stage3-spells.yml: revenant stays absent (stage-gated)
+PASS  stage3-spells.yml: ghast stays absent (stage-gated)
+PASS  stage3-spells.yml: mount stays absent (stage-gated)
+PASS  stage3-spells.yml: tamepet name == 'Pet Heal'
+PASS  stage3-spells.yml: top-level key count unchanged  [176 -> 176]
+PASS  stage4-spells.yml: only name: additions, zero deletions (+7)  [['name: Pet Heal', 'name: Archer', 'name: Bruiser', 'name: Guardian', 'name: Revenant', 'name: Ghast', 'name: Mount']]
+PASS  stage4-spells.yml: archer name == 'Archer'
+PASS  stage4-spells.yml: bruiser name == 'Bruiser'
+PASS  stage4-spells.yml: guardian name == 'Guardian'
+PASS  stage4-spells.yml: revenant name == 'Revenant'
+PASS  stage4-spells.yml: ghast name == 'Ghast'
+PASS  stage4-spells.yml: mount name == 'Mount'
+PASS  stage4-spells.yml: tamepet name == 'Pet Heal'
+PASS  stage4-spells.yml: top-level key count unchanged  [222 -> 222]
+PASS  stage5-spells.yml: only name: additions, zero deletions (+7)  [['name: Pet Heal', 'name: Archer', 'name: Bruiser', 'name: Guardian', 'name: Revenant', 'name: Ghast', 'name: Mount']]
+PASS  stage5-spells.yml: archer name == 'Archer'
+PASS  stage5-spells.yml: bruiser name == 'Bruiser'
+PASS  stage5-spells.yml: guardian name == 'Guardian'
+PASS  stage5-spells.yml: revenant name == 'Revenant'
+PASS  stage5-spells.yml: ghast name == 'Ghast'
+PASS  stage5-spells.yml: mount name == 'Mount'
+PASS  stage5-spells.yml: tamepet name == 'Pet Heal'
+PASS  stage5-spells.yml: top-level key count unchanged  [222 -> 222]
+PASS  total F3+F4 name lines == 26  [26]
+PASS  magicgate stage3/paths.yml: only expected grant additions, zero deletions  [+['- grouprenewal'] -[]]
+PASS  magicgate stage3/wands.yml: only expected grant additions, zero deletions  [+['- grouprenewal'] -[]]
+PASS  magicgate stage4/paths.yml: only expected grant additions, zero deletions  [+['- grouprenewal', '- resurrection'] -[]]
+PASS  magicgate stage4/wands.yml: only expected grant additions, zero deletions  [+['- grouprenewal', '- resurrection'] -[]]
+PASS  magicgate stage5/paths.yml: only expected grant additions, zero deletions  [+['- grouprenewal', '- resurrection'] -[]]
+PASS  magicgate stage5/wands.yml: only expected grant additions, zero deletions  [+['- grouprenewal', '- resurrection'] -[]]
+PASS  magic/paths.yml: only grouprenewal+resurrection additions, zero deletions  [+['- grouprenewal', '- resurrection'] -[]]
+PASS  magic/wands.yml: only grouprenewal+resurrection additions, zero deletions  [+['- grouprenewal', '- resurrection'] -[]]
+  stage3 paths cumulative: base {'beginner': 25, 'student': 55, 'apprentice': 71, 'master': 78} -> staged {'beginner': 25, 'student': 55, 'apprentice': 72, 'master': 79}
+PASS  stage3 cumulative: apprentice +1, master +1 (grouprenewal only)
+  stage4 paths cumulative: base {'beginner': 26, 'student': 57, 'apprentice': 78, 'master': 106} -> staged {'beginner': 26, 'student': 57, 'apprentice': 79, 'master': 108}
+PASS  stage4 cumulative: apprentice +1, master +2
+  stage5 paths cumulative: base {'beginner': 26, 'student': 57, 'apprentice': 78, 'master': 106} -> staged {'beginner': 26, 'student': 57, 'apprentice': 79, 'master': 108}
+PASS  stage5 cumulative: apprentice +1, master +2
+PASS  stage3 templates contain no resurrection (spell absent from stage3 book)
+PASS  stage4 banding: grouprenewal first at apprentice, resurrection first at master
+
+RESULT: ALL CHECKS PASS
