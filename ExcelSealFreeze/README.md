@@ -1,0 +1,2 @@
+# ExcelSealFreeze (Wink Reyes Valley)
+Freezes EliteMobs progression at the arm-time baseline until ExcelGuildGate reads unlocked (fifth seal). Holds HighestLevelKilled, Score, Kills, CurrencyV2/CurrencyCents and all SkillXP_* at baseline; never touches Deaths/gambling/quests. Commands: /sealfreeze status|arm|disarm|clampnow (op). Build: ./build.sh. Installed with the Nov 14, 2026 EM wipe (P-SEALFREEZE-1).
