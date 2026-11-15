@@ -1,0 +1,62 @@
+# GROUP MOVE — Nov 14, 2026 (P-AUTOSORT-FILTER-1, Mike's in-game
+# report): the ExcelAutoSort on/off switch leaves the Settings /
+# Toggles area for the Chest Tools page (server_menu page 2, the
+# chest-organization section beside Chest filter setup, Filter
+# recovery box and Max Organization) — it is a chest tool, not a
+# settings switch. The move is the group:/order:/order-bedrock:
+# lines only; label, lore, icon, states, action, guards and the
+# status feed are byte-identical to the Nov 12, 2026 toggles-split
+# entry it replaces. Java order 25 / Bedrock weight 245 append it
+# after maxorg (20 / 240) — no live entry is renumbered, no slot
+# or weight collides (chest_tools has 8 slots, 3 doors today).
+# ExcelMenu 2.0 registry entry — STATE-DRIVEN conversion, Nov 3, 2026
+# (menu-toggle-fix): status-placeholder + states, toggle action
+# + [refresh]. The status feed is %autosort_status%, served by
+# ExcelAutoSort's own PlaceholderAPI expansion (AutoSortExpansion —
+# the contract the retired ExcelAutoSortBridge 0.1.0 once served).
+# requires-plugin names the OWNER (ExcelAutoSort): if the owner is
+# absent the entry resolves to its default variant — fail-closed.
+id: autosort
+menu: server_menu
+group: chest_tools
+order: 25
+order-bedrock: 245
+icon: LIME_DYE
+label: '&a&lAuto-sort my chests: ON'
+lore:
+  - '&7Tidies your chests, barrels, shulker'
+  - '&7boxes and ender chest when you open them'
+  - '&7Click to turn auto-sort OFF'
+action:
+  - '[player] autosort'
+  - '[refresh]'
+requires-plugin: ExcelAutoSort
+requires-permission: excelautosort.toggle
+status-placeholder: '%autosort_status%'
+states:
+  'ON':
+    icon: LIME_DYE
+    label: '&a&lAuto-sort my chests: ON'
+    lore:
+      - '&7Tidies your chests, barrels, shulker'
+      - '&7boxes and ender chest when you open them'
+      - '&7Click to turn auto-sort OFF'
+    action:
+      - '[player] autosort'
+      - '[refresh]'
+  'OFF':
+    icon: GRAY_DYE
+    label: '&7&lAuto-sort my chests: OFF'
+    lore:
+      - '&7Your chests, barrels, shulker boxes'
+      - '&7and ender chest stay as you left them'
+      - '&7Click to turn auto-sort ON'
+    action:
+      - '[player] autosort'
+      - '[refresh]'
+  'default':
+    icon: GRAY_DYE
+    label: '&7&lAuto-sort my chests: unavailable'
+    lore:
+      - '&7Sorting plugin or status bridge is unavailable'
+      - '&7Try again later or ask server staff'

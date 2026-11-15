@@ -1,0 +1,21 @@
+PASS core toggle target exists
+PASS core default ON mode is WHITELIST
+PASS flow toggle entry point
+PASS flow confirm updates toggle memory
+PASS flow open seeds toggle memory from record
+PASS java selector slot 3 renders toggle
+PASS java slot 3 click routes to toggle
+PASS java toggle label key (on)
+PASS java toggle label key (off)
+PASS bedrock main form renders toggle button
+PASS bedrock toggle routes to flow
+PASS bedrock toggle label key (on)
+PASS bedrock toggle label key (off)
+PASS bedrock list button shifted to index 1
+PASS bedrock back button shifted to index 4
+PASS config carries java toggle words
+PASS config carries bedrock toggle words
+PASS menu entry in chest_tools
+PASS menu entry bedrock weight 245
+PASS menu entry not in settings/toggles
+WALK-TOTAL pass=20 fail=0
