@@ -1,0 +1,15 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: tpmenu
+menu: server_menu
+group: travel
+order: 30
+order-bedrock: 10
+icon: ENDER_PEARL
+label: '&a&lTeleport to a player'
+lore:
+  - '&7Pick a player and send'
+  - '&7them a teleport request'
+action:
+  - '[close]'
+  - '[player] tpmenu'

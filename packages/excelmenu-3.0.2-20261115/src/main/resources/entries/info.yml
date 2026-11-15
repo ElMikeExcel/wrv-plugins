@@ -1,0 +1,13 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: info
+menu: server_menu
+group: help
+order: 40
+order-bedrock: 140
+icon: BOOK
+label: '&a&lServer Info'
+lore:
+  - '&7What runs on this server'
+action:
+  - '[player] motd'

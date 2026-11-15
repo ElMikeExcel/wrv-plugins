@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: st_excelshop_setup
+menu: commands_menu
+group: shops_trading
+order: 30
+order-bedrock: 190
+icon: CRAFTING_TABLE
+label: '&a&l/excelshop setup'
+lore:
+  - '&7Start the guided setup for your own chest shop'
+  - '&8Shops & Trading'
+action:
+  - '[player] excelshop setup'

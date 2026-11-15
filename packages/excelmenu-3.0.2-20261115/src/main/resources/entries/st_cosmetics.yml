@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: st_cosmetics
+menu: commands_menu
+group: shops_trading
+order: 20
+order-bedrock: 180
+icon: AMETHYST_SHARD
+label: '&a&l/cosmetics'
+lore:
+  - '&7See your colors, effects and sets, and equip them'
+  - '&8Shops & Trading'
+action:
+  - '[player] cosmetics'

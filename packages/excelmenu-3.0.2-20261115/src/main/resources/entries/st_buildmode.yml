@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: st_buildmode
+menu: commands_menu
+group: shops_trading
+order: 70
+order-bedrock: 230
+icon: BRICKS
+label: '&a&l/buildmode'
+lore:
+  - '&7Start or end a build session'
+  - '&8Shops & Trading'
+action:
+  - '[message] &7Type it in chat: &e/buildmode on &7or &e/buildmode off'

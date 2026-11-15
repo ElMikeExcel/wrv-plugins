@@ -1,0 +1,23 @@
+== compile main ==
+/home/hatch/workspace/menu-colors-20261113/excelmenu-301-build/src/main/java/com/winkreyes/excelmenu/bukkit/ActionDispatcher.java:109: warning: [removal] valueOf(@org.jetbrains.annotations.NotNull String) in Sound has been deprecated and marked for removal
+            sound = Sound.valueOf(parts[0].toUpperCase(Locale.ROOT));
+                         ^
+Note: /home/hatch/workspace/menu-colors-20261113/excelmenu-301-build/src/main/java/com/winkreyes/excelmenu/bukkit/TeleportScreen.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: /home/hatch/workspace/menu-colors-20261113/excelmenu-301-build/src/main/java/com/winkreyes/excelmenu/bukkit/ChildproofScreen.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+1 warning
+== jar ==
+== compile tests ==
+== run tests ==
+JUnit version 4.13.2
+.......................................................................................................................................................................GOLDEN HARNESS: 108 viewer states x2 platforms, 5526 rows compared, deltas occurred: [D4, D5, D6, D7, D8, D11, D9, D1, D2, D3]
+..CATALOGUE HARNESS: 56 rows compared, acceptances occurred: [C3, C4, C5, C6, C7, C8, C1, C2]
+
+Time: 2.341
+
+OK (169 tests)
+
+== built ==
+5bb1c1a3c45ce4b54e75a5e5b6e5d03b50f06c5708afd3904c3cf85e031b2939  /home/hatch/workspace/menu-colors-20261113/excelmenu-301-build/ExcelMenu-3.0.1.jar
+-rw-rw---- 1 root root 330214 Nov 13 18:56 /home/hatch/workspace/menu-colors-20261113/excelmenu-301-build/ExcelMenu-3.0.1.jar

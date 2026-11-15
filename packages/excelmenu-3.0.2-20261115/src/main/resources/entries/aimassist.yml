@@ -1,0 +1,45 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: aimassist
+menu: server_menu
+group: settings
+order: 60
+order-bedrock: 240
+icon: LIME_DYE
+label: '&a&lAim Assist: ON'
+lore:
+  - '&7Shots bend toward a hostile mob'
+  - '&7you are already aiming at'
+  - '&7Click to turn aim assist OFF'
+action:
+  - '[player] excelaimassist:aimassist toggle'
+  - '[refresh]'
+requires-plugin: ExcelAimAssist
+requires-permission: excelaimassist.toggle
+status-placeholder: '%aimassist_status%'
+states:
+  'ON':
+    icon: LIME_DYE
+    label: '&a&lAim Assist: ON'
+    lore:
+      - '&7Shots bend toward a hostile mob'
+      - '&7you are already aiming at'
+      - '&7Click to turn aim assist OFF'
+    action:
+      - '[player] excelaimassist:aimassist toggle'
+      - '[refresh]'
+  'OFF':
+    icon: GRAY_DYE
+    label: '&7&lAim Assist: OFF'
+    lore:
+      - '&7Bows, crossbows and thrown tridents'
+      - '&7Click to turn aim assist ON'
+    action:
+      - '[player] excelaimassist:aimassist toggle'
+      - '[refresh]'
+  'default':
+    icon: GRAY_DYE
+    label: '&7&lAim Assist: unavailable'
+    lore:
+      - '&7Aim assist plugin or status bridge is unavailable'
+      - '&7Try again later or ask server staff'

@@ -1,0 +1,17 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: yi_trash
+menu: commands_menu
+group: your_items_help
+order: 20
+order-bedrock: 530
+icon: CAULDRON
+label: '&a&l/trash'
+lore:
+  - '&7Throw items away. Changed your mind?'
+  - '&7/trash undo works for 5 minutes'
+  - '&8Your Items & Help'
+action:
+  - '[player] trash'

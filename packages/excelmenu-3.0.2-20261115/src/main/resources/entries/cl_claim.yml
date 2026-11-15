@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: cl_claim
+menu: commands_menu
+group: claims_land
+order: 10
+order-bedrock: 240
+icon: OAK_FENCE
+label: '&a&l/claim'
+lore:
+  - '&7Claim the land around you'
+  - '&8Claims & Land'
+action:
+  - '[player] claim'

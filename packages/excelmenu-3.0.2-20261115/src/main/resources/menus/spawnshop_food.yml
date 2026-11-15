@@ -1,0 +1,82 @@
+# ExcelMenu definition: spawnshop_food
+# Migrated 2026-10-20 from DeluxeMenus gui_menus/spawnshop_food.yml
+# (source SHA-256 47b22f75759850912a1553184af448e768919a8b7d6e2b091d6316a3f75aa6f4; provenance in ~/workspace/excelmenu/dm-source/PROVENANCE.md)
+format: 1
+title: '&e$%vault_eco_balance_2dp% &8| &2Food'
+size: 9
+type: dispenser
+update-interval: 1
+items:
+  bread:
+    material: BREAD
+    slot: 0
+    amount: 16
+    name: '&a&l16 Bread'
+    lore:
+    - '&7Fill up on a trip'
+    - '&eBundle price: &f$40'
+    - '&8Tap to choose quantity. No charge yet.'
+    clicks:
+      left:
+      - '[player] excelshop browse bread'
+      right:
+      - '[player] excelshop browse bread'
+  steak:
+    material: COOKED_BEEF
+    slot: 1
+    amount: 16
+    name: '&a&l16 Steak'
+    lore:
+    - '&7Great food'
+    - '&eBundle price: &f$80'
+    - '&8Tap to choose quantity. No charge yet.'
+    clicks:
+      left:
+      - '[player] excelshop browse steak'
+      right:
+      - '[player] excelshop browse steak'
+  gcarrot:
+    material: GOLDEN_CARROT
+    slot: 2
+    amount: 16
+    name: '&a&l16 Golden Carrots'
+    lore:
+    - '&7Best normal food'
+    - '&eBundle price: &f$250'
+    - '&8Tap to choose quantity. No charge yet.'
+    clicks:
+      left:
+      - '[player] excelshop browse gcarrot'
+      right:
+      - '[player] excelshop browse gcarrot'
+  gapple:
+    material: GOLDEN_APPLE
+    slot: 3
+    amount: 1
+    name: '&a&lGolden Apple'
+    lore:
+    - '&7Heals you fast'
+    - '&eBundle price: &f$300'
+    - '&8Tap to choose quantity. No charge yet.'
+    clicks:
+      left:
+      - '[player] excelshop browse gapple'
+      right:
+      - '[player] excelshop browse gapple'
+  balance:
+    material: GOLD_NUGGET
+    slot: 4
+    update: true
+    name: '&e&lCurrent balance: &f$%vault_eco_balance_2dp%'
+    lore:
+    - '&7Tap an item to review your purchase.'
+    - '&7Browsing does not spend money.'
+  back:
+    material: ARROW
+    slot: 5
+    name: '&c&lBack to Categories'
+    clicks:
+      left:
+      - '[openguimenu] spawnshop'
+      right:
+      - '[openguimenu] spawnshop'

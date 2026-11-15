@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: ga_warps
+menu: commands_menu
+group: getting_around
+order: 60
+order-bedrock: 50
+icon: FILLED_MAP
+label: '&a&l/warps'
+lore:
+  - '&7List the server warps (/warp <name> to go)'
+  - '&8Getting Around'
+action:
+  - '[player] warps'

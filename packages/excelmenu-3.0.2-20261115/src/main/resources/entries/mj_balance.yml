@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: mj_balance
+menu: commands_menu
+group: money_jobs
+order: 10
+order-bedrock: 60
+icon: EMERALD
+label: '&a&l/balance'
+lore:
+  - '&7See how much money you have'
+  - '&8Money & Jobs'
+action:
+  - '[player] balance'

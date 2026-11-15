@@ -1,0 +1,13 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: commands
+menu: server_menu
+group: help
+order: 30
+order-bedrock: 150
+icon: KNOWLEDGE_BOOK
+label: '&a&lServer Commands'
+lore:
+  - '&7Every command you can use'
+action:
+  - '[openguimenu] commands_menu'

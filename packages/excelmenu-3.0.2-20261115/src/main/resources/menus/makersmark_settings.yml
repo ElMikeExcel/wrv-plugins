@@ -1,0 +1,95 @@
+# OFFLINE PROPOSAL ONLY. Not installed or player-tested.
+format: 1
+title: '&7&lMaker''s Mark settings'
+size: 27
+open-requirement:
+  requirements:
+  - id: makersmark_use
+    type: has-permission
+    permission: excelmakersmark.use
+    deny:
+    - '[message] &cYou cannot use Maker''s Mark right now.'
+items:
+  makersmark_on:
+    material: NAME_TAG
+    slot: 11
+    priority: 1
+    name: '&a&lMaker''s mark: ✔ ON'
+    lore:
+    - '&7Crafted gear: Crafted by your name'
+    - '&7Unmarked weapons you take: Found by'
+    - '&7Includes older unsigned weapons'
+    - '&7Click to turn it off'
+    view-requirement:
+      requirements:
+      - id: makersmark_on
+        type: string-equals
+        input: '%makersmark_mark%'
+        output: 'ON'
+    clicks:
+      left:
+      - '[player] mark off'
+      - '[refresh]'
+  makersmark_off:
+    material: PAPER
+    slot: 11
+    priority: 2
+    name: '&7&lMaker''s mark: &c&l✘ OFF'
+    lore:
+    - '&7New crafts and finds are not signed'
+    - '&7Existing signatures stay unchanged'
+    - '&7Click to turn it on'
+    view-requirement:
+      requirements:
+      - id: makersmark_off
+        type: string-equals
+        input: '%makersmark_mark%'
+        output: 'OFF'
+    clicks:
+      left:
+      - '[player] mark on'
+      - '[refresh]'
+  gearstats_on:
+    material: IRON_SWORD
+    slot: 15
+    priority: 1
+    name: '&a&lGear stats: ✔ ON'
+    lore:
+    - '&7Weapons count kills and bosses'
+    - '&7Armor counts hits blocked'
+    - '&7Click to turn it off'
+    view-requirement:
+      requirements:
+      - id: gearstats_on
+        type: string-equals
+        input: '%makersmark_stats%'
+        output: 'ON'
+    clicks:
+      left:
+      - '[player] mark stats off'
+      - '[refresh]'
+  gearstats_off:
+    material: WOODEN_SWORD
+    slot: 15
+    priority: 2
+    name: '&7&lGear stats: &c&l✘ OFF'
+    lore:
+    - '&7Nothing is counted'
+    - '&7Click to turn it on'
+    view-requirement:
+      requirements:
+      - id: gearstats_off
+        type: string-equals
+        input: '%makersmark_stats%'
+        output: 'OFF'
+    clicks:
+      left:
+      - '[player] mark stats on'
+      - '[refresh]'
+  back:
+    material: ARROW
+    slot: 22
+    name: '&aBack to Server Menu'
+    clicks:
+      any:
+      - '[openguimenu] server_menu'

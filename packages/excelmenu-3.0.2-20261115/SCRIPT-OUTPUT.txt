@@ -1,0 +1,64 @@
+STEP: live-pull-check
+EXPECTED: path=plugins/ExcelMenu-2.0.0.jar size=330214 sha256=5bb1c1a3c45ce4b54e75a5e5b6e5d03b50f06c5708afd3904c3cf85e031b2939
+ACTUAL: path=plugins/ExcelMenu-2.0.0.jar size=330214 sha256=5bb1c1a3c45ce4b54e75a5e5b6e5d03b50f06c5708afd3904c3cf85e031b2939 lane=rclone pulled_at=2026-11-15T08:10:00Z
+RESULT: PASS
+STEP: live-pull-check
+EXPECTED: path=plugins/ExcelMenu/layouts/commands_menu.yml size=4956 sha256=146db1d91c4d34c49d7f43c1fd55f2eb80a6979215365b29442848ea47403bcb
+ACTUAL: path=plugins/ExcelMenu/layouts/commands_menu.yml size=4956 sha256=146db1d91c4d34c49d7f43c1fd55f2eb80a6979215365b29442848ea47403bcb lane=rclone pulled_at=2026-11-15T08:10:00Z
+RESULT: PASS
+STEP: live-pull-check
+EXPECTED: path=plugins/ExcelGuildGate/state.yml size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890
+ACTUAL: path=plugins/ExcelGuildGate/state.yml size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890 lane=rclone pulled_at=2026-11-15T08:10:00Z
+RESULT: PASS
+STEP: backup-cap-check
+EXPECTED: total<=6
+ACTUAL: total=6 daily=3 manual=3 prune_needed=0
+RESULT: PASS
+STEP: emptiness-check
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=3
+RESULT: PASS
+STEP: emptiness-check
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=3
+RESULT: PASS
+STEP: placed-jar-pullback
+EXPECTED: size=337069 sha256=0dacc1364851f716aaefd67aa138b259f2eca34ca6cf51e3aeb14228c72e7359
+ACTUAL: size=337069 sha256=0dacc1364851f716aaefd67aa138b259f2eca34ca6cf51e3aeb14228c72e7359
+RESULT: PASS
+STEP: placed-layout-pullback
+EXPECTED: size=3707 sha256=0005e5dcd6e40bfa8c6b6c78c920db1dd1a916c6ca75651452090841175466a9
+ACTUAL: size=3707 sha256=0005e5dcd6e40bfa8c6b6c78c920db1dd1a916c6ca75651452090841175466a9
+RESULT: PASS
+STEP: bak-jar-pullback
+EXPECTED: size=330214 sha256=5bb1c1a3c45ce4b54e75a5e5b6e5d03b50f06c5708afd3904c3cf85e031b2939
+ACTUAL: size=330214 sha256=5bb1c1a3c45ce4b54e75a5e5b6e5d03b50f06c5708afd3904c3cf85e031b2939
+RESULT: PASS
+STEP: bak-layout-pullback
+EXPECTED: size=4956 sha256=146db1d91c4d34c49d7f43c1fd55f2eb80a6979215365b29442848ea47403bcb
+ACTUAL: size=4956 sha256=146db1d91c4d34c49d7f43c1fd55f2eb80a6979215365b29442848ea47403bcb
+RESULT: PASS
+STEP: boot-log-scan
+EXPECTED: done=present severe=0 guild_locked=any
+ACTUAL: done=present severe=0 guild_locked=missing
+RESULT: PASS
+STEP: menu-enabled-line
+EXPECTED: count=1 pattern=ExcelMenu 3.0.2 enabled mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: severe-zero
+EXPECTED: count=0 pattern=SEVERE mode=occurrences
+ACTUAL: count=0
+RESULT: PASS
+STEP: guildgate-open-unchanged
+EXPECTED: count=1 pattern=5 of 5 seals broken, guild OPEN mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: done-line-server
+EXPECTED: count=1 pattern=Done \(23.523s\)! For help mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: bb01-installed-marker
+EXPECTED: present
+ACTUAL: present Boot=Done (23.523s)! ExcelMenu 3.0.2 enabled, 93 entries, SEVERE 0 ExcelMenu 3.0.2 (BB-01) INSTALLED 2026-11-15 by wrv-install-failsafe run scheduled 02=03 CST Placed: plugins/ExcelMenu-2.0.0.jar (same live filename)=337069 B / 0dacc1364851f716aaefd67aa138b259f2eca34ca6cf51e3aeb14228c72e7359 Placed: plugins/ExcelMenu/layouts/commands_menu.yml=3707 B / 0005e5dcd6e40bfa8c6b6c78c920db1dd1a916c6ca75651452090841175466a9 Window backup=BB01 ExcelMenu 3.0.2 pre-install 1115
+RESULT: PASS

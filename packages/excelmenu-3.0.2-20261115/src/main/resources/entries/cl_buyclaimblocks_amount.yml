@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: cl_buyclaimblocks_amount
+menu: commands_menu
+group: claims_land
+order: 70
+order-bedrock: 300
+icon: GOLD_INGOT
+label: '&a&l/buyclaimblocks <amount>'
+lore:
+  - '&7Buy more claim blocks with server money'
+  - '&8Claims & Land'
+action:
+  - '[message] &7Type it in chat: &e/buyclaimblocks <amount>'
