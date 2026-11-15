@@ -1,0 +1,80 @@
+STEP: Backup cap after window backup
+EXPECTED: total<=6
+ACTUAL: total=6 daily=3 manual=3 prune_needed=0
+RESULT: PASS
+STEP: Emptiness gate reading 1 arrival
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=2
+RESULT: PASS
+STEP: Emptiness gate reading 2
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=2
+RESULT: PASS
+STEP: Emptiness pre-swap list
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=2
+RESULT: PASS
+STEP: G1 live jar ExcelSummons-0.1.9
+EXPECTED: path=plugins/ExcelSummons-0.1.9.jar size=102260 sha256=ead3beec553da8e37d255971c8e8e5f96a707835c0a8811a90df115759e6df46
+ACTUAL: path=plugins/ExcelSummons-0.1.9.jar size=102260 sha256=ead3beec553da8e37d255971c8e8e5f96a707835c0a8811a90df115759e6df46 lane=rclone pulled_at=2026-11-15T14:14:49Z
+RESULT: PASS
+STEP: G1 GuildGate state
+EXPECTED: path=plugins/ExcelGuildGate/state.yml size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890
+ACTUAL: path=plugins/ExcelGuildGate/state.yml size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890 lane=rclone pulled_at=2026-11-15T14:14:51Z
+RESULT: PASS
+STEP: Candidate jar at window
+EXPECTED: size=102597 sha256=97e442165b755fb7fac325e712f634c2607490bf7f0de0dd83b28510036ff7d0
+ACTUAL: size=102597 sha256=97e442165b755fb7fac325e712f634c2607490bf7f0de0dd83b28510036ff7d0
+RESULT: PASS
+STEP: Placed pull-back ExcelSummons 0.1.10
+EXPECTED: size=102597 sha256=97e442165b755fb7fac325e712f634c2607490bf7f0de0dd83b28510036ff7d0
+ACTUAL: size=102597 sha256=97e442165b755fb7fac325e712f634c2607490bf7f0de0dd83b28510036ff7d0
+RESULT: PASS
+STEP: Bak pull-back ExcelSummons pre0110
+EXPECTED: size=102260 sha256=ead3beec553da8e37d255971c8e8e5f96a707835c0a8811a90df115759e6df46
+ACTUAL: size=102260 sha256=ead3beec553da8e37d255971c8e8e5f96a707835c0a8811a90df115759e6df46
+RESULT: PASS
+STEP: Boot log scan BB-11
+EXPECTED: done=present severe=0 guild_locked=any
+ACTUAL: done=present severe=0 guild_locked=missing
+RESULT: PASS
+STEP: Summons build id count
+EXPECTED: count=1 pattern=EXC-SUMMONS-0.1.10-WRV-20261114-01-bb1110 mode=lines
+ACTUAL: count=1
+RESULT: PASS
+STEP: Enabling Summons 0.1.10 count
+EXPECTED: count=1 pattern=Enabling ExcelSummons v0.1.10 mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: Summons enabled line count
+EXPECTED: count=1 pattern=ExcelSummons 0.1.10 enabled mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: GuildGate enabled line count
+EXPECTED: count=1 pattern=ExcelGuildGate enabled: 5 of 5 seals broken, guild OPEN mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: SEVERE count
+EXPECTED: count=0 pattern=SEVERE mode=occurrences
+ACTUAL: count=0
+RESULT: PASS
+STEP: Done line server
+EXPECTED: count=1 pattern=Done \(23.715s\)! For help mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: Post-boot GuildGate state unchanged
+EXPECTED: size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890
+ACTUAL: size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890
+RESULT: PASS
+STEP: Post-boot placed jar ExcelSummons 0.1.10
+EXPECTED: size=102597 sha256=97e442165b755fb7fac325e712f634c2607490bf7f0de0dd83b28510036ff7d0
+ACTUAL: size=102597 sha256=97e442165b755fb7fac325e712f634c2607490bf7f0de0dd83b28510036ff7d0
+RESULT: PASS
+STEP: Emptiness departure list
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=2
+RESULT: PASS
+STEP: INSTALLED marker BB-11
+EXPECTED: present plugin=ExcelSummons version=0.1.10
+ACTUAL: present installed=2026-11-15 jar=ExcelSummons-0.1.10.jar plugin=ExcelSummons sha256=97e442165b755fb7fac325e712f634c2607490bf7f0de0dd83b28510036ff7d0 size=102597 version=0.1.10 window=wrv-install-failsafe scheduled 2026-11-15 08:03 CST
+RESULT: PASS
