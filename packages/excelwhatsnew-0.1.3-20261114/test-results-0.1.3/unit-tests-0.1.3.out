@@ -1,0 +1,160 @@
+9c153d3ab4d5024f3f29d409fe2c657be2ccaa576c2b6743ed2633e9267baafb  /home/hatch/workspace/whatsnew-013-build-20261114/ExcelWhatsNew-0.1.3.jar
+ok   seed changelog has 1 entry
+ok   seed changelog has no warnings []
+ok   seed id/date/posted
+ok   form title is What's New (Oct 24)
+ok   New commands lists /lostfound
+ok   New commands lists /mark
+ok   New commands lists /tips
+ok   New commands lists /autosort
+ok   New commands lists /wandstyle
+ok   New commands lists /whatsnew
+ok   Commands that got better: /trash
+ok   one-line description for /lostfound (100 chars)
+ok   one-line description for /mark off or /mark on (102 chars)
+ok   one-line description for /tips ok (46 chars)
+ok   one-line description for /autosort (71 chars)
+ok   one-line description for /wandstyle (56 chars)
+ok   one-line description for /whatsnew (43 chars)
+skip /lostfound (external jar absent: /workspace/batch-next/deathrecord-0.3.0/ExcelDeathRecord-0.3.0.jar)
+skip /recover (external jar absent: /workspace/batch-next/deathrecord-0.3.0/ExcelDeathRecord-0.3.0.jar)
+skip /mark (external jar absent: /workspace/batch-next/makersmark/ExcelMakersMark-0.1.0.jar)
+skip /tips (external jar absent: /workspace/batch-next/2am-batch/files/tips/ExcelTips-0.1.0.jar)
+skip /autosort (external jar absent: /workspace/batch-next/2am-batch/files/spellbook/autosort-0.1.17+26.3-paper.jar)
+skip /sort (external jar absent: /workspace/batch-next/2am-batch/files/spellbook/autosort-0.1.17+26.3-paper.jar)
+skip /wandstyle (external jar absent: /workspace/batch-next/2am-batch/files/spellbook/ExcelWandBars-0.2.1.jar)
+skip /trash (external jar absent: /workspace/batch-next/2am-batch/files/trash/ExcelTrash-0.2.0.jar)
+ok   /whatsnew and /news registered by this plugin
+ok   /whatsnew is for everyone (default true)
+ok   plugin.yml version is 0.1.3
+ok   no em or en dashes
+ok   no UUIDs
+ok   nothing staff-only in the news
+ok   java header
+ok   java has the three sections
+ok   java never shows the Bedrock no-typing hints
+ok   java shows the Java compass hint
+ok   bedrock shows the no-typing hint
+ok   bedrock never shows the Java compass hint
+ok   bedrock section order
+ok   new entry on top parses
+ok   never said OK -> newest
+ok   OK on older -> newest is pending
+ok   OK on newest -> nothing
+ok   OK id removed, OK day not before newest -> nothing
+ok   OK id removed, newest posted after OK day -> pending
+ok   older than max-age-days -> not on join
+ok   max-age 0 = no limit
+ok   unseen count
+ok   dup id and missing id skipped
+ok   em dash warned
+ok   missing slash warned
+ok   missing what warned
+ok   wrong order warned
+ok   missing entries list warned
+ok   Newer news only when idx > 0
+ok   Newer news opens /whatsnew idx (the next newer one)
+ok   Older news opens /whatsnew idx+2 (unchanged)
+ok   Older news stops at the last shown entry
+ok   form newest + pending: OK, Older, By date
+ok   form newest, already OK: Older, By date, Close
+ok   form middle: Newer, Older, By date, Close
+ok   form oldest shown: Newer, By date, Close
+ok   form pending middle: OK, Newer, Older, By date
+ok   form single entry: By date (+ OK or Close)
+ok   middle form: id 0 Newer, 1 Older, 2 By date, 3 Close
+ok   pending newest: id 0 OK, 1 Older, 2 By date
+ok   oldest form: id 0 Newer, 1 By date, 2 Close (never Older)
+ok   closed or out-of-range id does nothing
+ok   java newest pending: [OK] [Older news] [By date]
+ok   java middle: [Newer news] [Older news] [By date]
+ok   java oldest: [Newer news] [By date]
+ok   java single entry, already OK: [By date] only
+ok   Java/Bedrock parity: same buttons in the same order for every idx/shown/pending (Close is Bedrock only)
+ok   typed hint has both directions: &7Newer news: &e/whatsnew 3&7. Older news: &e/whatsnew 5&7.
+ok   typed hint newest: OK + Older, no Newer
+ok   typed hint oldest: Newer only
+ok   typed hint nothing to say: no line
+ok   list hint 1 entry: none
+ok   list hint 2 entries
+ok   list hint 10 entries: /whatsnew 2 to /whatsnew 10
+ok   list hint no longer hardcodes (or 3)
+ok   no em or en dashes in new text
+ok   no em or en dashes in new text
+ok   default config.yml has text.newer-button
+ok   default config.yml has text.bydate-button
+ok   default config.yml has text.back-button
+skip live-config checks (readback absent on this VM)
+ok   code reads text.newer-button with default 'Newer news'
+ok   code reads text.bydate-button with default 'By date'
+ok   code reads text.back-button with default 'Back'
+ok   hardcoded (or 3) gone from source
+ok   day label Fri, Nov 13
+ok   day label Mon, Oct 26
+ok   day label Sat, Oct 24
+ok   month label November 2026
+ok   month label October 2026
+ok   count label singular/plural
+ok   live-shape grouping has no warnings []
+ok   live shape: 2 months
+ok   November 2026 ? 72 changes
+ok   October 2026 ? 24 changes
+ok   live shape: 13 November days, 7 October days
+ok   newest day first: Fri, Nov 13 ? 5 changes
+ok   oldest November day last: Nov 1 ? 4 changes
+ok   no Oct 27 row (no entries that day)
+ok   Oct 26 ? 10 changes
+ok   entries inside a day walk OLDEST first (0.1.3): e10 first, e1 last
+ok   Nov 13 day tap opens its OLDEST entry first (0.1.3), newest last
+ok   grouping leaves the flat list newest-first (unchanged)
+ok   one-entry day: Sat, Oct 24 ? 1 change
+ok   live shape: 96 entries in the grouping (all reachable by date)
+ok   all 20 per-day counts match the design ?5 table
+ok   live changelog: every dated entry is grouped (100 of 100 entries)
+ok   live changelog: months stay newest first
+ok   live Nov 13 day has all 9 of its entries
+ok   live Nov 13 walk OPENS the day's oldest entry (last in file order): 2026-11-13-excelskillspanel
+ok   live Nov 13 walk ENDS at the day's newest entry (first in file order): 2026-11-13-excelwhatsnew-bydate
+ok   one-entry month still walks month -> day -> entry (no skipping)
+ok   empty changelog groups to nothing (months view shows No news yet. + Back)
+ok   all three edge entries stay in the flat list
+ok   posted missing but id has a valid date prefix: grouped by the prefix
+ok   unparseable entry excluded from by-date only (2 of 3 grouped)
+ok   unparseable entry warned at load: [nodate-here has no usable date; left out of By date]
+ok   posted wins over a disagreeing id prefix
+ok   posted/id disagreement warned: [2026-11-05-wrong: posted 2026-11-04 disagrees with its id date 2026-11-05 (posted wins)]
+ok   day position labels are N/M, 1-based from the oldest
+ok   day walk: Newer exists until the newest entry
+ok   day walk: Older exists only after the oldest entry
+ok   day walk Newer opens bydate N = position + 1
+ok   day walk Older opens bydate N = position - 1
+ok   day form OLDEST of 5 (walk start): Newer, Back, Close (no Older)
+ok   day form NEWEST of 5 (walk end): Older, Back, Close (no Newer)
+ok   day form middle: Newer, Older, Back, Close
+ok   day form pending at walk start: OK, Newer, Back (no Close)
+ok   day form pending at walk end: OK, Older, Back (no Close)
+ok   day form single entry: Back, Close (no Newer/Older)
+ok   java day middle: [Newer news] [Older news] [Back]
+ok   java day walk start: [Newer news] [Back]
+ok   java day walk end: [Older news] [Back]
+ok   java day single pending: [OK] [Back]
+ok   day form mapping: 0 Newer, 1 Older, 2 Back, 3 Close
+ok   Java/Bedrock parity for day views (Close is Bedrock only)
+ok   typed day hint: both directions (global numbers) + Back line: &7Fri, Nov 13 2/5. Newer news: &e/whatsnew 4&7. Older news: &e/whatsnew 6&7. Back to Fri, Nov 13: &e/whatsnew bydate 2026-11-13&7.
+ok   typed day hint shows the walk position N/M: &7Fri, Nov 13 2/5. Newer news: &e/whatsnew 4&7. Older news: &e/whatsnew 6&7. Back to Fri, Nov 13: &e/whatsnew bydate 2026-11-13&7.
+ok   typed day hint at walk start: position 1/5, Newer only: &7Fri, Nov 13 1/5. Newer news: &e/whatsnew 10&7. Back to Fri, Nov 13: &e/whatsnew bydate 2026-11-13&7.
+ok   typed day hint at walk end: position 5/5, Older only: &7Fri, Nov 13 5/5. Older news: &e/whatsnew 8&7. Back to Fri, Nov 13: &e/whatsnew bydate 2026-11-13&7.
+ok   typed day hint for a single entry still carries the Back line
+ok   typed day hint for a single entry shows position 1/1
+ok   no em or en dashes in the typed day hint
+ok   bedrock day form title carries the position: What's New (Oct 24) (1/5)
+ok   bedrock day form title at walk end is 10/10
+ok   java day position line: day label + N/M
+ok   java day position line at walk end is 10/10
+ok   day form opens with the position title
+ok   java day view sends the position line
+ok   java day buttons use the walk numbers
+ok   bedrock day form: Newer advances the walk, Older steps back
+ok   month button label is exact
+ok   day button label is exact
+RESULT 149 passed, 0 failed, 9 skipped
