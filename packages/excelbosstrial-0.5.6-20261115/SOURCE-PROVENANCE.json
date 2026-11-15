@@ -1,0 +1,524 @@
+[
+  {
+    "path": "plugin.yml",
+    "input_sha256": "338682562af37ac2a5e2462390c76a33402daf9dfa0286f1614d34b24ce9dbb7",
+    "output_sha256": "338682562af37ac2a5e2462390c76a33402daf9dfa0286f1614d34b24ce9dbb7",
+    "modified": false
+  },
+  {
+    "path": "config.yml",
+    "input_sha256": "f42c6814505731081ee7135e83101955290fd01e5b5e0aa8a5163ceb99d64552",
+    "output_sha256": "e404811e2bbf95ee7abf75e4ac57953ca0608584d3f596dad55e9f9ee725b45d",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/ExcelBossTrial.java",
+    "input_sha256": "12262f05c3ab43a83f9eda186f0d5e485657de4f8fd6fb4fa26761eefefe14fe",
+    "output_sha256": "f7eefb8196d8960b03d2912ef806542a7df39a756e03e368739ee82e4efdc544",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/TeamClaims.java",
+    "input_sha256": "48452fc0e2926cea8e20400f7f9bf42ee23a9198fd59025ec1a8c3d0020063f7",
+    "output_sha256": "d8653c5df3da847bac50d1ef85bb097884f1282d8132bd3490acd927fa1a93b2",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/Attribution.java",
+    "input_sha256": "025c51138350d8e58efc93d1dddb08821c317f74c4035630fad58f9ddcc13485",
+    "output_sha256": "8102a14687367c63ceac844122c55233bcb3415920884d2fd5ac5a4a1048a058",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/SealCreditHook.java",
+    "input_sha256": "f37f694865ba92456b39f09bd3798522af7d860fc69050344caea4443f9567eb",
+    "output_sha256": "2502d6e8fddde5b715a34bf8ce5fae10e576504b0bab94e050ea4bdf9be92174",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/teamrewards/ui/ClaimGateway.java",
+    "input_sha256": "0698f4c84a0f3268e8a837a0308b8ad9879655d918766c419a9b02c1bec846dc",
+    "output_sha256": "7c17ca5ce9ba0419be465d2bac2d4fdc6c19fcc80a64d262efc422d0a7c27d07",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/teamrewards/ui/ClaimSession.java",
+    "input_sha256": "5d61094c83ff18f0151449712816b299c30d8348035e028e0ae25d5ce4e8ecae",
+    "output_sha256": "5a2a9b760c9b4536bec0eec7e5f6826832da24e4735916b7d04b2f633db6f164",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/teamrewards/ui/PersonalClaimsUi.java",
+    "input_sha256": "ce9e816f7869c46f8b6745f0b1dac69cba54a1593e47558d6416192b56e79526",
+    "output_sha256": "73343960f416df17d2b5ec908e42ce6d3074b84bfa8098a4f5866f5e8775a153",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/teamrewards/ui/LedgerClaimGateway.java",
+    "input_sha256": "8c080d92bdca79c8fa662accee4b9f8052b80515daef112b69e8db7b914547d6",
+    "output_sha256": "2c5dba1126a8e73ea1169c66e5095ab378c0fa2b2e7c3379937855a86c6c9705",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/teamrewards/integration/TeamRewardEngine.java",
+    "input_sha256": "2e8d0c6fdf78e303ad4626b60d190c19eb9723500f05fc2d571f06235c6d4e70",
+    "output_sha256": "5d013335b5633241eb50a043245268898752bc0c36a81d2859988ea1ea99133a",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/teamrewards/marker/PersonalChestMarkers.java",
+    "input_sha256": "656b7750c3c1ca59649b9d81e02e94d1323322e9ebe580bf624792848fa86aea",
+    "output_sha256": "656b7750c3c1ca59649b9d81e02e94d1323322e9ebe580bf624792848fa86aea",
+    "modified": false
+  },
+  {
+    "path": "src/com/winkreyes/teamrewards/marker/GriefPreventionWildernessGuard.java",
+    "input_sha256": "1c3105b3e3c394ec8e7d5e5cc04c53de5849faeb1b0486f93c1d88ade2306833",
+    "output_sha256": "2830256e2962c02a9ec9c0da304ccf9114e494ea9420256b8083cb290c6b83c5",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/teamrewards/marker/ReviewedWorlds.java",
+    "input_sha256": "f2cc5fff0defba810ccda854ba8272c4f58167f7e0e9a529bdaaea5a91ae634a",
+    "output_sha256": "95a5991b4a080eec91daab21dadb57c625e0ef82940f89a8e0b6789122ae89fc",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/teamrewards/marker/MarkerRegistry.java",
+    "input_sha256": "0fb5588aa5d8b4243bc506ddc21c12faba4fc7e0c074a29aa6cf86a78eb0decf",
+    "output_sha256": "e514524ee4f66a244a799a2158e3558bf206754975048f136d12ecb93ec26c20",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/teamrewards/encounter/PaperTeamSampler.java",
+    "input_sha256": "e4f41b6921716c85a75cf888a8551725374f02e305b2cf63663bf872e25cc9be",
+    "output_sha256": "85067f7ae91dd489089f5a024bafe1b25a7f72ab634a20fdf68f109c23767bf4",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/teamrewards/encounter/TeamAdmission.java",
+    "input_sha256": "9ffe2eca8f7976fd350169c578655cb6cb1b1b943abd707eeea0aa6f0d8b0079",
+    "output_sha256": "9575d1d2019029f4ba9ee100a04fc2940dddaaea72bc9c537f9ea337debf1b0a",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/SpoilsMath.java",
+    "input_sha256": "7b74a85886722580cb0a50167380263a922db77ce2f3e2ee96753db838d641de",
+    "output_sha256": "c7c8d52206e0b766a351e5921552836078425cd928bdf77a4b8b08ad05f12f70",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/EncounterLedger.java",
+    "input_sha256": "71356d0db40da37a29d8c738b2df886226cd04eee6a747734a45b61a5a1f8492",
+    "output_sha256": "d2a8e131e249e0129391d69af64be673edf2daee02d01eebd17be8e33872bc3a",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/BossCaps.java",
+    "input_sha256": "94069affb7c467e04af147ad4bd080b7b75597bccba1198f00d2f55ca7826d14",
+    "output_sha256": "acf86fe2635db18405e642b52f10a03df682eff733d849d4c478d6c2011c71b3",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/SealLoot.java",
+    "input_sha256": "be7520930c797a3b6bd7c7b372ec0dd36598769c75ba74dcdf9e6c329f2530f9",
+    "output_sha256": "31fa2a939a32c52f8b012ec108a0d5814068055bae1a9bb8754a48bc7bafa697",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/BossGovernor.java",
+    "input_sha256": "df89399efee07351cb1e85a121ce6e740c5f0fcd78d9ad3d90aa560249bf46d2",
+    "output_sha256": "b3e8810838d23cfbea606a9288dfa192acfb47572bab2842b257e329a0e5c716",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/MonumentTracker.java",
+    "input_sha256": "2986afca24c6d09f24de073129570254d440bd59e7d4bb5b6c750d9916f72225",
+    "output_sha256": "3fe149f0b092b4e110ede1dc6890842dab2222e8ca8eb74c53e3b0260d33d8f5",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/XpBandTokens.java",
+    "input_sha256": "6306fc8076535986949a060253b91b5fec72b7bac086cf898ff98d3862e91a76",
+    "output_sha256": "61e937d5d0b2d50216c277a47cacf26791e74659685cafc9095ba8c0198a8135",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/BossKind.java",
+    "input_sha256": "12b4fdb3f381ee67ec87c7851a0e1242b78b7aacc2d7e56cc11f611b02a00e10",
+    "output_sha256": "c83a46fa4dd5da2b059b79270085e86282ddaa52ace7870aca68f6cedaf7bbe7",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/WardenGiveUp.java",
+    "input_sha256": "2dd6e2c9fcb68caa122d8d355b900c26baf1fd6a0636f4ed3b7cef90a03ffcb6",
+    "output_sha256": "594feba67cdc79ddc540bcfead89f0d4a08b85aaa214babf3cf99335b73fb551",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/EncounterRetention.java",
+    "input_sha256": "ffd7ad3c66ee570c1683211addfa8840f1f8dece587382d94b0a15e311e9fdbf",
+    "output_sha256": "ffdd8226f6b9276c71227f2c1754fd2a67989b6ddb0db52489a237bbafc1100d",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/XpBandPlant.java",
+    "input_sha256": "509fce01dd122a17031d838f2925f07729cdab2b0445da227a414cae8c3ac2e8",
+    "output_sha256": "d2c5dada14dbd366d1ea7bc297750de0d715a9e93e3166b262d7b313e7ea3549",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/ScalingRule.java",
+    "input_sha256": "abfda7ead034456683d0cd697742bd79b751ad4f7bb242468d2089ff4cb37587",
+    "output_sha256": "62ae3aa4c400058c70dffba78f3b9b21e515992d8a7034d6da116fb7e80a464b",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/CreditJudge.java",
+    "input_sha256": "52fec4de9c406ff7cbc672e1676eba1a651dc0844f74cf125e5ec5dee6211126",
+    "output_sha256": "69d4dd366e75488de223d5c2ac0c631e399ae28943de91be519ae670eaf1607d",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/Announcements.java",
+    "input_sha256": "26369147464528a684b47dca4bf451902069602a845b3363db5ab56527d74938",
+    "output_sha256": "658e4e56b7a29082ec8484b3b7cb32e7e0e2f1147a41b05274327b2f6d961ded",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/CommandAccess.java",
+    "input_sha256": "27da29cfdf2bcf64e1956b83172c39f891003dcbbdc557e5b45237b91d700f85",
+    "output_sha256": "3412aff537441ca20002e602663b3dfca68c38d1c43c2c2dbd7d7368b3f427e7",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/LaunchSnapshotLog.java",
+    "input_sha256": "632d2b55ff3bdbc87bf12defb5d492f8eba71e178589e260dc3468ae353efbca",
+    "output_sha256": "47c16bd4d28d16e92798e1261686b272e2060f02ec89b64f30e5fc85106d49d7",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/DenialMessage.java",
+    "input_sha256": "7da4510b7b228f9621f8d39a545ea40a4047e41dce1ca532298885b6bb0def12",
+    "output_sha256": "9e40cb2748eab4d86c0302fa9d94ec0480addaa026fde650278516d4a3cb8082",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/BossTrialConfig.java",
+    "input_sha256": "b0216f1787f02febc5b5a0941232a357541ddd107167da365f69c63f669f3471",
+    "output_sha256": "898cf9fd8c616f020c6ce59e8cc152450f9d732d836162398afe410bdd227f70",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/ProvenanceLore.java",
+    "input_sha256": "a440dae49ee9f7074fcfb1b4b4bb54cbacdb0c23f9382d3ffe8f7aeb4d64badf",
+    "output_sha256": "a4cc390559ab1c92b89307035e8bfdd4569380b4bb586f4b36e3e0934ca4a2cc",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/PlacementRegistry.java",
+    "input_sha256": "52e3f299d5a75d44ca6a73d010bd31353edae46404fc1d674f218c6fceb29ebc",
+    "output_sha256": "0f8ac4cab8949b053f0686c1c63d4c86ed6b65ba3c066367c1707cc9c0c713c5",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/CooldownBook.java",
+    "input_sha256": "39d40451b50c3b1eb5ef5867366fa0c2ea2e6afcb5a916028625fd33fb6e8f70",
+    "output_sha256": "f4dee9531e718ebfb8b2de5dc7c56fd02453762d4e43523b54794d622165fcc3",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/core/AtomicStateFile.java",
+    "input_sha256": "f9b5fd68ad4b1f8c6c89ddaf010d277804f4ea062e015355cd2fedfa69d96d12",
+    "output_sha256": "975a037a51315826ea15690632bdf83427a80b53f57271c5b150431250b8ff4d",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/dragon/TrialStateMachine.java",
+    "input_sha256": "defe903107b59cf6ae754b84a0f323432a2da0912195743a739c6a415d91fc80",
+    "output_sha256": "2ad9c04b34c5b13ca8584764261bc8081ca6918489602dcb8d3938d413b6a6e1",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/dragon/BedIgnitionLog.java",
+    "input_sha256": "7b21ab1bf11ba4cc862fce8973aa2af17036cb422b705542147f4e0382125563",
+    "output_sha256": "dd000ccde90a1fa22d083cd1a6021229e928268231cbda719c61bc22077b8fee",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/dragon/CrystalPlacementRule.java",
+    "input_sha256": "804b82334afe5f061e1c8d52199761ecd2cba6cbd95c31080c5734bbbcba0341",
+    "output_sha256": "fed5d000635e38eb0a305f37ed681ad18493f0acaeaa81b76b864cb25eebf886",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/dragon/BattlePhase.java",
+    "input_sha256": "f2317808a3dde6b999e2aebb052d19a2c6cef0314aaeb59e00fdc0285349498a",
+    "output_sha256": "2144355e90b718b26f70d2ef6448d20851b6b7a4beeca759b85de25f3456e142",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/dragon/FlipEffects.java",
+    "input_sha256": "5c4e87badffd9861e37a8721c23567ab70f7af9eebf2adec88bbd6261f13093c",
+    "output_sha256": "d8b8eaa6e8138330457aa1502b0a22f85cbdd0798e463d44b4b5d74b1e53ccc2",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/dragon/DamagerKind.java",
+    "input_sha256": "bf6ba9ad2d839797120bd6d34f4c8e97daadf420319117f78ff5567ad8ee5809",
+    "output_sha256": "4da2dad1d66a1811bfc9d5a9e449296f9726a8578c97cab43c7e743cf8e61841",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/dragon/DamageGovernor.java",
+    "input_sha256": "5bca5e4bf3a22866b61282b43b75a20d0d8a2fce7d82e874fa719c5d3c62b19f",
+    "output_sha256": "7e24334c32178f281a207b29724704d933458cbef766f66c570a123c55f483aa",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/dragon/TrialConfig.java",
+    "input_sha256": "c2268f37ba34b5ab645c920c516c2e1b80b8feecba3ffb2b730ae8b75620bf78",
+    "output_sha256": "0a9e5825cac8649c95ef066de6c705413d22c2bb0fbdc61e76b9b341e4affa01",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/dragon/DragonChapter.java",
+    "input_sha256": "2dc03dfdcf7ff8c460ca6617a367a789cb2f89041eec5438dfcf16f7dd6f0d41",
+    "output_sha256": "0d6967a9ea7105b5231e4a8e92b1a600755a991160269ee0ca6e71c78d41e088",
+    "modified": true
+  },
+  {
+    "path": "src/com/winkreyes/excelbosstrial/api/BossTrialAPI.java",
+    "input_sha256": "2a77cabbf34813127457205668c7c6c2174b446c25b78c9a56e942c30fedb7c4",
+    "output_sha256": "6cf6d912e3cd3b6bd745c4308d9c8cc4859abbcbd2784c3ee19d4be1e7cb2be2",
+    "modified": true
+  },
+  {
+    "path": "src/wrv/rewards/TeamRewardLedger.java",
+    "input_sha256": "e683802ca3877a80049d34c8dc769cfcd26df751585f246cf7d297c4d5f69925",
+    "output_sha256": "8f0e349b8c992a504edea3ab15c3947c50cf2874153321fbd4c1ea2495448c3e",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/ProvenanceLoreTest.java",
+    "input_sha256": "9e39b14bc7fd4e4e88a74330c3f5525160887dc68382b1b71c03be19835d7b07",
+    "output_sha256": "c31aaa64bb421dc3af3ed3781b4ec6c6c4e0746df1876060aaad089149964a0b",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/DenialMessageTest.java",
+    "input_sha256": "780471ac77d76f7e88c47f60a816a8baa6d2db8ac4240a199c7a7e7662c36920",
+    "output_sha256": "bb3396c336e03521c2d256eeb99761b537c9547f4ba9380be4719d92c6badea3",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/SealHardeningTest.java",
+    "input_sha256": "14b17290ba98f7b63c0992555006ded9d9f1102d08dfa1fbb12d80250f336a4c",
+    "output_sha256": "4208170aef73e29c93b520b2ee3b17476292f8ac37dedf7a256b6d2870fd8cea",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/SpoilsMathTest.java",
+    "input_sha256": "67ebb6a0f0f8f3297e13db337006c3b1651df07078005ab0e40fd9082c16139d",
+    "output_sha256": "04fc6f189d7032cf33c0e4ffff2e727bc2be141bcf8625cd7ef0b7d4fc22cfe1",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/ScalingConfigTest.java",
+    "input_sha256": "ec7b909cf58a07854fa6211f455e15771bb8ac407f79108c69371b4f7f6f93b8",
+    "output_sha256": "e06a970b31ec354d1e78703cb8be6284f5c5e8796fc281c5bb5c2eac8a0a9232",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/SpoilsVerdictTest.java",
+    "input_sha256": "3a196fa1dab818863296fcaaa60f67a8a469d6e58999a1e368a7be0a2194dda3",
+    "output_sha256": "395ba200cb016a0c8078b309c8ca851cb4d88e0daf8ae3b19a4f0d75b4af4ceb",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/HeightBandTest.java",
+    "input_sha256": "5d3b4ed565508be661e414b8057ef5e2d46b070b61d57e74780bebaff014dffb",
+    "output_sha256": "18f26a90e650a9bf38c0e9670c2590c916df73e9e6b52982fc3d562fe64355e6",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/LedgerGrowthTest.java",
+    "input_sha256": "df21c0284a7b990e02b7056e2725fadbca35d54ebf8d8962236da1a55925a8d7",
+    "output_sha256": "679f935dc91d420a582e761489e8e30836603a637e6fbbd660f92967f4722e4e",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/CreditJudgeTest.java",
+    "input_sha256": "5944aad05e00f90cd4cff54545bceabdc044d50dba8e1c730b10ba6bb1b379a7",
+    "output_sha256": "59575dbd43e8213ba3993438b4b71c1193b29043704612f03ed083aaa98ed732",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/CooldownBookTest.java",
+    "input_sha256": "588921cbcaf0a8a39b2ed7b2244cf547691fe8bf62bcbeba7cee641ad15d749b",
+    "output_sha256": "4227f7028e12d54e46c5796ed3cd7fd54981c5356cbb60f30a990cf30b2938f6",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/ScalingRuleTest.java",
+    "input_sha256": "acf41ab35ae0eba2ca50ebbb55f326b05c9155f6c60f1936597603f2b4859f1c",
+    "output_sha256": "966733821ca559203be039838687cbfdd9dbd691826d4569c91851c3a0d7b788",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/CommandAccessTest.java",
+    "input_sha256": "5093871218e96aa663b4d7f895020a9ca5f694194696bda115bcf3ff569f1d5a",
+    "output_sha256": "687f675031afb1bea815199d3590f4e347ffe6846d50f0890630ad45a1093300",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/SealLootTest.java",
+    "input_sha256": "7fc99bfebcdb45e0c841985271a607e420daf53585cb2da0126403727315906a",
+    "output_sha256": "80d48d752cc2915dab48b4ae5ee5dec53a9ac8de264212162c5e4776471fce05",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/BossGovernorTest.java",
+    "input_sha256": "e4f50766b7a9dfb1a804d15e448bc1d3e1c7e75d09e5758a1179c63504f5cbed",
+    "output_sha256": "33b24a749981795efab8c703d570805ede6e69a2bf46c484adb7d97b1f528f72",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/AnnouncementsTest.java",
+    "input_sha256": "95ca5010d4dd2d44b5e9e5cf53bbe08187b60c8a84abb023b0c04412c1aee9cc",
+    "output_sha256": "c504377148af5b185b76e67149441b88b56f4a6b9731592b8c895f7991569d34",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/EncounterLedgerTest.java",
+    "input_sha256": "352983f01d45038c80818ad3235a6f27bf04d589c8b371e7db9e7d2a417da5b0",
+    "output_sha256": "13f7332799201647c18a59bf0892888b85ef0a5aeabbbc223ff81f2c24e84988",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/XpBandPlantTest.java",
+    "input_sha256": "97a0b5dfe6a4e26ef9d9bbb1dbdc5b9fe17e40157af93c85c44199e01ed5ce32",
+    "output_sha256": "4e1c8e9c35d54238cebfb5075ae879e19f63bf7698b5314b42965793278fd5ac",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/EncounterRetentionTest.java",
+    "input_sha256": "85644eb9c1b466f6766d26e02689bfec6a868c95e6c28c0a51dbb6d3830bd14b",
+    "output_sha256": "8c1230268044974d9ecf5a7713e9df2c68d886e6233f97a241330e637a270475",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/MonumentTrackerTest.java",
+    "input_sha256": "9f9c78580968670f7d1b5c7fc73ccc72586183d11a3121d6b03181086eccbc91",
+    "output_sha256": "0e911b3a485d5ca322185e83ad2acc6b9f08c76a0d58abb14cd62825e95d0ef9",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/SignatureGrantTest.java",
+    "input_sha256": "0d25c5509c129b3e0e676dc5616e74d4edc723d2a75b15475626c8d42014e131",
+    "output_sha256": "34a243ddab4021ce6f45626359a07bcf93e5f69fd6e19c581271d33c1314cb82",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/BossTrialConfigTest.java",
+    "input_sha256": "9ec141d769c516278d8f7f10262f6c0a068b5d7cbf46b7e63fe4739d8bf462ad",
+    "output_sha256": "daa53d9a9fe153f9c710dc2fd8e22f828c3446a4ecdce0f7f913b520638808d4",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/SealIntegrityFixTest.java",
+    "input_sha256": "11fd74f219dfffa501359316c1ba8ccba9da7cd735c10b09d4fedf07f57034c3",
+    "output_sha256": "2998822b6fc1a5ed2683df3fe2fd2aa0ccd16b8f8cbc23c0666089540bbeb683",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/core/XpBandTokensTest.java",
+    "input_sha256": "6f4654b7e1ac49537bb1eab32437d2735f804674d3b7458266c4cf7e6230e9db",
+    "output_sha256": "c571b42d5d1e94a4eb9785ab4a96a7e2fe52c1db0c711e6110dab004aff7d0d4",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/dragon/NoFalseCreditTest.java",
+    "input_sha256": "43c63e57a480f1325e2223ed5de6e9d0b012c950503bc905ed0381555ebc6a17",
+    "output_sha256": "bff9fd45ce82f9469bab0af83e07f14213bd37ea819a4b10ab5de791a7cda74e",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/dragon/TrialConfigTest.java",
+    "input_sha256": "877d8f7ee850e61917432d3d8123200e277be750d642a4a886693687587b8e18",
+    "output_sha256": "13580df24fcaff31ae9e7c7199cc6660fe6ab2a34de09fbce48afa2d3b83626b",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/dragon/FlipEffectsTest.java",
+    "input_sha256": "13e988a5243d456cc3732d437ddd48e736c45a547584bfa8b20be14859452480",
+    "output_sha256": "1195eccd45d2b205262909cd55fcde0de0bff26b560054b04a9420777472af51",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/dragon/CrystalPlacementRuleTest.java",
+    "input_sha256": "83b8d3ebf676f6d556938309e3a13f9d8721ef96c9c46fb3a88f82db09a63a2f",
+    "output_sha256": "7ed81da2d0485600b76c9a2b4fe72e4552b033b975bc4dbde01f44814de11cbc",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/dragon/BedIgnitionLogTest.java",
+    "input_sha256": "bb48c845861df3079a237f2a82ac03bef85659dc7e05e8166e7209e2fbdcbd82",
+    "output_sha256": "021b2d411c97a6f7106e97da1824a8c68b4c3c75760f69e1db680b9bbe54428a",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/dragon/TrialStateMachineTest.java",
+    "input_sha256": "881887b5771efcd0a6528c1160581ed9fac28fc8c57d9c8c74d4f6d1a924294d",
+    "output_sha256": "ea96bec9b1c6b10cf58605f1fdfa19291a4f3073c66dc974ba66ebf2a2ad7f87",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/dragon/DamageGovernorTest.java",
+    "input_sha256": "7fa585e076fdaf1adf0c6417f83f306b5c21f47de1b607ce7ee78560439ff9f1",
+    "output_sha256": "1b8489807a6e34b50133b62f850764551ad122aeebcaf54599e568582c3aeb77",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/excelbosstrial/recovery/RecoveryApiTest.java",
+    "input_sha256": "74093eb1381f18a707f229d6598d656de60a209efaeb2aa63d94786f6f441441",
+    "output_sha256": "e3a34ce21e68ac6529ce0937c4b09ce147c7edc1bec914241397748213a87228",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/teamrewards/ui/InventoryPlanTest.java",
+    "input_sha256": "6e95ace89f4c0fda9c71b9eab228805c88ede3d8087a106f951f67d46c50d71f",
+    "output_sha256": "b23e895fca80d6653cdb2519f30344933f9fd2d8ef8e3eec11c6d0cba692a384",
+    "modified": true
+  },
+  {
+    "path": "tests/com/winkreyes/teamrewards/ui/ClaimSessionTest.java",
+    "input_sha256": "ca397567135e86148be317d1999bb69f253a3e0802df9adaed407767bf394cb5",
+    "output_sha256": "2dc70c29885ea870eac36bf6760b62f716e772f77ce15d10821516e58ede3168",
+    "modified": true
+  },
+  {
+    "path": "tests/wrv/rewards/ComponentTest.java",
+    "input_sha256": "1698e71e450994d69c8445bea69849743d87b638b2bed05a71cc02309837412c",
+    "output_sha256": "ed9b912700e67eac0865022c9b4443e269655737700c4200b960632fef0fa274",
+    "modified": true
+  },
+  {
+    "path": "tests/wrv/rewards/TeamRewardLedgerTest.java",
+    "input_sha256": "9517757bb2b6ffdcf86776a2034bd55e1a35642b13712ef0932d01d98a807369",
+    "output_sha256": "09fc3723a19070cf93eb1825873fa17aab37fb9639609aa1e96235612f9cbe99",
+    "modified": true
+  },
+  {
+    "path": "tests/ReviewedWorldsTest.java",
+    "input_sha256": "29a87d61264e3472594a4059262a6afec8ebffe01dad6876afa2bfaa196bff00",
+    "output_sha256": "f2da988de5f49314f6ffa7fc0932c9a4f44e90b42c1781897b6651f0f9947cac",
+    "modified": true
+  },
+  {
+    "path": "tests/ExcelMarkerReview.java",
+    "input_sha256": "2a1894fc36a230f31417c8c54ed15c934056da436f13599f2e4ef0651f4af31e",
+    "output_sha256": "2a1894fc36a230f31417c8c54ed15c934056da436f13599f2e4ef0651f4af31e",
+    "modified": false
+  }
+]
