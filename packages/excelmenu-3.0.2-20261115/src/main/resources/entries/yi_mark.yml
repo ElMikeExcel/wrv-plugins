@@ -1,0 +1,17 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: yi_mark
+menu: commands_menu
+group: your_items_help
+order: 30
+order-bedrock: 540
+icon: NAME_TAG
+label: '&a&l/mark'
+lore:
+  - '&7Choose if things you craft say'
+  - '&7"Crafted by" with your name'
+  - '&8Your Items & Help'
+action:
+  - '[message] &7Type it in chat: &e/mark off &7or &e/mark on&7. &e/mark stats off &7hides the counters. Or click Maker''s mark in the compass menu.'

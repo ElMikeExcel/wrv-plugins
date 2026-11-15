@@ -1,0 +1,45 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: silkwarnings
+menu: server_menu
+group: settings
+order: 50
+order-bedrock: 230
+icon: LIME_DYE
+label: '&a&lSilk Touch Warnings: ON'
+lore:
+  - '&7Warn when storing Silk Touch items'
+  - '&7or shulkers containing them in your ender chest'
+  - '&7Click to turn notifications OFF'
+action:
+  - '[player] excelsilkwatch:silkwarnings toggle'
+  - '[refresh]'
+requires-plugin: ExcelSilkWatch
+requires-permission: excelsilkwatch.toggle
+status-placeholder: '%silkwarnings_status%'
+states:
+  'ON':
+    icon: LIME_DYE
+    label: '&a&lSilk Touch Warnings: ON'
+    lore:
+      - '&7Warn when storing Silk Touch items'
+      - '&7or shulkers containing them in your ender chest'
+      - '&7Click to turn notifications OFF'
+    action:
+      - '[player] excelsilkwatch:silkwarnings toggle'
+      - '[refresh]'
+  'OFF':
+    icon: GRAY_DYE
+    label: '&7&lSilk Touch Warnings: OFF'
+    lore:
+      - '&7Notifications only; your items move normally'
+      - '&7Click to turn notifications ON'
+    action:
+      - '[player] excelsilkwatch:silkwarnings toggle'
+      - '[refresh]'
+  'default':
+    icon: GRAY_DYE
+    label: '&7&lSilk Touch Warnings: unavailable'
+    lore:
+      - '&7Warning plugin or status bridge is unavailable'
+      - '&7Try again later or ask server staff'

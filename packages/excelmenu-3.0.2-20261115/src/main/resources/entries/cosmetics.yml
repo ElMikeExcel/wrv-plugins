@@ -1,0 +1,14 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: cosmetics
+menu: server_menu
+group: shops
+order: 20
+order-bedrock: 60
+icon: AMETHYST_SHARD
+label: '&d&lMy Cosmetics'
+lore:
+  - '&7See and wear the cosmetics you own'
+action:
+  - '[close]'
+  - '[player] cosmetics'

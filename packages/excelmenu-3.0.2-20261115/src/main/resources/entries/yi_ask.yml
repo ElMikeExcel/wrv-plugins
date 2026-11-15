@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: yi_ask
+menu: commands_menu
+group: your_items_help
+order: 40
+order-bedrock: 550
+icon: OAK_SIGN
+label: '&a&l/ask'
+lore:
+  - '&7Ask the Guide anything about the server'
+  - '&8Your Items & Help'
+action:
+  - '[message] &7Type &e/ask &7and your question in chat, or start a message with &eGuide,'

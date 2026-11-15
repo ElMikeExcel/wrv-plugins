@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: si_serverwebsite
+menu: commands_menu
+group: server_info
+order: 90
+order-bedrock: 450
+icon: ENDER_EYE
+label: '&a&l/serverwebsite'
+lore:
+  - '&7Get the server website address'
+  - '&8Server Info'
+action:
+  - '[player] serverwebsite'

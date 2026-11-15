@@ -1,0 +1,14 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: party
+menu: server_menu
+group: travel
+order: 40
+order-bedrock: 20
+icon: PLAYER_HEAD
+label: '&a&lParty'
+lore:
+  - '&7Invite family to a party'
+  - '&7and see who is in yours — the same party as /party and /em party'
+action:
+  - '[player] excelparty'

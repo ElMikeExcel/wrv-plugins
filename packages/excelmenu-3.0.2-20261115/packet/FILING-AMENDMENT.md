@@ -1,0 +1,7 @@
+# BB-01 FILING AMENDMENT — supervisor, run 354, Nov 14, 2026 (~5:40 PM CST)
+
+G1 gate filled via labeled FALLBACK (panel) downloads (Homebase relay flapping; panel leg 23:35–23:37 UTC):
+- Live jar: plugins/ExcelMenu-2.0.0.jar (stale filename) — in-jar plugin.yml version 3.0.1, so live IS the audited 3.0.1; 330,214 B / SHA-256 5bb1c1a3c45ce4b54e75a5e5b6e5d03b50f06c5708afd3904c3cf85e031b2939; panel mtime Nov 13, 1:30 PM. Retained: g1-pulls/excelmenu/ExcelMenu-2.0.0.jar. NO re-base needed.
+- Live layout: plugins/ExcelMenu/layouts/commands_menu.yml EXISTS — 4,956 B / SHA-256 146db1d91c4d34c49d7f43c1fd55f2eb80a6979215365b29442848ea47403bcb; panel mtime Nov 7, 3:36 PM. Retained: g1-pulls/layout/commands_menu.yml.
+
+AMENDMENT to the packet's layout step: jar extraction is fill-missing only and the live commands_menu.yml already exists, so the staged layout (3,707 B / 0005e5dc…) will NOT take effect by extraction. The live layout has a "Back to Commands" item but NO slot-49 "Back to Server Menu". Install step for this file is therefore explicit: back up the live layout in place (.bak at install), then place the staged layout (its content is a superset shape carrying both items per the BB-01 build record), and verify by pull-back hash = staged hash. If install prep prefers a merge instead, the merge must produce exactly the staged file's slot-49 item in the live file — pull-back diff is the verification either way.

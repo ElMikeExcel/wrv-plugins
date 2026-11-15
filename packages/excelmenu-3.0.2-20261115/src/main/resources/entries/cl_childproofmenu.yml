@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: cl_childproofmenu
+menu: commands_menu
+group: claims_land
+order: 40
+order-bedrock: 270
+icon: IRON_DOOR
+label: '&a&l/childproofmenu'
+lore:
+  - '&7Pick a player: doors and buttons only in this claim'
+  - '&8Claims & Land'
+action:
+  - '[player] childproofmenu'

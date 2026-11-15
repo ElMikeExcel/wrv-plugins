@@ -1,0 +1,16 @@
+# ExcelMenu 2.0 registry entry — commands catalogue, converted in
+# Phase 1 from the ExcelMenu 0.1.8 commands pages (Java) and the
+# ExcelBedrockMenu 1.5.27 CATALOG arrays (Bedrock). See
+# tools/make_catalogue.py — the converter of record.
+id: sl_skill_name
+menu: commands_menu
+group: skills_levels
+order: 30
+order-bedrock: 140
+icon: IRON_SWORD
+label: '&a&l/<skill name>'
+lore:
+  - '&7Inspect one skill: /mining, /swords, /axes, /fishing and more'
+  - '&8Skills & Levels'
+action:
+  - '[message] &7Type it in chat: &e/<skill name>'

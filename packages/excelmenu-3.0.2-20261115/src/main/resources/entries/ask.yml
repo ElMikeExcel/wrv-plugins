@@ -1,0 +1,14 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: ask
+menu: server_menu
+group: help
+order: 20
+order-bedrock: 180
+icon: OAK_SIGN
+label: '&a&lAsk the Guide'
+lore:
+  - '&7Type /ask and your question in chat'
+  - '&7The Guide answers from the server''s own pages'
+action:
+  - '[message] &7Type &e/ask &7and your question in chat, or start a message with &eGuide,'

@@ -1,0 +1,14 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+id: shop
+menu: server_menu
+group: shops
+order: 10
+order-bedrock: 50
+icon: EMERALD
+label: '&a&lExcel Shop'
+lore:
+  - '&7Spend your Jobs money'
+  - '&7on useful items'
+action:
+  - '[player] shop'

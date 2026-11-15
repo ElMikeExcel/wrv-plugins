@@ -1,0 +1,25 @@
+# ExcelMenu 2.0 registry entry — production data converted from the live
+# server_menu.yml (Java) + ExcelBedrockMenu 1.5.27 BUTTONS (Bedrock order).
+# Phase 2 repair (Nov 2, 2026): the action no longer opens a
+# 'halloween_scares' menu — that definition lived only in the live
+# data folder and was renamed aside at the Phase 1 install, so the
+# door opened nothing. It now runs the owner's own /scares command
+# (the screen ExcelBedrockMenu's guarded dispatch opened), guarded
+# by requires-plugin like every other owner-backed entry. The
+# Nov 6 cleanup retires this entry with the season.
+id: halloween_scares
+menu: server_menu
+group: help
+order: 70
+order-bedrock: 186
+icon: CARVED_PUMPKIN
+label: '&6&lHalloween Scares — your switches'
+lore:
+  - '&7Pick which Halloween scares can find you:'
+  - '&7pumpkin hat, Slenderman, Herobrine and more'
+  - '&7The event runs through Nov 5'
+action:
+  - '[player] scares'
+requires-plugin: ExcelHalloweenToggles
+visible-from: 2026-10-31
+visible-until: 2026-11-05

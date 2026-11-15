@@ -1,0 +1,88 @@
+# ExcelMenu 2.0 — settings. Every value here is a knob
+# (adjustability law): presentation and behaviour change by editing
+# this file and running /excelmenu reload, never by rebuilding.
+
+registry:
+  # Zone the entries' visible-from / visible-until dates are read in.
+  zone: America/Chicago
+  # The standard plain message a guarded entry falls back to when its
+  # plugin is absent, its permission is missing, or its state cannot
+  # be read (Amendment A — one message, applied uniformly).
+  unavailable-message: "&eThat isn't available right now."
+  # Definition files the loader must never serve again because the
+  # registry conversion retired them. commands_menu_page2's rows are
+  # commands_menu registry entries now; if the old file is still on
+  # disk it is skipped with a log line, not served as a stale copy.
+  retired-definitions:
+    - commands_menu_page2
+    # Phase 2: the teleport confirmations are a gate service now,
+    # not definition menus (DESIGN-2.0 §2.4). On-disk copies of these
+    # files are skipped with a log line; their ids route to the
+    # confirmation gate in MenuService.
+    - teleport_confirm_spawn
+    - teleport_confirm_spawncmd
+    - teleport_confirm_guild
+    - teleport_confirm_home
+
+forms:
+  # How long a registry form's session token stays answerable
+  # (seconds). A response after this, after a world change, or after
+  # a newer form replaced it is dropped (DESIGN-2.0 §2.5).
+  session-ttl-seconds: 300
+
+# Village fallback for the Spawn door (overworld): if the console
+# /spawn is unavailable, or the player is still in the guild world a
+# tick later, the confirmed Spawn lands here instead (Y is found
+# automatically — the highest block). The same keys ExcelBedrockMenu
+# used, so the operator's tuned values carry over by copying them.
+spawn:
+  x: -784
+  z: -272
+
+# Row sequence per menu: Java packing follows this order, and entries
+# whose group is not listed sort after the listed ones.
+groups:
+  server_menu:
+    - travel
+    - me
+    - shops
+    - help
+    - settings
+  commands_menu:
+    - getting_around
+    - money_jobs
+    - skills_levels
+    - shops_trading
+    - claims_land
+    - guild_quests
+    - server_info
+    - fixes_help
+    - your_items_help
+
+# Bedrock form button colour per group (ExcelBedrockMenu 1.5.21's
+# group colouring, as data). Server Menu palette approved by Mike
+# Nov 13, 2026 (ExcelMenu 3.0.1 — "give this some color again"):
+# Travel GREEN, Me LIGHT PURPLE, Shops GOLD, Help RED. Blue is
+# owned by the Spawn + Teleport pins and is never a section colour.
+# Settings YELLOW is the build's pick for the section Mike did not
+# name — distinct, non-blue, listed in the 3.0.1 build record for
+# his veto. (The live config also carries chest_tools "&8" dark
+# gray; this bundled default predates that live-only group.)
+# The catalogue's groups intentionally have no colour: its group
+# forms list one group at a time and its buttons were always plain
+# (1.5.27).
+group-colors:
+  travel: "&a"
+  me: "&d"
+  shops: "&6"
+  help: "&c"
+  settings: "&e"
+
+# Colour of the root PIN buttons (Spawn + Teleport to a player).
+# Blue is owned by the pins (Mike, Nov 13, 2026): the pins keep
+# dark blue exactly as they render today, even though Travel
+# itself is green now. Change this, not the section colours,
+# to recolour the pins.
+pin-color: "&1"
+
+# ExcelMenu — an Excel plugin by WinkReyesValley. (Excel signature — MikeExcel)
