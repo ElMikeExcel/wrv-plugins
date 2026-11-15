@@ -1,0 +1,158 @@
+SCRIPT-OUTPUT — Arrow family balance fix — wrv-install-failsafe run scheduled 2026-11-15 09:03 CST (full-push chain)
+All blocks verbatim script stdout. Emptiness blocks ran on kv-normalized captures transcribed from retained raw RCON captures, same as BB-12/BT056 this run.
+
+--- backup_cap_check (chain window, from BB-12 leg) ---
+STEP: BB12 backup cap-at-6 final listing (window backup pre-BB12-SkillsPanel023-20261115 completed; pruned oldest manual BB16 ExcelGuildGate 0.4.1 1115)
+EXPECTED: total<=6
+ACTUAL: total=6 daily=3 manual=3 prune_needed=0
+RESULT: PASS
+
+--- lp-live ---
+STEP: ARROW G1 live-pull live spells.yml vs STAGE5 receipt (re-based: stage-5 flip landed)
+EXPECTED: path=plugins/Magic/spells.yml size=188274 sha256=66ebb58cabb58b30a5cc611cf2b376b8c449c4511179c60805e769d33fbe44a7
+ACTUAL: path=plugins/Magic/spells.yml size=188274 sha256=66ebb58cabb58b30a5cc611cf2b376b8c449c4511179c60805e769d33fbe44a7 lane=rclone pulled_at=2026-11-15T10:18:56-06:00
+RESULT: PASS
+
+--- lp-s2 ---
+STEP: ARROW G1 live-pull stage2 spells.yml
+EXPECTED: path=plugins/ExcelMagicGate/stages/stage2/spells.yml size=89208 sha256=9be7eda6444471b526c0b20b28ee38a1efa0f25a0b474ff003cd21e9d78f97a5
+ACTUAL: path=plugins/ExcelMagicGate/stages/stage2/spells.yml size=89208 sha256=9be7eda6444471b526c0b20b28ee38a1efa0f25a0b474ff003cd21e9d78f97a5 lane=rclone pulled_at=2026-11-15T10:18:56-06:00
+RESULT: PASS
+
+--- lp-s3 ---
+STEP: ARROW G1 live-pull stage3 spells.yml
+EXPECTED: path=plugins/ExcelMagicGate/stages/stage3/spells.yml size=145673 sha256=682ab22f57b99e78b6c668e92d1fa8f43893569bf92bae34d8602fde2fb08be7
+ACTUAL: path=plugins/ExcelMagicGate/stages/stage3/spells.yml size=145673 sha256=682ab22f57b99e78b6c668e92d1fa8f43893569bf92bae34d8602fde2fb08be7 lane=rclone pulled_at=2026-11-15T10:18:56-06:00
+RESULT: PASS
+
+--- lp-s4 ---
+STEP: ARROW G1 live-pull stage4 spells.yml
+EXPECTED: path=plugins/ExcelMagicGate/stages/stage4/spells.yml size=188274 sha256=75877195b4991f48dd976698fbb53dca3800633dd8230d65a13022bfa2258abf
+ACTUAL: path=plugins/ExcelMagicGate/stages/stage4/spells.yml size=188274 sha256=75877195b4991f48dd976698fbb53dca3800633dd8230d65a13022bfa2258abf lane=rclone pulled_at=2026-11-15T10:18:56-06:00
+RESULT: PASS
+
+--- lp-s5 ---
+STEP: ARROW G1 live-pull stage5 spells.yml
+EXPECTED: path=plugins/ExcelMagicGate/stages/stage5/spells.yml size=188274 sha256=66ebb58cabb58b30a5cc611cf2b376b8c449c4511179c60805e769d33fbe44a7
+ACTUAL: path=plugins/ExcelMagicGate/stages/stage5/spells.yml size=188274 sha256=66ebb58cabb58b30a5cc611cf2b376b8c449c4511179c60805e769d33fbe44a7 lane=rclone pulled_at=2026-11-15T10:18:56-06:00
+RESULT: PASS
+
+--- emptiness-1 ---
+STEP: ARROW emptiness gate reading 1 (kv-normalized)
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=unknown players=unknown
+RESULT: PASS
+
+--- emptiness-2 ---
+STEP: ARROW emptiness gate reading 2 (kv-normalized)
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=unknown players=unknown
+RESULT: PASS
+
+--- emptiness-preswap ---
+STEP: ARROW emptiness pre-swap (kv-normalized)
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=unknown players=unknown
+RESULT: PASS
+
+--- vh-live ---
+STEP: ARROW verify-hash placed live spells.yml (stage5 candidate) pull-back
+EXPECTED: size=188297 sha256=96c61a50a75bc41d1906680bedff2b80a09ffece85be7ab97548bf36ac5a8152
+ACTUAL: size=188297 sha256=96c61a50a75bc41d1906680bedff2b80a09ffece85be7ab97548bf36ac5a8152
+RESULT: PASS
+
+--- vh-s2 ---
+STEP: ARROW verify-hash placed stage2 pull-back
+EXPECTED: size=89223 sha256=9498948ba474c1868c4ef54a4339604f19b703bc9e6ee1c9f509656de99e4389
+ACTUAL: size=89223 sha256=9498948ba474c1868c4ef54a4339604f19b703bc9e6ee1c9f509656de99e4389
+RESULT: PASS
+
+--- vh-s3 ---
+STEP: ARROW verify-hash placed stage3 pull-back
+EXPECTED: size=145696 sha256=123334d4ce535d9b1ec59a629ee1f6ad93da5c2cc58ee49479b2cf4294ec1406
+ACTUAL: size=145696 sha256=123334d4ce535d9b1ec59a629ee1f6ad93da5c2cc58ee49479b2cf4294ec1406
+RESULT: PASS
+
+--- vh-s4 ---
+STEP: ARROW verify-hash placed stage4 pull-back
+EXPECTED: size=188297 sha256=3572fc5ef5978314bc39a5261318be2c4f5eb0803eeec26f183f5ee3d5510f36
+ACTUAL: size=188297 sha256=3572fc5ef5978314bc39a5261318be2c4f5eb0803eeec26f183f5ee3d5510f36
+RESULT: PASS
+
+--- vh-s5 ---
+STEP: ARROW verify-hash placed stage5 pull-back
+EXPECTED: size=188297 sha256=96c61a50a75bc41d1906680bedff2b80a09ffece85be7ab97548bf36ac5a8152
+ACTUAL: size=188297 sha256=96c61a50a75bc41d1906680bedff2b80a09ffece85be7ab97548bf36ac5a8152
+RESULT: PASS
+
+--- boot-log-scan ---
+STEP: ARROW boot-log scan (guild line via verify_counts)
+EXPECTED: done=present severe=0 guild_locked=any
+ACTUAL: done=present severe=0 guild_locked=missing
+RESULT: PASS
+
+--- vc-loaded ---
+STEP: ARROW count Loaded spells line (live count 221, unchanged across all Nov 15 boots; packet figure 167 stale)
+EXPECTED: count=1 pattern=Loaded 221 spells mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+
+--- vc-done ---
+STEP: ARROW count server Done line
+EXPECTED: count=1 pattern=Done \(23\.781s\) mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+
+--- vc-severe ---
+STEP: ARROW count SEVERE total
+EXPECTED: count=0 pattern=SEVERE mode=occurrences
+ACTUAL: count=0
+RESULT: PASS
+
+--- vc-guild ---
+STEP: ARROW count GuildGate state line (unchanged)
+EXPECTED: count=1 pattern=ExcelGuildGate enabled: 5 of 5 seals broken, guild OPEN mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+
+--- ph-live ---
+STEP: ARROW post-boot verify-hash live spells.yml
+EXPECTED: size=188297 sha256=96c61a50a75bc41d1906680bedff2b80a09ffece85be7ab97548bf36ac5a8152
+ACTUAL: size=188297 sha256=96c61a50a75bc41d1906680bedff2b80a09ffece85be7ab97548bf36ac5a8152
+RESULT: PASS
+
+--- ph-s2 ---
+STEP: ARROW post-boot verify-hash stage2
+EXPECTED: size=89223 sha256=9498948ba474c1868c4ef54a4339604f19b703bc9e6ee1c9f509656de99e4389
+ACTUAL: size=89223 sha256=9498948ba474c1868c4ef54a4339604f19b703bc9e6ee1c9f509656de99e4389
+RESULT: PASS
+
+--- ph-s3 ---
+STEP: ARROW post-boot verify-hash stage3
+EXPECTED: size=145696 sha256=123334d4ce535d9b1ec59a629ee1f6ad93da5c2cc58ee49479b2cf4294ec1406
+ACTUAL: size=145696 sha256=123334d4ce535d9b1ec59a629ee1f6ad93da5c2cc58ee49479b2cf4294ec1406
+RESULT: PASS
+
+--- ph-s4 ---
+STEP: ARROW post-boot verify-hash stage4
+EXPECTED: size=188297 sha256=3572fc5ef5978314bc39a5261318be2c4f5eb0803eeec26f183f5ee3d5510f36
+ACTUAL: size=188297 sha256=3572fc5ef5978314bc39a5261318be2c4f5eb0803eeec26f183f5ee3d5510f36
+RESULT: PASS
+
+--- ph-s5 ---
+STEP: ARROW post-boot verify-hash stage5
+EXPECTED: size=188297 sha256=96c61a50a75bc41d1906680bedff2b80a09ffece85be7ab97548bf36ac5a8152
+ACTUAL: size=188297 sha256=96c61a50a75bc41d1906680bedff2b80a09ffece85be7ab97548bf36ac5a8152
+RESULT: PASS
+
+--- emptiness-departure ---
+STEP: ARROW emptiness departure (kv-normalized)
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=unknown players=unknown
+RESULT: PASS
+
+--- verify-marker ---
+STEP: ARROW verify-marker INSTALLED.txt
+EXPECTED: present installed=2026-11-15
+ACTUAL: present change=Arrow family balance fix (spells.yml x5 destinations) installed=2026-11-15 live=plugins/Magic/spells.yml 188297 96c61a50a75bc41d1906680bedff2b80a09ffece85be7ab97548bf36ac5a8152 (stage5 candidate; live base had flipped to stage5) plugin=Magic (config-only, no jar) stage2=89223 9498948ba474c1868c4ef54a4339604f19b703bc9e6ee1c9f509656de99e4389 stage3=145696 123334d4ce535d9b1ec59a629ee1f6ad93da5c2cc58ee49479b2cf4294ec1406 stage4=188297 3572fc5ef5978314bc39a5261318be2c4f5eb0803eeec26f183f5ee3d5510f36 stage5=188297 96c61a50a75bc41d1906680bedff2b80a09ffece85be7ab97548bf36ac5a8152 window=wrv-install-failsafe scheduled 2026-11-15 09:03 CST (full-push chain, whitelist on)
+RESULT: PASS
