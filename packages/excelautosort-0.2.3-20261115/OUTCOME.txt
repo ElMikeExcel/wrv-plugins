@@ -1,0 +1,14 @@
+entry: ## PENDING — ExcelAutoSort 0.2.3 (P-AUTOSORT-FILTER-1: Chest filter dialog toggle + menu move) (Nov 14, 2026)
+installed_by: wrv-install-failsafe run scheduled 2026-11-15 09:03 CST (America/Chicago), full-push chain under Mike's Nov 15 whitelist directive (white-list=true verified 09:56 CST, only .MikeExcel whitelisted)
+lane: Homebase (probe PASS attempt 1 this run) — no fallback. Panel used only for Backups + Shut Down/Start. Window backup shared with the chain: pre-BB12-SkillsPanel023-20261115 (completed 9:36 AM, cap-at-6 pruned BB16 ExcelGuildGate 0.4.1 1115, post total 6).
+g1_fresh: live jar ExcelAutoSort-0.2.2.jar 160197 / 8b3bf5ab… EXACT vs the BB-04 placed record (packet ORDER clause: 0.2.2 → 0.2.3, BB-04 landed 3:48 AM today); live config.yml 7363 / dea66e61… EXACT vs BB-04 merged record (all 4 filter-toggle merge keys absent); live ExcelMenu entries/autosort.yml 2427 / b2e6e467… EXACT vs packet G1.
+placed: plugins/ExcelAutoSort-0.2.3.jar 161791 0457557e15c3de52033be300bc7f5bb32991268f3005544d7ec0fe15965b130b (pull-back EXACT); config.yml MERGED +4 message keys only (7552 / 8f4364dc…, pull-back EXACT, diff = exactly the 4 lines); plugins/ExcelMenu/entries/autosort.yml 2381 d579593873757466c34797fd2c85fe6cca36b9bfa209682bed7a9e324c24f8c8 (pull-back EXACT)
+bak: ExcelAutoSort-0.2.2.jar.bak-20261115-pre023; config.yml.bak-20261115-pre023; entries/autosort.yml.bak-20261115-pre023 (in-place)
+boot_done: Done (23.437s)! For help, type "help"
+boot_lines: Enabling ExcelAutoSort v0.2.3 x1; awake line build EXC-AUTOSORT-0.2.3-WRV-20261114-01-c41a07 x1; ExcelProtect audit sink BOUND x1; /excelmenu reload (RCON, post-boot): "ExcelMenu registry reloaded: 93 entries, 0 failed" + layouts 2/0 failed + definitions 13/0 failed (output retained in excelmenu-reload.txt); SEVERE 0; GuildGate "5 of 5 seals broken, guild OPEN" x1 unchanged (packet's LOCKED 4-of-5 premise stale).
+arrival_online: 0 (RCON list twice + pre-swap 0)
+departure_online: 0 (RCON list after boot + panel Online 0/10)
+end_state: server left Online under the whitelist (full-push chain continues); Shut Down 10:39 AM (Offline 10:39:59 AM), Start 10:42 AM, Done 10:42:59 AM CST.
+script_blocks: SCRIPT-OUTPUT.txt in this folder (~/workspace/board-r362/autosort-filter/install-20261115/) — 20 verbatim blocks, all RESULT: PASS. All inputs retained in this folder.
+surfaces_owed: per packet (What's New BOTH surfaces + Guide owed at install pass) — supervisor/main leg. Proof owed: Mike's spot taps (dialog toggle Java + Bedrock; entry on Chest Tools page).
+chaining: full-push chain continues — next: ExcelSummons 0.1.11.
