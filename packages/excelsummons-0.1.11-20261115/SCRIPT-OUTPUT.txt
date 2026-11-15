@@ -1,0 +1,80 @@
+STEP: SUM0111 backup + cap-at-6 listing (panel capture 12:03 PM CST, resume run)
+EXPECTED: total<=6
+ACTUAL: total=6 daily=3 manual=3 prune_needed=0
+RESULT: PASS
+STEP: SUM0111 G1 live-pull live jar 0.1.10 (BB-11 gate)
+EXPECTED: path=plugins/ExcelSummons-0.1.10.jar size=102597 sha256=97e442165b755fb7fac325e712f634c2607490bf7f0de0dd83b28510036ff7d0
+ACTUAL: path=plugins/ExcelSummons-0.1.10.jar size=102597 sha256=97e442165b755fb7fac325e712f634c2607490bf7f0de0dd83b28510036ff7d0 lane=rclone pulled_at=2026-11-15T10:47:51-06:00
+RESULT: PASS
+STEP: SUM0111 G1 live-pull live config.yml
+EXPECTED: path=plugins/ExcelSummons/config.yml size=5878 sha256=659d9e2c643189c9f65e243c1eb8517c7f5d4775a7cad5ed9cb2502662f3c3a9
+ACTUAL: path=plugins/ExcelSummons/config.yml size=5878 sha256=659d9e2c643189c9f65e243c1eb8517c7f5d4775a7cad5ed9cb2502662f3c3a9 lane=rclone pulled_at=2026-11-15T10:47:51-06:00
+RESULT: PASS
+STEP: SUM0111 G1 live-pull Magic modifiers.yml
+EXPECTED: path=plugins/Magic/modifiers.yml size=263522 sha256=3d42a9a77c31c869ca35d01d3801e22d032f23b323047e86bb501229017724bc
+ACTUAL: path=plugins/Magic/modifiers.yml size=263522 sha256=3d42a9a77c31c869ca35d01d3801e22d032f23b323047e86bb501229017724bc lane=rclone pulled_at=2026-11-15T10:47:51-06:00
+RESULT: PASS
+STEP: SUM0111 emptiness gate reading 1 (kv-normalized)
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=unknown players=unknown
+RESULT: PASS
+STEP: SUM0111 emptiness gate reading 2 (kv-normalized)
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=unknown players=unknown
+RESULT: PASS
+STEP: SUM0111 emptiness pre-swap (kv-normalized)
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=unknown players=unknown
+RESULT: PASS
+STEP: SUM0111 verify-hash placed jar pull-back vs packet candidate on disk
+EXPECTED: size=107064 sha256=3d9b22a0ed3878912832760bd9df9e1f9979be7339fd7b49f805610643f7661a
+ACTUAL: size=107064 sha256=3d9b22a0ed3878912832760bd9df9e1f9979be7339fd7b49f805610643f7661a
+RESULT: PASS
+STEP: SUM0111 verify-hash placed config pull-back vs packet candidate on disk
+EXPECTED: size=6187 sha256=696005bae6201ab93a8485394021a87cf304d151eda0af0d711944a078106df8
+ACTUAL: size=6187 sha256=696005bae6201ab93a8485394021a87cf304d151eda0af0d711944a078106df8
+RESULT: PASS
+STEP: SUM0111 verify-hash placed merged modifiers pull-back vs merge output
+EXPECTED: size=263447 sha256=5c9de8df974725e196c01f87f1616c5f65acb9a394382641a1a914e6ba61e365
+ACTUAL: size=263447 sha256=5c9de8df974725e196c01f87f1616c5f65acb9a394382641a1a914e6ba61e365
+RESULT: PASS
+STEP: SUM0111 boot-log scan (guild line via verify_counts)
+EXPECTED: done=present severe=0 guild_locked=any
+ACTUAL: done=present severe=0 guild_locked=missing
+RESULT: PASS
+STEP: SUM0111 count build-id line
+EXPECTED: count=1 pattern=EXC-SUMMONS-0.1.11-WRV-20261114-01-tune11 mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: SUM0111 count Enabling line
+EXPECTED: count=1 pattern=Enabling ExcelSummons v0.1.11 mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: SUM0111 count GuildGate state line (unchanged)
+EXPECTED: count=1 pattern=ExcelGuildGate enabled: 5 of 5 seals broken, guild OPEN mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: SUM0111 count SEVERE (total, incl. attributable)
+EXPECTED: count=0 pattern=SEVERE mode=occurrences
+ACTUAL: count=0
+RESULT: PASS
+STEP: SUM0111 count reserve keys in placed modifiers pull-back
+EXPECTED: count=18 pattern=wrv_summon_reserve_ mode=occurrences
+ACTUAL: count=18
+RESULT: PASS
+STEP: SUM0111 spot check 35% tier boosts (guardian + ghast, D64)
+EXPECTED: count=2 pattern=mana_max_boost: -0.35 mode=occurrences
+ACTUAL: count=2
+RESULT: PASS
+STEP: SUM0111 departure emptiness reading 1 (kv-normalized)
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=unknown players=unknown
+RESULT: PASS
+STEP: SUM0111 departure emptiness reading 2 (kv-normalized)
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=unknown players=unknown
+RESULT: PASS
+STEP: SUM0111 verify-marker INSTALLED.txt
+EXPECTED: present plugin=ExcelSummons version=0.1.11
+ACTUAL: present installed=2026-11-15 jar=ExcelSummons-0.1.11.jar plugin=ExcelSummons sha256=3d9b22a0ed3878912832760bd9df9e1f9979be7339fd7b49f805610643f7661a size=107064 version=0.1.11 window=wrv-install-failsafe 09:03 CST full-push chain (swap+boot 10:50-10:55 CST); bookkeeping completed by resume run 11:54 CST
+RESULT: PASS
