@@ -1,0 +1,24 @@
+STEP: live-pull-check WN live jar
+EXPECTED: size=40535 sha256=f67e8f717b02000207d4b9e51a4176ef09243b0aa1baabe2affc7cd96406e581
+ACTUAL: size=40535 sha256=f67e8f717b02000207d4b9e51a4176ef09243b0aa1baabe2affc7cd96406e581
+RESULT: PASS
+STEP: hash-compare placed WN jar
+EXPECTED: size=41154 sha256=9c153d3ab4d5024f3f29d409fe2c657be2ccaa576c2b6743ed2633e9267baafb
+ACTUAL: size=41154 sha256=9c153d3ab4d5024f3f29d409fe2c657be2ccaa576c2b6743ed2633e9267baafb
+RESULT: PASS
+STEP: hash-compare WN config post-boot
+EXPECTED: size=1722 sha256=b3cf8a1f0f5f854134e32acdc3c801c997b8d988dd1308810b0524fe3421d023
+ACTUAL: size=1722 sha256=b3cf8a1f0f5f854134e32acdc3c801c997b8d988dd1308810b0524fe3421d023
+RESULT: PASS
+STEP: boot-log-scan
+EXPECTED: done=present severe=0 guild_locked=4of5
+ACTUAL: done=present severe=0 guild_locked=4of5
+RESULT: PASS
+STEP: counts-check Enabling ExcelWhatsNew v0.1.3
+EXPECTED: count=1
+ACTUAL: count=1
+RESULT: PASS
+STEP: counts-check ExcelWhatsNew 0.1.3: summary
+EXPECTED: count=1 (101 entries, newest 2026-11-14-spellbook-regroup)
+ACTUAL: count=1
+RESULT: PASS
