@@ -1,0 +1,11 @@
+# RECORDS STAGING — P-SUMMONS-TUNING-1 / ExcelSummons 0.1.11
+
+Staged: 2026-11-15 (board supervisor run 394, records publication worker W15). Recording work pre-approved (Mike, Nov 4, 2026).
+Install: INSTALLED Nov 15, 2026, wrv-install-failsafe 09:03 CST full-push chain, Install 5 of 13 (see INSTALLED.txt / OUTCOME.txt / SCRIPT-OUTPUT.txt).
+Package: packages/excelsummons-0.1.11-20261115/ in wrv-plugins (local staging: ~/workspace/board-r394/summons0111-publish/staging/excelsummons-0.1.11-20261115/).
+File count: 44 files total (43 covered by SHA256SUMS + SHA256SUMS itself). Contents: source tree src/ (26 .java) + tests/ (1 .java), config.yml, plugin.yml, local-build.sh, DESIGN-0.1.11.md, ExcelSummons-0.1.11-sources.zip (146,198 B / c2233881141f4722b33a00260659b07a16ffb6e336563c9e971f121bc988fadb, 40 entries), modifiers-replacement-0.1.11.yml, BUILD-RECORD.md, TEST-RESULTS.md, SOURCE.md, INSTALL-PACKET.md, RECEIPTS.md, G1-RECEIPTS.md, INSTALLED.txt, OUTCOME.txt, SCRIPT-OUTPUT.txt.
+Jar: NOT in package per house rule — ExcelSummons-0.1.11.jar 107,064 B / 3d9b22a0ed3878912832760bd9df9e1f9979be7339fd7b49f805610643f7661a, Drive deposit carries it (stated in SOURCE.md).
+G1 note (prep flag 2): the packet RECEIPTS.md G1 slots are the blank-by-design skeleton; the filled G1 evidence is split across G1-RECEIPTS.md (Nov 14 filing-time, STOP state — correct at the time) and the install-day OUTCOME.txt / SCRIPT-OUTPUT.txt (gate PASS, 20/20 blocks). All are carried in this package; SOURCE.md maps the split.
+Deviations from the 0.1.9 package shape (PR #225), per the run-394 records prep: G1-RECEIPTS.md + RECEIPTS.md both carried; modifiers-replacement-0.1.11.yml carried (new artifact class for this version — without it the landed state is not reproducible from the package).
+G2 duplicate guard: ~/workspace/workflow-tools/pr-exists.sh wrv-plugins excelsummons-0.1.11 — re-run immediately before push at publication time; see the publication PUBLISH.md for the fresh run's timestamp and result.
+Publication claim: wrv-plugins PR #___ (duplicate check run <timestamp>, result NO MATCH for 'excelsummons-0.1.11') — claim completes in the publication PUBLISH.md with the real PR number and the fresh duplicate-check run.

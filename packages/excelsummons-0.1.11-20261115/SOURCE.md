@@ -1,0 +1,13 @@
+# SOURCE — ExcelSummons 0.1.11 (P-SUMMONS-TUNING-1)
+
+Plugin: ExcelSummons 0.1.11 — P-SUMMONS-TUNING-1: D64 hold table + nameplate owner format + despawn funnel (new pure DespawnNotice; one notify funnel in SummonsListener).
+Build ID: EXC-SUMMONS-0.1.11-WRV-20261114-01-tune11. Tests: 116 found / 116 successful / 0 failed.
+Build folder of record: ~/workspace/board-r364/summons-build/ (run 364, worker W2). Publish ONLY from board-r364 — the board-r394 summons-mana-build tree is 0.1.12 and is NOT the 0.1.11 source of record.
+Source tree: src/ (26 .java) + tests/ (SummonsTest.java) in this package + local-build.sh, plugin.yml, config.yml, DESIGN-0.1.11.md.
+Sources zip: ExcelSummons-0.1.11-sources.zip — 146,198 B / SHA-256 c2233881141f4722b33a00260659b07a16ffb6e336563c9e971f121bc988fadb / MD5 01ad43b6bc9fe093c1a8c1369251b1f7 (40 entries; zip-to-tree check 40/40, 0 missing, 0 mismatched).
+Built jar (NOT inside this records package, per house rule): ExcelSummons-0.1.11.jar — 107,064 B / SHA-256 3d9b22a0ed3878912832760bd9df9e1f9979be7339fd7b49f805610643f7661a / MD5 0bfb84dc5b07513460864eac965768b6. The Drive deposit carries it; it is referenced here by hash only.
+Other artifacts: candidate config.yml — 6,187 B / 696005bae6201ab93a8485394021a87cf304d151eda0af0d711944a078106df8; modifiers-replacement-0.1.11.yml — 3,516 B / 62c6975ebf9ced1ec0d3a3e73465b782a1e47c59a64f957ada5ee7c0e13a63be (18 wrv_summon_reserve_* templates, D64 boosts — the install's third artifact, living in Magic's modifiers.yml).
+Base: the BB-11 ExcelSummons 0.1.10 build tree (candidate 102,597 B / 97e442165b755fb7fac325e712f634c2607490bf7f0de0dd83b28510036ff7d0). Base gate: the copied 0.1.10 tree rebuilt UNMODIFIED produced 97e44216… EXACT, 109/109 tests, before any edit.
+Install: INSTALLED Nov 15, 2026 by wrv-install-failsafe 09:03 CST full-push chain (Install 5 of 13) — see INSTALLED.txt, OUTCOME.txt, SCRIPT-OUTPUT.txt in this package.
+G1 material (filled): filing-time G1 is in G1-RECEIPTS.md (Nov 14, 23:31–23:34 CST — its STOP verdict was correct then: live was still 0.1.9 seq-02, BB-11 had not landed). The at-window G1 in OUTCOME.txt (Nov 15, 10:47 CST) PASSED: live ExcelSummons-0.1.10.jar 102,597 B / 97e44216… EXACT; live config 5,878 B / 659d9e2c… EXACT; live Magic modifiers.yml 263,522 B / 3d42a9a7… EXACT (18 reserve keys). Placed jar + config + merged modifiers (263,447 B / 5c9de8df…) pull-backs all EXACT; SCRIPT-OUTPUT.txt carries 20/20 verbatim blocks PASS. The packet RECEIPTS.md G1 slots are the blank-by-design skeleton — the filled evidence is the G1-RECEIPTS.md + OUTCOME.txt / SCRIPT-OUTPUT.txt split described here.
+Build record: BUILD-RECORD.md. Packet: INSTALL-PACKET.md. Tests: TEST-RESULTS.md.
