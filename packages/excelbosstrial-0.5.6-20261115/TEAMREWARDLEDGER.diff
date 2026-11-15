@@ -1,0 +1,30 @@
+--- /home/hatch/workspace/bosstrial-056-fsync-rebuild-20261114/bosstrial/src/wrv/rewards/TeamRewardLedger.java
++++ bosstrial/src/wrv/rewards/TeamRewardLedger.java
+@@ -5,7 +5,7 @@
+ import java.nio.file.*;
+ import java.util.*;
+ 
+-/** Single-writer durable roster/claims. Does NOT perform inventory mutations or determine combat eligibility. */
++/** Single-writer durable roster/claims. Does NOT perform inventory mutations or determine combat eligibility. Durability: the temp-file fsync is mandatory; the post-move directory force is best-effort only where the platform refuses directory channels outright (Windows NIO throws AccessDeniedException on FileChannel.open of a directory) — there the already-forced file carries the write. Any other directory-force failure still fails the save. */
+ public final class TeamRewardLedger implements AutoCloseable {
+  public enum State { OWED,PENDING,DELIVERED,REVIEW }
+  public enum EncounterOutcome { ACTIVE,WON,LOST,ABORTED }
+@@ -18,6 +18,9 @@
+  private Map<String,Encounter> encounters=new TreeMap<>(); private Map<String,Claim> claims=new TreeMap<>();
+  private Map<String,String> scopes=new TreeMap<>();
+  private byte[] expected; private boolean failed,closed;
++ @FunctionalInterface interface DirectoryForce { void force(Path directory) throws IOException; }
++ DirectoryForce directoryForce=TeamRewardLedger::forceDirectory;
++ private static void forceDirectory(Path directory) throws IOException { try(FileChannel channel=FileChannel.open(directory,StandardOpenOption.READ)){channel.force(true);} }
+  public TeamRewardLedger(Path file) throws IOException {
+   this.file=file.toAbsolutePath(); Files.createDirectories(this.file.getParent());
+   lockChannel=FileChannel.open(this.file.resolveSibling(this.file.getFileName()+".lock"),StandardOpenOption.CREATE,StandardOpenOption.WRITE);
+@@ -80,7 +83,7 @@
+  private void change(Runnable operation)throws IOException {byte[] before=encode();try{operation.run();persist();}catch(Exception ex){failed=true;try{read(before);}catch(Exception ignored){}if(ex instanceof IOException io)throw io;throw ex;}}
+  private void persist()throws IOException {
+   byte[] current=Files.exists(file)?Files.readAllBytes(file):null;if(!Arrays.equals(current,expected))throw new IOException("external ledger change");byte[] bytes=encode();Path tmp=Files.createTempFile(file.getParent(),file.getFileName()+".",".tmp");
+-  try{try(FileChannel ch=FileChannel.open(tmp,StandardOpenOption.WRITE)){java.nio.ByteBuffer b=java.nio.ByteBuffer.wrap(bytes);while(b.hasRemaining())ch.write(b);ch.force(true);}Files.move(tmp,file,StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);try(FileChannel dir=FileChannel.open(file.getParent(),StandardOpenOption.READ)){dir.force(true);}byte[] verify=Files.readAllBytes(file);if(!Arrays.equals(bytes,verify))throw new IOException("readback mismatch");expected=bytes;}finally{Files.deleteIfExists(tmp);}
++  try{try(FileChannel ch=FileChannel.open(tmp,StandardOpenOption.WRITE)){java.nio.ByteBuffer b=java.nio.ByteBuffer.wrap(bytes);while(b.hasRemaining())ch.write(b);ch.force(true);}Files.move(tmp,file,StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);try{directoryForce.force(file.getParent());}catch(AccessDeniedException platformRefusesDirectoryChannels){/* file fsync already carried this write */}byte[] verify=Files.readAllBytes(file);if(!Arrays.equals(bytes,verify))throw new IOException("readback mismatch");expected=bytes;}finally{Files.deleteIfExists(tmp);}
+  }
+  private byte[] encode()throws IOException {ByteArrayOutputStream b=new ByteArrayOutputStream();try(DataOutputStream d=new DataOutputStream(b)){d.writeInt(MAGIC);d.writeInt(2);d.writeInt(encounters.size());for(Encounter e:encounters.values()){d.writeUTF(e.id);d.writeUTF(e.outcome.name());d.writeUTF(e.plan);d.writeInt(e.roster.size());for(UUID p:new TreeSet<>(e.roster))d.writeUTF(p.toString());}d.writeInt(claims.size());for(Claim c:claims.values()){d.writeUTF(c.id);d.writeUTF(c.encounterId);d.writeUTF(c.planId);d.writeUTF(c.player.toString());d.writeUTF(c.state.name());d.writeUTF(c.attempt);d.writeInt(c.units.size());for(RewardUnit u:c.units){d.writeUTF(u.unitId);d.writeUTF(u.payload);}}d.writeInt(scopes.size());for(var entry:scopes.entrySet()){d.writeUTF(entry.getKey());d.writeUTF(entry.getValue());}}byte[] body=b.toByteArray();if(body.length>64*1024*1024-32)throw new IOException("ledger capacity");b.write(digest(body));return b.toByteArray();}
+  private static int count(DataInputStream d)throws IOException {int n=d.readInt();if(n<0||n>LIMIT)throw new IOException("invalid count");return n;}
