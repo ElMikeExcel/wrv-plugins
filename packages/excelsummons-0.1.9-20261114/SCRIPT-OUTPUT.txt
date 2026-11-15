@@ -1,0 +1,24 @@
+STEP: live-pull-check Summons live jar
+EXPECTED: size=92387 sha256=835419aaeff434b61e6be2f5cda1340233299e11262feebf96206cdd00bb8841
+ACTUAL: size=92387 sha256=835419aaeff434b61e6be2f5cda1340233299e11262feebf96206cdd00bb8841
+RESULT: PASS
+STEP: hash-compare placed Summons jar
+EXPECTED: size=102260 sha256=ead3beec553da8e37d255971c8e8e5f96a707835c0a8811a90df115759e6df46
+ACTUAL: size=102260 sha256=ead3beec553da8e37d255971c8e8e5f96a707835c0a8811a90df115759e6df46
+RESULT: PASS
+STEP: hash-compare Summons config post-boot
+EXPECTED: size=5878 sha256=659d9e2c643189c9f65e243c1eb8517c7f5d4775a7cad5ed9cb2502662f3c3a9
+ACTUAL: size=5878 sha256=659d9e2c643189c9f65e243c1eb8517c7f5d4775a7cad5ed9cb2502662f3c3a9
+RESULT: PASS
+STEP: boot-log-scan
+EXPECTED: done=present severe=0 guild_locked=4of5
+ACTUAL: done=present severe=0 guild_locked=4of5
+RESULT: PASS
+STEP: counts-check Enabling ExcelSummons v0.1.9
+EXPECTED: count=1
+ACTUAL: count=1
+RESULT: PASS
+STEP: counts-check seq-02 build id
+EXPECTED: count=1 EXC-SUMMONS-0.1.9-WRV-20261114-02-c9a114
+ACTUAL: count=1
+RESULT: PASS
