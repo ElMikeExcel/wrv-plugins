@@ -1,0 +1,26 @@
+PASS R1-render-back53
+PASS R1-handler-return
+PASS R1-handler-menu
+PASS R1-entry-from-sel
+PASS R2-entry-from-main
+PASS R2-back-to-main
+PASS R2-back-standalone
+PASS R3-render-back49
+PASS R3-handler-menu
+PASS R3-opener
+PASS R4-back-button
+PASS R5-render-back45
+PASS R5-handler-menu
+PASS R6-back-action
+PASS R7-config-relabel
+PASS R7-java-selector
+PASS R9-java-maxorg
+PASS R7-handler-sel
+PASS R9-handler-unlock
+PASS R8-bedrock-modal
+PASS R10-bedrock-modal
+PASS R11-render-back46
+PASS R11-handler-unlock
+PASS R12-label-back
+PASS R12-handler-unlock
+WALK-TOTAL pass=25 fail=0

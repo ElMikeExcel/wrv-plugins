@@ -1,0 +1,21 @@
+{
+ "date": "2026-11-14",
+ "jar": {
+  "bytes": 160197,
+  "drive_id": null,
+  "drive_md5": null,
+  "file": "ExcelAutoSort-0.2.2.jar",
+  "sha256": "8b3bf5ab3b07119909e8f371361a21f32235b17039eb0f53b987f514fa18ad28"
+ },
+ "notes": "Package prepped Nov 15, 2026 by the records-gap prep worker (board supervisor run 392, W2); INSTALLED Nov 15, 2026 (failsafe run scheduled 03:03 CST, Homebase lane; placed jar/config pull-backs EXACT, SCRIPT-OUTPUT 18/18 PASS). NOT yet published: the wrv-plugins draft-PR leg and the Drive deposit leg are the supervisor's to execute after this prep (drive_id/drive_md5 are null until the Drive leg lands and is byte-verified). Local Drive staging prepared at ~/workspace/autosort022-drive/ (jar + source zip + SOURCE note). Ownership: 100% house IP (see SOURCE.md). Build tree of record: ~/workspace/back-button-wave1-r354/BB-04/build/ExcelAutoSort-0.2.2/ (copy of the 0.2.1 tree; 8 files differ). Tests: unit 35/35; rig PASS SEVERE 0; walk 25/25. NOTE: 0.2.2 was superseded in live service the same morning by 0.2.3 (PR #230), which contains all BB-04 fixes; 0.2.2 still gets its own record per the jar rule.",
+ "plugin": "ExcelAutoSort",
+ "source_build_dir": "~/workspace/back-button-wave1-r354/BB-04/build/ExcelAutoSort-0.2.2/",
+ "source_zip": {
+  "bytes": 100207,
+  "drive_id": null,
+  "drive_md5": null,
+  "file": "ExcelAutoSort-0.2.2-source.zip",
+  "sha256": "c2ff6c453264c810e5fc340ade2fac0a32a940f30b958fa0427565733ca288fe"
+ },
+ "version": "0.2.2"
+}
