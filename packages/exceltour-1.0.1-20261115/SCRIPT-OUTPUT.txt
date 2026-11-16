@@ -1,0 +1,68 @@
+STEP: Backup cap after window backup
+EXPECTED: total<=6
+ACTUAL: total=6 daily=3 manual=3 prune_needed=0
+RESULT: PASS
+STEP: Emptiness gate reading 1 arrival
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: Emptiness gate reading 2
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: Emptiness pre-swap list
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: G1 live jar ExcelTour-1.0.0
+EXPECTED: path=plugins/ExcelTour-1.0.0.jar size=50656 sha256=4af7c455d98ead43603f75fe007444983c75345d70f0109c9149dc785c78dd72
+ACTUAL: path=plugins/ExcelTour-1.0.0.jar size=50656 sha256=4af7c455d98ead43603f75fe007444983c75345d70f0109c9149dc785c78dd72 lane=rclone pulled_at=2026-11-15T11:55:27Z
+RESULT: PASS
+STEP: G1 GuildGate state
+EXPECTED: path=plugins/ExcelGuildGate/state.yml size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890
+ACTUAL: path=plugins/ExcelGuildGate/state.yml size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890 lane=rclone pulled_at=2026-11-15T11:55:27Z
+RESULT: PASS
+STEP: Candidate jar at window
+EXPECTED: size=50908 sha256=ab94d4a12b33b8acb45b60599ef3b27eac4f0b86805456930719ba90e2c0e317
+ACTUAL: size=50908 sha256=ab94d4a12b33b8acb45b60599ef3b27eac4f0b86805456930719ba90e2c0e317
+RESULT: PASS
+STEP: Placed pull-back ExcelTour-1.0.1
+EXPECTED: size=50908 sha256=ab94d4a12b33b8acb45b60599ef3b27eac4f0b86805456930719ba90e2c0e317
+ACTUAL: size=50908 sha256=ab94d4a12b33b8acb45b60599ef3b27eac4f0b86805456930719ba90e2c0e317
+RESULT: PASS
+STEP: Bak pull-back ExcelTour-1.0.0 pre101
+EXPECTED: size=50656 sha256=4af7c455d98ead43603f75fe007444983c75345d70f0109c9149dc785c78dd72
+ACTUAL: size=50656 sha256=4af7c455d98ead43603f75fe007444983c75345d70f0109c9149dc785c78dd72
+RESULT: PASS
+STEP: Boot log scan BB-09
+EXPECTED: done=present severe=0 guild_locked=any
+ACTUAL: done=present severe=0 guild_locked=missing
+RESULT: PASS
+STEP: Enabling Tour 1.0.1 count
+EXPECTED: count=1 pattern=Enabling ExcelTour v1.0.1 mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: Enabled line exact count
+EXPECTED: count=1 pattern=ExcelTour v1.0.1 enabled: 1 route(s) loaded [guild-first-visit] (build EXC-TOUR-1.0.1-WRV-20261114-01-bb09) mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: SEVERE count
+EXPECTED: count=0 pattern=SEVERE mode=occurrences
+ACTUAL: count=0
+RESULT: PASS
+STEP: GuildGate state recorded
+EXPECTED: count=1 pattern=ExcelGuildGate enabled: 5 of 5 seals broken, guild OPEN mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: Post-boot GuildGate state unchanged
+EXPECTED: size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890
+ACTUAL: size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890
+RESULT: PASS
+STEP: Emptiness departure list
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: INSTALLED marker BB-09
+EXPECTED: present plugin=ExcelTour version=1.0.1
+ACTUAL: present build=EXC-TOUR-1.0.1-WRV-20261114-01-bb09 installed=2026-11-15 jar=ExcelTour-1.0.1.jar plugin=ExcelTour sha256=ab94d4a12b33b8acb45b60599ef3b27eac4f0b86805456930719ba90e2c0e317 size=50908 version=1.0.1 window=wrv-install-failsafe scheduled 2026-11-15 05:33 CST
+RESULT: PASS

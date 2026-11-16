@@ -1,0 +1,152 @@
+diff -ru /home/hatch/workspace/exceltour-build-20261111/ExcelTour/src/com/winkreyes/exceltour/BuildInfo.java src/com/winkreyes/exceltour/BuildInfo.java
+--- /home/hatch/workspace/exceltour-build-20261111/ExcelTour/src/com/winkreyes/exceltour/BuildInfo.java	2026-11-12 04:33:22.693608046 +0000
++++ src/com/winkreyes/exceltour/BuildInfo.java	2026-11-14 23:50:17.129264996 +0000
+@@ -2,8 +2,8 @@
+ 
+ /** Version fragments for the in-jar fingerprint gate (house pattern). */
+ public final class BuildInfo {
+-    public static final String VERSION = "1.0.0";
+-    public static final String BUILD_ID = "EXC-TOUR-1.0.0-WRV-20261111-01-t0ur";
+-    public static final String BUILD_TAG = "t0ur";
++    public static final String VERSION = "1.0.1";
++    public static final String BUILD_ID = "EXC-TOUR-1.0.1-WRV-20261114-01-bb09";
++    public static final String BUILD_TAG = "bb09";
+     private BuildInfo() {}
+ }
+diff -ru /home/hatch/workspace/exceltour-build-20261111/ExcelTour/src/com/winkreyes/exceltour/ExcelTour.java src/com/winkreyes/exceltour/ExcelTour.java
+--- /home/hatch/workspace/exceltour-build-20261111/ExcelTour/src/com/winkreyes/exceltour/ExcelTour.java	2026-11-12 04:34:48.032611358 +0000
++++ src/com/winkreyes/exceltour/ExcelTour.java	2026-11-14 23:49:59.163020686 +0000
+@@ -166,11 +166,32 @@
+                 player.sendMessage(Component.text("Tour stopped. You can start again any time from the compass Guide.", NamedTextColor.GOLD));
+                 break;
+             }
++            case "backmenu": {
++                // BB-09: Back from the Bedrock step form. Pure
++                // navigation only - no engine call, no save - so a
++                // mid-tour Back cannot advance, restart, reset or
++                // complete anything; progress survives untouched.
++                openServerMenu(player);
++                break;
++            }
+             case "close": break;
+             default: break;
+         }
+     }
+ 
++    /**
++     * Back to Server Menu (BB-09, FIX-2): pure navigation via the
++     * ExcelMenu /menu opener (the same opener this view is reached
++     * by). It never calls the tour engine and never saves, so tour
++     * progress - mid-tour included - is exactly as the player left
++     * it. If ExcelMenu is absent the command simply fails and the
++     * player stays where they are (the view is already closed).
++     */
++    public void openServerMenu(Player player) {
++        player.closeInventory();
++        player.performCommand("menu");
++    }
++
+     public void startRoute(Player player, String routeId) {
+         Progress p = engine.start(player.getUniqueId(), routeId);
+         if (p == null) {
+@@ -303,14 +324,14 @@
+                 : engine.progress(player.getUniqueId(), routeId);
+         if (p == null || p.state == Progress.State.NOT_STARTED) {
+             if (slot == 13) { Route def = defaultRoute(); if (def != null) { player.closeInventory(); startRoute(player, def.id); } }
+-            else if (slot == 26) player.closeInventory();
++            else if (slot == 26) openServerMenu(player);
+             return;
+         }
+         if (p.state == Progress.State.COMPLETED) {
+             if (slot == 22) {
+                 if (menu.isConfirmRestart()) { player.closeInventory(); handleTourAction(player, "restart"); }
+                 else new TourMenu(this, player, true).open();
+-            } else if (slot == 26) player.closeInventory();
++            } else if (slot == 26) openServerMenu(player);
+             return;
+         }
+         switch (slot) {
+@@ -322,7 +343,7 @@
+                 else new TourMenu(this, player, true).open();
+                 break;
+             case 22: player.closeInventory(); handleTourAction(player, "stop"); break;
+-            case 26: player.closeInventory(); break;
++            case 26: openServerMenu(player); break;
+             default: break;
+         }
+     }
+diff -ru /home/hatch/workspace/exceltour-build-20261111/ExcelTour/src/com/winkreyes/exceltour/Presentation.java src/com/winkreyes/exceltour/Presentation.java
+--- /home/hatch/workspace/exceltour-build-20261111/ExcelTour/src/com/winkreyes/exceltour/Presentation.java	2026-11-12 04:33:54.444609278 +0000
++++ src/com/winkreyes/exceltour/Presentation.java	2026-11-14 23:50:17.071745606 +0000
+@@ -64,7 +64,11 @@
+     /**
+      * The Bedrock step form (§4.2/§5.2): buttons in a fixed order —
+      * [Done — next step (if menu-advanceable)], [Skip (if skippable)],
+-     * [Repeat], [Restart], [Close]. Close/no-choice changes nothing.
++     * [Repeat], [Restart], [Close], [Back to Server Menu] (BB-09,
++     * FIX-2; Back-last, the house form convention). Close/no-choice
++     * changes nothing. Back is pure navigation to the Server Menu:
++     * it runs no tour action on progress, so a mid-tour Back leaves
++     * the player's step, skips and completions exactly as they were.
+      * Returns false when no form API answered (chat rendering stands).
+      */
+     public boolean sendStepForm(Player player, Route route, Step step) {
+@@ -75,6 +79,7 @@
+         buttons.add("Repeat"); actions.add("repeat");
+         buttons.add("Restart tour"); actions.add("restart");
+         buttons.add("Close"); actions.add("close");
++        buttons.add("Back to Server Menu"); actions.add("backmenu");
+         String body = TextPlain.plain(step.title) + "\n\n" + TextPlain.plain(step.body)
+                 + (step.hint != null ? "\n\nHint: " + TextPlain.plain(step.hint) : "");
+         IntConsumer onButton = idx -> {
+diff -ru /home/hatch/workspace/exceltour-build-20261111/ExcelTour/src/com/winkreyes/exceltour/TourMenu.java src/com/winkreyes/exceltour/TourMenu.java
+--- /home/hatch/workspace/exceltour-build-20261111/ExcelTour/src/com/winkreyes/exceltour/TourMenu.java	2026-11-12 04:34:10.429609898 +0000
++++ src/com/winkreyes/exceltour/TourMenu.java	2026-11-14 23:49:46.869759302 +0000
+@@ -22,6 +22,10 @@
+  * information and controls as the Bedrock form: current step,
+  * Repeat, Next/Done (when allowed), Skip (when allowed), Restart
+  * (two-click confirm), Stop tour. Reading the view advances nothing.
++ * Slot 26 is "Back to Server Menu" in every state (BB-09, FIX-2):
++ * it leaves the view for the ExcelMenu Server Menu and never
++ * touches tour progress. This inventory is also the Bedrock
++ * fallback view, so the same Back covers both platforms.
+  */
+ public final class TourMenu implements InventoryHolder {
+     private final ExcelTour plugin;
+@@ -49,14 +53,14 @@
+         if (p == null || p.state == Progress.State.NOT_STARTED) {
+             inventory.setItem(13, item(Material.COMPASS, "Start: " + TextPlain.plain(route.displayName),
+                     List.of(TextPlain.plain(route.description), "Click to begin the tour.")));
+-            inventory.setItem(26, item(Material.BARRIER, "Close", List.of()));
++            inventory.setItem(26, backItem());
+         } else if (p.state == Progress.State.COMPLETED) {
+             inventory.setItem(13, item(Material.COMPASS, TextPlain.plain(route.displayName) + " — finished",
+                     List.of("You finished this tour" + (p.completions > 0 ? " (" + p.completions + "x)" : "") + ".",
+                             "Click Restart below to walk it again.")));
+             inventory.setItem(22, item(Material.CLOCK, confirmRestart ? "Click again to confirm restart" : "Restart tour",
+                     List.of("Back to Step 1.")));
+-            inventory.setItem(26, item(Material.BARRIER, "Close", List.of()));
++            inventory.setItem(26, backItem());
+         } else {
+             Step step = route.stepById(p.currentStepId);
+             if (step == null) { viewer.sendMessage(Component.text("Your tour step could not be found — it has been reset.", NamedTextColor.RED)); return; }
+@@ -71,11 +75,18 @@
+             inventory.setItem(16, item(Material.CLOCK, confirmRestart ? "Click again to confirm restart" : "Restart",
+                     List.of("Back to Step 1 (finished count kept).")));
+             inventory.setItem(22, item(Material.GRAY_DYE, "Stop tour", List.of("End the tour; you can start again any time.")));
+-            inventory.setItem(26, item(Material.BARRIER, "Close", List.of()));
++            inventory.setItem(26, backItem());
+         }
+         viewer.openInventory(inventory);
+     }
+ 
++    /** BB-09: the slot-26 Back control (house style: ARROW). */
++    static ItemStack backItem() {
++        return item(Material.ARROW, "Back to Server Menu",
++                List.of("Return to the Server Menu.",
++                        "Leaving changes nothing - resume any time."));
++    }
++
+     private static List<String> wrap(String body, String hint) {
+         java.util.List<String> lines = new java.util.ArrayList<>();
+         String cur = "";
