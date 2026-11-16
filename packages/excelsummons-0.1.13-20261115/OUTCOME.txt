@@ -1,0 +1,14 @@
+ExcelSummons 0.1.13 (P-SUMMONS-MANA-25) — INSTALLED Nov 15, 2026, wrv-install-failsafe run scheduled 18:33 CST
+Lane: HOMEBASE (probe pass attempt 1: hostname DESKTOP-IL05DQR, rclone lsd listed "1. Michael's Server"; no fallback)
+Window backup: "Summons 0.1.13 pre-install 1115" created 18:39 CST, 8.3 GB, completed; cap-at-6 prunee: "Downed-0.1.3-pre-install-20261115-1259" (oldest manual, deleted before creation; final total 6)
+Emptiness: arrival 0/10, gate readings 0/10 twice (raw RCON captures list-1.txt/list-2.txt), final pre-shutdown 0/10, departure 0/10; server left ONLINE (outside maintenance window)
+G1 fresh pulls (all EXACT): live jar ExcelSummons-0.1.12.jar 116,690 B / a21c584f...; live config 6,187 B / 696005ba...; live Magic modifiers 263,447 B / 5c9de8df...
+Placed (pull-back EXACT): ExcelSummons-0.1.13.jar 116,869 B / 97b67906b7aad6b82c548c9ab025618fa5d7c93151331c029eb21cd824ddc1f5; config.yml 6,562 B / 6c449df3...; Magic modifiers.yml 263,447 B / 8d02644dc634... (built from fresh live pull + packet replacement blocks; 18 reserve keys, guardian/ghast boosts -0.44)
+Held aside / .baks (pull-back EXACT vs originals): ExcelSummons-0.1.12.jar.bak-20261115-pre0113; ExcelSummons/config.yml.bak-20261115-pre0113; Magic/modifiers.yml.bak-20261115-pre0113
+Restart: panel Shut Down 18:46 CST -> Offline 18:46; Start 18:46 -> Online 18:47 CST (no console stop)
+Boot Done line verbatim: [00:47:16] [Server thread/INFO]: Done (23.617s)! For help, type "help"
+Boot lines: "Enabling ExcelSummons v0.1.13" x1; build EXC-SUMMONS-0.1.13-WRV-20261115-01-mana25 x1; "Protect audit door bound" x1; SEVERE 0
+Guild state: post-boot state.yml byte-identical to the pre-install fresh pull (1,080 B / 8a3bdc65...) — unlocked: true, 5/5 seals broken, guild OPEN, unchanged by this install. Note: that hash differs from the packet's 14:34 G1-4 receipt (d5bffa99...) because the file's volatile seen: counters moved during afternoon play; the drift pre-dates this window (present in the pre-swap fresh pull) and no seal/unlock field changed.
+Script bundle: 18 verbatim blocks in SCRIPT-OUTPUT.txt beside this file, all RESULT: PASS (inputs retained in window-20261115-1833/: G1 pulls, both list captures + departure, Backups listing, placed pull-backs, post-install latest.log). The bundle emptiness parser does not accept the raw "out of maximum" RCON phrasing, so its blocks ran on the retained KV-normalized captures derived from the raw RCON files kept beside them.
+Surfaces owed (same-pass, supervisor/parent legs per packet): Guide knowledge + intents hold-table update, What's New BOTH surfaces, website pair (index.html + ai-knowledge.json), broadcaster tips check, in-game menus check — still owed at this run's close.
+Proof owed: Mike Guardian ~44% hold + Ghast-alongside refusal; Jester-lane wolf pack 3-hold/4th-refused; archer+bruiser+wolf = 75; Protect audit reserve_ceiling spot-check; adopted pet still 0.
