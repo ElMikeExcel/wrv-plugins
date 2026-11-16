@@ -1,0 +1,45 @@
+ExcelDowned 0.1.4 - records package file list
+Package: packages/exceldowned-0.1.4-20261116/ (35 files total)
+
+Root / docs (16):
+./BUILD-RECORD.md
+./DESIGN-0.1.2.md
+./DESIGN-0.1.3.md
+./DESIGN-0.1.4.md
+./FILE-LIST.txt
+./FINGERPRINTS.md
+./INSTALL-PACKET.md
+./INSTALLED.txt
+./PUSH-NOTES.md
+./RIG-RESULTS.md
+./SOURCE.md
+./TogetherPartyProvider.patch
+./config.yml
+./local-build.sh
+./plugin.yml
+./SHA256SUMS
+
+Source (18):
+./src/com/winkreyes/exceldowned/AdminPolicy.java
+./src/com/winkreyes/exceldowned/BedrockForms.java
+./src/com/winkreyes/exceldowned/BuildInfo.java
+./src/com/winkreyes/exceldowned/DownedCommands.java
+./src/com/winkreyes/exceldowned/DownedEvents.java
+./src/com/winkreyes/exceldowned/DownedListener.java
+./src/com/winkreyes/exceldowned/DownedMath.java
+./src/com/winkreyes/exceldowned/DownedSession.java
+./src/com/winkreyes/exceldowned/ExcelDowned.java
+./src/com/winkreyes/exceldowned/ExcelDownedAPI.java
+./src/com/winkreyes/exceldowned/FixPolicy.java
+./src/com/winkreyes/exceldowned/GiveUpHolder.java
+./src/com/winkreyes/exceldowned/GiveUpMenu.java
+./src/com/winkreyes/exceldowned/GiveUpRoute.java
+./src/com/winkreyes/exceldowned/GiveUpUi.java
+./src/com/winkreyes/exceldowned/MagicBridge.java
+./src/com/winkreyes/exceldowned/PartyProvider.java
+./src/com/winkreyes/exceldowned/TogetherPartyProvider.java
+
+Tests (1):
+./tests/com/winkreyes/exceldowned/DownedTest.java
+
+Counts: 16 root + 18 source + 1 test = 35 files. SHA256SUMS carries 34 entries (every other package file). Jar is NOT in the package (Drive only, see SOURCE.md).

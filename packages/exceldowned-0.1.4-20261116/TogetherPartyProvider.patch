@@ -1,0 +1,26 @@
+149a150,174
+>         // 0.1.4 (P-DOWNED-PROVIDER-1, S6 RC-1): ExcelTogether's
+>         // PartyManager.Party exposes its members as a public FIELD
+>         // (public final List<UUID> members; its only method is
+>         // size()). The 0.1.3 method-only lookup below could never
+>         // read it and always fell through to the empty list, so
+>         // every real party answered [] / UNKNOWN. Read the FIELD
+>         // first (public, then declared+accessible for robustness);
+>         // the method-name list stays verbatim as the fallback for
+>         // any other party shape. Fail-soft is unchanged: any doubt
+>         // still degrades to the empty list.
+>         try {
+>             Field f = party.getClass().getField("members");
+>             Object v = f.get(party);
+>             if (v instanceof Collection) return (Collection<?>) v;
+>         } catch (Throwable ignored) {
+>             // fall through to the declared-field route
+>         }
+>         try {
+>             Field f = party.getClass().getDeclaredField("members");
+>             f.setAccessible(true);
+>             Object v = f.get(party);
+>             if (v instanceof Collection) return (Collection<?>) v;
+>         } catch (Throwable ignored) {
+>             // fall through to the method shapes
+>         }
