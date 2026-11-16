@@ -1,0 +1,50 @@
+--- together-060-build-20261115/build-0.6.0/src/com/winkreyes/exceltogether/ReflectEmLink.java	2026-11-15 06:59:48.382347074 +0000
++++ board-r426/together-rebuild/work/build-0.6.0-r426/src/com/winkreyes/exceltogether/ReflectEmLink.java	2026-11-16 13:17:19.881802953 +0000
+@@ -39,6 +39,7 @@
+     private Method mGetParties, mGetParty, mCreate, mInvite, mAccept, mLeave;
+     private Method pGetId, pGetLeader, pDisplayOrder;
+     private Method mPartiesEnabled;                       // optional probe (PartyConfig.isEnabled)
++    private Method mHasPending;                           // optional (run 426 part 1): PartyManager.hasActivePendingInvite(UUID) - declared, not public, on EM 10.9.14 (both mirror rigs reach it via getDeclaredMethod + setAccessible); its absence never disables the link, the read just reports false
+     private final Map<Class<?>, Boolean> dungeonEvents = new LinkedHashMap<>();  // event class -> isJoin
+ 
+     private volatile boolean sessionDisabled;             // EM said DISABLED once: parties off in Party.yml
+@@ -106,6 +107,14 @@
+         // optional: the parties-enabled probe (its absence never disables the link by itself)
+         Class<?> cCfg = cls(cl, "com.magmaguy.elitemobs.config.PartyConfig", false);
+         if (cCfg != null) { try { mPartiesEnabled = cCfg.getMethod("isEnabled"); } catch (Throwable t) { mPartiesEnabled = null; } }
++        // optional (run 426 part 1): the pending-invite read. Declared (not public) on the EM
++        // builds of record, so getMethod cannot see it - resolve it exactly as the mirror rigs
++        // do. Absence leaves mHasPending null: hasPendingInvite reports false and the mesh
++        // behaves exactly as the pre-part-1 build (no pending read at all).
++        if (cPartyMgr != null) {
++            try { mHasPending = cPartyMgr.getDeclaredMethod("hasActivePendingInvite", UUID.class); mHasPending.setAccessible(true); }
++            catch (Throwable t) { mHasPending = null; }
++        }
+         // optional: the dungeon-instance tracker events (freeze F1); absence leaves F2 to carry it
+         for (String[] e : new String[][]{
+                 {"com.magmaguy.elitemobs.api.PlayerJoinDungeonEvent", "true"},
+@@ -276,6 +285,24 @@
+         return inviteLive(drivenInvites.get(target), inviter, System.currentTimeMillis());
+     }
+ 
++    /** True when the pending-invite read resolved at link start (false = this EM build does not expose it; hasPendingInvite then always reports false). */
++    public boolean pendingReadAvailable() { return mHasPending != null; }
++
++    /**
++     * Run 426 part 1: the pending-invite read (EmLink.hasPendingInvite). Positive reads only:
++     * any failure - method absent, link down, reflective throw - reports false and counts
++     * toward the failure latch like every other read, so a caller can never mistake a broken
++     * read for a proven "no invite" and act on it alone.
++     */
++    @Override public boolean hasPendingInvite(UUID target) {
++        if (target == null || mHasPending == null || !available()) return false;
++        try {
++            Object r = mHasPending.invoke(null, target);
++            succeeded();
++            return Boolean.TRUE.equals(r);
++        } catch (Throwable t) { failed("hasPendingInvite"); return false; }
++    }
++
+     // ---- dungeon-instance tracker (freeze F1) ----
+     /** Feed one dungeon/arena event (registered by the plugin through EM's classloader). Extracts the player reflectively. */
+     public void trackInstanceEvent(Object event, boolean joined) {

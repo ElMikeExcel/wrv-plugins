@@ -1,0 +1,189 @@
+--- /home/hatch/workspace/board-r426/together-rebuild/work/build-0.6.0-r426/tests/com/winkreyes/exceltogether/EmSyncTest.java	2026-11-16 13:17:41.413802868 +0000
++++ /home/hatch/workspace/board-r426/together-parts23/work/build-0.6.0-r426p23/tests/com/winkreyes/exceltogether/EmSyncTest.java	2026-11-16 13:33:59.161736267 +0000
+@@ -102,11 +102,20 @@
+         }
+         void emJoinRaw(UUID id, P p) { if (!p.m.contains(id)) p.m.add(id); }
+         void emLeaveRaw(UUID id) {
+-            P p = of(id); if (p == null) return;
++            // Run 426 BP-6 (D93): real EM kills a pending invite when its INVITER's
++            // materialised party is dismantled (Mirror Session 2: emPending(A)=false at
++            // +3s after the revert dismantled B's party). The pending map is keyed by
++            // TARGET, so the inviter's leave must remove every entry naming the inviter -
++            // the pre-fix fake removed only the entry keyed by the leaver and left the
++            // target's pending slot alive forever.
++            pending.values().removeIf(inv -> inv.equals(id));
++            P p = of(id); if (p == null) { pending.remove(id); return; }
+             p.m.remove(id); pending.remove(id);
+             if (p.m.isEmpty()) parties.remove(p.key);
+             else if (p.leader.equals(id)) p.leader = p.m.get(0);
+         }
++        /** Run 426 parts 2+3: the target answers a native invite WITHOUT joining - a native decline, or EM's own 60s timeout: the pending slot dies, the inviter's materialised party is left standing for the mesh to judge. */
++        void emPendingGoneRaw(UUID target) { pending.remove(target); }
+         boolean inEm(UUID a, UUID b) { P p = of(a); return p != null && p.m.contains(b); }
+     }
+ 
+@@ -620,8 +629,162 @@
+             check("NP-1e the inviter themself holds no pending invite", !w.em.hasPendingInvite(nat.id));
+             check("NP-1e no hub invite exists behind a native invite", !w.r.mgr.hasInvite(nat.id, uma.id, w.r.env.t) && w.r.mgr.invitesFor(uma.id, w.r.env.t).isEmpty());
+             w.polls(2);
+-            check("NP-1f PRE-FIX BASELINE (M4 desk shape): part 1 alone changes no behaviour - the native materialisation is still reverted", w.em.of(nat.id) == null);
+-            check("NP-1f the M4 revert was logged for the native inviter", w.logs.stream().anyMatch(s -> s.contains("reverted a non-door") && s.contains("NatNP")));
++            // RE-PINNED by run 426 parts 2+3 (D88): part 1 alone pinned this baseline as
++            // still-reverting; the part-2 native-pending spare now flips exactly this
++            // shape - the materialisation is SPARED while the native pending lives, and
++            // the spare records the pair (D91). The full lifecycle is NP-2 below.
++            check("NP-1f parts 2+3: the native materialisation is spared while the native pending lives", w.em.of(nat.id) != null && w.em.of(nat.id).m.equals(List.of(nat.id)));
++            check("NP-1f parts 2+3: no revert was logged for the native inviter", w.logs.stream().noneMatch(s -> s.contains("reverted a non-door") && s.contains("NatNP")));
++            check("NP-1f parts 2+3: the spare recorded the native pair in the observation map", w.r.ctl.emSync().nativeObserved(uma.id));
++        }
++        // ---------- NP-2 (run 426, one-roster rebuild parts 2+3, D88-D93): the native-pending lifecycle ----------
++        // (SCOPING.md L311-317 desk gate: spare survives >=3 polls; native accept completes
++        // the roster and both faces agree; pending expiry/decline re-arms the revert;
++        // crossed-pending does not complete - plus the D92 named scenarios: hub-refusal
++        // fallback, suppression ordering, dungeon-busy deferral, and the BP-6 fake pin.)
++        {
++            // NP-2a: the spare survives >=3 polls; nothing is created, driven, or told.
++            W w = new W(5);
++            var nat = w.j("Nat2A"); var uma = w.j("Uma2A");
++            w.em.emInviteRaw(nat.id, uma.id);
++            w.polls(3);
++            check("NP-2a spare survives >=3 polls: the inviter's solo party still stands", w.em.of(nat.id) != null && w.em.of(nat.id).m.equals(List.of(nat.id)));
++            check("NP-2a the pending invite survives the polls", w.em.hasPendingInvite(uma.id));
++            check("NP-2a no roster was created by the spare", w.r.mgr.partyOf(nat.id) == null && w.r.mgr.partyOf(uma.id) == null);
++            check("NP-2a no revert was logged and no Q3 notice was told", w.logs.stream().noneMatch(s -> s.contains("reverted a non-door")) && !nat.heard("run with /party"));
++            check("NP-2a the pair stands in the observation map", w.r.ctl.emSync().nativeObserved(uma.id));
++            check("NP-2a the spare drove nothing", w.em.drives.isEmpty());
++            w.rest("NP-2a", nat, uma);
++        }
++        {
++            // NP-2b: the native accept completes the roster through the door path; both faces agree.
++            W w = new W(5);
++            var nat = w.j("Nat2B"); var uma = w.j("Uma2B");
++            w.em.emInviteRaw(nat.id, uma.id);
++            w.poll();                                   // the spare observes the live pair
++            check("NP-2b setup: spared and observed", w.em.of(nat.id) != null && w.r.ctl.emSync().nativeObserved(uma.id));
++            w.em.accept(uma.id);                        // the target answers at the EM door (EM's own action; the pending slot is consumed)
++            check("NP-2b setup: the native accept landed in EM and consumed the pending slot", w.em.inEm(nat.id, uma.id) && !w.em.hasPendingInvite(uma.id));
++            w.poll();
++            check("NP-2b the native answer completed the roster", w.inOurs(nat, uma) && uma.heard("You joined"));
++            check("NP-2b the completion carries DOOR origin (D90)", w.r.mgr.originOfPlayer(uma.id) == RosterOrigin.DOOR);
++            check("NP-2b both faces agree on the roster", w.em.inEm(nat.id, uma.id) && w.em.of(nat.id).m.size() == 2);
++            check("NP-2b the observation was spent by the completion", !w.r.ctl.emSync().nativeObserved(uma.id));
++            check("NP-2b no revert was logged for either player", w.logs.stream().noneMatch(s -> s.contains("reverted a non-door")));
++            w.rest("NP-2b", nat, uma);
++        }
++        {
++            // NP-2c (expiry): the pending invite times out unanswered - the spare dies with it and the revert re-arms.
++            W w = new W(5);
++            var nat = w.j("Nat2C"); var uma = w.j("Uma2C");
++            w.em.emInviteRaw(nat.id, uma.id);
++            w.polls(2);
++            check("NP-2c setup: spared while the pending lives", w.em.of(nat.id) != null);
++            w.em.emPendingGoneRaw(uma.id);              // EM's own 60s invite timeout
++            w.poll();
++            check("NP-2c after expiry the materialised party is reverted", w.em.of(nat.id) == null);
++            check("NP-2c the post-expiry revert was logged for the inviter", w.logs.stream().anyMatch(s -> s.contains("reverted a non-door") && s.contains("Nat2C")));
++            check("NP-2c no roster was ever created", w.r.mgr.partyOf(nat.id) == null && w.r.mgr.partyOf(uma.id) == null);
++            w.rest("NP-2c", nat, uma);
++        }
++        {
++            // NP-2c2 (decline): the target declines natively - same re-arm as expiry.
++            W w = new W(5);
++            var nat = w.j("Nat2D"); var uma = w.j("Uma2D");
++            w.em.emInviteRaw(nat.id, uma.id);
++            w.poll();
++            check("NP-2c2 setup: spared while the pending lives", w.em.of(nat.id) != null);
++            w.em.emPendingGoneRaw(uma.id);              // a native decline: the slot dies, nobody joins
++            w.poll();
++            check("NP-2c2 after the native decline the materialised party is reverted", w.em.of(nat.id) == null);
++            check("NP-2c2 no roster was created by the declined invite", w.r.mgr.partyOf(nat.id) == null && w.r.mgr.partyOf(uma.id) == null);
++            w.rest("NP-2c2", nat, uma);
++        }
++        {
++            // NP-2d (crossed): two native pairs stand at once - enumeration pairs NOTHING (D88), both revert as today.
++            W w = new W(5);
++            var n1 = w.j("Nat2E1"); var u1 = w.j("Uma2E1"); var n2 = w.j("Nat2E2"); var u2 = w.j("Uma2E2");
++            w.em.emInviteRaw(n1.id, u1.id);
++            w.em.emInviteRaw(n2.id, u2.id);
++            w.polls(2);
++            check("NP-2d crossed pendings pair nothing: no observation was recorded", !w.r.ctl.emSync().nativeObserved(u1.id) && !w.r.ctl.emSync().nativeObserved(u2.id));
++            check("NP-2d crossed pendings complete nothing: no roster exists", w.r.mgr.partyOf(n1.id) == null && w.r.mgr.partyOf(u1.id) == null && w.r.mgr.partyOf(n2.id) == null && w.r.mgr.partyOf(u2.id) == null);
++            check("NP-2d crossed materialisations revert as today", w.em.of(n1.id) == null && w.em.of(n2.id) == null);
++            check("NP-2d both reverts were logged", w.logs.stream().filter(s -> s.contains("reverted a non-door")).count() == 2);
++            w.rest("NP-2d", n1, u1, n2, u2);
++        }
++        {
++            // NP-2e (D92(1)): a native pending crossed with a live HUB invite to the same target is never paired or completed blindly.
++            W w = new W(5);
++            var nat = w.j("Nat2F"); var uma = w.j("Uma2F"); var hub = w.j("Hub2F");
++            w.em.emInviteRaw(nat.id, uma.id);           // native pending nat -> uma
++            w.r.ctl.inviteTarget(hub, uma);             // hub invite hub -> uma (driven into EM too: the target slot now answers the drive)
++            w.polls(2);
++            check("NP-2e the crossed target was never observed as a native pair", !w.r.ctl.emSync().nativeObserved(uma.id));
++            check("NP-2e the native inviter was not spared through the crossed picture", w.em.of(nat.id) == null);
++            check("NP-2e the hub invite itself is untouched by the native side", w.r.mgr.hasInvite(hub.id, uma.id, w.r.env.t));
++            check("NP-2e no roster was completed from the crossed picture", w.r.mgr.partyOf(uma.id) == null);
++        }
++        {
++            // NP-2f (D92(2), named desk scenario): the hub side refuses the completion
++            // (inviter offline at accept time) - the door wording fires, no join lands,
++            // and the formed EM party falls back to the ordinary next-poll revert.
++            W w = new W(5);
++            var nat = w.j("Nat2G"); var uma = w.j("Uma2G");
++            w.em.emInviteRaw(nat.id, uma.id);
++            w.poll();
++            check("NP-2f setup: spared and observed", w.r.ctl.emSync().nativeObserved(uma.id));
++            w.em.accept(uma.id);                        // the native answer lands in EM
++            w.r.env.on.remove(nat.id); w.r.mgr.onQuit(nat.id, w.r.env.t);   // the inviter goes offline before the completing poll
++            w.poll();
++            check("NP-2f the hub refusal worded itself (inviter offline)", uma.heard("not online anymore"));
++            check("NP-2f no roster join landed from the refused completion", w.r.mgr.partyOf(uma.id) == null);
++            check("NP-2f the observation was spent by the refused attempt", !w.r.ctl.emSync().nativeObserved(uma.id));
++            w.poll();
++            check("NP-2f fallback: the formed EM party is reverted on the next poll (B1 shape)", w.em.of(uma.id) == null);
++            check("NP-2f the fallback revert was logged", w.logs.stream().anyMatch(s -> s.contains("reverted a non-door") && s.contains("Uma2G")));
++        }
++        {
++            // NP-2g (D92(3)): a suppressed player must not re-enter via a native pending -
++            // the completion check runs after the suppression hold.
++            W w = new W(5);
++            var nat = w.j("Nat2H"); var uma = w.j("Uma2H");
++            w.em.emInviteRaw(nat.id, uma.id);
++            w.poll();
++            check("NP-2g setup: spared and observed", w.r.ctl.emSync().nativeObserved(uma.id));
++            w.r.ctl.emSync().suppress(uma.id, Set.of(nat.id, uma.id));   // Together removed Uma on purpose (roster hint = the pair)
++            w.em.accept(uma.id);                        // the native answer lands anyway
++            w.polls(2);
++            check("NP-2g the suppressed target never completed into the roster", w.r.mgr.partyOf(uma.id) == null && !uma.heard("You joined"));
++            check("NP-2g the suppression was enforced on the EM face", !w.em.inEm(nat.id, uma.id));
++        }
++        {
++            // NP-2h (D92(4)): a dungeon-busy completion defers through the deferred queue and lands on unfreeze.
++            W w = new W(5);
++            var nat = w.j("Nat2I"); var uma = w.j("Uma2I");
++            w.em.emInviteRaw(nat.id, uma.id);
++            w.poll();
++            check("NP-2h setup: spared and observed", w.r.ctl.emSync().nativeObserved(uma.id));
++            w.em.accept(uma.id);
++            w.em.busy.add(uma.id);                      // the formed EM party is dungeon-frozen
++            w.poll();
++            check("NP-2h frozen: the completion did NOT land mid-freeze", w.r.mgr.partyOf(uma.id) == null);
++            check("NP-2h frozen: the EM party was not torn either", w.em.inEm(nat.id, uma.id));
++            w.em.busy.clear();
++            w.polls(2);
++            check("NP-2h on unfreeze the deferred completion lands", w.inOurs(nat, uma) && uma.heard("You joined"));
++            check("NP-2h both faces agree after the deferred completion", w.em.inEm(nat.id, uma.id));
++            w.rest("NP-2h", nat, uma);
++        }
++        {
++            // NP-2i (BP-6 pin, D93): when the inviter's materialised party is dismantled,
++            // the fake's target-keyed pending entry dies with it - real EM behaviour.
++            W w = new W(5);
++            var nat = w.j("Nat2J"); var uma = w.j("Uma2J");
++            w.em.emInviteRaw(nat.id, uma.id);
++            check("NP-2i setup: the native pending is live", w.em.hasPendingInvite(uma.id));
++            w.em.emLeaveRaw(nat.id);                    // the inviter's party is dismantled (the revert's leave, raw)
++            check("NP-2i the pending entry died with the inviter's party", !w.em.hasPendingInvite(uma.id));
+         }
+         // ---------- Converge drift (0.6.0): a stranger added to the EM twin natively is reverted out; the roster is untouched ----------
+         {

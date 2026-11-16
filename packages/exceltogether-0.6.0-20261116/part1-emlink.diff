@@ -1,0 +1,21 @@
+--- together-060-build-20261115/build-0.6.0/src/com/winkreyes/exceltogether/EmLink.java	2026-11-15 06:59:31.343173924 +0000
++++ board-r426/together-rebuild/work/build-0.6.0-r426/src/com/winkreyes/exceltogether/EmLink.java	2026-11-16 13:17:00.035803032 +0000
+@@ -56,6 +56,18 @@
+     default boolean dungeonBusy(Collection<UUID> members) { return false; }
+     /** True while a live adapter-driven invite from inviter to target exists (DESIGN §5 ledger). */
+     default boolean inviteDriven(UUID inviter, UUID target) { return false; }
++    /**
++     * True while target holds a live EliteMobs pending invite, from ANY door (run 426, one-roster
++     * rebuild part 1 of 3 per board-r418/together-emdoor-scoping/SCOPING.md §5: the pending read
++     * the mesh leg was missing - the interface previously exposed formed parties only, so a native
++     * /em party invite was invisible except through the inviter's materialised solo party).
++     * Read-only: this query never creates, drives, or syncs anything. A true result is a positive
++     * read; false means "no pending invite read" - either there is none, or the read is
++     * unavailable/failed - so a caller must never treat false ALONE as proof no invite exists
++     * (the part-2 spare combines it with the materialised-party and ledger state, exactly as
++     * drivenInviteMaterialisation combines its two halves).
++     */
++    default boolean hasPendingInvite(UUID target) { return false; }
+ 
+     EmLink NONE = new EmLink() {
+         public boolean available() { return false; }
