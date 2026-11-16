@@ -1,0 +1,21 @@
+RIG EVIDENCE - BossTrial 0.5.7.1 desk rig boot (Homebase test-server mirror)
+Date: Mon Nov 16, 2026 (America/Chicago). Mirror: C:\Users\MikeExcel\wrv-testserver\server (127.0.0.1:25566), Paper 26.3.
+Mirror was FREE before the rig (no Java process, ports 25566/25568 free, checked via ssh -F ~/.ssh/config mike-pc).
+Mirror BossTrial jar before: ExcelBossTrial-0.5.6.jar 471,888 B / 005bd005ff015dc7b7c1f9e271a3606e3601a9e2732cfc5ce603d8caea53449a - copied to ExcelBossTrial-0.5.6.jar.bak-rig0571-20261116 (hash verified identical) and moved aside.
+Candidate placed as ExcelBossTrial-0.5.7.1.jar; placed hash on PC verified: 94CF076DA9CBB489FA4DED38CD9B7599B4D72E36724F88017E0540EF7B01F899 / 472,617 B (matches VM candidate). Exactly one BossTrial .jar present during boot.
+Launch: pc-agent launch verb for start-testserver.cmd (S0-proven route). Stop: RCON stop via wrbot rcon-mirror.py; SERVER-EXIT 0; no Java, ports free after.
+Restore: candidate jar removed; backup renamed back to ExcelBossTrial-0.5.6.jar; restored hash verified 005BD005FF015DC7B7C1F9E271A3606E3601A9E2732CFC5CE603D8CAEA53449A / 471,888 B. Mirror left OFF as found.
+
+--- boot.log lines of record (full log: work/rig-boot.log) ---
+74:[09:15:03 INFO]: [ExcelBossTrial] Loading server plugin ExcelBossTrial v0.5.7.1
+330:[09:15:11 INFO]: [ExcelBossTrial] Enabling ExcelBossTrial v0.5.7.1
+344:[09:15:11 INFO]: [ExcelBossTrial] Build: EXC-BOSSTRIAL-0.5.7.1-WRV-20261116-01-471aa6
+612:[09:15:16 INFO]: [Geyser-Spigot] Done (3.155s)! Run /geyser help for help!
+656:[09:15:17 INFO]: Done (22.497s)! For help, type "help"
+877:SERVER-EXIT 0 
+
+--- counts over the full boot log ---
+Build: EXC-BOSSTRIAL-0.5.7.1-WRV-20261116-01-471aa6 : 1
+Enabling ExcelBossTrial v0.5.7.1 : 1
+EXC-BOSSTRIAL-0.5.6-WRV-20261111-01-3c9e56 (old ID) : 0
+SEVERE : 0
