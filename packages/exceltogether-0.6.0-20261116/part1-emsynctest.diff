@@ -1,0 +1,60 @@
+--- together-060-build-20261115/build-0.6.0/tests/com/winkreyes/exceltogether/EmSyncTest.java	2026-11-16 06:10:03.824941855 +0000
++++ board-r426/together-rebuild/work/build-0.6.0-r426/tests/com/winkreyes/exceltogether/EmSyncTest.java	2026-11-16 13:17:41.413802868 +0000
+@@ -84,8 +84,22 @@
+         }
+         public boolean dungeonBusy(Collection<UUID> ms) { for (UUID u : ms) if (busy.contains(u)) return true; return false; }
+         public boolean inviteDriven(UUID inv, UUID tgt) { return inv.equals(ledger.get(tgt)); }
++        /** Run 426 part 1: the pending read (EmLink.hasPendingInvite) over the same pending slot invite()/accept() use. */
++        public boolean hasPendingInvite(UUID target) { return pending.containsKey(target); }
+         // raw EM-door state edits (what EM itself does when players use /em party)
+         P makeEm(UUID leader) { P p = new P(UUID.randomUUID(), leader); parties.put(p.key, p); return p; }
++        /**
++         * Run 426 part 1: a NATIVE /em party invite, as EM itself performs it - the inviter's
++         * solo party materialises to hold the pending slot and the pending slot is written,
++         * but NO driven-invite ledger entry exists (the ledger is written only inside
++         * ReflectEmLink.invite, which a native EM command bypasses entirely). This is the
++         * raw native-pending state SCOPING.md §5 part 1 found missing from the fake: before
++         * this helper the fake's pending map was written only by the driven invite() above.
++         */
++        void emInviteRaw(UUID inviter, UUID target) {
++            P mine = of(inviter); if (mine == null) mine = makeEm(inviter);
++            pending.put(target, inviter);
++        }
+         void emJoinRaw(UUID id, P p) { if (!p.m.contains(id)) p.m.add(id); }
+         void emLeaveRaw(UUID id) {
+             P p = of(id); if (p == null) return;
+@@ -581,6 +595,34 @@
+             check("AT-1c without the ledger entry the party is reverted", w.em.of(four.id) == null);
+             w.rest("AT-1c", four, five);
+         }
++        // ---------- NP-1 (run 426, one-roster rebuild part 1 of 3): the pending read sees BOTH doors' pending invites, and tells them apart by the ledger ----------
++        // (SCOPING.md §5 part 1: the mesh leg gains a pending-invite query + the fake gains the
++        // raw native-pending state. Part 1 changes NO reconcile behaviour: NP-1f pins the M4
++        // desk shape still reverting, which is exactly what part 2's native-pending spare flips.)
++        {
++            W w = new W(5);
++            var ivy = w.j("IvyNP"); var tess = w.j("TessNP");
++            check("NP-1a no invite anywhere: the pending read is false for both players", !w.em.hasPendingInvite(ivy.id) && !w.em.hasPendingInvite(tess.id));
++            check("NP-1a the absent-EM link (EmLink.NONE) reads no pending invite", !EmLink.NONE.hasPendingInvite(tess.id));
++            w.em.invite(ivy.id, tess.id);               // the driven (adapter) invite, /party door
++            check("NP-1b a driven invite reads as pending for the target", w.em.hasPendingInvite(tess.id));
++            check("NP-1b a driven invite is also in the ledger (the two halves agree)", w.em.inviteDriven(ivy.id, tess.id));
++            w.em.accept(tess.id);
++            check("NP-1c an accepted invite consumes the pending slot: the read is false again", !w.em.hasPendingInvite(tess.id));
++        }
++        {
++            W w = new W(5);
++            var nat = w.j("NatNP"); var uma = w.j("UmaNP");
++            w.em.emInviteRaw(nat.id, uma.id);           // a native /em party invite: pending slot, NO ledger entry
++            check("NP-1d a native invite reads as pending for the target (the read the mesh was missing)", w.em.hasPendingInvite(uma.id));
++            check("NP-1d a native invite has NO ledger entry - pending + no-ledger is the native shape", !w.em.inviteDriven(nat.id, uma.id));
++            check("NP-1d the native invite materialised the inviter's solo EM party, like the driven one", w.em.of(nat.id) != null && w.em.of(nat.id).m.equals(List.of(nat.id)));
++            check("NP-1e the inviter themself holds no pending invite", !w.em.hasPendingInvite(nat.id));
++            check("NP-1e no hub invite exists behind a native invite", !w.r.mgr.hasInvite(nat.id, uma.id, w.r.env.t) && w.r.mgr.invitesFor(uma.id, w.r.env.t).isEmpty());
++            w.polls(2);
++            check("NP-1f PRE-FIX BASELINE (M4 desk shape): part 1 alone changes no behaviour - the native materialisation is still reverted", w.em.of(nat.id) == null);
++            check("NP-1f the M4 revert was logged for the native inviter", w.logs.stream().anyMatch(s -> s.contains("reverted a non-door") && s.contains("NatNP")));
++        }
+         // ---------- Converge drift (0.6.0): a stranger added to the EM twin natively is reverted out; the roster is untouched ----------
+         {
+             W w = new W(5);

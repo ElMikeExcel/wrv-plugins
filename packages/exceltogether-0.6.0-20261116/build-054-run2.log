@@ -1,0 +1,103 @@
+Magic build input pinned: 79e49fe3... OK
+descriptors parse: plugin.yml (0.5.4) + config.yml OK
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+== compiled: 88 classes
+/home/hatch/workspace/back-button-wave1-r354/BB-17b/build-0.5.4/tests/com/winkreyes/exceltogether/ShareTest.java:28: warning: Unsafe is internal proprietary API and may be removed in a future release
+        java.lang.reflect.Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe"); f.setAccessible(true);
+                                            ^
+/home/hatch/workspace/back-button-wave1-r354/BB-17b/build-0.5.4/tests/com/winkreyes/exceltogether/ShareTest.java:29: warning: Unsafe is internal proprietary API and may be removed in a future release
+        return (Job) ((sun.misc.Unsafe) f.get(null)).allocateInstance(Job.class);
+                               ^
+/home/hatch/workspace/back-button-wave1-r354/BB-17b/build-0.5.4/tests/com/winkreyes/exceltogether/PartyRepairTest.java:109: warning: Unsafe is internal proprietary API and may be removed in a future release
+            java.lang.reflect.Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+                                                ^
+/home/hatch/workspace/back-button-wave1-r354/BB-17b/build-0.5.4/tests/com/winkreyes/exceltogether/PartyRepairTest.java:111: warning: Unsafe is internal proprietary API and may be removed in a future release
+            return (ItemStack) ((sun.misc.Unsafe) f.get(null)).allocateInstance(ItemStack.class);
+                                         ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+4 warnings
+-- PartyTest
+18 passed, 0 failed
+-- PartyFeatureTest
+PartyFeatureTest: 196 passed, 0 failed
+-- RangeIndicatorTest
+RangeIndicatorTest: 61 passed, 0 failed
+-- McmmoLinkTest
+McmmoLinkTest: 79 passed, 0 failed
+-- McmmoSyncTest
+McmmoSyncTest: 86 passed, 0 failed
+-- ShareTest
+30 passed, 0 failed
+-- XpShareTest
+22 passed, 0 failed
+-- BaseRulesTest
+BaseRulesTest: 100 passed, 0 failed
+-- EmSyncTest
+EmSyncTest: 95 passed, 0 failed
+-- EmLinkMappingTest
+EmLinkMappingTest: 73 passed, 0 failed
+-- PartyLookupTest
+PartyLookupTest: 6 passed, 0 failed
+-- PartyRepairTest
+PartyRepairTest: 27 passed, 0 failed
+-- RepairGateTest
+RepairGateTest: 35 passed, 0 failed
+-- LeaveSticksTest
+LeaveSticksTest: 33 passed, 0 failed
+-- AdminCommandTest
+AdminCommandTest: 29 passed, 0 failed
+-- BackNavigationTest
+BackNavigationTest: 36 passed, 0 failed
+classes compiled byte-identical to shipped (kept): 41
+classes carried as shipped bytes (design-unchanged, bytes differ): 13
+  carried: com/winkreyes/exceltogether/BarPolicy$Gap.class
+  carried: com/winkreyes/exceltogether/BarPolicy$Mode.class
+  carried: com/winkreyes/exceltogether/BarPolicy$S.class
+  carried: com/winkreyes/exceltogether/BarPolicy.class
+  carried: com/winkreyes/exceltogether/GeyserForms$1.class
+  carried: com/winkreyes/exceltogether/GeyserForms.class
+  carried: com/winkreyes/exceltogether/McmmoXpShare.class
+  carried: com/winkreyes/exceltogether/PartyCombatDrops.class
+  carried: com/winkreyes/exceltogether/PartyRules$Kill.class
+  carried: com/winkreyes/exceltogether/PartyRules$KillCap.class
+  carried: com/winkreyes/exceltogether/PartyRules$Verdict.class
+  carried: com/winkreyes/exceltogether/PartyRules.class
+  carried: com/winkreyes/exceltogether/PartyText.class
+classes from 0.5.3 source (changed + new): 34
+  source: com/winkreyes/exceltogether/BukkitPlayer.class
+  source: com/winkreyes/exceltogether/Controller$1.class
+  source: com/winkreyes/exceltogether/Controller$Pending.class
+  source: com/winkreyes/exceltogether/Controller.class
+  source: com/winkreyes/exceltogether/EmLink$1.class
+  source: com/winkreyes/exceltogether/EmLink$EmMirror.class
+  source: com/winkreyes/exceltogether/EmLink$EmParty.class
+  source: com/winkreyes/exceltogether/EmLink.class
+  source: com/winkreyes/exceltogether/EmSync$Op$Kind.class
+  source: com/winkreyes/exceltogether/EmSync$Op.class
+  source: com/winkreyes/exceltogether/EmSync.class
+  source: com/winkreyes/exceltogether/EquipmentRepair$1.class
+  source: com/winkreyes/exceltogether/EquipmentRepair$DamageModel.class
+  source: com/winkreyes/exceltogether/EquipmentRepair.class
+  source: com/winkreyes/exceltogether/ExcelPartyRepairAction$1.class
+  source: com/winkreyes/exceltogether/ExcelPartyRepairAction.class
+  source: com/winkreyes/exceltogether/ExcelRepairItemAction.class
+  source: com/winkreyes/exceltogether/ExcelTogether.class
+  source: com/winkreyes/exceltogether/MagicLevelPartyLookup.class
+  source: com/winkreyes/exceltogether/McmmoSync$Landing.class
+  source: com/winkreyes/exceltogether/McmmoSync.class
+  source: com/winkreyes/exceltogether/PartyRepairBridge.class
+  source: com/winkreyes/exceltogether/PartyRoster.class
+  source: com/winkreyes/exceltogether/PlayerView.class
+  source: com/winkreyes/exceltogether/ReflectEmLink$DrivenInvite.class
+  source: com/winkreyes/exceltogether/ReflectEmLink$Op.class
+  source: com/winkreyes/exceltogether/ReflectEmLink.class
+  source: com/winkreyes/exceltogether/ReflectMagicLink.class
+  source: com/winkreyes/exceltogether/RepairCooldownStore.class
+  source: com/winkreyes/exceltogether/RepairGate$Decision.class
+  source: com/winkreyes/exceltogether/RepairGate$Texts.class
+  source: com/winkreyes/exceltogether/RepairGate$Verdict.class
+  source: com/winkreyes/exceltogether/RepairGate.class
+  source: com/winkreyesvalley/excelmagiclevel/adapter/together/PartyLookup.class
+ExcelTogether-0.5.4.jar: sha256 76c9d05f84ca3f9f320f84756801f222b2cfd294ee42b00d8306f12b751636f2 (176571 bytes) — identical across two builds
