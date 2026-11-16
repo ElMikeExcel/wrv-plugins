@@ -1,0 +1,91 @@
+ExcelProtect 0.1.12 (P-PROTECT-EM-1 fix) — failsafe window 2026-11-16 13:33 CST: INSTALLED.
+Homebase lane (probe PASS attempt 1, DESKTOP-IL05DQR; rclone lsd shockbyte: listed "1. Michael's Server"). No fallback.
+Entry: ## PENDING — ExcelProtect 0.1.12 (P-PROTECT-EM-1 fix) (filed Nov 16, 2026, board supervisor run 432)
+Window backup: wrv-pre-window-20261116-1333 (11/16/2026, 1:42 PM, 8.4 GB, Manual, completed). Cap-at-6 prune: deleted oldest manual pre-together060-20261116 (11/16/2026, 8:39 AM); final total 6.
+Emptiness: RCON list 0/10 at 13:37 and 13:40 CST (gate), 0/10 again pre-shutdown 13:52 CST. Arrival 0, departure 0 (post-boot RCON list).
+Placed: plugins/ExcelProtect-0.1.12.jar 304634 B / 6e3cf3981f38f92d3489bdde60b21f1c44ab202c26a55b70b57f9b5200d51e4b (pull-back == candidate)
+Held aside: plugins/ExcelProtect-0.1.11.jar.bak-20261116-pre0112 303587 B / ba10bbcd84de50f199f78b1e09d354ee189f8919ba9732d654ed2a4bcc94260f (pull-back verified); exactly 1 loadable ExcelProtect jar after swap.
+Config unchanged: plugins/ExcelProtect/config.yml 16002 B / c17204010170fe09d67bfeea348e89f50da071e3526bc834ee1897af69c98a9b after install.
+Boot (panel Shut Down 1:49 PM, Start 1:50 PM, outside maintenance window — server left ONLINE): Done (25.806s)! For help, type "help"
+Boot lines: Enabling ExcelProtect v0.1.12 x1; attempts: ON (damage/can-build + terminal backstops) x1; READY version=0.1.12 x1; SEVERE 0; ExcelGuildGate enabled: 5 of 5 seals broken, guild OPEN (unchanged).
+Observed (not a gate): boot log 19:51:09 UTC "[ExcelSummons] Protect audit door not bound (ExcelProtect absent)" fired one second before ExcelProtect enabled at 19:51:10 — a boot-order line for the supervisor chain to note; Protect's own audit watch line reports ON.
+Proofs owed (Installed, not Proven): live re-proof — guild break/place, Primis break/place, a real em_id_* instance break/place, overworld controls silent, attempts-toggle flip (needs its own restart window if the supervisor schedules it).
+Records owed (supervisor close-out): wrv-plugins OPEN DRAFT record PR (G2 duplicate check first) + Drive deposit of jar + source zip; website plugin-row version bump per packet surfaces note (surfaces staging run 432 said CHECKED-NO-CHANGE; packet records leg names the website row bump at publication).
+
+SCRIPT BUNDLE BLOCKS (verbatim, also in failsafe-20261116-1333/SCRIPT-OUTPUT.txt; 19 PASS / 0 FAIL):
+STEP: live-pull guide knowledge
+EXPECTED: path=plugins/ExcelGuide/knowledge.yml size=694541 sha256=9b098e6c3397f63958e765225866fe094c0418d21b96c1ae9705156d86ae61a5
+ACTUAL: path=plugins/ExcelGuide/knowledge.yml size=694541 sha256=9b098e6c3397f63958e765225866fe094c0418d21b96c1ae9705156d86ae61a5 lane=rclone pulled_at=2026-11-16T13:36:32-06:00
+RESULT: PASS
+STEP: live-pull protect jar
+EXPECTED: path=plugins/ExcelProtect-0.1.11.jar size=303587 sha256=ba10bbcd84de50f199f78b1e09d354ee189f8919ba9732d654ed2a4bcc94260f
+ACTUAL: path=plugins/ExcelProtect-0.1.11.jar size=303587 sha256=ba10bbcd84de50f199f78b1e09d354ee189f8919ba9732d654ed2a4bcc94260f lane=rclone pulled_at=2026-11-16T13:36:32-06:00
+RESULT: PASS
+STEP: live-pull protect config
+EXPECTED: path=plugins/ExcelProtect/config.yml size=16002 sha256=c17204010170fe09d67bfeea348e89f50da071e3526bc834ee1897af69c98a9b
+ACTUAL: path=plugins/ExcelProtect/config.yml size=16002 sha256=c17204010170fe09d67bfeea348e89f50da071e3526bc834ee1897af69c98a9b lane=rclone pulled_at=2026-11-16T13:36:32-06:00
+RESULT: PASS
+STEP: backup cap-at-6 listing (after: new wrv-pre-window-20261116-1333 completed 1:42 PM; pruned oldest manual pre-together060-20261116)
+EXPECTED: total<=6
+ACTUAL: total=6 daily=2 manual=4 prune_needed=0
+RESULT: PASS
+STEP: emptiness reading 1 (13:37 CST, RCON list)
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: emptiness reading 2 (13:41 CST, RCON list)
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: emptiness pre-shutdown reading (13:52 CST, RCON list)
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: placed protect 0.1.12 pull-back
+EXPECTED: size=304634 sha256=6e3cf3981f38f92d3489bdde60b21f1c44ab202c26a55b70b57f9b5200d51e4b
+ACTUAL: size=304634 sha256=6e3cf3981f38f92d3489bdde60b21f1c44ab202c26a55b70b57f9b5200d51e4b
+RESULT: PASS
+STEP: held-aside 0.1.11 bak pull-back
+EXPECTED: size=303587 sha256=ba10bbcd84de50f199f78b1e09d354ee189f8919ba9732d654ed2a4bcc94260f
+ACTUAL: size=303587 sha256=ba10bbcd84de50f199f78b1e09d354ee189f8919ba9732d654ed2a4bcc94260f
+RESULT: PASS
+STEP: loadable ExcelProtect jar count after swap
+EXPECTED: count=1 pattern=ExcelProtect-[0-9.]+\.jar$ mode=lines
+ACTUAL: count=1
+RESULT: PASS
+STEP: boot log scan post-install (Done + SEVERE; guild checked separately - OPEN 5 of 5)
+EXPECTED: done=present severe=0 guild_locked=any
+ACTUAL: done=present severe=0 guild_locked=missing
+RESULT: PASS
+STEP: Enabling ExcelProtect v0.1.12 count
+EXPECTED: count=1 pattern=Enabling ExcelProtect v0.1.12 mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: READY version=0.1.12 count
+EXPECTED: count=1 pattern=READY version=0.1.12 mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: attempts ON line count
+EXPECTED: count=1 pattern=attempts: ON mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: guild state unchanged (OPEN 5 of 5)
+EXPECTED: count=1 pattern=ExcelGuildGate enabled: 5 of 5 seals broken, guild OPEN mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: SEVERE count post-install log
+EXPECTED: count=0 pattern=SEVERE mode=occurrences
+ACTUAL: count=0
+RESULT: PASS
+STEP: config unchanged after install
+EXPECTED: size=16002 sha256=c17204010170fe09d67bfeea348e89f50da071e3526bc834ee1897af69c98a9b
+ACTUAL: size=16002 sha256=c17204010170fe09d67bfeea348e89f50da071e3526bc834ee1897af69c98a9b
+RESULT: PASS
+STEP: departure list (post-boot, RCON)
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: protect 0.1.12 marker
+EXPECTED: present plugin=ExcelProtect version=0.1.12
+ACTUAL: present backup=wrv-pre-window-20261116-1333 bak=plugins/ExcelProtect-0.1.11.jar.bak-20261116-pre0112 303587 ba10bbcd84de50f199f78b1e09d354ee189f8919ba9732d654ed2a4bcc94260f boot=Done (25.806s)! For help, type "help" installed=2026-11-16 placed_jar=plugins/ExcelProtect-0.1.12.jar 304634 6e3cf3981f38f92d3489bdde60b21f1c44ab202c26a55b70b57f9b5200d51e4b plugin=ExcelProtect version=0.1.12 window=wrv-install-failsafe run scheduled 2026-11-16 13:33 CST (gated, Homebase lane, panel backup + Shut Down/Start, no fallback)
+RESULT: PASS
