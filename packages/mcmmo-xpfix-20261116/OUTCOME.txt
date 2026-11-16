@@ -1,0 +1,16 @@
+entry: ## PENDING - mcMMO XP-fix final combined build (P-MCMMO-XPFIX-INSTALL-1) - Nov 16, 2026
+installed: 2026-11-16 (wrv-install-failsafe; chained behind EternalTD 1.7.10 in the same push per Mike's "Push now" full-push directive, Nov 16, 2026, 12:45 AM CST; rig GREEN 12:43 AM CST)
+lane: Homebase primary (probe PASS in the EternalTD leg of this run; no fallback). Panel used for Shut Down/Start only.
+placed artifact (as placed, pull-back verified): plugins/mcMMO-2.3.003-WRV-XP-2-ExcelShare-1.jar — 3,721,966 B / SHA-256 404025cc63f5733fa135dd9303783dc9812248ce6ad9bb0d408643c8879c8501
+live-jar gate: fresh pull of the live jar = 3,695,180 B (fork base class EXACT) / SHA-256 4276bd3e07bdaf60c4edbb5461c1c4a61c3252e24f15f324faaa58d7300dff5c; single live mcMMO jar under the exact name.
+in-place backup: plugins/mcMMO-2.3.003-WRV-XP-2-ExcelShare-1.jar.bak-20261116 (3,695,180 B, the pre-swap jar).
+window backup: "EternalTD 1.7.10 pre-install 1116" (chained leg shares the window backup per the packet's one-backup-per-window rule; cap-at-6 prune in that leg: "EM gating pre-install 1115").
+boot Done line verbatim: [07:12:26] [Server thread/INFO]: Done (23.710s)! For help, type "help"  (log timestamps UTC; 01:12:26 CST)
+online counts: gate readings 0/10 + 0/10, pre-swap 0/10, departure 0/10.
+verification summary (full verbatim blocks in SCRIPT-OUTPUT.txt; inputs retained in window-20261116/):
+- [mcMMO] Enabling mcMMO v2.3.003-SNAPSHOT = 1; SEVERE total = 0; ExcelAcrobatics confirmed the mcMMO award API from the swapped jar in the boot log
+- fork seeded WRV.No_XP_Worlds into live plugins/mcMMO/config.yml (section present post-boot, ships empty per packet)
+- GuildGate state.yml post pull EXACT (1,080 B / 8a3bdc65...), broken: true = 5 — guild OPEN 5/5 unchanged
+- EternalTD still Fully initialized on this boot; RPM pack live; console errors 0
+end state: server ONLINE (outside maintenance window), 0/10. Window marker deleted at push close.
+after-install (other lanes, per packet): surfaces TEXT (Guide + What's New both surfaces) filed by supervisor chain, placed by failsafe under live-edit exemption when pending; records = wrv-plugins OPEN DRAFT PR + Drive jar deposit (pre-approved recording work).

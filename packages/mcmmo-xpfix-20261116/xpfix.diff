@@ -1,0 +1,1636 @@
+diff -ruN '--exclude=target' /home/hatch/workspace/mcmmo-edit/repo/src/main/java/com/gmail/nossr50/config/GeneralConfig.java repo/src/main/java/com/gmail/nossr50/config/GeneralConfig.java
+--- /home/hatch/workspace/mcmmo-edit/repo/src/main/java/com/gmail/nossr50/config/GeneralConfig.java	2026-10-11 00:49:58.037144022 +0000
++++ repo/src/main/java/com/gmail/nossr50/config/GeneralConfig.java	2026-11-16 05:53:51.771904129 +0000
+@@ -13,6 +13,7 @@
+ import java.util.ArrayList;
+ import java.util.EnumMap;
+ import java.util.HashMap;
++import java.util.HashSet;
+ import java.util.List;
+ import java.util.Locale;
+ import java.util.Map;
+@@ -38,6 +39,11 @@
+ 
+     /* Level caps resolved once and reused on the XP hot path; reset by loadKeys() */
+     private @Nullable Integer powerLevelCap;
++
++    /* WRV no-XP world extras resolved once and reused on the XP hot path;
++       reset by loadKeys() */
++    private @Nullable Set<String> noXpWorldNames;
++    private @Nullable List<String> noXpWorldPrefixes;
+     private final Map<PrimarySkillType, Integer> levelCaps = new EnumMap<>(
+             PrimarySkillType.class);
+ 
+@@ -64,6 +70,8 @@
+         salvageAnvilMaterial = Material.matchMaterial(
+                 config.getString("Skills.Salvage.Anvil_Material", "GOLD_BLOCK"));
+         powerLevelCap = null;
++        noXpWorldNames = null;
++        noXpWorldPrefixes = null;
+         levelCaps.clear();
+         abilitiesEnabled = null;
+         abilityMessagesEnabled = null;
+@@ -1067,6 +1075,51 @@
+         return powerLevelCap;
+     }
+ 
++    /**
++     * WRV: extra world names (beyond the built-in EliteMobs rules) where mcMMO
++     * XP never pays, from {@code WRV.No_XP_Worlds.Extra_Names} in config.yml.
++     * Returned lowercased, trimmed, and without blanks, so callers compare a
++     * lowercased world name directly. A future EliteMobs pack whose world
++     * name escapes the built-in {@code em_} prefix rule is covered by adding
++     * its name here — a config edit, never a rebuild.
++     *
++     * @return the configured extra no-XP world names, never null
++     */
++    public @NotNull Set<String> getNoXpWorldNames() {
++        if (noXpWorldNames == null) {
++            final Set<String> names = new HashSet<>();
++            for (String name : config.getStringList("WRV.No_XP_Worlds.Extra_Names")) {
++                if (name != null && !name.isBlank()) {
++                    names.add(name.trim().toLowerCase(Locale.ROOT));
++                }
++            }
++            noXpWorldNames = Set.copyOf(names);
++        }
++
++        return noXpWorldNames;
++    }
++
++    /**
++     * WRV: extra world-name prefixes (beyond the built-in EliteMobs rules)
++     * where mcMMO XP never pays, from {@code WRV.No_XP_Worlds.Extra_Prefixes}
++     * in config.yml. Returned lowercased, trimmed, and without blanks.
++     *
++     * @return the configured extra no-XP world-name prefixes, never null
++     */
++    public @NotNull List<String> getNoXpWorldPrefixes() {
++        if (noXpWorldPrefixes == null) {
++            final List<String> prefixes = new ArrayList<>();
++            for (String prefix : config.getStringList("WRV.No_XP_Worlds.Extra_Prefixes")) {
++                if (prefix != null && !prefix.isBlank()) {
++                    prefixes.add(prefix.trim().toLowerCase(Locale.ROOT));
++                }
++            }
++            noXpWorldPrefixes = List.copyOf(prefixes);
++        }
++
++        return noXpWorldPrefixes;
++    }
++
+     public int getLevelCap(PrimarySkillType skill) {
+         return levelCaps.computeIfAbsent(skill, key -> {
+             int cap = config.getInt(
+diff -ruN '--exclude=target' /home/hatch/workspace/mcmmo-edit/repo/src/main/java/com/gmail/nossr50/datatypes/player/McMMOPlayer.java repo/src/main/java/com/gmail/nossr50/datatypes/player/McMMOPlayer.java
+--- /home/hatch/workspace/mcmmo-edit/repo/src/main/java/com/gmail/nossr50/datatypes/player/McMMOPlayer.java	2026-10-11 00:50:10.658144511 +0000
++++ repo/src/main/java/com/gmail/nossr50/datatypes/player/McMMOPlayer.java	2026-11-16 05:53:42.934903786 +0000
+@@ -54,6 +54,7 @@
+ import com.gmail.nossr50.util.player.NotificationManager;
+ import com.gmail.nossr50.util.player.UserManager;
+ import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
++import com.gmail.nossr50.util.skills.NoXpWorldRecognition;
+ import com.gmail.nossr50.util.skills.PerksUtils;
+ import com.gmail.nossr50.util.skills.RankUtils;
+ import com.gmail.nossr50.util.skills.SkillTools;
+@@ -721,6 +722,18 @@
+      */
+     public void beginUnsharedXpGain(PrimarySkillType skill, float xp, XPGainReason xpGainReason,
+             XPGainSource xpGainSource) {
++        // WRV: mcMMO XP never pays in EliteMobs worlds (Mike's ruling,
++        // Nov 15, 2026). Returning here stops the player's own gain below,
++        // the together bonus, and this gain's party-level XP contribution.
++        // Party XP shares also arrive through this method once per member,
++        // so a member standing in an EliteMobs world receives no share
++        // either; share recipients must be near the earner (Misc.isNear is
++        // same-world), so an EliteMobs-world gain can only ever be offered
++        // to members in that same world, each gated here in turn.
++        if (NoXpWorldRecognition.isNoXpWorld(player)) {
++            return;
++        }
++
+         if (player.getGameMode() == GameMode.CREATIVE) {
+             return;
+         }
+@@ -756,6 +769,16 @@
+      */
+     public void applyXpGain(PrimarySkillType primarySkillType, float xp, XPGainReason xpGainReason,
+             XPGainSource xpGainSource) {
++        // WRV: the final funnel for online gains — EventUtils.handleXpGainEvent
++        // below is the only place profile XP is written for an online player,
++        // and every path to it passes through here. Gating here also covers
++        // the exact-amount paths that bypass beginXpGain/beginUnsharedXpGain
++        // (ExperienceAPI gains, /addxp, McMMOPlayer.addXp) when the player is
++        // standing in an EliteMobs world.
++        if (NoXpWorldRecognition.isNoXpWorld(player)) {
++            return;
++        }
++
+         if (!mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, primarySkillType)) {
+             return;
+         }
+diff -ruN '--exclude=target' /home/hatch/workspace/mcmmo-edit/repo/src/main/java/com/gmail/nossr50/util/skills/CombatUtils.java repo/src/main/java/com/gmail/nossr50/util/skills/CombatUtils.java
+--- /home/hatch/workspace/mcmmo-edit/repo/src/main/java/com/gmail/nossr50/util/skills/CombatUtils.java	2026-10-09 00:41:45.368868232 +0000
++++ repo/src/main/java/com/gmail/nossr50/util/skills/CombatUtils.java	2026-11-16 05:40:09.535872218 +0000
+@@ -564,7 +564,16 @@
+             }
+ 
+             event.setDamage(boostedDamage);
+-            processCombatXP(mmoPlayer, target, PrimarySkillType.TAMING, 3);
++
++            // WRV: a CAST summon fighting as a pet earns its owner no Taming
++            // XP (Mike's ruling, Nov 15, 2026); an ADOPTED pet — the player's
++            // own hand-tamed animal, merely registered by ExcelSummons'
++            // sweep — still pays, as does any pet ExcelSummons cannot
++            // positively identify as cast-made. The summon's abilities above
++            // still apply either way.
++            if (!NoXpEntityRecognition.isCastSummon(wolf)) {
++                processCombatXP(mmoPlayer, target, PrimarySkillType.TAMING, 3);
++            }
+         }
+ 
+     }
+@@ -690,6 +699,13 @@
+         }
+ 
+         if (target instanceof Player player) {
++            // WRV: an attack from a recognised no-XP entity (training dummy,
++            // summon) grants the defender nothing either — no Acrobatics
++            // dodge XP and no counter-attack processing.
++            if (NoXpEntityRecognition.isNoXpEntity(painSourceRoot)) {
++                return;
++            }
++
+             if (ExperienceConfig.getInstance().isNPCInteractionPrevented()) {
+                 if (Misc.isNPCEntityExcludingVillagers(target)) {
+                     return;
+@@ -1123,6 +1139,14 @@
+     }
+ 
+     private static double calculatePveBaseXP(@NotNull LivingEntity target) {
++        // WRV: recognised no-XP entities (training dummies, managed summons,
++        // RewardGuard-denied entities) never pay combat XP. Combat XP here is
++        // priced per point of damage with no per-kill cap, so a plugin-made
++        // mega-HP practice target would otherwise pay out indefinitely.
++        if (NoXpEntityRecognition.isNoXpEntity(target)) {
++            return 0;
++        }
++
+         double baseXP = 0;
+         final EntityType type = target.getType();
+ 
+diff -ruN '--exclude=target' /home/hatch/workspace/mcmmo-edit/repo/src/main/java/com/gmail/nossr50/util/skills/NoXpEntityRecognition.java repo/src/main/java/com/gmail/nossr50/util/skills/NoXpEntityRecognition.java
+--- /home/hatch/workspace/mcmmo-edit/repo/src/main/java/com/gmail/nossr50/util/skills/NoXpEntityRecognition.java	1970-01-01 00:00:00.000000000 +0000
++++ repo/src/main/java/com/gmail/nossr50/util/skills/NoXpEntityRecognition.java	2026-11-16 05:40:07.367872134 +0000
+@@ -0,0 +1,402 @@
++package com.gmail.nossr50.util.skills;
++
++import java.lang.reflect.Method;
++import java.util.Locale;
++import org.bukkit.Bukkit;
++import org.bukkit.NamespacedKey;
++import org.bukkit.entity.Entity;
++import org.bukkit.persistence.PersistentDataContainer;
++import org.bukkit.plugin.Plugin;
++import org.jetbrains.annotations.Nullable;
++import org.jetbrains.annotations.VisibleForTesting;
++
++/**
++ * WRV house patch: recognises entities that must never be a source of mcMMO XP
++ * in either direction — training dummies and managed summons.
++ *
++ * <p>mcMMO pays weapon XP per point of damage dealt, settled per hit, with no
++ * per-kill or per-entity cap. That is safe against vanilla-sized health pools,
++ * but a plugin-supplied mega-HP practice target (an EliteMobs training dummy
++ * with millions of HP) pays out indefinitely. Recognition here is the choke
++ * point {@link CombatUtils} consults before pricing a target, before paying
++ * Taming XP for a pet's hit, and before letting a defender earn Acrobatics XP
++ * from an attack.
++ *
++ * <p>Every check is a POSITIVE identification and every failure mode is OPEN:
++ * if a partner plugin is absent, its API cannot be resolved, or a probe
++ * throws, the entity is treated as an ordinary mob and pays normally. A
++ * regular EliteMobs elite, a vanilla mob, or anything unrecognised is never
++ * blocked by this class.
++ *
++ * <p>Partner plugins are reached reflectively only (the ExcelProtect
++ * EliteProbe pattern); this fork compiles and runs identically without them.
++ */
++public final class NoXpEntityRecognition {
++
++    // Persistent-data stamps written by the owning plugins.
++    private static final NamespacedKey EXCEL_TRAINING_DUMMY_KEY =
++            new NamespacedKey("exceltrainingdummy", "training");
++    private static final NamespacedKey REWARD_GUARD_DENIED_KEY =
++            new NamespacedKey("excelrewardguard", "denied_v1");
++    // Magic (com.elmakers) stamps every mob it spawns or manages: MAGIC_SPAWNED
++    // is a BYTE boolean, MAGIC_MOB a STRING mob key, both under the "magic"
++    // namespace (verified against the Magic 11.2.5 jar, MagicMetaKeys +
++    // PersistentEntityMetadataUtils).
++    private static final NamespacedKey MAGIC_SPAWNED_KEY =
++            new NamespacedKey("magic", "magicspawned");
++    private static final NamespacedKey MAGIC_MOB_KEY =
++            new NamespacedKey("magic", "magicmob");
++
++    private static final String EXCEL_SUMMONS_PLUGIN = "ExcelSummons";
++    private static final String EXCEL_SUMMONS_API =
++            "com.winkreyes.excelsummons.ExcelSummonsAPI";
++    private static final String ELITE_MOBS_PLUGIN = "EliteMobs";
++    private static final String ELITE_MOBS_TRACKER =
++            "com.magmaguy.elitemobs.entitytracker.EntityTracker";
++
++    // Probe states: 0 = untried, 1 = hooked, 2 = API broken (fail open, logged once).
++    // Plugin absence is never cached: it is re-checked cheaply on every call.
++    private static volatile int summonsProbeState = 0;
++    private static volatile Method summonsIsSummonMethod;
++    private static volatile int summonsRecordProbeState = 0;
++    private static volatile Method summonsGetRecordMethod;
++    private static volatile int eliteProbeState = 0;
++    private static volatile Method eliteIsEliteMobMethod;
++    private static volatile Method eliteGetEliteMobEntityMethod;
++
++    private NoXpEntityRecognition() {
++    }
++
++    /**
++     * Whether the entity is positively recognised as a no-XP entity: one of our
++     * training dummies, a RewardGuard-denied entity, a Magic-spawned or
++     * Magic-managed mob, an ExcelSummons summon, or an EliteMobs training
++     * dummy.
++     *
++     * @param entity the entity to check, may be null
++     * @return true only on a positive identification; false (pay normally) in
++     *         every other case, including probe failure
++     */
++    public static boolean isNoXpEntity(@Nullable Entity entity) {
++        if (entity == null) {
++            return false;
++        }
++
++        if (hasNoXpStamp(entity)) {
++            return true;
++        }
++
++        if (isSummon(entity)) {
++            return true;
++        }
++
++        return isEliteMobsTrainingDummy(entity);
++    }
++
++    /**
++     * Whether the entity is a registered ExcelSummons summon, via the plugin's
++     * own API reached reflectively.
++     *
++     * @param entity the entity to check, may be null
++     * @return true only when ExcelSummons is present and its registry claims
++     *         the entity; false in every other case
++     */
++    public static boolean isSummon(@Nullable Entity entity) {
++        if (entity == null || !pluginEnabled(EXCEL_SUMMONS_PLUGIN)) {
++            return false;
++        }
++
++        final Method method = resolveSummonsMethod();
++        if (method == null) {
++            return false;
++        }
++
++        try {
++            return Boolean.TRUE.equals(method.invoke(null, entity));
++        } catch (Throwable t) {
++            // A stale handle (plugin reloaded under a new classloader) must not
++            // break combat: drop it, re-resolve next time, pay normally now.
++            summonsIsSummonMethod = null;
++            summonsProbeState = 0;
++            return false;
++        }
++    }
++
++    /**
++     * Whether the entity is a registered ExcelSummons summon of CAST origin —
++     * an entity a Magic cast actually conjured, as opposed to an ADOPTED
++     * registration (a player's own hand-tamed pet that ExcelSummons' sweep
++     * merely registered). The distinction is ExcelSummons' own record
++     * ({@code ExcelSummonsAPI.getRecord(Entity)} → {@code SummonRecord.origin()},
++     * an enum with exactly the constants CAST and ADOPTED since ExcelSummons
++     * 0.1.4); it is the same origin its rank cap and dismiss rules read.
++     *
++     * <p>Mike's ruling (Nov 15, 2026): a cast summon fighting as a pet earns
++     * its owner no Taming XP, but an adopted pet still does. This check is
++     * therefore deliberately narrower than {@link #isSummon}: it answers true
++     * ONLY on a positive CAST identification. An unregistered entity, an
++     * ADOPTED registration, a record whose origin reads as anything else, an
++     * absent plugin, or any probe failure all answer false — the pet pays
++     * normally. ExcelSummons' own defaults lean the same way: a stored record
++     * with no origin restores as ADOPTED there, so legacy registrations pay.
++     *
++     * @param entity the entity to check, may be null
++     * @return true only when ExcelSummons is present and its record for the
++     *         entity positively reports CAST origin; false in every other case
++     */
++    public static boolean isCastSummon(@Nullable Entity entity) {
++        if (entity == null || !pluginEnabled(EXCEL_SUMMONS_PLUGIN)) {
++            return false;
++        }
++
++        final Method method = resolveSummonsRecordMethod();
++        if (method == null) {
++            return false;
++        }
++
++        try {
++            final Object record = method.invoke(null, entity);
++            if (record == null) {
++                // Not registered at all: not positively a cast summon.
++                return false;
++            }
++
++            // origin() and name() are resolved from the live objects on every
++            // call, so a record produced by a reloaded classloader is read
++            // through its own classes, never a cached foreign handle.
++            final Method originMethod = record.getClass().getMethod("origin");
++            final Object origin = originMethod.invoke(record);
++            if (origin == null) {
++                return false;
++            }
++
++            final Method nameMethod = origin.getClass().getMethod("name");
++            final Object name = nameMethod.invoke(origin);
++            return name instanceof String originName
++                    && isCastOriginName(originName);
++        } catch (Throwable t) {
++            // Same stale-handle discipline as isSummon: drop the handle,
++            // re-resolve next time, pay normally now.
++            summonsGetRecordMethod = null;
++            summonsRecordProbeState = 0;
++            return false;
++        }
++    }
++
++    /**
++     * Whether an ExcelSummons origin name denotes a cast-made summon. The
++     * origin enum's constant is exactly {@code CAST}; ADOPTED, legacy or
++     * unrecognised values, and null all answer false (the pet pays).
++     *
++     * @param originName the {@code SummonRecord.Origin} constant name, may be null
++     * @return true only for the exact name {@code "CAST"}
++     */
++    @VisibleForTesting
++    static boolean isCastOriginName(@Nullable String originName) {
++        return "CAST".equals(originName);
++    }
++
++    private static boolean hasNoXpStamp(@Nullable Entity entity) {
++        if (entity == null) {
++            return false;
++        }
++
++        try {
++            final PersistentDataContainer container =
++                    entity.getPersistentDataContainer();
++            return container.has(EXCEL_TRAINING_DUMMY_KEY)
++                    || container.has(REWARD_GUARD_DENIED_KEY)
++                    || container.has(MAGIC_SPAWNED_KEY)
++                    || container.has(MAGIC_MOB_KEY);
++        } catch (Throwable t) {
++            return false;
++        }
++    }
++
++    private static boolean isEliteMobsTrainingDummy(@Nullable Entity entity) {
++        if (entity == null || !pluginEnabled(ELITE_MOBS_PLUGIN)) {
++            return false;
++        }
++
++        if (!resolveEliteTrackerMethods()) {
++            return false;
++        }
++
++        try {
++            if (!Boolean.TRUE.equals(eliteIsEliteMobMethod.invoke(null, entity))) {
++                return false;
++            }
++
++            final Object eliteEntity =
++                    eliteGetEliteMobEntityMethod.invoke(null, entity);
++            if (eliteEntity == null) {
++                return false;
++            }
++
++            // isCustomBossEntity lives on the EliteEntity base class; natural
++            // elites answer false here and keep paying full XP (control case).
++            final Method isCustomBoss = eliteEntity.getClass()
++                    .getMethod("isCustomBossEntity");
++            if (!Boolean.TRUE.equals(isCustomBoss.invoke(eliteEntity))) {
++                return false;
++            }
++
++            final Method getConfigFields = eliteEntity.getClass()
++                    .getMethod("getCustomBossesConfigFields");
++            final Object configFields = getConfigFields.invoke(eliteEntity);
++            if (configFields == null) {
++                return false;
++            }
++
++            final Method getFilename = configFields.getClass()
++                    .getMethod("getFilename");
++            final Object filename = getFilename.invoke(configFields);
++            return filename instanceof String name
++                    && isTrainingDummyFilename(name);
++        } catch (Throwable t) {
++            // Any mismatch between this probe and the installed EliteMobs
++            // build fails open: the entity pays normally.
++            return false;
++        }
++    }
++
++    /**
++     * Whether a boss filename names one of the dummy-class boss files: the
++     * Adventurers Guild training dummies (training_dummy_lv1/25/50/75/100.yml)
++     * or EliteMobs' own damage test dummy (damage_test_dummy.yml — a Lv.50,
++     * ai:false, healthMultiplier-1000 practice pool of the same class, found
++     * in the live custombosses tree by the Nov 15, 2026 interaction audit;
++     * currently unspawnable, zeroed anyway under Mike's standing rule that
++     * training dummies grant no XP of any kind). Directory prefixes and case
++     * are ignored; every other boss file answers false.
++     *
++     * @param filename the boss filename from EliteMobs, may be null
++     * @return true only for the dummy-class set
++     */
++    @VisibleForTesting
++    static boolean isTrainingDummyFilename(@Nullable String filename) {
++        if (filename == null) {
++            return false;
++        }
++
++        String base = filename.replace('\\', '/');
++        final int slash = base.lastIndexOf('/');
++        if (slash >= 0) {
++            base = base.substring(slash + 1);
++        }
++
++        final String lower = base.toLowerCase(Locale.ROOT);
++        return (lower.startsWith("training_dummy_lv") && lower.endsWith(".yml"))
++                || lower.equals("damage_test_dummy.yml");
++    }
++
++    private static boolean pluginEnabled(@Nullable String pluginName) {
++        if (pluginName == null) {
++            return false;
++        }
++
++        try {
++            if (Bukkit.getPluginManager() == null) {
++                return false;
++            }
++            final Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
++            return plugin != null && plugin.isEnabled();
++        } catch (Throwable t) {
++            return false;
++        }
++    }
++
++    private static @Nullable Method resolveSummonsMethod() {
++        if (summonsProbeState == 2) {
++            return null;
++        }
++        if (summonsProbeState == 1) {
++            return summonsIsSummonMethod;
++        }
++
++        synchronized (NoXpEntityRecognition.class) {
++            if (summonsProbeState != 0) {
++                return summonsProbeState == 1 ? summonsIsSummonMethod : null;
++            }
++            try {
++                final Class<?> api = Class.forName(EXCEL_SUMMONS_API);
++                summonsIsSummonMethod = api.getMethod("isSummon", Entity.class);
++                summonsProbeState = 1;
++                return summonsIsSummonMethod;
++            } catch (Throwable t) {
++                summonsProbeState = 2;
++                logProbeFailure(EXCEL_SUMMONS_PLUGIN, t);
++                return null;
++            }
++        }
++    }
++
++    private static @Nullable Method resolveSummonsRecordMethod() {
++        if (summonsRecordProbeState == 2) {
++            return null;
++        }
++        if (summonsRecordProbeState == 1) {
++            return summonsGetRecordMethod;
++        }
++
++        synchronized (NoXpEntityRecognition.class) {
++            if (summonsRecordProbeState != 0) {
++                return summonsRecordProbeState == 1
++                        ? summonsGetRecordMethod : null;
++            }
++            try {
++                final Class<?> api = Class.forName(EXCEL_SUMMONS_API);
++                summonsGetRecordMethod =
++                        api.getMethod("getRecord", Entity.class);
++                summonsRecordProbeState = 1;
++                return summonsGetRecordMethod;
++            } catch (Throwable t) {
++                summonsRecordProbeState = 2;
++                logProbeFailure(EXCEL_SUMMONS_PLUGIN, t);
++                return null;
++            }
++        }
++    }
++
++    private static boolean resolveEliteTrackerMethods() {
++        if (eliteProbeState == 2) {
++            return false;
++        }
++        if (eliteProbeState == 1) {
++            return true;
++        }
++
++        synchronized (NoXpEntityRecognition.class) {
++            if (eliteProbeState != 0) {
++                return eliteProbeState == 1;
++            }
++            try {
++                final Class<?> tracker = Class.forName(ELITE_MOBS_TRACKER);
++                eliteIsEliteMobMethod =
++                        tracker.getMethod("isEliteMob", Entity.class);
++                eliteGetEliteMobEntityMethod =
++                        tracker.getMethod("getEliteMobEntity", Entity.class);
++                eliteProbeState = 1;
++                return true;
++            } catch (Throwable t) {
++                eliteProbeState = 2;
++                logProbeFailure(ELITE_MOBS_PLUGIN, t);
++                return false;
++            }
++        }
++    }
++
++    private static void logProbeFailure(String pluginName, Throwable cause) {
++        try {
++            if (com.gmail.nossr50.mcMMO.p != null) {
++                com.gmail.nossr50.mcMMO.p.getLogger().warning(
++                        "No-XP recognition: " + pluginName
++                                + " is present but its API could not be resolved ("
++                                + cause.getClass().getSimpleName()
++                                + "); affected entities will pay XP normally.");
++            }
++        } catch (Throwable ignored) {
++            // Logging must never break combat.
++        }
++    }
++}
+diff -ruN '--exclude=target' /home/hatch/workspace/mcmmo-edit/repo/src/main/java/com/gmail/nossr50/util/skills/NoXpWorldRecognition.java repo/src/main/java/com/gmail/nossr50/util/skills/NoXpWorldRecognition.java
+--- /home/hatch/workspace/mcmmo-edit/repo/src/main/java/com/gmail/nossr50/util/skills/NoXpWorldRecognition.java	1970-01-01 00:00:00.000000000 +0000
++++ repo/src/main/java/com/gmail/nossr50/util/skills/NoXpWorldRecognition.java	2026-11-16 05:53:36.162903523 +0000
+@@ -0,0 +1,152 @@
++package com.gmail.nossr50.util.skills;
++
++import com.gmail.nossr50.config.GeneralConfig;
++import com.gmail.nossr50.mcMMO;
++import java.util.List;
++import java.util.Locale;
++import java.util.Set;
++import org.bukkit.World;
++import org.bukkit.entity.Player;
++import org.jetbrains.annotations.Nullable;
++
++/**
++ * WRV house patch: recognises the worlds where mcMMO XP never pays — the
++ * EliteMobs worlds (Mike's ruling, Nov 15, 2026: mcMMO XP pays zero in all
++ * EliteMobs worlds; EliteMobs content pays out in its own rewards, Jobs money
++ * and vanilla XP instead).
++ *
++ * <p>mcMMO pays weapon XP per point of damage with no per-entity cap, and
++ * EliteMobs content — today's 83 packages and the gated ExcelExpansions packs
++ * still to release — keeps introducing fresh mega-HP targets. Zeroing gains
++ * by world closes the whole class at once, including every future pack,
++ * because EliteMobs worlds follow a strict naming scheme (verified against
++ * the live server, Nov 15, 2026: every content package's {@code worldName}
++ * across all 83 live package files, the boot log's world-load lines, and the
++ * world names recorded in ExcelProtect's player streams):
++ *
++ * <ul>
++ *   <li>Every EliteMobs world name starts with {@code em_} — the guild hub
++ *       ({@code em_adventurers_guild}), Primis ({@code em_primis}), the
++ *       regional worlds ({@code em_oasis}, {@code em_the_catacombs}, …) and
++ *       the instanced-dungeon bases ({@code em_id_bone_monastery},
++ *       {@code em_id_primis_wolf_den}, …).</li>
++ *   <li>An instanced copy appends {@code _<instance number>} to its base
++ *       world's name ({@code em_id_primis_wolf_den_1},
++ *       {@code em_id_primis_gladius_statue_2}), so the prefix rule covers
++ *       instances with no extra work.</li>
++ *   <li>The one exception in the whole tree is the Goblin Kingdom world,
++ *       {@code GoblinKingdom_vf}, which carries no {@code em_} prefix; it is
++ *       matched by exact name, plus its own would-be instance copies
++ *       ({@code GoblinKingdom_vf_<n>}).</li>
++ * </ul>
++ *
++ * <p>Anything beyond those built-in rules is config, never code: the
++ * {@code WRV.No_XP_Worlds} section of config.yml adds exact world names and
++ * name prefixes (see {@link GeneralConfig#getNoXpWorldNames()}), so a future
++ * pack with an off-pattern world name is a config edit, not a rebuild.
++ *
++ * <p>The fail posture is the mirror of {@link NoXpEntityRecognition}'s: a
++ * world that is NOT positively matched pays normally. The overworld can
++ * therefore never be caught by accident — a broken config read or an
++ * unrecognised name simply leaves gains untouched.
++ */
++public final class NoXpWorldRecognition {
++
++    /** Every EliteMobs base world and instanced copy carries this prefix. */
++    private static final String ELITE_MOBS_WORLD_PREFIX = "em_";
++
++    /** The one live EliteMobs world with no {@code em_} prefix (lowercased). */
++    private static final String GOBLIN_KINGDOM_WORLD_NAME = "goblinkingdom_vf";
++
++    private NoXpWorldRecognition() {
++    }
++
++    /**
++     * Whether the player is standing in a world where mcMMO XP never pays.
++     *
++     * @param player the gaining player, may be null
++     * @return true only when the player's current world is positively
++     *         recognised as an EliteMobs world; false in every other case,
++     *         including a null player or world
++     */
++    public static boolean isNoXpWorld(@Nullable Player player) {
++        if (player == null) {
++            return false;
++        }
++
++        final World world;
++        try {
++            world = player.getWorld();
++        } catch (Throwable t) {
++            return false;
++        }
++
++        return world != null && isNoXpWorldName(world.getName());
++    }
++
++    /**
++     * Whether a world name belongs to an EliteMobs world: the built-in
++     * {@code em_} prefix rule, the Goblin Kingdom exception, or the
++     * admin-configured extra names/prefixes from config.yml.
++     *
++     * @param worldName the Bukkit world name, may be null
++     * @return true only on a positive match; unmatched names pay normally
++     */
++    public static boolean isNoXpWorldName(@Nullable String worldName) {
++        if (worldName == null || worldName.isEmpty()) {
++            return false;
++        }
++
++        final String lower = worldName.toLowerCase(Locale.ROOT);
++
++        if (lower.startsWith(ELITE_MOBS_WORLD_PREFIX)) {
++            return true;
++        }
++
++        // The Goblin Kingdom exception, plus its instanced copies, which
++        // would append "_<instance number>" to the base name exactly as the
++        // em_ instances do.
++        if (lower.equals(GOBLIN_KINGDOM_WORLD_NAME)
++                || lower.startsWith(GOBLIN_KINGDOM_WORLD_NAME + "_")) {
++            return true;
++        }
++
++        return matchesConfiguredExtras(lower);
++    }
++
++    private static boolean matchesConfiguredExtras(String lowerWorldName) {
++        try {
++            if (mcMMO.p == null) {
++                return false;
++            }
++
++            final GeneralConfig config = mcMMO.p.getGeneralConfig();
++            if (config == null) {
++                return false;
++            }
++
++            // Both getters return lowercased values (see GeneralConfig), so
++            // the already-lowercased world name compares directly.
++            final Set<String> names = config.getNoXpWorldNames();
++            if (names != null && names.contains(lowerWorldName)) {
++                return true;
++            }
++
++            final List<String> prefixes = config.getNoXpWorldPrefixes();
++            if (prefixes != null) {
++                for (String prefix : prefixes) {
++                    if (prefix != null && !prefix.isEmpty()
++                            && lowerWorldName.startsWith(prefix)) {
++                        return true;
++                    }
++                }
++            }
++        } catch (Throwable t) {
++            // Config unavailable (early startup, tests): the built-in rules
++            // above have already answered; extras simply do not apply.
++            return false;
++        }
++
++        return false;
++    }
++}
+diff -ruN '--exclude=target' /home/hatch/workspace/mcmmo-edit/repo/src/main/resources/config.yml repo/src/main/resources/config.yml
+--- /home/hatch/workspace/mcmmo-edit/repo/src/main/resources/config.yml	2026-10-09 00:43:29.791754158 +0000
++++ repo/src/main/resources/config.yml	2026-11-16 05:53:57.786904363 +0000
+@@ -747,3 +747,21 @@
+     # This setting controls the master volume. 1.0 is Max,  0 would be off
+     MasterVolume: 1.0
+     
++
++#
++#  WRV house settings
++###
++WRV:
++    No_XP_Worlds:
++        # Extra world names where mcMMO XP never pays, on top of the built-in
++        # EliteMobs rules (every world named em_*, plus GoblinKingdom_vf and
++        # its instanced copies). Add a name here when a future EliteMobs pack
++        # ships a world whose name escapes those rules; matching is exact and
++        # case-insensitive. Instanced copies append _<number> to the base
++        # world name, so also add the suffixed names a pack's instances use,
++        # or cover the whole family with Extra_Prefixes below.
++        Extra_Names: []
++        # Extra world-name prefixes where mcMMO XP never pays. Any world
++        # whose name starts with one of these prefixes (case-insensitive)
++        # pays no mcMMO XP, including that world's instanced copies.
++        Extra_Prefixes: []
+diff -ruN '--exclude=target' /home/hatch/workspace/mcmmo-edit/repo/src/test/java/com/gmail/nossr50/config/GeneralConfigNoXpWorldsTest.java repo/src/test/java/com/gmail/nossr50/config/GeneralConfigNoXpWorldsTest.java
+--- /home/hatch/workspace/mcmmo-edit/repo/src/test/java/com/gmail/nossr50/config/GeneralConfigNoXpWorldsTest.java	1970-01-01 00:00:00.000000000 +0000
++++ repo/src/test/java/com/gmail/nossr50/config/GeneralConfigNoXpWorldsTest.java	2026-11-16 05:54:57.715906688 +0000
+@@ -0,0 +1,124 @@
++package com.gmail.nossr50.config;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.mockito.Answers.CALLS_REAL_METHODS;
++import static org.mockito.Mockito.mock;
++
++import com.gmail.nossr50.MMOTestEnvironment;
++import java.io.InputStream;
++import java.io.InputStreamReader;
++import java.lang.reflect.Field;
++import java.nio.charset.StandardCharsets;
++import java.util.logging.Logger;
++import org.bukkit.Material;
++import org.bukkit.configuration.file.YamlConfiguration;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++
++/**
++ * Guards the WRV no-XP worlds config contract: the shipped config.yml carries
++ * the {@code WRV.No_XP_Worlds} keys, and the getters resolve them lowercased
++ * and blank-free so {@code NoXpWorldRecognition} can compare a lowercased
++ * world name directly. Follows the {@code GeneralConfigTogetherBonusTest}
++ * pattern.
++ */
++class GeneralConfigNoXpWorldsTest extends MMOTestEnvironment {
++    private static final Logger logger =
++            Logger.getLogger(GeneralConfigNoXpWorldsTest.class.getName());
++
++    @BeforeEach
++    void setUp() {
++        mockBaseEnvironment(logger);
++    }
++
++    @AfterEach
++    void tearDown() {
++        cleanUpStaticMocks();
++    }
++
++    /**
++     * Creates a {@link GeneralConfig} whose backing config is the given YAML,
++     * without running the file-loading constructor. {@code loadKeys} cannot
++     * run on the mock (its inline-initialized maps stay null), so the two
++     * memoized anvil materials it would resolve are injected directly; the
++     * no-XP getters resolve lazily from the backing config and need no such
++     * injection.
++     */
++    private static GeneralConfig generalConfigBackedBy(final YamlConfiguration yaml) {
++        final GeneralConfig generalConfig = mock(GeneralConfig.class, CALLS_REAL_METHODS);
++        try {
++            final Field configField = BukkitConfig.class.getDeclaredField("config");
++            configField.setAccessible(true);
++            configField.set(generalConfig, yaml);
++            setMemoizedMaterial(generalConfig, "repairAnvilMaterial", Material.IRON_BLOCK);
++            setMemoizedMaterial(generalConfig, "salvageAnvilMaterial", Material.GOLD_BLOCK);
++        } catch (ReflectiveOperationException e) {
++            throw new IllegalStateException("Unable to inject backing config", e);
++        }
++        return generalConfig;
++    }
++
++    private static void setMemoizedMaterial(final GeneralConfig generalConfig,
++            final String fieldName, final Material material)
++            throws ReflectiveOperationException {
++        final Field field = GeneralConfig.class.getDeclaredField(fieldName);
++        field.setAccessible(true);
++        field.set(generalConfig, material);
++    }
++
++    /** Loads the config.yml bundled with the plugin jar. */
++    private static YamlConfiguration shippedConfigYaml() {
++        final InputStream resource =
++                GeneralConfig.class.getClassLoader().getResourceAsStream("config.yml");
++        assertThat(resource).as("bundled config.yml resource").isNotNull();
++        return YamlConfiguration.loadConfiguration(
++                new InputStreamReader(resource, StandardCharsets.UTF_8));
++    }
++
++    @Test
++    void shippedConfigShouldCarryEmptyNoXpWorldExtrasAndValidate() {
++        // Given - the config.yml shipped with the plugin, with no admin edits
++        final YamlConfiguration shippedYaml = shippedConfigYaml();
++        final GeneralConfig generalConfig = generalConfigBackedBy(shippedYaml);
++
++        // Then - the shipped file defines the keys the getters read
++        assertThat(shippedYaml.isSet("WRV.No_XP_Worlds.Extra_Names")).isTrue();
++        assertThat(shippedYaml.isSet("WRV.No_XP_Worlds.Extra_Prefixes")).isTrue();
++
++        // And - the shipped defaults are empty: the built-in rules alone apply
++        assertThat(generalConfig.getNoXpWorldNames()).isEmpty();
++        assertThat(generalConfig.getNoXpWorldPrefixes()).isEmpty();
++
++        // And - the shipped file still passes validation with the WRV section
++        assertThat(generalConfig.validateKeys()).isTrue();
++    }
++
++    @Test
++    void gettersShouldResolveConfiguredExtrasLowercasedAndBlankFree() {
++        // Given - an admin config with mixed case, stray spaces, and blanks
++        final YamlConfiguration yaml = new YamlConfiguration();
++        yaml.set("WRV.No_XP_Worlds.Extra_Names",
++                java.util.List.of("Future_Pack_World", "  spaced_name  ", ""));
++        yaml.set("WRV.No_XP_Worlds.Extra_Prefixes",
++                java.util.List.of("TD_", " "));
++        final GeneralConfig generalConfig = generalConfigBackedBy(yaml);
++
++        // Then - the getters hand back comparison-ready values
++        assertThat(generalConfig.getNoXpWorldNames())
++                .containsExactlyInAnyOrder("future_pack_world", "spaced_name");
++        assertThat(generalConfig.getNoXpWorldPrefixes())
++                .containsExactly("td_");
++    }
++
++    @Test
++    void gettersShouldReturnEmptyWhenSectionIsAbsent() {
++        // Given - a config with no WRV section at all (getter fallbacks apply)
++        final GeneralConfig generalConfig =
++                generalConfigBackedBy(new YamlConfiguration());
++
++        // Then - the extras are empty, never null
++        assertThat(generalConfig.getNoXpWorldNames()).isEmpty();
++        assertThat(generalConfig.getNoXpWorldPrefixes()).isEmpty();
++    }
++}
+diff -ruN '--exclude=target' /home/hatch/workspace/mcmmo-edit/repo/src/test/java/com/gmail/nossr50/datatypes/player/McMMOPlayerNoXpWorldTest.java repo/src/test/java/com/gmail/nossr50/datatypes/player/McMMOPlayerNoXpWorldTest.java
+--- /home/hatch/workspace/mcmmo-edit/repo/src/test/java/com/gmail/nossr50/datatypes/player/McMMOPlayerNoXpWorldTest.java	1970-01-01 00:00:00.000000000 +0000
++++ repo/src/test/java/com/gmail/nossr50/datatypes/player/McMMOPlayerNoXpWorldTest.java	2026-11-16 05:56:14.877909683 +0000
+@@ -0,0 +1,241 @@
++package com.gmail.nossr50.datatypes.player;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.anyInt;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++import com.gmail.nossr50.MMOTestEnvironment;
++import com.gmail.nossr50.config.experience.ExperienceConfig;
++import com.gmail.nossr50.datatypes.experience.FormulaType;
++import com.gmail.nossr50.datatypes.experience.XPGainReason;
++import com.gmail.nossr50.datatypes.experience.XPGainSource;
++import com.gmail.nossr50.datatypes.party.Party;
++import com.gmail.nossr50.datatypes.party.ShareMode;
++import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
++import com.gmail.nossr50.mcMMO;
++import com.gmail.nossr50.party.PartyManager;
++import com.gmail.nossr50.util.Permissions;
++import com.gmail.nossr50.util.TestPlayerMock;
++import com.gmail.nossr50.util.experience.FormulaManager;
++import java.util.List;
++import java.util.logging.Logger;
++import org.bukkit.World;
++import org.bukkit.entity.Player;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Nested;
++import org.junit.jupiter.api.Test;
++
++/**
++ * Covers Mike's ruling (Nov 15, 2026) at the pipeline level: a player standing
++ * in an EliteMobs world gains no mcMMO XP through any channel — the normal
++ * gain pipeline, the exact-amount funnel, or a party XP share — while the
++ * same gains in the overworld pay exactly as before.
++ */
++class McMMOPlayerNoXpWorldTest extends MMOTestEnvironment {
++    private static final Logger logger = Logger.getLogger(
++            McMMOPlayerNoXpWorldTest.class.getName());
++    private static final int XP_TO_NEXT_LEVEL = 10;
++
++    @BeforeEach
++    void setUp() {
++        mockBaseEnvironment(logger);
++        stubLevelUpEnvironment();
++    }
++
++    @AfterEach
++    void tearDown() {
++        cleanUpStaticMocks();
++    }
++
++    /**
++     * Stubs everything the gain path needs so gains translate into level-ups:
++     * skill permissions, disabled level caps, a 1.0 rate, and a flat XP curve.
++     * Mirrors {@code McMMOPlayerAddXpAndLevelsTest}.
++     */
++    private void stubLevelUpEnvironment() {
++        when(Permissions.skillEnabled(any(Player.class), any(PrimarySkillType.class)))
++                .thenReturn(true);
++        when(generalConfig.getPowerLevelCap()).thenReturn(Integer.MAX_VALUE);
++        when(generalConfig.getLevelCap(any(PrimarySkillType.class)))
++                .thenReturn(Integer.MAX_VALUE);
++        when(ExperienceConfig.getInstance().getFormulaType()).thenReturn(FormulaType.LINEAR);
++        when(experienceConfigInstance.getExperienceGainsMultiplier(
++                any(PrimarySkillType.class))).thenReturn(1D);
++
++        final FormulaManager formulaManager = mock(FormulaManager.class);
++        when(formulaManager.getXPtoNextLevel(anyInt(), any(FormulaType.class)))
++                .thenReturn(XP_TO_NEXT_LEVEL);
++        when(mcMMO.getFormulaManager()).thenReturn(formulaManager);
++    }
++
++    private void useWorld(String worldName) {
++        final World bukkitWorld = mock(World.class);
++        when(bukkitWorld.getName()).thenReturn(worldName);
++        when(player.getWorld()).thenReturn(bukkitWorld);
++    }
++
++    private float rawXp(PrimarySkillType skill) {
++        return mmoPlayer.getProfile().getSkillXpLevelRaw(skill);
++    }
++
++    @Nested
++    class GainPipeline {
++
++        @Test
++        void beginXpGainShouldAwardNothingAcrossChannelsInEliteMobsWorld() {
++            // Given - the player is standing in the Adventurers Guild hub
++            useWorld("em_adventurers_guild");
++
++            // When - gains arrive through the normal pipeline for a combat
++            // skill, a gathering skill, Acrobatics, and Taming
++            mmoPlayer.beginXpGain(PrimarySkillType.SWORDS, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++            mmoPlayer.beginXpGain(PrimarySkillType.MINING, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++            mmoPlayer.beginXpGain(PrimarySkillType.ACROBATICS, 5F,
++                    XPGainReason.PVE, XPGainSource.SELF);
++            mmoPlayer.beginXpGain(PrimarySkillType.TAMING, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++
++            // Then - no channel paid anything
++            assertThat(rawXp(PrimarySkillType.SWORDS)).isZero();
++            assertThat(rawXp(PrimarySkillType.MINING)).isZero();
++            assertThat(rawXp(PrimarySkillType.ACROBATICS)).isZero();
++            assertThat(rawXp(PrimarySkillType.TAMING)).isZero();
++        }
++
++        @Test
++        void beginXpGainShouldAwardNothingInInstancedDungeonCopy() {
++            // Given - the player is inside an instanced Primis dungeon copy
++            useWorld("em_id_primis_wolf_den_1");
++
++            // When - a combat gain arrives
++            mmoPlayer.beginXpGain(PrimarySkillType.SWORDS, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++
++            // Then - the instanced copy is an EliteMobs world too
++            assertThat(rawXp(PrimarySkillType.SWORDS)).isZero();
++        }
++
++        @Test
++        void beginXpGainShouldAwardNormallyInOverworld() {
++            // Given - the player is standing in the overworld
++            useWorld("world");
++
++            // When - combat and gathering gains arrive
++            mmoPlayer.beginXpGain(PrimarySkillType.SWORDS, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++            mmoPlayer.beginXpGain(PrimarySkillType.MINING, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++
++            // Then - both pay the full amount, as before the ruling
++            assertThat(rawXp(PrimarySkillType.SWORDS)).isEqualTo(5F);
++            assertThat(rawXp(PrimarySkillType.MINING)).isEqualTo(5F);
++        }
++    }
++
++    @Nested
++    class ExactAmountFunnel {
++
++        @Test
++        void applyXpGainShouldAwardNothingInEliteMobsWorld() {
++            // Given - the player is standing in Primis
++            useWorld("em_primis");
++
++            // When - an exact-amount gain arrives through the funnel the API
++            // and /addxp paths use (it bypasses beginXpGain entirely)
++            mmoPlayer.applyXpGain(PrimarySkillType.MINING, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++
++            // Then - the funnel pays nothing in an EliteMobs world
++            assertThat(rawXp(PrimarySkillType.MINING)).isZero();
++            assertThat(mmoPlayer.getSkillLevel(PrimarySkillType.MINING)).isZero();
++        }
++
++        @Test
++        void applyXpGainShouldAwardNormallyInOverworld() {
++            // Given - the player is standing in the overworld
++            useWorld("world");
++
++            // When - an exact-amount gain arrives through the funnel
++            mmoPlayer.applyXpGain(PrimarySkillType.MINING, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++
++            // Then - it accrues exactly, as before the ruling
++            assertThat(rawXp(PrimarySkillType.MINING)).isEqualTo(5F);
++        }
++    }
++
++    @Nested
++    class PartyShare {
++
++        private TestPlayerMock member;
++
++        private void stubEqualSharePartyWithMemberIn(String memberWorldName) {
++            member = mockPlayer();
++            final World memberWorld = mock(World.class);
++            when(memberWorld.getName()).thenReturn(memberWorldName);
++            when(member.player().getWorld()).thenReturn(memberWorld);
++
++            final Party party = mock(Party.class);
++            when(party.getXpShareMode()).thenReturn(ShareMode.EQUAL);
++            mmoPlayer.setParty(party);
++
++            final PartyManager partyManager = mock(PartyManager.class);
++            when(mcMMO.p.getPartyManager()).thenReturn(partyManager);
++            // ShareHandler adds the earner to the returned list, so it must
++            // be mutable (the real PartyManager returns an ArrayList)
++            when(partyManager.getNearVisibleMembers(mmoPlayer))
++                    .thenReturn(new java.util.ArrayList<>(List.of(member.player())));
++
++            // Share bonus of exactly 1.0: a 100 XP gain splits 50 / 50
++            when(generalConfig.getPartyShareBonusBase()).thenReturn(1.0D);
++            when(generalConfig.getPartyShareBonusIncrease()).thenReturn(0.0D);
++            when(generalConfig.getPartyShareBonusCap()).thenReturn(10.0D);
++        }
++
++        @Test
++        void shareShouldNotReachMemberStandingInEliteMobsWorld() {
++            // Given - the earner is in the overworld, the party member is
++            // standing in Primis, and XP sharing is EQUAL
++            useWorld("world");
++            stubEqualSharePartyWithMemberIn("em_primis");
++
++            // When - the earner gains 100 Swords XP
++            mmoPlayer.beginXpGain(PrimarySkillType.SWORDS, 100F,
++                    XPGainReason.PVE, XPGainSource.SELF);
++
++            // Then - the earner keeps their own 50 XP share (5 levels on the
++            // flat 10-XP curve)...
++            assertThat(mmoPlayer.getSkillLevel(PrimarySkillType.SWORDS))
++                    .isEqualTo(5);
++            assertThat(rawXp(PrimarySkillType.SWORDS)).isZero();
++
++            // ...but the member in the EliteMobs world receives nothing
++            assertThat(member.mmoPlayer().getSkillLevel(PrimarySkillType.SWORDS))
++                    .isZero();
++            assertThat(member.playerProfile()
++                    .getSkillXpLevelRaw(PrimarySkillType.SWORDS)).isZero();
++        }
++
++        @Test
++        void shareShouldReachMemberStandingInOverworld() {
++            // Given - both players are in the overworld, sharing EQUAL
++            useWorld("world");
++            stubEqualSharePartyWithMemberIn("world");
++
++            // When - the earner gains 100 Swords XP
++            mmoPlayer.beginXpGain(PrimarySkillType.SWORDS, 100F,
++                    XPGainReason.PVE, XPGainSource.SELF);
++
++            // Then - the control case: the member's 50 XP share pays in full
++            assertThat(member.mmoPlayer().getSkillLevel(PrimarySkillType.SWORDS))
++                    .isEqualTo(5);
++            assertThat(member.playerProfile()
++                    .getSkillXpLevelRaw(PrimarySkillType.SWORDS)).isZero();
++        }
++    }
++}
+diff -ruN '--exclude=target' /home/hatch/workspace/mcmmo-edit/repo/src/test/java/com/gmail/nossr50/util/skills/NoXpEntityRecognitionTest.java repo/src/test/java/com/gmail/nossr50/util/skills/NoXpEntityRecognitionTest.java
+--- /home/hatch/workspace/mcmmo-edit/repo/src/test/java/com/gmail/nossr50/util/skills/NoXpEntityRecognitionTest.java	1970-01-01 00:00:00.000000000 +0000
++++ repo/src/test/java/com/gmail/nossr50/util/skills/NoXpEntityRecognitionTest.java	2026-11-16 05:40:36.152873251 +0000
+@@ -0,0 +1,242 @@
++package com.gmail.nossr50.util.skills;
++
++import static java.util.logging.Logger.getLogger;
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.eq;
++import static org.mockito.Mockito.when;
++
++import com.gmail.nossr50.MMOTestEnvironment;
++import com.winkreyes.excelsummons.ExcelSummonsAPI;
++import com.winkreyes.excelsummons.SummonRecord;
++import java.util.UUID;
++import org.bukkit.NamespacedKey;
++import org.bukkit.entity.LivingEntity;
++import org.bukkit.entity.Wolf;
++import org.bukkit.persistence.PersistentDataContainer;
++import org.bukkit.plugin.Plugin;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Nested;
++import org.junit.jupiter.api.Test;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.CsvSource;
++import org.mockito.Mockito;
++
++class NoXpEntityRecognitionTest extends MMOTestEnvironment {
++    private static final java.util.logging.Logger logger = getLogger(
++            NoXpEntityRecognitionTest.class.getName());
++
++    @BeforeEach
++    void setUp() {
++        mockBaseEnvironment(logger);
++    }
++
++    @AfterEach
++    void tearDown() {
++        cleanUpStaticMocks();
++    }
++
++    @Nested
++    class TrainingDummyFilename {
++
++        @ParameterizedTest
++        @CsvSource({
++                "training_dummy_lv1.yml, true",
++                "training_dummy_lv25.yml, true",
++                "training_dummy_lv100.yml, true",
++                "adventurers_guild/training_dummy_lv50.yml, true",
++                "TRAINING_DUMMY_LV75.YML, true",
++                "damage_test_dummy.yml, true",
++                "adventurers_guild/damage_test_dummy.yml, true",
++                "training_dummy.yml, false",
++                "some_boss.yml, false",
++                "training_dummy_lv100.txt, false",
++        })
++        void filenameShouldMatchOnlyTheGuildTrainingDummySet(String filename,
++                boolean expected) {
++            // When - the filename is checked
++            final boolean recognised =
++                    NoXpEntityRecognition.isTrainingDummyFilename(filename);
++
++            // Then - only the dummy-class boss files match (the guild
++            // training_dummy_lv* set plus EM's damage_test_dummy.yml)
++            assertThat(recognised).isEqualTo(expected);
++        }
++
++        @Test
++        void filenameShouldRejectNull() {
++            assertThat(NoXpEntityRecognition.isTrainingDummyFilename(null))
++                    .isFalse();
++        }
++    }
++
++    @Nested
++    class Stamps {
++
++        private LivingEntity entity;
++        private PersistentDataContainer container;
++
++        @BeforeEach
++        void setUpEntity() {
++            entity = Mockito.mock(LivingEntity.class);
++            container = Mockito.mock(PersistentDataContainer.class);
++            when(entity.getPersistentDataContainer()).thenReturn(container);
++            when(container.has(any(NamespacedKey.class))).thenReturn(false);
++        }
++
++        @Test
++        void excelTrainingDummyStampShouldBeRecognised() {
++            // Given - an entity stamped by ExcelTrainingDummy
++            when(container.has(eq(new NamespacedKey("exceltrainingdummy",
++                    "training")))).thenReturn(true);
++
++            // Then - it is a no-XP entity
++            assertThat(NoXpEntityRecognition.isNoXpEntity(entity)).isTrue();
++        }
++
++        @Test
++        void rewardGuardDeniedStampShouldBeRecognised() {
++            // Given - an entity denied by ExcelRewardGuard
++            when(container.has(eq(new NamespacedKey("excelrewardguard",
++                    "denied_v1")))).thenReturn(true);
++
++            // Then - it is a no-XP entity
++            assertThat(NoXpEntityRecognition.isNoXpEntity(entity)).isTrue();
++        }
++
++        @Test
++        void magicSpawnedStampShouldBeRecognised() {
++            // Given - an entity Magic stamped as spawned
++            when(container.has(eq(new NamespacedKey("magic", "magicspawned"))))
++                    .thenReturn(true);
++
++            // Then - it is a no-XP entity
++            assertThat(NoXpEntityRecognition.isNoXpEntity(entity)).isTrue();
++        }
++
++        @Test
++        void magicMobStampShouldBeRecognised() {
++            // Given - an entity Magic stamped as one of its mobs
++            when(container.has(eq(new NamespacedKey("magic", "magicmob"))))
++                    .thenReturn(true);
++
++            // Then - it is a no-XP entity
++            assertThat(NoXpEntityRecognition.isNoXpEntity(entity)).isTrue();
++        }
++
++        @Test
++        void unstampedEntityShouldNotBeRecognised() {
++            // Given - an ordinary mob with no stamps and no partner plugins
++            // answering for it (control case: a regular mob still pays XP)
++
++            // Then - it is not a no-XP entity
++            assertThat(NoXpEntityRecognition.isNoXpEntity(entity)).isFalse();
++        }
++    }
++
++    @Nested
++    class CastSummonOrigin {
++
++        private Wolf wolf;
++        private UUID wolfId;
++
++        @BeforeEach
++        void setUpWolf() {
++            ExcelSummonsAPI.clearForTest();
++            wolf = Mockito.mock(Wolf.class);
++            wolfId = UUID.randomUUID();
++            when(wolf.getUniqueId()).thenReturn(wolfId);
++        }
++
++        @AfterEach
++        void clearRegistry() {
++            ExcelSummonsAPI.clearForTest();
++        }
++
++        private void enableSummonsPlugin() {
++            Plugin summonsPlugin = Mockito.mock(Plugin.class);
++            when(summonsPlugin.isEnabled()).thenReturn(true);
++            when(pluginManager.getPlugin("ExcelSummons"))
++                    .thenReturn(summonsPlugin);
++        }
++
++        @Test
++        void castSummonWolfShouldEarnNoTamingXp() {
++            // Given - a wolf ExcelSummons registered as CAST (a Magic cast
++            // conjured it); CombatUtils pays the owner's Taming award
++            // exactly when isCastSummon answers false
++            enableSummonsPlugin();
++            ExcelSummonsAPI.registerForTest(wolfId, SummonRecord.Origin.CAST);
++
++            // Then - it is a registered summon AND positively cast-made,
++            // so the pet branch skips the award: the owner earns 0
++            assertThat(NoXpEntityRecognition.isSummon(wolf)).isTrue();
++            assertThat(NoXpEntityRecognition.isCastSummon(wolf)).isTrue();
++        }
++
++        @Test
++        void adoptedPetWolfShouldStillEarnTamingXp() {
++            // Given - a hand-tamed wolf ExcelSummons' sweep registered as
++            // ADOPTED (the player's own pet dog)
++            enableSummonsPlugin();
++            ExcelSummonsAPI.registerForTest(wolfId,
++                    SummonRecord.Origin.ADOPTED);
++
++            // Then - registry membership alone no longer blocks the award:
++            // it is a summon, but not a cast summon, so the owner still pays
++            assertThat(NoXpEntityRecognition.isSummon(wolf)).isTrue();
++            assertThat(NoXpEntityRecognition.isCastSummon(wolf)).isFalse();
++        }
++
++        @Test
++        void unregisteredWolfShouldStillEarnTamingXp() {
++            // Given - an ordinary tamed wolf ExcelSummons has no record of
++            enableSummonsPlugin();
++
++            // Then - nothing positively identifies it as cast-made: it pays
++            assertThat(NoXpEntityRecognition.isSummon(wolf)).isFalse();
++            assertThat(NoXpEntityRecognition.isCastSummon(wolf)).isFalse();
++        }
++
++        @Test
++        void castCheckShouldFailOpenWhenPluginAbsent() {
++            // Given - a CAST record exists in the registry, but the
++            // ExcelSummons plugin itself is absent (the plugin manager
++            // answers null, as in the base environment)
++            ExcelSummonsAPI.registerForTest(wolfId, SummonRecord.Origin.CAST);
++
++            // Then - the check cannot positively identify anything: it pays
++            assertThat(NoXpEntityRecognition.isCastSummon(wolf)).isFalse();
++        }
++
++        @ParameterizedTest
++        @CsvSource({
++                "CAST, true",
++                "ADOPTED, false",
++                "cast, false",
++                "UNKNOWN, false",
++        })
++        void originNameShouldMatchOnlyExactCast(String originName,
++                boolean expected) {
++            assertThat(NoXpEntityRecognition.isCastOriginName(originName))
++                    .isEqualTo(expected);
++        }
++
++        @Test
++        void originNameShouldRejectNull() {
++            assertThat(NoXpEntityRecognition.isCastOriginName(null)).isFalse();
++        }
++    }
++
++    @Nested
++    class NullSafety {
++
++        @Test
++        void nullEntityShouldNotBeRecognised() {
++            assertThat(NoXpEntityRecognition.isNoXpEntity(null)).isFalse();
++            assertThat(NoXpEntityRecognition.isSummon(null)).isFalse();
++            assertThat(NoXpEntityRecognition.isCastSummon(null)).isFalse();
++        }
++    }
++}
+diff -ruN '--exclude=target' /home/hatch/workspace/mcmmo-edit/repo/src/test/java/com/gmail/nossr50/util/skills/NoXpWorldRecognitionTest.java repo/src/test/java/com/gmail/nossr50/util/skills/NoXpWorldRecognitionTest.java
+--- /home/hatch/workspace/mcmmo-edit/repo/src/test/java/com/gmail/nossr50/util/skills/NoXpWorldRecognitionTest.java	1970-01-01 00:00:00.000000000 +0000
++++ repo/src/test/java/com/gmail/nossr50/util/skills/NoXpWorldRecognitionTest.java	2026-11-16 05:54:32.563905712 +0000
+@@ -0,0 +1,164 @@
++package com.gmail.nossr50.util.skills;
++
++import static java.util.logging.Logger.getLogger;
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++import com.gmail.nossr50.MMOTestEnvironment;
++import java.util.List;
++import java.util.Set;
++import org.bukkit.World;
++import org.bukkit.entity.Player;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Nested;
++import org.junit.jupiter.api.Test;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.CsvSource;
++
++class NoXpWorldRecognitionTest extends MMOTestEnvironment {
++    private static final java.util.logging.Logger logger = getLogger(
++            NoXpWorldRecognitionTest.class.getName());
++
++    @BeforeEach
++    void setUp() {
++        mockBaseEnvironment(logger);
++    }
++
++    @AfterEach
++    void tearDown() {
++        cleanUpStaticMocks();
++    }
++
++    @Nested
++    class BuiltInRules {
++
++        @ParameterizedTest
++        @CsvSource({
++                // EliteMobs base worlds (live census, Nov 15, 2026)
++                "em_adventurers_guild, true",
++                "em_primis, true",
++                "em_primis_elementals_arena, true",
++                "em_oasis, true",
++                "em_the_catacombs, true",
++                "em_id_bone_monastery, true",
++                "em_id_enchantment_challenge_20, true",
++                // Instanced copies: base name + _<instance number>
++                "em_id_primis_wolf_den_1, true",
++                "em_id_primis_lighthouse_keeper_1, true",
++                "em_id_primis_gladius_statue_2, true",
++                // Case does not matter
++                "EM_PRIMIS, true",
++                "Em_Id_Primis_Wolf_Den_1, true",
++                // The one non-em_ EliteMobs world, and its instance copies
++                "GoblinKingdom_vf, true",
++                "goblinkingdom_vf, true",
++                "GoblinKingdom_vf_1, true",
++                // Everything else pays normally
++                "world, false",
++                "world_nether, false",
++                "world_the_end, false",
++                "em, false",
++                "emx_world, false",
++                "some_em_world, false",
++                "goblinkingdom, false",
++                "goblinkingdom_vfx, false",
++        })
++        void worldNameShouldMatchOnlyEliteMobsWorlds(String worldName,
++                boolean expected) {
++            // When - the world name is checked against the built-in rules
++            final boolean recognised =
++                    NoXpWorldRecognition.isNoXpWorldName(worldName);
++
++            // Then - only EliteMobs worlds are recognised
++            assertThat(recognised).isEqualTo(expected);
++        }
++
++        @Test
++        void worldNameShouldRejectNullAndEmpty() {
++            assertThat(NoXpWorldRecognition.isNoXpWorldName(null)).isFalse();
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("")).isFalse();
++        }
++    }
++
++    @Nested
++    class ConfiguredExtras {
++
++        @Test
++        void extraNameFromConfigShouldBeRecognised() {
++            // Given - an admin added an off-pattern world name to config.yml
++            // (the getters return lowercased values; see GeneralConfig)
++            when(generalConfig.getNoXpWorldNames())
++                    .thenReturn(Set.of("future_pack_world"));
++            when(generalConfig.getNoXpWorldPrefixes()).thenReturn(List.of());
++
++            // Then - that world pays no XP, in any case
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("future_pack_world"))
++                    .isTrue();
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("Future_Pack_World"))
++                    .isTrue();
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("future_pack_world_2"))
++                    .isFalse();
++        }
++
++        @Test
++        void extraPrefixFromConfigShouldBeRecognised() {
++            // Given - an admin added a world-name prefix to config.yml
++            when(generalConfig.getNoXpWorldNames()).thenReturn(Set.of());
++            when(generalConfig.getNoXpWorldPrefixes()).thenReturn(List.of("td_"));
++
++            // Then - the whole family matches, instances included
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("td_hub")).isTrue();
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("td_hub_3")).isTrue();
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("atd_hub")).isFalse();
++        }
++
++        @Test
++        void builtInRulesShouldWorkWhenConfigExtrasAreUnavailable() {
++            // Given - the config getters answer null (Mockito default), which
++            // the recognition must treat as "no extras", never as an error
++            // Then - the built-in rules still answer on their own
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("em_primis"))
++                    .isTrue();
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("world")).isFalse();
++        }
++    }
++
++    @Nested
++    class PlayerPredicate {
++
++        @Test
++        void playerInEliteMobsWorldShouldBeRecognised() {
++            // Given - a player standing in the guild hub
++            final Player bukkitPlayer = mock(Player.class);
++            final World bukkitWorld = mock(World.class);
++            when(bukkitWorld.getName()).thenReturn("em_adventurers_guild");
++            when(bukkitPlayer.getWorld()).thenReturn(bukkitWorld);
++
++            // Then - the player is in a no-XP world
++            assertThat(NoXpWorldRecognition.isNoXpWorld(bukkitPlayer)).isTrue();
++        }
++
++        @Test
++        void playerInOverworldShouldNotBeRecognised() {
++            // Given - a player standing in the overworld
++            final Player bukkitPlayer = mock(Player.class);
++            final World bukkitWorld = mock(World.class);
++            when(bukkitWorld.getName()).thenReturn("world");
++            when(bukkitPlayer.getWorld()).thenReturn(bukkitWorld);
++
++            // Then - gains pay normally
++            assertThat(NoXpWorldRecognition.isNoXpWorld(bukkitPlayer)).isFalse();
++        }
++
++        @Test
++        void nullPlayerAndNullWorldShouldNotBeRecognised() {
++            assertThat(NoXpWorldRecognition.isNoXpWorld(null)).isFalse();
++
++            final Player bukkitPlayer = mock(Player.class);
++            when(bukkitPlayer.getWorld()).thenReturn(null);
++            assertThat(NoXpWorldRecognition.isNoXpWorld(bukkitPlayer)).isFalse();
++        }
++    }
++}
+diff -ruN '--exclude=target' /home/hatch/workspace/mcmmo-edit/repo/src/test/java/com/winkreyes/excelsummons/ExcelSummonsAPI.java repo/src/test/java/com/winkreyes/excelsummons/ExcelSummonsAPI.java
+--- /home/hatch/workspace/mcmmo-edit/repo/src/test/java/com/winkreyes/excelsummons/ExcelSummonsAPI.java	1970-01-01 00:00:00.000000000 +0000
++++ repo/src/test/java/com/winkreyes/excelsummons/ExcelSummonsAPI.java	2026-11-16 05:40:16.278872480 +0000
+@@ -0,0 +1,47 @@
++package com.winkreyes.excelsummons;
++
++import java.util.HashMap;
++import java.util.Map;
++import java.util.UUID;
++import org.bukkit.entity.Entity;
++
++/**
++ * Test-only stand-in for ExcelSummons' ExcelSummonsAPI, with the same
++ * class name and the same static signatures {@code NoXpEntityRecognition}
++ * resolves reflectively ({@link #isSummon(Entity)} and
++ * {@link #getRecord(Entity)}). Backed by an in-memory registry the tests
++ * seed through {@link #registerForTest(UUID, SummonRecord.Origin)}; with
++ * nothing seeded it answers exactly as an empty live registry would.
++ * Never packaged into the jar.
++ */
++public final class ExcelSummonsAPI {
++
++    private static final Map<UUID, SummonRecord> RECORDS = new HashMap<>();
++
++    private ExcelSummonsAPI() {
++    }
++
++    /** Is this entity a registered summon (any origin)? */
++    public static boolean isSummon(Entity entity) {
++        return entity != null && entity.getUniqueId() != null
++                && RECORDS.containsKey(entity.getUniqueId());
++    }
++
++    /** The registry record for a summon entity, or null. */
++    public static SummonRecord getRecord(Entity entity) {
++        if (entity == null || entity.getUniqueId() == null) {
++            return null;
++        }
++        return RECORDS.get(entity.getUniqueId());
++    }
++
++    /** Test hook: register an entity id with the given origin. */
++    public static void registerForTest(UUID entityId, SummonRecord.Origin origin) {
++        RECORDS.put(entityId, new SummonRecord(origin));
++    }
++
++    /** Test hook: empty the registry between tests. */
++    public static void clearForTest() {
++        RECORDS.clear();
++    }
++}
+diff -ruN '--exclude=target' /home/hatch/workspace/mcmmo-edit/repo/src/test/java/com/winkreyes/excelsummons/SummonRecord.java repo/src/test/java/com/winkreyes/excelsummons/SummonRecord.java
+--- /home/hatch/workspace/mcmmo-edit/repo/src/test/java/com/winkreyes/excelsummons/SummonRecord.java	1970-01-01 00:00:00.000000000 +0000
++++ repo/src/test/java/com/winkreyes/excelsummons/SummonRecord.java	2026-11-16 05:40:16.291872480 +0000
+@@ -0,0 +1,26 @@
++package com.winkreyes.excelsummons;
++
++/**
++ * Test-only stand-in for ExcelSummons' SummonRecord, carrying only the
++ * surface {@code NoXpEntityRecognition} reads reflectively: the nested
++ * {@link Origin} enum and its {@link #origin()} accessor, with the same
++ * shape as the real class (ExcelSummons 0.1.13). It exists so the
++ * origin-aware recognition tests can drive the real reflective path
++ * without a live ExcelSummons plugin; it is never packaged into the jar.
++ */
++public final class SummonRecord {
++
++    public enum Origin {
++        CAST, ADOPTED
++    }
++
++    private final Origin origin;
++
++    public SummonRecord(Origin origin) {
++        this.origin = origin;
++    }
++
++    public Origin origin() {
++        return origin;
++    }
++}
