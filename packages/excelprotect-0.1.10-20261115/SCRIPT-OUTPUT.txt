@@ -1,0 +1,96 @@
+STEP: Backup cap after window backup
+EXPECTED: total<=6
+ACTUAL: total=6 daily=3 manual=3 prune_needed=0
+RESULT: PASS
+STEP: Emptiness gate reading 1 arrival
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: Emptiness gate reading 2
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: Emptiness pre-swap list
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: G1 live jar ExcelProtect-0.1.9
+EXPECTED: path=plugins/ExcelProtect-0.1.9.jar size=269208 sha256=893892889318ae2d5ffc08846a55b92d0b83bab4140d9a6f46d9f91f4cf6b626
+ACTUAL: path=plugins/ExcelProtect-0.1.9.jar size=269208 sha256=893892889318ae2d5ffc08846a55b92d0b83bab4140d9a6f46d9f91f4cf6b626 lane=rclone pulled_at=2026-11-15T19:42:23Z
+RESULT: PASS
+STEP: G1 live config ExcelProtect
+EXPECTED: path=plugins/ExcelProtect/config.yml size=13164 sha256=543da9f9cc2a4410a8d4747d531816bb96e580fb754db63fe10fe68558de1f51
+ACTUAL: path=plugins/ExcelProtect/config.yml size=13164 sha256=543da9f9cc2a4410a8d4747d531816bb96e580fb754db63fe10fe68558de1f51 lane=rclone pulled_at=2026-11-15T19:41:57Z
+RESULT: PASS
+STEP: G1 live config ExcelSummons (reserve table present)
+EXPECTED: path=plugins/ExcelSummons/config.yml size=6187 sha256=696005bae6201ab93a8485394021a87cf304d151eda0af0d711944a078106df8
+ACTUAL: path=plugins/ExcelSummons/config.yml size=6187 sha256=696005bae6201ab93a8485394021a87cf304d151eda0af0d711944a078106df8 lane=rclone pulled_at=2026-11-15T19:42:00Z
+RESULT: PASS
+STEP: G1 GuildGate state
+EXPECTED: path=plugins/ExcelGuildGate/state.yml size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890
+ACTUAL: path=plugins/ExcelGuildGate/state.yml size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890 lane=rclone pulled_at=2026-11-15T19:42:04Z
+RESULT: PASS
+STEP: G1 live jar Magic
+EXPECTED: path=plugins/Magic-11.2.5-wrvnpe1.jar size=7662464 sha256=b78f03b83fe7a298f3d7cfde100392ba693cfc2e312322827d3dd556454b3999
+ACTUAL: path=plugins/Magic-11.2.5-wrvnpe1.jar size=7662464 sha256=b78f03b83fe7a298f3d7cfde100392ba693cfc2e312322827d3dd556454b3999 lane=rclone pulled_at=2026-11-15T19:42:29Z
+RESULT: PASS
+STEP: Candidate jar at window
+EXPECTED: size=295195 sha256=dd78718e789492865aec621dda6f5ccefdcce57a4df95b0b4bc360c15de1be61
+ACTUAL: size=295195 sha256=dd78718e789492865aec621dda6f5ccefdcce57a4df95b0b4bc360c15de1be61
+RESULT: PASS
+STEP: Candidate config at window
+EXPECTED: size=14885 sha256=a0ba0318169ecef6f7d9ffcd7e77caf2caa0e259577f2e795d1a1877a76886c2
+ACTUAL: size=14885 sha256=a0ba0318169ecef6f7d9ffcd7e77caf2caa0e259577f2e795d1a1877a76886c2
+RESULT: PASS
+STEP: Placed pull-back ExcelProtect-0.1.10
+EXPECTED: size=295195 sha256=dd78718e789492865aec621dda6f5ccefdcce57a4df95b0b4bc360c15de1be61
+ACTUAL: size=295195 sha256=dd78718e789492865aec621dda6f5ccefdcce57a4df95b0b4bc360c15de1be61
+RESULT: PASS
+STEP: Bak pull-back ExcelProtect-0.1.9 pre0110
+EXPECTED: size=269208 sha256=893892889318ae2d5ffc08846a55b92d0b83bab4140d9a6f46d9f91f4cf6b626
+ACTUAL: size=269208 sha256=893892889318ae2d5ffc08846a55b92d0b83bab4140d9a6f46d9f91f4cf6b626
+RESULT: PASS
+STEP: Placed pull-back ExcelProtect config
+EXPECTED: size=14885 sha256=a0ba0318169ecef6f7d9ffcd7e77caf2caa0e259577f2e795d1a1877a76886c2
+ACTUAL: size=14885 sha256=a0ba0318169ecef6f7d9ffcd7e77caf2caa0e259577f2e795d1a1877a76886c2
+RESULT: PASS
+STEP: Bak pull-back ExcelProtect config pre0110
+EXPECTED: size=13164 sha256=543da9f9cc2a4410a8d4747d531816bb96e580fb754db63fe10fe68558de1f51
+ACTUAL: size=13164 sha256=543da9f9cc2a4410a8d4747d531816bb96e580fb754db63fe10fe68558de1f51
+RESULT: PASS
+STEP: Boot log scan Protect 0.1.10
+EXPECTED: done=present severe=0 guild_locked=any
+ACTUAL: done=present severe=0 guild_locked=missing
+RESULT: PASS
+STEP: Enabling Protect 0.1.10 count
+EXPECTED: count=1 pattern=Enabling ExcelProtect v0.1.10 mode=lines
+ACTUAL: count=1
+RESULT: PASS
+STEP: Audit watch ON line count
+EXPECTED: count=1 pattern=audit watch: ON dir=plugins/ExcelProtect/audit per-player daily files magic=on summons=on mode=lines
+ACTUAL: count=1
+RESULT: PASS
+STEP: Protect READY line count
+EXPECTED: count=1 pattern=READY version=0.1.10 mode=lines
+ACTUAL: count=1
+RESULT: PASS
+STEP: SEVERE count
+EXPECTED: count=0 pattern=SEVERE mode=occurrences
+ACTUAL: count=0
+RESULT: PASS
+STEP: GuildGate state recorded
+EXPECTED: count=1 pattern=ExcelGuildGate enabled: 5 of 5 seals broken, guild OPEN mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: Post-boot GuildGate state unchanged
+EXPECTED: size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890
+ACTUAL: size=1080 sha256=d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890
+RESULT: PASS
+STEP: Emptiness departure list
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+STEP: INSTALLED marker Protect 0.1.10
+EXPECTED: present plugin=ExcelProtect version=0.1.10
+ACTUAL: present installed=2026-11-15 jar=ExcelProtect-0.1.10.jar plugin=ExcelProtect sha256=dd78718e789492865aec621dda6f5ccefdcce57a4df95b0b4bc360c15de1be61 size=295195 version=0.1.10 window=wrv-install-failsafe scheduled 2026-11-15 13:33 CST (Install 1 of 6)
+RESULT: PASS
