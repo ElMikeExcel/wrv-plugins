@@ -1,0 +1,90 @@
+# Summoning tree — Magic modifiers.yml REPLACEMENT for ExcelSummons
+# 0.1.13 (P-SUMMONS-MANA-25, +25% hold table, Nov 15, 2026).
+#
+# INSTALL: in Magic's modifiers.yml, REPLACE the 18 existing
+# wrv_summon_reserve_* template blocks with the 18 blocks below
+# (same keys, new boosts + description text), in the same window
+# as the ExcelSummons 0.1.13 jar + config. One number, two readers:
+# if only the bridge config changes, the bridge COMPUTES with the
+# new percents while Magic APPLIES the old boosts — a silent
+# desync. Boost = -(new percent x count) as a mana_max_boost
+# fraction. Percentages mirror summon-reserve-percent in the
+# 0.1.13 bridge config (D64 holds x 1.25, halves-up; Mike adopted
+# the draft table Nov 15, 2026, ~12:28 PM CST). Wolf4 (-0.76) and
+# wolf5 (-0.95) are nominal stack totals only — the ReservePolicy
+# ceiling clamp governs what is actually applied (3 wolves, 57%).
+#
+# Excel — Wink Reyes Valley (Iris / Mike).
+
+wrv_summon_reserve_archer:
+  name: Summon Reserve — Archer
+  description: Your archer holds 25% of your mana while it serves.
+  mana_max_boost: -0.25
+wrv_summon_reserve_archer2:
+  name: Summon Reserve — Archers
+  description: Your two archers hold 50% of your mana while they serve.
+  mana_max_boost: -0.50
+wrv_summon_reserve_bruiser:
+  name: Summon Reserve — Bruiser
+  description: Your bruiser holds 31% of your mana while it serves.
+  mana_max_boost: -0.31
+wrv_summon_reserve_bruiser2:
+  name: Summon Reserve — Bruisers
+  description: Your two bruisers hold 62% of your mana while they serve.
+  mana_max_boost: -0.62
+wrv_summon_reserve_guardian:
+  name: Summon Reserve — Guardian
+  description: Your guardian holds 44% of your mana while it serves.
+  mana_max_boost: -0.44
+wrv_summon_reserve_revenant:
+  name: Summon Reserve — Revenant
+  description: Your revenant holds 38% of your mana while it serves.
+  mana_max_boost: -0.38
+wrv_summon_reserve_ghast:
+  name: Summon Reserve — Ghast
+  description: Your ghast holds 44% of your mana while it serves.
+  mana_max_boost: -0.44
+wrv_summon_reserve_wolf:
+  name: Summon Reserve — Wolf
+  description: Your wolf holds 19% of your mana while it serves.
+  mana_max_boost: -0.19
+wrv_summon_reserve_wolf2:
+  name: Summon Reserve — Wolves
+  description: Your two wolves hold 38% of your mana while they serve.
+  mana_max_boost: -0.38
+wrv_summon_reserve_wolf3:
+  name: Summon Reserve — Wolves
+  description: Your three wolves hold 57% of your mana while they serve.
+  mana_max_boost: -0.57
+wrv_summon_reserve_wolf4:
+  name: Summon Reserve — Wolves
+  description: Your four wolves hold 76% of your mana while they serve.
+  mana_max_boost: -0.76
+wrv_summon_reserve_wolf5:
+  name: Summon Reserve — Wolves
+  description: Your five wolves hold 95% of your mana while they serve.
+  mana_max_boost: -0.95
+wrv_summon_reserve_familiar:
+  name: Summon Reserve — Familiar
+  description: Your familiar holds 13% of your mana while it serves.
+  mana_max_boost: -0.13
+wrv_summon_reserve_familiar2:
+  name: Summon Reserve — Familiars
+  description: Your two familiars hold 26% of your mana while they serve.
+  mana_max_boost: -0.26
+wrv_summon_reserve_familiar3:
+  name: Summon Reserve — Familiars
+  description: Your three familiars hold 39% of your mana while they serve.
+  mana_max_boost: -0.39
+wrv_summon_reserve_cat:
+  name: Summon Reserve — Cat
+  description: Your cat holds 13% of your mana while it serves.
+  mana_max_boost: -0.13
+wrv_summon_reserve_cat2:
+  name: Summon Reserve — Cats
+  description: Your two cats hold 26% of your mana while they serve.
+  mana_max_boost: -0.26
+wrv_summon_reserve_mount:
+  name: Summon Reserve — Mount
+  description: Your mount holds 19% of your mana while it serves.
+  mana_max_boost: -0.19

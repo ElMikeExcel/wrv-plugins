@@ -1,0 +1,72 @@
+STEP: G1-1 live jar ExcelSummons-0.1.12
+EXPECTED: path=plugins/ExcelSummons-0.1.12.jar size=116690 sha256=a21c584fd9982ec5ce83b652b19b6c9536af31baecdb92251ab42afcf1d81c83
+ACTUAL: path=plugins/ExcelSummons-0.1.12.jar size=116690 sha256=a21c584fd9982ec5ce83b652b19b6c9536af31baecdb92251ab42afcf1d81c83 lane=rclone pulled_at=2026-11-16T00:36:20Z
+RESULT: PASS
+STEP: G1-2 live ExcelSummons config
+EXPECTED: path=plugins/ExcelSummons/config.yml size=6187 sha256=696005bae6201ab93a8485394021a87cf304d151eda0af0d711944a078106df8
+ACTUAL: path=plugins/ExcelSummons/config.yml size=6187 sha256=696005bae6201ab93a8485394021a87cf304d151eda0af0d711944a078106df8 lane=rclone pulled_at=2026-11-16T00:36:22Z
+RESULT: PASS
+STEP: G1-3 live Magic modifiers
+EXPECTED: path=plugins/Magic/modifiers.yml size=263447 sha256=5c9de8df974725e196c01f87f1616c5f65acb9a394382641a1a914e6ba61e365
+ACTUAL: path=plugins/Magic/modifiers.yml size=263447 sha256=5c9de8df974725e196c01f87f1616c5f65acb9a394382641a1a914e6ba61e365 lane=rclone pulled_at=2026-11-16T00:36:25Z
+RESULT: PASS
+STEP: window backup + cap-at-6 (Summons 0.1.13 pre-install 1115)
+EXPECTED: total<=6
+ACTUAL: total=6 daily=3 manual=3 prune_needed=0
+RESULT: PASS
+STEP: emptiness reading 1 (RCON raw in list-1.txt: 0 of maximum 10)
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=unknown players=unknown
+RESULT: PASS
+STEP: emptiness reading 2 (RCON raw in list-2.txt: 0 of maximum 10)
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=unknown players=unknown
+RESULT: PASS
+STEP: placed jar pull-back ExcelSummons-0.1.13
+EXPECTED: size=116869 sha256=97b67906b7aad6b82c548c9ab025618fa5d7c93151331c029eb21cd824ddc1f5
+ACTUAL: size=116869 sha256=97b67906b7aad6b82c548c9ab025618fa5d7c93151331c029eb21cd824ddc1f5
+RESULT: PASS
+STEP: placed config pull-back
+EXPECTED: size=6562 sha256=6c449df37666c1d28a3aebc6e04ee55412e84847962b668821bdcbeea2ff4479
+ACTUAL: size=6562 sha256=6c449df37666c1d28a3aebc6e04ee55412e84847962b668821bdcbeea2ff4479
+RESULT: PASS
+STEP: placed modifiers pull-back (built from live + replacement blocks)
+EXPECTED: size=263447 sha256=8d02644dc634d9ef0f5b05ea7c8492d98076e3dbcfae5500346fccdb124d5535
+ACTUAL: size=263447 sha256=8d02644dc634d9ef0f5b05ea7c8492d98076e3dbcfae5500346fccdb124d5535
+RESULT: PASS
+STEP: modifiers reserve keys count
+EXPECTED: count=18 pattern=wrv_summon_reserve_ mode=occurrences
+ACTUAL: count=18
+RESULT: PASS
+STEP: modifiers -0.44 boosts (guardian+ghast)
+EXPECTED: count=2 pattern=mana_max_boost: -0.44 mode=occurrences
+ACTUAL: count=2
+RESULT: PASS
+STEP: boot log scan (guild OPEN per state.yml, LOCKED line waived)
+EXPECTED: done=present severe=0 guild_locked=any
+ACTUAL: done=present severe=0 guild_locked=missing
+RESULT: PASS
+STEP: boot: Enabling ExcelSummons v0.1.13
+EXPECTED: count=1 pattern=Enabling ExcelSummons v0.1.13 mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: boot: build id line
+EXPECTED: count=1 pattern=EXC-SUMMONS-0.1.13-WRV-20261115-01-mana25 mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: boot: Protect audit door bound
+EXPECTED: count=1 pattern=Protect audit door bound mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: post-boot guild state vs pre-install fresh pull (unlocked true, 5/5 seals)
+EXPECTED: size=1080 sha256=8a3bdc653e6e5f29b1db02a2b0a126ff561965a36d0b694e52bd69bd94866e17
+ACTUAL: size=1080 sha256=8a3bdc653e6e5f29b1db02a2b0a126ff561965a36d0b694e52bd69bd94866e17
+RESULT: PASS
+STEP: departure list (raw RCON in list-departure.txt: 0 of maximum 10)
+EXPECTED: online=0 max=any
+ACTUAL: online=0 max=unknown players=unknown
+RESULT: PASS
+STEP: INSTALLED marker ExcelSummons 0.1.13
+EXPECTED: present plugin=ExcelSummons version=0.1.13
+ACTUAL: present entry=## PENDING — ExcelSummons 0.1.13 (mana holds +25%, P-SUMMONS-MANA-25) (Nov 15, 2026) installed=2026-11-15 18:47 CST (boot Done 18:47:16 CST) lane=Homebase (rclone/SFTP over SSH, probe pass attempt 1, no fallback) plugin=ExcelSummons version=0.1.13 window_backup=Summons 0.1.13 pre-install 1115
+RESULT: PASS
