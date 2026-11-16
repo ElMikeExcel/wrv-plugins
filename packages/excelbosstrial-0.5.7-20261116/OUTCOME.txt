@@ -1,0 +1,16 @@
+OUTCOME - ExcelBossTrial 0.5.7 (BB-18 claims-chest Back)
+Entry id (MANIFEST heading): ## PENDING — ExcelBossTrial 0.5.7 (BB-18 claims-chest Back) (Nov 16, 2026)
+Installed: 2026-11-16, wrv-install-failsafe run scheduled 07:29 CST, Homebase lane (rclone/SFTP + RCON), panel for backup + Shut Down/Start. No fallback used.
+Placed artifact: plugins/ExcelBossTrial-0.4.1.jar (live filename retained) = 472,525 B / SHA-256 4b737c584dae9d9d6ebcffe85dc0899fbc6918d06f7c3818b9e8a5bd9bfc1e01 (pull-back verified EXACT).
+In-place backup: plugins/ExcelBossTrial-0.4.1.jar.bak-20261116-pre057 = 471,888 B / 005bd005ff015dc7b7c1f9e271a3606e3601a9e2732cfc5ce603d8caea53449a (pull-back verified EXACT).
+Live-jar gate: fresh pull 471,888 B / 005bd005ff015dc7b7c1f9e271a3606e3601a9e2732cfc5ce603d8caea53449a EXACT (live_pull_check PASS).
+Window backup: pre-bosstrial057-20261116 (created 11/16/2026 7:36 AM CST, finished 8.4 GB). Cap-at-6 prunee: "EternalTD 1.7.10 pre-install 1116" (oldest manual; total after = 6).
+Emptiness: arrival list readings 0 of 10 (x2, PASS) + pre-swap 0 of 10 (PASS); departure 0 of 10 (PASS).
+Boot Done line verbatim: [13:48:50] [Server thread/INFO]: Done (24.688s)! For help, type "help"
+Boot counts (verify_counts, SCRIPT-OUTPUT.txt): Enabling ExcelBossTrial v0.5.7 = 1 PASS; Cash taper: ON = 1 PASS; Seal cycle: = 1 PASS (line verbatim: "[ExcelBossTrial] Seal cycle: cycle 1, 0 of 5 this cycle, guild opened latch unset, personal first-break extras paid for 0 player-seal pair(s)."); Elder progress expiry: ON = 1 PASS; GuildGate "5 of 5 seals broken, guild OPEN" = 1 PASS (unchanged); SEVERE total = 0 PASS; boot_log_scan PASS.
+KNOWN DEFECT (candidate, not install): packet boot-verify expected build-id string EXC-BOSSTRIAL-0.5.7-WRV-20261116-01-bb18 count = 1; actual count = 0 (verify_counts FAIL block retained in SCRIPT-OUTPUT.txt). The placed jar's excel-build.txt carries the 0.5.7 build id, but BuildInfo.class constants still carry EXC-BOSSTRIAL-0.5.6-WRV-20261111-01-3c9e56, so the boot line reads "[ExcelBossTrial] Build: EXC-BOSSTRIAL-0.5.6-WRV-20261111-01-3c9e56". Placed bytes are byte-exact the packet candidate; plugin enables as v0.5.7. Owed to the build lane: stamp BuildInfo in future BossTrial builds (or accept the stale class stamp). Install stands; rollback was not invoked (no swap failure, no functional misbehavior; all other boot lines exact).
+End state: server ONLINE (outside maintenance window), 0/10 players.
+Marker: ~/workspace/board-r426/bb18-filing/INSTALLED.txt (verify_marker PASS).
+Proof owed: Java /bossrewards Back tap rig (slot 48 -> Server Menu) + one Bedrock spot-open (Mike or bot-as-Mike; not Kailey).
+Same-pass surfaces still owed (supervisor legs, NOT part of this gated entry): What's New record 2026-11-16-excelbosstrial-057 + Guide chunk bosstrial-claims-back + website pair, staged at ~/workspace/board-r426/bb18-surfaces/.
+Script blocks: SCRIPT-OUTPUT.txt in this folder (17 PASS, 1 FAIL build-id block retained verbatim with root-cause note).

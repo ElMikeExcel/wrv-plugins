@@ -1,0 +1,56 @@
+ExcelBossTrial 0.5.6 (fsync follow-up rebuild) - test results (Nov 14, 2026, P-FSYNC-1 follow-up)
+
+Scope: ONLY the Windows-safe directory-force fix at the two
+remaining sites - teamrewards/marker/MarkerRegistry (mutate)
+and wrv/rewards/TeamRewardLedger (persist) - folded into the
+HELD 0.5.6 candidate on top of the first fsync rebuild
+(AtomicStateFile). Full detail: ../REBUILD-RECORD.md and
+../TEST-RESULTS.md.
+
+Tally method: work/tally.py over the package.sh log (copied
+from the original build's work/ folder). Full suite via
+package.sh on every build below: 0 failures, 0 FAIL lines.
+
+- BASE GATE (unmodified copied tree, before any edit):
+  rebuilt jar byte-identical to the first fsync rebuild's
+  candidate (470,592 B /
+  eb11a6e2f2c74436a505a7199c2f5a686fe45742f00257549d61530f712bd265);
+  suite 2,775 checks / 99 harnesses - exactly that rebuild's
+  tally.
+- FIXED BUILDS pkg1 + pkg2 (deterministic double-build):
+  byte-identical to each other, 471,888 B /
+  005bd005ff015dc7b7c1f9e271a3606e3601a9e2732cfc5ce603d8caea53449a;
+  suite 2,792 checks / 101 harnesses on both runs.
+- Delta +17 checks / +2 harnesses = the two new
+  DirectoryForce harnesses:
+  * MarkerRegistryDirectoryForceTest (8): public add lands +
+    survives reopen with the real force; the Windows refusal
+    injected through the production mutate path's seam
+    (AccessDeniedException) -> force attempted, adds and a
+    remove succeed, registry stays writable, mutations are
+    durable on disk; control: a plain-IOException
+    directory-force failure still fails the mutation as
+    "marker persistence uncertain" and the registry stops
+    being writable.
+  * TeamRewardLedgerDirectoryForceTest (9): encounter +
+    roster survive reopen with the real force; the Windows
+    refusal injected through the production persist path's
+    seam -> saves succeed and stay readable, a win persists
+    an OWED claim, outcome and claim durable on disk after
+    reopen; control: a plain-IOException directory-force
+    failure still propagates out of the save and the ledger
+    refuses further work.
+
+Jar-entry diff vs the first fsync rebuild's candidate:
+242 -> 244 entries; changed = MarkerRegistry.class and
+TeamRewardLedger.class only; added =
+MarkerRegistry$DirectoryForce.class and
+TeamRewardLedger$DirectoryForce.class; none removed.
+
+The 0.5.6 feature coverage (taper, seal cycle, first-break
+extras, counter seeding, elder expiry, simulated payouts)
+and the AtomicStateFile fix are unchanged from the prior
+records and were re-proven by the full suite above; see
+the original build folder's and the first fsync rebuild
+folder's TEST-RESULTS / REBUILD-RECORD files for that
+detail.

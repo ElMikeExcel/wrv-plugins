@@ -1,0 +1,47 @@
+=== strings: PersonalClaimsUi.class (0.5.7 candidate) ===
+62:Your earned rewards
+87:Previous page
+91:Refresh rewards
+93:	Next page
+118:eBack to Server Menu
+124:7Return to the Server Menu
+214:menu
+217:cThe Server Menu could not open.
+=== javap -c: nav-relevant bytecode ===
+3:  public static final int BACK_SLOT;
+5:  public static final java.lang.String MENU_COMMAND;
+7:  public static final java.lang.String BACK_LABEL;
+9:  public static final java.lang.String BACK_LORE;
+11:  public static final java.lang.String BACK_FAILURE_LINE;
+25:  public static boolean isBackSlot(int);
+28:         1: bipush        48
+274:       243: bipush        45
+282:       265: bipush        48
+283:       267: invokestatic  #200                // Method backIcon:()Lorg/bukkit/inventory/ItemStack;
+287:       280: bipush        49
+295:       302: bipush        53
+351:  private static org.bukkit.inventory.ItemStack backIcon();
+473:       150: bipush        45
+476:       157: invokestatic  #353                // Method isBackSlot:(I)Z
+479:       165: bipush        49
+482:       172: bipush        53
+485:       179: invokestatic  #353                // Method isBackSlot:(I)Z
+499:       215: bipush        45
+504:       226: bipush        53
+651:       109: invokeinterface #434,  1          // InterfaceMethod org/bukkit/entity/Player.closeInventory:()V
+796:        11: invokeinterface #434,  1          // InterfaceMethod org/bukkit/entity/Player.closeInventory:()V
+799:        20: invokeinterface #498,  2          // InterfaceMethod org/bukkit/entity/Player.performCommand:(Ljava/lang/String;)Z
+=== javap -constants ===
+  public static final int BACK_SLOT = 48;
+  public static final java.lang.String MENU_COMMAND = "menu";
+  public static final java.lang.String BACK_LABEL = "\u00a7eBack to Server Menu";
+  public static final java.lang.String BACK_LORE = "\u00a77Return to the Server Menu";
+  public static final java.lang.String BACK_FAILURE_LINE = "\u00a7cThe Server Menu could not open.";
+=== plugin.yml in jar ===
+name: ExcelBossTrial
+version: 0.5.7
+build-id: EXC-BOSSTRIAL-0.5.7-WRV-20261116-01-bb18
+sku: ExcelBossTrial
+version: 0.5.7
+channel: WRV
+build-date: 2026-11-16
