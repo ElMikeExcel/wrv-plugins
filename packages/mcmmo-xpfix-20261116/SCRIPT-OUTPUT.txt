@@ -1,0 +1,74 @@
+SCRIPT BUNDLE OUTPUT — mcMMO XP-fix final combined build (P-MCMMO-XPFIX-INSTALL-1) — window 2026-11-16 (chained in the EternalTD push, wrv-install-failsafe)
+All blocks verbatim from ~/workspace/wrv-install-queue/tools/ scripts; inputs retained in window-20261116/.
+
+--- backup_cap_check (window backup; chained leg shares the EternalTD window backup per packet one-backup-per-window rule) ---
+STEP: backup-cap-post-window-backup
+EXPECTED: total<=6
+ACTUAL: total=6 daily=3 manual=3 prune_needed=0
+RESULT: PASS
+Window backup: 'EternalTD 1.7.10 pre-install 1116' created + verified completed in the EternalTD leg of this same push (post-prune total 6; prunee 'EM gating pre-install 1115').
+
+--- live_pull_check live jar PRE (live_mcmmo_pre.jar) ---
+STEP: live-pull-mcmmo-live-jar-pre
+EXPECTED: path=plugins/mcMMO-2.3.003-WRV-XP-2-ExcelShare-1.jar size=3695180 sha256=4276bd3e07bdaf60c4edbb5461c1c4a61c3252e24f15f324faaa58d7300dff5c
+ACTUAL: path=plugins/mcMMO-2.3.003-WRV-XP-2-ExcelShare-1.jar size=3695180 sha256=4276bd3e07bdaf60c4edbb5461c1c4a61c3252e24f15f324faaa58d7300dff5c lane=rclone pulled_at=2026-11-16T07:09:44Z
+RESULT: PASS
+
+--- emptiness_check gate reading 1 ---
+STEP: emptiness-gate-reading-1
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+
+--- emptiness_check gate reading 2 ---
+STEP: emptiness-gate-reading-2
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+
+--- emptiness_check pre-swap ---
+STEP: emptiness-pre-swap
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+NOTE: same 'out of maximum' phrasing normalization as the EternalTD leg (raw captures retained).
+
+--- post-boot blocks (boot scan / placed pull-back hash / GuildGate post / counts / departure) ---
+STEP: boot-log-scan-mcmmo-post
+EXPECTED: done=present severe=0 guild_locked=any
+ACTUAL: done=present severe=0 guild_locked=missing
+RESULT: PASS
+STEP: verify-hash-placed-mcmmo-pullback
+EXPECTED: size=3721966 sha256=404025cc63f5733fa135dd9303783dc9812248ce6ad9bb0d408643c8879c8501
+ACTUAL: size=3721966 sha256=404025cc63f5733fa135dd9303783dc9812248ce6ad9bb0d408643c8879c8501
+RESULT: PASS
+STEP: live-pull-guildgate-state-post-mcmmo
+EXPECTED: path=plugins/ExcelGuildGate/state.yml size=1080 sha256=8a3bdc653e6e5f29b1db02a2b0a126ff561965a36d0b694e52bd69bd94866e17
+ACTUAL: path=plugins/ExcelGuildGate/state.yml size=1080 sha256=8a3bdc653e6e5f29b1db02a2b0a126ff561965a36d0b694e52bd69bd94866e17 lane=rclone pulled_at=2026-11-16T07:16:52Z
+RESULT: PASS
+STEP: count-enabling-mcmmo
+EXPECTED: count>=1 pattern=Enabling mcMMO mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: count-severe-total-mcmmo-boot
+EXPECTED: count=0 pattern=SEVERE mode=occurrences
+ACTUAL: count=0
+RESULT: PASS
+STEP: count-config-no-xp-worlds-seeded
+EXPECTED: count>=1 pattern=No_XP_Worlds mode=occurrences
+ACTUAL: count=1
+RESULT: PASS
+STEP: count-guildgate-broken-post-mcmmo
+EXPECTED: count=5 pattern=broken: true mode=occurrences
+ACTUAL: count=5
+RESULT: PASS
+STEP: emptiness-departure-mcmmo
+EXPECTED: online=0 max=10
+ACTUAL: online=0 max=10 players=0
+RESULT: PASS
+
+--- verify_marker INSTALLED.txt ---
+STEP: marker-installed-mcmmo
+EXPECTED: present plugin=mcMMO
+ACTUAL: present entry=P-MCMMO-XPFIX-INSTALL-1 installed=2026-11-16 lane=Homebase (rclone/SFTP over SSH + RCON; panel for restart) plugin=mcMMO server=Michael's Server (Shockbyte 2602e828-7192-4a75-add8-74861e5632d7) version=2.3.003-WRV-XP-2-ExcelShare-1 (XP-fix final combined build) window_backup=EternalTD 1.7.10 pre-install 1116 (chained in the EternalTD window per packet)
+RESULT: PASS

@@ -1,0 +1,846 @@
+--- a/McMMOPlayer.java
++++ b/McMMOPlayer.java
+@@ -54,6 +54,7 @@
+ import com.gmail.nossr50.util.player.NotificationManager;
+ import com.gmail.nossr50.util.player.UserManager;
+ import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
++import com.gmail.nossr50.util.skills.NoXpWorldRecognition;
+ import com.gmail.nossr50.util.skills.PerksUtils;
+ import com.gmail.nossr50.util.skills.RankUtils;
+ import com.gmail.nossr50.util.skills.SkillTools;
+@@ -721,6 +722,18 @@
+      */
+     public void beginUnsharedXpGain(PrimarySkillType skill, float xp, XPGainReason xpGainReason,
+             XPGainSource xpGainSource) {
++        // WRV: mcMMO XP never pays in EliteMobs worlds (Mike's ruling,
++        // Nov 15, 2026). Returning here stops the player's own gain below,
++        // the together bonus, and this gain's party-level XP contribution.
++        // Party XP shares also arrive through this method once per member,
++        // so a member standing in an EliteMobs world receives no share
++        // either; share recipients must be near the earner (Misc.isNear is
++        // same-world), so an EliteMobs-world gain can only ever be offered
++        // to members in that same world, each gated here in turn.
++        if (NoXpWorldRecognition.isNoXpWorld(player)) {
++            return;
++        }
++
+         if (player.getGameMode() == GameMode.CREATIVE) {
+             return;
+         }
+@@ -756,6 +769,16 @@
+      */
+     public void applyXpGain(PrimarySkillType primarySkillType, float xp, XPGainReason xpGainReason,
+             XPGainSource xpGainSource) {
++        // WRV: the final funnel for online gains — EventUtils.handleXpGainEvent
++        // below is the only place profile XP is written for an online player,
++        // and every path to it passes through here. Gating here also covers
++        // the exact-amount paths that bypass beginXpGain/beginUnsharedXpGain
++        // (ExperienceAPI gains, /addxp, McMMOPlayer.addXp) when the player is
++        // standing in an EliteMobs world.
++        if (NoXpWorldRecognition.isNoXpWorld(player)) {
++            return;
++        }
++
+         if (!mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, primarySkillType)) {
+             return;
+         }
+--- a/GeneralConfig.java
++++ b/GeneralConfig.java
+@@ -13,6 +13,7 @@
+ import java.util.ArrayList;
+ import java.util.EnumMap;
+ import java.util.HashMap;
++import java.util.HashSet;
+ import java.util.List;
+ import java.util.Locale;
+ import java.util.Map;
+@@ -38,6 +39,11 @@
+ 
+     /* Level caps resolved once and reused on the XP hot path; reset by loadKeys() */
+     private @Nullable Integer powerLevelCap;
++
++    /* WRV no-XP world extras resolved once and reused on the XP hot path;
++       reset by loadKeys() */
++    private @Nullable Set<String> noXpWorldNames;
++    private @Nullable List<String> noXpWorldPrefixes;
+     private final Map<PrimarySkillType, Integer> levelCaps = new EnumMap<>(
+             PrimarySkillType.class);
+ 
+@@ -64,6 +70,8 @@
+         salvageAnvilMaterial = Material.matchMaterial(
+                 config.getString("Skills.Salvage.Anvil_Material", "GOLD_BLOCK"));
+         powerLevelCap = null;
++        noXpWorldNames = null;
++        noXpWorldPrefixes = null;
+         levelCaps.clear();
+         abilitiesEnabled = null;
+         abilityMessagesEnabled = null;
+@@ -1067,6 +1075,51 @@
+         return powerLevelCap;
+     }
+ 
++    /**
++     * WRV: extra world names (beyond the built-in EliteMobs rules) where mcMMO
++     * XP never pays, from {@code WRV.No_XP_Worlds.Extra_Names} in config.yml.
++     * Returned lowercased, trimmed, and without blanks, so callers compare a
++     * lowercased world name directly. A future EliteMobs pack whose world
++     * name escapes the built-in {@code em_} prefix rule is covered by adding
++     * its name here — a config edit, never a rebuild.
++     *
++     * @return the configured extra no-XP world names, never null
++     */
++    public @NotNull Set<String> getNoXpWorldNames() {
++        if (noXpWorldNames == null) {
++            final Set<String> names = new HashSet<>();
++            for (String name : config.getStringList("WRV.No_XP_Worlds.Extra_Names")) {
++                if (name != null && !name.isBlank()) {
++                    names.add(name.trim().toLowerCase(Locale.ROOT));
++                }
++            }
++            noXpWorldNames = Set.copyOf(names);
++        }
++
++        return noXpWorldNames;
++    }
++
++    /**
++     * WRV: extra world-name prefixes (beyond the built-in EliteMobs rules)
++     * where mcMMO XP never pays, from {@code WRV.No_XP_Worlds.Extra_Prefixes}
++     * in config.yml. Returned lowercased, trimmed, and without blanks.
++     *
++     * @return the configured extra no-XP world-name prefixes, never null
++     */
++    public @NotNull List<String> getNoXpWorldPrefixes() {
++        if (noXpWorldPrefixes == null) {
++            final List<String> prefixes = new ArrayList<>();
++            for (String prefix : config.getStringList("WRV.No_XP_Worlds.Extra_Prefixes")) {
++                if (prefix != null && !prefix.isBlank()) {
++                    prefixes.add(prefix.trim().toLowerCase(Locale.ROOT));
++                }
++            }
++            noXpWorldPrefixes = List.copyOf(prefixes);
++        }
++
++        return noXpWorldPrefixes;
++    }
++
+     public int getLevelCap(PrimarySkillType skill) {
+         return levelCaps.computeIfAbsent(skill, key -> {
+             int cap = config.getInt(
+--- a/config.yml
++++ b/config.yml
+@@ -747,3 +747,21 @@
+     # This setting controls the master volume. 1.0 is Max,  0 would be off
+     MasterVolume: 1.0
+     
++
++#
++#  WRV house settings
++###
++WRV:
++    No_XP_Worlds:
++        # Extra world names where mcMMO XP never pays, on top of the built-in
++        # EliteMobs rules (every world named em_*, plus GoblinKingdom_vf and
++        # its instanced copies). Add a name here when a future EliteMobs pack
++        # ships a world whose name escapes those rules; matching is exact and
++        # case-insensitive. Instanced copies append _<number> to the base
++        # world name, so also add the suffixed names a pack's instances use,
++        # or cover the whole family with Extra_Prefixes below.
++        Extra_Names: []
++        # Extra world-name prefixes where mcMMO XP never pays. Any world
++        # whose name starts with one of these prefixes (case-insensitive)
++        # pays no mcMMO XP, including that world's instanced copies.
++        Extra_Prefixes: []
+--- a/NoXpWorldRecognition.java
++++ b/NoXpWorldRecognition.java
+@@ -0,0 +1,152 @@
++package com.gmail.nossr50.util.skills;
++
++import com.gmail.nossr50.config.GeneralConfig;
++import com.gmail.nossr50.mcMMO;
++import java.util.List;
++import java.util.Locale;
++import java.util.Set;
++import org.bukkit.World;
++import org.bukkit.entity.Player;
++import org.jetbrains.annotations.Nullable;
++
++/**
++ * WRV house patch: recognises the worlds where mcMMO XP never pays — the
++ * EliteMobs worlds (Mike's ruling, Nov 15, 2026: mcMMO XP pays zero in all
++ * EliteMobs worlds; EliteMobs content pays out in its own rewards, Jobs money
++ * and vanilla XP instead).
++ *
++ * <p>mcMMO pays weapon XP per point of damage with no per-entity cap, and
++ * EliteMobs content — today's 83 packages and the gated ExcelExpansions packs
++ * still to release — keeps introducing fresh mega-HP targets. Zeroing gains
++ * by world closes the whole class at once, including every future pack,
++ * because EliteMobs worlds follow a strict naming scheme (verified against
++ * the live server, Nov 15, 2026: every content package's {@code worldName}
++ * across all 83 live package files, the boot log's world-load lines, and the
++ * world names recorded in ExcelProtect's player streams):
++ *
++ * <ul>
++ *   <li>Every EliteMobs world name starts with {@code em_} — the guild hub
++ *       ({@code em_adventurers_guild}), Primis ({@code em_primis}), the
++ *       regional worlds ({@code em_oasis}, {@code em_the_catacombs}, …) and
++ *       the instanced-dungeon bases ({@code em_id_bone_monastery},
++ *       {@code em_id_primis_wolf_den}, …).</li>
++ *   <li>An instanced copy appends {@code _<instance number>} to its base
++ *       world's name ({@code em_id_primis_wolf_den_1},
++ *       {@code em_id_primis_gladius_statue_2}), so the prefix rule covers
++ *       instances with no extra work.</li>
++ *   <li>The one exception in the whole tree is the Goblin Kingdom world,
++ *       {@code GoblinKingdom_vf}, which carries no {@code em_} prefix; it is
++ *       matched by exact name, plus its own would-be instance copies
++ *       ({@code GoblinKingdom_vf_<n>}).</li>
++ * </ul>
++ *
++ * <p>Anything beyond those built-in rules is config, never code: the
++ * {@code WRV.No_XP_Worlds} section of config.yml adds exact world names and
++ * name prefixes (see {@link GeneralConfig#getNoXpWorldNames()}), so a future
++ * pack with an off-pattern world name is a config edit, not a rebuild.
++ *
++ * <p>The fail posture is the mirror of {@link NoXpEntityRecognition}'s: a
++ * world that is NOT positively matched pays normally. The overworld can
++ * therefore never be caught by accident — a broken config read or an
++ * unrecognised name simply leaves gains untouched.
++ */
++public final class NoXpWorldRecognition {
++
++    /** Every EliteMobs base world and instanced copy carries this prefix. */
++    private static final String ELITE_MOBS_WORLD_PREFIX = "em_";
++
++    /** The one live EliteMobs world with no {@code em_} prefix (lowercased). */
++    private static final String GOBLIN_KINGDOM_WORLD_NAME = "goblinkingdom_vf";
++
++    private NoXpWorldRecognition() {
++    }
++
++    /**
++     * Whether the player is standing in a world where mcMMO XP never pays.
++     *
++     * @param player the gaining player, may be null
++     * @return true only when the player's current world is positively
++     *         recognised as an EliteMobs world; false in every other case,
++     *         including a null player or world
++     */
++    public static boolean isNoXpWorld(@Nullable Player player) {
++        if (player == null) {
++            return false;
++        }
++
++        final World world;
++        try {
++            world = player.getWorld();
++        } catch (Throwable t) {
++            return false;
++        }
++
++        return world != null && isNoXpWorldName(world.getName());
++    }
++
++    /**
++     * Whether a world name belongs to an EliteMobs world: the built-in
++     * {@code em_} prefix rule, the Goblin Kingdom exception, or the
++     * admin-configured extra names/prefixes from config.yml.
++     *
++     * @param worldName the Bukkit world name, may be null
++     * @return true only on a positive match; unmatched names pay normally
++     */
++    public static boolean isNoXpWorldName(@Nullable String worldName) {
++        if (worldName == null || worldName.isEmpty()) {
++            return false;
++        }
++
++        final String lower = worldName.toLowerCase(Locale.ROOT);
++
++        if (lower.startsWith(ELITE_MOBS_WORLD_PREFIX)) {
++            return true;
++        }
++
++        // The Goblin Kingdom exception, plus its instanced copies, which
++        // would append "_<instance number>" to the base name exactly as the
++        // em_ instances do.
++        if (lower.equals(GOBLIN_KINGDOM_WORLD_NAME)
++                || lower.startsWith(GOBLIN_KINGDOM_WORLD_NAME + "_")) {
++            return true;
++        }
++
++        return matchesConfiguredExtras(lower);
++    }
++
++    private static boolean matchesConfiguredExtras(String lowerWorldName) {
++        try {
++            if (mcMMO.p == null) {
++                return false;
++            }
++
++            final GeneralConfig config = mcMMO.p.getGeneralConfig();
++            if (config == null) {
++                return false;
++            }
++
++            // Both getters return lowercased values (see GeneralConfig), so
++            // the already-lowercased world name compares directly.
++            final Set<String> names = config.getNoXpWorldNames();
++            if (names != null && names.contains(lowerWorldName)) {
++                return true;
++            }
++
++            final List<String> prefixes = config.getNoXpWorldPrefixes();
++            if (prefixes != null) {
++                for (String prefix : prefixes) {
++                    if (prefix != null && !prefix.isEmpty()
++                            && lowerWorldName.startsWith(prefix)) {
++                        return true;
++                    }
++                }
++            }
++        } catch (Throwable t) {
++            // Config unavailable (early startup, tests): the built-in rules
++            // above have already answered; extras simply do not apply.
++            return false;
++        }
++
++        return false;
++    }
++}
+--- a/NoXpWorldRecognitionTest.java
++++ b/NoXpWorldRecognitionTest.java
+@@ -0,0 +1,164 @@
++package com.gmail.nossr50.util.skills;
++
++import static java.util.logging.Logger.getLogger;
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++import com.gmail.nossr50.MMOTestEnvironment;
++import java.util.List;
++import java.util.Set;
++import org.bukkit.World;
++import org.bukkit.entity.Player;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Nested;
++import org.junit.jupiter.api.Test;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.CsvSource;
++
++class NoXpWorldRecognitionTest extends MMOTestEnvironment {
++    private static final java.util.logging.Logger logger = getLogger(
++            NoXpWorldRecognitionTest.class.getName());
++
++    @BeforeEach
++    void setUp() {
++        mockBaseEnvironment(logger);
++    }
++
++    @AfterEach
++    void tearDown() {
++        cleanUpStaticMocks();
++    }
++
++    @Nested
++    class BuiltInRules {
++
++        @ParameterizedTest
++        @CsvSource({
++                // EliteMobs base worlds (live census, Nov 15, 2026)
++                "em_adventurers_guild, true",
++                "em_primis, true",
++                "em_primis_elementals_arena, true",
++                "em_oasis, true",
++                "em_the_catacombs, true",
++                "em_id_bone_monastery, true",
++                "em_id_enchantment_challenge_20, true",
++                // Instanced copies: base name + _<instance number>
++                "em_id_primis_wolf_den_1, true",
++                "em_id_primis_lighthouse_keeper_1, true",
++                "em_id_primis_gladius_statue_2, true",
++                // Case does not matter
++                "EM_PRIMIS, true",
++                "Em_Id_Primis_Wolf_Den_1, true",
++                // The one non-em_ EliteMobs world, and its instance copies
++                "GoblinKingdom_vf, true",
++                "goblinkingdom_vf, true",
++                "GoblinKingdom_vf_1, true",
++                // Everything else pays normally
++                "world, false",
++                "world_nether, false",
++                "world_the_end, false",
++                "em, false",
++                "emx_world, false",
++                "some_em_world, false",
++                "goblinkingdom, false",
++                "goblinkingdom_vfx, false",
++        })
++        void worldNameShouldMatchOnlyEliteMobsWorlds(String worldName,
++                boolean expected) {
++            // When - the world name is checked against the built-in rules
++            final boolean recognised =
++                    NoXpWorldRecognition.isNoXpWorldName(worldName);
++
++            // Then - only EliteMobs worlds are recognised
++            assertThat(recognised).isEqualTo(expected);
++        }
++
++        @Test
++        void worldNameShouldRejectNullAndEmpty() {
++            assertThat(NoXpWorldRecognition.isNoXpWorldName(null)).isFalse();
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("")).isFalse();
++        }
++    }
++
++    @Nested
++    class ConfiguredExtras {
++
++        @Test
++        void extraNameFromConfigShouldBeRecognised() {
++            // Given - an admin added an off-pattern world name to config.yml
++            // (the getters return lowercased values; see GeneralConfig)
++            when(generalConfig.getNoXpWorldNames())
++                    .thenReturn(Set.of("future_pack_world"));
++            when(generalConfig.getNoXpWorldPrefixes()).thenReturn(List.of());
++
++            // Then - that world pays no XP, in any case
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("future_pack_world"))
++                    .isTrue();
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("Future_Pack_World"))
++                    .isTrue();
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("future_pack_world_2"))
++                    .isFalse();
++        }
++
++        @Test
++        void extraPrefixFromConfigShouldBeRecognised() {
++            // Given - an admin added a world-name prefix to config.yml
++            when(generalConfig.getNoXpWorldNames()).thenReturn(Set.of());
++            when(generalConfig.getNoXpWorldPrefixes()).thenReturn(List.of("td_"));
++
++            // Then - the whole family matches, instances included
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("td_hub")).isTrue();
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("td_hub_3")).isTrue();
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("atd_hub")).isFalse();
++        }
++
++        @Test
++        void builtInRulesShouldWorkWhenConfigExtrasAreUnavailable() {
++            // Given - the config getters answer null (Mockito default), which
++            // the recognition must treat as "no extras", never as an error
++            // Then - the built-in rules still answer on their own
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("em_primis"))
++                    .isTrue();
++            assertThat(NoXpWorldRecognition.isNoXpWorldName("world")).isFalse();
++        }
++    }
++
++    @Nested
++    class PlayerPredicate {
++
++        @Test
++        void playerInEliteMobsWorldShouldBeRecognised() {
++            // Given - a player standing in the guild hub
++            final Player bukkitPlayer = mock(Player.class);
++            final World bukkitWorld = mock(World.class);
++            when(bukkitWorld.getName()).thenReturn("em_adventurers_guild");
++            when(bukkitPlayer.getWorld()).thenReturn(bukkitWorld);
++
++            // Then - the player is in a no-XP world
++            assertThat(NoXpWorldRecognition.isNoXpWorld(bukkitPlayer)).isTrue();
++        }
++
++        @Test
++        void playerInOverworldShouldNotBeRecognised() {
++            // Given - a player standing in the overworld
++            final Player bukkitPlayer = mock(Player.class);
++            final World bukkitWorld = mock(World.class);
++            when(bukkitWorld.getName()).thenReturn("world");
++            when(bukkitPlayer.getWorld()).thenReturn(bukkitWorld);
++
++            // Then - gains pay normally
++            assertThat(NoXpWorldRecognition.isNoXpWorld(bukkitPlayer)).isFalse();
++        }
++
++        @Test
++        void nullPlayerAndNullWorldShouldNotBeRecognised() {
++            assertThat(NoXpWorldRecognition.isNoXpWorld(null)).isFalse();
++
++            final Player bukkitPlayer = mock(Player.class);
++            when(bukkitPlayer.getWorld()).thenReturn(null);
++            assertThat(NoXpWorldRecognition.isNoXpWorld(bukkitPlayer)).isFalse();
++        }
++    }
++}
+--- a/McMMOPlayerNoXpWorldTest.java
++++ b/McMMOPlayerNoXpWorldTest.java
+@@ -0,0 +1,241 @@
++package com.gmail.nossr50.datatypes.player;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.anyInt;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++import com.gmail.nossr50.MMOTestEnvironment;
++import com.gmail.nossr50.config.experience.ExperienceConfig;
++import com.gmail.nossr50.datatypes.experience.FormulaType;
++import com.gmail.nossr50.datatypes.experience.XPGainReason;
++import com.gmail.nossr50.datatypes.experience.XPGainSource;
++import com.gmail.nossr50.datatypes.party.Party;
++import com.gmail.nossr50.datatypes.party.ShareMode;
++import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
++import com.gmail.nossr50.mcMMO;
++import com.gmail.nossr50.party.PartyManager;
++import com.gmail.nossr50.util.Permissions;
++import com.gmail.nossr50.util.TestPlayerMock;
++import com.gmail.nossr50.util.experience.FormulaManager;
++import java.util.List;
++import java.util.logging.Logger;
++import org.bukkit.World;
++import org.bukkit.entity.Player;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Nested;
++import org.junit.jupiter.api.Test;
++
++/**
++ * Covers Mike's ruling (Nov 15, 2026) at the pipeline level: a player standing
++ * in an EliteMobs world gains no mcMMO XP through any channel — the normal
++ * gain pipeline, the exact-amount funnel, or a party XP share — while the
++ * same gains in the overworld pay exactly as before.
++ */
++class McMMOPlayerNoXpWorldTest extends MMOTestEnvironment {
++    private static final Logger logger = Logger.getLogger(
++            McMMOPlayerNoXpWorldTest.class.getName());
++    private static final int XP_TO_NEXT_LEVEL = 10;
++
++    @BeforeEach
++    void setUp() {
++        mockBaseEnvironment(logger);
++        stubLevelUpEnvironment();
++    }
++
++    @AfterEach
++    void tearDown() {
++        cleanUpStaticMocks();
++    }
++
++    /**
++     * Stubs everything the gain path needs so gains translate into level-ups:
++     * skill permissions, disabled level caps, a 1.0 rate, and a flat XP curve.
++     * Mirrors {@code McMMOPlayerAddXpAndLevelsTest}.
++     */
++    private void stubLevelUpEnvironment() {
++        when(Permissions.skillEnabled(any(Player.class), any(PrimarySkillType.class)))
++                .thenReturn(true);
++        when(generalConfig.getPowerLevelCap()).thenReturn(Integer.MAX_VALUE);
++        when(generalConfig.getLevelCap(any(PrimarySkillType.class)))
++                .thenReturn(Integer.MAX_VALUE);
++        when(ExperienceConfig.getInstance().getFormulaType()).thenReturn(FormulaType.LINEAR);
++        when(experienceConfigInstance.getExperienceGainsMultiplier(
++                any(PrimarySkillType.class))).thenReturn(1D);
++
++        final FormulaManager formulaManager = mock(FormulaManager.class);
++        when(formulaManager.getXPtoNextLevel(anyInt(), any(FormulaType.class)))
++                .thenReturn(XP_TO_NEXT_LEVEL);
++        when(mcMMO.getFormulaManager()).thenReturn(formulaManager);
++    }
++
++    private void useWorld(String worldName) {
++        final World bukkitWorld = mock(World.class);
++        when(bukkitWorld.getName()).thenReturn(worldName);
++        when(player.getWorld()).thenReturn(bukkitWorld);
++    }
++
++    private float rawXp(PrimarySkillType skill) {
++        return mmoPlayer.getProfile().getSkillXpLevelRaw(skill);
++    }
++
++    @Nested
++    class GainPipeline {
++
++        @Test
++        void beginXpGainShouldAwardNothingAcrossChannelsInEliteMobsWorld() {
++            // Given - the player is standing in the Adventurers Guild hub
++            useWorld("em_adventurers_guild");
++
++            // When - gains arrive through the normal pipeline for a combat
++            // skill, a gathering skill, Acrobatics, and Taming
++            mmoPlayer.beginXpGain(PrimarySkillType.SWORDS, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++            mmoPlayer.beginXpGain(PrimarySkillType.MINING, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++            mmoPlayer.beginXpGain(PrimarySkillType.ACROBATICS, 5F,
++                    XPGainReason.PVE, XPGainSource.SELF);
++            mmoPlayer.beginXpGain(PrimarySkillType.TAMING, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++
++            // Then - no channel paid anything
++            assertThat(rawXp(PrimarySkillType.SWORDS)).isZero();
++            assertThat(rawXp(PrimarySkillType.MINING)).isZero();
++            assertThat(rawXp(PrimarySkillType.ACROBATICS)).isZero();
++            assertThat(rawXp(PrimarySkillType.TAMING)).isZero();
++        }
++
++        @Test
++        void beginXpGainShouldAwardNothingInInstancedDungeonCopy() {
++            // Given - the player is inside an instanced Primis dungeon copy
++            useWorld("em_id_primis_wolf_den_1");
++
++            // When - a combat gain arrives
++            mmoPlayer.beginXpGain(PrimarySkillType.SWORDS, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++
++            // Then - the instanced copy is an EliteMobs world too
++            assertThat(rawXp(PrimarySkillType.SWORDS)).isZero();
++        }
++
++        @Test
++        void beginXpGainShouldAwardNormallyInOverworld() {
++            // Given - the player is standing in the overworld
++            useWorld("world");
++
++            // When - combat and gathering gains arrive
++            mmoPlayer.beginXpGain(PrimarySkillType.SWORDS, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++            mmoPlayer.beginXpGain(PrimarySkillType.MINING, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++
++            // Then - both pay the full amount, as before the ruling
++            assertThat(rawXp(PrimarySkillType.SWORDS)).isEqualTo(5F);
++            assertThat(rawXp(PrimarySkillType.MINING)).isEqualTo(5F);
++        }
++    }
++
++    @Nested
++    class ExactAmountFunnel {
++
++        @Test
++        void applyXpGainShouldAwardNothingInEliteMobsWorld() {
++            // Given - the player is standing in Primis
++            useWorld("em_primis");
++
++            // When - an exact-amount gain arrives through the funnel the API
++            // and /addxp paths use (it bypasses beginXpGain entirely)
++            mmoPlayer.applyXpGain(PrimarySkillType.MINING, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++
++            // Then - the funnel pays nothing in an EliteMobs world
++            assertThat(rawXp(PrimarySkillType.MINING)).isZero();
++            assertThat(mmoPlayer.getSkillLevel(PrimarySkillType.MINING)).isZero();
++        }
++
++        @Test
++        void applyXpGainShouldAwardNormallyInOverworld() {
++            // Given - the player is standing in the overworld
++            useWorld("world");
++
++            // When - an exact-amount gain arrives through the funnel
++            mmoPlayer.applyXpGain(PrimarySkillType.MINING, 5F, XPGainReason.PVE,
++                    XPGainSource.SELF);
++
++            // Then - it accrues exactly, as before the ruling
++            assertThat(rawXp(PrimarySkillType.MINING)).isEqualTo(5F);
++        }
++    }
++
++    @Nested
++    class PartyShare {
++
++        private TestPlayerMock member;
++
++        private void stubEqualSharePartyWithMemberIn(String memberWorldName) {
++            member = mockPlayer();
++            final World memberWorld = mock(World.class);
++            when(memberWorld.getName()).thenReturn(memberWorldName);
++            when(member.player().getWorld()).thenReturn(memberWorld);
++
++            final Party party = mock(Party.class);
++            when(party.getXpShareMode()).thenReturn(ShareMode.EQUAL);
++            mmoPlayer.setParty(party);
++
++            final PartyManager partyManager = mock(PartyManager.class);
++            when(mcMMO.p.getPartyManager()).thenReturn(partyManager);
++            // ShareHandler adds the earner to the returned list, so it must
++            // be mutable (the real PartyManager returns an ArrayList)
++            when(partyManager.getNearVisibleMembers(mmoPlayer))
++                    .thenReturn(new java.util.ArrayList<>(List.of(member.player())));
++
++            // Share bonus of exactly 1.0: a 100 XP gain splits 50 / 50
++            when(generalConfig.getPartyShareBonusBase()).thenReturn(1.0D);
++            when(generalConfig.getPartyShareBonusIncrease()).thenReturn(0.0D);
++            when(generalConfig.getPartyShareBonusCap()).thenReturn(10.0D);
++        }
++
++        @Test
++        void shareShouldNotReachMemberStandingInEliteMobsWorld() {
++            // Given - the earner is in the overworld, the party member is
++            // standing in Primis, and XP sharing is EQUAL
++            useWorld("world");
++            stubEqualSharePartyWithMemberIn("em_primis");
++
++            // When - the earner gains 100 Swords XP
++            mmoPlayer.beginXpGain(PrimarySkillType.SWORDS, 100F,
++                    XPGainReason.PVE, XPGainSource.SELF);
++
++            // Then - the earner keeps their own 50 XP share (5 levels on the
++            // flat 10-XP curve)...
++            assertThat(mmoPlayer.getSkillLevel(PrimarySkillType.SWORDS))
++                    .isEqualTo(5);
++            assertThat(rawXp(PrimarySkillType.SWORDS)).isZero();
++
++            // ...but the member in the EliteMobs world receives nothing
++            assertThat(member.mmoPlayer().getSkillLevel(PrimarySkillType.SWORDS))
++                    .isZero();
++            assertThat(member.playerProfile()
++                    .getSkillXpLevelRaw(PrimarySkillType.SWORDS)).isZero();
++        }
++
++        @Test
++        void shareShouldReachMemberStandingInOverworld() {
++            // Given - both players are in the overworld, sharing EQUAL
++            useWorld("world");
++            stubEqualSharePartyWithMemberIn("world");
++
++            // When - the earner gains 100 Swords XP
++            mmoPlayer.beginXpGain(PrimarySkillType.SWORDS, 100F,
++                    XPGainReason.PVE, XPGainSource.SELF);
++
++            // Then - the control case: the member's 50 XP share pays in full
++            assertThat(member.mmoPlayer().getSkillLevel(PrimarySkillType.SWORDS))
++                    .isEqualTo(5);
++            assertThat(member.playerProfile()
++                    .getSkillXpLevelRaw(PrimarySkillType.SWORDS)).isZero();
++        }
++    }
++}
+--- a/GeneralConfigNoXpWorldsTest.java
++++ b/GeneralConfigNoXpWorldsTest.java
+@@ -0,0 +1,124 @@
++package com.gmail.nossr50.config;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.mockito.Answers.CALLS_REAL_METHODS;
++import static org.mockito.Mockito.mock;
++
++import com.gmail.nossr50.MMOTestEnvironment;
++import java.io.InputStream;
++import java.io.InputStreamReader;
++import java.lang.reflect.Field;
++import java.nio.charset.StandardCharsets;
++import java.util.logging.Logger;
++import org.bukkit.Material;
++import org.bukkit.configuration.file.YamlConfiguration;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++
++/**
++ * Guards the WRV no-XP worlds config contract: the shipped config.yml carries
++ * the {@code WRV.No_XP_Worlds} keys, and the getters resolve them lowercased
++ * and blank-free so {@code NoXpWorldRecognition} can compare a lowercased
++ * world name directly. Follows the {@code GeneralConfigTogetherBonusTest}
++ * pattern.
++ */
++class GeneralConfigNoXpWorldsTest extends MMOTestEnvironment {
++    private static final Logger logger =
++            Logger.getLogger(GeneralConfigNoXpWorldsTest.class.getName());
++
++    @BeforeEach
++    void setUp() {
++        mockBaseEnvironment(logger);
++    }
++
++    @AfterEach
++    void tearDown() {
++        cleanUpStaticMocks();
++    }
++
++    /**
++     * Creates a {@link GeneralConfig} whose backing config is the given YAML,
++     * without running the file-loading constructor. {@code loadKeys} cannot
++     * run on the mock (its inline-initialized maps stay null), so the two
++     * memoized anvil materials it would resolve are injected directly; the
++     * no-XP getters resolve lazily from the backing config and need no such
++     * injection.
++     */
++    private static GeneralConfig generalConfigBackedBy(final YamlConfiguration yaml) {
++        final GeneralConfig generalConfig = mock(GeneralConfig.class, CALLS_REAL_METHODS);
++        try {
++            final Field configField = BukkitConfig.class.getDeclaredField("config");
++            configField.setAccessible(true);
++            configField.set(generalConfig, yaml);
++            setMemoizedMaterial(generalConfig, "repairAnvilMaterial", Material.IRON_BLOCK);
++            setMemoizedMaterial(generalConfig, "salvageAnvilMaterial", Material.GOLD_BLOCK);
++        } catch (ReflectiveOperationException e) {
++            throw new IllegalStateException("Unable to inject backing config", e);
++        }
++        return generalConfig;
++    }
++
++    private static void setMemoizedMaterial(final GeneralConfig generalConfig,
++            final String fieldName, final Material material)
++            throws ReflectiveOperationException {
++        final Field field = GeneralConfig.class.getDeclaredField(fieldName);
++        field.setAccessible(true);
++        field.set(generalConfig, material);
++    }
++
++    /** Loads the config.yml bundled with the plugin jar. */
++    private static YamlConfiguration shippedConfigYaml() {
++        final InputStream resource =
++                GeneralConfig.class.getClassLoader().getResourceAsStream("config.yml");
++        assertThat(resource).as("bundled config.yml resource").isNotNull();
++        return YamlConfiguration.loadConfiguration(
++                new InputStreamReader(resource, StandardCharsets.UTF_8));
++    }
++
++    @Test
++    void shippedConfigShouldCarryEmptyNoXpWorldExtrasAndValidate() {
++        // Given - the config.yml shipped with the plugin, with no admin edits
++        final YamlConfiguration shippedYaml = shippedConfigYaml();
++        final GeneralConfig generalConfig = generalConfigBackedBy(shippedYaml);
++
++        // Then - the shipped file defines the keys the getters read
++        assertThat(shippedYaml.isSet("WRV.No_XP_Worlds.Extra_Names")).isTrue();
++        assertThat(shippedYaml.isSet("WRV.No_XP_Worlds.Extra_Prefixes")).isTrue();
++
++        // And - the shipped defaults are empty: the built-in rules alone apply
++        assertThat(generalConfig.getNoXpWorldNames()).isEmpty();
++        assertThat(generalConfig.getNoXpWorldPrefixes()).isEmpty();
++
++        // And - the shipped file still passes validation with the WRV section
++        assertThat(generalConfig.validateKeys()).isTrue();
++    }
++
++    @Test
++    void gettersShouldResolveConfiguredExtrasLowercasedAndBlankFree() {
++        // Given - an admin config with mixed case, stray spaces, and blanks
++        final YamlConfiguration yaml = new YamlConfiguration();
++        yaml.set("WRV.No_XP_Worlds.Extra_Names",
++                java.util.List.of("Future_Pack_World", "  spaced_name  ", ""));
++        yaml.set("WRV.No_XP_Worlds.Extra_Prefixes",
++                java.util.List.of("TD_", " "));
++        final GeneralConfig generalConfig = generalConfigBackedBy(yaml);
++
++        // Then - the getters hand back comparison-ready values
++        assertThat(generalConfig.getNoXpWorldNames())
++                .containsExactlyInAnyOrder("future_pack_world", "spaced_name");
++        assertThat(generalConfig.getNoXpWorldPrefixes())
++                .containsExactly("td_");
++    }
++
++    @Test
++    void gettersShouldReturnEmptyWhenSectionIsAbsent() {
++        // Given - a config with no WRV section at all (getter fallbacks apply)
++        final GeneralConfig generalConfig =
++                generalConfigBackedBy(new YamlConfiguration());
++
++        // Then - the extras are empty, never null
++        assertThat(generalConfig.getNoXpWorldNames()).isEmpty();
++        assertThat(generalConfig.getNoXpWorldPrefixes()).isEmpty();
++    }
++}
