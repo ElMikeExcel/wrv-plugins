@@ -1,0 +1,16 @@
+entry: ## PENDING — ExcelTour 1.0.1 (BB-09 back-button fixes, 3 rows) (Nov 14, 2026)
+installed_by: wrv-install-failsafe run scheduled 2026-11-15 05:33 CST (America/Chicago)
+lane: Homebase (probe PASS attempt 1: DESKTOP-IL05DQR; rclone lsd lists "1. Michael's Server") — no fallback. Panel used only for Backups + Shut Down/Start.
+placed: plugins/ExcelTour-1.0.1.jar 50908 ab94d4a12b33b8acb45b60599ef3b27eac4f0b86805456930719ba90e2c0e317 (pull-back EXACT)
+bak: plugins/ExcelTour-1.0.0.jar.bak-20261115-pre101 50656 4af7c455d98ead43603f75fe007444983c75345d70f0109c9149dc785c78dd72 (pull-back EXACT; rollback = swap back + restart, or restore window backup)
+window_backup: BB09 ExcelTour 1.0.1 1115 (11/15/2026, 5:56 AM, 8.3 GB, Manual, completed)
+cap_prunees: BB10 ExcelTrainingDummy 1.0.1 1115 (oldest manual; post-creation total 6)
+boot_done: Done (23.318s)! For help, type "help"
+boot_lines: Enabling ExcelTour v1.0.1 x1; "ExcelTour v1.0.1 enabled: 1 route(s) loaded [guild-first-visit] (build EXC-TOUR-1.0.1-WRV-20261114-01-bb09)" x1 exact; /tour version answered "ExcelTour v1.0.1 (build EXC-TOUR-1.0.1-WRV-20261114-01-bb09)"; SEVERE 0; panel Errors 0. ExcelTour WARNs in boot log are the pre-existing route TO-BE-PULLED placeholder degradations (routes unchanged by this unit), not SEVERE.
+guild_state: ExcelGuildGate enabled: 5 of 5 seals broken, guild OPEN — unchanged (pre/post state.yml byte-identical, d5bffa9922706babbb9d6de70fa687401e4b5dc565c74d29697585391c441890). Packet boot-verify wording said guild LOCKED 4 of 5 — stale pre-opening premise (guild opened Nov 14); verified as OPEN 5/5 unchanged, per tonight's BB-05/BB-06/BB-07 precedent.
+arrival_online: 0 (RCON list 0 of maximum 10, twice, 05:54:36 + 05:56:13 CST; pre-swap list 0 again ~06:00 CST)
+departure_online: 0 (RCON list after boot + panel Online 0/10)
+end_state: server left Online (outside the 2:00-5:00 AM maintenance window)
+script_blocks: SCRIPT-OUTPUT.txt — 17 blocks, all RESULT: PASS (backup_cap, emptiness x4 incl. pre-swap + departure, live_pull G1 jar + GuildGate state, candidate/placed/bak verify_hash, boot_log_scan guild-waived, verify_counts x4, post-boot state verify_hash, verify_marker). Raw boot_log_scan without the guild waive retained as script-block-boot-raw.txt: it flags guild_locked=missing because the live line reads guild OPEN, not LOCKED; the guild leg is covered by the verify_counts PASS + identical state.yml hash.
+surfaces_owed: Guide knowledge note + What's New BOTH surfaces (drafts staged in BB-09/surfaces/ — supervisor/main leg per packet); broadcaster tips + in-game menus checked NO CHANGE by packet. Mirror walk + Mike's Java Guide Back tap mid-tour + Kailey's Bedrock step-form Back tap still owed as proof.
+chaining: stopped after this install — ~50-minute chain limit for this run (window opened 05:54, boot verified ~06:06 CST); 19 gated entries remain PENDING for the next run.
