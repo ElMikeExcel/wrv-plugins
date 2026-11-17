@@ -1,0 +1,35 @@
+ExcelItemInsight 0.1.0 — INSTALLED LIVE
+Wink Reyes Valley (Shockbyte 2602e828-7192-4a75-add8-74861e5632d7)
+Installed: Oct 20, 2026, ~1:21 PM CDT (supervised, standard gate)
+
+Gate: console `list` = 0 players, three times. Fresh install (no
+predecessor jar or folder on the server).
+Jar: ExcelItemInsight-0.1.0.jar — 24,137 B — SHA-256
+5f300b4be8317ab2e93889be9c30499c23e422bad972825b2953d67add9ccf13
+(matches the build record: build twice + clean-room rebuild from the
+deposited source zip byte-identical; 960/960 checks; rig 48/48;
+dictionary 43/43 incl. Lunge, new in 26.2).
+
+Boot verify (all held):
+- '[ExcelItemInsight] ExcelItemInsight 0.1.0 enabled — dictionary:
+  43 enchantments, registry coverage 43/43.'
+- Zero SEVERE mentioning ExcelItemInsight.
+- plugins/ExcelItemInsight/config.yml generated.
+- Console `iteminsight status` -> 'v0.1.0 — enabled: true —
+  dictionary covers 43/43 enchantments.'
+- LuckPerms: exceliteminsight.admin granted to Mike (UUID form).
+- `guildgate status` still LOCKED, Progress 0 of 5. Server Online.
+
+Rollback: remove plugins/ExcelItemInsight-0.1.0.jar + the
+plugins/ExcelItemInsight/ folder, restart. Nothing else references
+the plugin.
+
+Player proof owed (one test, per the test rules): any enchanted item
+handled in game shows its explanation block — Jester's Sharpness V
+diamond sword is the natural first check ('Total hit: 10 (base 7 +
+3 from Sharpness)').
+
+Website + Guide publish pass prepared the same day (knowledge stamp
+e7c55b9c, 143 chunks, 54 intents — new curated lore intent
+item-insight); PR + panel legs run by the main agent from
+~/workspace/website-pass-2026-10-20-iteminsight/PUBLISH-NOTE.md.
