@@ -1,0 +1,16 @@
+name: ExcelLeaderboard
+version: 1.3.1
+main: com.winkreyes.leaderboard.ExcelLeaderboard
+api-version: '1.21'
+description: >-
+  All-in-one leaderboards for Wink Reyes Valley. The six vanilla boards (Miner, Builder, Playtime, Slayer, Traveler, Deaths) always work. Five more boards appear only when the plugin they read from is installed and its API checks out at startup: Richest reads Vault, mcMMO Power reads mcMMO, Jobs Levels reads Jobs Reborn, Elite Coins reads EliteMobs, and Land Claimed reads GriefPrevention (blocks claimed, plus how many each player can still claim). ExcelBuildMode sessions never count toward Top Miner (ExcelBuildMode is an optional companion). How the boards are shown depends on the player: Bedrock players get native form menus when Geyser and Floodgate are installed (turn forms off with bedrock-forms in config.yml); Java players get a clickable chat menu; the chest menu stays as a fallback whenever a form cannot be sent.
+commands:
+  leaderboard:
+    description: Open the leaderboards.
+    usage: /leaderboard [board <board>]
+    permission: excelleaderboard.use
+permissions:
+  excelleaderboard.use:
+    description: View the leaderboards.
+    default: true
+softdepend: [Vault, mcMMO, Jobs, EliteMobs, GriefPrevention, ExcelBuildMode, Geyser-Spigot, floodgate]
