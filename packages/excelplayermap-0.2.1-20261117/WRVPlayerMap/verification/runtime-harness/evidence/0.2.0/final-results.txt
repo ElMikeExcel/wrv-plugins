@@ -1,0 +1,10 @@
+PASS exact-server-version
+PASS native-map-layer-and-transparent-pixels
+PASS plugin-enabled
+PASS native-empty-map-activation-preserves-id-and-terrain
+PASS vanilla-clone-zoom-and-lock-provenance
+PASS tracked-map-restored-after-restart
+PASS delta-pixels-and-native-terrain-restoration
+PASS sharing-hands-dimensions-and-frame-id-semantics
+PASS visibility-and-disconnected-player-filtering
+SUMMARY passed=9 failed=0 assertions=111
