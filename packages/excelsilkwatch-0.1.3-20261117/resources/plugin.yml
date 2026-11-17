@@ -1,0 +1,17 @@
+# ExcelSilkWatch — Excel signature — MikeExcel
+name: ExcelSilkWatch
+version: 0.1.3-offline
+main: com.winkreyes.silkstorage.ExcelSilkWatch
+api-version: '1.21'
+description: Nonblocking warning after a successful Silk Touch ender chest deposit.
+author: WinkReyesValley
+softdepend: [PlaceholderAPI]
+commands:
+  silkwarnings:
+    description: Toggle your Silk Touch storage warnings.
+    usage: /silkwarnings [on|off|toggle|status]
+    permission: excelsilkwatch.toggle
+permissions:
+  excelsilkwatch.toggle:
+    description: Change your own Silk Touch storage warning preference.
+    default: true
