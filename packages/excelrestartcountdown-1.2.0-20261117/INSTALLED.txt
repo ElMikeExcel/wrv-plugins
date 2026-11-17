@@ -1,0 +1,43 @@
+Excel Renames Part 2 (WRV-060) — INSTALLED LIVE via auto-watch
+Installed: Fri Oct 16, 2026, ~8:47 AM CDT (server Done ~8:47:05 AM CDT panel time)
+Gate: two console `list` readings, both 0/10 — 1st 8:41:19 AM CDT, 2nd 8:43:34 AM CDT (intermediate 8:42:35 AM also 0/10). No players online.
+
+New jar SHA-256 (verified against INSTALL-PACKET.md before install):
+f989a82431e0a5fb509bd8cff9f15b9452abbd4dfae332cdf816e5b6517cfee2  ExcelWealthBoard-1.4.0.jar
+e9150198dd3260ad5ae829067f84131cc2dabc135e495e6c5d7e41f228417fa1  ExcelWeekendXP-1.1.0.jar
+2c8f3a7688df3f11f295b29d220de74d4c08f37b0ba4d6a103f5d53128529609  ExcelNoPhantoms-1.1.0.jar
+50dfa7b89b6bad50ce368bda198314d6b3d429522c77c8f811e95124f04530cd  ExcelRestartCountdown-1.2.0.jar
+
+Backups (rollback set, left in plugins/):
+WealthBoard-1.3.0-mobile.7.jar.bak-20261016
+WeekendXP-1.0.2.jar.bak-20261016
+NoPhantoms-1.0.0.jar.bak-20261016
+RestartCountdown-1.1.0.jar.bak-20261016
+
+Key verification lines observed in console:
+[ExcelWealthBoard] Enabling ExcelWealthBoard v1.4.0
+[ExcelWealthBoard] ExcelWealthBoard enabled (join popup mode, no sidebar).
+[ExcelWeekendXP] Enabling ExcelWeekendXP v1.1.0
+[ExcelWeekendXP] Weekday detected: dispatched mcMMO XP-rate reset command; verified vanilla XP event multiplier 1.0x.
+[ExcelWeekendXP] ExcelWeekendXP scheduler enabled: America/Chicago, every 30 minutes.
+[ExcelNoPhantoms] Enabling ExcelNoPhantoms v1.1.0
+[ExcelNoPhantoms] ExcelNoPhantoms enabled: phantoms will not spawn.
+[ExcelRestartCountdown] Enabling ExcelRestartCountdown v1.2.0
+[ExcelRestartCountdown] ExcelRestartCountdown enabled (references /restartwarn 2-minute countdown).
+Migration lines: NONE — no legacy data folders existed for any of the four (expected per packet).
+SEVERE / stack traces naming any of the four new or old plugins: NONE.
+Old names enabling as separate plugins: NONE (plugins list = 35, four Excel names present, no standalone old names).
+Server reached Done (17.145s).
+
+Probes:
+version ExcelWealthBoard -> ExcelWealthBoard version 1.4.0
+version ExcelWeekendXP -> ExcelWeekendXP version 1.1.0
+version ExcelNoPhantoms -> ExcelNoPhantoms version 1.1.0
+version ExcelRestartCountdown -> ExcelRestartCountdown version 1.2.0
+excelrestartwarn cancel -> No countdown is running.
+restartwarn cancel -> No countdown is running. (legacy alias kept)
+Final list -> 0 out of maximum 10 players online (8:53:47 AM CDT).
+
+No rollback triggered. Server left online.
+Publishing NOT done in this job (owed: four records as one draft PR + website name updates).
+In-game checks still owed: WealthBoard popup on a real join, phantom behavior in live play, first weekend-boundary WeekendXP line.
