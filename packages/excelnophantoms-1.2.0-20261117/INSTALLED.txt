@@ -1,0 +1,34 @@
+ExcelNoPhantoms 1.2.0 — INSTALLED LIVE, PHANTOM DEBT EVENT ARMED
+Installed: Sun Oct 18, 2026, ~9:14 PM CDT (install window 2; boot Done (18.759s) 9:14:36 PM CDT, ZERO SEVERE)
+Server: Wink Reyes Valley (Shockbyte panel, Paper 26.2)
+Window packet: ~/workspace/install-window-2026-10-18/PACKET.md
+
+What went in: ExcelNoPhantoms-1.2.0.jar (40,631 B, SHA-256 f705ac0e…) with the packet
+config (mode: event, event-active: true). Supersedes 1.1.0 (kept on the server as
+ExcelNoPhantoms-1.1.0.jar.bak-20261018 — rollback).
+
+Live verification (post-boot console, `nophantoms status`):
+- Mode: event; Event active: true; Dragon seal: not broken
+- "Tonight (Sunday): WARDS HOLD" — correct for a Sunday (Fri–Sun the guild's wards
+  suppress phantoms; Mon–Thu they hunt under vanilla insomnia rules)
+- Story rotation armed (line 1 of 5, 25-minute interval); ward line enabled.
+
+THE EVENT IS ARMED. First haunted night = Monday Oct 19, 2026. The event ends for
+good when Seal 1 (ender_dragon) credits — the plugin reads GuildGate's seal state by
+reflection (fail-soft) — or when an operator sets event-active: false.
+
+JOIN WARNING (same window): the Phantom Debt warning text was placed as the server's
+join message — plugins/Essentials/motd.txt replaced (the previous motd preserved on
+the server as motd.txt.bak-20261018) — so every player who joins tonight sees the
+warning per Mike's per-join design.
+FOLLOW-UP OWED: retire/replace motd.txt after the first haunted night begins
+(Mon Oct 19, 2026 evening) — from then on the sky's own story rotation carries the
+telling. Tracked on Route Sheet WRV-082.
+
+LIVE PROOF STILL OWED: the first haunted night itself (phantoms actually hunt a
+sleepless player Mon night; story lines rotate in chat) — build day was a wards day,
+so the ALLOW path + broadcast firing are proven by the unit suites + rig only.
+
+Rollback: panel Shut Down; delete plugins/ExcelNoPhantoms-1.2.0.jar, rename
+plugins/ExcelNoPhantoms-1.1.0.jar.bak-20261018 back; Start. (Or config-only stop:
+set mode: always-off / event-active: false and restart.)
