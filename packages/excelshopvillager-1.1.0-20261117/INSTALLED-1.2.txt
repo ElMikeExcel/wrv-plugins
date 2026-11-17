@@ -1,0 +1,25 @@
+ExcelShops 1.2 install — landed Thu Oct 15, 2026, ~10:19 PM CDT
+Server: Michael's Server (Shockbyte, 2602e828-7192-4a75-add8-74861e5632d7), Paper 26.2
+Gate: panel 0/10 players; console list #1 10:12:18 PM "There are 0 out of maximum 10 players online."; list #2 10:13:58 PM same. Passed.
+Shutdown: panel Shut Down (not console stop), offline 10:14:22 PM.
+Swaps (old jar renamed .bak-20261015, new jar uploaded):
+- ExcelShops-1.1.jar -> ExcelShops-1.2.jar
+- MenuJoin-1.2.0.jar -> ExcelMenuJoin-1.3.0.jar
+- BedrockMenu-1.4.2-menu.1.jar -> ExcelBedrockMenu-1.5.0.jar
+- ShopVillager-1.0.0.jar -> ExcelShopVillager-1.1.0.jar
+- plugins/DeluxeMenus/gui_menus/server_menu.yml -> server_menu.yml.bak-20261015, new server_menu.yml uploaded
+Log evidence (verbatim):
+- Done (17.448s)! For help, type "help" at 10:19:41 PM
+- [ExcelShops] Enabling ExcelShops v1.2
+- [ExcelMenuJoin] Enabling ExcelMenuJoin v1.3.0
+- [ExcelBedrockMenu] Enabling ExcelBedrockMenu v1.5.0
+- [ExcelShopVillager] Enabling ExcelShopVillager v1.1.0
+- [ExcelShops] ExcelShops v1.2 enabled. 1 shop(s), 1 chest binding(s). Economy: EssentialsX Economy
+- No "protection-only mode" line (console search returned no matches)
+- [ExcelBedrockMenu] Migrated legacy data folder plugins/BedrockMenu -> plugins/ExcelBedrockMenu
+- [ExcelShopVillager] Migrated legacy data folder plugins/ShopVillager -> plugins/ExcelShopVillager
+- [PlaceholderAPI] Successfully registered internal expansion: menujoin [1.3.0]
+- [DeluxeMenus] 8 GUI menus loaded!
+- No stack traces naming the four plugins; no "Error occurred while enabling"
+Rollback: No
+Final state: Server Online on new plugin set. coolgirlkail rejoined 10:20:05 PM after Done (1/10).
