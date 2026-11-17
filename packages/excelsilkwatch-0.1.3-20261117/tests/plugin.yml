@@ -1,0 +1,6 @@
+# Excel — offline verification fixture for ExcelSilkWatch.
+name: ObserverProbe
+version: '1'
+main: verification.ObserverProbe
+api-version: '1.21'
+depend: [ExcelSilkWatch]
