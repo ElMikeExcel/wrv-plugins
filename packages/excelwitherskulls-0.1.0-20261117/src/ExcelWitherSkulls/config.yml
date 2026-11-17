@@ -1,0 +1,33 @@
+# ExcelWitherSkulls — elite wither skeleton skull top-up (Wink Reyes Valley)
+#
+# THE RULE: when an ELITE wither skeleton (EliteMobs' own tagger
+# decides what is elite) dies to a PLAYER kill, its total skull
+# chance is topped up toward "target-chance-percent" below.
+# Vanilla already rolled 2.5% + 1% per Looting level on the
+# killer's weapon (5.5% at Looting III) before this plugin sees
+# the drops; if that roll left no skull, the plugin rolls the
+# difference (target minus vanilla's chance) once and adds
+# exactly one skull on success. The realized total is therefore
+# ~24.4% at the 25% target with no Looting — the top-up is the
+# difference roll, stated honestly.
+#
+# Regular wither skeletons are never touched. Neither are
+# non-player kills (a dispenser arrow earns nothing), any other
+# drop, or EliteMobs itself (read-only seam; its item drops stay
+# off until Seal 5 by Mike's standing call).
+
+# Master switch. false = wither skeletons drop exactly what
+# vanilla gives them, everywhere.
+enabled: true
+
+# The total skull chance an elite wither skeleton killed by a
+# player is topped up toward, in percent. Only ever adds: if a
+# kill's vanilla chance already meets or beats this (it cannot
+# at any sane value — Looting III tops out at 5.5%), the plugin
+# does nothing.
+target-chance-percent: 25.0
+
+# true = every elite wither skeleton death on the player-kill
+# path logs its verdict (chances, roll, outcome) at INFO, for
+# tuning checks. Leave off in normal play.
+debug-log: false

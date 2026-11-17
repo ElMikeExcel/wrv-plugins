@@ -1,0 +1,16 @@
+name: ExcelWitherSkulls
+version: 0.1.0
+main: com.winkreyes.excelwitherskulls.ExcelWitherSkulls
+api-version: '1.13'
+author: WinkReyesValley
+softdepend: [EliteMobs]
+description: Elite wither skeletons that die to a player kill get their skull chance topped up toward a configured target (default 25 percent). Vanilla already rolls 2.5 percent plus 1 percent per Looting level; when that roll leaves no skull in the drops, this plugin rolls the difference and adds exactly one. Regular wither skeletons, non-player kills and all other drops are untouched, and EliteMobs is only ever read (its own tagger), never written.
+commands:
+  witherskulls:
+    description: Elite wither skull top-up admin.
+    usage: /witherskulls <status|reload>
+    aliases: [wskulls]
+permissions:
+  excelwitherskulls.admin:
+    description: Run /witherskulls status and reload.
+    default: op
