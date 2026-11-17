@@ -1,0 +1,8 @@
+name: WRVWandDiagnostic
+version: 0.1.0-offline-diagnostic
+main: com.winkreyes.wanddiagnostic.WandDiagnostic
+api-version: '1.21'
+depend: [Geyser-Spigot, ExcelWandBars]
+commands:
+  wanddiag:
+    description: Console-only owner-filtered temporary gesture diagnostics
