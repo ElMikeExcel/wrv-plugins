@@ -1,0 +1,38 @@
+--- /home/hatch/workspace/downed-016-build-20261117/work/build-1.0.0/tests/com/winkreyes/exceldowned/DownedTest.java	2026-11-18 03:04:46.585233817 +0000
++++ build-1.0.0/tests/com/winkreyes/exceldowned/DownedTest.java	2026-11-18 03:34:39.682226735 +0000
+@@ -1401,6 +1401,35 @@
+         assertFalse(c3.isLocked(buyer), "a COMPLETED transaction never locks");
+     }
+ 
++    // Group 6b (F1, run 510): the journal's directory sync is best-effort.
++    // Windows refuses directory channels (AccessDeniedException on open),
++    // which on the unconditional directory force disabled purchases on the
++    // first boot after journal creation (mirror rig W5, Boot A WARN).
++    // Downed's build excludes Mockito, so the refusal is injected through
++    // the journal's DirectoryChannelOpener seam instead of Shops'
++    // MockedStatic<FileChannel> approach (DirectorySyncBestEffortTest).
++    @Test
++    void journalDirectorySyncBestEffort() throws Exception {
++        Path dir = Files.createTempDirectory("revive-buy-dir-sync");
++        // a platform refusal (either refusal type) must not fail the sync
++        assertDoesNotThrow(() -> RevivePurchaseJournal.syncDirectoryBestEffort(dir,
++                d -> { throw new java.nio.file.AccessDeniedException(d.toString()); }));
++        assertDoesNotThrow(() -> RevivePurchaseJournal.syncDirectoryBestEffort(dir,
++                d -> { throw new UnsupportedOperationException("no directory channels"); }));
++        // any other IOException still propagates — only refusals are best-effort
++        assertThrows(java.io.IOException.class, () -> RevivePurchaseJournal.syncDirectoryBestEffort(dir,
++                d -> { throw new java.io.IOException("some other failure"); }));
++        // the real opener syncs a real directory without error
++        assertDoesNotThrow(() -> RevivePurchaseJournal.syncDirectoryBestEffort(dir));
++        // end to end: a fresh journal in a fresh directory is created healthy
++        // and usable (the creation path that carries the directory sync)
++        Path file = dir.resolve("nested").resolve("purchases.journal");
++        RevivePurchaseJournal fresh = new RevivePurchaseJournal(file);
++        assertTrue(Files.isRegularFile(file), "journal file created");
++        assertTrue(fresh.healthy(), "fresh journal is healthy");
++        assertTrue(fresh.unresolved().isEmpty(), "fresh journal has no unresolved entries");
++    }
++
+     // Group 7: busy guard and success cooldown.
+     @Test
+     void buyBusyGuardAndSuccessCooldown() throws Exception {
