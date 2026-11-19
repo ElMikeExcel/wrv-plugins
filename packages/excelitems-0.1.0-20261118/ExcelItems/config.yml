@@ -1,0 +1,19 @@
+# ExcelItems - the custom-item registry (Wink Reyes Valley)
+#
+# ID ASSIGNMENTS. Every custom item owns a permanent ID number.
+# IDs are NEVER reused and NEVER renumbered: shops, menus and loot
+# reference items by these IDs in their own configs, so moving an ID
+# would silently re-point every reference. When a new custom item is
+# created, it takes the next free ID (max + 1) and a line is added
+# here in the same pass; a retired item's line stays, marked in its
+# owning plugin's notes, and its ID is never handed out again.
+#
+# This section is validated at enable against the definitions the
+# code registers: an unknown ID, a key mismatch, or a registered ID
+# missing here disables the plugin (fail closed) instead of letting
+# the wrong item ship under a familiar ID.
+items:
+  1: veil_potion
+  2: deathprotection_basic
+  3: deathpotion
+  4: revive_potion
