@@ -1,0 +1,20 @@
+# Prototype: stage with the deployed economy, claims and Java/Bedrock clients first.
+# When true, GriefPrevention must be enabled and its ownership API readable.
+require-grief-prevention: true
+quote-seconds: 60
+# Maximum offers the spawn catalog may hold. Offers live only in
+# spawn-catalog.yml; raising this never invents stock.
+max-catalog-offers: 250
+# Native Bedrock number entry/review. All callback actions re-enter the server thread.
+bedrock-forms: true
+# Menu-compass shortcut: tapping your own shop's sign with the server-menu
+# compass opens Manage, and tapping a sign on your own non-shop chest offers
+# shop setup, instead of opening the server menu.
+compass-shop-shortcut: true
+# Append every completed ExcelShops purchase to purchases.csv (market-trend history).
+# Evidence only; checkout/transactions.log stays the reconciliation journal.
+purchase-log: true
+
+# Experimental session proof and narrowly verified no-activity recovery. Both default OFF; deployment approval required.
+session-proof-enabled: false
+no-activity-auto-recovery: false
