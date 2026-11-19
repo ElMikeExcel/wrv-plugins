@@ -1,0 +1,57 @@
+--- /home/hatch/workspace/downed-016-build-20261117/work/build-1.0.0/src/com/winkreyes/exceldowned/RevivePurchaseJournal.java	2026-11-18 02:57:27.039235553 +0000
++++ build-1.0.0/src/com/winkreyes/exceldowned/RevivePurchaseJournal.java	2026-11-18 03:34:57.996226663 +0000
+@@ -4,7 +4,9 @@
+ import java.nio.ByteBuffer;
+ import java.nio.channels.FileChannel;
+ import java.nio.charset.StandardCharsets;
++import java.nio.file.AccessDeniedException;
+ import java.nio.file.Files;
++
+ import java.nio.file.Path;
+ import java.nio.file.StandardOpenOption;
+ import java.util.Collections;
+@@ -55,9 +57,7 @@
+                 channel.force(true);
+             }
+             // Persist the newly created directory entry before any money operation.
+-            try (FileChannel directory = FileChannel.open(parent, StandardOpenOption.READ)) {
+-                directory.force(true);
+-            }
++            syncDirectoryBestEffort(parent);
+         }
+         byte[] bytes = Files.readAllBytes(this.file);
+         if (bytes.length > 0 && bytes[bytes.length - 1] != '\n') {
+@@ -73,6 +73,33 @@
+         }
+     }
+ 
++    /** Opens a channel on a directory so its entry can be forced. Test seam. */
++    @FunctionalInterface
++    interface DirectoryChannelOpener {
++        FileChannel open(Path directory) throws IOException;
++    }
++
++    private static final DirectoryChannelOpener REAL_DIRECTORY_OPENER =
++            directory -> FileChannel.open(directory, StandardOpenOption.READ);
++
++    // Directory fsync is best-effort: Windows refuses directory channels
++    // (AccessDeniedException on open), so a refusal must not fail journal
++    // creation; the journal file itself is always forced first. Any other
++    // IOException still propagates. Mirrors ExcelShops 1.3.9's
++    // FileJournal.syncDirectory (board run 510, finding F1).
++    static void syncDirectoryBestEffort(Path directory) throws IOException {
++        syncDirectoryBestEffort(directory, REAL_DIRECTORY_OPENER);
++    }
++
++    static void syncDirectoryBestEffort(Path directory, DirectoryChannelOpener opener)
++            throws IOException {
++        try (FileChannel channel = opener.open(directory)) {
++            channel.force(true);
++        } catch (AccessDeniedException | UnsupportedOperationException refused) {
++            // Platform cannot fsync directories; file-level fsync already done.
++        }
++    }
++
+     public synchronized boolean healthy() { return healthy; }
+ 
+     public synchronized Map<UUID, Entry> unresolved() {

@@ -1,0 +1,25 @@
+name: ExcelDowned
+version: 1.0.0
+api-version: '1.21'
+main: com.winkreyes.exceldowned.ExcelDowned
+description: Lethal damage becomes a downed state instead of death; the Resurrection spell brings a downed party member back at 50% health. Giving up is a button confirm (Java menu / Bedrock form), with the typed two-step as fallback. Staff can revive or clear a downed player from console (/downed revive|clear, exceldowned.admin). The Revive Potion — sold at the Excel Shop for $5,000 (launch) — lets a carrier revive a downed party member by walking up and tapping Revive — no wand, works in EliteMobs worlds; one potion per revive, 10-minute per-player cooldown after a successful use. A Cleric (EliteMobs class, EM level 10+) can Raise Ally with /raiseally — a downed ally within 20 blocks stands at 50% health for 85 GRACE, 10-minute success-only cooldown; EliteMobs is a soft depend, so without it the ability stands down and Downed is unaffected.
+authors: [Iris, Mike]
+depend: [Magic]
+softdepend: [ExcelTogether, Geyser-Spigot, floodgate, EliteMobs, Vault]
+
+commands:
+  giveup:
+    description: While downed, give up and die on the spot (button confirm, typed two-step fallback)
+    usage: /giveup
+  raiseally:
+    description: Cleric ability — raise a downed ally within range at 50% health (85 GRACE, 10-minute cooldown after a success)
+    usage: /raiseally
+    aliases: [raise]
+  downed:
+    description: Check downed status; staff can inspect a player, reload settings, or revive/clear a downed player; the revivepotion seam mints Revive Potions (shop/console) and confirms a chat-fallback revive
+    usage: /downed [player|reload|revive <player>|clear <player>|revivepotion give <player> [amount]|revivepotion confirm]
+
+permissions:
+  exceldowned.admin:
+    description: Staff tools (status inspection, settings reload, console revive/clear of a downed player)
+    default: op
