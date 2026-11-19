@@ -1,0 +1,29 @@
+name: ExcelShops
+version: '1.3.11'
+main: com.winkreyes.shops.WRVShops
+api-version: '1.21'
+author: Wink Reyes Valley
+license: MIT
+description: "Guided shops and guarded legacy ChestShop BUY/SELL with explicit final confirmation. 1.3.8 adds the separate console-admin command /excelshopadmin (status and reload only), gated by excelshops.admin. 1.3.9 makes the directory durability sync best-effort so the stores also open on Windows-hosted test rigs; no shop behavior changes. 1.3.10 adds a working Back to the built-in shop screens: the setup price list returns to the screen that opened it, and the spawn catalog, player catalog, setup prompt, Manage screen and legacy ChestShop offer return to the Server Menu. 1.3.11 hard-depends on ExcelItems: the four special products resolve through the registry (listings name a registry ID in config, name and lore come from the registry definition, delivery stays the owning plugin console command, registry-resolved)."
+depend: [ExcelItems]
+softdepend: [Vault, GriefPrevention, ChestShop, Geyser-Spigot, floodgate, ExcelMenu]
+commands:
+  excelshop:
+    aliases: [wrvshop]
+    description: Browse the confirmed Spawn Shop or manage your chest shop
+    usage: /excelshop [browse <item>|setup|manage|amount <number>|stats [days]]
+    permission: wrvshops.use
+  excelshopadmin:
+    description: "Console admin for ExcelShops - inspect a player's shops (read-only) or reload config and catalogs"
+    usage: /excelshopadmin status <player> | /excelshopadmin reload
+permissions:
+  wrvshops.use:
+    default: true
+  wrvshops.create:
+    default: true
+  wrvshops.admin:
+    description: View /excelshop stats (purchase history summary)
+    default: op
+  excelshops.admin:
+    description: Administer ExcelShops with /excelshopadmin (status and reload). Checked inside the admin command only - deliberately NOT a command-level permission, and /excelshop keeps its own wrvshops.use gate unchanged.
+    default: op
