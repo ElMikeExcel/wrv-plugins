@@ -1,0 +1,14 @@
+name: ExcelItems
+version: 0.1.0
+main: com.winkreyes.excelitems.ExcelItems
+api-version: '1.13'
+author: WinkReyesValley
+description: The custom-item registry. Every WRV custom item is defined once as data with a permanent ID and name; the identity is carried in the item's own data (excelitems:id) so any plugin can recognize it, and behavior is registered against the ID by the owning plugin. Shops, menus and loot reference items by ID in config. Standalone dependency plugin (ExcelShops, ExcelDowned and future Excel plugins hard-depend on it); free, small, stable and boring by design.
+commands:
+  excelitems:
+    description: ExcelItems registry admin.
+    usage: /excelitems <status|list|give <player> <id|key> [amount]|identify>
+permissions:
+  excelitems.admin:
+    description: Run /excelitems status, list, give and identify.
+    default: op
