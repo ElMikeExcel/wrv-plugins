@@ -1,0 +1,31 @@
+# ExcelShops special products (ExcelItems registry, M4) - bundled fallback.
+# Used only when the data-folder config.yml carries no special-products
+# section. Keep these listings identical to config.yml's section (a test
+# pins the agreement). Each listing names the permanent registry ID it
+# sells; name/lore come from the registry definition; price is a shop
+# fact; delivery is the owning plugin's console command template.
+special-products:
+  veil_potion:
+    category: potions_protection
+    excelitems_id: 1
+    price: '2000.00'
+    delivery: 'mobveil buy %player_name%'
+    owner: ExcelMobVeil
+  deathprotection_basic:
+    category: potions_protection
+    excelitems_id: 2
+    price: '15000.00'
+    delivery: 'deathprotection buy basic %player_name%'
+    owner: ExcelDeathProtection
+  deathpotion:
+    category: potions_protection
+    excelitems_id: 3
+    price: '30000.00'
+    delivery: 'deathprotection buy premium %player_name%'
+    owner: ExcelDeathProtection
+  revive_potion:
+    category: potions_protection
+    excelitems_id: 4
+    price: '5000.00'
+    delivery: 'downed revivepotion buy %player_name%'
+    owner: ExcelDowned
