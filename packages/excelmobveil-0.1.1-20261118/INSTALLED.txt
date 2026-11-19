@@ -1,0 +1,13 @@
+plugin=ExcelMobVeil
+version=0.1.1
+installed=2026-11-18 23:30 CST
+window=wrv-install-failsafe-v2 run 30dd1528-d957-4c98-bfe9-397579735dfe, Install 2 of 3 (chained M2-M4 window)
+lane=Homebase (probe PASS attempt 1, DESKTOP-IL05DQR)
+backup=wrv-migration-m2m4-20261118 (Manual, 11/18/2026 11:16 PM, 8.4 GB); prunees wrv-tdleak-20261118 + Daily Backup 11/15/2026
+gate_live=plugins/ExcelMobVeil-0.1.0.jar 61085 66E7E50821B439F51A9C1882CE9E60D0011D97065B7B4ED26B407E81D35080FC EXACT
+placed=plugins/ExcelMobVeil-0.1.1.jar 61819 42FFA15514513366E973A4CEFDD106A108BD31004ED166CBBBAC3FCA1863560D EXACT pull-back
+bak=plugins/ExcelMobVeil-0.1.0.jar.bak-premigration (gate hash EXACT)
+boot=Done (24.148s) 23:30:00 CST; Enabling ExcelMobVeil v0.1.1 x1 line 622 after ExcelItems line 233; enable line 623 x1 ($2,000.00, eight real-time minutes); SEVERE 0
+rcon_excelitems_status=4 item(s) registered, next free id 5.
+end_state=server ONLINE, 0 players, whitelist never engaged
+run_record=~/workspace/wrv-install-queue/runs/20261118-2304-failsafe/RUN-RECORD.md
