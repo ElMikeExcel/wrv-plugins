@@ -1,0 +1,17 @@
+# Insert under items only after assigning a free slot from the current live file.
+veil_potion:
+  material: POTION
+  display_name: '&b&lVeil Potion'
+  lore:
+    - '&7Price: &a$2,000'
+    - '&7Each drink adds 8 real-time minutes.'
+    - '&bMore potions stack time.'
+    - '&7Farm while standard mobs ignore you.'
+    - '&7Works in armor; armor stays visible.'
+    - '&cAttacking ends all accumulated time.'
+    - '&7Milk/death end it. No damage immunity.'
+    - '&eClick to review purchase.'
+  left_click_commands:
+    - '[console] mobveil buy %player_name%'
+  right_click_commands:
+    - '[console] mobveil buy %player_name%'
