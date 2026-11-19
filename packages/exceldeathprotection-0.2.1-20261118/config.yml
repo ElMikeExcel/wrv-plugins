@@ -1,0 +1,20 @@
+# Candidate 0.1.3. In-game money; paid only from the matching review Confirm button.
+# Old `price` no longer sets either product's price.
+basic-price: 15000.0
+premium-price: 30000.0
+
+# Premium credits (ExcelBossTrial war-chest seam, 0.2.0). A banked
+# premium credit is a service balance, not an item: one credit is
+# one premium protection, spent automatically at respawn after a
+# death uses the active protection. Defaults keep the seam ON for
+# a config carried over from 0.1.x (which has no premium block).
+premium:
+  # Master switch for the API: false makes creditPremium return false.
+  enabled: true
+  # Re-arm from the bank automatically at respawn after a death
+  # consumes the active protection.
+  auto-rearm: true
+  # Sanity clamp on a single API call. BossTrial passes 1.
+  max-per-call: 5
+  # 0 = no cap on banked credits.
+  max-banked: 0
