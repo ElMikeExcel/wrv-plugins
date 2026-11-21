@@ -1,0 +1,33 @@
+# ExcelEMLeash 0.1.0 — the EliteMobs leash fix (D167).
+#
+# Leg A — aggro-clear: when a regional boss finishes its leash return
+# home, clear its target and EliteMobs combat memory so it STAYS home
+# (healed, as EliteMobs designs) instead of charging straight back out
+# at the player who dragged it away. It re-engages only when genuinely
+# re-pulled.
+aggro-clear:
+  enabled: true
+
+# Leg B — radii management: EliteMobs reads each boss's leashRadius
+# from its own files when the boss spawns. This plugin raises the
+# loaded values in memory at runtime — the boss files are never
+# edited — and re-applies after EliteMobs reloads, so a content-pack
+# update cannot silently undo the floor.
+radii:
+  enabled: true
+  # No boss that has a leash keeps one tighter than this. Bosses with
+  # larger radii are untouched; bosses with NO leash stay unleashed
+  # (the floor never invents leashes). Primis' tight stock values
+  # (50 bosses at 20 — their walk-home starts at 10 blocks) are why
+  # this exists.
+  minimum-radius: 35
+  # Per-boss overrides, keyed by boss filename. An override always
+  # wins, in both directions: raise one boss above the floor, lower
+  # one below it, give a leash to a boss that has none, or set 0 to
+  # unleash a boss entirely.
+  overrides: {}
+    # "primis_feral_wolf.yml": 40
+
+# Verbose LEASH lines (per-boss radius changes, every aggro clear).
+# Ships on until the first live proof lands, per house precedent.
+debug: true
