@@ -1,0 +1,36 @@
+ExcelTrainingWheels 0.1.4 - records package file list
+Package files total: 31 (including FILE-LIST.txt and SHA256SUMS)
+
+./BUILD-RECORD.md
+./FILE-LIST.txt
+./INSTALL-PACKET.md
+./INSTALLED.txt
+./RECEIPTS.md
+./RECORDS-RECORD.md
+./SHA256SUMS
+./SOURCE.md
+./build.sh
+./config.yml
+./plugin.yml
+./run-tests.sh
+./src/com/winkreyes/exceltrainingwheels/ExcelTrainingWheels.java
+./src/com/winkreyes/exceltrainingwheels/core/BossDivision.java
+./src/com/winkreyes/exceltrainingwheels/core/CompensationTable.java
+./src/com/winkreyes/exceltrainingwheels/core/CopperDoors.java
+./src/com/winkreyes/exceltrainingwheels/core/DoorHoldRule.java
+./src/com/winkreyes/exceltrainingwheels/core/ProtectedRegistry.java
+./src/com/winkreyes/exceltrainingwheels/core/RaidDivision.java
+./src/com/winkreyes/exceltrainingwheels/core/ShieldRule.java
+./src/com/winkreyes/exceltrainingwheels/core/SiegeBook.java
+./tests/BossDivisionTest.java
+./tests/Check.java
+./tests/CompensationTableTest.java
+./tests/CopperDoorsTest.java
+./tests/DoorHoldRuleTest.java
+./tests/ProtectedRegistryTest.java
+./tests/RaidDivisionTest.java
+./tests/ShieldRuleTest.java
+./tests/SiegeBookTest.java
+./tests/TestMain.java
+
+Counts: 31 files total. SHA256SUMS carries 30 entries (every other package file). Jar is NOT in the package (Drive only, see SOURCE.md) unless the package is the D164 config fix, which has no jar by design.
