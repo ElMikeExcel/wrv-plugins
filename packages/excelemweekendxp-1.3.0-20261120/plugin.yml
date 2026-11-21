@@ -1,0 +1,8 @@
+name: ExcelEMWeekendXP
+version: 1.3.0
+authors: [Iris, Mike]
+main: com.winkreyes.excelweekendxp.ExcelWeekendXP
+api-version: "1.21"
+description: Automatically sets mcMMO, vanilla, and EliteMobs skill 1.2x XP on weekends (Fri-Sun). Vanilla and EliteMobs multipliers owned in-plugin via event listeners; no mcMMO bridge API required.
+depend: [mcMMO]
+softdepend: [EliteMobs]
