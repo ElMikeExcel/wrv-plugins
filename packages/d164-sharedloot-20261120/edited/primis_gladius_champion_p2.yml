@@ -1,0 +1,67 @@
+onSpawnBlockStates: []
+onRemoveBlockStates: []
+bossType: NORMAL
+normalizedCombat: true
+isEnabled: true
+instanced: true
+entityType: ZOMBIE
+name: $bossLevel &6Fallen Champion Natus
+level: 8
+healthMultiplier: 6.0
+damageMultiplier: 1.75
+spawnCooldown: 15
+leashRadius: 30
+followDistance: 35
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+damageModifiers:
+- material:NETHERITE_SWORD,multiplier:2
+powers:
+- primis_dome_of_darkness.yml
+- primis_fire_columns.yml
+- primis_push_dome.yml
+- gold_explosion.yml
+movementSpeedAttribute: 0.34
+classLoot: true
+classLootRank: BOSS
+classLootDifficulty: AUTO
+uniqueLootList:
+- filename: cl_primis_adventure_road_swords_46210d6b.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_axes_0c821e4a.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_bows_e4d8fbd7.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_crossbows_5d67b3d2.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_tridents_77df7594.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_hoes_2289ee02.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_maces_7be8402e.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_spears_ece109f5.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_staves_a1e33596.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_wands_8e767dbc.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_dps_helmets_e226c922.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_dps_chestplates_98bd9b33.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_dps_leggings_7d5b8a0f.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_dps_boots_20facc24.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_tank_helmets_8188c6e7.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_tank_chestplates_666050e5.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_tank_leggings_386b5e9a.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_tank_boots_dd8f2eff.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_shields_29d265a3.yml
+  chance: 1.0

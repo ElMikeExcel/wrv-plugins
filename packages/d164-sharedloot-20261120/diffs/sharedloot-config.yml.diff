@@ -1,0 +1,8 @@
+--- originals/sharedloot-config.yml	2026-11-20 17:08:04.976905562 +0000
++++ edited/sharedloot-config.yml	2026-11-20 17:08:07.746905670 +0000
+@@ -6,4 +6,4 @@
+ # debug: when true, every snapshot, intercept, suppression and delivery is
+ # written to the server console. Useful while proving the share in live
+ # guild content; leave off in normal use.
+-debug: false
++debug: true

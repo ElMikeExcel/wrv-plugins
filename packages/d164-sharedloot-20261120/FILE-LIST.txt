@@ -1,0 +1,26 @@
+D164 shared-loot fix - records package file list
+Package files total: 21 (including FILE-LIST.txt and SHA256SUMS)
+
+./FILE-LIST.txt
+./INSTALL-PACKET.md
+./INSTALLED.txt
+./RECORD.md
+./RECORDS-RECORD.md
+./SHA256SUMS
+./diffs/primis_feral_alpha_wolf.yml.diff
+./diffs/primis_gladius_champion_p2.yml.diff
+./diffs/primis_mountain_pass_guardian_p1.yml.diff
+./diffs/primis_mountain_pass_guardian_p2.yml.diff
+./diffs/sharedloot-config.yml.diff
+./edited/primis_feral_alpha_wolf.yml
+./edited/primis_gladius_champion_p2.yml
+./edited/primis_mountain_pass_guardian_p1.yml
+./edited/primis_mountain_pass_guardian_p2.yml
+./edited/sharedloot-config.yml
+./originals/primis_feral_alpha_wolf.yml
+./originals/primis_gladius_champion_p2.yml
+./originals/primis_mountain_pass_guardian_p1.yml
+./originals/primis_mountain_pass_guardian_p2.yml
+./originals/sharedloot-config.yml
+
+Counts: 21 files total. SHA256SUMS carries 20 entries (every other package file). Jar is NOT in the package (Drive only, see SOURCE.md) unless the package is the D164 config fix, which has no jar by design.
