@@ -1,0 +1,36 @@
+# ExcelEMFoodHeal 0.1.0 (D162) - food heal-over-time in EliteMobs worlds.
+# All values are percents of the player's live max health.
+
+# Debug logging: FOODHEAL meal/pause/resume/complete/expire lines.
+# Default ON until the first live proof lands, then flip to false.
+debug: true
+
+# Instant heal granted the moment food is eaten (part of the budget).
+instant-percent: 1.0
+
+# Budget delivery rate while out of combat.
+rate-percent-per-second: 0.5
+
+# Budget total = clamp(food saturation * multiplier, min, max).
+# Steak (12.8 saturation) = 9.6%; bread (6.0) = 4.5%; carrot (3.6) = 2.7%.
+saturation-multiplier: 0.75
+min-total-percent: 1.0
+max-total-percent: 10.0
+
+# Seconds after the last combat action before budget ticks land
+# (mirrors EliteMobs' own 20-second combat-exit rule).
+combat-window-seconds: 20
+
+# Undelivered budget expires this many seconds after the meal.
+budget-expiry-seconds: 90
+
+# World gate: a world is in scope when EliteMobs' own registry
+# claims it (covers instanced dungeon worlds automatically) OR its
+# name is listed here. The overworld/nether/end are never in scope.
+worlds:
+  - em_primis
+  - em_adventurers_guild
+
+# Optional per-food saturation overrides (Material name -> saturation).
+# Empty by default; the built-in vanilla table covers all foods.
+food-saturation: {}
