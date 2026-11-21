@@ -1,0 +1,26 @@
+ExcelEMFoodHeal 0.1.0 - records package file list
+Package files total: 21 (including FILE-LIST.txt and SHA256SUMS)
+
+./BUILD-RECORD.md
+./FILE-LIST.txt
+./INSTALL-PACKET.md
+./INSTALLED.txt
+./RECEIPTS.md
+./RECORDS-RECORD.md
+./SHA256SUMS
+./SOURCE.md
+./build.sh
+./config.yml
+./plugin.yml
+./run-tests.sh
+./src/com/winkreyes/excelemfoodheal/ExcelEMFoodHeal.java
+./src/com/winkreyes/excelemfoodheal/FoodTable.java
+./src/com/winkreyes/excelemfoodheal/HealEngine.java
+./src/com/winkreyes/excelemfoodheal/WorldGate.java
+./tests/com/winkreyes/excelemfoodheal/Check.java
+./tests/com/winkreyes/excelemfoodheal/FoodTableTest.java
+./tests/com/winkreyes/excelemfoodheal/HealEngineTest.java
+./tests/com/winkreyes/excelemfoodheal/TestMain.java
+./tests/com/winkreyes/excelemfoodheal/WorldGateTest.java
+
+Counts: 21 files total. SHA256SUMS carries 20 entries (every other package file). Jar is NOT in the package (Drive only, see SOURCE.md) unless the package is the D164 config fix, which has no jar by design.

@@ -1,0 +1,7 @@
+name: ExcelEMFoodHeal
+version: 0.1.0
+main: com.winkreyes.excelemfoodheal.ExcelEMFoodHeal
+api-version: '1.13'
+softdepend: [EliteMobs]
+author: WinkReyesValley
+description: Food heal-over-time in EliteMobs worlds - eating grants a small instant heal plus a saturation-scaled budget of max-health percent, delivered slowly while out of combat (D162).
