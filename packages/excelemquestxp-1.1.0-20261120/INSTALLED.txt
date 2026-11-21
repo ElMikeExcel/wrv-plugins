@@ -1,0 +1,8 @@
+# ExcelEMQuestXP 1.1.0 — INSTALLED
+- Installed: 2026-11-20, runner-hybrid window (runs/20261120-1335-runner-hybrid), Packet B 20261120-1814-hybrid-b (12/12 legs exit 0; post-swap verification 10/10); panel Start 18:19 CT, Done (23.437s) 18:20:01 CT.
+- Window backup: wrv-fullpush-20261120 (Manual, 8.1 GB).
+- Migration: plugins/ExcelQuestXP/ copied to plugins/ExcelEMQuestXP/ in Segment 2, all 4 files SHA-256-identical both sides (backpay.yml 24274c55…, backpay-paid.yml, grants.log, quest-xp.yml); source folder left in place. Old ExcelQuestXP-1.0.1.jar renamed to .bak-20261120.
+- Placed: ExcelEMQuestXP-1.1.0.jar 50,603 B / SHA-256 cab1574471c50ace591bc12603afbd42272c06aec8c4cc78a3b660ae112b670e (D159 target choice + D160 rename).
+- Boot: ExcelEMQuestXP v1.1.0 ready; "Backpay paid ledger loaded: 46"; SEVERE 0.
+- Segment 3 console proof: /questxp backpay GumGumJetPistol and /questxp backpay Jester_Turtle both REFUSED-offline by design (players offline; nothing paid); paid ledger pulled and verified — exactly 46 paid records, all 2026-11-20 (13 Marvin + 33 Jester) → 0 owed on primary evidence. Backpay CLOSED.
+- End state (Segment 3): server ONLINE, whitelist OFF. Proof owed (player lane): quest completion pays to chosen target (D154 pool).
