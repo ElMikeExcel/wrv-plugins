@@ -1,0 +1,11 @@
+# D164 shared-loot fix (config, 5 files) — INSTALLED
+- Installed: 2026-11-20, runner-hybrid window (runs/20261120-1335-runner-hybrid), Packet B 20261120-1814-hybrid-b (12/12 legs exit 0; post-swap verification 10/10); panel Start 18:19 CT, Done (23.437s) 18:20:01 CT.
+- Window backup: wrv-fullpush-20261120 (Manual, 8.1 GB).
+- Placed (each live file first backed up to .bak-20261120; hyper_loot power line removed from the 4 boss files; ExcelSharedDungeonLoot config debug false→true until retest passes):
+  - primis_feral_alpha_wolf.yml → b155d316ac5e28967749efbd63f53d856b5309bee00ccbabd3086a789be2f881
+  - primis_gladius_champion_p2.yml → e696e4ce79d07eb4aa2bfc3bbecbb41733babeeda68e04e1a12f06ce1de07a21
+  - primis_mountain_pass_guardian_p1.yml → d7a0760930828a9a7a24591a73fa07419eef1cd6473d1b81c4aaa5362d803772
+  - primis_mountain_pass_guardian_p2.yml → 3c6d8d94f5eff2ecc5c2d9e64b349c8d04f834467548373f163bf2ae35f97658
+  - plugins/ExcelSharedDungeonLoot/config.yml → 3bd626d5cc6eba075c55519146fe2f9dc791309017aca2d2afb1d879b4c7f380 (debug: true)
+- Boot: SharedDungeonLoot "enabled (enabled=true, debug=true)"; SEVERE 0; no new WARN/ERROR naming the four bosses. D172 Wolf Den lockout reset (18→1 per player for Jester + Marvin, Lighthouse survivor byte-identical) landed in the same window's Segment 2.
+- End state (Segment 3): server ONLINE, whitelist OFF. Proof owed (player lane): Wolf Den retest — Marvin + Jester pair, no floor shower, shared items to both, /sharedloot counters increment; flip config debug off after a passing retest.

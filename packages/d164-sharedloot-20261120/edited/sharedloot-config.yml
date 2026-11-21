@@ -1,0 +1,9 @@
+# ExcelSharedDungeonLoot configuration.
+#
+# enabled: master switch. When false the plugin stands down completely and
+# EliteMobs runs its stock Need/Greed vote untouched.
+enabled: true
+# debug: when true, every snapshot, intercept, suppression and delivery is
+# written to the server console. Useful while proving the share in live
+# guild content; leave off in normal use.
+debug: true

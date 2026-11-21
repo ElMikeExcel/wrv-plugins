@@ -1,0 +1,249 @@
+bossType: NORMAL
+isEnabled: true
+entityType: IRON_GOLEM
+name: $bossLevel &6The Guardian
+level: 15
+healthMultiplier: 7
+damageMultiplier: 1.75
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+powers:
+- invulnerability_knockback.yml
+- photon_ray.yml
+- death_slice.yml
+- primis_electrical_discharge.yml
+- summonType: ON_COMBAT_ENTER
+  amount: 2
+  filename: primis_mountain_pass_healer.yml
+customModel: 05_em_ancient_golem
+followDistance: 30
+damageModifiers:
+- material:NETHERITE_SWORD,multiplier:3
+- material:NETHERITE_AXE,multiplier:3
+- material:DIAMOND_SWORD,multiplier:0.2
+- material:DIAMOND_AXE,multiplier:0.2
+- material:IRON_SWORD,multiplier:0.2
+- material:IRON_AXE,multiplier:0.2
+- material:GOLDEN_SWORD,multiplier:0.2
+- material:GOLDEN_AXE,multiplier:0.2
+- material:WOODEN_SWORD,multiplier:0.2
+- material:WOODEN_AXE,multiplier:0.2
+- material:STONE_SWORD,multiplier:0.2
+- material:STONE_AXE,multiplier:0.2
+- material:TRIDENT,multiplier:0.2
+- material:BOW,multiplier:0.2
+- material:CROSSBOW,multiplier:0.2
+onSpawnBlockStates:
+- -2.5,-0.5,-27.5/minecraft:barrier
+- -2.5,-0.5,-26.5/minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]
+- -2.5,-0.5,-25.5/minecraft:lightning_rod[facing=west,powered=false,waterlogged=false]
+- -2.5,0.5,-27.5/minecraft:barrier
+- -2.5,0.5,-26.5/minecraft:chain[axis=y,waterlogged=false]
+- -2.5,0.5,-25.5/minecraft:chain[axis=x,waterlogged=false]
+- -2.5,1.5,-27.5/minecraft:barrier
+- -2.5,1.5,-26.5/minecraft:chain[axis=y,waterlogged=false]
+- -2.5,1.5,-25.5/minecraft:chain[axis=x,waterlogged=false]
+- -2.5,2.5,-27.5/minecraft:barrier
+- -2.5,2.5,-26.5/minecraft:lightning_rod[facing=down,powered=false,waterlogged=false]
+- -2.5,2.5,-25.5/minecraft:lightning_rod[facing=west,powered=false,waterlogged=false]
+- -1.5,-0.5,-27.5/minecraft:barrier
+- -1.5,-0.5,-26.5/minecraft:lightning_rod[facing=down,powered=false,waterlogged=false]
+- -1.5,-0.5,-25.5/minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]
+- -1.5,0.5,-27.5/minecraft:barrier
+- -1.5,0.5,-26.5/minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]
+- -1.5,0.5,-25.5/minecraft:lightning_rod[facing=west,powered=false,waterlogged=false]
+- -1.5,1.5,-27.5/minecraft:barrier
+- -1.5,1.5,-26.5/minecraft:chain[axis=y,waterlogged=false]
+- -1.5,1.5,-25.5/minecraft:chain[axis=x,waterlogged=false]
+- -1.5,2.5,-27.5/minecraft:barrier
+- -1.5,2.5,-26.5/minecraft:chain[axis=y,waterlogged=false]
+- -1.5,2.5,-25.5/minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]
+- -0.5,-0.5,-27.5/minecraft:barrier
+- -0.5,-0.5,-26.5/minecraft:chain[axis=y,waterlogged=false]
+- -0.5,-0.5,-25.5/minecraft:chain[axis=x,waterlogged=false]
+- -0.5,0.5,-27.5/minecraft:barrier
+- -0.5,0.5,-26.5/minecraft:lightning_rod[facing=down,powered=false,waterlogged=false]
+- -0.5,0.5,-25.5/minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]
+- -0.5,1.5,-27.5/minecraft:barrier
+- -0.5,1.5,-26.5/minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]
+- -0.5,1.5,-25.5/minecraft:lightning_rod[facing=west,powered=false,waterlogged=false]
+- -0.5,2.5,-27.5/minecraft:barrier
+- -0.5,2.5,-26.5/minecraft:chain[axis=y,waterlogged=false]
+- -0.5,2.5,-25.5/minecraft:chain[axis=x,waterlogged=false]
+- 0.5,-0.5,-27.5/minecraft:barrier
+- 0.5,-0.5,-26.5/minecraft:lightning_rod[facing=down,powered=false,waterlogged=false]
+- 0.5,-0.5,-25.5/minecraft:lightning_rod[facing=west,powered=false,waterlogged=false]
+- 0.5,0.5,-27.5/minecraft:barrier
+- 0.5,0.5,-26.5/minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]
+- 0.5,0.5,-25.5/minecraft:chain[axis=x,waterlogged=false]
+- 0.5,1.5,-27.5/minecraft:barrier
+- 0.5,1.5,-26.5/minecraft:chain[axis=y,waterlogged=false]
+- 0.5,1.5,-25.5/minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]
+- 0.5,2.5,-27.5/minecraft:barrier
+- 0.5,2.5,-26.5/minecraft:chain[axis=y,waterlogged=false]
+- 0.5,2.5,-25.5/minecraft:lightning_rod[facing=west,powered=false,waterlogged=false]
+- 1.5,-0.5,-27.5/minecraft:barrier
+- 1.5,-0.5,-26.5/minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]
+- 1.5,-0.5,-25.5/minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]
+- 1.5,0.5,-27.5/minecraft:barrier
+- 1.5,0.5,-26.5/minecraft:chain[axis=y,waterlogged=false]
+- 1.5,0.5,-25.5/minecraft:chain[axis=x,waterlogged=false]
+- 1.5,1.5,-27.5/minecraft:barrier
+- 1.5,1.5,-26.5/minecraft:chain[axis=y,waterlogged=false]
+- 1.5,1.5,-25.5/minecraft:chain[axis=x,waterlogged=false]
+- 1.5,2.5,-27.5/minecraft:barrier
+- 1.5,2.5,-26.5/minecraft:lightning_rod[facing=down,powered=false,waterlogged=false]
+- 1.5,2.5,-25.5/minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]
+onRemoveBlockStates:
+- -3.5,-0.5,-27.5/minecraft:deepslate_bricks
+- -3.5,-0.5,-26.5/minecraft:polished_deepslate
+- -3.5,-0.5,-25.5/minecraft:chiseled_deepslate
+- -3.5,0.5,-27.5/minecraft:deepslate_bricks
+- -3.5,0.5,-26.5/minecraft:deepslate_bricks
+- -3.5,0.5,-25.5/minecraft:chiseled_deepslate
+- -3.5,1.5,-27.5/minecraft:polished_deepslate
+- -3.5,1.5,-26.5/minecraft:polished_deepslate
+- -3.5,1.5,-25.5/minecraft:chiseled_deepslate
+- -3.5,2.5,-27.5/minecraft:polished_deepslate
+- -3.5,2.5,-26.5/minecraft:cracked_deepslate_bricks
+- -3.5,2.5,-25.5/minecraft:chiseled_deepslate
+- -2.5,-0.5,-27.5/minecraft:air
+- -2.5,-0.5,-26.5/minecraft:air
+- -2.5,-0.5,-25.5/minecraft:air
+- -2.5,0.5,-27.5/minecraft:air
+- -2.5,0.5,-26.5/minecraft:air
+- -2.5,0.5,-25.5/minecraft:air
+- -2.5,1.5,-27.5/minecraft:air
+- -2.5,1.5,-26.5/minecraft:air
+- -2.5,1.5,-25.5/minecraft:air
+- -2.5,2.5,-27.5/minecraft:air
+- -2.5,2.5,-26.5/minecraft:air
+- -2.5,2.5,-25.5/minecraft:air
+- -1.5,-0.5,-27.5/minecraft:air
+- -1.5,-0.5,-26.5/minecraft:air
+- -1.5,-0.5,-25.5/minecraft:air
+- -1.5,0.5,-27.5/minecraft:air
+- -1.5,0.5,-26.5/minecraft:air
+- -1.5,0.5,-25.5/minecraft:air
+- -1.5,1.5,-27.5/minecraft:air
+- -1.5,1.5,-26.5/minecraft:air
+- -1.5,1.5,-25.5/minecraft:air
+- -1.5,2.5,-27.5/minecraft:air
+- -1.5,2.5,-26.5/minecraft:air
+- -1.5,2.5,-25.5/minecraft:air
+- -0.5,-0.5,-27.5/minecraft:air
+- -0.5,-0.5,-26.5/minecraft:air
+- -0.5,-0.5,-25.5/minecraft:air
+- -0.5,0.5,-27.5/minecraft:air
+- -0.5,0.5,-26.5/minecraft:air
+- -0.5,0.5,-25.5/minecraft:air
+- -0.5,1.5,-27.5/minecraft:air
+- -0.5,1.5,-26.5/minecraft:air
+- -0.5,1.5,-25.5/minecraft:air
+- -0.5,2.5,-27.5/minecraft:air
+- -0.5,2.5,-26.5/minecraft:air
+- -0.5,2.5,-25.5/minecraft:air
+- 0.5,-0.5,-27.5/minecraft:air
+- 0.5,-0.5,-26.5/minecraft:air
+- 0.5,-0.5,-25.5/minecraft:air
+- 0.5,0.5,-27.5/minecraft:air
+- 0.5,0.5,-26.5/minecraft:air
+- 0.5,0.5,-25.5/minecraft:air
+- 0.5,1.5,-27.5/minecraft:air
+- 0.5,1.5,-26.5/minecraft:air
+- 0.5,1.5,-25.5/minecraft:air
+- 0.5,2.5,-27.5/minecraft:air
+- 0.5,2.5,-26.5/minecraft:air
+- 0.5,2.5,-25.5/minecraft:air
+- 1.5,-0.5,-27.5/minecraft:air
+- 1.5,-0.5,-26.5/minecraft:air
+- 1.5,-0.5,-25.5/minecraft:air
+- 1.5,0.5,-27.5/minecraft:air
+- 1.5,0.5,-26.5/minecraft:air
+- 1.5,0.5,-25.5/minecraft:air
+- 1.5,1.5,-27.5/minecraft:air
+- 1.5,1.5,-26.5/minecraft:air
+- 1.5,1.5,-25.5/minecraft:air
+- 1.5,2.5,-27.5/minecraft:air
+- 1.5,2.5,-26.5/minecraft:air
+- 1.5,2.5,-25.5/minecraft:air
+- 2.5,-0.5,-27.5/minecraft:deepslate_bricks
+- 2.5,-0.5,-26.5/minecraft:polished_deepslate
+- 2.5,-0.5,-25.5/minecraft:chiseled_deepslate
+- 2.5,0.5,-27.5/minecraft:deepslate_bricks
+- 2.5,0.5,-26.5/minecraft:polished_deepslate
+- 2.5,0.5,-25.5/minecraft:chiseled_deepslate
+- 2.5,1.5,-27.5/minecraft:polished_deepslate
+- 2.5,1.5,-26.5/minecraft:deepslate_bricks
+- 2.5,1.5,-25.5/minecraft:chiseled_deepslate
+- 2.5,2.5,-27.5/minecraft:polished_deepslate
+- 2.5,2.5,-26.5/minecraft:deepslate_bricks
+- 2.5,2.5,-25.5/minecraft:chiseled_deepslate
+- -2.5,-1.5,13.5/minecraft:polished_deepslate_slab[type=top,waterlogged=false]
+- -2.5,-1.5,14.5/minecraft:polished_deepslate_slab[type=top,waterlogged=false]
+- -2.5,-1.5,15.5/minecraft:polished_deepslate_slab[type=top,waterlogged=false]
+- -2.5,-1.5,16.5/minecraft:polished_deepslate_slab[type=top,waterlogged=false]
+- -2.5,-1.5,17.5/minecraft:polished_deepslate_slab[type=top,waterlogged=false]
+- -1.5,-1.5,13.5/minecraft:deepslate_brick_slab[type=top,waterlogged=false]
+- -1.5,-1.5,14.5/minecraft:air
+- -1.5,-1.5,15.5/minecraft:air
+- -1.5,-1.5,16.5/minecraft:air
+- -1.5,-1.5,17.5/minecraft:deepslate_brick_slab[type=top,waterlogged=false]
+- -0.5,-1.5,13.5/minecraft:deepslate_brick_slab[type=top,waterlogged=false]
+- -0.5,-1.5,14.5/minecraft:air
+- -0.5,-1.5,15.5/minecraft:air
+- -0.5,-1.5,16.5/minecraft:air
+- -0.5,-1.5,17.5/minecraft:deepslate_brick_slab[type=top,waterlogged=false]
+- 0.5,-1.5,13.5/minecraft:polished_deepslate_slab[type=top,waterlogged=false]
+- 0.5,-1.5,14.5/minecraft:air
+- 0.5,-1.5,15.5/minecraft:air
+- 0.5,-1.5,16.5/minecraft:air
+- 0.5,-1.5,17.5/minecraft:deepslate_brick_slab[type=top,waterlogged=false]
+- 1.5,-1.5,13.5/minecraft:deepslate_brick_slab[type=top,waterlogged=false]
+- 1.5,-1.5,14.5/minecraft:deepslate_brick_slab[type=top,waterlogged=false]
+- 1.5,-1.5,15.5/minecraft:deepslate_brick_slab[type=top,waterlogged=false]
+- 1.5,-1.5,16.5/minecraft:polished_deepslate_slab[type=top,waterlogged=false]
+- 1.5,-1.5,17.5/minecraft:deepslate_brick_slab[type=top,waterlogged=false]
+classLoot: true
+classLootRank: BOSS
+classLootDifficulty: AUTO
+uniqueLootList:
+- filename: cl_primis_adventure_road_swords_46210d6b.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_axes_0c821e4a.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_bows_e4d8fbd7.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_crossbows_5d67b3d2.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_tridents_77df7594.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_hoes_2289ee02.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_maces_7be8402e.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_spears_ece109f5.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_staves_a1e33596.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_wands_8e767dbc.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_dps_helmets_e226c922.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_dps_chestplates_98bd9b33.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_dps_leggings_7d5b8a0f.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_dps_boots_20facc24.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_tank_helmets_8188c6e7.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_tank_chestplates_666050e5.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_tank_leggings_386b5e9a.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_tank_boots_dd8f2eff.yml
+  chance: 1.0
+- filename: cl_primis_adventure_road_shields_29d265a3.yml
+  chance: 1.0
