@@ -1,0 +1,24 @@
+ExcelEMLeash 0.1.0 - records package file list
+Package files total: 19 (including FILE-LIST.txt and SHA256SUMS)
+
+./BUILD-RECORD.md
+./FILE-LIST.txt
+./INSTALL-PACKET.md
+./INSTALLED.txt
+./RECORDS-RECORD.md
+./SHA256SUMS
+./SOURCE.md
+./build.sh
+./config.yml
+./plugin.yml
+./run-tests.sh
+./src/com/winkreyes/excelemleash/AggroClearPolicy.java
+./src/com/winkreyes/excelemleash/EmLeashBridge.java
+./src/com/winkreyes/excelemleash/ExcelEMLeash.java
+./src/com/winkreyes/excelemleash/RadiusPolicy.java
+./tests/com/winkreyes/excelemleash/AggroClearPolicyTest.java
+./tests/com/winkreyes/excelemleash/Check.java
+./tests/com/winkreyes/excelemleash/RadiusPolicyTest.java
+./tests/com/winkreyes/excelemleash/TestMain.java
+
+Counts: 19 files total. SHA256SUMS carries 18 entries (every other package file). Jar is NOT in the package (Drive only, see SOURCE.md) unless the package is the D164 config fix, which has no jar by design.

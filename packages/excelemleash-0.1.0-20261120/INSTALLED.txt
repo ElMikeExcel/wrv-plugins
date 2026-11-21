@@ -1,0 +1,8 @@
+# ExcelEMLeash 0.1.0 — INSTALLED
+- Installed: 2026-11-20, runner-hybrid window (runs/20261120-1335-runner-hybrid), Packet B 20261120-1814-hybrid-b (12/12 legs exit 0; post-swap verification 10/10); panel Start 18:19 CT, Done (23.437s) 18:20:01 CT.
+- Window backup: wrv-fullpush-20261120 (Manual, 8.1 GB).
+- Gate passed: no ExcelEMLeash*.jar existed live (new plugin, D167).
+- Placed: ExcelEMLeash-0.1.0.jar 11,438 B / SHA-256 9da74f34ec97da8227b3531e76e4fe7e921abcdf2325742ead08cf2d29dbc90b.
+- Boot: "Enabling ExcelEMLeash v0.1.0"; "ExcelEMLeash 0.1.0 ready — aggro-clear on, radii floor 35.0."; boot-time WARN "LEASH radii: EliteMobs boss registry is empty — nothing applied yet" (expected at enable).
+- Segment 3 live proof (log, 00:25:03 UTC): the 5-min self-heal applied the radii — "LEASH radii applied: bosses seen 755, with leash 234, floor 35: raised 122, overrides in force 0, values changed 122" + 122 [debug] LEASH lines incl. "LEASH primis_feral_wolf.yml: leashRadius 20 -> 35 (floor)". Radii leg PROVEN live. OWED: flip debug off after the aggro-clear live proof; aggro-clear end-to-end (drag a feral wolf past 35, boss returns and stays home) still owed (player lane, D154 pool).
+- End state (Segment 3): server ONLINE, whitelist OFF.
