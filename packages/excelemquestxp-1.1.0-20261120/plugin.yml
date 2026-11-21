@@ -1,0 +1,18 @@
+name: ExcelEMQuestXP
+version: 1.1.0
+authors: [Iris, Mike]
+main: com.winkreyes.excelquestxp.ExcelQuestXP
+api-version: "1.21"
+description: Pays EliteMobs skill XP for completing EliteMobs quests (D136). Listens to the public QuestCompleteEvent and grants the table amount in quest-xp.yml to the player's chosen weapon skill plus Armor at 1/3. 1.0.1 adds the op-only /questxp backpay <player> command, which pays the staged backlog for quests completed before the bridge was installed (backpay.yml) with a persisted exactly-once ledger (backpay-paid.yml). 1.1.0 (D159) lets each player choose where quest XP goes — /questxp target, /questxp menu, or bare /questxp opens the popup (Java chest GUI / Bedrock form); the default stays HIGHEST, exactly the pre-1.1.0 rule. Renamed ExcelEMQuestXP under the D160 naming law; the /questxp command is unchanged. No native XP route exists in EliteMobs, so this bridge is the delivery.
+softdepend: [EliteMobs, Geyser-Spigot, floodgate]
+commands:
+  questxp:
+    description: ExcelEMQuestXP quest XP target, status, table reload, and quest backpay
+    usage: /questxp target [highest|<skill>] | /questxp menu | /questxp reload | /questxp backpay <player>
+permissions:
+  excelquestxp.admin:
+    description: Reload the quest XP table and pay staged quest backpay
+    default: op
+  excelquestxp.target:
+    description: Choose where your own quest XP goes (/questxp target, /questxp menu)
+    default: true

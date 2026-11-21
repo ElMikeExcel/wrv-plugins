@@ -1,0 +1,34 @@
+ExcelEMQuestXP 1.1.0 - records package file list
+Package files total: 29 (including FILE-LIST.txt and SHA256SUMS)
+
+./BUILD-RECORD.md
+./FILE-LIST.txt
+./INSTALL-PACKET.md
+./INSTALLED.txt
+./RECORDS-RECORD.md
+./SHA256SUMS
+./SOURCE.md
+./backpay.yml
+./build.sh
+./plugin.yml
+./quest-xp.yml
+./run-tests.sh
+./src/com/winkreyes/excelquestxp/BackpayLedger.java
+./src/com/winkreyes/excelquestxp/BackpayTable.java
+./src/com/winkreyes/excelquestxp/BedrockForms.java
+./src/com/winkreyes/excelquestxp/BuildInfo.java
+./src/com/winkreyes/excelquestxp/ExcelQuestXP.java
+./src/com/winkreyes/excelquestxp/GrantPolicy.java
+./src/com/winkreyes/excelquestxp/QuestXpListener.java
+./src/com/winkreyes/excelquestxp/QuestXpTable.java
+./src/com/winkreyes/excelquestxp/SkillGrant.java
+./src/com/winkreyes/excelquestxp/TargetMenu.java
+./src/com/winkreyes/excelquestxp/TargetPolicy.java
+./src/com/winkreyes/excelquestxp/TargetStore.java
+./tests-110.log
+./tests/com/winkreyes/excelquestxp/BackpayTestMain.java
+./tests/com/winkreyes/excelquestxp/EmApiTestMain.java
+./tests/com/winkreyes/excelquestxp/QuestXpTestMain.java
+./tests/com/winkreyes/excelquestxp/TargetTestMain.java
+
+Counts: 29 files total. SHA256SUMS carries 28 entries (every other package file). Jar is NOT in the package (Drive only, see SOURCE.md) unless the package is the D164 config fix, which has no jar by design.
