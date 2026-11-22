@@ -1,0 +1,21 @@
+# Tracker catalog report
+
+- quests: 111
+- mainChain: 31
+- dungeons: 14
+  - primis_air_temple: world=em_id_primis_air_temple objectives=['&9Rain Elemental'] bosses=3
+  - primis_blood_temple_sanctum: world=em_id_bloodtemple objectives=['&6The Fire Elemental'] bosses=4
+  - primis_counselor_quarters: world=em_id_primis_counselor objectives=['&fCounselor Machiavelli'] bosses=5
+  - primis_gladius_invasion_dungeon: world=em_id_primis_gladius objectives=['&fBell'] bosses=15
+  - primis_gladius_statue: world=em_id_primis_gladius_statue objectives=['&6Fallen Champion Natus'] bosses=1
+  - primis_ice_elemental: world=em_id_primis_ice_elemental objectives=['&9Ice Elemental'] bosses=3
+  - primis_lighthouse_keeper: world=em_id_primis_lighthouse_keeper objectives=['&6The Lighthouse Keeper'] bosses=1
+  - primis_rat_cellar: world=em_id_primis_rat_cellar objectives=['&fRat'] bosses=1
+  - primis_sea_monster_lair: world=em_id_primis_sea_monster objectives=['&dSea Monster'] bosses=1
+  - primis_sewers: world=em_id_primis_sewers objectives=['&5The Shredder'] bosses=3
+  - primis_storm_temple: world=em_id_primis_storm_temple objectives=['&1Storm Elemental'] bosses=4
+  - primis_terravilla_maze: world=em_id_primis_terravilla objectives=['&fEarth Elemental'] bosses=2
+  - primis_trial_of_ice: world=em_id_primis_trial_of_ice objectives=['&bMinor Ice Elemental'] bosses=1
+  - primis_wolf_den: world=em_id_primis_wolf_den objectives=['&8Feral Alpha Wolf'] bosses=2
+- places: 38
+- bosses total: 407

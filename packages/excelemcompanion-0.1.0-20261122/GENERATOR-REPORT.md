@@ -1,0 +1,346 @@
+# Generator report — ExcelEMDropGuide drops-index
+
+## Counts
+
+- boss_files_loaded: 755
+- bosses_disabled: 5
+- drop_entries: 4066
+- items_loaded: 849
+- mob_groups: 689
+- mobs_listed: 407
+- mobs_no_drops: 275
+- mobs_standard_loot_only: 7
+- packages_disabled_or_bad: 63
+- packages_loaded: 20
+- phase_fallback_merges: 2
+- places_emitted: 38
+- quest_item_refs: 204
+
+## Places emitted
+
+- [dungeon] [lvl 000-020] Primis - Gladius Invasion (primis_gladius_invasion_dungeon): 12 mobs
+- [dungeon] [lvl 003] Primis - Sea Monster Lair (primis_sea_monster_lair): 1 mobs
+- [dungeon] [lvl 003] Primis - Wolf Den (primis_wolf_den): 2 mobs
+- [dungeon] [lvl 006] Primis - Lighthouse Keeper (primis_lighthouse_keeper): 1 mobs
+- [dungeon] [lvl 008] Primis - Gladius Statue (primis_gladius_statue): 1 mobs
+- [dungeon] [lvl 008] Primis - Rat Cellar (primis_rat_cellar): 1 mobs
+- [dungeon] [lvl 010] Primis - Storm Temple (primis_storm_temple): 4 mobs
+- [dungeon] [lvl 011] Primis - Counselor's Quarters (primis_counselor_quarters): 10 mobs
+- [dungeon] [lvl 011] Primis - The Sewers (primis_sewers): 3 mobs
+- [dungeon] [lvl 012] Primis - Trial of Ice (primis_trial_of_ice): 1 mobs
+- [dungeon] [lvl 013] Primis - Ice Elemental Lair (primis_ice_elemental): 3 mobs
+- [dungeon] [lvl 014] Primis - Air Temple (primis_air_temple): 3 mobs
+- [dungeon] [lvl 014] Primis - Terravilla Maze (primis_terravilla_maze): 2 mobs
+- [dungeon] [lvl 020] Primis - Blood Temple' (primis_blood_temple_sanctum): 1 mobs
+- [zone] Acolyte (primis_adventure_acolyte): 4 mobs
+- [zone] Acolyte Forest (primis_adventure_acolyte_forest): 5 mobs
+- [zone] Blood Temple (primis_adventure_blood_temple): 17 mobs
+- [zone] Catacombs (primis_adventure_catacombs): 13 mobs
+- [zone] Crazed (primis_adventure_crazed): 3 mobs
+- [zone] Fields (primis_adventure_fields): 3 mobs
+- [zone] General (primis_adventure_general): 10 mobs
+- [zone] Gladius Arena (primis_adventure_gladius_arena): 17 mobs
+- [zone] Goblin (primis_adventure_goblin): 6 mobs
+- [zone] Ice Village (primis_adventure_ice_village): 9 mobs
+- [zone] Ogre Mines (primis_adventure_ogre_mines): 6 mobs
+- [zone] Pontis (primis_adventure_pontis): 3 mobs
+- [zone] Pontis Mille (primis_adventure_pontis_mille): 12 mobs
+- [zone] Redwood (primis_adventure_redwood): 5 mobs
+- [zone] Roofed Forest (primis_adventure_roofed_forest): 3 mobs
+- [zone] Storm Temple (primis_adventure_storm_temple): 4 mobs
+- [zone] Terravilla (primis_adventure_terravilla): 5 mobs
+- [zone] Tommyknockers (Free) (folder_betterstructures_tommyknockers_free_pack): 3 mobs
+- [zone] Tommyknockers (Premium) (folder_betterstructures_tommyknockers_premium_pack): 5 mobs
+- [zone] Undead (primis_adventure_undead): 5 mobs
+- [event] Event Megapack 1 (folder_event_megapack_1): 105 mobs
+- [event] Event Megapack 2 (folder_event_megapack_2): 96 mobs
+- [event] Goblin Events (folder_em_events_goblins_free): 10 mobs
+- [other] Other Elites (other_elites): 13 mobs
+
+## Bosses with no enabled package (folder-fallback place, or Other Elites when loose)
+
+- ancient_corpse.yml
+- animated_armor.yml
+- annoyed_drowned.yml
+- arachnid_matriarch.yml
+- arachnid_matriarch_summon.yml
+- baba_rhoga.yml
+- baba_rhoga_summon.yml
+- baba_yaga.yml
+- baba_yaga_summon.yml
+- balloon_rider.yml
+- balloon_rider_mount.yml
+- banshee.yml
+- banshee_summon.yml
+- beach_bug.yml
+- beast_tamer.yml
+- beast_tamer_summon.yml
+- beast_tamer_summon_1.yml
+- big_bad_wolf.yml
+- bigfoot.yml
+- bloated_jeffrey.yml
+- bloated_jeffrey_summon.yml
+- bone_fiend.yml
+- bone_fiend_mount.yml
+- bone_skeleton.yml
+- changeling.yml
+- circus_ringmaster.yml
+- circus_ringmaster_summon.yml
+- circus_ringmaster_summon_1.yml
+- circus_ringmaster_summon_2.yml
+- craftenmine_stacked_bones.yml
+- craftenmine_stacked_bones_ankle.yml
+- craftenmine_stacked_bones_backbone.yml
+- craftenmine_stacked_bones_femur.yml
+- craftenmine_stacked_bones_spine.yml
+- craftenmine_terror.yml
+- craftenmine_terror_mount.yml
+- creeperpede_1.yml
+- creeperpede_2.yml
+- creeperpede_3.yml
+- creeperpede_4.yml
+- creeperpede_5.yml
+- crone.yml
+- crone_summon.yml
+- crooked_tommy.yml
+- cursed_bandit.yml
+- cursed_bandit_mount.yml
+- damage_test_dummy.yml
+- debt_collector.yml
+- diggs_tommy.yml
+- divine_cinder.yml
+- earth_mite.yml
+- em_free_goblins_event_pack_bling_covered_goblin.yml
+- em_free_goblins_event_pack_bone_seeker_goblin.yml
+- em_free_goblins_event_pack_doom_shroom_goblin.yml
+- em_free_goblins_event_pack_gold_tooth_goblin.yml
+- em_free_goblins_event_pack_good_citizen_goblin.yml
+- em_free_goblins_event_pack_master_blacksmith_goblin.yml
+- em_free_goblins_event_pack_meat_hunter_goblin.yml
+- em_free_goblins_event_pack_treasure_hunter_goblin.yml
+- em_free_goblins_event_pack_trophy_collector_goblin.yml
+- em_free_goblins_event_pack_weapon_enchanter_goblin.yml
+- ender_guardian.yml
+- ender_lapin.yml
+- enders_1.yml
+- enders_2.yml
+- enders_3.yml
+- endless_pursuer.yml
+- enraged_snowman.yml
+- evil_undead.yml
+- exhumed_dead.yml
+- fallen_knight.yml
+- fine_swine.yml
+- fine_swine_summon.yml
+- fire_conjurer.yml
+- fire_conjurer_summon.yml
+- firestarter.yml
+- firestarter_mount.yml
+- foreign_visitor.yml
+- fox_king_cold.yml
+- fulgora.yml
+- giant_magi.yml
+- gloomlight_tommy.yml
+- goblin_invader.yml
+- goblin_invader_summon_1.yml
+- goblin_invader_summon_2.yml
+- goblin_invader_summon_3.yml
+- goblin_invader_summon_4.yml
+- greedy_dwarf.yml
+- gremlin_1.yml
+- gremlin_10.yml
+- gremlin_2.yml
+- gremlin_3.yml
+- gremlin_4.yml
+- gremlin_5.yml
+- gremlin_6.yml
+- gremlin_7.yml
+- gremlin_8.yml
+- gremlin_9.yml
+- grunter.yml
+- harmless_chicken.yml
+- harmless_chicken_summon.yml
+- hog_rider.yml
+- hog_rider_mount.yml
+- hog_rider_summon.yml
+- horde_champion.yml
+- horrid_duplicator.yml
+- horrid_duplicator_summon.yml
+- horrid_duplicator_summon_1.yml
+- ironfist_tommy.yml
+- jungle_lion.yml
+- knarl_tommy.yml
+- krampus.yml
+- large_hopper.yml
+- large_hopper_mount.yml
+- living_shadow.yml
+- magma_construct.yml
+- merman.yml
+- monster_of_the_deep.yml
+- moon_spider.yml
+- moon_spider_summon.yml
+- moonlight_devourer.yml
+- morgana.yml
+- morgana_mount.yml
+- mutated_mermaid.yml
+- mutated_mermaid_summon.yml
+- necromancer.yml
+- necromancer_summon_1.yml
+- necromancer_summon_2.yml
+- necromancer_summon_3.yml
+- necronomicon_skeleton.yml
+- necronomicon_zombie.yml
+- nether_bovine.yml
+- nether_escapee.yml
+- nether_hag.yml
+- nether_wasp.yml
+- nether_wasp_summon_1.yml
+- nether_wasp_summon_2.yml
+- netherite_golem.yml
+- night_crawler.yml
+- night_horder.yml
+- nightwing.yml
+- nightwing_summon.yml
+- nightwing_summon_1.yml
+- okami.yml
+- pufferfish.yml
+- pufferfish_summon_1.yml
+- pufferfish_summon_2.yml
+- pufferfish_summon_3.yml
+- pufferfish_summon_4.yml
+- rabbit_wolf_1.yml
+- rabbit_wolf_2.yml
+- redfuse_tommy.yml
+- regular_hoglin.yml
+- rotting_diver.yml
+- salty_corpse.yml
+- sand_fiend.yml
+- sand_fiend_1.yml
+- sand_fiend_2.yml
+- skeleton_knight.yml
+- skipper_tommy.yml
+- sky_archer.yml
+- sky_archer_mount.yml
+- smallstack.yml
+- smallstack_1.yml
+- smallstack_2.yml
+- smallstack_3.yml
+- smallstack_4.yml
+- smallstack_5.yml
+- smallstack_6.yml
+- snoopy.yml
+- sorcerer_supreme.yml
+- sorcerer_supreme_summon.yml
+- spider_knight.yml
+- spider_knight_mount.yml
+- starving_hog.yml
+- stonebite_tommy.yml
+- storm_caller.yml
+- storm_caller_summon.yml
+- summonable_wolf.yml
+- super_mite.yml
+- super_mite_summon.yml
+- suspicious_phantom.yml
+- suspicious_phantom_summon.yml
+- suspicious_phantom_summon_1.yml
+- test_boss.yml
+- the_great_weaver.yml
+- the_great_weaver_summon.yml
+- the_great_weaver_summon_1.yml
+- the_hunter.yml
+- the_hunter_mount.yml
+- the_living_dead.yml
+- the_phantom.yml
+- the_phantom_summon_1.yml
+- the_phantom_summon_2.yml
+- the_phantom_summon_3.yml
+- the_phantom_summon_4.yml
+- the_phantom_summon_5.yml
+- the_phantom_summon_6.yml
+- the_phantom_summon_7.yml
+- the_phantom_summon_8.yml
+- the_returned.yml
+- tiny_giant.yml
+- transport_cannon_seat.yml
+- tree_defender.yml
+- tree_trampler.yml
+- undead_farmer.yml
+- undead_farmer_summon.yml
+- undead_farmer_summon_1.yml
+- undead_horde_summon_1.yml
+- undead_horde_summon_2.yml
+- undead_horde_summon_3.yml
+- unwanted_visitor.yml
+- unwanted_visitor_summon.yml
+- vex_top.yml
+- vex_top_mount_1.yml
+- vex_top_mount_2.yml
+- vex_top_mount_3.yml
+- wandering_giant.yml
+- warlock.yml
+- warlock_mount.yml
+- wasp_queen.yml
+- wasp_queen_summon.yml
+- water_pest.yml
+- wendigo.yml
+- wendigo_summon.yml
+- werehare.yml
+- yeti.yml
+- yezhi_baba.yml
+- yezhi_baba_summon.yml
+- zombie_friends_friend.yml
+- zombie_parents_dad.yml
+- zombie_parents_mom.yml
+
+## Unresolved drop references (listed with fallback icon)
+
+- none
+
+## Material fallbacks (invalid/missing material in item config)
+
+- em_goblin_events_free_chicken_staff_of_wonders.yml: material 'WOODEN_SPEAR' -> CHEST
+- cl_10_free_elitemobs_goblin_events_relics_spears_734b88ae.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_10_free_elitemobs_goblin_events_relics_staves_3d422a44.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- em_goblin_events_free_enchanters_poker.yml: material 'DIAMOND_SPEAR' -> CHEST
+- cl_primis_adventure_road_legacy_2_spears_314e5fb9.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_road_legacy_2_staves_3ebea5ae.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- cl_primis_adventure_road_spears_ece109f5.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_road_staves_a1e33596.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- cl_primis_adventure_bloodtemple_spears_4c6d920f.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_bloodtemple_staves_01b9a52c.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- primis_blood_temple_chest_drop_spear.yml: material 'DIAMOND_SPEAR' -> CHEST
+- cl_primis_adventure_catacombs_spears_51dcfc5e.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_catacombs_staves_8ffbeffb.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- cl_primis_adventure_wilds_legacy_8_spears_4a7d203f.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_wilds_legacy_8_staves_e3d8e657.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- cl_primis_adventure_wilds_spears_48c3a182.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_wilds_staves_4bca06f2.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- primis_final_elemental_drop_spear_normal.yml: material 'NETHERITE_SPEAR' -> CHEST
+- primis_final_elemental_drop_spear_hard.yml: material 'NETHERITE_SPEAR' -> CHEST
+- primis_final_elemental_drop_spear_mythic.yml: material 'NETHERITE_SPEAR' -> CHEST
+- primis_invaders_drop_spear.yml: material 'IRON_SPEAR' -> CHEST
+- cl_primis_adventure_road_legacy_3_spears_63c16f1d.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_road_legacy_3_staves_8be6c07d.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- cl_primis_adventure_raiders_spears_52ca7ef5.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_raiders_staves_e81cb787.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- primis_gladius_arena_drop_spear.yml: material 'DIAMOND_SPEAR' -> CHEST
+- cl_primis_adventure_road_legacy_4_spears_52aced27.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_road_legacy_4_staves_c84001ad.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- primis_pontis_mines_goblin_drop_spear.yml: material 'IRON_SPEAR' -> CHEST
+- primis_ice_village_mobs_drop_spear.yml: material 'IRON_SPEAR' -> CHEST
+- cl_primis_adventure_darius_spears_a6e38321.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_darius_staves_566907bd.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- cl_primis_adventure_tullius_spears_d5de124a.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_tullius_staves_fe2f6a3b.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- cl_primis_adventure_niall_spears_2dfe2c73.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_niall_staves_3b37f75f.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- cl_primis_adventure_road_legacy_1_spears_672fde8e.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_road_legacy_1_staves_8c080a7d.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- cl_primis_adventure_road_legacy_5_spears_5b40bcc2.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_road_legacy_5_staves_9da7f364.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+- cl_primis_adventure_road_legacy_6_spears_1c5eb53e.yml: material 'DIAMOND_SPEAR' -> TRIDENT
+- cl_primis_adventure_road_legacy_6_staves_7394f55a.yml: material 'WOODEN_SPEAR' -> IRON_SWORD
+
+## Item filename collisions (difficulty variants etc.)
+
+- none

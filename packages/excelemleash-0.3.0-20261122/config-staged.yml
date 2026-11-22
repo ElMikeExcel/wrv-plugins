@@ -1,0 +1,37 @@
+# ExcelEMLeash 0.3.0 — the MMO-style leash (D183).
+#
+# Mike's ruling (Nov 21, 2026): an elite has a home — its spawn
+# point. Within the leash range of home, aggro behaves completely
+# normally (no deaggro ever; a camp fight can never trip it). Pulled
+# beyond the range, the elite deaggros, walks home, and heals to
+# full when it arrives — but if it takes player damage on the way
+# home it re-aggroes the damager immediately and does NOT heal.
+# Aggro still ends on death or on leaving the world/dimension.
+#
+# How it works: EliteMobs' own leash cannot do this (its soft
+# return starts at HALF the radius, its returning bosses are
+# damage-invulnerable, and it never clears the target), so this
+# plugin suppresses the native leash — every boss's leashRadius is
+# set to 0 in memory, boss files are never written — and runs the
+# D183 return itself: a distance poll against each elite's spawn
+# point, a deaggro through EliteMobs' own clear calls, a pathfinder
+# walk home (teleport fallback if the walk stalls), heals held
+# while returning, and the stock full heal on arrival.
+leash:
+  # Master switch for the whole plugin (both the native-leash
+  # suppression and the D183 return engine). false = plugin inert.
+  enabled: true
+  # How far an elite can be pulled from its spawn point before it
+  # deaggros and heads home. Default 96 (Mike's pick, Nov 21, 2026).
+  range: 96
+
+# The 0.2.0 config key, still honored as a master switch when set
+# to false (an operator who turned the plugin off under 0.2.0
+# stays off). The leash section above is the live one.
+# leash-removal:
+#   enabled: true
+
+# Log each suppression write, return start/break/arrival, and held
+# heal (info level, "[debug]" prefix). The suppression summary line
+# and the ready line always log regardless of this setting.
+debug: true
