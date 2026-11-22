@@ -1,0 +1,24 @@
+# ExcelEMCompanion configuration (D186).
+#
+# Each module is toggled independently. Turning a module off removes
+# its commands and menus completely; the other modules are
+# unaffected. Changes apply on server start or /companion reload.
+#
+# Module data files live beside this config in the plugin's data
+# folder: drops-index.yml (drop-guide) and tracker-catalog.yml
+# (progress-tracker). The bundled copies are used unless a file is
+# placed in the data folder, which then overrides it — that is how
+# the indexes are refreshed without a rebuild (regenerate with the
+# tools/ scripts, drop the file in, /companion reload).
+
+modules:
+  drop-guide:
+    enabled: true
+    # Entries per menu page on Java (chest GUI content area, max 45).
+    page-size-java: 45
+    # Entries per menu page on Bedrock (Cumulus form).
+    page-size-bedrock: 40
+  progress-tracker:
+    enabled: true
+    page-size-java: 45
+    page-size-bedrock: 40

@@ -1,0 +1,16 @@
+name: ExcelEMCompanion
+version: 0.1.0
+main: com.winkreyes.excelemcompanion.ExcelEMCompanion
+api-version: '1.13'
+softdepend: [EliteMobs, Geyser-Spigot, ExcelProtect]
+author: WinkReyesValley
+description: One companion plugin with an open module framework (D186). Modules - drop-guide (/drops, D185) and progress-tracker (/progress, alias /tracker) - each toggled in config under modules.<id>.enabled. Module commands are registered dynamically at runtime, so a disabled module's commands do not exist; only /companion is declared here.
+commands:
+  companion:
+    description: ExcelEMCompanion status and reload.
+    usage: /companion [reload]
+    permission: excelemcompanion.admin
+permissions:
+  excelemcompanion.admin:
+    description: Reload ExcelEMCompanion and its modules.
+    default: op

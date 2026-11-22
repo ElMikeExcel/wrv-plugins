@@ -1,0 +1,7 @@
+name: ExcelEMFoodHeal
+version: 0.2.0
+main: com.winkreyes.excelemfoodheal.ExcelEMFoodHeal
+api-version: '1.13'
+softdepend: [EliteMobs]
+author: WinkReyesValley
+description: Food heal-over-time plus a base out-of-combat regen bonus in EliteMobs worlds (D162 + D184) - eating grants a small instant heal plus a saturation-scaled budget of max-health percent delivered slowly while out of combat, and out-of-combat players regenerate an extra +1%/s so the total base rate with EliteMobs' own trickle is 2%/s.

@@ -1,0 +1,46 @@
+# ExcelEMFoodHeal 0.2.0 (D162 + D184) - food heal-over-time plus a
+# base out-of-combat regen bonus in EliteMobs worlds.
+# All values are percents of the player's live max health.
+
+# Debug logging: FOODHEAL meal/pause/resume/complete/expire lines.
+# Default ON until the first live proof lands, then flip to false.
+debug: true
+
+# Instant heal granted the moment food is eaten (part of the budget).
+instant-percent: 1.0
+
+# Budget delivery rate while out of combat.
+rate-percent-per-second: 0.5
+
+# Budget total = clamp(food saturation * multiplier, min, max).
+# Steak (12.8 saturation) = 9.6%; bread (6.0) = 4.5%; carrot (3.6) = 2.7%.
+saturation-multiplier: 0.75
+min-total-percent: 1.0
+max-total-percent: 10.0
+
+# Seconds after the last combat action before budget ticks land
+# (mirrors EliteMobs' own 20-second combat-exit rule).
+combat-window-seconds: 20
+
+# Undelivered budget expires this many seconds after the meal.
+budget-expiry-seconds: 90
+
+# World gate: a world is in scope when EliteMobs' own registry
+# claims it (covers instanced dungeon worlds automatically) OR its
+# name is listed here. The overworld/nether/end are never in scope.
+worlds:
+  - em_primis
+  - em_adventurers_guild
+
+# Optional per-food saturation overrides (Material name -> saturation).
+# Empty by default; the built-in vanilla table covers all foods.
+food-saturation: {}
+
+# D184: base out-of-combat regen bonus in EliteMobs worlds.
+# EliteMobs' own ACS trickle heals 1%/s out of combat and is
+# hardcoded (no config in EM 10.9.14); this bonus adds ours on top
+# under the same out-of-combat rule (combat-window-seconds above),
+# so the total base out-of-combat heal is 2%/s. No food required.
+# Food budgets are unchanged and stack on top of the bonus.
+ooc-bonus-enabled: true
+ooc-bonus-percent-per-second: 1.0

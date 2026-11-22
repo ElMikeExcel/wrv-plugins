@@ -1,0 +1,95 @@
+onSpawnBlockStates: []
+bossType: NORMAL
+isEnabled: true
+entityType: ZOMBIE
+name: $eventBossLevel &8Camp Warden
+level: 11
+instanced: true
+normalizedCombat: true
+healthMultiplier: 6.0
+damageMultiplier: 1.75
+movementSpeedAttribute: 0.34
+mainHand: GOLDEN_SWORD
+chestplate: CHAINMAIL_CHESTPLATE
+leggings: IRON_LEGGINGS
+boots: GOLDEN_BOOTS
+powers:
+- em_primis_magma_slam_double_sequential.yml
+- invulnerability_knockback.yml
+- invulnerability_fire.yml
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+onRemoveBlockStates:
+- 13.5,-1.5,-1.5/minecraft:polished_blackstone
+- 13.5,-1.5,-0.5/minecraft:polished_blackstone
+- 13.5,-1.5,0.5/minecraft:polished_blackstone_bricks
+- 13.5,-0.5,-1.5/minecraft:air
+- 13.5,-0.5,-0.5/minecraft:air
+- 13.5,-0.5,0.5/minecraft:air
+- 13.5,0.5,-1.5/minecraft:air
+- 13.5,0.5,-0.5/minecraft:air
+- 13.5,0.5,0.5/minecraft:air
+- 13.5,1.5,-1.5/minecraft:air
+- 13.5,1.5,-0.5/minecraft:air
+- 13.5,1.5,0.5/minecraft:air
+- 13.5,2.5,-1.5/minecraft:polished_blackstone_stairs[facing=north,half=top,shape=straight,waterlogged=false]
+- 13.5,2.5,-0.5/minecraft:air
+- 13.5,2.5,0.5/minecraft:polished_blackstone_stairs[facing=south,half=top,shape=straight,waterlogged=false]
+- -1.5,-1.5,-14.5/minecraft:polished_blackstone
+- -1.5,-0.5,-14.5/minecraft:air
+- -1.5,0.5,-14.5/minecraft:air
+- -1.5,1.5,-14.5/minecraft:air
+- -1.5,2.5,-14.5/minecraft:polished_blackstone_stairs[facing=west,half=top,shape=straight,waterlogged=false]
+- -0.5,-1.5,-14.5/minecraft:polished_blackstone
+- -0.5,-0.5,-14.5/minecraft:air
+- -0.5,0.5,-14.5/minecraft:air
+- -0.5,1.5,-14.5/minecraft:air
+- -0.5,2.5,-14.5/minecraft:air
+- 0.5,-1.5,-14.5/minecraft:polished_blackstone
+- 0.5,-0.5,-14.5/minecraft:air
+- 0.5,0.5,-14.5/minecraft:air
+- 0.5,1.5,-14.5/minecraft:air
+- 0.5,2.5,-14.5/minecraft:polished_blackstone_stairs[facing=east,half=top,shape=straight,waterlogged=false]
+classLoot: true
+classLootRank: MINIBOSS
+classLootDifficulty: AUTO
+uniqueLootList:
+- filename: cl_primis_adventure_bloodtemple_swords_1bc44a07.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_axes_4338f42f.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_bows_46111634.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_crossbows_3a2cf875.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_tridents_69ed070e.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_hoes_81fec946.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_maces_e2560340.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_spears_4c6d920f.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_staves_01b9a52c.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_wands_90ebc672.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_dps_helmets_e5baa747.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_dps_chestplates_0fa0a513.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_dps_leggings_4056ecf3.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_dps_boots_8f9125be.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_tank_helmets_09aba4b1.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_tank_chestplates_fc00086d.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_tank_leggings_77371e20.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_tank_boots_9d16f641.yml
+  chance: 1.0
+- filename: cl_primis_adventure_bloodtemple_shields_875a0258.yml
+  chance: 1.0
