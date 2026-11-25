@@ -1,0 +1,9 @@
+INSTALLED — ExcelEMFixes 0.12.0 (EM-world Acrobatics ceiling, D220)
+Window: wrv-install-failsafe-20261124-1151 (failsafe run scheduled 2026-11-24 11:51:25 CST), Homebase lane.
+Installed: 2026-11-24 12:01 CT boot (Done 31.841s).
+Live gates passed fresh on PC: ExcelEMFixes-0.11.0.jar 456,032 B / 98269ab6...; config.yml 61,436 B / f076a351...
+Placed: ExcelEMFixes-0.12.0.jar 459,581 B / e7162029...; config 64,032 B / 0c694bfa...
+Backups: ExcelEMFixes-0.11.0.jar.bak-20261124-pre0120; config.yml.bak-20261124-pre0120; snapshot-11242026.1157.
+Acceptance: Enabling v0.12.0; mcMMO XP Connector ready line present; emfixes reload ZERO reload-failed; SEVERE 0; guild OPEN 5 of 5.
+Known cosmetic defect in the shipped build: the pack ready line prints "ExcelEMFixes 0.11.0 ready" (stale version literal; the lane's own rig log shows the same line for this build). Plugin version everywhere else (plugin.yml, enabling line, plugin list) is 0.12.0.
+Record: ~/workspace/wrv-install-queue/runs/20261124-1151-failsafe/RUN-RECORD.md
