@@ -1,0 +1,20 @@
+# ExcelEMFixes — Seal Restore data file.
+#
+# One row per boss whose arena seal is not fully restored by its
+# own content. When a listed boss dies, every registered block
+# that still wears its "sealed" state is put back to "restore".
+# Blocks a player or another system changed to anything else are
+# never touched. Coordinates are absolute block coordinates.
+#
+# Example (fictional):
+# restores:
+#   - boss: my_arena_boss.yml
+#     blocks:
+#       - {world: world, x: 100, y: 64, z: 200, restore: "minecraft:air", sealed: "minecraft:barrier"}
+#       - {world: world, x: 101, y: 64, z: 200, restore: "minecraft:stone_bricks", sealed: "minecraft:barrier"}
+#
+# "sealed" is optional: without it, a block is restored whenever
+# it differs from the restore target. Block states use the full
+# blockdata string format (e.g.
+# "minecraft:polished_blackstone_stairs[facing=north,half=top]").
+restores: []
