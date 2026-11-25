@@ -1,0 +1,15 @@
+name: ExcelCalmBars
+version: 0.1.0
+authors: [Iris, Mike]
+main: com.winkreyes.excelcalmbars.ExcelCalmBars
+api-version: "1.21"
+description: Holds XP-gain boss bars (Jobs, mcMMO, EliteMobs skills) back while a player is in combat and for a quiet period after, so they stop blocking the view in back-to-back fights. Real boss bars and status bars are never held.
+commands:
+  calmbars:
+    aliases: [calm]
+    description: ExcelCalmBars status, manual release of your held bars, and admin reload
+    usage: /calmbars [status|flush|reload]
+permissions:
+  excelcalmbars.admin:
+    description: Reload the ExcelCalmBars config
+    default: op
