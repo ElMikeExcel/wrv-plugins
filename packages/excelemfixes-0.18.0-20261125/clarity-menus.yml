@@ -1,0 +1,325 @@
+# clarity-menus text — every word the /emguide menus show.
+# Bundled in the jar; a copy of this file placed in the plugin
+# data folder (plugins/ExcelEMFixes/clarity-menus.yml) overrides
+# the bundled one, so wording can change without a rebuild.
+# House rules for edits: plain language, one idea per line, the
+# canonical name for EliteMobs' per-skill unlockable picks is
+# "skill bonuses" (D216), the item lock state is "soulbound",
+# and EliteMobs' currency is "Elite Coins".
+#
+# routes: buttons that act. A route either runs a command as
+# the player ("command") or opens one of EliteMobs' own screens
+# directly ("em-menu" — for screens no command can reach, like
+# the skill-bonus claim screens). Exactly one of the two.
+# "hint" is an optional chat line sent just before the action.
+routes:
+  my-bonuses:
+    command: "skillmenu"
+    hint: "&eYour skills and their bonuses — tap a bonus to switch it on or off."
+  claim-bonuses:
+    em-menu: "skill-bonus"
+    hint: "&ePick the skill, then click each &f[UNLOCKED]&e bonus to switch it on — up to &f3 per skill&e."
+  my-quests:
+    command: "em quest check"
+    hint: "&eYour active quests:"
+  coin-balance:
+    command: "em money check"
+  shop-set:
+    command: "em shop custom"
+  shop-rolling:
+    command: "em shop dynamic"
+  repair:
+    command: "em repair"
+  enchant:
+    command: "em enchant"
+  scroll:
+    command: "em scroll"
+  unbind:
+    command: "em unbind"
+  questwhere:
+    command: "questwhere"
+
+pages:
+  home:
+    title: "&a&lEliteMobs, Made Clear"
+    intro: "EliteMobs in plain words. Pick what you want to understand:"
+    buttons:
+      - name: "&a&lSkills & Skill Bonuses"
+        icon: "ENCHANTED_BOOK"
+        lore:
+          - "&7How to claim the skill bonuses"
+          - "&7your levels have earned"
+        page: "skills"
+      - name: "&a&lQuests"
+        icon: "WRITABLE_BOOK"
+        lore:
+          - "&7Accepting, tracking and turning in"
+          - "&7quests — and the one button to avoid"
+        page: "quests"
+      - name: "&a&lShops & Elite Coins"
+        icon: "GOLD_INGOT"
+        lore:
+          - "&7Elite Coins, the two buy shops,"
+          - "&7selling, and the reroll button"
+        page: "shops"
+      - name: "&a&lGear Tools"
+        icon: "ANVIL"
+        lore:
+          - "&7Repair, enchant, elite scrolls"
+          - "&7and unbinding, in plain words"
+        page: "gear"
+
+  skills:
+    title: "&a&lSkills & Skill Bonuses"
+    intro: "Your skills level up as you fight. Levels earn skill bonuses — permanent perks you switch on yourself."
+    buttons:
+      - name: "&a&lMy skill bonuses"
+        icon: "NETHER_STAR"
+        lore:
+          - "&7Our own skills screen — your levels"
+          - "&7and bonuses, tap to switch on or off"
+        route: "my-bonuses"
+      - name: "&f&lHow to claim skill bonuses"
+        icon: "ENCHANTED_BOOK"
+        lore:
+          - "&7The step-by-step path — step 3"
+          - "&7is the one everyone misses"
+        detail:
+          title: "How to claim skill bonuses"
+          lines:
+            - "&f1. Tap &aMy skill bonuses&f on this page (or type &f/skillmenu&f) — our own skills screen opens."
+            - "&f2. Pick the skill — Armor, Swords, whichever skill you leveled."
+            - "&f3. Tap each bonus to switch it on. Bonuses show &a[ON]&f, ready, or locked with the level they need."
+            - "&7You can have up to &f3 bonuses per skill&7 switched on at once."
+            - "&7New bonuses unlock at skill levels &f10, 25, 50 and 75&7."
+            - "&7Switching is free, and you can change your picks any time."
+            - "&7It is the same list EliteMobs keeps — picks made on either screen show on both."
+            - "&7Going through /em instead? The normal /em Skills page only lists levels — nothing on it can be clicked. Run &f/elitemobs alt&7 once to switch /em to the style whose skills can be clicked, then choose Skills and click &fthe skill itself&7. The &fClaim skill bonuses&7 button below opens those screens directly."
+      - name: "&7Claim skill bonuses (EliteMobs' screens)"
+        icon: "CHEST"
+        lore:
+          - "&7EliteMobs' own chest screens — the"
+          - "&7long way round; My skill bonuses"
+          - "&7above is made for your device"
+        route: "claim-bonuses"
+      - name: "&f&lBonus types in plain words"
+        icon: "BOOK"
+        lore:
+          - "&7What Proc, Passive and the"
+          - "&7other bonus types actually mean"
+        detail:
+          title: "Bonus types in plain words"
+          lines:
+            - "&fProc&7 — triggers by chance when you fight."
+            - "&fPassive&7 — always on; no trigger needed."
+            - "&fConditional&7 — works when its condition is met; its description says which condition."
+            - "&fStacking&7 — builds up stacks; more stacks, stronger effect."
+            - "&fCooldown&7 — triggers, then recharges before it can trigger again."
+            - "&7Every bonus's own description says exactly what it does and how strong it is."
+      - name: "&f&lWhere bonuses come from"
+        icon: "EXPERIENCE_BOTTLE"
+        lore:
+          - "&7How skills level up and how"
+          - "&7levels turn into bonuses"
+        detail:
+          title: "Where bonuses come from"
+          lines:
+            - "&7Skills level up as you use them: Armor by taking hits in elite gear, weapon skills by fighting with that weapon."
+            - "&7At levels &f10, 25, 50 and 75&7 a skill unlocks a new tier of bonuses."
+            - "&7Unlocked is not the same as on: a bonus does nothing until you click it on the skill's own page."
+            - "&7The chat nudge 'Skill bonuses waiting!' counts bonuses you have unlocked but not switched on."
+
+  quests:
+    title: "&a&lQuests"
+    intro: "Quests come from quest givers at the Adventurers Guild and out in the world."
+    buttons:
+      - name: "&f&lHow quests work"
+        icon: "WRITABLE_BOOK"
+        lore:
+          - "&7Accept, track, finish, turn in —"
+          - "&7the whole loop in four steps"
+        detail:
+          title: "How quests work"
+          lines:
+            - "&fAccept:&7 talk to a quest giver and click &a[Accept!]&7 on the quest screen."
+            - "&fTrack:&7 accepted quests track automatically — progress shows on your screen and scoreboard."
+            - "&fObjectives:&7 do what the quest says (kill, fetch, or talk). Progress appears in chat as you go."
+            - "&fTurn in:&7 when the quest is done, go back to the quest giver and click &a[Turn in!]"
+            - "&7Rewards land when you turn in — not when the last objective finishes."
+            - "&7You can hold up to &f10 active quests&7 at once."
+      - name: "&a&lSee my quests"
+        icon: "COMPASS"
+        lore:
+          - "&7Your active quests and"
+          - "&7how far along each one is"
+        route: "my-quests"
+      - name: "&c&lCareful: the 'Accepted!' line"
+        icon: "OAK_SIGN"
+        lore:
+          - "&7On the quest screen that line is"
+          - "&7a button — read this before clicking it"
+        detail:
+          title: "Careful: the 'Accepted!' line"
+          lines:
+            - "&cOn the quest screen, the green 'Accepted!' line is a button, not just a label."
+            - "&7Clicking it starts abandoning the quest."
+            - "&7The game asks you to click once more to confirm — and abandoning starts the quest's full cooldown, so confirming a misclick still costs you the quest."
+            - "&fThe safe way to check a quest:&7 use 'See my quests' on this page, or follow the tracker on your screen."
+            - "&7Only click the Accepted line when you truly mean to give the quest up."
+      - name: "&f&lFinding where to go"
+        icon: "RECOVERY_COMPASS"
+        lore:
+          - "&7When a quest's tracker shows"
+          - "&7no destination, use these"
+        detail:
+          title: "Finding where to go"
+          lines:
+            - "&7Your tracked quest normally points the way on screen."
+            - "&7Some quests — mostly boss quests inside dungeons — show no destination. That is an EliteMobs gap this server patched:"
+            - "&f/questwhere&7 lists those quests and names the real destination, and how to get in."
+            - "&f/questbeacon&7 lights a pillar of light at the destination of the quest you are tracking."
+            - "&7The 'Find my quest' button on this page runs /questwhere for you."
+      - name: "&a&lFind my quest"
+        icon: "RECOVERY_COMPASS"
+        lore:
+          - "&7For quests whose tracker"
+          - "&7shows no destination"
+        route: "questwhere"
+
+  shops:
+    title: "&a&lShops & Elite Coins"
+    intro: "EliteMobs has its own money: Elite Coins. They are separate from Excel Bucks."
+    buttons:
+      - name: "&f&lElite Coins"
+        icon: "GOLD_INGOT"
+        lore:
+          - "&7What they are, where they come"
+          - "&7from, and what they buy"
+        detail:
+          title: "Elite Coins"
+          lines:
+            - "&7Elite Coins drop from elite mobs — pick them up and they land in your EliteMobs wallet."
+            - "&7Quests and bosses pay them too."
+            - "&7They spend only in EliteMobs shops and gear tools — the server shops use Excel Bucks instead."
+            - "&7You can pay a friend with &f/em money pay&7."
+            - "&7The button below shows your balance."
+      - name: "&a&lCheck my Elite Coins"
+        icon: "GOLD_NUGGET"
+        lore:
+          - "&7Shows your Elite Coin"
+          - "&7balance in chat"
+        route: "coin-balance"
+      - name: "&f&lBuying: two shops"
+        icon: "CHEST"
+        lore:
+          - "&7The set shop and the rolling"
+          - "&7shop, and how they differ"
+        detail:
+          title: "Buying: two shops"
+          lines:
+            - "&fThe set shop&7 sells a fixed list of gear and items for Elite Coins."
+            - "&fThe rolling shop&7 sells random gear — its stock changes when someone rerolls it."
+            - "&7Every price is in Elite Coins and is shown on the item."
+            - "&7The arrow shop at the guild works the same way — the price is on every arrow."
+      - name: "&f&lThe reroll button"
+        icon: "PLAYER_HEAD"
+        lore:
+          - "&7The button at the top of the"
+          - "&7rolling shop, and what it does"
+        detail:
+          title: "The reroll button"
+          lines:
+            - "&7At the top of the rolling shop sits the reroll button."
+            - "&7Clicking it shuffles the shop's stock — a new set of random gear for sale."
+            - "&7On the newest menus it is labeled &fReroll Shop Stock&7; on older ones it is the head icon at the top of the shop."
+      - name: "&f&lSelling"
+        icon: "HOPPER"
+        lore:
+          - "&7How the sell shop works and"
+          - "&7what it will and won't buy"
+        detail:
+          title: "Selling"
+          lines:
+            - "&7The sell shop — an NPC at the guild — buys only special EliteMobs drops. Normal items can't be sold there."
+            - "&7Put items in, check the total, and press &aConfirm Sale&7."
+            - "&7The cancel button backs out without selling anything."
+            - "&7There is no /em command for the sell shop; visit the NPC at the guild."
+      - name: "&a&lOpen the set shop"
+        icon: "CHEST"
+        lore:
+          - "&7The fixed-list EliteMobs shop"
+        route: "shop-set"
+      - name: "&a&lOpen the rolling shop"
+        icon: "ENDER_CHEST"
+        lore:
+          - "&7The random-stock EliteMobs shop"
+        route: "shop-rolling"
+
+  gear:
+    title: "&a&lGear Tools"
+    intro: "Four tools look after elite gear. Each one opens its own screen."
+    buttons:
+      - name: "&f&lRepair — fix elite gear"
+        icon: "ANVIL"
+        lore:
+          - "&7Damaged elite items, fixed"
+          - "&7with elite scrap"
+        detail:
+          title: "Repair — fix elite gear"
+          lines:
+            - "&7Elite gear wears down as you fight."
+            - "&7The repair screen takes your damaged elite item and &felite scrap&7, and returns the item repaired."
+            - "&7Put the item in its slot, the scrap in its slot, check the cost, and confirm."
+      - name: "&a&lOpen Repair"
+        icon: "ANVIL"
+        lore:
+          - "&7Opens the EliteMobs repair screen"
+        route: "repair"
+      - name: "&f&lEnchant — add enchantments"
+        icon: "ENCHANTING_TABLE"
+        lore:
+          - "&7Move enchantments from elite"
+          - "&7books onto elite items"
+        detail:
+          title: "Enchant — add enchantments"
+          lines:
+            - "&7The enchant screen moves an enchantment from an &felite enchanted book&7 onto an elite item."
+            - "&7Put the item and the book in their slots and confirm."
+            - "&7Only elite items can take elite enchantments."
+      - name: "&a&lOpen Enchant"
+        icon: "ENCHANTING_TABLE"
+        lore:
+          - "&7Opens the EliteMobs enchant screen"
+        route: "enchant"
+      - name: "&f&lElite Scrolls — make gear elite"
+        icon: "PAPER"
+        lore:
+          - "&7Turn a normal item into"
+          - "&7an elite item"
+        detail:
+          title: "Elite Scrolls — make gear elite"
+          lines:
+            - "&7An elite scroll turns a normal item into an &felite item&7."
+            - "&7Elite items carry elite damage or elite defense — extra power that applies against elite mobs."
+            - "&7Put the normal item and the scroll in their slots and confirm."
+      - name: "&a&lOpen Elite Scrolls"
+        icon: "PAPER"
+        lore:
+          - "&7Opens the EliteMobs scroll screen"
+        route: "scroll"
+      - name: "&f&lUnbind — remove soulbound"
+        icon: "SHEARS"
+        lore:
+          - "&7Unlock soulbound gear so it"
+          - "&7can be traded or given away"
+        detail:
+          title: "Unbind — remove soulbound"
+          lines:
+            - "&7Elite gear can be &fsoulbound&7: locked to its owner, so it can't be traded or given away."
+            - "&7The unbind screen uses an &fUnbind Scroll&7 to remove that lock."
+            - "&7Put the item and the Unbind Scroll in their slots and confirm."
+      - name: "&a&lOpen Unbind"
+        icon: "SHEARS"
+        lore:
+          - "&7Opens the EliteMobs unbind screen"
+        route: "unbind"
