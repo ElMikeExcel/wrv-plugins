@@ -1,0 +1,26 @@
+INSTALLED — ExcelEMFixes 0.10.0 (clarity-menus module: /emguide front door)
+Installed: Nov 24, 2026, boot verified 03:36:00 CT
+Window: parent hand window hand-20261124-032540-emfixes0100 (D189 pattern)
+Record: ~/workspace/wrv-install-queue/runs/20261124-handwindow-emfixes0100/RUN-RECORD.md
+
+Placed (hash-verified on the PC post-copy):
+- plugins/ExcelEMFixes-0.10.0.jar — 461,849 B — SHA-256 22224de86e2cda5ae1c419eefdae8a25576dc2d0f86fa70f120f872ae74e14e2 (the REBASED candidate; the pre-rebase proof build 00fd21cb... was NOT installed)
+- plugins/ExcelEMFixes/config.yml — 61,011 B — SHA-256 5ab26780eb195bf67c502fdf7732e6f2273e41ce13929714a0c9b0cd1134cfac (live config + clarity-menus section appended at the end of the modules block; pure insertion, reversible-verified)
+- plugins/ExcelMenu/entries/el_emguide.yml — 905 B — SHA-256 3df1009bbaa92de9496d849aef6f5f41036ba4b4a3672666f17af233116d9fc3
+- plugins/ExcelMenu/layouts/elitemobs_menu.yml — 1,984 B — SHA-256 29c26eb44654b4bc3e5bb43d746fc3f4d488107704f3690c062368ed58b74dc5 (elite slot list gains 9; only change vs live)
+- plugins/ExcelWhatsNew/changelog.yml — 138,588 B — SHA-256 217fad26fdd53aadcc9e2ef3d7d34a7d57d9cd3e067959e04a143d8164bdba64 (176 entries; new 2026-11-24-emguide at top)
+
+Backups kept in place:
+- plugins/ExcelEMFixes-0.9.0.jar.bak (the outgoing 0.9.0 jar, 2d930ac2...)
+- plugins/ExcelEMFixes/config.yml.bak-emguide-20261124
+- plugins/ExcelMenu/layouts/elitemobs_menu.yml.bak-emguide-20261124
+- plugins/ExcelWhatsNew/changelog.yml.bak-20261124-emguide
+
+Gates (fresh pulls, all PASS): live jar 444,409 B / 2d930ac2...; live config 58,922 B / 9fd44d36... with clarity-menus count 0; live layout 1,981 B / 66b52a18...; el_emguide.yml absent live.
+Backup snapshot: snapshot-11242026.0329 (result ok; retention pruned snapshot-11232026.2104, store at 6).
+
+Boot verify: Done (30.060s) 03:36:00 CT; latest.log 1,105 lines; SEVERE 0; ExcelEMFixes 0.10.0 ready — 19 modules incl. quest-giver-glow + clarity-menus; "Clarity Menus ready — 5 pages, 10 routes."; Quest-Giver Glow census 73/76; ExcelWhatsNew 176 entries (newest 2026-11-24-emguide); emfixes reload clean (0 reload-failed lines); console /emguide answers "The /emguide menus are for players."; sole ERROR = the standing Essentials unsupported-server-version notice.
+
+DEVIATION (same window, fixed): the first boot (03:32:54) loaded 0.9.0 instead of 0.10.0 — the outgoing 0.9.0 jar had been copied to .bak but also left in place beside the new jar, and Paper's loader flagged the ambiguous plugin name and loaded 0.9.0. The duplicate jar was removed (rollback .bak kept) and the server restarted; the second boot is the verified one above. Total player downtime ≈3.5 min at 0 players, inside the maintenance window.
+
+Proof owed (player-ride): Jester (or Mike) opens /emguide on Java (compass door + typed command, walks the Skills page, uses a route button); Marvin taps the same door on Bedrock. Website What's New + help card from SURFACES.md are a parent follow-up; Guide hibernated (owed).
