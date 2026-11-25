@@ -1,0 +1,68 @@
+# Quest -> destination table for the ExcelEMFixes quest-destinations
+# module (/questwhere). THIS BUNDLED COPY IS A BLANK TEMPLATE: the
+# plugin ships with no server's content in it. Put your own table
+# in plugins/ExcelEMFixes/quest-destinations.yml (a copy of this
+# file lands there on first run) — it overrides this template.
+#
+# WHY: EliteMobs' quest tracker builds its destination from the
+# target boss's spawn locations. A boss that lives in an instanced
+# dungeon spawns only inside a per-player instance world (em_id_*),
+# so the tracker has nothing it can point at in the real world and
+# shows no destination at all (upstream EliteMobs issue #241). The
+# player still needs the way in: the instance's entry point in the
+# parent world. Each row below records exactly that.
+#
+# WHICH QUESTS BELONG HERE: on startup the module scans your
+# EliteMobs data (customquests/ + custombosses/) and logs every
+# tracker-blank quest it finds, by filename — start from that
+# list. A quest belongs here when its kill targets spawn only
+# inside instanced (em_id_*) worlds.
+#
+# ADDING A ROW (no code changes, /emfixes reload applies it):
+#   quest-file : the customquests filename, e.g. mypack_quest_07.yml
+#   quest-name : the quest's display name
+#   target     : what the player is hunting, in plain words
+#   place      : the area the entry point is in, in plain words
+#   world      : the parent world the entry point stands in
+#   x / y / z  : the entry point's coordinates in that world. For a
+#                wormhole entry, read location1 from its file under
+#                EliteMobs/wormholes/ (location2 names the instance's
+#                content package). For an instance entered through a
+#                teleporter NPC, use the NPC's spawn location from
+#                its file under EliteMobs/npcs/.
+#   entry      : what the player steps into / talks to, in plain
+#                words ("Advisor wormhole", "Granus the Teleporter")
+#   directions : short steps a player can follow on foot. Keep
+#                travel to what your server already has — this
+#                module never teleports anyone.
+#   icon       : optional menu icon (a Material name; default COMPASS)
+#   glow-mode  : optional. "marker" (default) lights a temporary
+#                marker at the entry point; "entity" lights the
+#                named entity itself when it is near the point
+#                (then also set glow-entity-name to its in-world
+#                display name). Wormhole entries are places and use
+#                "marker"; teleporter-NPC entries are entities and
+#                use "entity".
+#
+# EXAMPLE ROW (commented out — a fictional pack):
+# - quest-file: mypack_quest_07.yml
+#   quest-name: "The Sunken King"
+#   target: "The Sunken King"
+#   place: "Harbor Town"
+#   world: em_mypack
+#   world-label: "My Pack"
+#   x: 100.5
+#   y: 64.0
+#   z: -250.5
+#   entry: "Sunken Grotto wormhole"
+#   icon: TRIDENT
+#   directions:
+#   - "The Sunken King waits in a private instance — that is why the tracker shows nothing."
+#   - "Find the grotto wormhole under the Harbor Town lighthouse, at the coordinates above, and step in."
+#
+# ignored: files in the tracker-blank defect class that are NOT
+# real player content, so the coverage scan stays quiet about
+# them (for example a test quest shipped with a content pack).
+ignored: []
+
+destinations: []
