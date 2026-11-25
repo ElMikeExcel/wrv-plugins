@@ -1,0 +1,56 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '6'
+    filename: primis_storm_temple_bowman.yml
+    objectiveType: KILL_CUSTOM
+  Objective4:
+    amount: '5'
+    filename: primis_storm_temple_minor_storm_elemental.yml
+    objectiveType: KILL_CUSTOM
+  Objective1:
+    amount: '1'
+    filename: primis_storm_temple_storm_elemental.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '5'
+    filename: primis_storm_temple_axeman.yml
+    objectiveType: KILL_CUSTOM
+  Objective5:
+    amount: '3'
+    filename: primis_storm_temple_summoner.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=130:amount=1:chance=1
+- filename=primis_pontis_mille_reward_sword.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_13.yml
+questLockoutPermission: elitequest.primis_main_quest_14.yml
+name: '&2Storm''s end'
+questLore:
+- It is hard to believe that you pushed through the &dGoblin Mines&f on your own.
+- Perhaps with your fortitude you will be able to face the challenge ahead.
+- We attempted to assault the &dStorm Temple&f, and reached its deepest confines at a great cost.
+- What we found there... It defies understanding.
+- It may be hard to believe, but it sounds like the very storm itself has materialized as our opponent.
+- We do not even know if it can be defeated. We feared we were sent to our deaths.
+- If you truly defeated the &cGoblin King&f, then perhaps you will find a way to slay
+  this storm.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Blepharo]&f We have weakened their forces a little, but still, this is no easy
+  task.'
+- The Storm is no ordinary opponent. Do not underestimate it.
+- '&7&oI should go into the &dStorm Temple&f and slay the &cStorm&f.'
+questCompleteMessage:
+- '&a[Shogun Navita]&f You WHAT!?'
+- Defeated the &cStorm&f? I was told that was impossible! I mean...
+- '... it is no use hiding it now. I knew about the &cStorm&f. I knew about the &dGladius&f
+  invasion - I even facilitated it. I did it for my people - for &dPontis Mille&f.'
+- '&cCounselor Machiavelli&f convinced me that the &cStorm&f was as unstoppable as
+  Nature itself, and that the fall of &dGladius&f and &dPontis Mille&f was an inevitability
+  that we could but delay through sacrifice.'
+- I see now that that snake poisoned my mind and corrupted my judgment. He must be
+  dealt with posthaste.
+- '&8&oSeems like &aShogun Navita&7&o has a problem he wants me to deal with.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_shogun.yml

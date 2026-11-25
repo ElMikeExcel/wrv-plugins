@@ -1,0 +1,25 @@
+questCompleteCommands: []
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '10'
+    filename: primis_gladius_assassin.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=90:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_7.yml
+questLockoutPermission: elitequest.primis_gladius_assassins.yml
+name: '&5Who snipes the snipers?'
+questLore:
+- The roofs of &dGladius&f are covered in &cAssassins&f!
+- Venturing out to the streets is a death sentence. We need to deal with these snipers!
+- There are some spots for &eGrappling Arrows&f on the roofs, make good use of them
+  and deal with those snipers!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Belli] Deal with those &cAssassins&f! Remember to use the &eGrappling Arrows&f!.'
+- '&7&oI should kill those &cAssassins&7&o.'
+questCompleteMessage:
+- '&a[Belli]&f You dealt with those &cAssassins&f? Good! That''s one headache dealt
+  with!'

@@ -1,0 +1,35 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Chief Piscis]&fYou''ll help us? Thank the seas! This was starting to feel
+      like a sinking ship!'
+    filename: primis_caeruleaum_leader.yml
+    npcName: Chief Piscis
+    location: at the village
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=50:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_1.yml
+questLockoutPermission: elitequest.primis_main_quest_2.yml
+name: '&2Strangers in need...'
+questLore:
+- So not only can they not help, but they want our help? Bah!
+- Well, we don't have much choice now, do we?
+- Go, help them, then make them help us!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[First Mate Iracundi]&f Fine, go help the locals, see what info you can gather
+  and see if you can get them to help us in turn. I will be here, negotiating things.'
+- Come back as soon as you have something!
+- '&7&oI should talk to the &aVillage Leader&7&o to see about helping the locals.'
+questCompleteMessage:
+- '&a[Chief Piscis]&f Everyone in the village has an issue that needs dealing with,
+  and I am no exception. My request is quite challenging, so maybe you want to get
+  warmed up and get the lay of the land with some of the issues from the other villagers.'
+- Talk to me when you are ready, and I will share with you the secrets kept by us
+  to leaving this valley!
+- '&7&oI should talk to the locals and see who needs help, and come back to the leader
+  when I feel ready to continue.'
+questCompleteCommands: []
+turnInNPC: primis_caeruleaum_leader.yml

@@ -1,0 +1,37 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '7'
+    filename: primis_ice_village_salmon.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '7'
+    itemName: Fresh Salmon
+    filename: primis_ice_village_salmon.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=150:amount=1:chance=1
+- filename=primis_ice_village_taking_the_bait_reward.yml:amount=1:chance=1.0
+questAcceptPermission: elitequest.primis_main_quest_16.yml
+questLockoutPermission: elitequest.primis_ice_village_taking_the_bait.yml
+name: '&2Taking the bait'
+questLore:
+- These &cFish&f, what is wrong with them!
+- I have been out here fishing for days now!
+- Not even a single bite. If only I was younger I would show them!
+- Well it sure is good you're here now. Our village gets most of its food from these
+  &cFish&f.
+- And if we cannot catch any, well that is a big problem.
+- You will need to go down there and beat them senseless.
+temporaryPermissions:
+- elitequest.primis_ice_village_salmon.yml
+questAcceptDialog:
+- '&a[Theopropides Nero]&f You wanted to help so here is your chance!'
+- '&7&oI must jump into the lake and kill 7 &c&oChilly Salmon&7&o and collect their
+  bodies.'
+questCompleteMessage:
+- '&a[Theopropides Nero]&f Oh! Look at them! Such big ones!.'
+- This should keep us fed for a while! Thank you for the assistance, you're a good
+  soul in my book!
+questCompleteCommands: []
+turnInNPC: primis_ice_village_fisherman_boat.yml

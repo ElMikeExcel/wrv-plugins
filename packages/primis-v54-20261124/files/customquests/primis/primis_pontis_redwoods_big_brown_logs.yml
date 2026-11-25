@@ -1,0 +1,31 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Magnus]&f Who are you? Oh, you came from &dPontis Mille&f.'
+    filename: primis_pontis_redwoods_lumberlord.yml
+    npcName: Lumber Lord Magnus
+    location: in The Redwoods
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=50:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_11.yml
+questLockoutPermission: elitequest.primis_pontis_redwoods_big_brown_logs.yml
+name: '&2Big brown logs'
+questLore:
+- I could dedicate my forces to helping &dGladius&f if you could help us deal with the &cWerewolf&f crisis in the &dRedwoods&f.
+- Our forces have been holding back the &cWerewolves&f for weeks now.
+- It would be great if you could assist us.
+- Go to the &dRedwoods&f and talk to &aMagnus Castorea&f.
+- They will let you know what needs to be done to end this crisis.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Cylindrus]&fThe &dRedwoods&f can be reached by heading North.'
+- Head North until you reach the &dRailway Stop&f, then head West.
+- '&7&oI need to head into the &dRedwoods&7&o and talk to &aMagnus&7&o.'
+questCompleteMessage:
+- '&a[Magnus]&f The general has sent you to help?'
+- Hmm...you better be good.
+questCompleteCommands: []
+turnInNPC: primis_pontis_redwoods_lumberlord.yml

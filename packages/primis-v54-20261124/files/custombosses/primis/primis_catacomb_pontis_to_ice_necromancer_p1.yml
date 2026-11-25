@@ -1,0 +1,76 @@
+onRemoveBlockStates: []
+bossType: NORMAL
+normalizedCombat: true
+isEnabled: true
+entityType: WITHER_SKELETON
+name: $bossLevel &4Catacomb Necromancer
+level: 11
+healthMultiplier: 1.75
+damageMultiplier: 1.25
+spawnCooldown: 60
+mainHand: NETHERITE_HOE
+powers:
+- invulnerability_fire.yml
+- attack_wither.yml
+- frost_cone.yml
+- bonus_coins.yml
+phases:
+- primis_catacomb_pontis_to_ice_necromancer_p2.yml:.9999
+disguise: custom:primis_catacomb_necromancer
+customDisguiseData: player primis_catacomb_necromancer setskin {"id":"1c94d1cf-97ea-41dd-9305-9b869547d84f","name":"Unknown","properties":[{"name":"textures","value":"ewogICJ0aW1lc3RhbXAiIDogMTY1MDI0NDAwNDA0OSwKICAicHJvZmlsZUlkIiA6ICI1YjY2YzNkZWZhYTI0NWMzYTcwNjM3OTA3NTQ0Yjg3MCIsCiAgInByb2ZpbGVOYW1lIiA6ICJSZWFuX1JhaWNvMDgxNiIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS80MTE1YTIyMTA4MjAxNzJmMWVjNDljODQ1NDk3NWQ1OWEwNmYwMjI5MDgyMGE4MGM5NWEyOTExYzUxOWRjM2JkIgogICAgfQogIH0KfQ==","signature":"vpj96kZKow9K+RWJsEkdhfctEGUkMqzU/gxcrvEGJuWiU4WNd+A5lrxshI+wgPcYoh5Jjbw6EqHnWu1Xl2vthvC7lpGyMcWZHXEczfqABQa84umZb32J8tVOt8mHq4iS8Zt6Fga3BCrJWgWWjDTIHmaGUT1zYJwZCj0t+QEUH9gPatszTXmNDHlHb6wp1oF0VmpflalYiYDz1yY13oNiIapCkZrGv+FYbUsOPU2dBxedVUFiwlFIKJARAKZU6KTT6kx2XCqmUtOzontV1OyHpp3yDIPUZ4ZK5W0XfKI3vyDAYTI7x3lKRxSZOJEBnmVTw6rUwFRPbuYBilkTHTy91414YIBAX8HDQdgYO35rrjpx4czUQfUutsj5pPbSU5whaxPMtZJEeEd+Cr0nLihRH8rskOsIYDcmgZA6yfyHUQ+AuGUIqlGnJUV8kNSUdPnZcrjnB4qpQFgd+SOwJybpS+1xmxbB9BMbdY3/V+sBmJ1GQ44Hs0pPZFLX4SDteQwayrgX1+eCsmu0PwRBP9VcwPo+VQd8GWcb2C12uM7BUnmygL349/EkkTspZYsJMF2v/uVN3cNaSUc2wlg5SynkNJ0OKHPy3O36C1Ndtx3UpXCGRTXeU52YAHUrJbgmVN54qEewotnB5js5NzeWjup5+Mt1gsMqgXsJdrtoTqJ0qwo="}],"legacy":false}
+leashRadius: 40
+isRegionalBoss: true
+followDistance: 20
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+spawnLocations:
+- em_primis,411.5,-25.5,1195.5,0.0,0.0:0
+onSpawnBlockStates:
+- 26.5,-1.5,-2.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,-1.5,-1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,-1.5,-0.5/minecraft:dark_oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,-1.5,0.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,-1.5,1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,-0.5,-2.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,-0.5,-1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,-0.5,-0.5/minecraft:dark_oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,-0.5,0.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,-0.5,1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,0.5,-2.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,0.5,-1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,0.5,-0.5/minecraft:dark_oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,0.5,0.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,0.5,1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,1.5,-2.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,1.5,-1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,1.5,-0.5/minecraft:dark_oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,1.5,0.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,1.5,1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,2.5,-2.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,2.5,-1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,2.5,-0.5/minecraft:dark_oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,2.5,0.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,2.5,1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,3.5,-2.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,3.5,-1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,3.5,-0.5/minecraft:dark_oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,3.5,0.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,3.5,1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,4.5,-2.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,4.5,-1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,4.5,-0.5/minecraft:dark_oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,4.5,0.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,4.5,1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,5.5,-2.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,5.5,-1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,5.5,-0.5/minecraft:dark_oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,5.5,0.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,5.5,1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,6.5,-2.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,6.5,-1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,6.5,-0.5/minecraft:dark_oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,6.5,0.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,6.5,1.5/minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+- 26.5,7.5,-0.5/minecraft:dark_oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]
+classLoot: false

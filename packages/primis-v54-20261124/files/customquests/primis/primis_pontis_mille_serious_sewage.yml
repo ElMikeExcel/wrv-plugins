@@ -1,0 +1,81 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    dialog:
+    - '&a[Michelangelo]&f Tell that old man everything is in order!'
+    filename: primis_sewer_michelangelo.yml
+    npcName: Agent Michelangelo
+    location: in The Sewers
+    objectiveType: DIALOG
+  Objective4:
+    dialog:
+    - '&a[Raphael]&f Tell Rogerius I am alive and doing fine!'
+    filename: primis_sewer_raphael.yml
+    npcName: Agent Raphael
+    location: in The Sewers
+    objectiveType: DIALOG
+  Objective1:
+    dialog:
+    - '&a[Donatello]&f You can tell the General I am doing just fine!'
+    filename: primis_sewer_donatello.yml
+    npcName: Agent Donatello
+    location: in The Sewers
+    objectiveType: DIALOG
+  Objective2:
+    dialog:
+    - '&a[Leonardo]&f The General should not worry, I am ok!'
+    filename: primis_sewer_leonardo.yml
+    npcName: Agent Leonardo
+    location: in The Sewers
+    objectiveType: DIALOG
+  Objective7:
+    amount: '8'
+    filename: primis_sewer_spore_spreader.yml
+    objectiveType: KILL_CUSTOM
+  Objective8:
+    amount: '1'
+    filename: primis_sewer_the_shredder_p1.yml
+    objectiveType: KILL_CUSTOM
+  Objective5:
+    amount: '1'
+    itemName: Sewage Keys
+    filename: primis_pontis_mille_sewage_keys.yml
+    objectiveType: FETCH_ITEM
+  Objective6:
+    amount: '6'
+    filename: primis_sewer_noxious_ninja.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=140:amount=1:chance=1
+- filename=primis_pontis_mille_serious_sewage_reward_helmet.yml:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_11.yml
+questLockoutPermission: elitequest.primis_pontis_mille_serious_sewage.yml
+name: '&2Serious sewage'
+questLore:
+- If you are up to the task then I could use your help.
+- The &dSewers&f under the city have become a lair for all sorts of trouble makers and critters.
+- The trouble makers call themselves &cNinjas&f...even though they are far from it.
+- They have a leader, I think he calls himself &cShreepper&f or something.
+- Make sure to get rid of him, a snake without it's head is not a threat.
+- If you could go down there and thin the numbers of critters and the trouble makers then that would allow me to assign my forces to more important tasks...
+- We had also sent &a4 Agents&f down there, I have not heard from them yet.
+- It would mean a lot to me if you could check up on them to make sure they are OK.
+- I also seem to have misplaced my personal &eSewage Keys&f if you could retrieve those too, then that would be great.
+temporaryPermissions:
+- elitequest.primis_pontis_mille_sewage_keys.yml
+questAcceptDialog:
+- '&a[Rogerius]&fYou can get to the &dSewers&f by going to the fountain and then a
+  bit south-east.'
+- You know you are at the right spot when you see a big sewage pipe going into the
+  wall.
+- '&7&oI need to find my way into the &dSewers&7&o and complete the tasks.'
+questCompleteMessage:
+- '&a[Rogerius]&f You have completed the all I have asked? If only I had 10 more men
+  like you...'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_general_rogerius.yml

@@ -1,0 +1,33 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Alanus Secundas] &fHas the &dGrove&f sent you?'
+    filename: primis_pontis_groves_lighthouse_sick_man.yml
+    npcName: Alanus Secundas
+    location: at the Lighthouse
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=60:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_pontis_groves_population_control.yml
+questLockoutPermission: elitequest.primis_pontis_groves_lighthouse_1.yml
+name: '&2Feeding the sick'
+questLore:
+- Wanderer, could I ask a simple favor of you?
+- There is a nearby &dLighthouse&f. We usually deliver food to the family that lives
+  there.
+- But ever since the troubles began we could not leave our &dGrove&f.
+- Would you be so kind to bring the family their latest batch of food.
+- It would be great if you could hurry, it has been a while since the last delivery.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[King Nemian]&f When you exit the hole the &dLighthouse&f is straight forward
+  and a bit to the left.'
+- '&7&oI should go to the &dLighthouse&7&o.'
+questCompleteMessage:
+- '&a[Alanus Secundas]&f I am so thankful! We were just starting to run out of food.'
+- Are you busy?
+- '&7&oSeems like &aAlanus&7&o wants to talk to me.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_groves_lighthouse_sick_man.yml

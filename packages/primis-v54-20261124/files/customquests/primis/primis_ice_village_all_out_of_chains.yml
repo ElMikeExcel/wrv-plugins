@@ -1,0 +1,41 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Mekanikus]&f Oh, the Ice Village chain shipment. Yes, it is right in that chest
+      over there.'
+    - Sorry for not sending it over, but we were quite busy and had no time.
+    - It's all paid for so feel free to just grab it.
+    filename: primis_pontis_repairman.yml
+    npcName: Mekanikus
+    location: in Pontis Mille
+    objectiveType: DIALOG
+  Objective2:
+    amount: '1'
+    itemName: Shipment of Chains
+    filename: primis_ice_village_chains_shipment.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=160:amount=1:chance=1
+- filename=enchanted_book_hunter.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_17.yml
+questLockoutPermission: elitequest.primis_ice_village_all_out_of_chains.yml
+name: '&2All out of chains'
+questLore:
+- Hey, you came from &dPontis Mille&f right?
+- How would you like to help us out.
+- Here at the jail we tend to go through a lot of chains...
+- Especially the chains holding up the cages.
+- They rust a lot and then they break. That's how one of the prisoners escaped.
+- The rusty chain snapped, the cage fell and he ran.
+- We paid for a &eShipment of new chains&f, but it did not arrive yet. If you could go to &dPontis Mille&f and fetch our &eShipment of Chains&f then that would be great!
+temporaryPermissions:
+- elitequest.primis_ice_village_chains_shipment.yml
+questAcceptDialog:
+- '&a[Philolaches Triferus]&f Go talk to Mekanikus. They are the ones that make the chains.'
+- '&7&oI should go talk to &a&oMekanikus&7&o and bring back the &e&oShipment of Chains&7&o.'
+questCompleteMessage:
+- '&a[Philolaches Triferus]&f Those are the chains! Thank you for getting these, we
+  really needed them.'
+questCompleteCommands: []
+turnInNPC: primis_ice_village_jail_caretaker.yml

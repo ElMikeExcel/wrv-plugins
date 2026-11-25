@@ -1,0 +1,41 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '3'
+    filename: primis_pontis_mille_fields_two_legged_terror.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '6'
+    itemName: Samples
+    filename: primis_terravilla_two_legged_terror_sample.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=170:amount=1:chance=1
+- material=COOKED_BEEF:amount=10:chance=1.0
+- currencyAmount=15:chance=0.3
+- currencyAmount=90:chance=0.2
+- currencyAmount=160:chance=0.1
+- currencyAmount=300:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_20.yml
+questLockoutPermission: elitequest.primis_terravilla_bipedal_examination.yml
+name: '&2Bipedal examination'
+questLore:
+- I have been studying the &cTwo Legged Terrors&f that roam around &dTerravilla&f.
+- Did you know that their population used to be much larger just some years ago.
+- In fact it was the reason why the first settlers decided to build &dTerravilla&f on top of the ruins and not down on the ground.
+- For some reason their numbers have decreased.
+- I was trying to get some &eSamples&f but trying to kill any of them is far beyond my skill.
+- But you look like the sort of type who can handle a &cTwo Legged Terror&f or two.
+- Interested in helping me out?
+temporaryPermissions:
+- elitequest.primis_terravilla_two_legged_terror_sample.yml
+questAcceptDialog:
+- '&a[Plautia Suilius]&f Six &eSamples&f should do it. Return to me once you have
+  collected the &eSamples&f.'
+- '&7&oI need to slay 3 &c&oTwo Legged Terrors&7&o and collect their &e&oSamples&7&o.'
+questCompleteMessage:
+- '&a[Plautia Suilius]&f Great! Let''s have a look.'
+- '&7&oI should hear what &a&oPlautia Suilius&7&o has discovered.'
+questCompleteCommands: []
+turnInNPC: primis_terravilla_researcher.yml

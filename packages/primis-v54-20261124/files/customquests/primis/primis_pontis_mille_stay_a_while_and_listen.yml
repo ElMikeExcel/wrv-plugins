@@ -1,0 +1,28 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    filename: primis_pontis_mille_arena.yml
+    objectiveType: ARENA
+customRewards:
+- currencyAmount=140:amount=1:chance=1
+- material=ENCHANTED_GOLDEN_APPLE:amount=3
+questAcceptPermission: elitequest.primis_pontis_mille_star_gazing.yml
+questLockoutPermission: elitequest.primis_pontis_mille_stay_a_while_and_listen.yml
+name: '&2Stay a while and listen'
+questLore:
+- Hand me the note. Let me take a look...
+- We have been given permission to share important information with you regarding our past.
+- You must have done something quite important, this information is usually only shared with the top brass.
+- "&aStella&f will share with you what we have uncovered."
+temporaryPermissions:
+- elitequest.primis_pontis_mille_arena_knowledge.yml
+- elitequest.primis_pontis_mille_stay_a_while_and_listen_arena.yml
+questAcceptDialog:
+- '&a[Virgo Dexippus]&f Talk to &aStella&f and &9Click on the Sword&f to start listening.'
+- '&7&oI should talk to &aStella&7&o and start the &9Arena Challenge&7&o.'
+questCompleteMessage:
+- '&a[Virgo Dexippus]&f Do not share this information with anyone.'
+- '&7&oThat was quite a tale...'
+- '&7&oI should go talk to Fortes.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_observatory_arena_turn_in.yml

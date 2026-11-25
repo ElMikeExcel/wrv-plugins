@@ -1,0 +1,36 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '4'
+    filename: primis_roofed_forest_spider_reinforcement.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '1'
+    filename: primis_roofed_forest_cave_spider_boss.yml
+    objectiveType: KILL_CUSTOM
+  Objective3:
+    amount: '1'
+    filename: primis_roofed_forest_cave_spider.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=130:amount=1:chance=1
+- filename=primis_pontis_groves_spider_boots_reward.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_pontis_groves_population_control.yml
+questLockoutPermission: elitequest.primis_pontis_groves_caught_in_the_web.yml
+name: '&2Caught in the web'
+questLore:
+- So they have a &dNest&f somewhere in the &dGrove&f.
+- That would explain why their population has skyrocketed.
+- We were used to some &cSpiders&f wandering into the &dGrove&f, but this is too much.
+- It would be great if you could locate the &dNest&f and clear it out.
+- We will make you some fine &eSpider Leg Boots&f as a reward!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[King Nemian]&f If there is a &dNest&f I am sure it would be &9Surrounded by
+  Cobwebs&f.'
+- '&7&oI should find the &dSpiders Nest&7&o and clear it out.'
+questCompleteMessage:
+- '&a[King Nemian]&f Hah! I knew we could count on you!'
+- Here are your fine boots, well deserved!
+questCompleteCommands: []
+turnInNPC: primis_groves_nemus_leader.yml

@@ -1,0 +1,43 @@
+questCompleteCommands: []
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Fortis Fossores] &fWhat do you want? What, &aFugit&f sent you? What for?
+      The mines were overrun? Hah, I didn''t even notice!'
+    - Let that worrywart brother of mine know that I am fine. Now, begone! I am on
+      the verge of making a big mining discovery. I call it - branch mining! Hehehe,
+      this one will change everything!
+    filename: primis_ogre_mines_lone_miner.yml
+    npcName: Fugit's Brother
+    location: in the mines
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=70:amount=1:chance=1
+- filename=primis_lucky_pickaxe.yml:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_5.yml
+questLockoutPermission: elitequest.primis_ogre_mines_lost_bretheren.yml
+name: '&5Lost Bretheren'
+questLore:
+- The mine was overrun by &cOgres&7&o!
+- In the confusion I got separated from my &aBrother&f in the &dMines&f, and I fear
+  for his safety!
+- He's a bit of an eccentric man, very dedicated to mining.
+- You'll know if you've seen him!
+- Please bring him back up here, or at the very least tell me if he is safe.
+- I'll make it worth your trouble!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Fugit] &fPlease find my &aBrother&f and make sure he''s OK!'
+- '&7&oI find &aFugit''s Brother&7&o in the &dMines&7&o overrun by &cOgres&7&o.'
+questCompleteMessage:
+- '&a[Fugit Fossores]&f My &aBrother&f said what? Ah, typical of him, too focused
+  on his work to notice the entire place was taken over!'
+- I'll have a serious conversation with him next time I see him!
+- Thank you for your help, you can have my best pick-axe, LL I call her. It doesn't
+  look like I'll be able to get mining any time soon at this rate.

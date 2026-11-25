@@ -1,0 +1,10 @@
+Primis Adventure v54 content update INSTALLED Nov 24, 2026 11:28 CT
+Window: wrv-install-failsafe-20261124-1121 (chained Install 2 of 2, with ExcelBossTrial 0.5.8)
+Placed: 112 files; skipped 1 (content_packages/primis_adventure.yml byte-identical on live, per re-based packet)
+Post-placement live verify: all 113 packet files on live hash-match packet-files.tsv (225,249 B total, BAD 0)
+Gates: sleep bfefef97..., meta 525b528c... (v51/lockout 120), adventure 46c175fe... (777 B, lockout 120), 3 Sunken Ship chests at D219 hashes - all MATCHED fresh on PC
+Boot: Done (31.793s) 11:28:45; SEVERE 0; EliteMobs loaded world em_primis; live meta reads dungeonVersion 54 AND dungeonLockoutMinutes 120; chests unchanged; Longhorn spawnCooldown 5 / 13 locations unchanged
+Backup: snapshot-11242026.1125 (same window backup)
+End state: ONLINE, pid 21232, 0 players, whitelist untouched
+Proof owed: sleep/wake repro ON LIVE (boss leash-returns, re-sleeps, player hit wakes it) - result is the report-back owed on issue #242; DRAFT-REPLY-242.md NOT posted (Mike reviews; per Nov 24 testing bar, upstream claim only after the live test passes)
+Record: ~/workspace/wrv-install-queue/runs/20261124-1121-failsafe/RUN-RECORD.md

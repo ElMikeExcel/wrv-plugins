@@ -1,0 +1,30 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Navita]&f You have returned! I hope you have good tidings.'
+    filename: primis_pontis_mille_shogun.yml
+    npcName: Navita
+    location: at Pontis Mille
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=180:amount=1:chance=1
+- filename=enchanted_book_loot_bonus_blocks.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_23.yml
+questLockoutPermission: elitequest.primis_main_quest_24.yml
+name: '&2There and back again'
+questLore:
+- We had no idea what was going on... Yes, &dTerravilla&f will be able to pledge some of our forces to your cause.
+- I wonder if the &cEarth Elemental&f awakening had anything to do with the &dBlood Temple&f.
+- We will prepare our forces and wait for word from &dPontis Mille&f.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Lutum Princeps]&f So you are heading off to &dPontis Mille&f, make sure to tell
+  the &aShogun&f that &dTerravilla&f will be ready to assist.'
+- '&7&oI should head to &d&oPontis Mille&7&o and speak with &a&oShogun Navita&7&o.'
+questCompleteMessage:
+- '&a[Navita]&f It is good to hear that the &dIce Village&f has decided to join our
+  cause! But I did not expect that you would manage to convince &dTerravilla&f to
+  pledge to our cause as well.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_shogun.yml

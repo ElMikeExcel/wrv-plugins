@@ -1,0 +1,34 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '8'
+    filename: primis_pontis_mille_fields_field_rat.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '9'
+    filename: primis_pontis_mille_fields_bird.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=110:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_12.yml
+questLockoutPermission: elitequest.primis_pontis_mille_fields_not_on_my_farm.yml
+name: '&2Not on my farm!'
+questLore:
+- Lately all these &cRats&f have been driving me crazy.
+- They keep going into our little farm and eating all our goods!
+- Any chance you could go and lower their numbers a bit?
+- Be careful, there are so many of them.
+- Oh, I almost forgot to tell you.
+- If you see a large &cWell Fed Rat&f don't bother with it.
+- It has grown so large and fat it would take you days to slay it.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Milonia Majus]&f I am sure that you already noticed that they like to squirm
+  around the path area.'
+- '&7&oI should go kill the &cRats&7&o that hang around the path that leads to &dPontis
+  Mille&7&o.'
+questCompleteMessage:
+- '&a[Milonia Majus]&f Thank you so much! We can get back to making delicious goods
+  now.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_fields_farm_npc.yml

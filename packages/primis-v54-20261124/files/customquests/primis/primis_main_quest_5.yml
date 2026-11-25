@@ -1,0 +1,36 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_quartz_elemental.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    dialog:
+    - '&a[Eartep] &fWow! Who are you? I saw you defeat the &cCrystal Elemental&f, clearly there''s greatness in your future!'
+    filename: primis_mountain_guide_2.yml
+    npcName: Eartep
+    location: mountain passage exit
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=70:amount=1:chance=1
+- filename=enchanted_book_durability.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_4.yml
+questLockoutPermission: elitequest.primis_main_quest_5.yml
+name: '&5The Crystal Elemental'
+questLore:
+- You need to pass through? Ill timing, my friend.
+- A &cCrystal Elemental &fhas invaded our passage
+- and shut it down.
+- If you really must make your way to Gladius,
+- you will have to defeat this &cElemental&f first!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Petrae]&f You seek to defeat the &cCrystal Elemental&f? I can but wish you luck
+  in your endeavor!'
+- 'If you are successful in your attempt, meet my brother on the other side of the passage!'
+- '&7&oSeems like I must defeat the &cCrystal Elemental&7&o to be able to reach the other side of the passage.'
+questCompleteMessage:
+- My brother sent you? Let me tell you the path to &dGladius&f!
+- '&7&oI should talk to &a&oEartep &7&oand hear what he has to say.'
+questCompleteCommands: []
+turnInNPC: primis_mountain_guide_2.yml

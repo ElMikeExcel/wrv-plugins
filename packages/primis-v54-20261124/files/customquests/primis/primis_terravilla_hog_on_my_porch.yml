@@ -1,0 +1,27 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_terravilla_alpha_razorback.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=400:amount=1:chance=1
+- filename=primis_terravilla_hog_on_my_porch_reward_helmet.yml:amount=1:chance=1.0
+- filename=enchanted_book_arrow_fire.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_20.yml
+questLockoutPermission: elitequest.primis_terravilla_hog_on_my_porch.yml
+name: '&2Hog on my porch'
+questLore:
+- He is sitting on the darn lift again!
+- I cannot believe it! You there! You look like you can handle a large beast.
+- I will pay you good money if you can get rid of that &cAnnoying Large Hog&f that keeps sitting on the lift.
+- How are we supposed to get goods up and down this way.
+temporaryPermissions:
+- elitequest.primis_terravilla_two_legged_terror_sample.yml
+questAcceptDialog:
+- '&a[Dorippa Sarimarcus]&f Get rid of that hog right down there, see it?'
+- '&7&oI need to slay the &c&oAlpha Razorback&7&o.'
+questCompleteMessage:
+- '&a[Dorippa Sarimarcus]&f Finally! I can move on with my life now! Thank you!'
+questCompleteCommands: []
+turnInNPC: primis_terravilla_annoyed_explorer.yml

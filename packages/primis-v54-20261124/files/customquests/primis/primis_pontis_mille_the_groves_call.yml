@@ -1,0 +1,35 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[King Nemian]&f &2General Bromia&a sent you?'
+    - Excellent, I knew we could count on him.
+    filename: primis_groves_nemus_leader.yml
+    npcName: King Nemian
+    location: in The Groves
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=50:amount=1:chance=1
+- material=GLOW_BERRIES:amount=4
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_11.yml
+questLockoutPermission: elitequest.primis_pontis_mille_the_groves_call.yml
+name: '&2The groves call!'
+questLore:
+- It is our duty to protect the &dGroves&f from any threats.
+- '&aKing Nemian&f of the &dGroves&f has sent a request for aid.'
+- Nasty critters have come to the &dGroves&f and other invaders are taking over the trees.
+- If you could go over there and sort out these issues then my forces will be free to come to &dGladius'&f aid.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Bromia]&f The &dGroves&f are located North of the city.'
+- There is a path through the mountain,, below the mines.
+- '&7&oI should talk to &aKing Nemian&7&o.'
+questCompleteMessage:
+- '&a[King Nemian]&f You have arrived just in time!'
+questCompleteCommands: []
+turnInNPC: primis_groves_nemus_leader.yml

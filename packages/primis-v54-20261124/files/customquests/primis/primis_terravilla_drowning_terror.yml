@@ -1,0 +1,44 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '6'
+    filename: primis_terravilla_regular_fish.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '1'
+    itemName: Perfect Sample
+    filename: primis_terravilla_perfect_sample.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=170:amount=1:chance=1
+- filename=primis_terravilla_drowning_terror_reward_charm.yml:amount=1:chance=1.0
+questAcceptPermission: elitequest.primis_terravilla_terrifying.yml
+questLockoutPermission: elitequest.primis_terravilla_drowning_terror.yml
+name: '&2Drowning terror'
+questLore:
+- My theory was correct. I dissected the growth and found an organism inside.
+- After careful examination I have determined that the organism is of aquatic origin.
+- And not only that, they are capable of hijacking the host's brain.
+- Once ready to hatch they make the host go to the nearest water source and drown themselves.
+- The organism can then freely hatch and swim away.
+- Whatever is infecting the &cTwo Legged Terrors&f must be living in a nearby river.
+- You should go there and collect a &ePerfect Sample&f of whatever organism is causing this.
+- I do not know if this is something that can affect humans, but just in case you should kill a few of the organisms to make sure that their numbers stay low.
+temporaryPermissions:
+- elitequest.primis_terravilla_perfect_sample.yml
+questAcceptDialog:
+- '&a[Plautia Suilius]&f Come back here once you have collected a &ePerfect Sample&f.'
+- '&7&oI need to go to the nearby river and collect a &e&oPerfect Sample&7&o of whatever
+  is causing the infections.'
+questCompleteMessage:
+- '&a[Plautia Suilius]&f Wow it looks like a fish, but it''s internal organs are different.'
+- It must infect other creatures by releasing these tiny worm like meat particles...
+- Let me have a look at you. Hmm, you seem fine, no traces...
+- So it is not affecting us...yet. This is an emergency, I need to collect my stuff
+  and go present my findings to the researchers at &dPontis Mille&f immediately. I
+  need to get approval for extermination, that organism cannot be allowed to evolve.
+- Thank you for everything you have done. Here, take this. It's not a lot but at least
+  it's something.
+- '&7&oI should make sure to stay away from the river...'
+questCompleteCommands: []
+turnInNPC: primis_terravilla_researcher.yml

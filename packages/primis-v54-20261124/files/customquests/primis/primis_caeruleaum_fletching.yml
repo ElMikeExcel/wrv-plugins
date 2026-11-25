@@ -1,0 +1,39 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '10'
+    itemName: Grappling Arrow
+    filename: grappling_arrow.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=30:amount=1:chance=1
+- filename=grappling_arrow.yml:amount=5:chance=1
+- filename=primis_ruins_bow.yml:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_2.yml
+questLockoutPermission: elitequest.primis_caeruleaum_fletching.yml
+name: '&2Arrow Hunter'
+questLore:
+- Got a few minutes to help out?
+- With all the recent raids, we have found ourselves out of &eGrappling Arrows&f!
+- It is usually my job to get them, but things are just a bit too dangerous right now for me to go dungeon delving.
+- If you could get these &eGrappling Arrows&f for me, I will teach you how to use them!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Ventus Artifex]&f Please bring me 10 &eGrappling Arrows &ffrom the ruins just
+  beyond the village.'
+- The &cUndead Skeletons&f and &cDrowned&f from of old usually carry these.
+- '&7&oI should go kill &cSkeletons&7&o and &cDrowned&7&o at the ruins near the village
+  for their &eGrappling Arrows&7&o.'
+questCompleteMessage:
+- '&a[Ventus Artifex]&f Great work!'
+- '&eGrappling Arrows &fcan be used on &cTarget Blocks &fto get to hard to reach places.'
+- They are a must have for the aspiring ancient ruin delver.
+- Here is your reward!
+- How about putting your knowledge to the test?
+- '&7&oSeems like &aVentus Artifex&7&o has a challenge for me.'
+questCompleteCommands: []

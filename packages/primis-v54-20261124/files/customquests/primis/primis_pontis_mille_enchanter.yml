@@ -1,0 +1,35 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - "&a[Meliorem]&f Fortes sent you here to upgrade your gear?"
+    - "&a[Meliorem]&f Talk to the assistant in the back and he will give you some free goodies."
+    filename: primis_pontis_enhancer.yml
+    npcName: Meliorem
+    location: in the Streets of Pontis
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=69:amount=1:chance=1
+- filename=enchanted_book_critical_strikes.yml:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_10.yml
+questLockoutPermission: elitequest.primis_pontis_mille_enchanter.yml
+name: '&2Enchanted!'
+questLore:
+- "Hmm, your gear could use some upgrades."
+- "We have an enchanter in our city that could help you out with that."
+- "You see enchanting is a pretty straight forward process."
+- "All you need is some &eElite Gear&f and an &eEnchantment Book&f and if you have it with you, an optional &eLucky Ticket&f."
+- "You talk to the &aEnchanter&f and a window will open up where you can drag over your piece of &eElite Gear&f your &eEnchantment Book&f and any &eLucky Tickets&f you might have."
+- "The &eLucky Tickets&f are completely optional, they only improve the chance of the enchantment being a success."
+- "After you have placed your items in the correct slots you can hit the Enchant button and hopefully you will have an enchanted piece of gear!"
+- "Oh, and of course the enchanter will charge you a small fee for their service."
+temporaryPermissions: []
+questAcceptDialog:
+- "&a[Fortes]&f You can find &aMeliorem&f down in the city streets near a &dWater Fountain&f."
+- "&a[Fortes]&f Do not forget! Drag over you gear, the enchantment book and any lucky tickets you might have into the enchantment window and then click on Enchant when you are ready!"
+- "&7&oI should find &a&oMeliorem the Enchanter&7&o and upgrade some of my gear."
+questCompleteMessage:
+- "&a[Assistant]&f I can give you a free book and a ticket. Talk to &aMeliorem&f to enchant your gear!"
+questCompleteCommands: []
+turnInNPC: primis_pontis_enhancer_assistant.yml

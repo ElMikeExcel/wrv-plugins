@@ -1,0 +1,32 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Navita]&f Welcome, slayer of evils, protector of Primis!'
+    filename: primis_pontis_mille_shogun.yml
+    npcName: Navita
+    location: at Pontis Mille Throne-room
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=333:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_28.yml
+questLockoutPermission: elitequest.primis_main_quest_29.yml
+name: '&2There and Back Again'
+questLore:
+- "You have done the impossible, hero. The fire elemental’s rage has been quenched, and the blood elemental’s vile presence has been destroyed."
+- "Your bravery and skill have saved countless lives."
+- "We will escort you back to &dPontis Mille&f. The ruler, &aNavita&f, awaits your return and has decreed a celebration in your honor."
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Officer]&f Enough chatter. Let’s ensure you return safely to &aNavita&f.'
+- '&7&oI need to make my way back to &d&oPontis Mille&f&o and talk to &a&oNavita&f&o.'
+questCompleteMessage:
+- '&a[Navita]&fYou have returned victorious. Your deeds will be sung for generations to come.'
+- "&7&oI should talk to &a&oNavita&7&o."
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_shogun.yml

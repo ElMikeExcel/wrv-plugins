@@ -1,0 +1,37 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&8[Jeeves]&fOh, hello there again!'
+    - '&8[Jeeves]&f They do not need the food anymore? I was just about to go shopping.'
+    - '&8[Jeeves]&f So kind of you to come here and let me know.'
+    filename: primis_caeruleaum_jeeves.yml
+    npcName: Jeeves
+    location: at Caeruleaum Village
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=60:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_pontis_groves_lighthouse_1.yml
+questLockoutPermission: elitequest.primis_pontis_groves_lighthouse_2.yml
+name: '&2Do not ask Jeeves'
+questLore:
+- Uh, before you came. Jeeves the Traveling Merchant stopped by.
+- We asked him if he could go get some food for us.
+- Well, that is not necessary anymore so it would be great if you could climb to the
+  top of the lighthouse and fly a griffin to Caeruleaum Village and tell Jeeves we do not
+  need the food anymore.
+temporaryPermissions: []
+questAcceptDialog:
+- '&8[Alanus Secundas]&f When you exit the dwelling the Lighthouse is straight forward
+  and a bit to the left.'
+- '&8&oI should go to the Lighthouse.'
+questCompleteMessage:
+- '&8[Alanus]&f You let him know? Good, good!'
+- '&8&oSeems like Alanus is quite fed.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_groves_lighthouse_sick_man.yml

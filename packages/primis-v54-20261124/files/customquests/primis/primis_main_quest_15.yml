@@ -1,0 +1,68 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_pontis_mille_counselor_p1.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '1'
+    itemName: Stone of Far Speech
+    filename: primis_pontis_mille_counselor_sword.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=140:amount=1:chance=1
+- filename=primis_pontis_mille_reward_shield.yml:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_14.yml
+questLockoutPermission: elitequest.primis_main_quest_15.yml
+name: '&2Severance payback!'
+questLore:
+- Once upon a time, &cCounselor Machiavelli&f, the wisest among us, foresaw the fall
+  of &dPontis Mille&f.
+- Faced with an unprecedented existential threat, he convinced me to keep quiet as
+  to not incite panic.
+- I took the only course of action I thought we had left - sacrificing our closest
+  ally to buy us mere weeks.
+- I spoke to the entity which resides in the &dBlood Temple&f. I made a deal with
+  the devil.
+- In exchange for revealing &dGladius'&f greatest weakness - their naval capabilities
+  - I bought us time.
+- They demanded I send the army away, which I did by mobilizing it to face nearby
+  conflicts.
+- I was blind, but now I see. &cCounselor Machiavelli&f was in their pocket the whole
+  time.
+- He guided us to our doom, and would've gotten away with it had you not appeared.
+- Now, there is hope.
+- I ask you, please rid us of the treacherous &cCounselor&f.
+- He has locked himself in his quarters, surrounded by those loyal to him and his...
+  pets.
+- Be careful. I knew not the reason why he isolated himself, but it is now clear he
+  is expecting retribution.
+- Bring me back the &eFar SSpeech Stone&f we used to communicate with the &dBlood
+  Temple&f.
+- I wish to deliver one last message through them.
+temporaryPermissions:
+- elitequest.primis_adv_unlock
+- elitequest.primis_pontis_mille_counselor_sword.yml
+questAcceptDialog:
+- '&a[Shogun Navita]&f &cCounselor Machiavelli&f has retreated to his quarters in
+  the lower city by the market. Be careful, has has amassed a devoted following in
+  his time, and will not go down without a fight.'
+- '&7&oIt is time for &cCounselor Machiavelli&f to face righteous retribution.'
+questCompleteMessage:
+- '&a[Shogun Navita]&f So it is done.'
+- '&dPontis Mille&f owes you a great debt, wanderer. Once we finish mobilizing the
+  army we will be ready to right our wrongs and march to &dGladius''&f aid.'
+- '&7<Shogun Navita focuses on the far speech stone>&a[Shogun Navita]&2 We feared
+  you. We surrendered our allies to you. We dispersed our armies. No more.'
+- '&dPontis Mille&2 marches to war, and we shall not walk alone! You shall rue the
+  day you crossed our path.'
+- '&7<Ominous laughter can be heard through the far speech stone as &aShogun Navita
+  &7smashes it on the ground>'
+- '&7&oSeems like the &aShogun&7&o has a plan. I should talk to him.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_shogun.yml

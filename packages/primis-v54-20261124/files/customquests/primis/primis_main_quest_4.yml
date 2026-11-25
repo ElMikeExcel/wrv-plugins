@@ -1,0 +1,34 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Petrae]&f &2Chief Piscis&f sent you? Unfortunately the passage is closed,
+      and the &cElemental&f guards it...'
+    filename: primis_mountain_guide.yml
+    npcName: Mountain Guide
+    location: at the end of the blue flower path
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=20:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_3.yml
+questLockoutPermission: elitequest.primis_main_quest_4.yml
+name: '&9Blue flower path!'
+questLore:
+- We must report our findings about the &dBandit Camp&f to &dGladius&f!
+- The mountain pass is guarded by an ancient, powerful &cGolem&f which must be avoided at all costs!
+- Follow the &9Blue Flowers&f along the path, they will lead you to a secret passage through the mountains!
+- A mountain guide will be waiting for you at the end of the &9Blue Flower &fpath!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Chief Piscis]&f The mountain pass is guarded by an extremely dangerous &cGolem&f,
+  which you are probably not able to defeat right now!'
+- We know of a secret passage in the mountains. Follow the path of &9Blue Flowers
+  &fand talk to the &aMountain Guide&f to get safe passage to Bridgeport!
+- '&7&oI should follow the &9&oBlue Flower &7&opath to the &aMountain Guide&7&o!'
+- '&7&oI should make sure to finish any business I got left before I leave.'
+- '&7&oHint: Make sure you track the quest to make finding your destination easier!'
+questCompleteMessage:
+- '&a[Petrae]&f Are you sure you want to risk it? I can help you...'
+- '&7&oSeems like &aPetrae&f has a request for me.'
+questCompleteCommands: []
+turnInNPC: primis_mountain_guide.yml

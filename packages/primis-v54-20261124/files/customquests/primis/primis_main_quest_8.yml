@@ -1,0 +1,45 @@
+questCompleteCommands: []
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    itemName: Promisory Note
+    filename: primis_gladius_lord_promise.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=90:amount=1:chance=1
+- filename=primis_gladius_sword.yml:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_7.yml
+questLockoutPermission: elitequest.primis_main_quest_8.yml
+name: '&5Recovering Hope'
+questLore:
+- We never saw this invasion coming.
+- They came in the dead of night, hit us hard and fast.
+- Before we knew it, half the city was overrun.
+- Morale is low. Everyone here has lost someone.
+- To spite our heartache, our own loved ones parade through the streets in a mockery
+  of life itself.
+- We need to rally and bolster morale, or we won't see another dawn!
+- Back in my &dMansion&f, in my treasury, lies a &eDocument&f of the utmost importance.
+- It is a written promise with one of the founders of &dPontis Mille&f to provide
+  us with assistance in a time of dire need.
+- This is the time. Retrieve the &eDocument&f, bring it back to me and I promise you
+  will be welcomed in &dPontis Mille&f with open arms.
+- Soldiers will fight to their last if given this small hope.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[General Hasta] The note is in my &dMansion&f. Be sure to bring it back. My men
+  here also have other requests around town you can help with, if able.'
+- '&7&oI should check what the other soldiers need and head to the &dMansion&7&o at
+  the town exit.'
+questCompleteMessage:
+- '&a[Lord Hasta]&f Outstanding! Recovering this &eDocument&f in the middle of a war?
+  If we had 10 more of you, the city would never have been taken in the first place!'
+- Before you go, do you think you could do me a small personal favor?
+- '&7&oSeems like &aLord Hasta&7&o wants to talk to me.'
+turnInNPC: primis_gladius_lord.yml

@@ -1,0 +1,39 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '3'
+    filename: primis_acolyte_forest_summoner.yml
+    objectiveType: KILL_CUSTOM
+  Objective1:
+    amount: '8'
+    filename: primis_acolyte_forest_brute.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '8'
+    filename: primis_acolyte_forest_sharpshooter.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=240:amount=1:chance=1
+- filename=primis_pontis_redwoods_nasty_little_bandits_reward_boots.yml:amount=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_11.yml
+questLockoutPermission: elitequest.primis_pontis_redwoods_lumberjack.yml
+name: '&2Nasty little bandits!'
+questLore:
+- Ever since these darn &cBandits&f settled across the river there has been no peace.
+- They keep ruining the trees, yesterday I caught one of them trying to set one of these giant trees on fire!
+- And not too long ago I got chased by a crazy person with a hatchet, I am quite sure it was one of the &cBandits&f.
+- Not too mention they keep trying to rob anyone that has business with us good folk here at the &dSawmill&f.
+- Enough is enough. I am willing to pay good coin to make this madness end.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Ligna Crispian]&f You will find them across the river.'
+- '&8&oI should go to the &dBandit Camp&f and clear it out.'
+questCompleteMessage:
+- '&a[Ligna Crispian]&f Finally! Some peace, thank you!'
+questCompleteCommands: []
+turnInNPC: primis_pontis_redwoods_lumberjack.yml

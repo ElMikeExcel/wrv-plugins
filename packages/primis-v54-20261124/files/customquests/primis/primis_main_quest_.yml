@@ -1,0 +1,44 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '4'
+    filename: primis_goblin_spearman.yml
+    objectiveType: KILL_CUSTOM
+  Objective4:
+    amount: '1'
+    filename: primis_goblin_king.yml
+    objectiveType: KILL_CUSTOM
+  Objective1:
+    amount: '5'
+    filename: primis_goblin_warrior.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '5'
+    filename: primis_goblin_grunt.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=50:amount=1:chance=1
+- filename=primis_pontis_mille_reward_chest.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_12.yml
+questLockoutPermission: elitequest.primis_main_quest_13.yml
+name: '&2Goblins in the mines!'
+questLore:
+- This day just keeps getting worse. First, we get ambushed by goblins.
+- The we retreat, only to find our army split. Some are dead, many are missing.
+- Worst of all, we fear we might've woken the Goblin King.
+- Some, hopefully, made it through. We have to set up camp and recover for now.
+- If you dare brave into the mines, you are on your own.
+- We tried to sneak past them, and it did not go well.
+- The only way forward is through bloodshed.
+temporaryPermissions: []
+questAcceptDialog:
+- '&8[Centurion]&fAre you braving the Goblin Mines? Beware the Goblin King!'
+- '&8[Centurion]&fWe hope our scouting party made it past him. Meet up with them if
+  you can.'
+- '&8&oI should venture through the mines and defeat the Goblin King.'
+questCompleteMessage:
+- '&8[Scouting party]&fYou made it through? I almost wish you hadn''t. You won''t
+  believe what lies ahead.'
+- '&8&oSounds like the scouting party has bad news for me.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_scout_leader.yml

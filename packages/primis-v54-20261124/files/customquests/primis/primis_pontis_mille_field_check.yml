@@ -1,0 +1,37 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Augustina Verrucosis]&f Oh, this is quite important! I will let the residents
+      know.'
+    - Thank you for delivering these important documents.
+    filename: primis_pontis_mille_slums_npc_5.yml
+    npcName: Augustina Verrucosis
+    location: at the slums
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=100:amount=1:chance=1
+- filename=enchanted_book_lure.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_12.yml
+questLockoutPermission: elitequest.primis_pontis_mille_field_check.yml
+name: '&2Field check'
+questLore:
+- If I could bother you with some delivery tasks.
+- I have here some important documents that need to be delivered to the &dSlums&f and to the &dFields Farm&f.
+- The soldier that was supposed to come and get them has not arrived yet.
+- And this is an urgent matter, we cannot afford to wait any longer.
+- Unfortunately I have strict orders to not leave my post.
+- If you could do this for me it would help us out a lot.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Godefridus Novation]&f You will do it? Excellent!'
+- You can follow the &9Yellow Path&f to get to the slums.
+- The &dFields Farm&f is right beyond the slums, just follow the path.
+- Oh! And watch out for the field rats!
+- '&7&oI should head for the &d&oSlums&7&o and then the &d&oFields Farm&7&o.'
+questCompleteMessage:
+- '&a[Milonia Majus]&f Documents? Let me see them. Hmmm, looks official.'
+- Thank you for coming all the way here to deliver them.
+- '&7&oSeems like &a&oMilonia&7&o could use my help with the rats...'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_fields_farm_npc.yml

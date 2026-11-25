@@ -1,0 +1,36 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Elite Guard]&f Plenty of rats inside.'
+    filename: primis_pontis_guard_rat_at_wormhole.yml
+    npcName: Elite Guard
+    location: in Pontis Mille
+    objectiveType: DIALOG
+  Objective2:
+    amount: '10'
+    itemName: Fresh Rat
+    filename: primis_pontis_mille_fresh_rat.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=120:amount=1:chance=1
+- filename=primis_pontis_mille_cat_quest_reward_charm.yml:amount=1:chance=1.0
+- filename=enchanted_book_protection_fall.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_pontis_mille_hungry_friend.yml
+questLockoutPermission: elitequest.primis_pontis_mille_fresh_rats_coming_up.yml
+name: '&2Fresh rats coming up'
+questLore:
+- No cat food but I think I can help ya find something even better...
+- I heard a couple of &aGuards&f have been dealing with a rat infestation in the lower parts of the city.
+- Go down there and maybe you can get some &cRats&f for your cat friend.
+temporaryPermissions:
+- elitequest.primis_pontis_mille_fresh_rats_coming_up.yml
+questAcceptDialog:
+- '&7&oI should check out the lower part of the city and see if I can find the &a&oElite
+  Guards&7&o.'
+questCompleteMessage:
+- '&a[Mew Meowzer]&f Meow. MEOW! Prrrrr.'
+- '&7&oI should let the cat enjoy it''s meal in peace.'
+- '&7&oIt seems to have dropped something, hmm...'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_mew_meowzer.yml

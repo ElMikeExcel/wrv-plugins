@@ -1,0 +1,33 @@
+questCompleteCommands: []
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_gladius_monk_p1.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=100:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_7.yml
+questLockoutPermission: elitequest.primis_gladius_prayer.yml
+name: '&5Leap of faith'
+questLore:
+- I am not going to sugarcoat it, things look downright grim!
+- The walls have fallen, the streets are teeming with the &cUndead&f and I just ran
+  out of drinks.
+- At times like these, people turn their hope to some kind of divine intervention!
+- There is a &dPath&f, lit by candles, that leads to a &dSanctuary in the Mountains&f.
+- Warriors go up this path and defeat the &cMonk&f which guards the sanctuary in order
+  to be blessed by the war god in combat.
+- It may just be a superstition, but would it hurt to give people hope?
+- The fact you made your way here shows you are a cut above the rest - go up the mountain
+  and defeat the &cMonk&f.
+- All warriors will feel better knowing they are being watched over.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Belli] &fGo &dUpstairs&f and follow the candles! Careful not to fall, the path
+  is treacherous!'
+- '&7&oI should follow the &dCandle Path&7&o and defeat the &cMonk&7&o.'
+questCompleteMessage:
+- '&a[Belli]&f You completed the prayer? Thank you, the soldiers will feel relieved
+  to hear it.'

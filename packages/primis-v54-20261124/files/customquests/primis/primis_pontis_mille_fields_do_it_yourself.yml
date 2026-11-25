@@ -1,0 +1,46 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '1'
+    filename: primis_pontis_mille_fields_bubba.yml
+    objectiveType: KILL_CUSTOM
+  Objective1:
+    amount: '6'
+    filename: primis_pontis_mille_fields_shorthorn.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '5'
+    filename: primis_pontis_mille_fields_longhorn.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=130:amount=1:chance=1
+- filename=primis_pontis_mille_fields_do_it_yourself_reward_bow.yml:amount=1:chance=1.0
+questAcceptPermission: elitequest.primis_pontis_mille_fields_camping_hunters.yml
+questLockoutPermission: elitequest.primis_pontis_mille_fields_do_it_yourself.yml
+name: '&2Do it yourself'
+questLore:
+- Deal with the &cMonsters&f? Well I can tell you we have already been doing that.
+- There is just too many of them and not enough of us.
+- We started hunting them as soon as we made our &dCamp&f here.
+- But their numbers just don't seem to be going down.
+- And that's not even the worst of it.
+- We have discovered a lair and a big old &cBeast&f that comes with it!
+- Well since you have made it to our &dCamp&f in one piece, I assume you are quite capable yourself.
+- How about joining the hunt? What say you?
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Scribonia Ingenvinus]&f I knew you would say yes! I see you are already well
+  equipped.'
+- OK, this is what I want you to do.
+- We are worried about that large &cBeast&f aka. &cBig ol' Bubba&f so that is priority
+  number one.
+- Second I need you to slay 5 &cLonghorns&f and 6 &cShorthorns&f.
+- Understood? Good. Report to me when you're done.
+- '&7&oI should slay &c&oBig ol'' Bubba&7&o and kill 5 &c&oLonghorns&7&o and 6 &c&oShorthorns&7&o.'
+questCompleteMessage:
+- '&a[Scribonia Ingenvinus]&f I must say I am quite impressed.'
+- Clearly you are way more than just 'capable'.
+- Thank you for the assistance, we will be able to handle the rest.
+- Until we meet again, great hunter.
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_fields_camp_generic_npc_1.yml

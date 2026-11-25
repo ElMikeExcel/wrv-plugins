@@ -1,0 +1,29 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Officer]&f I hope you are ready for the final assault.'
+    filename: primis_pontis_outpost_officer_blood_temple.yml
+    npcName: Officer
+    location: at the blood temple
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=190:amount=1:chance=1
+- filename=enchanted_book_knockback.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_25.yml
+questLockoutPermission: elitequest.primis_main_quest_26.yml
+name: '&2Blood and Fire'
+questLore:
+- Our allies from &dTerravilla&f and the &dIce Village&f have arrived.
+- We are ready to assault the &dBlood Temple&f.
+- Our goal is to reach the entrance and secure it.
+- Once that is done we can focus on the final assault.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Outpost Officer]&f Well this is it. I will see you again at the entrance. Give them no quarter!'
+- '&7&oI should fight my way to the &d&oBlood Temple&7&o entrance and speak with the &a&oOfficer&7&o.'
+questCompleteMessage:
+- '&a[Officer]&f Our scouts have come back with useful information.'
+- '&a[Officer]&f We should talk.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_outpost_officer_blood_temple.yml

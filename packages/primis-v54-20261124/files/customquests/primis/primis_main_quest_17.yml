@@ -1,0 +1,60 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    dialog:
+    - '&a[Theopropides Nero]&f Help? Yes, please!'
+    filename: primis_ice_village_fisherman_boat.yml
+    npcName: Theopropides Nero
+    location: on the boat
+    objectiveType: DIALOG
+  Objective1:
+    dialog:
+    - '&a[Alanus Isatis]&f Here to help with the &cRazorbacks&f?'
+    filename: primis_ice_village_hunter.yml
+    npcName: Alanus Isatis
+    location: at hunters lodge
+    objectiveType: DIALOG
+  Objective2:
+    dialog:
+    - '&a[Domina Violet]&f I hope you are here to help!'
+    filename: primis_ice_village_violet.yml
+    npcName: Domina Violet
+    location: in the guest house
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=150:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_16.yml
+questLockoutPermission: elitequest.primis_main_quest_17.yml
+name: '&2Helping the north'
+questLore:
+- Before we further discuss anything about
+- the &dBlood Temple&f.
+- There are issues that have popped around our village that need to be dealt with
+  as soon as possible.
+- If these issues are not resolved then I would fail in my duties as a village leader.
+- There is no way for me to ignore the plea of my own people and put others first.
+- If you could aid us in resolving these issues then our attention would be all yours.
+- We have an escaped prisoner, wildlife problems and even our own villagers stealing
+  from the village.
+- I will tell you the names and the locations of the people that came with these issues
+  to me.
+- Go talk to them and make sure you help them with any complaints and issues they
+  have.
+- They will be able to tell you in more detail what needs to be done.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Glacies Princeps]&f Once you are done helping them. Come back to me and we can
+  talk.'
+- '&7&oI should go talk to the villagers on my list and help them out with any issues
+  they might have.'
+questCompleteMessage:
+- '&a[Romanus Superbus]&f &2Glacies&f sent you, about darn time! We have a prisoner
+  on the loose!'
+- '&7&oI should speak to &a&oRomanus Superbus&7&o.'
+questCompleteCommands: []
+turnInNPC: primis_ice_village_jail_master.yml

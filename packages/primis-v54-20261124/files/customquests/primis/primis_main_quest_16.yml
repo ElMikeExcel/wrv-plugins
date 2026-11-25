@@ -1,0 +1,61 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    dialog:
+    - '&a[Demenis Nolus]&f Heading to the village, eh. Just keep going East, follow
+      the road and you should be there in no time!'
+    filename: primis_traveler_4.yml
+    npcName: Demenis Nolus
+    location: on the roads
+    objectiveType: DIALOG
+  Objective4:
+    dialog:
+    - '&a[Callipho Classicius]&f Directions? Just head down this road that leads to
+      the graveyards.'
+    filename: primis_traveler_5.yml
+    npcName: Callipho Classicius
+    location: on the roads
+    objectiveType: DIALOG
+  Objective1:
+    dialog:
+    - '&a[Glacies]&f Welcome to our village traveler! Please tell me, what brings
+      you here friend.'
+    filename: primis_ice_village_leader.yml
+    npcName: Glacies
+    location: at The Ice Village
+    objectiveType: DIALOG
+  Objective2:
+    dialog:
+    - '&a[Bromia Culleolus]&f Oh, the way to the village. Yes, just take  this road
+      that leads to the mountain.'
+    - Happy to help!
+    filename: primis_traveler_3.yml
+    npcName: Bromia Culleolus
+    location: on the roads
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=140:amount=1:chance=1
+- filename=enchanted_book_protection_fire.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_15.yml
+questLockoutPermission: elitequest.primis_main_quest_16.yml
+name: '&2The ice village awaits'
+questLore:
+- We must send aid to &dGladius&f as soon as possible.
+- Champion, there is a village of mighty warriors to the far south.
+- You should travel there and inform them that &dPontis Mille&f would seek their aid in pushing back the invaders from the &dBlood Temple&f.
+- Find &aGlacies Princeps&f and tell them I sent you.
+- There many travelers on the roads, you should stop and ask them for direction.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Shogun Navita]&f It will be a long journey. Make sure you prepare. Follow the
+  roads that lead south.'
+- '&7&oI must go and locate the &d&oIce Village&7&o to the far south.'
+questCompleteMessage:
+- '&a[Glacies Princeps]&f The Shogun sent you, I see, it is good to hear that &aNavita&f
+  is back to his old self.'
+- Before we can act against the &dBlood Temple&f, there are some issues that I would
+  like dealt with first.
+- Let me tell you more...
+- '&7&oI should speak to &a&oGlacies&7&o.'
+questCompleteCommands: []
+turnInNPC: primis_ice_village_leader.yml

@@ -1,0 +1,34 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Outpost Officer]&f I was expecting you.'
+    filename: primis_pontis_outpost_officer.yml
+    npcName: Outpost Officer
+    location: at the outpost
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=190:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_24.yml
+questLockoutPermission: elitequest.primis_main_quest_25.yml
+name: '&2To the outpost'
+questLore:
+- It is so good to see you again friend!
+- While you were gone we were preparing our forces.
+- We have made an &dOutpost&f between the &dBlood Temple&f and &dPontis Mille&f.
+- You should go there and report to the &aOutpost Officer&f.
+- They will let you know how we should proceed with the assault on the &dBlood Temple&f.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Navita]&f The outpost is to the South of the city. Not too long now before
+  the additional forces from &dTerravilla&f and the &dIce Village&f arrive.'
+- '&7&oI should head to the &d&oOutpost&7&o and speak with the &a&oOutpost Officer&7&o.'
+questCompleteMessage:
+- '&a[Outpost Officer]&f We are almost ready for the assault! Let us talk once you have time.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_outpost_officer.yml

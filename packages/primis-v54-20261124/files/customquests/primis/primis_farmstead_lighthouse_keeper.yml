@@ -1,0 +1,35 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_farmstead_lighthouse_keeper.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=80:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_5.yml
+questLockoutPermission: elitequest.primis_farmstead_lighthouse_keeper.yml
+name: '&2The Lighthouse Keeper'
+questLore:
+- Something is deeply wrong with my husband.
+- He used to be a loving and caring husband and father, but in recent times he has been focusing on documents he found in the basement.
+- He said it was for important research, something that could change the world.
+- I should've told him to stop when I saw how obsessed he was becoming.
+- He did... something... to the lighthouse - and I fear the lighthouse has done something to him, too.
+- It morphed him into some kind of monster. He no longer recognizes us, and has even attacked us when we tried to approach him.
+- At night, we can't sleep due to the wailing sounds coming from the &dLighthouse's Basement&f.
+- He is suffering, and we are powerless to help him.
+- I know it's asking a lot, but do you think you could help us?
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Amavit]&f Thank you so much for accepting our request. I hope with all my heart
+  you succeed.'
+- '&7&oI should go to the &dBasement of the Lighthouse&7&o and put the &cLighthouse
+  Keeper&7&o out of his misery.'
+questCompleteMessage:
+- '&a[Amavit]&f I heard it - so it is done? Did he suff- no, forget it, I don''t want
+  to know.'
+- '&fIt seems like the lighthouse started emitting an odd light when you... dealt
+  with the issue. We need to make sure it is not an issue.'
+- '&7&oSeems like &aAmavit&7&o has another task for me. I should talk to her.'
+questCompleteCommands: []

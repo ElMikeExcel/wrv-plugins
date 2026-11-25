@@ -1,0 +1,35 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '14'
+    filename: primis_roofed_forest_spider.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '6'
+    itemName: Spider Legs
+    filename: primis_pontis_redwoods_spider_legs.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=120:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_pontis_mille_the_groves_call.yml
+questLockoutPermission: elitequest.primis_pontis_groves_population_control.yml
+name: '&2Population control!'
+questLore:
+- Oh I am so happy that finally someone has arrived to help us out.
+- We have a big arachnid problem going on in our little grove.
+- There are so many arachnids around these days that you cannot even take a nice evening walk without one of the nasty buggers jumping at you from the shadows.
+- It is clear that their population numbers need a serious culling.
+- Oh! Please bring to me any arachnid legs that are still in good condition.
+- We use them to make small cranes and grabbers.
+temporaryPermissions:
+- elitequest.primis_pontis_redwoods_spider_legs.yml
+questAcceptDialog:
+- '&8[King Nemian]&f You will find them lurking beneath the shadows of the trees.'
+- '&8&oI need to find Forest Crawlers and kill them.'
+questCompleteMessage:
+- '&8[King Nemian]&fGood to see you return, and with plenty of legs too!'
+- '&8[King Nemian]&fYou think that their nest might be near? Let''s talk more about
+  this'
+questCompleteCommands: []
+turnInNPC: primis_groves_nemus_leader.yml

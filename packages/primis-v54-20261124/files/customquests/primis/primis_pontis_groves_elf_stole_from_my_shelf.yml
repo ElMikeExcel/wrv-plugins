@@ -1,0 +1,38 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    itemName: Valuable Heirloom
+    filename: primis_pointis_groves_heirloom.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=120:amount=1:chance=1
+- material=RABBIT_STEW:amount=5
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_pontis_groves_into_the_next_hole.yml
+questLockoutPermission: elitequest.primis_pontis_groves_elf_stole_from_my_shelf.yml
+name: '&2Elf stole from my shelf'
+questLore:
+- Disaster has struck our little hole.
+- Not too long ago our lovely home got raided by &cElf Bandits&f.
+- Thankfully we weren't home at the time so nobody got hurt.
+- We managed to replace most of our possessions.
+- But they took my &eFamily Heirloom&f that was sitting on the shelf.
+- If you would be so kind to go try and get it back for me, I would be most thankful.
+- I make the best stews, I would be glad to share some with you as a reward.
+temporaryPermissions:
+- elitequest.primis_pointis_groves_heirloom.yml
+questAcceptDialog:
+- '&a[Luxuria Gorgonius]&f The &eHeirloom&f is quite valuable I am sure they would
+  keep it &9Somewhere Extra Safe&f.'
+- '&7&oI need to go retrieve the &eHeirloom&7&o.'
+questCompleteMessage:
+- '&a[Luxuria Gorgonius]&f Oh my gosh! You found it!'
+- There are not enough thanks in the world for what you just did for me.
+- '&7&oThis stew should keep med fed for a while.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_groves_hole_luxuria.yml

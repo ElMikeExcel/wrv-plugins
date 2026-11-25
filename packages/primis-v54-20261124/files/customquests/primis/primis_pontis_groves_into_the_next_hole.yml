@@ -1,0 +1,30 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Phygia Gorgonius]&f Time to kick those &cElves&f out for good!'
+    filename: primis_pontis_groves_hole_phygia.yml
+    npcName: Phygia Gorgonius
+    location: inside the grove hole
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=50:amount=1:chance=1
+- filename=enchanted_book_luck.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_pontis_groves_population_control.yml
+questLockoutPermission: elitequest.primis_pontis_groves_into_the_next_hole.yml
+name: '&2Into the next hole...'
+questLore:
+- If you are available there is plenty more work to do around here.
+- We have some serious &cElf&f problems,
+- but I have assigned &aPhygia&f to handle those issues.
+- Go talk to &aPhygia Gorgonius&f in the hole next to this one.
+- They will be able to tell you more and what needs to be done.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[King Nemian]&f The hole right next to this one one, can''t  miss it!'
+- '&7&oI should go talk to &aPhygia Gorgonius&7&o.'
+questCompleteMessage:
+- '&a[Phygia Gorgonius]&f Let''s talk...'
+- '&7&oI should hear out &aPhygia Gorgonius&7&o.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_groves_hole_phygia.yml

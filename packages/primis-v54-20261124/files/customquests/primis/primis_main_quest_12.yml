@@ -1,0 +1,36 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Centurion]&f Where are our reinforcements?'
+    filename: primis_pontis_mille_royal_guard_centurion.yml
+    npcName: Royal Guard Centurion
+    location: The Mines Entrance
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=40:amount=1:chance=1
+- filename=primis_pontis_mille_reward_leggings.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_11.yml
+questLockoutPermission: elitequest.primis_main_quest_12.yml
+name: '&2Mine path'
+questLore:
+- I cannot believe what befell &dGladius&f. They hit it fast, and they hit it where it hurts most.
+- It is our sworn duty to aid our allies. We have failed our duty, and we have failed our allies.
+- The &cCounselor's&f ordered us to mobilize our troops in several zones before the invasion.
+- You see, recently and unusual and devastating storm was spotted at the &dStorm Temple&f.
+- The Royal Guard was ordered to quiet the storm, and the &aShogun&f refuses to belay that order.
+- Our own guards are in other places, and I fear we will need all that we have to take &dGladius&f back.
+- The path to the &dStorm Temple&f is treacherous, as it requires going through the &dGoblin Mines&f.
+- Help our guard clear the mines and make a path to the &dStorm Temple&f!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Fortes Bellator]&fTread lightly, the &dGoblin Mines&f are a dangerous place.
+  Perhaps you should aid the normal guard before assisting the &aRoyal Guard&f.'
+- The &dMines&f are north of the city. There are stairs leading to its entrance.
+- '&7&oI should see what else I can aid &aFortes Bellator&7&o with, or I can head
+  to the &dGoblin Mines''&7&o entrance.'
+questCompleteMessage:
+- '&a[Centurion]&fIt is so good to see someone! Has &dPontis Mille&f sent you?'
+- '&7&oI should hear what the &aCenturion&7&o has to say'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_royal_guard_centurion.yml

@@ -1,0 +1,32 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_final_elemental_p1.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=300:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_27.yml
+questLockoutPermission: elitequest.primis_main_quest_28.yml
+name: '&2Legacy of the Flame'
+questLore:
+- It is hard to believe we made it to this point.
+- And I don't think it would have been possible without your help.
+- Without a doubt the best strategy here is for you to go join the rest of our troops in fighting the &cFire Elemental&f.
+- It doesn't sound like they are winning, please hurry!
+- &aMajor Fortes'&f forces will be making sure to intercept any reinforcements they try to send your way.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Officer]&f Oh, I almost forgot, I have a message to you from &aMajor Fortes&f. "Go knock them dead!"'
+- '&7&oI need to go slay the &c&oFire Elemental&7&o.'
+questCompleteMessage:
+- '&a[Officer]&f Is it done? That was quite the epic battle! I have never seen anyone fight like that.'
+- '&a[Officer]&f We will escort you back to safety. It is time for celebration!'
+- "&7&oSeems like the &a&oOfficer&7&o has more to say."
+questCompleteCommands: []
+turnInNPC: primis_pontis_outpost_officer_blood_temple_2.yml

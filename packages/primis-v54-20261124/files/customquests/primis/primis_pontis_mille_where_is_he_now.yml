@@ -1,0 +1,36 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Gorenus Palis]&f My brother sent you looking for me?'
+    - Oh, I messed up again...I got real lost this time.
+    - I hope he isn't too mad.
+    - When you go back, please tell him I'm safe.
+    filename: primis_traveler_7.yml
+    npcName: Gorenus Palis
+    location: at Pontis Mille Fields  
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=330:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_11.yml
+questLockoutPermission: elitequest.primis_pontis_mille_where_is_he_now.yml
+name: '&2Where is he now'
+questLore:
+- Me and my &aBrother&f were on our way back here from the village.
+- During our travels I had to do a little detour, so we got separated.
+- We were supposed to meet up here. But no trace of him for quite some time now.
+- He has a tendency to get lost...real lost.
+- I'm quite worried about him.
+- I am willing to pay a high reward to anyone who can find him.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Rodenus Palis]&f So kind of you to offer your help.'
+- Please if you find him come tell me where he is right away.
+- '&7&oI need to go find &a&oRodenus''&7&o brother.'
+questCompleteMessage:
+- '&a[Rodenus Palis]&f What! How the heck did he end up all the way there!'
+- Sigh, I better start going now then...
+- Thank you for all your help. Here are the coins as promised.
+questCompleteCommands: []
+turnInNPC: primis_traveler_6.yml

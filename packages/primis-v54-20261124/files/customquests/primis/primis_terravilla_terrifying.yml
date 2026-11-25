@@ -1,0 +1,28 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '2'
+    itemName: Growth
+    filename: primis_terravilla_two_legged_terror_growth.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=170:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_terravilla_bipedal_examination.yml
+questLockoutPermission: elitequest.primis_terravilla_terrifying.yml
+name: '&2Terrifying'
+questLore:
+- Well that is concerning. The sample you brought shows that they are slowly being drained of their nutrients.
+- My hypothesis is that there is most likely a parasite attached to them that is causing this.
+- You should go out there again and see if you can find any large &eGrowths&f on their bodies.
+- If you find any, cut them off and bring them back here.
+temporaryPermissions:
+- elitequest.primis_terravilla_two_legged_terror_growth.yml
+questAcceptDialog:
+- '&a[Plautia Suilius]&f I would only need two &eGrowths&f no more than that.'
+- '&7&oI need to slay &c&oTwo Legged Terrors&7&o and collect two &e&oGrowths&7&o.'
+questCompleteMessage:
+- '&a[Plautia Suilius]&f Excellent, these should do it.'
+- '&7&oI should hear what &a&oPlautia Suilius&7&o has managed to find.'
+questCompleteCommands: []
+turnInNPC: primis_terravilla_researcher.yml

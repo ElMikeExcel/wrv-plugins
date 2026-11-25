@@ -1,0 +1,51 @@
+questCompleteCommands: []
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '1'
+    filename: primis_gladius_undead_captain.yml
+    objectiveType: KILL_CUSTOM
+  Objective4:
+    dialog:
+    - '&a[General Hasta] &fI can''t believe you made it past the enemies.'
+    - You are exactly the kind of help we need right now!
+    - '&7&oSeems like I should talk to &aGeneral Hasta&7&o.'
+    filename: primis_gladius_lord.yml
+    npcName: Lord of Gladius
+    location: at Gladius
+    objectiveType: DIALOG
+  Objective1:
+    amount: '9'
+    filename: primis_gladius_undead_swashbuckler.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '3'
+    filename: primis_gladius_undead_buccaneer.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=80:amount=1:chance=1
+- filename=enchanted_book_protection_environmental.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_6.yml
+questLockoutPermission: elitequest.primis_main_quest_7.yml
+name: '&5The path to Gladius'
+questLore:
+- Recently smoke was sighted over the fortress of &dGladius&f.
+- We were unable to go there and see what's happening because a &dShip&f is currently
+  blocking the path.
+- We got attacked by a bunch of undead-looking creatures when we approached the &dShip&f,
+  so we ran away.
+- I am afraid you will have to force your way through this &dShip&f in order to reach
+  &dGladius&f. I''m sure that they will reward you if you help thin the number of
+  &cUndead&f on that ship!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Filius] Be careful on the road, clearly something has gone wrong in &dGladius&f.'
+- Once you reach &dGladius&f, the Fortress' lord should either be at his mansion or
+  at the barracks!
+- '&7&oI should go down the path to &dGladius&7&o and clear out some &cUndead Sailors&7&o
+  on the way there.'
+questCompleteMessage:
+- '&a[Lord Hasta]&f Were you sent as reinforcements from Pontis Mille? Where are the
+  others? Are you a messenger?'
+- '&7&oI should talk to &aLord Hasta&7&o.'
+turnInNPC: primis_gladius_lord.yml

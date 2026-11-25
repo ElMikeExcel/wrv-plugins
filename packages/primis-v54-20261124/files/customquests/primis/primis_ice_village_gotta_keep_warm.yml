@@ -1,0 +1,32 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Severinus Martius]&f Ha ha! That should keep me warm for another couple
+      of weeks!'
+    - Hey friend, you heading for &dCaerullium Village&f by any chance?
+    filename: primis_ice_village_lighthouse_keeper.yml
+    npcName: Severinus Martius
+    location: at the lighthouse
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=160:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_16.yml
+questLockoutPermission: elitequest.primis_ice_village_gotta_keep_warm.yml
+name: '&2Gotta keep warm'
+questLore:
+- We deliver the &aLighthouse Keeper&f some of our strong stuff every couple of weeks.
+- It keeps him warm during the colder days.
+- It's a small gesture of thanks for all his hard work.
+- Any chance you could help out and bring over the next batch?
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Grania Cecilius]&f You can find the lighthouse to the East. Thanks!'
+- '&7&oI should go to the &d&oLighthouse&7&o and deliver these to the &a&oLighthouse
+  Keeper&7&o.'
+questCompleteMessage:
+- '&a[Severinus Martius]&f If you''re heading over there then I would appreciate if
+  you could deliver some of these to my good friend &aJeeves&f.'
+- '&7&oSeems like the &a&oLighthouse Keeper&7&o has a quest for me.'
+questCompleteCommands: []
+turnInNPC: primis_ice_village_lighthouse_keeper.yml

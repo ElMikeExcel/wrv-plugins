@@ -1,0 +1,43 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_terravilla_earth_elemental.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=180:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_22.yml
+questLockoutPermission: elitequest.primis_main_quest_23.yml
+name: '&2Strike the earth'
+questLore:
+- You see the real reason we asked for help is because of what happened at the ruins.
+- There were always dangerous things down there, but nothing a seasoned adventurer or explorer could not handle.
+- But then something awakened, these ancient constructs started rising out of the ground and the walls.
+- Then these quakes started happening, it was weird, because you could only feel them if you were down in the ruins.
+- So we shut everything down, nobody was allowed access to the ruins anymore.
+- A few days ago I gathered some of my best men and sent them down there to find the source of it all.
+- They barely made it back. They found an &cEarth Elemental&f high above the pillars, on top some sort of platform.
+- It must have been there for ages, dormant.
+- No clue why it decided to wake up now...
+- Your job would be to go down there, navigate through the maze and put the &cEarth Elemental&f into a slumber it will never wake up from!
+temporaryPermissions:
+- elitequest.primis_terravilla_strike_the_earth_reward_sword.yml
+questAcceptDialog:
+- '&a[Lutum Princeps]&f You can get to the maze by walking down the spiral staircase
+  in the middle of the ruins.'
+- Don't get lost in the maze, also make sure to watch out for the constructs. Good
+  luck!
+- '&7&oI should enter the &d&oRuins Maze&7&o and slay the &c&oEarth Elemental&7&o.'
+questCompleteMessage:
+- '&a[Lutum Princeps]&f I cannot believe it, you''re back. In one piece too!'
+- I guess you are tougher than you look. What you have done here is incredible it
+  is clear we are in great debt to you. Is there anything Terravilla might be able
+  to do for you.
+- '&7&oI need to tell &a&oLutum&7&o about my quest and the &d&oBlood Temple&7&o.'
+questCompleteCommands: []
+turnInNPC: primis_terravilla_overseer.yml

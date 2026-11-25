@@ -1,0 +1,31 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    itemName: Lucky Pickaxe
+    filename: primis_ogre_mines_lucky_pickaxe.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=90:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_5.yml
+questLockoutPermission: elitequest.primis_ogre_mines_old_miner_quest.yml
+name: '&2Lucky Pickaxe'
+questLore:
+- We have ourselves a bit of a pickle!
+- As we were mining, we came across a mysterious cave full of monsters!
+- I dropped my favorite &ePick-axe&f as I ran, I need your help to go get it!
+- I'm sure the &cOgre Magi&f picked it up for himself.
+- Get my &eLucky Pickaxe&f back from that brute!
+- I've got some trinkets for you when you return.
+temporaryPermissions:
+- elitequest.primis_ogre_mines_lucky_pickaxe.yml
+questAcceptDialog:
+- '&a[Vetus Fossores]&f That &cOgre&f shouldn''t be far! You can find him in the cave
+  to the right, before the collapsed area.'
+- He should have the &ePickaxe&f, &cOgres&f love shiny things after all!
+- '&7&oI should defeat the &cOgre Chief&f.'
+questCompleteMessage:
+- '&aa[Vetus Fossores]&f You got my lucky pick? Excellent!'
+- Heres your reward!
+questCompleteCommands: []

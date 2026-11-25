@@ -1,0 +1,30 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Jeeves]&f Oh! A gift from my friend Severinus you say.'
+    - Well, thank you for bringing it over. Was nice seeing you again!
+    filename: primis_caeruleaum_jeeves.yml
+    npcName: Jeeves
+    location: at the lighthouse
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=160:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_ice_village_gotta_keep_warm.yml
+questLockoutPermission: elitequest.primis_ice_village_gotta_see_jeeves.yml
+name: '&2Gotta see Jeeves'
+questLore:
+- Now, now it would be really rude of me to keep all of the good stuff to myself!
+- If you would bother helping me out friend and delivering some of the good stuff to my friend &aJeeves&f at &dCaerullium Village&f.
+- You can get there quickly by flying a &9griffin&f from the lighthouse.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Severinus Martius]&f The griffins land all the way at the top.'
+- '&7&oI should go to &d&oCaerullium Village&7&o and deliver some of the good stuff
+  to &a&oJeeves&7&o.'
+questCompleteMessage:
+- '&a[Severinus Martius]&f Thank you for delivering some of the strong stuff to Jeeves.
+  I know he likes a good drink here and there ha ha!'
+questCompleteCommands: []
+turnInNPC: primis_ice_village_lighthouse_keeper.yml
