@@ -1,0 +1,11 @@
+ExcelProtect 0.1.13 "Event Time" INSTALLED — Nov 24, 2026 04:41 CT
+Window: wrv-install-failsafe run wrv-install-failsafe-20261124-0434 (Homebase lane + WRV Panel snapshot/power)
+Live-jar gate PASS (fresh on PC): ExcelProtect-0.1.12.jar 304,634 B / 6e3cf3981f38f92d3489bdde60b21f1c44ab202c26a55b70b57f9b5200d51e4b
+Placed: plugins/ExcelProtect-0.1.13.jar 305,079 B / e9fcefc61491b3f4aea6ec2ba672fa0695e20ddcc0f3dcfbae54b507093bbe28
+Rollback: plugins/ExcelProtect-0.1.12.jar.bak-20261124-pre0113 (304,634 B / 6e3cf398…)
+Config: untouched (c17204010170fe09d67bfeea348e89f50da071e3526bc834ee1897af69c98a9b verified post-boot)
+Backup: snapshot-11242026.0437 (pruned snapshot-11232026.2221; store at 6 snapshots)
+Boot: Done (34.374s) 04:41:18; Enabling ExcelProtect v0.1.13 x1; READY version=0.1.13 x1; Magic CastEvent feed hooked x1; SEVERE 0; /excelprotect status version=0.1.13; guild OPEN 5 of 5 (unchanged)
+End state: ONLINE, 0 players, stop_flag=false, whitelist untouched (arrival maintenance state)
+Record: ~/workspace/wrv-install-queue/runs/20261124-0434-failsafe/RUN-RECORD.md
+Proof owed: first live held heal flushed across a damage anchor carries event_ts_ms ≈ event time with later ts_ms; restart inside a claim window no longer drops the held heal (nightly audit lane verifies).
