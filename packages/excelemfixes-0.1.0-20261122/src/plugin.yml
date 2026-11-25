@@ -1,0 +1,15 @@
+name: ExcelEMFixes
+version: 0.1.0
+main: excelemfixes.ExcelEMFixes
+api-version: '1.13'
+softdepend: [EliteMobs, Geyser-Spigot]
+description: Community workarounds for EliteMobs defects, packaged as toggleable modules (EliteMobs' own files are never edited). Module quest-destinations (/questwhere) gives players the destination for quests whose EliteMobs tracker shows none (instanced-boss quests; upstream EliteMobs issue #241). Module commands are registered dynamically at runtime, so a disabled module's commands do not exist; only /emfixes is declared here.
+commands:
+  emfixes:
+    description: ExcelEMFixes status and reload.
+    usage: /emfixes [reload]
+    permission: excelemfixes.admin
+permissions:
+  excelemfixes.admin:
+    description: Reload ExcelEMFixes and its modules.
+    default: op

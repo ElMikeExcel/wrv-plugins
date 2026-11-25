@@ -1,0 +1,18 @@
+# ExcelMenu 2.0 registry entry — elitemobs_menu door: Find My Quest
+# (/questwhere). Ships with the ExcelEMFixes 0.1.0 install window
+# (Nov 22, 2026) as that pack's same-pass menu surface: the command
+# only exists once the pack is live, so the door lands in the same
+# window. Spec: the pack's INSTALL-PACKET.md menu-surface section.
+id: el_questwhere
+menu: elitemobs_menu
+group: elite
+order: 80
+order-bedrock: 70
+icon: RECOVERY_COMPASS
+label: '&a&lFind My Quest'
+lore:
+  - '&7Where to go for a quest whose tracker'
+  - '&7shows no destination'
+action:
+  - '[close]'
+  - '[player] questwhere'

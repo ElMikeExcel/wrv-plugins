@@ -1,0 +1,233 @@
+# ExcelEMFixes configuration.
+#
+# ExcelEMFixes is the standing home for community workarounds to
+# EliteMobs defects. Each fix is a module, toggled independently;
+# turning a module off removes its commands and menus completely
+# and leaves the other modules untouched. Changes apply on server
+# start or /emfixes reload.
+#
+# Module data files live beside this config in the plugin's data
+# folder. The bundled copies are used unless a file is placed in
+# the data folder, which then overrides it — that is how a table
+# is refreshed without a rebuild (edit the file, /emfixes reload).
+#
+# Reference-server disclosure: Wink Reyes Valley (the server this
+# pack was built on) runs every knob in this file at the shipped
+# defaults below. Where that ever changes, the README's "What
+# WRV runs differently" section states both numbers and why.
+
+modules:
+  # ==========================================================
+  # MODULE: quest-destinations  (commands: /questwhere, /questdest)
+  # ==========================================================
+  quest-destinations:
+    enabled: true
+    # THE DEFECT: EliteMobs' quest tracker builds its destination
+    # from a quest target's spawn locations. A boss that lives in
+    # an instanced dungeon spawns only inside a per-player
+    # instance world, so the tracker has nothing it can point at
+    # and shows NO destination — the player is told to kill
+    # something with no hint where it lives (upstream EliteMobs
+    # issue #241). THIS MODULE: for those quests it serves the
+    # destination itself — the instance's entry point in the real
+    # world (its wormhole, or the teleporter NPC), coordinates,
+    # and directions — from a data table you maintain
+    # (quest-destinations.yml), plus an optional glow that lights
+    # the entry so players can spot it. On startup it scans your
+    # EliteMobs quest/boss data and logs every tracker-blank
+    # quest your table does not cover yet. Information and
+    # guidance only: it never teleports anyone.
+    # On login, tell a player whose active quest has no EliteMobs
+    # tracker destination that /questwhere has their directions.
+    join-hint: true
+    # Glow guidance (a tracked GLOWING potion effect): "Guide me
+    # there" lights the
+    # destination — the NPC/boss itself, or a temporary marker at
+    # the entry point — for a short while. Guidance only; it never
+    # teleports anyone.
+    glow:
+      enabled: true
+      duration-seconds: 90
+      # How far around a destination to look for its named entity
+      # (entity-mode rows only; place rows always use a marker).
+      search-radius: 32
+
+  # ==========================================================
+  # MODULE: arcane-bolt  (no commands — a background fix)
+  # ==========================================================
+  arcane-bolt:
+    enabled: true
+    # THE DEFECT: EliteMobs computes class-ability damage (Arcane
+    # Bolt, Arcane Volley, and the other Advanced Combat System
+    # abilities) from the ability's own numbers only — it never
+    # applies the caster's outgoing-damage buffs (like Spell Echo)
+    # the way it does for weapon hits, and it never scales with
+    # the caster's gear. Buffs silently do nothing for abilities,
+    # and abilities fall further behind with every gear upgrade.
+    # THIS MODULE: measures each ability hit on an elite and adds
+    # the missing piece — the caster's strongest active
+    # outgoing-damage buff, and an optional flat scale — as extra
+    # damage, capped per hit. With the scale at 1.0 and buff
+    # application on, it is a pure bug fix: no number changes
+    # except the buffs working as players expect.
+    # Multiplier applied to measured class-ability damage, before
+    # the buff below. 1.0 = shipped default (pure bug fix).
+    # (Wink Reyes Valley, the reference server, runs 1.5 — on its
+    # gear curve that is where the bolt keeps pace with a geared
+    # wand without passing it.)
+    ability-damage-scale: 1.0
+    # Apply the caster's own active EliteMobs outgoing-damage
+    # buff (the strongest unexpired ANY/SPELL modifier, e.g.
+    # Spell Echo) to ability damage. This is the defect repair;
+    # leave it on unless you only want the scale.
+    buff-application-enabled: true
+    # Per-hit safety cap: extra damage never exceeds this
+    # fraction of the elite's max health.
+    max-extra-fraction-of-max-health: 1.0
+    # Log one line per compensated hit (damage measured, buff
+    # read, extra applied). Leave off in normal operation.
+    debug-log: false
+
+  # ==========================================================
+  # MODULE: drop-guide  (command: /drops)
+  # ==========================================================
+  drop-guide:
+    enabled: true
+    # THE GAP: EliteMobs has no in-game drop browser. A player
+    # who wants to know what a boss drops — or where to find the
+    # item they are chasing — has to leave the game and dig
+    # through wiki pages or config files. THIS MODULE: an
+    # in-game drop guide. /drops browses places (dungeons,
+    # arenas, regions) -> their mobs -> each mob's full drop
+    # list, built from an index generated out of your EliteMobs
+    # content (drops-index.yml in the data folder; see README).
+    # Entries per menu page on Java (chest GUI content area).
+    page-size-java: 45
+    # Entries per menu page on Bedrock (form).
+    page-size-bedrock: 40
+
+  # ==========================================================
+  # MODULE: progress-tracker  (commands: /progress, /tracker)
+  # ==========================================================
+  progress-tracker:
+    enabled: true
+    # THE GAP: EliteMobs tracks a player's quest completions,
+    # dungeon runs and elite kills, but shows players almost
+    # none of it — there is no in-game answer to "what have I
+    # finished, what is left, and how many times have I killed
+    # this boss?" THIS MODULE: /progress shows the player's own
+    # record — quest completions against the full catalog, per-
+    # boss and per-dungeon kill counts with expertise tiers,
+    # and class skill levels — read live from EliteMobs' own
+    # player data. The catalog (tracker-catalog.yml in the data
+    # folder) is generated from your EliteMobs content; see
+    # README.
+    page-size-java: 45
+    page-size-bedrock: 40
+    # Optional: per-boss kill counts come from a kill-records
+    # folder (a plugins/ subfolder holding entities-*.jsonl
+    # record streams with killing-blow data). Name the folder
+    # here; leave empty to run without per-boss counts (quest,
+    # dungeon and combat totals are unaffected — they come from
+    # EliteMobs itself). (Wink Reyes Valley sets this to its
+    # records plugin's folder, "ExcelProtect"; the shipped
+    # default is empty.)
+    kill-records-folder: ""
+
+  # ==========================================================
+  # MODULE: food-heal  (no commands — a background fix)
+  # ==========================================================
+  food-heal:
+    enabled: true
+    # THE BEHAVIOR: in EliteMobs worlds, food barely heals.
+    # EliteMobs' own out-of-combat trickle is a hardcoded 1%/s
+    # of max health with no config, and eating a steak does
+    # almost nothing against an ACS-raised health pool in the
+    # hundreds. THIS MODULE: eating food in an EliteMobs world
+    # grants a heal budget — 1% of max health instantly, the
+    # rest delivered at 0.5%/s while out of combat — sized by
+    # the food: total = clamp(saturation x 0.75, 1%, 10%) of
+    # max health (steak 9.6%, bread 4.5%, carrot 2.7%). Plus a
+    # base out-of-combat bonus of +1%/s (no food needed), so
+    # the total base out-of-combat heal is 2%/s next to
+    # EliteMobs' own 1%/s. Budgets pause in combat (20 s
+    # window, mirroring EliteMobs), expire 90 s after the meal,
+    # and are replaced — never stacked — by re-eating.
+    # Debug logging: FOODHEAL meal/pause/resume/complete lines.
+    # (Wink Reyes Valley runs this ON until its first natural
+    # live proof lands; the shipped default is off.)
+    debug: false
+    # Instant heal granted the moment food is eaten (part of
+    # the budget), percent of max health.
+    instant-percent: 1.0
+    # Budget delivery rate while out of combat, percent/second.
+    rate-percent-per-second: 0.5
+    # Budget total = clamp(food saturation x multiplier, min, max).
+    saturation-multiplier: 0.75
+    min-total-percent: 1.0
+    max-total-percent: 10.0
+    # Seconds after the last combat action before budget ticks
+    # land (mirrors EliteMobs' own 20-second combat-exit rule).
+    combat-window-seconds: 20
+    # Undelivered budget expires this many seconds after the meal.
+    budget-expiry-seconds: 90
+    # Extra worlds in scope by name. A world is in scope when
+    # EliteMobs' own registry claims it (instanced dungeon
+    # worlds are covered automatically) OR it is listed here.
+    # (Wink Reyes Valley lists its two persistent EliteMobs
+    # worlds here as a belt-and-braces measure; the shipped
+    # default is the empty list.)
+    worlds: []
+    # Optional per-food saturation overrides (Material -> value).
+    food-saturation: {}
+    # The base out-of-combat regen bonus (see the header).
+    ooc-bonus-enabled: true
+    ooc-bonus-percent-per-second: 1.0
+
+  # ==========================================================
+  # MODULE: leash  (no commands — a background fix)
+  # ==========================================================
+  leash:
+    enabled: true
+    # THE DEFECT: EliteMobs' built-in boss leash cannot behave
+    # like an MMO leash. Its soft return starts at HALF the
+    # configured radius (a boss set to leash at 96 starts walking
+    # home at 48 — mid-camp-fight), its returning bosses are
+    # damage-invulnerable (so a player can never re-aggro one on
+    # its way home), and it never clears the boss's target (a
+    # boss could chase the same player forever in a loop).
+    # THIS MODULE: suppresses the native leash (every boss's
+    # in-memory leash radius is set to 0; boss files are never
+    # written) and runs a proper leash itself: within range of
+    # its spawn point an elite fights completely normally;
+    # pulled beyond the range it drops aggro, walks home, and
+    # heals to full on arrival — but player damage on the way
+    # home re-aggroes it instantly and cancels the heal.
+    # How far an elite can be pulled from its spawn point
+    # before it deaggros and heads home, in blocks.
+    range: 96
+    # Log each suppression write, return start/break/arrival,
+    # and held heal. (Wink Reyes Valley runs this ON until the
+    # first natural leash proof lands; shipped default is off.
+    # The suppression summary and ready lines always log.)
+    debug: false
+
+  # ==========================================================
+  # MODULE: seal-restore  (no commands — a background fix)
+  # ==========================================================
+  seal-restore:
+    enabled: true
+    # THE DEFECT: EliteMobs content can seal an arena when a
+    # boss spawns (placing blocks over its doors) and restore
+    # the blocks from the boss's onRemove list when it dies —
+    # but content exists whose restore list is SHORTER than its
+    # seal list, so part of the arena stays walled up forever
+    # after the fight, every fight. THIS MODULE: you list the
+    # affected boss and the blocks its arena should end with in
+    # seal-restore.yml (in this plugin's data folder); when that
+    # boss dies, any registered block still wearing its sealed
+    # state is restored. Blocks changed to anything else are
+    # never touched. Nothing is hardcoded — any boss, any world,
+    # any blocks.
+    # Log a line for every restore, not just non-empty ones.
+    debug: false
