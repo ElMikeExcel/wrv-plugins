@@ -1,0 +1,59 @@
+# ExcelCalmBars — XP boss bars wait until the fight is over.
+#
+# Why this exists (player feedback, Nov 24, 2026 — FEEDBACK-TRACKER
+# row 92): Marvin reported that when the XP bars from Jobs, mcMMO
+# and EliteMobs all pop out during back-to-back fights they stack
+# across the top of the screen and block his view. Mike's ruling:
+# hold the XP-gain bars while a player is in combat and for a quiet
+# period after the last combat event, then show them normally.
+#
+# Only bars whose titles positively match the XP patterns below are
+# ever held. Real boss-fight bars, quest bars, the
+# ExcelDeathProtection status bar, and anything unrecognised always
+# pass straight through, and every failure in the gate fails open
+# (bars show exactly as they did without this plugin).
+
+# Master switch. false = the plugin loads but holds nothing.
+enabled: true
+
+# Seconds after the last damage dealt or taken before held XP bars
+# are shown. Mike's ruling: 30. Raise or lower freely — it is a
+# config value, not a rebuild.
+quiet-period-seconds: 30
+
+# Hard cap: a held bar is released after this many seconds even if
+# the player is still in combat, so a bar can never be lost.
+max-hold-seconds: 120
+
+# Verbose per-bar hold/release logging (for rigs and debugging).
+debug-logging: false
+
+# Titles containing any of these (case-insensitive) are NEVER held,
+# even if a pattern below would match. The ExcelDeathProtection bar
+# ("Inventory protected: 1 death") is a standing status display,
+# not an XP pop-out, and stays exempt by name as a second line of
+# defence behind the pattern design.
+never-hold-substrings:
+  - "inventory protected"
+
+# Positive-identification patterns, matched against the bar's full
+# plain-text title. Built from the live title templates of each
+# system (Jobs locale bossBarOutput, mcMMO locale XPBar.*,
+# EliteMobs skills.yml title formats). If a template changes in a
+# future plugin update, bars from that system simply show as before
+# until the pattern is updated here — the failure direction is
+# always "show", never "hold the wrong bar".
+patterns:
+  jobs:
+    # "Lvl 37 Explorer: 633.25/5846 xp (+2.35)"
+    - '^Lvl \d+ .+: \d+(\.\d+)?/\d+(\.\d+)? xp( \([^)]*\))?$'
+  mcmmo:
+    # "Swords Lv.268" (optionally followed by extra detail text)
+    - '^(Acrobatics|Alchemy|Archery|Axes|Crossbows|Excavation|Fishing|Herbalism|Mining|Repair|Salvage|Smelting|Swords|Taming|Tridents|Spears|Maces|Unarmed|Woodcutting) Lv\.\d+([ (].*)?$'
+    # mcMMO's early-game boost bar title
+    - '^Learning a new skill\.\.\.$'
+  elitemobs:
+    # "Swords Lv.13 (+48 XP)" — same shape as mcMMO's, EM skill names
+    - '^(Armor|Swords|Axes|Bows|Crossbows|Tridents|Hoes|Maces|Spears|Staves|Wands) Lv\.\d+([ (].*)?$'
+    # "✦ Swords LEVEL UP! → Lv.14 ✦"
+    - '^(✦ )?(Armor|Swords|Axes|Bows|Crossbows|Tridents|Hoes|Maces|Spears|Staves|Wands) LEVEL UP!.*$'
