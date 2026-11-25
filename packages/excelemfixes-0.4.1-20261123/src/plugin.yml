@@ -1,0 +1,15 @@
+name: ExcelEMFixes
+version: 0.4.1
+main: excelemfixes.ExcelEMFixes
+api-version: '1.13'
+softdepend: [EliteMobs, Geyser-Spigot, Jobs, ExcelItems, Vault]
+description: Community workarounds for EliteMobs defects, packaged as toggleable modules (EliteMobs' own files are never edited). Module quest-destinations (/questwhere) gives players the destination for quests whose EliteMobs tracker shows none (instanced-boss quests; upstream EliteMobs issue #241). Module jobs-dummy-gate vetoes Jobs payments for EliteMobs' guild training dummies (Jobs is a softdepend; the module idles without it). Module field-medic adds the Field Bandage, an in-combat heal-over-time consumable whose item registers through ExcelItems (a softdepend; the module stays off without it), and the Strong Healing Potion (registry ID 7), sold through the ExcelShops special-products listing and the guild vendor via the module's /fieldmedic and /guildvendor review/confirm buy flows (Vault is needed only for the purchases). Module summon-mount (/mountcharm) is the interim mount product — a buyable Mount Charm in the ExcelItems registry (ExcelItems is a softdepend of the pack and a hard requirement of that module only; without ExcelItems the module stands down and the rest of the pack is unaffected; Vault is needed only for its purchases). Module commands are registered dynamically at runtime, so a disabled module's commands do not exist; only /emfixes is declared here.
+commands:
+  emfixes:
+    description: ExcelEMFixes status and reload.
+    usage: /emfixes [reload]
+    permission: excelemfixes.admin
+permissions:
+  excelemfixes.admin:
+    description: Reload ExcelEMFixes and its modules.
+    default: op
