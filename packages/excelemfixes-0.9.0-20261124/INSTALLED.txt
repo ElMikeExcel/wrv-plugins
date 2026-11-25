@@ -1,0 +1,11 @@
+INSTALLED — ExcelEMFixes 0.9.0 (quest-giver-glow module + skill-bonus-nudge reword)
+When: Nov 24, 2026 03:08 CT (boot Done 03:08:02)
+Window: parent hand window hand-20261124-025814-magicgate034-glow090 (D189 pattern)
+Live gates (fresh pulls at the gate): jar 423,069 B / 5C9D6AC1… PASS; config 55,152 B / B34CC8DD… PASS.
+Placed: jar 444,409 B / 2D930AC2… as plugins/ExcelEMFixes-0.9.0.jar; merged config 58,922 B / 9FD44D36… built from the live config (glow-section insertion before the quest-beacon module block + the one-line skill-bonus-nudge swap; insertion+swap reversible-verified, YAML-valid). The lane's build-root/deploy/config.yml was NOT placed: it is src-built and would have regressed the ghast tier price to $30,000/$22,500 (live carries Mike's $50,000/$37,500) and a food-heal comment.
+Backups: ExcelEMFixes-0.8.0.jar.bak-questglow-090; config.yml.bak-questglow-090.
+Snapshot: snapshot-11242026.0304.
+Boot: ExcelEMFixes 0.9.0 ready — 18 modules incl. quest-giver-glow; Quest-Giver Glow census 73 quest-giver NPCs / 76 glow-capable NPCs; `emfixes reload` clean, ZERO reload-failed lines; SEVERE 0.
+Surfaces placed same pass: in-game What's New entries 2026-11-24-quest-giver-glow + 2026-11-24-skill-bonus-nudge (changelog 175 entries, fb3cc465…; backup changelog.yml.bak-20261124-glow090). Website What's New + canon remain staged in surfaces/ (parent follow-up); Guide hibernated (owed); player announcement is the parent's call.
+Proof owed (player-ride): Dux (guide_0) gold glow for a fresh player; Casus turn-in green; Bedrock glow rendering; Jester's findability confirmation.
+Record: ~/workspace/wrv-install-queue/runs/20261124-handwindow-magicgate-glow/RUN-RECORD.md
