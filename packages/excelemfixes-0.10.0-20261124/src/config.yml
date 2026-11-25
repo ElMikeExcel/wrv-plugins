@@ -1,0 +1,1221 @@
+# ExcelEMFixes configuration.
+#
+# ExcelEMFixes is the standing home for community workarounds to
+# EliteMobs defects. Each fix is a module, toggled independently;
+# turning a module off removes its commands and menus completely
+# and leaves the other modules untouched. Changes apply on server
+# start or /emfixes reload.
+#
+# Module data files live beside this config in the plugin's data
+# folder. The bundled copies are used unless a file is placed in
+# the data folder, which then overrides it — that is how a table
+# is refreshed without a rebuild (edit the file, /emfixes reload).
+#
+# Reference-server disclosure: Wink Reyes Valley (the server this
+# pack was built on) runs every knob in this file at the shipped
+# defaults below. Where that ever changes, the README's "What
+# WRV runs differently" section states both numbers and why.
+
+modules:
+  # ==========================================================
+  # MODULE: quest-destinations  (commands: /questwhere, /questdest)
+  # ==========================================================
+  quest-destinations:
+    enabled: true
+    # THE DEFECT: EliteMobs' quest tracker builds its destination
+    # from a quest target's spawn locations. A boss that lives in
+    # an instanced dungeon spawns only inside a per-player
+    # instance world, so the tracker has nothing it can point at
+    # and shows NO destination — the player is told to kill
+    # something with no hint where it lives (upstream EliteMobs
+    # issue #241). THIS MODULE: for those quests it serves the
+    # destination itself — the instance's entry point in the real
+    # world (its wormhole, or the teleporter NPC), coordinates,
+    # and directions — from a data table you maintain
+    # (quest-destinations.yml), plus an optional glow that lights
+    # the entry so players can spot it. On startup it scans your
+    # EliteMobs quest/boss data and logs every tracker-blank
+    # quest your table does not cover yet. Information and
+    # guidance only: it never teleports anyone.
+    # On login, tell a player whose active quest has no EliteMobs
+    # tracker destination that /questwhere has their directions.
+    join-hint: true
+    # Glow guidance (a tracked GLOWING potion effect): "Guide me
+    # there" lights the
+    # destination — the NPC/boss itself, or a temporary marker at
+    # the entry point — for a short while. Guidance only; it never
+    # teleports anyone.
+    glow:
+      enabled: true
+      duration-seconds: 90
+      # How far around a destination to look for its named entity
+      # (entity-mode rows only; place rows always use a marker).
+      search-radius: 32
+
+  # ==========================================================
+  # MODULE: arcane-bolt  (no commands — a background fix)
+  # ==========================================================
+  arcane-bolt:
+    enabled: true
+    # THE DEFECT: EliteMobs computes class-ability damage (Arcane
+    # Bolt, Arcane Volley, and the other Advanced Combat System
+    # abilities) from the ability's own numbers only — it never
+    # applies the caster's outgoing-damage buffs (like Spell Echo)
+    # the way it does for weapon hits, and it never scales with
+    # the caster's gear. Buffs silently do nothing for abilities,
+    # and abilities fall further behind with every gear upgrade.
+    # THIS MODULE: measures each ability hit on an elite and adds
+    # the missing piece — the caster's strongest active
+    # outgoing-damage buff, and an optional flat scale — as extra
+    # damage, capped per hit. With the scale at 1.0 and buff
+    # application on, it is a pure bug fix: no number changes
+    # except the buffs working as players expect.
+    # Multiplier applied to measured class-ability damage, before
+    # the buff below. 1.0 = shipped default (pure bug fix).
+    # (Wink Reyes Valley, the reference server, runs 1.5 — on its
+    # gear curve that is where the bolt keeps pace with a geared
+    # wand without passing it.)
+    ability-damage-scale: 1.0
+    # Apply the caster's own active EliteMobs outgoing-damage
+    # buff (the strongest unexpired ANY/SPELL modifier, e.g.
+    # Spell Echo) to ability damage. This is the defect repair;
+    # leave it on unless you only want the scale.
+    buff-application-enabled: true
+    # Per-hit safety cap: extra damage never exceeds this
+    # fraction of the elite's max health.
+    max-extra-fraction-of-max-health: 1.0
+    # Log one line per compensated hit (damage measured, buff
+    # read, extra applied). Leave off in normal operation.
+    debug-log: false
+
+  # ==========================================================
+  # MODULE: drop-guide  (command: /drops)
+  # ==========================================================
+  drop-guide:
+    enabled: true
+    # THE GAP: EliteMobs has no in-game drop browser. A player
+    # who wants to know what a boss drops — or where to find the
+    # item they are chasing — has to leave the game and dig
+    # through wiki pages or config files. THIS MODULE: an
+    # in-game drop guide. /drops browses places (dungeons,
+    # arenas, regions) -> their mobs -> each mob's full drop
+    # list, built from an index generated out of your EliteMobs
+    # content (drops-index.yml in the data folder; see README).
+    # Entries per menu page on Java (chest GUI content area).
+    page-size-java: 45
+    # Entries per menu page on Bedrock (form).
+    page-size-bedrock: 40
+
+  # ==========================================================
+  # MODULE: progress-tracker  (commands: /progress, /tracker)
+  # ==========================================================
+  progress-tracker:
+    enabled: true
+    # THE GAP: EliteMobs tracks a player's quest completions,
+    # dungeon runs and elite kills, but shows players almost
+    # none of it — there is no in-game answer to "what have I
+    # finished, what is left, and how many times have I killed
+    # this boss?" THIS MODULE: /progress shows the player's own
+    # record — quest completions against the full catalog, per-
+    # boss and per-dungeon kill counts with expertise tiers,
+    # and class skill levels — read live from EliteMobs' own
+    # player data. The catalog (tracker-catalog.yml in the data
+    # folder) is generated from your EliteMobs content; see
+    # README.
+    page-size-java: 45
+    page-size-bedrock: 40
+    # Optional: per-boss kill counts come from a kill-records
+    # folder (a plugins/ subfolder holding entities-*.jsonl
+    # record streams with killing-blow data). Name the folder
+    # here; leave empty to run without per-boss counts (quest,
+    # dungeon and combat totals are unaffected — they come from
+    # EliteMobs itself). (Wink Reyes Valley sets this to its
+    # records plugin's folder, "ExcelProtect"; the shipped
+    # default is empty.)
+    kill-records-folder: ""
+
+  # ==========================================================
+  # MODULE: food-heal  (no commands — a background fix)
+  # ==========================================================
+  food-heal:
+    enabled: true
+    # THE BEHAVIOR: in EliteMobs worlds, food barely heals.
+    # EliteMobs' own out-of-combat trickle is a hardcoded 1%/s
+    # of max health with no config, and eating a steak does
+    # almost nothing against an ACS-raised health pool in the
+    # hundreds. THIS MODULE: eating food in an EliteMobs world
+    # grants a heal budget — 1% of max health instantly, the
+    # rest delivered at 0.5%/s while out of combat — sized by
+    # the food: total = clamp(saturation x 0.75, 1%, 10%) of
+    # max health (steak 9.6%, bread 4.5%, carrot 2.7%). Plus a
+    # base out-of-combat bonus of +1%/s (no food needed), so
+    # the total base out-of-combat heal is 2%/s next to
+    # EliteMobs' own 1%/s. Budgets pause in combat (20 s
+    # window, mirroring EliteMobs), expire 90 s after the meal,
+    # and are replaced — never stacked — by re-eating.
+    # Debug logging: FOODHEAL meal/pause/resume/complete lines.
+    # (Wink Reyes Valley runs this ON until its first natural
+    # live proof lands; the shipped default is off.)
+    debug: false
+    # Instant heal granted the moment food is eaten (part of
+    # the budget), percent of max health.
+    instant-percent: 1.0
+    # Budget delivery rate while out of combat, percent/second.
+    rate-percent-per-second: 0.5
+    # Budget total = clamp(food saturation x multiplier, min, max).
+    saturation-multiplier: 0.75
+    min-total-percent: 1.0
+    max-total-percent: 10.0
+    # Seconds after the last combat action before budget ticks
+    # land (mirrors EliteMobs' own 20-second combat-exit rule).
+    combat-window-seconds: 20
+    # Undelivered budget expires this many seconds after the meal.
+    budget-expiry-seconds: 90
+    # Extra worlds in scope by name. A world is in scope when
+    # EliteMobs' own registry claims it (instanced dungeon
+    # worlds are covered automatically) OR it is listed here.
+    # (Wink Reyes Valley lists its two persistent EliteMobs
+    # worlds here as a belt-and-braces measure; the shipped
+    # default is the empty list.)
+    worlds: []
+    # Optional per-food saturation overrides (Material -> value).
+    food-saturation: {}
+    # The base out-of-combat regen bonus (see the header).
+    ooc-bonus-enabled: true
+    ooc-bonus-percent-per-second: 1.0
+
+  # ==========================================================
+  # MODULE: leash  (no commands — a background fix)
+  # ==========================================================
+  leash:
+    enabled: true
+    # THE DEFECT: EliteMobs' built-in boss leash cannot behave
+    # like an MMO leash. Its soft return starts at HALF the
+    # configured radius (a boss set to leash at 96 starts walking
+    # home at 48 — mid-camp-fight), its returning bosses are
+    # damage-invulnerable (so a player can never re-aggro one on
+    # its way home), and it never clears the boss's target (a
+    # boss could chase the same player forever in a loop).
+    # THIS MODULE: suppresses the native leash (every boss's
+    # in-memory leash radius is set to 0; boss files are never
+    # written) and runs a proper leash itself: within range of
+    # its spawn point an elite fights completely normally;
+    # pulled beyond the range it drops aggro, walks home, and
+    # heals to full on arrival — but player damage on the way
+    # home re-aggroes it instantly and cancels the heal.
+    # How far an elite can be pulled from its spawn point
+    # before it deaggros and heads home, in blocks.
+    range: 96
+    # Log each suppression write, return start/break/arrival,
+    # and held heal. (Wink Reyes Valley runs this ON until the
+    # first natural leash proof lands; shipped default is off.
+    # The suppression summary and ready lines always log.)
+    debug: false
+
+  # ==========================================================
+  # MODULE: seal-restore  (no commands — a background fix)
+  # ==========================================================
+  seal-restore:
+    enabled: true
+    # THE DEFECT: EliteMobs content can seal an arena when a
+    # boss spawns (placing blocks over its doors) and restore
+    # the blocks from the boss's onRemove list when it dies —
+    # but content exists whose restore list is SHORTER than its
+    # seal list, so part of the arena stays walled up forever
+    # after the fight, every fight. THIS MODULE: you list the
+    # affected boss and the blocks its arena should end with in
+    # seal-restore.yml (in this plugin's data folder); when that
+    # boss dies, any registered block still wearing its sealed
+    # state is restored. Blocks changed to anything else are
+    # never touched. Nothing is hardcoded — any boss, any world,
+    # any blocks.
+    # Log a line for every restore, not just non-empty ones.
+    debug: false
+
+  # ==========================================================
+  # MODULE: jobs-dummy-gate  (no commands — a background fix)
+  # ==========================================================
+  jobs-dummy-gate:
+    enabled: true
+    # THE DEFECT: EliteMobs' Adventurers Guild training dummies
+    # are custom bosses whose entity type is HUSK — and as
+    # regional bosses they respawn on the spot, forever. The
+    # Jobs plugin pays its Kill actions by ENTITY TYPE, so every
+    # dummy death pays the killer the full husk rate in money
+    # and job XP, and a player can stand at the guild and farm
+    # a "training" target indefinitely (observed: three kills in
+    # ten seconds, full pay each). EliteMobs itself paying
+    # nothing for the dummy does not help — Jobs pays on the
+    # death event regardless of EliteMobs' drop flags, and a
+    # death event cannot be cancelled.
+    # THIS MODULE: a veto on Jobs' own payment events
+    # (JobsPrePaymentEvent + JobsExpGainEvent, zeroed and
+    # cancelled) keyed on EliteMobs' identity for the entity —
+    # its boss filename, read through EliteMobs' own tagger —
+    # for the bosses listed below. Identity is never entity
+    # type: a real husk anywhere else is not on the list and
+    # keeps paying normally. Requires the Jobs plugin; without
+    # Jobs there is nothing to veto and the module idles.
+    # EliteMobs boss files whose deaths pay nothing in Jobs.
+    # The shipped default is EliteMobs' own five guild training
+    # dummies, which ship with EliteMobs' Adventurers Guild
+    # content. The ".yml" ending is optional; matching ignores
+    # case. Add or remove bosses to taste — any EliteMobs boss
+    # can be listed (class-trial actors, for example, are NOT
+    # listed: their kills are real objectives and keep paying).
+    boss-files:
+      - training_dummy_lv1
+      - training_dummy_lv25
+      - training_dummy_lv50
+      - training_dummy_lv75
+      - training_dummy_lv100
+    # Log each vetoed death as it is remembered (the blocked
+    # payment itself always logs one line). Leave off in
+    # normal operation.
+    debug: false
+
+  # ==========================================================
+  # MODULE: enderman-resistance  (no commands — a background fix)
+  # ==========================================================
+  enderman-resistance:
+    enabled: true
+    # THE DEFECT: an enderman can never be damaged by a
+    # projectile — vanilla refuses every projectile damage source
+    # outright (no damage event, just a teleport away). Every
+    # EliteMobs magic attack is projectile-delivered at the point
+    # of contact, so magic and ranged builds whiff 100% of their
+    # hits on enderman content (regional bosses, event bosses,
+    # natural elites) and cannot earn weapon/class XP there at
+    # all. Melee is unaffected, which hides the wall from melee
+    # players.
+    # THIS MODULE: endermen get RESISTANCE instead of immunity.
+    # Projectile and magic hits on in-scope endermen are observed
+    # and reconciled so only the fraction below lands: a hit
+    # EliteMobs applied itself is trimmed back by restoring the
+    # resisted share of the damage; a hit vanilla refused
+    # outright is re-applied once as a player-sourced hit — the
+    # one shape endermen accept — so EliteMobs' own pipeline
+    # values it from the shooter's gear and credits the shooter
+    # (XP and loot shares flow as for a real hit), then trimmed
+    # the same way. Melee is never observed or adjusted, and
+    # endermen keep teleporting and hitting exactly as before.
+    # Scope: elite endermen anywhere, plus natural endermen in
+    # EliteMobs worlds (EliteMobs' world registry, the worlds
+    # list below, or the world-name prefix below).
+    # The fraction of projectile/magic damage that LANDS on an
+    # enderman (0.5 = half lands, half is resisted). At 0.5 an
+    # enderman is still the most magic-resistant mob in the
+    # game — a wand user needs roughly twice the hits they need
+    # on anything else — but every hit counts and every build
+    # can fight and level. 1.0 would remove the resistance
+    # entirely; 0 restores total immunity (not recommended).
+    # (Wink Reyes Valley runs the shipped default, 0.5.)
+    damage-fraction: 0.5
+    # Extra worlds in scope by name for NATURAL endermen (elite
+    # endermen are always in scope). A world is in scope when
+    # EliteMobs' registry claims it, it is listed here, or its
+    # name starts with the prefix below.
+    worlds: []
+    # World-name prefix that marks a world as EliteMobs scope
+    # for natural endermen. The shipped default covers the
+    # conventional em_ world family (em_primis, em_dungeons...).
+    world-prefix: "em_"
+    # Seed sizes for a re-applied (refused) hit, before
+    # EliteMobs' pipeline values it: against an ELITE, EliteMobs
+    # recomputes the damage from the shooter's weapon and skills,
+    # so the seed is just the input its formula expects (6.0 is
+    # a full-draw arrow's roll). Against a NATURAL enderman there
+    # is no EliteMobs formula, so the seed is sized like a
+    # standard magic-weapon application. A shot that connects
+    # physically (bow/trident) is seeded from the shot itself,
+    # not from these numbers.
+    reroute-seed-elite: 6.0
+    reroute-seed-natural: 2.0
+    # A refused hit is only re-applied when the shooter was
+    # within this many blocks of the enderman at the moment the
+    # hit connected or the cast was aimed. The enderman's own
+    # teleport afterwards does not void the hit (that teleport
+    # is the whiff being repaired); a hit is never delivered
+    # across the map or into another world.
+    max-reroute-distance: 48.0
+    # Log every observed hit/cast and how it was reconciled.
+    # Leave off in normal operation.
+    debug: false
+
+  # ==========================================================
+  # MODULE: field-medic  (commands: /fieldmedic + /guildvendor —
+  # item solutions + the vendor buy flows)
+  # ==========================================================
+  field-medic:
+    enabled: true
+    # THE GAP: every meaningful heal in EliteMobs content is
+    # out-of-combat-gated — EliteMobs' own trickle and this
+    # pack's food-heal budgets all pause while a player is
+    # fighting — while the hits that kill arrive IN combat
+    # (elite hits land at a median of ~10-12 HP against
+    # 62-76 HP player pools; focus-fire bursts can take a
+    # whole pool in ~2 seconds). The only in-combat heal a
+    # player owns is a brewed Instant Health II potion (8 HP).
+    # THIS MODULE: the Field Bandage, a consumable a player
+    # right-clicks mid-fight for a heal-over-time — a decision,
+    # not a crutch. It is an ITEM solution: the bandage
+    # registers once through ExcelItems (permanent registry
+    # ID 6, key field_bandage) and this module is its behavior.
+    # The module also registers the Strong Healing Potion
+    # (ID 7) and runs the buy flows documented at the bottom
+    # of this section.
+    # ExcelItems is REQUIRED for this module: without it the
+    # module stays off and logs exactly that (one line naming
+    # the missing dependency). The registry ID is pinned in
+    # code and is never a config knob.
+    # Total heal, percent of the player's max health. 35% is
+    # ~22-27 HP at typical EliteMobs pools — about three
+    # Instant Health II potions, or one to two elite hits:
+    # enough to turn a mistimed fight, never enough to
+    # out-heal focus fire.
+    heal-percent: 35.0
+    # The heal is delivered over this many seconds, one
+    # delivery per second, through EntityRegainHealthEvent —
+    # visible to heal accounting (ExcelProtect and friends),
+    # never silent setHealth. The player must survive the
+    # bandage; it is not a panic button.
+    duration-seconds: 5
+    # Cooldown from the moment of use. One bandage per fight;
+    # a second use while the heal runs or the cooldown runs
+    # is refused and consumes nothing. The cooldown survives
+    # relogging (it is mirrored into the player's own data);
+    # death clears it.
+    cooldown-seconds: 60
+    # Log each use, refusal, delivery and completion
+    # (FIELDMEDIC lines). Leave off in normal operation.
+    debug: false
+    # THE SECOND GAP (same Nov 22, 2026 investigation): the
+    # brewed Instant Health II potion was sold NOWHERE — a
+    # player who wanted the burst heal had to brew it or go
+    # without. THIS MODULE also sells it, as the Strong Healing
+    # Potion: a real Splash Potion of Instant Health II (8 HP)
+    # that registers once through ExcelItems (permanent
+    # registry ID 7, key strong_healing_potion) and is minted
+    # by the registry at delivery — never a plain effect-less
+    # splash potion under a healing name. The ExcelShops
+    # special-products listing sells it by that registry ID.
+    # HOW BUYING WORKS: ExcelShops never charges for special
+    # products itself — its menu hands the buyer to this
+    # module's /fieldmedic buy command, which arms a review at
+    # the price below (no charge); /fieldmedic confirm charges
+    # Excel Bucks through Vault and delivers. The price is
+    # snapshotted when the review is armed, so the number the
+    # player reviewed is the number they pay. A delivery
+    # failure after payment refunds automatically. Vault is
+    # needed only for these purchases; without an economy the
+    # bandage and both items work and purchases report
+    # unavailable.
+    # Shop price of the Strong Healing Potion. The ExcelShops
+    # listing carries the same $150 as a shop fact — the two
+    # must agree, because the shop menu refuses to load on a
+    # price mismatch.
+    potion-shop-price: 150.0
+    # Guild vendor NPC price of the same potion: 25% under the
+    # shop price (the standing vendor discount, D200). The
+    # vendor NPC's interaction runs:
+    #   fieldmedic buy <player> npc
+    potion-npc-price: 112.5
+    # THE GENERIC VENDOR FLOW (/guildvendor): the guild vendor
+    # NPC also sells plain goods at the same 25% vendor
+    # discount. EliteMobs' own NPC shops are engine-driven
+    # menus with no per-item price files, so a discounted
+    # fixed listing for a vanilla item cannot be expressed in
+    # EliteMobs content — the NPC interaction runs a console
+    # command into this flow instead (the pattern the
+    # summon-mount module proved): guildvendor buy <good>
+    # <player> arms the same review/confirm at the NPC price,
+    # and /guildvendor confirm charges and delivers. At list
+    # price these goods are ordinary ExcelShops catalog
+    # offers, so the vendor flow is NPC-venue only.
+    # Ender Pearls x16 at the vendor (ExcelShops list: $400).
+    vendor-pearl-npc-price: 300.0
+    # Empty Map x1 at the vendor (ExcelShops list: $100).
+    vendor-emptymap-npc-price: 75.0
+
+  # ==========================================================
+  # MODULE: melee-premium  (no commands — a background balance module)
+  # ==========================================================
+  melee-premium:
+    enabled: true
+    # THE DESIGN GAP: in EliteMobs worlds a melee fighter pays
+    # for every hit twice — once in the swing, and again in the
+    # contact damage eaten at point-blank range, which elite
+    # damage scaling multiplies (on the reference server,
+    # natural elites deal x1.94 and regional bosses x2.0) —
+    # while a ranged or magic fighter kites the same mob for
+    # free. EliteMobs' damage multipliers are weapon-neutral,
+    # so nothing compensates the melee fighter for standing in
+    # the fire. THIS MODULE: the melee-range risk premium.
+    # Direct melee hits by players in EliteMobs-scope worlds
+    # deal the multiplier below. For ELITE targets the scaling
+    # happens inside EliteMobs' own damage pipeline (on its
+    # EliteMobDamagedByPlayerEvent, after its formula and
+    # before it credits the hit), so the damager ledger,
+    # weapon/class XP and loot shares all price the premiumed
+    # number — the premium is not a side-channel top-up the
+    # ledger cannot see. For NON-elite targets in scope worlds
+    # (stock vanilla damage; no EliteMobs pipeline exists) the
+    # hit's base damage is scaled the vanilla way, so defenses
+    # apply to the stronger hit. Projectiles, magic weapons
+    # (wands/staves), sweep echoes and synthetic/custom damage
+    # get NO premium, and the overworld is never touched —
+    # including elites that appear there.
+    # The premium factor for direct melee hits. 1.15 = melee
+    # deals 15% more: slightly above magic single-target, the
+    # reference server's standing balance ruling for the
+    # melee-range risk. 1.0 turns the premium off without
+    # disabling the module. Values below 1.0 (a penalty) or
+    # above 3.0 are rejected and fall back to 1.15.
+    # (Wink Reyes Valley runs the shipped default, 1.15.)
+    damage-multiplier: 1.15
+    # Extra worlds in scope by name. A world is in scope when
+    # EliteMobs' own registry claims it (instanced dungeon
+    # worlds are covered automatically), it is listed here, or
+    # its name starts with the prefix below.
+    worlds: []
+    # World-name prefix that marks a world as EliteMobs scope.
+    # The shipped default covers the conventional em_ world
+    # family (em_primis, em_dungeons...).
+    world-prefix: "em_"
+    # Log every premiumed hit (player, target, before/after).
+    # Leave off in normal operation.
+    debug: false
+
+  # ==========================================================
+  # MODULE: melee-mitigation  (no commands — a background balance module)
+  # ==========================================================
+  melee-mitigation:
+    enabled: true
+    # WHAT THIS MODULE DOES, in plain language: a player who
+    # is holding a melee weapon takes less damage. The weapon
+    # in the main hand is the whole test — this is NOT tied to
+    # any class, skill, or player list. A melee fighter has to
+    # stand where the hits land, so holding a melee weapon
+    # takes the percentage below off every hit they take. An
+    # item in the OFF hand adds a small extra slice, split by
+    # item: a shield (or shield-like defensive item) adds
+    # more, a totem adds less, because a totem already does so
+    # much else. The off-hand slice pays ONLY while the main
+    # hand holds a melee weapon: sword + totem earns its
+    # slice, wand + totem earns nothing — a wand is not a
+    # melee weapon. While an off-hand slice is active, the
+    # off-hand item itself says so in its lore ("7% mitigation
+    # activated" / "2% mitigation activated"); when it stops
+    # being active, the line is gone and the item shows
+    # nothing. This module never heals and never steals life
+    # — it only makes incoming hits smaller; healing stays
+    # the healer's job.
+    # HOW IT WORKS: the hit's damage is scaled on the victim
+    # at the same point armour and other reductions have
+    # already priced it (the TrainingWheels shield shape:
+    # damage x (1 - total mitigation), written into the
+    # damage event itself, so health, death and logs all see
+    # the one mitigated number). Scope is EliteMobs worlds
+    # (registry, the worlds list below, or the world-prefix),
+    # unless apply-in-all-worlds is turned on.
+    # The base mitigation for holding any melee weapon.
+    # 0.15 = 15% less damage taken. (Wink Reyes Valley runs
+    # the shipped default, 0.15.)
+    base-percent: 0.15
+    # Extra mitigation when the off hand holds a TOTEM —
+    # deliberately small: a totem already saves your life,
+    # negates a death and grants buffs. 0.02 = +2%.
+    # (Wink Reyes Valley runs the shipped default, 0.02.)
+    totem-bonus-percent: 0.02
+    # Extra mitigation when the off hand holds a SHIELD or
+    # shield-like defensive item. 0.07 = +7%.
+    # (Wink Reyes Valley runs the shipped default, 0.07.)
+    shield-bonus-percent: 0.07
+    # Hard cap on base + off-hand bonus combined, so no
+    # tuning accident can make a player near-invulnerable.
+    max-total-percent: 0.90
+    # Materials that count as a melee weapon in the main
+    # hand (exact names), plus the suffix families below.
+    # Audited against the EliteMobs custom-items tree: EM
+    # scythes are built on the _HOE family, so _HOE counts;
+    # a held TRIDENT is a melee weapon (while thrown it is
+    # not in hand, so it pays nothing then). EliteMobs
+    # STAVES are built on WOODEN_SPEAR — they are still
+    # never melee, because EliteMobs' own magic-weapon
+    # identity is checked first and wins over material.
+    melee-materials: [MACE, TRIDENT]
+    melee-material-suffixes: [_SWORD, _AXE, _SPEAR, _HOE]
+    # Materials that never count as melee, even if a list
+    # above would catch them.
+    excluded-materials: []
+    # Off-hand material families for the two bonus slices.
+    # Every EliteMobs shield in the audited content tree is
+    # the vanilla SHIELD material; add a material here when
+    # a custom shield-like item ships on one.
+    totem-materials: [TOTEM_OF_UNDYING]
+    shield-like-materials: [SHIELD]
+    # Damage causes that are never mitigated — no weapon
+    # parries the void or a /kill.
+    excluded-causes: [VOID, SUICIDE]
+    # Extra worlds in scope by name (same rule as the other
+    # modules: registry, this list, or the prefix below).
+    worlds: []
+    world-prefix: "em_"
+    # true = mitigation applies in every world, not just
+    # EliteMobs-scope worlds.
+    apply-in-all-worlds: false
+    # How often (ticks) the off-hand indicator lore is
+    # refreshed for online players. 10 ticks = twice a
+    # second; the line appears/disappears as hands change.
+    indicator-check-ticks: 10
+    # Log every mitigated hit (player, cause, before/after).
+    # Leave off in normal operation.
+    debug: false
+
+  # ==========================================================
+  # MODULE: skill-bonus-nudge  (no commands — a background fix)
+  # ==========================================================
+  skill-bonus-nudge:
+    enabled: true
+    # THE DEFECT: EliteMobs' skill system grants real power —
+    # the Armor line alone holds Battle Hardened, Second Wind
+    # and Last Stand — but nothing anywhere tells a player the
+    # picks exist or that theirs are sitting unclaimed. The
+    # claim menu is three screens deep inside EliteMobs' status
+    # screen, and EM never points at it. Observed live
+    # (Nov 22, 2026): a player at ARMOR level 14 / WANDS 17 had
+    # selected ZERO bonuses in every skill while dying to the
+    # burst damage the unclaimed Armor picks exist to answer.
+    #
+    # THE FIX: once per session, a few seconds after a player
+    # joins, compare their EliteMobs skill levels and selected
+    # bonuses (read through EliteMobs' own public API — the
+    # same getters its Skills page uses; strictly read-only)
+    # against EliteMobs' own bonus catalog (the skillbonuses
+    # folder: per skill, how many enabled bonuses each tier
+    # holds). If a pick is genuinely claimable, send the
+    # message below. A player who claims their bonuses stops
+    # qualifying on their own; the check runs at join in any
+    # world, because it is about the player's progression, not
+    # about where they are standing.
+    #
+    # Tiers unlock at these skill levels (EliteMobs' own menu
+    # config: Tier 1 at 10, Tier 2 at 25, Tier 3 at 50,
+    # Tier 4 at 75) and at most this many bonuses can be
+    # active per skill (EliteMobs' own menu refuses a 4th).
+    # Both are config knobs so a fork that retunes them stays
+    # correct without a code change.
+    tier-unlock-levels: [10, 25, 50, 75]
+    max-active-per-skill: 3
+    # Ticks after join before the check runs. The delay lets
+    # EliteMobs finish loading the player's data and lets the
+    # login burst settle; 100 ticks = 5 seconds.
+    delay-ticks: 100
+    # Java only: the nudge message is clickable — clicking
+    # it runs this command (the claim path the message
+    # names). Bedrock players get no click events through
+    # Geyser, so they receive the plain message with the
+    # command spelled out in the text. Set to "" for no
+    # click.
+    click-command: "/elitemobs"
+    # The message. (0.9.0 reword: the old text never said HOW
+    # to claim — a player with unclaimed picks could not find
+    # where they were claimed (Jester, Nov 24, 2026). The
+    # message now names the step that was missing: click the
+    # skill itself in the Skills menu to open its bonus menu,
+    # then claim the [UNLOCKED] picks.)
+    # Placeholders: %count% = unclaimed picks,
+    # %topskill% = the skill with the most waiting,
+    # %player% = the player's name. & color codes.
+    message:
+      - "&6&lSkill bonuses waiting! &eYou have &f%count% &eunclaimed EliteMobs skill bonus(es) — your &f%topskill% &elevels earned them."
+      - "&7Open &f/elitemobs&7, choose &fSkills&7, then &fclick the skill itself &7to open its bonus menu and claim the &f[UNLOCKED] &7picks. Armor picks like Battle Hardened and Last Stand make elites hit softer."
+    # Log every join evaluation (levels, selections, verdict).
+    # Leave off in normal operation.
+    debug: false
+
+  # ==========================================================
+  # MODULE: respawn-grace  (no commands — a background fix)
+  # ==========================================================
+  respawn-grace:
+    enabled: true
+    # THE PROBLEM: a player who dies in an EliteMobs world drops
+    # everything where they fell, and the run back to recover it
+    # goes through the same mobs that just killed them — players
+    # die twice in minutes on the corpse run, and the spiral, not
+    # the death, is what hurts.
+    # THIS MODULE: the server's Nether precedent (protection
+    # holds until the player hits something), applied to the
+    # death-return — with a fuse, because an open-ended shield
+    # was judged too strong. Dying in an EliteMobs world arms a
+    # one-use return ticket and tags every dropped stack with
+    # the owner's name and a per-death id. When the player comes
+    # back into an EliteMobs world — respawning inside one, or
+    # crossing back into one with the ticket — they take NO
+    # damage from any cause, until the fuse burns:
+    #   * LOOT: the first time they pick up a stack of their OWN
+    #     tagged death-drops, the countdown below starts. They
+    #     stay protected while it runs (action-bar numbers plus
+    #     a tick sound each second, a distinct final tick); at
+    #     zero, protection ends with a "Round start!" title.
+    #     Other pickups never start it and never restart it.
+    #   * ATTACK: dealing damage at any point ends protection
+    #     immediately, cancels any countdown, and fires the same
+    #     "Round start!" flourish. The hit itself lands in full.
+    #   * CAP: before any loot is recovered, the max-seconds cap
+    #     ends protection plainly — it cannot be sat on forever.
+    # Moving does NOT end it: a corpse run is movement. A plain
+    # world-hop with no death grants nothing, one ticket buys
+    # exactly one grant, and quitting clears ticket and grace.
+    # Scope: EliteMobs worlds (EliteMobs' own registry, or the
+    # worlds list below) — the same scope rule as food-heal.
+    # Seconds of protection after the first own-loot pickup,
+    # counted down on the action bar with tick sounds. (Wink
+    # Reyes Valley runs the shipped default, 10.)
+    countdown-seconds: 10
+    # Hard cap on the pre-loot phase, in seconds. Once the loot
+    # countdown starts it replaces the cap — the countdown is
+    # the fuse. (Wink Reyes Valley runs the shipped default, 60.)
+    max-seconds: 60
+    # How long a death's return ticket stays valid, in seconds.
+    # Die, log off for dinner, come back tomorrow: no stale
+    # protection. (Wink Reyes Valley runs the shipped default.)
+    return-window-seconds: 600
+    # Player feedback: a chat line when protection starts, an
+    # action-bar line while it holds, the countdown numbers,
+    # and the "Round start!" title when an attack or the
+    # countdown ends it. Players always know the state; turn
+    # off only to silence the text (sounds have their own knob).
+    messages: true
+    # Tick sounds during the countdown, the distinct final
+    # tick, and the "Round start!" sting. (Shipped default on.)
+    sounds: true
+    # Sound names (Minecraft sound ids). Defaults: a note-block
+    # hat per second, a bell for the final tick, the challenge
+    # toast sting for the flourish.
+    tick-sound: "minecraft:block.note_block.hat"
+    final-tick-sound: "minecraft:block.note_block.bell"
+    flourish-sound: "minecraft:ui.toast.challenge_complete"
+    # The flourish title and subtitle (legacy & colour codes
+    # work). A Mortal Kombat play-on-words: the announcer's
+    # "Round start!" means the fight is on — protection is over.
+    title-text: "&6Round start!"
+    subtitle-text: "&eFight!"
+    # Title timings, in ticks (20 per second).
+    title-fade-in-ticks: 5
+    title-stay-ticks: 30
+    title-fade-out-ticks: 10
+    # Extra worlds in scope by name. A world is in scope when
+    # EliteMobs' own registry claims it (instanced dungeon
+    # worlds are covered automatically) OR it is listed here.
+    # (Wink Reyes Valley runs the shipped default, empty.)
+    worlds: []
+    # Log ticket arms, grants, blocks and ends. Leave off in
+    # normal operation.
+    debug: false
+  summon-mount:
+    enabled: true
+    # WHAT THIS IS: not a defect workaround — the interim mount
+    # product (D196, shipped as a module per D199). EliteMobs
+    # worlds have no mounts; players cross Primis on ender
+    # pearls. This module sells ONE thing: the Mount Charm
+    # (ExcelItems registry ID 5, permanent — never renumbered or
+    # reused), a reusable item that calls the owner's own horse
+    # and sends it away again. It exists only until EliteMobs
+    # ships native mounts (watch P-EM-MOUNT-WATCH-20261122).
+    # REQUIRES: the ExcelItems plugin (the charm lives in its
+    # registry). ExcelItems is a softdepend of this pack; without
+    # it this module stands down with one clear log line and
+    # every other module is unaffected. Vault is required only
+    # for purchases.
+    #
+    # RETIREMENT (two switches, no rebuild either way):
+    # 1. Soft landing — set retired: true below and reload
+    #    (/emfixes reload or /mountcharm reload): horses out at
+    #    that moment come in, sales stop, and summons are answered
+    #    with the retirement message.
+    # 2. Full removal — set this module's enabled: false above
+    #    and reload/restart: the command, the listener and the
+    #    shop flow cease to exist. Then delete the mount_charm
+    #    entry from the shop menu. Registry ID 5 stays assigned
+    #    to mount_charm forever either way.
+    retired: false
+    retirement-message: "Mounts have arrived — the charm rests now. Your horse answers a new call."
+    # PRICES (Excel Bucks, via Vault — both venues).
+    # Two venues (P-SHOP-TWO-VENUE-20261122): the ExcelShops
+    # shop sells at list price; the vendor NPC sells at the
+    # discounted price, because visiting in person is rewarded.
+    # The NPC reaches the buy flow through a console command
+    # (mountcharm buy <player> npc) wired as an EliteMobs NPC
+    # COMMAND interaction — EliteMobs-native shops charge Elite
+    # Coins and cannot be used.
+    # The values below are the shipped defaults. Wink Reyes
+    # Valley runs price: 15000 / npc-price: 11250 in its
+    # deploy config — luxury pricing, because the charm is
+    # currently the only mount that works in EliteMobs
+    # worlds (Mike's ruling, Nov 23, 2026).
+    # Purchases check the buyer's balance BEFORE any money
+    # moves and refuse cleanly when it is short — nobody is
+    # ever charged into a negative balance.
+    price: 7500
+    npc-price: 5625
+    # GATES. Summoning is refused while the player is in combat.
+    # Combat is marked by any entity-caused damage involving the
+    # player, in either direction — the same notion (and default
+    # window) the food-heal module uses. Dismissing is never
+    # refused.
+    combat-window-seconds: 20
+    # If the horse vanishes outside every despawn trigger (an
+    # admin kill command, a chunk glitch), the charm rests this
+    # long before it can call another. The charm is never lost.
+    lost-horse-cooldown-seconds: 60
+    # THE HORSE (fixed stats — travel only, no combat role).
+    # Vanilla attribute bases: a good horse, not a record-
+    # breaker. movement-speed 0.29 is about 12 blocks/second
+    # (vanilla range roughly 0.11-0.34), jump-strength 0.85
+    # clears about 3 blocks, max-health 24 is above the vanilla
+    # average of 22.5. The horse is invulnerable and deals
+    # nothing; these numbers are feel, not power.
+    horse:
+      movement-speed: 0.29
+      jump-strength: 0.85
+      max-health: 24.0
+    # WORLDS. Summoning is blocked in any world whose name
+    # starts with a blocked prefix or equals a blocked name.
+    # Everything else — overworld, Nether, End, em_primis and
+    # future open adventure worlds — is allowed with no edit
+    # needed. em_id_* are EliteMobs' instanced dungeon/arena
+    # worlds: a horse there would break encounters. The guild
+    # hub is an interior social space; horses there are clutter.
+    worlds:
+      blocked-prefixes:
+      - em_id_
+      blocked-names:
+      - em_adventurers_guild
+    # FOLLOW RULE. Ender pearls and wormholes teleport the
+    # player, not the horse. After a same-world teleport that
+    # leaves the horse farther than follow-distance blocks
+    # behind, the horse is moved to the player — pearls are how
+    # Primis is travelled, and stranding the horse on every
+    # throw would make the charm useless.
+    follow-teleport: true
+    follow-distance: 48
+    # THE GHAST TIER — the Ghast Charm (ExcelItems registry
+    # ID 9, permanent), this module's premium product (0.8.0):
+    # a second carry-and-toggle charm that calls a flying
+    # mount — a harnessed happy ghast the owner rides, steered
+    # by the game's own flight controls. Everything the horse
+    # obeys, the ghast obeys too: the same combat gate, the
+    # same blocked worlds, the same follow rule, the same
+    # retirement switch — and combat state is shared between
+    # the charms, so fighting with the horse out still bars
+    # calling the ghast. The ghast is called in a few blocks
+    # above the player (it is a big creature, four blocks
+    # wide) and it needs a current server: the rideable ghast
+    # and its harness only exist in recent Minecraft versions.
+    # On an older server summons refuse cleanly and the log
+    # says why — the charm is never consumed by a failure.
+    ghast:
+      # The tier's own switch: false removes the Ghast Charm's
+      # command, listener and sales. Registry ID 9 stays
+      # claimed either way, and the Mount Charm is untouched.
+      enabled: true
+      # PRICES (Excel Bucks, via Vault — both venues, the same
+      # two-venue shape as the Mount Charm: list price in the
+      # shop, the vendor price at the guild NPC, reached
+      # through the console command ghastcharm buy <player>
+      # npc, wired as an EliteMobs NPC COMMAND interaction).
+      # The flying tier sits above the horse: 30000 list /
+      # 22500 vendor as shipped. Purchases check the balance
+      # BEFORE any money moves, exactly like the horse's.
+      price: 30000
+      npc-price: 22500
+      # If the ghast vanishes outside every despawn trigger,
+      # the charm rests this long before it can call another —
+      # the horse's loss rule, on the ghast's own clock.
+      lost-cooldown-seconds: 60
+      # THE ENTITY. entity-type is the entity type name of the
+      # mount (HAPPY_GHAST is the rideable ghast);
+      # harness-material is the harness it wears — without a
+      # harness the ghast cannot be ridden, so a harness that
+      # cannot be equipped refuses the summon rather than
+      # leaving a grounded mount standing. flying-speed 0
+      # keeps the vanilla speed; a positive value overrides
+      # the entity's flying-speed attribute where the server
+      # provides one. Vanilla's attribute is 0.05, which
+      # cruises at only ~3.6 blocks/second — slower than a
+      # sprinting player. Flight speed grows with the SQUARE
+      # of the attribute (it scales both the rider's input
+      # and the travel acceleration), so tune in small steps:
+      # 0.10 is roughly 14.4 blocks/second, about four times
+      # the vanilla cruise. spawn-height-offset is how far
+      # above the player the ghast materializes.
+      entity-type: HAPPY_GHAST
+      harness-material: RED_HARNESS
+      flying-speed: 0.0
+      spawn-height-offset: 3.0
+      # THE QUEST GATE. The Ghast Charm is earned as well as
+      # bought: to purchase it, a player must have finished
+      # at least the fraction below of the quests in ONE
+      # package — halfway through one adventure, never a
+      # little of several added together. Quest counts come
+      # from EliteMobs' own quest files (enabled quests only,
+      # counted at enable and on reload); completions come
+      # from EliteMobs' quest-cooldown registry, the record
+      # it writes on every completion. Packages are defined
+      # by quest-filename prefix, so a package enrolls by
+      # adding an entry here — no rebuild. If the gate cannot
+      # be read (EliteMobs absent, or its data unreadable),
+      # sales refuse rather than wave through: fail closed.
+      # Set enabled: false to sell the charm ungated.
+      #
+      # The shipped config defines NO packages — quest
+      # content is the server's, not the pack's — so with the
+      # gate on and no packages, the charm cannot be bought
+      # and the module's enable log says exactly that.
+      # Example (one entry per package; prefix is the shared
+      # start of the package's quest filenames):
+      #   packages:
+      #   - id: primis
+      #     prefix: primis_
+      gate:
+        enabled: true
+        fraction: 0.5
+        packages: []
+  # MODULE: mcmmo-xp-connector  (no commands — a background fix)
+  # ==========================================================
+  mcmmo-xp-connector:
+    enabled: true
+    # THE DEFECT: mcMMO pays combat XP per point of damage,
+    # settled per hit, with no per-kill cap of any kind. That
+    # pricing is sane against vanilla-sized health pools, but
+    # EliteMobs pools are not vanilla-sized — a level 100 elite
+    # carries millions of HP — so the pool itself becomes the
+    # payout: a target that never dies pays out indefinitely
+    # (this is exactly how an EliteMobs training dummy at the
+    # Adventurers Guild became an XP farm). The blunt fix some
+    # servers use — zeroing ALL mcMMO XP in EliteMobs worlds —
+    # stops the farm but also pays nothing at all for real
+    # EliteMobs play, which is most of the game.
+    # THIS MODULE replaces the pricing for EliteMobs entities
+    # with kill-settled awards, in four parts:
+    # (1) PER-DAMAGE VETO. Every hit a player (or their pet)
+    # lands on an EliteMobs entity plants a short-lived
+    # provenance token. mcMMO's gain events do not say which
+    # entity a gain came from, so when a combat gain matches a
+    # live token, the module zeroes it on mcMMO's own gain
+    # event — the earner's gains and the party shares derived
+    # from them alike. Per-damage XP from EliteMobs entities
+    # pays 0 in every world.
+    # NO WORLD GATE, ON PURPOSE: there is no rule anywhere
+    # that pays less mcMMO XP because of the world a player
+    # stands in. An earlier design zeroed ALL mcMMO XP inside
+    # EliteMobs worlds; that was a temporary stopgap against
+    # training-dummy farming, and this module is its proper
+    # replacement — its rules are about TARGETS (EliteMobs
+    # entities), not worlds. Ordinary mcMMO play (mining,
+    # fishing, gathering, vanilla combat) pays normal rates
+    # in every world, EliteMobs worlds included, and kill
+    # awards land the moment they are earned, wherever the
+    # killer is standing. The watchdog (part 4 below) is the
+    # safety net for gain paths nobody foresaw.
+    # (2) KILL AWARDS. When an EliteMobs entity dies to a
+    # player, the killer earns a fixed award — the rate below
+    # for the entity's class times its EliteMobs level — in
+    # the skill of the weapon that dealt the killing blow
+    # (a pet's kill pays its owner in Taming). The award is
+    # granted through mcMMO's normal gain pipeline, so party
+    # sharing and XP multipliers compose exactly as they do
+    # for ordinary combat gains. Because the award is priced
+    # by level and rank — never by health — healing a boss
+    # mid-fight, parking it, or farming a huge pool changes
+    # nothing: a kill pays once, the same, every time.
+    # (3) HOURLY CEILING. Award XP is capped per player, per
+    # skill, per rolling hour (see hourly-ceiling), counted on
+    # the final granted amount after multipliers, and the
+    # count is saved to disk so a server restart cannot reset
+    # it. No content pack — audited or not — can pay a player
+    # more than the ceiling per hour through kill awards.
+    # (4) XP WATCHDOG. Every mcMMO gain is totalled per
+    # player and skill over rolling minute/hour windows;
+    # abnormal rates are flagged in a record file, and a
+    # rolling hour past the cap is hard-stopped (see the
+    # watchdog settings below). This is the safety net for
+    # gain paths nobody foresaw: bounded within the hour
+    # and named in the flag record for review.
+    # NEVER PAID: recognised no-XP entities (EliteMobs
+    # training dummies by filename, practice targets stamped
+    # by other plugins, managed summons, reward-denied
+    # entities) and passive practice targets (a custom boss
+    # whose config cannot fight back: ai off and damage
+    # multiplier 0) earn no award and no per-damage XP, in any
+    # world, forever. A cast summon's kills earn its owner
+    # nothing; an adopted pet's kills earn normally.
+    # Requires BOTH EliteMobs and mcMMO. With either missing
+    # the module stands down with one log line and does
+    # nothing; no other module is affected.
+    # The per-damage veto (part 1 above). Turn off only if you
+    # want EliteMobs entities to ALSO pay mcMMO's raw
+    # per-damage XP on top of kill awards — not recommended:
+    # that reopens the pool-priced farm this module exists
+    # to close.
+    per-damage-veto: true
+    # The kill awards (part 2 above). Turn off to keep only
+    # the veto (EliteMobs content then pays no mcMMO XP at
+    # all — the blunt-fix behaviour, but in every world).
+    kill-awards: true
+    # Award rates, in mcMMO XP per EliteMobs level, by the
+    # entity's EliteMobs class-loot rank. A level 10 boss at
+    # the shipped rates pays 100 x 10 = 1,000 XP — about two
+    # ordinary skeleton kills' worth in mcMMO — for a fight
+    # that takes minutes. These shipped numbers are the
+    # rebalance's design defaults, chosen so an hour of
+    # hard EliteMobs farming pays roughly two to three times
+    # an hour of ordinary overworld grinding, and the ceiling
+    # below bounds everything regardless.
+    rates:
+      # Custom bosses EliteMobs ranks BOSS.
+      boss: 100
+      # Custom bosses EliteMobs ranks MINIBOSS.
+      miniboss: 40
+      # Natural elites (not custom bosses; EliteMobs gives
+      # them no class-loot rank, so they price here).
+      natural-elite: 20
+      # Custom bosses EliteMobs ranks TRASH (dungeon fodder).
+      # An unreadable rank also prices here — awards fail low,
+      # never high.
+      trash: 10
+    # The hourly ceiling (part 3 above): the most kill-award
+    # XP one player can receive in one skill in any rolling
+    # 60 minutes. Hard stop: an award that would cross the
+    # ceiling is fitted to what remains, and the rest is
+    # forfeited (it is not queued for later).
+    hourly-ceiling: 60000
+    # (4) THE XP WATCHDOG. The module watches EVERY mcMMO
+    # gain any player receives (all skills, all sources —
+    # combat, gathering, this module's own awards) and keeps
+    # per-player, per-skill rolling totals for the last
+    # minute and the last hour, saved to disk so a restart
+    # does not reset them. Two things can happen:
+    # FLAG: when a total crosses a flag threshold, the
+    # module appends one record (player, skill, window
+    # total, world, time, and how many EliteMobs hit tokens
+    # were live) to mcmmo-watchdog-flags.txt in this
+    # plugin's data folder and logs one warning line. A flag
+    # never blocks anything — it is a tripwire that names a
+    # suspicious rate so a human can look.
+    # CAP: when the rolling HOUR crosses the cap, further
+    # gains in that skill are zeroed until the hour rolls
+    # back under the cap. Other skills are unaffected, and a
+    # kill award that arrives while capped is queued and
+    # paid after roll-off instead of being lost.
+    # The shipped thresholds sit far above every legitimate
+    # rate (the biggest single award is 10,000 XP; kill
+    # awards are separately capped at 60,000/hour above), so
+    # normal play never trips them — the farm this module
+    # replaces ran about 52,800 XP per minute in one skill.
+    watchdog:
+      # The watchdog as a whole. Turn off only for diagnosis:
+      # with it off, no gain rate is flagged or capped.
+      enabled: true
+      # Flag when one skill gains this much XP in one minute.
+      flag-minute-xp: 25000
+      # Flag when one skill gains this much XP in one hour.
+      flag-hour-xp: 90000
+      # Zero further gains in a skill once its rolling hour
+      # reaches this much XP, until it rolls back under.
+      cap-hour-xp: 120000
+    # DEFERRAL (automatic, no switch): an award is always
+    # granted the moment it is earned. If the pipeline
+    # produces no gain for it at all — an mcMMO build that
+    # still gates EliteMobs worlds in-pipeline eats the grant
+    # before any event exists, and Creative-mode players
+    # cannot gain — the award is saved instead and granted
+    # through the normal pipeline the moment the player is
+    # back in a world where gains land: same amount, same
+    # sharing and multipliers, just later. On the paired
+    # mcMMO build this is only a fallback; awards normally
+    # pay on the kill, inside the EliteMobs world itself.
+    # How many party shares a single hit's provenance token
+    # can veto. Shares are delivered through each member's own
+    # gain event, so the token carries a budget instead of
+    # being consumed by the first share. 8 covers any normal
+    # party; raise it only if your parties run larger.
+    share-veto-budget: 8
+    # How long (in server ticks) a hit's provenance token
+    # stays live waiting for its gain event. mcMMO settles a
+    # hit's XP about a tick after the hit; 6 ticks is a
+    # comfortable margin that still cannot reach an unrelated
+    # later gain.
+    hit-token-ttl-ticks: 6
+    # Log every vetoed gain, computed award, deferral and
+    # delivery. Leave off in normal operation.
+    debug: false
+
+  # ==========================================================
+  # MODULE: quest-beacon  (commands: /questbeacon)
+  # ==========================================================
+  quest-beacon:
+    enabled: true
+    # THE GAP: EliteMobs' tracker tells a player WHAT to kill,
+    # but for the quests whose destination it cannot show (the
+    # tracker-blank defect, issue #241) — and even for quests it
+    # can show — there is no always-on visual that points the
+    # way while you travel. The quest-destinations module answers
+    # with text directions, coordinates and a short glow; players
+    # still lose the thread on a long walk.
+    # THIS MODULE: while you have a quest SELECTED (tracked) in
+    # EliteMobs' tracker, a tall pillar of light marks that
+    # quest's destination — the same destination the
+    # quest-destinations module computes from its table, read
+    # through the pack's destination API (so this module needs
+    # quest-destinations enabled, and stands down quietly when
+    # it is off or when EliteMobs is absent). The light is
+    # PER-PLAYER and purely visual: it is particles sent only to
+    # you — no beacon block, no pyramid, nothing is placed in
+    # the world, nothing persists, and no other player sees your
+    # light. (A real beacon beam comes from a ticking beacon
+    # block, which a per-player fake block does not have; the
+    # particle pillar is the mechanism that looks the same on
+    # Java and on Bedrock, which is why it is the one shipped.)
+    # From far away the pillar does NOT sit on the destination —
+    # no pillar can be seen beyond your view distance — it rides
+    # at the edge of your view in the destination's direction and
+    # moves as you move, leading you in; once the destination is
+    # inside that range the pillar stands on the destination
+    # itself. The light ends when you untrack the quest, finish
+    # it, switch to a different tracked quest, change worlds, or
+    # arrive within the arrival radius below. /questwhere and
+    # the glow are unchanged — the beacon complements them.
+    # /questbeacon shows your beam's state; /questbeacon off|on
+    # is your own switch for the session.
+    # How often (in ticks; 20 = 1 second) the beam re-reads your
+    # tracked quest and repositions. Shipped default: 10.
+    update-ticks: 10
+    # How far from you (in blocks) the pillar rides while the
+    # destination is out of sight, and the distance at which it
+    # settles onto the destination itself. Keep it inside your
+    # server's view distance or the riding pillar sits in
+    # unloaded chunks and cannot be seen. Shipped default: 48.
+    edge-distance: 48
+    # Arriving within this many blocks (horizontal) of the
+    # destination ends the beam — its job is done.
+    # Shipped default: 8.
+    arrival-radius: 8
+    # The pillar's height in blocks and the spacing between its
+    # light motes (smaller spacing = denser, brighter, more
+    # packets). Shipped defaults: 40 high, one mote every 2.
+    column-height: 40
+    column-step: 2
+
+  # ==========================================================
+  # MODULE: quest-giver-glow  (no commands — a background fix)
+  # ==========================================================
+  quest-giver-glow:
+    enabled: true
+    # WHY THIS EXISTS: a player asked for it (Jester, Nov 24,
+    # 2026 — "can you make a menu or something so that i can
+    # see the nearest quest giving npc… hard to find them…
+    # have to get close and sometimes just right click
+    # them"). The server owner's direction: no menu —
+    # quest-giving NPCs GLOW, per-player, for whoever has a
+    # quest from them.
+    #
+    # THE PROBLEM: EliteMobs quest NPCs give no sign that they
+    # have a quest for you until you walk up and right-click
+    # them. In a big quest world, players cannot tell which of
+    # the many NPCs around them is worth visiting — they end
+    # up clicking every NPC they pass, or missing quests
+    # entirely.
+    #
+    # THE FIX: every refresh, this module asks EliteMobs' own
+    # data — through EliteMobs' own accept check, the same one
+    # it runs before offering a quest — which NPCs have a
+    # quest THIS player can pick up right now, and lights
+    # exactly those NPCs up FOR THAT PLAYER ONLY. The light is
+    # a per-player packet, not a real glow: the NPC lights up
+    # on your screen and stays plain on everyone else's, so a
+    # player with nothing to pick up sees a completely plain
+    # world, and your quests are never advertised to other
+    # players. An NPC you are carrying a FINISHED quest back
+    # to lights in the turn-in color instead. Quests you
+    # already hold, quests you finished for good, and quests
+    # still in their repeat lockout never light anything.
+    # EliteMobs' dynamic quest givers (the NPCs that invent
+    # offers on the spot when talked to) hold no quest list in
+    # EliteMobs' data, so there is nothing truthful to light
+    # for them — they never glow here. A few NPCs are spawned
+    # by their content package and have no home spot in
+    # EliteMobs' data (the Adventurers' Guild greeter is one);
+    # those are matched by name near you instead, within the
+    # view radius below.
+    #
+    # How often (in ticks; 20 = 1 second) every player's quest
+    # NPCs are re-checked and their lights refreshed. The
+    # refresh is also what keeps a light from ever going
+    # stale: accept a quest, finish one, or walk away, and the
+    # light follows within one interval. Shipped default: 40
+    # (2 seconds).
+    refresh-ticks: 40
+    # How close (in blocks) you must be to a quest NPC
+    # before it can light for you. Keep it inside your
+    # server's view distance — a light on an NPC you cannot
+    # see yet does nothing. Shipped default: 64.
+    view-radius: 64
+    # The module learns which body is which NPC from
+    # EliteMobs' own spawn records. If an NPC already stood
+    # spawned when the module was enabled, it is adopted
+    # from its post instead: this is how far (in blocks)
+    # from the home spot EliteMobs' data gives it the body
+    # on the post may stand and still be adopted as that
+    # NPC. Shipped default: 8.
+    anchor-radius: 8
+    # The glow colors (any Minecraft color name). Accept =
+    # this NPC has a quest you can pick up. Turn-in = you are
+    # carrying a finished quest back to this NPC; when both
+    # are true at one NPC, the turn-in color wins. Shipped
+    # defaults: gold for accept, green for turn-in.
+    accept-color: gold
+    turn-in-color: green
+    # Log the module's per-player decisions (which NPCs it
+    # lights, for whom, and why not) plus refresh failures.
+    # Diagnostic only; leave off in normal operation.
+    debug: false
+
+  # ==========================================================
+  # MODULE: clarity-menus  (command: /emguide)
+  # ==========================================================
+  clarity-menus:
+    enabled: true
+    # WHY THIS MODULE EXISTS: on Nov 24, 2026 an experienced
+    # MMO player on our server (Jester) could not find how to
+    # claim his EliteMobs skill bonuses — he had 12 earned
+    # picks waiting and no screen told him the claiming step.
+    # A clarity audit of every EliteMobs menu followed (its
+    # findings are F1–F9 in the audit record) and the server
+    # owner's direction was to fix everything, remaking the
+    # menus ourselves if that is what it takes. This module
+    # is that remake's front door.
+    # THE GAP: EliteMobs' own screens assume players already
+    # know how EliteMobs works. Its Skills page looks like a
+    # stats list, so players never learn that clicking the
+    # skill itself opens the screen where skill bonuses are
+    # claimed (an experienced MMO player sat on 12 unclaimed
+    # bonuses because nothing said so). Its quest screen hides
+    # quest-abandoning behind a status line that reads
+    # "Accepted!". And nothing anywhere explains Elite Coins,
+    # the two buy shops, the reroll button, or the four gear
+    # tools in plain words.
+    # THIS MODULE: /emguide opens "EliteMobs, Made Clear" —
+    # this pack's own front door that explains Skills & skill
+    # bonuses (with the click-the-skill step spelled out),
+    # Quests (including the safe way to check a quest, and the
+    # Accepted-line warning), Shops & Elite Coins, and the
+    # gear tools (repair, enchant, elite scrolls, unbind) —
+    # and opens the matching EliteMobs screen for the player
+    # at each step. All wording lives in clarity-menus.yml
+    # (bundled in the jar; a copy in this plugin's data folder
+    # overrides it), so the text can be reworded without a
+    # rebuild. Menus render identically on Java and Bedrock
+    # through the pack's shared renderer, and every page
+    # carries a Back button (the home page carries Close).
