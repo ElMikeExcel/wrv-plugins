@@ -1,0 +1,15 @@
+ExcelEMFixes 0.3.1 — INSTALLED Nov 22, 2026
+Window: parent hand window hand-20261122-215739-nov22batch (D189 escalation; the 21:51 CT file-and-fire failsafe run D180-exited on poisoned SSH, nothing installed by it).
+Method: Homebase SSH + staged swap script (D:\muse-servers\staging-nov22batch\swap_all.py), hash gates first.
+Backup: snapshot-20261122-215916 (window snapshot, MuseWRVSnapshot manual run ~21:59 CT).
+Gate: RCON list = 0 players at 21:57:5x, 21:58:23, 21:59:14 and at shutdown.
+Swap results (all hash-verified on the PC):
+- ExcelEMFixes-0.2.0.jar (733a02d1…) renamed to ExcelEMFixes-0.2.0.jar.bak-excelemfixes-031 (rollback artifact, in place).
+- ExcelEMFixes-0.3.1.jar placed (198,859 B, SHA-256 bf49e51df4987809fb2aaa66101e933a3352a64cb41f3b492b849f793d3acc32, verified after placement).
+- Live config backed up to config.yml.bak-excelemfixes-031; deploy config placed (SHA 74341d9d…, verified).
+Stop note: the first stop bounced — a STOP.flag created at D:\muse-servers\wrv\STOP.flag is NOT seen by the supervisor, which watches C:\Users\MikeExcel\muse-tools\wrv-server\STOP.flag. The stray D: flag was deleted; the C: flag held the second stop. Real downtime starts at the second stop (~22:03 CT).
+Boot: JVM PID 1948, started 22:08:34; Done (26.450s) at 22:09:01. Console log D:\muse-servers\logs\wrv-server-console-20261122-220834.log.
+Boot-verify: "ExcelEMFixes 0.3.1 ready — modules: [quest-destinations, arcane-bolt, drop-guide, progress-tracker, food-heal, leash, seal-restore, jobs-dummy-gate, enderman-resistance]" (all nine); Enderman Magic Resistance ready line present (50% landed fraction); SEVERE 0; TPS 20.0/19.9/19.9; list = 0 players.
+Same window also installed: D197 density Option C (23 files, all hash-verified swaps; bulls live-verified post-boot at 13/12 spawn locations, spawnCooldown 5) and the autoclicker softening (live MobCombatSettings.yml verified post-boot: autoclickerThrottleMaxHitsPerSecond 8, autoclickerThrottlePenaltySeconds 3, backup .bak-20261122-autoclicker kept).
+Proofs owed (do not gate): P-ENDERMAN-LIVE-1, P-JESTER-OOC-HEAL-1 stage 2 (then food-heal debug off), D197 density proofs per em-density-tuning-20261122/RECORD.md §4.
+Run record: ~/workspace/wrv-install-queue/runs/20261122-2157-handwindow/
