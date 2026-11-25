@@ -1,0 +1,14 @@
+INSTALLED — ExcelEMFixes 0.8.0 ghast flying mount (D204)
+Installed: Nov 23, 2026, boot Done 22:25:43 CT (30.960s)
+Window: parent hand window hand-20261123-222048-ghast080 (hold released by Mike 22:17 CT)
+Run record: ~/workspace/wrv-install-queue/runs/20261123-2220-handwindow-ghast/RUN-RECORD.md
+Snapshot: snapshot-11232026.2221
+Placed + hash-verified by fresh download:
+- plugins/ExcelEMFixes-0.8.0.jar — 423,069 B — sha256 5c9d6ac15b8eb0e49624a71f84792442fbeb911da8594090f555416788117dd7 (rollback: ExcelEMFixes-0.7.1.jar.bak-ghast-080)
+- plugins/ExcelEMFixes/config.yml — 55,152 B — sha256 3608fd58c4631b2256fdbf00c17d155ee93e669dae9740eda84a1a80b3015733 (live 0.7.1 config + ghast: subsection insertion only; rollback: config.yml.bak-0.7.1-20261123)
+- plugins/EliteMobs/npcs/guild_vendor_ghast.yml — 1,621 B — sha256 0b59b3d4c5d11b5cfddd91093cdd8c44291286eaba4b80a7816d17a9cfb92eb7 (new fifth vendor stall, shepherd, x=287.5, command: ghastcharm buy npc)
+PRICE CHANGE Nov 23, 2026 22:29 CT (Mike): list $30,000 -> $50,000, vendor $22,500 -> $37,500 (standing 25%). Live config swapped (sha256 b34cc8dde2d8fd278db5018b20567309c2fd3785a9e847f08179c4e0f09e82e5; backup config.yml.bak-ghast080-price) + emfixes reload clean (ghast census re-read, zero reload-failed); stall dialog text updated to $37,500 + elitemobs reload clean (fully initialized 22:29:44, SEVERE 0).
+Boot verify: ExcelEMFixes 0.8.0 ready, 17 modules incl. summon-mount; ghast tier line (registry id 9, $30000 shop / $22500 vendor NPC, quest gate on fraction 0.5); census primis=105 quests; SEVERE 0; emfixes reload ZERO reload-failed lines.
+ExcelItems: NO change (no 9: line — the 0.1.0 trap avoided; ID 9 registered via API at module enable, confirmed by the tier line).
+SECRECY: unannounced — no What's New / website / Guide surfaces.
+Live proofs owed: below-gate refusal on a live session, flight feel, Bedrock rendering, idle drift.
