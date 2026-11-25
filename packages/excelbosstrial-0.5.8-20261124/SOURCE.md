@@ -7,4 +7,4 @@ ExcelBossTrial 0.5.8 (grantclaim emloot form), built and installed Nov 24, 2026.
 - **This package's source tree** was verified byte-exact (full recursive diff) against the build tree of record at records time, Nov 24, 2026.
 - **Install of record:** wrv-install-failsafe-20261124-1121, Nov 24, 2026 — placed 481,720 B / 119ecbad189376e12f235c6c9c2a381033579ce0dfbc0497c4e3aa91c89f995b at live filename ExcelBossTrial-0.4.1.jar; boot Done 11:28:45 CT, build EXC-BOSSTRIAL-0.5.8-WRV-20261124-01-2c5e05, SEVERE 0. Full record: INSTALLED.txt.
 - **Records note:** published Nov 24, 2026 by the fleet-audit Lane 4 backlog clearance (item A14); jar NOT in git (Drive only, hash-referenced in FINGERPRINTS.md).
-- Publication claim: PENDING (filled by amend push after the PR number exists)
+- Publication claim: wrv-plugins PR #286 (duplicate checks run Nov 24, 2026, result NO MATCH for 'excelbosstrial-0.5.8' before assembly and re-run immediately before push, NO MATCH; lane: Homebase git)
