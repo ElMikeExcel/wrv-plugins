@@ -1,0 +1,45 @@
+isEnabled: true
+powerType: UNIQUE
+eliteScript:
+  Sleep:
+    Events:
+    - EliteMobSpawnEvent
+    - EliteMobHealEvent
+    Actions:
+    - action: SET_MOB_AI
+      bValue: false
+      Target:
+        targetType: SELF
+  WakeUp:
+    Events:
+    - ZoneEnterEvent
+    Zone:
+      shape: SPHERE
+      radius: 8
+      Target:
+        targetType: SELF
+    Actions:
+    - action: SET_MOB_AI
+      bValue: true
+      Target:
+        targetType: SELF
+    Cooldowns:
+      local: 100
+      global: 20
+  Reset:
+    Events:
+    - EliteMobHealEvent
+    Actions:
+    - action: TELEPORT
+      FinalTarget:
+        targetType: SELF_SPAWN
+      Target:
+        targetType: SELF
+  WakeUpOnDamage:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Actions:
+    - action: SET_MOB_AI
+      bValue: true
+      Target:
+        targetType: SELF

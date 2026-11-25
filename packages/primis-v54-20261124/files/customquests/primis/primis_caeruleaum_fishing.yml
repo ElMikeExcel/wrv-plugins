@@ -1,0 +1,40 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '5'
+    itemName: Fish Bait
+    filename: primis_fish_bait.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=30:amount=1:chance=1
+- filename=primis_diving_helmet.yml:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_2.yml
+questLockoutPermission: elitequest.primis_caeruleaum_fishing.yml
+name: '&2Fish Bait'
+questLore:
+- We have a big problem!
+- I got wounded by a monstrous &cSea Creature&f that came from a fishy portal to another
+  realm!
+- My friend &aPiscis Nemesis&f is still out on the boat, trying to either fight the
+  creature or close the portal,
+- but he can't do anything without the right bait!
+- I'll tell you where to go get &eFish Bait &f, please go help my friend!
+- I promise I'll reward you!
+temporaryPermissions:
+- elitequest.primis_fish_bait.yml
+questAcceptDialog:
+- '&a[Callidus Piscatus]&f Time is of the essence! There are a bunch of &cBig Worms&f
+  to the right when you leave the village!'
+- Get 5 and come back here and I will prepare them for use.
+- '&7&oI should go get some Fish Bait.'
+questCompleteMessage:
+- '&a[Callidus Piscatus]&f You brought bait? Perfect!'
+- I'll prepare it right away!
+- '&7&oI should talk to &aCallidus &7&oagain and collect the prepared bait.'
+questCompleteCommands: []
+turnInNPC: primis_caeruleaum_injured_fisherman.yml

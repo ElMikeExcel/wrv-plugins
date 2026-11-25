@@ -1,0 +1,35 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    itemName: First Aid
+    filename: primis_pontis_mille_fields_first_aid.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=110:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_12.yml
+questLockoutPermission: elitequest.primis_pontis_mille_fields_wellness.yml
+name: '&2Wellness'
+questLore:
+- Am I glad to see you right now!
+- Dang &cNightmare Rat&f ambushed me while I was climbing down the well.
+- I injured my arm and legs when I fell.
+- Argh, I still have some of its toxic spit left in my eyes.
+- Thankfully I managed to crawl my way onto this little ledge before it could come finish me off.
+- How embarrassing, not sure what hurts more right now, my body or my pride.
+- I have some &eFirst Aid Equipment&f in the chest at the &dHunters Camp&f.
+- Would you mind getting it for me? Oh, and make sure not to tell anyone there a word about what you saw here.
+- ...almost died in a well...this is a chapter of my life I will need to erase...
+temporaryPermissions:
+- elitequest.primis_pontis_mille_fields_first_aid.yml
+questAcceptDialog:
+- '&a[Volumnia Zoilus]&f The &dHunters Camp&f is straight South, cannot miss it, look
+  for tents.'
+- '&7&oI need to go collect the &e&oFirst Aid Equipment&7&o for &a&oVolumnia&7&o at
+  the &d&oHunters Camp&7&o.'
+questCompleteMessage:
+- '&a[Volumnia Zoilus]&f Already back? Hand me the equipment.'
+- Do not worry about me, I will have myself patched up in no time.
+- Thank you for everything! You saved my life you know!
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_fields_farm_well_npc.yml

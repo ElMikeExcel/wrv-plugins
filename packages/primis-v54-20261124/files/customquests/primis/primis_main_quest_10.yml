@@ -1,0 +1,42 @@
+questCompleteCommands: []
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_gladius_gatekeeper_p1.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    dialog:
+    - '&a[Shogun Navita] &f&dGladius&f calls for our aid?\n&7&oSeems like I should
+      talk to the &aShogun&7&o.'
+    filename: primis_pontis_mille_shogun.yml
+    npcName: Shogun of Pontis Mille
+    location: at Pontis Mille
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=100:amount=1:chance=1
+- filename=primis_pontis_mille_reward_helmet.yml:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_9.yml
+questLockoutPermission: elitequest.primis_main_quest_10.yml
+name: '&5Bridging the gap'
+questLore:
+- It is time to call &dPontis Mille&f for aid.
+- Let them know of what happened here and tell them we are cashing in our favor.
+- There is an &cAutomaton&f on the &dBridge&f that leads there. Defeat it and the
+  bridge will lower.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[General Hasta] &fSafe travels, friend. Remember: Kill the &cGate Keeper&f and
+  make sure our plea reaches &aShogun Navita''s&f ears..'
+- '&7&oI should slay the &cGate Keeper&7&o at the &dBridge&7&o and make my way to
+  &aShogun Navita&7&o in &dPontis Mille&7&o.'
+questCompleteMessage:
+- '&a[Shogun Navita]&f Truly the news you bring me are most disturbing, but I am afraid
+  we already suspected something... unnatural... was going on.'
+- '&7&oSeems like &aShogun Navita&7&o wants to talk to me.'
+turnInNPC: primis_pontis_mille_shogun.yml

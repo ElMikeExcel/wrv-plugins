@@ -1,0 +1,33 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_ice_village_the_ice_elemental.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=170:amount=1:chance=1
+- filename=enchanted_book_ice_breaker.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_18.yml
+questLockoutPermission: elitequest.primis_main_quest_19.yml
+name: '&2Chill out'
+questLore:
+- It is time to free ourselves from this curse.
+- We should have never made ourselves dependent on an &cElementals&f power.
+- We shall correct that mistake here and now.
+- What you have slain were just &cMinor Ice Elementals&f, the &cIce Elemental&f rests in a temple right across from our village.
+- It was the main source of our power...and foolishness.
+- Go forth now and slay the &cIce Elemental&f.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Glacies Princeps]&f You will find a path that leads into the temple at the summit
+  of the village.'
+- '&7&oI should go into the temple and slay the &c&oIce Elemental&7&o.'
+questCompleteMessage:
+- '&a[Glacies Princeps]&f I could feel the energies flowing out, all the way from
+  here.'
+- You have done us a great favor friend. The &dIce Village&f will provide aid to you
+  and your allies.
+- There is another settlement that might need your help, let's speak.
+- '&7&oI should hear what &a&oGlacies&7&o has to say.'
+questCompleteCommands: []
+turnInNPC: primis_ice_village_leader.yml

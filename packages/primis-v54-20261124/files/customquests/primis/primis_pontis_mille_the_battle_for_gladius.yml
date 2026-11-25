@@ -1,0 +1,55 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '2'
+    filename: primis_gladius_mariner_id.yml
+    objectiveType: KILL_CUSTOM
+  Objective4:
+    amount: '2'
+    filename: primis_gladius_raider_id.yml
+    objectiveType: KILL_CUSTOM
+  Objective1:
+    amount: '1'
+    filename: primis_gladius_commander_id.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '1'
+    filename: primis_gladius_general_id.yml
+    objectiveType: KILL_CUSTOM
+  Objective5:
+    amount: '1'
+    filename: primis_miniboss_3_p1.yml
+    objectiveType: KILL_CUSTOM
+  Objective6:
+    dialog:
+    - '&4[General Hasta] &fPontis Mille came to our aid after all!'
+    filename: primis_gladius_lord_id.yml
+    npcName: General Hasta
+    location: at the Gladius castle
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=150:amount=1:chance=1
+- filename=primis_gladius_battle_reward_sword.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_pontis_mille_stay_a_while_and_listen.yml
+questLockoutPermission: elitequest.primis_pontis_mille_the_battle_for_gladius.yml
+name: '&2The Battle for Gladius'
+questLore:
+- I assume everything has been revealed to you now?
+- Good, good. While you were gonna we have finished preparing our troops.
+- We are now ready to march on &dGladius &fand retake the city.
+- It has pained me greatly to just standby and watch our ally suffer under siege.
+- But no more! After today &dGladius &fwill be free once again!
+- When you are ready to march with us go talk to the &aPontis Soldier&f.
+- You can find them near the &dGladius-Pontis gate&f.
+temporaryPermissions: 
+- elitequest.primis_gladius_teleporter.yml
+questAcceptDialog:
+- '&a[Fortes Bellator]&f Bring your best gear, this won''t be a cakewalk.'
+- '&7&oI should interact with the &a&oPontis Soldier&7&o at the &d&oGladius-Pontis entrance&7&o.'
+questCompleteMessage:
+- '&a[Fortes Bellator]&f Now that was a battle for the history books!'
+- '&a[Fortes Bellator]&f We managed to find some &9important information&f on one of the enemy generals!'
+- '&a[Fortes Bellator]&f Apparently there is a secret passage that leads to the &dBlood Temple&f somewhere in the &dFields-Ice Village Mountains&f. The entrance is sealed off by a puzzle. The solution to the puzzle was written as: &oRed, Blue, Green, Orange. If color one cannot see, then deciphering of the names one should seek.&f We are not sure what it means, hopefully it will be of use to you. Until we meet again friend!'
+- '&7&oI should try and solve the puzzle to get access to the hidden passage.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_major.yml

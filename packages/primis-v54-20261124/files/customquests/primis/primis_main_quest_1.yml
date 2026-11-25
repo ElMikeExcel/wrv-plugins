@@ -1,0 +1,46 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Chief Piscis] &fOh so you were in the ship that beached a few hours ago?'
+    - I apologize, we would've sent help but I am afraid we are drowning in our own
+      issues right now!
+    - A nearby &dBandit Camp &fkeeps raiding our supplies, a mysterious &cSea Creature
+      &fkeeps haunting our shores and a &dWolf Den &fis making foraging impossible!
+    - If you help us out, I will tell you where you might be able to get the supplies
+      you need to repair your ship.
+    - '&7&oI should report to the &aFirst Mate &7&oto see if I should help these people!'
+    filename: primis_caeruleaum_leader.yml
+    npcName: Village Leader
+    location: at the lighthouse
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=20:amount=1:chance=1
+- material=BREAD:amount=20:chance=1
+- filename=primis_starter_sword.yml:amount=1:chance=1
+- filename=primis_starter_helmet.yml:amount=1:chance=1
+- filename=primis_starter_chestplate.yml:amount=1:chance=1
+- filename=primis_starter_leggings.yml:amount=1:chance=1
+- filename=primis_starter_boots.yml:amount=1:chance=1
+questAcceptPermission: ''
+questLockoutPermission: elitequest.primis_main_quest_1.yml
+name: '&2Shipwrecked!'
+questLore:
+- You're finally awake? Good! We need your help.
+- The ship beached during last night's storm.
+- We see a &dLighthouse &fin the distance, so there must be a village there!
+- Go talk to the &aVillage Leader &fand see if they can lend use some help!
+- The &aFirst Mate &fwent ahead of you, but hasn't returned yet.
+- Follow his instructions if you see him!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Captain Squalus]&f Go to the nearby village and see if they will help us!'
+- Be careful on your way there, we don't know what lurks around these parts!
+- Oh and you ever see any critters start spawning a bunch of particles, well that is your sign that something bad is about to happen!
+- '&7&oI should investigate the nearby village and talk to their leader.'
+questCompleteMessage:
+- '&a[First Mate Iracundi]&f Darnation! We just can''t catch a break today! Here,
+  it''s clearly dangerous to go alone, take this!'
+- '&7&oSeems like First Mate Iracundi has a request for me...'
+questCompleteCommands: []
+turnInNPC: primis_first_mate.yml

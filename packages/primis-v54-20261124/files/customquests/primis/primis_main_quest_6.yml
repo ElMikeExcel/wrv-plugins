@@ -1,0 +1,39 @@
+questCompleteCommands: []
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Filius] &fYou made it through the mountain! You don''t see that every day.'
+    - I'm afraid my father is missing, but I can tell you about the path to &dGladius&f.
+      If you want to help us though, talk to my &aMother&f!
+    - '&7&oSeem like &aFilius&7&o can help me find the way to &dGladius&7&o.'
+    filename: primis_farmstead_son.yml
+    npcName: Farmstead's Proprietor
+    location: at the farmstead down the road
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=70:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_5.yml
+questLockoutPermission: elitequest.primis_main_quest_6.yml
+name: '&5The Farmstead'
+questLore:
+- The path to &dGladius&f should be easy, but with all the disturbances we've been
+  seeing I suspect it might not be that simple.
+- I am good friends with the &aProprietor of the Farmstead&f down the road.
+- If you tell them I sent you, I am sure they will tell you how to safely reach &dGladius&f
+  and give you news about the surrounding area.
+- Good luck in your travels and stay safe!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Eartep]&f Just tell the &aProprietor of the Farmstead&f that I sent you, though
+  I have heard that the &aProprietor&f hasn''t been seen in a while.'
+- If they aren't around I am sure their son &aFilius&f will be glad to help you out!
+- Safe travels!
+- '&7&oI should follow the path to the &dFarmstead&7&o and talk to its &aProprietor&7&o.'
+questCompleteMessage:
+- '&a[Eartep]&f Outstanding! I saw you defeat the &cCrystal Elemental&f, clearly there''s
+  greatness in your future!'
+- Now that we are on the other side, let me tell you the path to &dGladius&f!
+- '&7&oI should talk to &aFilius&7&o to learn the way to &dGladius&7&o, and possibly
+  talk to his &aMother&7&o to see how I can help.'
+turnInNPC: primis_farmstead_son.yml

@@ -1,0 +1,33 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_ice_village_escaped_prisoner.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '1'
+    itemName: Captured Prisoner
+    filename: primis_ice_village_escaped_prisoner_body.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=300:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_16.yml
+questLockoutPermission: elitequest.primis_ice_village_catch_me_if_you_can.yml
+name: '&2Catch me if you can'
+questLore:
+- What timing! I was just looking for someone to go capture our &cEscaped Prisoner&f.
+- One of our prisoners managed to make the darn cage swing and the rusty chain that holds it cracked under the load.
+- He must have gotten pretty hurt during the escape so he cannot have gone that far.
+- I need you to bring him back &9alive&f, be careful though, he managed to snag one of our rusty swords before he fled.
+temporaryPermissions:
+- elitequest.primis_ice_village_escaped_prisoner_body.yml
+questAcceptDialog:
+- '&a[Romanus Superbus]&f He must be somewhere in the mountains.'
+- '&7&oI need to find the &c&oEscaped Prisoner&7&o and bring him back to the prison.'
+questCompleteMessage:
+- '&a[Romanus Superbus]&f Well, well, well. If it isn''t our escaped sleeping beauty.'
+- Good work. A job well done deserves a good payment, here ya go.
+- '&aRomanus&7 hands you a heavy bag of coin.'
+questCompleteCommands: []
+turnInNPC: primis_ice_village_jail_master.yml

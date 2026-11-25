@@ -1,0 +1,32 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_ice_village_bell_banger.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=160:amount=1:chance=1.0
+- material=COOKED_BEEF:amount=10:chance=1.0
+- material=COOKED_BEEF:amount=10:chance=0.5
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_17.yml
+questLockoutPermission: elitequest.primis_ice_village_bell_banger.yml
+name: '&2Bell banger'
+questLore:
+- Do you see that? There, look at that bell tower in the village.
+- You see it too, right? The feller there banging his head on the bell.
+- I am pretty sure that's what's going on, unless my vision is failing me.
+- Could you go investigate and report back to me with your findings.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Eleusium Festus]&f What is going on...'
+- '&7&oI should go see what is happening at the &d&oIce Village Bell Tower&7&o.'
+questCompleteMessage:
+- '&a[Eleusium Festus]&f You found an undead banging their head on the bell...'
+- Well now I have heard it all...
+questCompleteCommands: []
+turnInNPC: primis_ice_village_jail_guard.yml

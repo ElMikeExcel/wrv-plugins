@@ -1,0 +1,60 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    dialog:
+    - '&a[Melaenis Gelasius]&f Cat food? Where the heck did you manage to find a cat
+      here...'
+    - No, I don't know where to get any cat food.
+    filename: primis_pontis_citizen_30.yml
+    npcName: Melaenis Gelasius
+    location: in Pontis Mille
+    objectiveType: DIALOG
+  Objective4:
+    dialog:
+    - '&a[Sulpicio Panthera]&f I wish I could help, sorry.'
+    filename: primis_pontis_citizen_29.yml
+    npcName: Sulpicio Panthera
+    location: in Pontis Mille
+    objectiveType: DIALOG
+  Objective1:
+    dialog:
+    - '&a[Royal Guard]&f Do I look like someone who keeps track of cat food?...'
+    filename: primis_pontis_guard_shogun_1_cat_quest.yml
+    npcName: Royal Guard
+    location: in Pontis Mille
+    objectiveType: DIALOG
+  Objective2:
+    dialog:
+    - '&a[Tyndarus Faustinius]&f Sorry, I have no idea.'
+    filename: primis_pontis_citizen_28.yml
+    npcName: Tyndarus Faustinius
+    location: in Pontis Mille
+    objectiveType: DIALOG
+  Objective5:
+    dialog:
+    - '&a[Tyndarus Columbanus]&f We used to have cat food around here somewhere, but
+      heck knows what happened to it...'
+    filename: primis_pontis_citizen_31.yml
+    npcName: Tyndarus Columbanus
+    location: in Pontis Mille
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=110:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_12.yml
+questLockoutPermission: elitequest.primis_pontis_mille_hungry_friend.yml
+name: '&2Hungry friend'
+questLore:
+- '&7&oWhat is wrong little one.'
+- '&a[Mew Meowzer]&f Meow!'
+- '&7&o Are you hungry? Does the little one want some food?'
+- '&a[Mew Meowzer]&f MREOOOW!!!'
+- '&7&oLet''s see if we can get you some food.'
+temporaryPermissions: []
+questAcceptDialog:
+- '&7&oI should see if anybody in the city knows where to find some cat food.'
+questCompleteMessage:
+- '&a[Modestus Aper]&f Cat food? I don''t know about that. But...'
+- '&7&oSeems like &a&oModestus&7&o might know something...'
+questCompleteCommands: []
+turnInNPC: primis_pontis_citizen_37.yml

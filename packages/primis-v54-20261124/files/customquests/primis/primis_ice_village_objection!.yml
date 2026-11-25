@@ -1,0 +1,51 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    dialog:
+    - '&a[Glacies Princeps]&f What, absolutely not. I don''t know how he convinced
+      you to come here and beg for his release.'
+    - That man you are trying to help was corrupted by the Ice Elemental. He went
+      mad and slaughtered his entire family.
+    - He will never be released. Is that understood.
+    filename: primis_ice_village_leader.yml
+    npcName: Glacies Princeps
+    location: at the village
+    objectiveType: DIALOG
+  Objective1:
+    dialog:
+    - '&a[Romanus Superbus]&f Release him? Not guilty? Are you mad? You''re lucky
+      I don''t throw you in a cage too for suggesting such nonsense.'
+    filename: primis_ice_village_jail_master.yml
+    npcName: Romanus Superbus
+    location: at the jail
+    objectiveType: DIALOG
+  Objective2:
+    dialog:
+    - '&a[Luxuria Placidus]&f Who? Never heard of him.'
+    filename: primis_ice_village_friendly_villager.yml
+    npcName: Luxuria Placidus
+    location: at the village
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=160:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_17.yml
+questLockoutPermission: elitequest.primis_ice_village_objection!.yml
+name: '&2Objection!'
+questLore:
+- I do not belong here! Surely you can see that?
+- I have done no wrong! Stranger will you hear my plea.
+- Would you help this poor soul who has been trapped here in this awful cage of no fault of his own?
+- You must go talk to the &aJail Master&f or the &aVillage Leader&f.
+- Or any other &aFriendly Villager&f who would be willing to argue for my release!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Adrius Calpornius]&f Go talk to them! Get me out!'
+- '&7&oI should go talk to the people on my list.'
+questCompleteMessage:
+- '&a[Adrius Calpornius]&f WHAT?! LIES!!! I never would do such a horrible thing to
+  my family...'
+- They are right here! Can't you see them, hear them. Here next to me, they want to
+  be free too!!! RELEASE US!!!
+- '&7Whatever sanity this poor man still had left, is gone now...'
+questCompleteCommands: []
+turnInNPC: primis_ice_village_prisoner.yml

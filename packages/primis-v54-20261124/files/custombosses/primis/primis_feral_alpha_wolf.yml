@@ -1,0 +1,77 @@
+onSpawnBlockStates: []
+onRemoveBlockStates: []
+bossType: NORMAL
+normalizedCombat: true
+isEnabled: true
+instanced: true
+entityType: WOLF
+name: $bossLevel &8Feral Alpha Wolf
+level: 3
+healthMultiplier: 6.0
+damageMultiplier: 1.0
+spawnCooldown: 15
+leashRadius: 35
+isRegionalBoss: true
+followDistance: 35
+customModel: 01_em_wolf
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+powers:
+- primis_sleep.yml
+- ground_pound.yml
+- hyper_loot.yml
+- primis_fire_circle.yml
+- primis_howl.yml
+- summonType: ON_COMBAT_ENTER
+  filename: primis_beta_feral_wolf.yml
+- summonType: ON_COMBAT_ENTER
+  filename: primis_beta_feral_wolf.yml
+- summonType: ON_COMBAT_ENTER
+  filename: primis_beta_feral_wolf.yml
+- summonType: ON_COMBAT_ENTER
+  filename: primis_beta_feral_wolf.yml
+spawnLocations:
+- em_id_primis_wolf_den,0.5,57.5,-82.5,0.0,0.0:1697792654448
+classLoot: true
+classLootRank: BOSS
+classLootDifficulty: AUTO
+uniqueLootList:
+- filename: cl_primis_adventure_wilds_legacy_8_swords_18d409cc.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_axes_9771134b.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_bows_51b844d5.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_crossbows_f880fa19.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_tridents_871cbfcb.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_hoes_d9de9dc1.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_maces_50ceb75c.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_spears_4a7d203f.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_staves_e3d8e657.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_wands_aa8eb7b8.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_dps_helmets_97f07996.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_dps_chestplates_2856ef42.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_dps_leggings_17ad7a7d.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_dps_boots_a0098cce.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_tank_helmets_94c637ff.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_tank_chestplates_aa1eb8c7.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_tank_leggings_d1c9bf42.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_tank_boots_0acfd820.yml
+  chance: 1.0
+- filename: cl_primis_adventure_wilds_legacy_8_shields_55dd50ad.yml
+  chance: 1.0

@@ -1,0 +1,36 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Idoneitatem Hominem]&f Congratulations!'
+    filename: primis_pontis_groves_parkour_npc_2.yml
+    npcName: Idoneitatem
+    location: at the course end
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=120:amount=1:chance=1
+- filename=primis_pontis_mille_parkour_reward_boots.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_pontis_mille_the_groves_call.yml
+questLockoutPermission: elitequest.primis_pontis_groves_acrobatics.yml
+name: '&2Acrobatics'
+questLore:
+- So you think you have you what it takes.
+- Are you fit enough, are you quick enough, are you strong enough?
+- Platforms, vines, dangerous heights. All you could ever want!
+- The ultimate challenge lies ahead! OK, OK.
+- Me and my &aBrother&f might have been bored a bit and made an entire acrobatics course.
+- The goal is to to get from platform to platform using &9Vines&f and &9Acrobatics&f and reach the end of the course.
+- Should you get through the course and reach the end. (Which is a sphere by the way.)
+- You will be rewarded with a very nice &eItem&f!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Posuere Hominem]&f You can find the start of the course at the &dEnd of that
+  Tunnel&f.'
+- Just swim up to the first vine and keep climbing the vine until you reach the top.
+- Don't forget to speak to my &aBrother&f at the end of the course for the reward!
+- '&7&oI should head to the start of the course.'
+questCompleteMessage:
+- '&a[Idoneitatem Hominem]&f Well deserved! I hope you did not cheat! Try and beat
+  my record if you can.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_groves_parkour_npc_2.yml

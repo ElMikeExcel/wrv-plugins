@@ -1,0 +1,32 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '15'
+    itemName: Fur Ice Crystals
+    filename: primis_ice_village_magical_ice_crystals.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=160:amount=1:chance=1
+- filename=primis_ice_village_wanna_build_a_snowman_reward_boots.yml:amount=1:chance=0.90
+questAcceptPermission: elitequest.primis_main_quest_17.yml
+questLockoutPermission: elitequest.primis_ice_village_wanna_make_a_snowman.yml
+name: '&2Wanna make a snowman'
+questLore:
+- The kids around the village have been pretty bored lately and I've been thinking.
+- There are these &cMagical Creatures&f that inhabit the woods around this village.
+- The creatures fur grows &eMagical Ice Crystals&e.
+- When you infuse snow with these &eCrystals&f it makes the snow shuffle around and expand and contract.
+- And if you build a snowman out of this infused snow it makes it look as if the snowman is moving.
+- The kids would love it! So, want to help this old man cheer up some kids?
+temporaryPermissions:
+- elitequest.primis_ice_village_magical_ice_crystals.yml
+questAcceptDialog:
+- '&a[Luxuria Placidus]&f You will find the &cCreatures&f in any woods near the village.'
+- We will at least need 15 of the &eCrystals&f if we want to have enough to build
+  a snowman.
+- '&7&oI should go slay enough &c&oFrost Fur Ursus&7&o to gather 15 &e&oIce Crystals&7&o.'
+questCompleteMessage:
+- '&a[Luxuria Placidus]&f You gathered enough crystals? Wonderful!'
+- I can start making the snowman now, I cannot wait for the kids to see it!
+questCompleteCommands: []
+turnInNPC: primis_ice_village_friendly_villager.yml

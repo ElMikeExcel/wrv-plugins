@@ -1,0 +1,58 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    dialog:
+    - '&a[Hurt Guard]&f Am so I happy to see you!'
+    filename: primis_pontis_mines_guard_3.yml
+    npcName: Hurt Guard
+    location: in The Mines
+    objectiveType: DIALOG
+  Objective4:
+    amount: '1'
+    filename: primis_goblin_fowl_warrior.yml
+    objectiveType: KILL_CUSTOM
+  Objective1:
+    dialog:
+    - '&a[Injured Guard]&f Thank the skies!'
+    filename: primis_pontis_mines_guard_1.yml
+    npcName: Injured Guard
+    location: in The Mines
+    objectiveType: DIALOG
+  Objective2:
+    dialog:
+    - '&a[Wounded Guard]&f Finally, the rescue is here!'
+    filename: primis_pontis_mines_guard_2.yml
+    npcName: Wounded Guard
+    location: in The Mines
+    objectiveType: DIALOG
+  Objective5:
+    amount: '1'
+    itemName: Fowl Goblin Feathers
+    filename: primis_pontis_mille_mines_goblin_head.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=110:amount=1:chance=1
+- filename=primis_pontis_mille_mines_goblined_up_in_the_maze_reward_axe.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_12.yml
+questLockoutPermission: elitequest.primis_pontis_mille_mines_goblined_up_in_the_maze.yml
+name: '&2Goblined up in the maze'
+questLore:
+- If I could bother you for a second.
+- Since you will be going into the &dMines&f already, it would be great if you could help us resolve some issues.
+- We are missing three &aGuards&f that were sent into the mines to hunt down a &cCursed Goblin&f.
+- I fear that something might have happened to them.
+- This &cCursed Goblin&f is supposed to be hiding in some sort of &9Maze&f in the &dMines&f.
+- Could you locate the &aMissing Guards&f and bring me proof of the &cGoblins&f death.
+temporaryPermissions:
+- elitequest.primis_pontis_mille_mines_goblin_head.yml
+questAcceptDialog:
+- '&a[Centurion]&fTry to not get lost in the &9Maze&f.'
+- May luck be on your side warrior!
+- '&7&oI should venture through the &d&oMines&7&o and locate the &9&oMaze&7&o.'
+questCompleteMessage:
+- '&a[Centurion]&f They are alive, excellent, we will send some soldiers to get them
+  out as soon as possible.'
+- I see you brought proof of the &cGoblins&f death, well done.
+- '&7&oHopefully people keep out of the &9Maze&7&o in the future.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_royal_guard_centurion.yml

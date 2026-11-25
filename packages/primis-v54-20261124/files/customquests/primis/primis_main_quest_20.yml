@@ -1,0 +1,43 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Lutum Princeps]&f This better be important.'
+    filename: primis_terravilla_overseer.yml
+    npcName: Lutum Princeps
+    location: at Terravilla
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=170:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_19.yml
+questLockoutPermission: elitequest.primis_main_quest_20.yml
+name: '&2Terravilla'
+questLore:
+- Some time ago we received a request for aid from a nearby settlement.
+- Years ago a bunch of explorers settled on top of this ancient ruin.
+- I think they call their little settlement &dTerravilla&f.
+- Apparently there is a lot of treasure to be had there if you don't mind the risk of death.
+- But I hear that something has gone wrong there and they asked us if we could spare any help to send their way.
+- To be honest, you are the strongest warrior I have ever seen.
+- You are the best help we could send. If you would like to, of course.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Glacies Princeps]&f You will find &aTerravilla&f straight West of here.'
+- It is located on top of this ancient elemental ruin, you will know it when you see
+  it.
+- Oh, I almost forgot. The person you want to talk to is &aOverseer Lutum&f.
+- '&7&oI should go to &d&oTerravilla&7&o and talk to &a&oOverseer Lutum&7&o.'
+questCompleteMessage:
+- '&a[Lutum Princeps]&f Came all the way from the &dIce Village&f, eh. Good to see
+  some help arrive.'
+- When I sent that request for aid I wasn't sure if we were gonna get any. I heard
+  the situation over there wasn't that much better.
+- We are in quite a pickle over here. We have plenty of work for you if you want it.
+- '&7&oI should talk to &a&oLutum&7&o.'
+questCompleteCommands: []
+turnInNPC: primis_terravilla_overseer.yml

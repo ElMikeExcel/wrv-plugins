@@ -1,0 +1,28 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&8[Hegio Remus]&f Another letter? Thank you for bringing it to me.'
+    filename: primis_pontis_mille_lighthouse_man.yml
+    npcName: Hegio
+    location: at The Pontis Mille Lighthouse
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=50:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_11.yml
+questLockoutPermission: elitequest.primis_pontis_mille_lighthouse_1.yml
+name: '&2A quick delivery'
+questLore:
+- Before you go anywhere, could you deliver this letter for me?
+- You can find the gentleman it needs to go to on top of the Lighthouse.
+- Don't worry the Lighthouse is right behind me through that doorway.
+temporaryPermissions: []
+questAcceptDialog:
+- '&8[Fortes]&f Thank you.'
+- '&8&oI should go talk to the Pontis Mille Lighthouse Keeper.'
+questCompleteMessage:
+- '&8[Hegio Remus]&f Hey, do you have a second?'
+- '&8&oSeems like Hegio Remus needs me to talk to him.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_lighthouse_man.yml

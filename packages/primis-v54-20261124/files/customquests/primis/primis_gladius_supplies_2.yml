@@ -1,0 +1,36 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    itemName: The Good Stuff
+    filename: primis_gladius_the_good_stuff.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=100:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_gladius_supplies_1.yml
+questLockoutPermission: elitequest.primis_gladius_supplies_2.yml
+name: '&cSupplying more problems'
+questLore:
+- We have food, but what about drinks?
+- Some would say it's foolish to get drunk in the middle of a war, but if now then when?
+- The &cBarkeep&f across the street kept all of the good stuff in the &dBasement&f.
+- I think you know where I'm going with this!
+- Go to the &dBasement&f of the tavern across the street and get the &eGood Stuff&f.
+- If you find the &cBarkeep&f, I'd consider it a personal favor if you free him from this curse of undeath.
+- We are pretty sure that he was in the &dBasement&f when the invasion happened so odds are he is still there, though probably no longer himself.
+- Be careful!
+temporaryPermissions:
+- elitequest.primis_gladius_supplies_2_loot.yml
+questAcceptDialog:
+- '&a[Cibus]&f The &dTavern&f is right across the street, hard to miss! Just head
+  to the &dBasement&f and get the &eGood Stuff&f!'
+- '&7&oI should go to the &dBasement&7&o of the tavern and get "the &eGood Stuff&7&o".'
+questCompleteMessage:
+- '&a[Cibus]&f You defeated the &cBarkeep&f? I thank you for freeing my old man from
+  this accursed undeath. Here, I''ll have the first drink with you.'
+questCompleteCommands: []

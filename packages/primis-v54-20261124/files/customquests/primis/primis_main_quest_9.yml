@@ -1,0 +1,31 @@
+questCompleteCommands: []
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_gladius_champion_p1.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=100:amount=1:chance=1
+- filename=enchanted_book_protection_projectile.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_8.yml
+questLockoutPermission: elitequest.primis_main_quest_9.yml
+name: '&5Gladius'' Champion'
+questLore:
+- Before heading to &dPontis Mille&f, I have a personal favor to ask.
+- Our &cChampion&f was last seen fighting off a horde of enemies near the &dStatue&f.
+- We have not heard from him since the start of the invasion and at this stage we
+  fear the worst.
+- Please go check on him. If you find him and he has turned into one of these undead...please
+  free him of his curse.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[General Hasta] &fMake your way to the &dStatue&f. I am sure our &cChampion&f
+  will be easy to find.'
+- '&7&oI should go to the &dStatue&7&o and investigate what happened to the &cChampion
+  of Gladius&7&o.'
+questCompleteMessage:
+- '&a[General Hasta]&f So... The worst has come to pass. I will make sure these beasts
+  shall pay for slaying my son.'
+- '&7&oSeems like &aGeneral Hasta&7&o has some parting words for me.'
+turnInNPC: primis_gladius_lord.yml

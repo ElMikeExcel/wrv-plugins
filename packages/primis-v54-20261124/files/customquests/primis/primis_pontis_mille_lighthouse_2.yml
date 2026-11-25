@@ -1,0 +1,29 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Jeeves]&f Oh, we meet again. It''s good to see you.'
+    - You have something for me? Oh, wow...that is quite the shopping list.
+    - I will have the items sent back to &aHegio&f as soon as possible.
+    - Thank you for stopping by. Hope we meet again.
+    - '&7&oI should let &aHegio&7&o know I delivered the note.'
+    filename: primis_caeruleaum_jeeves.yml
+    npcName: Jeeves
+    location: at Caeruleaum Village
+    objectiveType: DIALOG
+customRewards:
+- material=RABBIT_STEW:amount=5
+questAcceptPermission: elitequest.primis_pontis_mille_lighthouse_1.yml
+questLockoutPermission: elitequest.primis_pontis_mille_lighthouse_2.yml
+name: '&2Ask Jeeves'
+questLore:
+- Would you mind flying a griffin from the lighthouse and delivering a note to my good friend &aJeeves&f.
+temporaryPermissions: []
+questAcceptDialog:
+- "&a[Hegio]&f Much appreciated friend."
+- "&7&oI should go talk to &aJeeves&f at &dCaeruleaum Village&7&o."
+questCompleteMessage:
+- "&a[Hegio]&f You delivered the note? Excellent!"
+- "Here, you can have some of this &eRabbit Stew&f I keep in my back pocket."
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_lighthouse_man.yml

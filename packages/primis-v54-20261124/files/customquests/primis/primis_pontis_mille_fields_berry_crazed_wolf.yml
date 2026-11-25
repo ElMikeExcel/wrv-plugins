@@ -1,0 +1,38 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '6'
+    filename: primis_redwood_rockhound.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '5'
+    itemName: Stolen Berries
+    filename: primis_pontis_mille_fields_stolen_berries.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=120:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_12.yml
+questLockoutPermission: elitequest.primis_pontis_mille_fields_berry_crazed_wolf.yml
+name: '&2Berry crazed wolves'
+questLore:
+- Oh gosh, I have no idea what is wrong with these &cRockhounds&f.
+- They keep coming into the &dBerry Farm&f while I am away or sleeping.
+- You would think they come here and eat the berries, but no!
+- They load their mouths with them and carry them off somewhere deep into the forest.
+- I mean they are &cHounds&f! Why are they even stealing berries.
+- Well I guess it doesn''t matter, I have a favor to ask.
+- Could you go clear the &9Area Behind the Berry Farm&f, and bring back my &eStolen Berries&f.
+- I have a lot of pies to make and the berries that they stole were ripe and ready.
+temporaryPermissions:
+- elitequest.primis_pontis_mille_fields_stolen_berries.yml
+questAcceptDialog:
+- '&a[Dordalus Nasica]&f I only saw the &cRockhounds&f steal the berries.'
+- '&7&oI should go kill the &c&oRedwood Rockhounds&7&o and collect any &e&oStolen
+  Berries&7&o they drop.'
+questCompleteMessage:
+- '&a[Dordalus Nasica]&f Oh my, you did it. Could I bother you with one more tiny
+  favor.'
+- '&7&o Seems like &d&oMilonia&7&o has more work for me.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_fields_farm_berry_npc.yml

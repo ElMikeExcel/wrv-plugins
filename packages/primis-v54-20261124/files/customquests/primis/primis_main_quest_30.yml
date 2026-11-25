@@ -1,0 +1,37 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Captain Squalus]&f There you are! By the seas, I thought you were eaten by a were-badger!'
+    filename: primis_captain.yml
+    npcName: Captain Squalus
+    location: at the beached ship
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=366:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+- filename=primis_shield_final_quest_reward.yml:amount=1:chance=1.0
+questAcceptPermission: elitequest.primis_main_quest_29.yml
+questLockoutPermission: elitequest.primis_main_quest_30.yml
+name: '&2Goodbye Primis!'
+questLore:
+- "Tonight, we celebrate! But come, sit by my side. Tell me of your trials and triumphs. There is much to discuss."
+- "People of &dPontis Mille&f, we owe our lives and our peace to this hero! Let us rejoice in their honor and pledge our gratitude forever."
+- "Hero, your deeds today have ensured the safety of our city, but I have news that may concern you. While you were battling the great evils, I dispatched a small troupe to the location of your beached &dShip&f. We carried supplies, tools, and goods to your crew and oversaw the ship’s repair."
+- "Your captain and crew have worked tirelessly, and I am pleased to inform you that your ship is seaworthy once more. It waits for you, ready to embark on its next voyage. This, too, is a gift of gratitude from &aPontis Mille&f."
+- "Enough talk for now! Let us quench our thirst with drink, satisfy our hunger with a feast, and delight our ears with the sweetness of music!"
+temporaryPermissions: []
+questAcceptDialog:
+- '&7&oWell that was a celebration I will not forget any time soon.'
+- '&7&oBut it is time to say goodbye to &d&oPontis Mille&7&o and slowly make my way to our &d&oShip&7&o.'
+questCompleteMessage:
+- "&a[Captain Squalus]&fThe ship’s as good as new, thanks to the folks from Pontis Mille. Their handiwork is impressive, and the crew’s been itching to set sail again."
+- "&a[Captain Squalus]&fThey also left a small gift for you. Here take it."
+- "&a[Captain Squalus]&fThe sea’s calling, and with you back, we’re ready to answer. What say ye?"
+- "&7&oPrimis is safe, its dangers defeated, but the journey isn’t over. There are still new adventures to explore, mysteries to uncover, and challenges to face. Onwards!"
+questCompleteCommands: []
+turnInNPC: primis_captain.yml

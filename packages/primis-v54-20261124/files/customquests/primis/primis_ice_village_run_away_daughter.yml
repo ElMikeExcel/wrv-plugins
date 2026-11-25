@@ -1,0 +1,30 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Sestia Ennodius]&f I could sense you coming.'
+    filename: primis_ice_village_worried_mother.yml
+    npcName: Sestia Ennodius
+    location: outside the village
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=160:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_17.yml
+questLockoutPermission: elitequest.primis_ice_village_run_away_daughter.yml
+name: '&2Run away daughter'
+questLore:
+- Stranger! Would you help our family?
+- Our &aDaughter&f has gone missing.
+- She has been gifted with special powers just like her &aMother&f.
+- I fear that last night something terrible must have happened to make her run away in the middle of the night.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Sparax Ennodius]&f My &aWife&f has already gone looking for her.'
+- I am sure she is somewhere outside the village. Go find her and talk to her.
+- '&7&oI should go look for the &a&oWorried Mother&7&o.'
+questCompleteMessage:
+- '&a[Sestia Ennodius]&f You were sent by my &aHusband&f to help with the search?'
+- '&7&oI should hear out the &a&oWorried Mother&7&o.'
+questCompleteCommands: []
+turnInNPC: primis_ice_village_worried_mother.yml

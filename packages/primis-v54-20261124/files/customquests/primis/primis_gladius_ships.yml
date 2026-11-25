@@ -1,0 +1,37 @@
+questCompleteCommands: []
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_gladius_admiral.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '10'
+    filename: primis_gladius_mariner.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=70:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_gladius_clear.yml
+questLockoutPermission: elitequest.primis_gladius_ships.yml
+name: '&5A sinking feeling'
+questLore:
+- Have you seen them? The dozens of ships just outside of &dGladius&f? They are to
+  blame for all of this.
+- We never expected an invasion from the &dBlood Temple&f, much less one done by siege
+  weapons mounted on boats!
+- We must do something about it. Killing the &cAdmiral&f and some of the forces won't
+  give us back what we lost, but it will sure make us feel better.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Belli] &fKill the &cAdmiral&f and some of the troops on the boats. Be careful
+  about their water superiority! I recommend using &eGrappling Arrows&f to move around
+  the ships.'
+- '&7&oI should go slay the &cAdmiral&7&o and some of its troops on the boats just
+  &dOutside of Gladius&7&o.'
+questCompleteMessage:
+- '&a[Belli]&f The admiral is no more? Why, I feel better already!'

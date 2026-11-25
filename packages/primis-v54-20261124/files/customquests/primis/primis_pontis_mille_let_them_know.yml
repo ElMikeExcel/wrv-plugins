@@ -1,0 +1,51 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    dialog:
+    - So Fortes sent you? I see.
+    - Your help would be much appreciated, aid me and my forces will be ready.
+    filename: primis_pontis_mille_general_cylindrus.yml
+    npcName: General Cylindrus
+    location: in Pontis City
+    objectiveType: DIALOG
+  Objective1:
+    dialog:
+    - So Fortes has decided to take action.
+    - Help me finish my task, and my forces will be ready.
+    filename: primis_pontis_mille_general_bromia.yml
+    npcName: General Bromia
+    location: in Pontis City
+    objectiveType: DIALOG
+  Objective2:
+    dialog:
+    - So Fortes has decided to act.
+    - If you could assist me with this task, then my forces will be ready.
+    filename: primis_pontis_mille_general_rogerius.yml
+    npcName: General Rogerius
+    location: in Pontis City
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=50:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_11.yml
+questLockoutPermission: elitequest.primis_pontis_mille_let_them_know.yml
+name: '&2Let them know!'
+questLore:
+- I am sorry that we cannot send aid to &dGladius&f right away.
+- Ever since that new &cCounselor&f came, our ruler has not been himself.
+- If you could reach out to the &aGenerals&f in the city and let them know that &dGladius&f needs help we might be able to to do something about it.
+- But not before we deal with the existing issues first.
+- I am sure that the &aGenerals&f will be happy to let you help them out with their issues.
+- Go talk to them and then come back to let me know they got the message.
+- I will reward you for your time.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Fortes]&f Follow the &9orange path&f from the main room to find &aGeneral Bromia&f.'
+- '&a[Fortes]&f At the end of the &9yellow path&f you will find the &aGeneral Rogerius&f.'
+- '&a[Fortes]&f At the end of the &9shorter purple&f path you will find the &aGeneral
+  Cylindrus&f.'
+- '&7&oI need to talk to the three &a&oGenerals&7&o.'
+questCompleteMessage:
+- '&a[Fortes]&f You managed to contact them? Excellent!'
+- '&a[Fortes]&f Here is your reward. Don''t spend it all in one place.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_major.yml

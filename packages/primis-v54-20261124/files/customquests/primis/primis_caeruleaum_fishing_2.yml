@@ -1,0 +1,28 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_sea_monster.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=40:amount=1:chance=1
+- filename=primis_monster_slaying_spear.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_caeruleaum_a_can_of_worms.yml
+questLockoutPermission: elitequest.primis_caeruleaum_fishing_2.yml
+name: '&2Monster Bait'
+questLore:
+- That did the trick! Hop into the wormhole, I'll hold the boat!
+- Let's show this monster the wrath of a fisherman!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Piscis Nemesis]&f Hop in, I''ll hold the boat!'
+- Don't forget to put on that &eDiving Helmet&f!
+- '&7&oI should enter the wormhole and defeat the Sea Monster.'
+questCompleteMessage:
+- '&a[Piscis Nemesis]&f Haha! What a show!'
+- '&fOf course, I had the situation under control this entire time, but you sure helped
+  a bit!'
+- '&fHere, you can have this!'
+- '&7&oThe monster is dead and the shore is safe. Seems like a job well done.'
+questCompleteCommands: []
+turnInNPC: primis_caeruleaum_fisherman.yml

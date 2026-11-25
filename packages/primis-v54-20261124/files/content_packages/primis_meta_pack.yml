@@ -1,0 +1,52 @@
+isEnabled: true
+name: '&2[000-020] The Primis Adventure!'
+customInfo:
+- The tutorial adventure for players
+- new to EliteMobs!
+dungeonSizeCategory: LAIR
+environment: NORMAL
+protect: true
+contentType: META_PACKAGE
+setupMenuDescription:
+- '&2A soft tutorial adventure for players between levels 0-20!'
+- '&2Adventures are massive maps with quests,'
+- '&2many bosses and npcs, among other things!'
+- '&2Also has custom models!'
+dungeonLockoutMinutes: 120
+# isEnabled: true
+# name: '&2[000-020] The Primis Adventure!'
+# customInfo:
+# - The tutorial adventure for players
+# - new to EliteMobs!
+# downloadLinkV2: https://discord.gg/9f5QSka
+# dungeonSizeCategory: LAIR
+# environment: NORMAL
+# protect: true
+# contentType: META_PACKAGE
+# containedPackages:
+# - primis_adventure.yml
+# - primis_blood_temple_sanctum.yml
+# - primis_gladius_invasion_dungeon.yml
+# setupMenuDescription:
+# - '&2A soft tutorial adventure for players between levels 0-20!'
+# - '&2Adventures are massive maps with quests,'
+# - '&2many bosses and npcs, among other things!'
+# - '&2Also has custom models!'
+containedPackages:
+- primis_elementals_arena.yml
+- primis_adventure.yml
+- primis_blood_temple_sanctum.yml
+- primis_gladius_invasion_dungeon.yml
+- primis_wolf_den.yml
+- primis_sea_monster_lair.yml
+- primis_gladius_statue.yml
+- primis_lighthouse_keeper.yml
+- primis_rat_cellar.yml
+- primis_sewers.yml
+- primis_counselor_quarters.yml
+- primis_storm_temple.yml
+- primis_air_temple.yml
+- primis_trial_of_ice.yml
+- primis_ice_elemental.yml
+- primis_terravilla_maze.yml
+dungeonVersion: 54 # Sleeping bosses now wake up when hit

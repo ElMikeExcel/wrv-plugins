@@ -1,0 +1,33 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    itemName: Premium Tobacco
+    filename: primis_pontis_redwoods_tobacco.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=120:amount=1:chance=1
+- material=GOLDEN_APPLE:amount=12
+questAcceptPermission: elitequest.primis_pontis_redwoods_its_reyn_time.yml
+questLockoutPermission: elitequest.primis_pontis_redwoods_need_a_smoke.yml
+name: '&2Need a smoke'
+questLore:
+- I heard you helped good old &aReynus&f there.
+- Well as you can see, I managed to cut my legs with that darn saw again.
+- Oh, don't worry about me. My legs will be healed up again in no time.
+- You see, the issue is, not much to do while I wait for my legs to heal.
+- This makes me in the mood for some good puffin.
+- I brought with me some &ePremium Tobacco&f for my pipe, but I had to hide it in case those &cBandits&f got their hands on it.
+- The problem is, I completely forgot where I hid it!
+- All I remember is burying it &9Near a Tree&f.
+- Which tree? Who knows! Listen I got you a fine deal here.
+- Find my tobacco and you can have all of my &eGolden Apples&f.
+temporaryPermissions:
+- elitequest.primis_pontis_redwoods_tobacco.yml
+questAcceptDialog:
+- '&a[Lyco]&f Hope ya find it soon.'
+- '&7&oI should go look for the &eTobacco&7&o.'
+questCompleteMessage:
+- '&a[Lyco]&f You found it! HAHA! Knew I could rely on ya!'
+questCompleteCommands: []
+turnInNPC: primis_pontis_redwoods_injured_lumberjack.yml

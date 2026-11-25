@@ -1,0 +1,34 @@
+questCompleteCommands: []
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_gladius_mariner_quest.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '3'
+    itemName: Important Documents
+    filename: primis_gladius_important_documents.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=80:amount=1:chance=1
+- material=COOKED_COD:amount=5
+questAcceptPermission: elitequest.primis_gladius_ships.yml
+questLockoutPermission: elitequest.primis_gladius_sunken_ship.yml
+name: '&5Sunken Ship'
+questLore:
+- Now that you took care of the &cMariner Forces&f I got another task for you.
+- The &dSunken Ship&f should be reachable now.
+- You see some time ago one of our ships got sunk, unfortunately it was carrying &eImportant
+  DDocuments&f.
+- I need you to reach the &dSunken Ship&f and kill any threats around and retrieve
+  the &eDocuments&f.
+- Come back to me after you have completed the task.
+temporaryPermissions:
+- elitequest.primis_gladius_important_documents.yml
+questAcceptDialog:
+- '&a[Belli] &fYou will find the ship in the waters to the south-west. Give them hell!'
+- '&7&oI should go collect the &eDocuments&7&o and slay any &cMariners&7&o near the
+  ship.'
+questCompleteMessage:
+- '&a[Belli]&f Back already? Excellent work! We really needed these &eDocuments&f.'

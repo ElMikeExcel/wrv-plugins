@@ -1,0 +1,50 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '1'
+    itemName: Alanus' Dagger
+    filename: primis_ice_village_alanus_dagger.yml
+    objectiveType: FETCH_ITEM
+  Objective1:
+    amount: '12'
+    filename: primis_pontis_mille_fields_juvenile_razorback.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '16'
+    filename: primis_pontis_mille_fields_babe_razorback.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=150:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_16.yml
+questLockoutPermission: elitequest.primis_ice_village_get_them_off_my_back.yml
+name: '&2Get them off my back!'
+questLore:
+- Let me tell ya, I sure am glad you are here to help, ha ha.
+- Our mission here is to hunt &cRazorbacks&f and keep their numbers in check.
+- It's not all about population control either.
+- They provide us with valuable leather, tusks and meat.
+- Not sure this village would be around without them.
+- But this season their numbers have just exploded. We have been struggling with culling their numbers.
+- It's all about striking a balance, can't have their numbers be so high that they start becoming a danger again.
+- You need to go out there and slay a significant amount of them. Don't bother with
+  hunting any of the &9Mature&f ones.
+- We only need you to cull the &cBabe&f and the &cJuvenile Razorbacks&f.
+- I also have a personal favor to ask of you. When you're out there could you keep
+  an eye out for my old &eDagger&f.
+- I lost it couple of days ago during a hunt. Stuck it in a &cJuvenile Razorback&f and it just
+  ran off with my dagger still attached...
+- Would mean a lot to me if you could retrieve it.
+temporaryPermissions:
+- elitequest.primis_ice_village_alanus_dagger.yml
+questAcceptDialog:
+- '&a[Alanus Isatis]&f You must have seen the &cRazorbacks&f on your way here so I
+  assume you know where to find them.'
+- '&7&oI need to cull the &c&oRazorback&7&o population and retrieve &e&oAlanus'' Dagger&7&o.'
+questCompleteMessage:
+- '&a[Alanus Isatis]&f Well done friend! That should help a lot.'
+- We can handle the rest. And you found my dagger too, glad to have it in my hands
+  again.
+- The dagger is nothing special, but it was a handmade gift from my late father.
+- Next time you're thirsty, the drinks are on me!
+questCompleteCommands: []
+turnInNPC: primis_ice_village_hunter.yml

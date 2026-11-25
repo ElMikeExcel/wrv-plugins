@@ -1,0 +1,32 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    itemName: Old Shield
+    filename: primis_old_shield.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=30:amount=1:chance=1
+- filename=primis_artifexs_shield.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_caeruleaum_fletching.yml
+questLockoutPermission: elitequest.primis_caeruleaum_fletching_2.yml
+name: '&2Shield Hunter'
+questLore:
+- You got the arrows? Great!
+- Use those arrows with a bow to climb the tower!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Ventus Artifex]&f Use the arrows you just received to go to the ruins and shoot
+  the targets with them!'
+- Inside of the ruins there are rumors of an ancient chest. Not very useful to anyone...
+  but collectors!
+- Go and grab me that &eShield&f, and I will trade it with something more... useful...
+  to you!
+- '&7&oI should go get the &eShield&7&o inside of the ruins, using the &eGrappling
+  Arrows&7&o in order to shoot the targets inside of the building.'
+questCompleteMessage:
+- '&a[Ventus Artifex]&f Outstanding!'
+- Truly you are a real ruins delver!
+- Here is your reward!
+- '&7&oSeems like Grappling Arrows will be useful in the future.'
+questCompleteCommands: []

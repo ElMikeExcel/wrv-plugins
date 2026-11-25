@@ -1,0 +1,28 @@
+temporaryPermissions: []
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Chief Piscis] &fPlease tell me you''re the one bringing the bait.'
+    filename: primis_caeruleaum_fisherman.yml
+    npcName: Piscis Nemesis
+    location: at the docks.
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=10:amount=1:chance=1
+- filename=enchanted_book_damage_all.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_caeruleaum_fishing.yml
+questLockoutPermission: elitequest.primis_caeruleaum_a_can_of_worms.yml
+name: '&2A can of worms'
+questLore:
+- Here, take the bait and go.
+- Please hurry!
+questAcceptDialog:
+- '&a[Callidus Piscatus]&f My friend is in a boat near the docks!'
+- '&7&oI should hurry to the boat.'
+questCompleteMessage:
+- '&a[Piscis Nemesis]&f You brought bait? Perfect!'
+- The bait should lure it out!
+- '&7&oI should talk with Nemesis.'
+questCompleteCommands: []
+turnInNPC: primis_caeruleaum_fisherman.yml

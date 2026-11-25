@@ -1,0 +1,32 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Major Fortes Bellator]&f Yes, traveler?'
+    filename: primis_pontis_mille_major.yml
+    npcName: Fortes
+    location: in the Throne Room
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=30:amount=1:chance=1
+- filename=primis_pontis_mille_reward_boots.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_10.yml
+questLockoutPermission: elitequest.primis_main_quest_11.yml
+name: '&2Sending a message!'
+questLore:
+- The tales of your travel are most surprising.
+- That you made it alive to here is nothing short of a miracle.
+- The forces invading &dGladius&f are insurmountable.
+- '&dGladius&f will eventually crumble under their might...'
+- Aid?... Ah, yes. Go see &aMajor Fortes Bellator&f.
+- He will be able to assist you.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Navita]&f You can find the &aMajor&f on top of those stairs right ahead!'
+- '&7&oI should go talk to the &aMajor&f and see if he can help.'
+questCompleteMessage:
+- '&a[Major Fortes Bellator]&f The &aShogun&f seeks to aid &dGladius&f? I thought
+  he would never ask! But first, we must prepare.'
+- '&7&oSeems like &aFortes Bellator&7&o has work for me.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_major.yml

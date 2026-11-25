@@ -1,0 +1,61 @@
+questAcceptPermission: ''
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_ice_village_trial_of_ice_minor_ice_elemental.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '1'
+    filename: primis_ice_village_fallen_trial_warrior_summon.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=160:amount=1:chance=1
+questAcceptPermissions:
+- elitequest.primis_main_quest_17.yml
+- elitequest.primis_ice_village_make_them_go_ouch.yml
+- elitequest.primis_ice_village_taking_the_bait.yml
+- elitequest.primis_ice_village_get_them_off_my_back.yml
+- elitequest.primis_ice_village_catch_me_if_you_can.yml
+questLockoutPermission: elitequest.primis_main_quest_18.yml
+name: '&2The trial of ice'
+questLore:
+- Well you have certainly impressed me and most of the village.
+- I owe you an explanation friend. You see for the longest time we used to draw power
+  from the &cIce Elementals&f.
+- They would bless us with their power and in return any of us who would want to become
+  a warrior or a hunter had to pass the &9Trial of Ice&f.
+- To pass the trial you had to climb the black mountain all the way to its eastern
+  peak. And at the peak you would face the &cMinor Ice Elementals&f in combat.
+- Should you succeed then your claim to become a warrior or a hunter was unquestionably
+  your right.
+- If you failed...then...your energy and your being belonged to the &cIce Elementals&f.
+- This is how it was for the longest time. Until the &dBlood Temples&f influence grew
+  in power.
+- Ever since then the &cIce Elementals&f have been emboldened. Drawing power from
+  them was now a risk.
+- Several of our people got corrupted and we had to jail them for our own safety.
+- And doing the trial became impossible, what faced you at the peak was something
+  no villager could overcome.
+- Those who have failed the trial are still there, their souls trapped in the husks
+  of their decaying bodies.
+- Slaves to the &cIce Elementals&f.
+- It is clear that our old traditions are no longer.
+- The &cIce Elementals&f must be dealt with...
+- I would ask you to be the last one to undertake &9The Trial of Ice&f. Climb to the
+  peak and face the &cMinor Ice Elementals&f and release the souls of those who failed
+  the trial.
+temporaryPermissions:
+- elitequest.primis_ice_village_trial_of_ice.yml
+questAcceptDialog:
+- '&a[Glacies Princeps]&f You can find the start of the path to the trial at &aViolet''s&f
+  house.'
+- Follow the &9Amethyst&f blocks, they will guide you to the peak.
+- '&7&oI should follow the &9&oAmethyst Blocks&7&o to the peak of the mountain and
+  then slay the &c&oMinor Ice Elementals&7&o.'
+questCompleteMessage:
+- '&a[Glacies Princeps]&f You have done it? May their souls rest in peace now.'
+- Let's speak again friend. There is more to be done.
+- '&7&oI should speak to &a&oGlacies&7&o.'
+questCompleteCommands: []
+turnInNPC: primis_ice_village_leader.yml

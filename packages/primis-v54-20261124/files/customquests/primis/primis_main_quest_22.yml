@@ -1,0 +1,32 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '8'
+    filename: primis_terravilla_bar_brawler.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=170:amount=1:chance=1
+- filename=primis_terravilla_big_trouble_in_little_pub_reward_leggings.yml:amount=1:chance=1.0
+questAcceptPermission: elitequest.primis_main_quest_21.yml
+questLockoutPermission: elitequest.primis_main_quest_22.yml
+name: '&2Big trouble in a little pub'
+questLore:
+- Before we get to the big problem underground, I would like you to do one last thing here in town.
+- There has been huge trouble in our little pub.
+- There are certain characters in town who keep going to the pub and causing a ruckus.
+- Well I heard that this time all of them managed to gather at the pub at the same time.
+- And of course now there is a huge brawl happening over there.
+- This is a great opportunity for us to arrest all of them at once.
+- Go to the pub and knock them all out. We will handle the rest.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Lutum Princeps]&f The pub is at the ground level, right across. Don''t let them
+  overwhelm you.'
+- I will have a nice reward waiting here for you when you're back.
+- '&7&oI need to go to the pub and deal with the &c&oBar Brawlers&7&o.'
+questCompleteMessage:
+- '&a[Lutum Princeps]&f I hear that the pub is a peaceful place again. Let''s discuss
+  the real issue now.'
+- '&7&oI need to talk to &a&oLutum&7&o.'
+questCompleteCommands: []
+turnInNPC: primis_terravilla_overseer.yml

@@ -1,0 +1,32 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '5'
+    itemName: Supplies
+    filename: primis_gladius_supplies.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=90:amount=1:chance=1
+- filename=enchanted_book_damage_undead.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_7.yml
+questLockoutPermission: elitequest.primis_gladius_supplies_1.yml
+name: '&cSupplying problems'
+questLore:
+- We are running out of &eSupplies&f!
+- '&dGladius&f is a fortress equipped to last a long siege'
+- without any issues, but that's assuming we have access to the &dWarehouse&f!
+- Unfortunately the &dWarehouse&f was one of the first places to fall, and now we are slowly starving to death!
+- If you can clear a path to the &dWarehouse&f and get some &eSupplies&f that would greatly aid in the war effort!
+temporaryPermissions:
+- elitequest.primis_gladius_supplies_1_loot.yml
+questAcceptDialog:
+- '&a[Cibus]&f The &dWarehouse&f is hard to miss! It''s the extra large warehouse-looking
+  building near the part where the wall fell! Grab some &eSupplies&f and get them
+  back here!'
+- '&7&oI should go to the &dWarehouse&7&o and bring back &eSupplies&7&o.'
+questCompleteMessage:
+- '&a[Cibus]&f You brought the &eSupplies&f back? Fantastic! Meanwhile I came up with
+  the perfect idea for the drinks - and it should be something that will lift the
+  spirits of the soldiers!'
+- '&7&oSeems like the &aCibus&7&o has a plan, I should talk to them.'
+questCompleteCommands: []

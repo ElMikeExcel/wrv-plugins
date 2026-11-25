@@ -1,0 +1,68 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '1'
+    filename: primis_pontis_beast_impaler.yml
+    objectiveType: KILL_CUSTOM
+  Objective4:
+    amount: '1'
+    itemName: Toxic Fish Scale
+    filename: primis_pontis_beast_scale.yml
+    objectiveType: FETCH_ITEM
+  Objective1:
+    amount: '1'
+    filename: primis_pontis_beast_cod.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '1'
+    filename: primis_pontis_beast_crawler.yml
+    objectiveType: KILL_CUSTOM
+  Objective5:
+    amount: '1'
+    itemName: Blood Drenched Horn
+    filename: primis_pontis_beast_horn.yml
+    objectiveType: FETCH_ITEM
+  Objective6:
+    amount: '1'
+    itemName: Sun Soaked Silk
+    filename: primis_pontis_beast_silk.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=130:amount=1:chance=1
+- filename=primis_pontis_mille_fields_beasts_reward_chest.yml:amount=1:chance=1.0
+- currencyAmount=10:chance=0.6
+- currencyAmount=60:chance=0.4
+- currencyAmount=160:chance=0.2
+- currencyAmount=300:chance=0.1
+- currencyAmount=450:chance=0.02
+questAcceptPermission: elitequest.primis_pontis_mille_fields_wellness.yml
+questLockoutPermission: elitequest.primis_pontis_mille_fields_camp_hunter_three_times_hunter.yml
+name: '&2Hunter three times hunter'
+questLore:
+- So you found &aVolumnia&f. Thank the great hunters that she is alright.
+- Since you have helped &aVolumnia&f and proven yourself a kind soul.
+- How about a friendly challenge. I would be willing to offer you some nice quality armor should you face the challenge and return victorious.
+- The challenge involves hunting &cThree Great Beasts&f scattered across Pontis.
+- The &cBeast Cod Furiosa&f who swims underneath a bridge where two mountains stand.
+- &cBeast Crawler Megdun&f that slumbers on top of a sun covered grove.
+- Dancing between two western peaks you will find the &cBeast Impaler Uladzimir.
+- As proof bring me the &eImpaler's Horn&f, the &eCod's Scale&f and the &eCrawler's Silk&f.
+temporaryPermissions:
+- elitequest.primis_pontis_beast_scale.yml
+- elitequest.primis_pontis_beast_horn.yml
+- elitequest.primis_pontis_beast_silk.yml
+questAcceptDialog:
+- '&a[Milonia Majus]&f Here take this device it will roughly guide you to the their
+  location.'
+- '&7&oI should go and challenge the &c&oThree Great Beasts&7&o.'
+questCompleteMessage:
+- '&a[Milonia Majus]&f You have returned. And you have brought all three items I requested
+  as proof.'
+- That must have been quite an adventure, reminds me of my younger days when I had
+  more strength and agility.
+- Well enough about me, here is your reward as promised!
+- '&7You hand back the beast tracking device.'
+- '&a[Milonia Majus]&fI had almost forgotten about that thing, thank you!'
+- Until we meet again adventurer!
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_fields_camp_magmus.yml

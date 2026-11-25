@@ -1,0 +1,35 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Eleusium Calenus]&f My wife sent you? Oh, are those treats? My favorite
+      too! She''s such a darling.'
+    - She always takes care of me, even in these dark times, she still has a place
+      for me in her heart.
+    - 'You tell her I am doing just fine and that I love her very much. '
+    filename: primis_ice_village_imprisoned_husband.yml
+    npcName: Eleusium Calenus
+    location: at the jail
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=160:amount=1:chance=1
+- filename=enchanted_book_arrow_knockback.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_17.yml
+questLockoutPermission: elitequest.primis_ice_village_treats_for_the_punished.yml
+name: '&2Treats for the punished'
+questLore:
+- If you don't mind, could I ask you to do something for me?
+- My dear &aHusband&f has been jailed and I know it's tough living a cage all day.
+- So I prepared some treats that I was gonna deliver to him.
+- But I am quite busy right now and I was wondering if maybe you would like to go
+  there and deliver them to him.
+temporaryPermissions:
+- elitequest.primis_ice_village_violet.yml
+questAcceptDialog:
+- '&a[Titia Calenus]&f He will be in one of the middle cages.'
+- Do not forget to tell him I love him.
+- '&7&oI should deliver these treats to the &a&oHusband&7&o.'
+questCompleteMessage:
+- '&a[Titia Calenus]&f Back so quick! Oh, did he really say that? He is such a sweetie.'
+questCompleteCommands: []
+turnInNPC: primis_ice_village_worried_wife.yml

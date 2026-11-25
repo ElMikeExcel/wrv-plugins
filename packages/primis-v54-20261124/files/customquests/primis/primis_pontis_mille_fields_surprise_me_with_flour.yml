@@ -1,0 +1,46 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    dialog:
+    - '&a[Adulescens Lupis]&f I heard the farm was having &cRat&f problems. Three
+      sacks of flour coming up, no problem!'
+    filename: primis_pontis_mille_fields_windmill_npc_3.yml
+    npcName: Adulescens Lupis
+    location: at the farthest windmill
+    objectiveType: DIALOG
+  Objective1:
+    dialog:
+    - '&a[Dinia Niraemius]&f Flour? Sure, one sack of flour coming up!'
+    filename: primis_pontis_mille_fields_windmill_npc_1.yml
+    npcName: Dinia Niraemius
+    location: at the nearest windmill
+    objectiveType: DIALOG
+  Objective2:
+    dialog:
+    - '&a[Daemones Maritialis]&f The farm needs more flour eh? Here ya go, two sacks!'
+    filename: primis_pontis_mille_fields_windmill_npc_2.yml
+    npcName: Daemones Maritialis
+    location: at the middle windmill
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=220:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_pontis_mille_fields_not_on_my_farm.yml
+questLockoutPermission: elitequest.primis_pontis_mille_fields_surprise_me_with_flour.yml
+name: '&2Surprise me with flour'
+questLore:
+- Wow, you're quite handy. If I could bother you with another task.
+- The &cRats&f had completely ruined our current stock of flour.
+- So we need to a completely new batch of flour.
+- The &dWindmills&f should have plenty of it.
+- Go collect the flour and drop it off back here with me.
+- I will be paying good coin for this service!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Milonia Majus]&f You will need to collect the flour from all three &dWindmills&f.'
+- '&7&oI need to visit the three &dWindmills&7&o and collect the flour they produce.'
+questCompleteMessage:
+- '&a[Milonia Majus]&f This should last us for quite a while!'
+- Hopefully our flour tab won't get too big, hehe.
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_fields_farm_npc.yml

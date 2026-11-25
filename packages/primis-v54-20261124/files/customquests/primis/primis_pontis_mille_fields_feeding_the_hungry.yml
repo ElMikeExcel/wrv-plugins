@@ -1,0 +1,60 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    dialog:
+    - '&7You hand the over the bread and the flour.'
+    - '&a[Rufia Tertulus]&f I don''t know what to say. My children will be so happy!'
+    - '&7The woman bows to you in deep appreciation.'
+    filename: primis_pontis_mille_slums_npc_3.yml
+    npcName: Rufia Tertulus
+    location: at the slums
+    objectiveType: DIALOG
+  Objective4:
+    dialog:
+    - '&a[Fabia Praetextus]&f I guess fantasies do come true sometimes. I am eternally
+      grateful to you kind sir.'
+    filename: primis_pontis_mille_slums_npc_4.yml
+    npcName: Fabia Praetextus
+    location: at the slums
+    objectiveType: DIALOG
+  Objective1:
+    dialog:
+    - '&a[Lena Lucan]&f Fresh bread! I cannot thank you enough!'
+    filename: primis_pontis_mille_slums_npc_1.yml
+    npcName: Lena Lucan
+    location: at the slums
+    objectiveType: DIALOG
+  Objective2:
+    dialog:
+    - '&a[Tranio Florens]&f Wow! The day just keeps getting better!'
+    - Thank you for the flour kind soul.
+    filename: primis_pontis_mille_slums_npc_2.yml
+    npcName: Tranio Florens
+    location: at the slums
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=110:amount=1:chance=1
+- filename=elite_lucky_ticket.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_12.yml
+questLockoutPermission: elitequest.primis_pontis_mille_fields_feeding_the_hungry.yml
+name: '&2Feeding the hungry'
+questLore:
+- I can feel a good heart beating in that chest of yours.
+- Not everyone is as fortunate as you and I.
+- There are some poor souls living in the &dPontis Mille Slums&f.
+- For a while now I have been working over time to produce surplus bread and flour.
+- Would you mind taking these sacks of wheat and these bread stacks.
+- Then travel with them to the &dSlums&f and hand them out to those in need?
+- I have been doing this for a while now but I injured my left foot, so I cannot do much walking right now.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Daemones Maritialis]&f I wish there were more people like you in the world.'
+- The &dSlums&f are straight North of here, you can see the buildings in the distance.
+- '&7&oI should go to the &dSlums&7&o and hand out the food to those in need.'
+questCompleteMessage:
+- '&a[Augustina Verrucosis]&f &2Daemones&f sent you here didn''t he.'
+- He has been coming by every week handing out any food he could spare to make sure
+  we didn't starve...
+- Thank you stranger, my family won't forget this.
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_slums_npc_5.yml

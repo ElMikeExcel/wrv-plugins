@@ -1,0 +1,38 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '1'
+    filename: primis_redwood_werewolf_packleader.yml
+    objectiveType: KILL_CUSTOM
+  Objective1:
+    amount: '18'
+    filename: primis_redwood_rockhound.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '8'
+    filename: primis_redwood_werewolf_grunt.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=130:amount=1:chance=1
+- filename=primis_pontis_mille_to_lycan_or_not_to_lycan_reward.yml:amount=1:chance=1.0
+questAcceptPermission: elitequest.primis_pontis_redwoods_big_brown_logs.yml
+questLockoutPermission: elitequest.primis_pontis_mille_to_lycan_or_not_to_lycan.yml
+name: '&2To lycan or not to lycan'
+questLore:
+- Not sure how a single person can accomplish what an entire battalion cannot.
+- But if the &aGeneral&f has sent you, then who I am to complain.
+- We have located their &dDen&f, but the resistance is too strong.
+- There was just no way to get through.
+- But If you could  fight your way into the &dDen&f and clear it out then the &dRedwoods&f could be safe yet again.
+- Well safer at least...
+- Their &dDen&f is located under a &9Corrupted Redwood Tree&f.
+- Should be easy to spot it, it stands out among the healthy trees.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Cylindrus]&f Be careful...'
+- '&7&oI need to clear out the &dWerewolf Den&7&o.'
+questCompleteMessage:
+- '&a[Magnus]&f By the great tree fairy, you''ve done it!!!'
+- Feel free to rest at our camp, you are always welcome here.
+questCompleteCommands: []
+turnInNPC: primis_pontis_redwoods_lumberlord.yml

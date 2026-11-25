@@ -1,0 +1,54 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '3'
+    filename: primis_acolyte_brute.yml
+    objectiveType: KILL_CUSTOM
+  Objective4:
+    amount: '1'
+    itemName: Lost Heirloom
+    filename: primis_heirloom.yml
+    objectiveType: FETCH_ITEM
+  Objective1:
+    amount: '1'
+    filename: primis_ice_mage.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '2'
+    filename: primis_acolyte_sharpshooter.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=50:amount=1:chance=1
+- filename=primis_caeruleaums_hope.yml:amount=1:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_2.yml
+questLockoutPermission: elitequest.primis_main_quest_3.yml
+name: '&cBandit Camp!'
+questLore:
+- A nearby &dBandit Camp&f has recently been sighted and is trying to take us under!
+- They keep raiding our supplies and kidnapping our villagers!
+- They even took my &eGrandfather's Heirloom&f!
+- We don't know what they want, but we need them gone!
+- Figure out what they are doing, deal with them and bring me back my &eGrandfather's Heirloom&f!
+temporaryPermissions:
+- elitequest.primis_heirloom.yml
+questAcceptDialog:
+- '&a[Chief Piscis]&f The &dBandit Camp&f isn''t too far away if you follow the road!'
+- Be careful on your way there, we don't know what they are up to but it can't be
+  anything good!
+- Oh, and make sure you bring back my &eGrandfather's Heirloom&f!
+- '&7&oI should go to the nearby &dBandit Camp&7&o and clear it out.'
+questCompleteMessage:
+- '&a[Chief Piscis]&f I see you''re back! Do you bring good news?'
+- '&7&oYou tell &aChief Piscis&7&o about the camp and turn the &eHeirloom&7&o in.'
+- What's this? Mages? Elementals? This is an ill omen. You must talk to the &aRuler
+  of Gladius&f to report this incident at once!
+- Truly you have served us well! Here, for your efforts, I give you my &eGrandfather's
+  Sword&f! May it serve you as well as it has served our family!
+- '&7&oSeems like the &aChief Piscis&f is ready to tell me how to get out of here.'
+questCompleteCommands: []
+turnInNPC: primis_caeruleaum_leader.yml

@@ -1,0 +1,46 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_redwood_fruity_hound.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '1'
+    itemName: Contest Berry
+    filename: primis_pontis_mille_fields_contest_berry.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=120:amount=1:chance=1
+- filename=primis_pontis_fields_berry_charm.yml:amount=1:chance=1.0
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_pontis_mille_fields_berry_crazed_wolf.yml
+questLockoutPermission: elitequest.primis_pontis_mille_fields_fruity_hound.yml
+name: '&2Fruity hound'
+questLore:
+- Since you are my NUMBER ONE berry recovery agent, I have another task for you.
+- As you can see we grow some very large berries on our little &dBerry Farm&f here.
+- There was a &eSpecific Berry&f I was growing for a contest.
+- But as I was walking to the &dBerry Farm&f I saw a &cFruity Rockhound&f jump for the bush holding my prized berry.
+- He snapped it off and carried it away.
+- Its jaws were holding the berry by its stem so it should still be in one piece, I hope.
+- If you go slay the beast and bring back my dear &eContest Berry&f I will have a nice reward waiting for you.
+temporaryPermissions:
+- elitequest.primis_pontis_mille_fields_contest_berry.yml
+questAcceptDialog:
+- '&a[Dordalus Nasica]&f I think I saw the &cHound&f head into the &dRedwoods&f, North-West
+  of the farm.'
+- '&7&oI should go slay the &c&oFruity Hound&7&o and see if the &e&oContest Berry&7&o
+  is still in one piece.'
+questCompleteMessage:
+- '&a[Dordalus Nasica]&f YES! That is my darling! Fine and whole, not even any saliva
+  on it!'
+- As a reward for your work you can have my second largest berry. Be careful not to
+  eat it.
+- I know might be tempting to eat it, but believe me it's way more useful if you keep
+  it around.
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_fields_farm_berry_npc.yml

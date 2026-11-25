@@ -1,0 +1,46 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '6'
+    filename: primis_terravilla_robber_slugger.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '6'
+    filename: primis_terravilla_robber_gladiator.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=170:amount=1:chance=1
+- filename=primis_terravilla_taking_out_the_trash_reward_sword.yml:amount=1:chance=1.0
+- material=COOKED_PORKCHOP:amount=10:chance=1.0
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_20.yml
+questLockoutPermission: elitequest.primis_main_quest_21.yml
+name: '&2Taking out the trash'
+questLore:
+- Many years ago some explorers came across this ruin and as they investigated it more closely they discovered a large underground maze-like structure.
+- In this structure there were a lot of ancient artifacts and treasures.
+- But also a lot of danger. Not like that stopped anyone from going down there.
+- And as the word spread, more and more people came here to make their fortunes.
+- Before you know it, it turned into a small settlement.
+- Until lately everything was fine, but then awful things started happening.
+- Before I tell you more, we should start by dealing with the lesser issues first.
+- A small band of &cRobbers&f has found a foothold in the hills surrounding &dTerravilla&f.
+- We need them gone. Also, feel free to assist any villagers in &aTerravilla&f that might need help.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Lutum Princeps]&f I am not sure where the &cRobbers&f are exactly. I just know
+  that people have reported seeing them coming from the hills.'
+- '&7&oI should deal with the &c&oRobbers&7&o and help any villagers in need if I
+  have the time.'
+questCompleteMessage:
+- '&a[Lutum Princeps]&f Well that is one issue resolved. Onto the next!'
+- Before we move on, I want you to have this blade.
+- It might be old and dull but it's still as good as anything you can get your hands
+  on today.
+- '&7&oI should hear out what &a&oLutum&7&o has planned next.'
+questCompleteCommands: []
+turnInNPC: primis_terravilla_overseer.yml

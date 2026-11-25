@@ -1,0 +1,45 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Cornelia Ennodius]&f Are they gone? I was so scared. My parents sent you?
+      Thank goodness.'
+    - I woke up in the night, but the nightmares, they did not end. They were still
+      there, so I ran and ran...
+    - I couldn't escape. I, I...will be fine, I just need a minute...
+    filename: primis_ice_village_missing_daughter.yml
+    npcName: Cornelia Ennodius
+    location: somewhere in the wild
+    objectiveType: DIALOG
+  Objective2:
+    amount: '6'
+    filename: primis_ice_village_manifested_nightmare.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=160:amount=1:chance=1
+- filename=primis_ice_village_living_nightmares_reward_chest.yml:amount=1:chance=1.0
+- material=COOKED_BEEF:amount=10:chance=1.0
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_ice_village_run_away_daughter.yml
+questLockoutPermission: elitequest.primis_ice_village_living_nightmares.yml
+name: '&2Living nightmares'
+questLore:
+- I was following her trail, this is where it ends.
+- Not sure where she would have gone from here.
+- I fear that something bad might have happened.
+- Our &aGirl&f takes a lot after me and my special powers.
+- Except that hers are a lot more potent, she is capable of making powerful emotions manifest in the real world.
+- We are running out of time, we need to find her soon.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Sestia Ennodius]&f The trail went cold here, she cannot be that far away...'
+- '&7&oI need to find the &a&oMissing Daughter&7&o before something happens to her.'
+questCompleteMessage:
+- '&a[Sestia Ennodius]&f You found her! Quickly, where is she?'
+- Thank you stranger, I will go to her at once!
+questCompleteCommands: []
+turnInNPC: primis_ice_village_worried_mother.yml

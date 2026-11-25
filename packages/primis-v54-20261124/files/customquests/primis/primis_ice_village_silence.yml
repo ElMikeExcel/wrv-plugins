@@ -1,0 +1,30 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    filename: primis_ice_village_sky_screecher.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=200:amount=1:chance=1
+- filename=primis_ice_village_silence_reward_helmet.yml:amount=1:chance=1.0
+- material=BREAD:amount=10:chance=1.0
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_17.yml
+questLockoutPermission: elitequest.primis_ice_village_make_them_go_ouch.yml
+name: '&2Make them go ouch'
+questLore:
+- Shhh! Do you hear it? The annoying screeching. Ugh, I cannot take it anymore!
+- Listen, I will pay good coin if you can find the source of that annoying screeching and make it stop.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Modestus Eulogius]&f It sounds like it coming somewhere from the hills behind
+  me.'
+- '&7&oI should find the source of all the noise and make it stop.'
+questCompleteMessage:
+- '&a[Modestus Eulogius]&f Both me and my ears thank you!'
+questCompleteCommands: []
+turnInNPC: primis_ice_village_tower_squatter.yml

@@ -1,0 +1,32 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    amount: '1'
+    itemName: Sturdy Pocket Watch
+    filename: primis_pontis_redwoods_watch.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=120:amount=1:chance=1
+- material=BREAD:amount=10
+- filename=enchanted_book_sweeping_edge.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_11.yml
+questLockoutPermission: elitequest.primis_pontis_redwoods_its_reyn_time.yml
+name: '&2It is Reyn time!'
+questLore:
+- My &ePocket-watch&f had fallen into the river when I was cutting down a tree.
+- It is a special watch you see. Filled with air and quite robust.
+- Fully resilient to heavy logs being dropped on it, yep.
+- I saw one of those nasty &cBandits&f scoop it up and put it in their pocket.
+- Pretty sure I saw them &9Carrying a Hatchet&f.
+- If you could go to their camp and get it back for me. That would mean the world to me!
+- A nice reward for you too, when you get back!
+temporaryPermissions:
+- elitequest.primis_pontis_redwoods_watch.yml
+questAcceptDialog:
+- '&8[Reynus]&f You can find the &cBandits&f right across the river.'
+- '&7&oI need to go slay the correct &cBandit&7&o and collect the &eWatch&7&o.'
+questCompleteMessage:
+- '&a[Reynus]&f I will make sure not to loose it again!'
+- Your reward my good sir!
+questCompleteCommands: []
+turnInNPC: primis_pontis_redwoods_reyn.yml

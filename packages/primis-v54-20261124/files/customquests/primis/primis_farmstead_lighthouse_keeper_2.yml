@@ -1,0 +1,39 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Jeeves]&f &2Amavit&f sent you? So you found the &dGriffins&f atop the lighthouse
+      too! My, what a discovery!\n&fFlying will revolutionize my job as a traveling merchant! Here,
+      have these &eScrolls&f - just call me and I''ll be there in a jiffy!\n&7&oSeems
+      like &aJeeves&7&o has something for me. I should talk to him.'
+    filename: primis_caeruleaum_jeeves.yml
+    npcName: Jeeves
+    location: at the first village
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=10:amount=1:chance=1
+- filename=summon_merchant_scroll.yml:amount=10:chance=1
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_farmstead_lighthouse_keeper.yml
+questLockoutPermission: elitequest.primis_farmstead_lighthouse_keeper_2.yml
+name: '&2The Mysterious Lights'
+questLore:
+- A strange light started being emitted from the &dTop of the Lighthouse&f when you...dealt
+  with the issue.
+- My father &aJeeves&f went to the top to check but he has not returned yet.
+- My heart can not bear to suffer any more, and we already owe you much - but if you
+  could investigate the issue and find my father, I would be eternally grateful.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Amavit]&f Thank you once again, and good luck. Hopefully it''s nothing.'
+- '&7&oI should go to the &dTop of the Lighthouse&f, investigate the issue and then
+  report back to &aAmavit''s&f father &aJeeves&f in the village.'
+questCompleteMessage:
+- '&7&oThese scrolls seem mighty useful! I should fly a &dGriffin&7&o from the &dLighthouse&7&o
+  back to the &dFarmstead&7&o and keep moving.'
+questCompleteCommands: []
+turnInNPC: primis_caeruleaum_jeeves.yml

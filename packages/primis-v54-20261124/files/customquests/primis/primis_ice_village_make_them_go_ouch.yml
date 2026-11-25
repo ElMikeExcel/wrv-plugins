@@ -1,0 +1,48 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '1'
+    itemName: Violet's Whip
+    filename: primis_ice_village_violet_whip.yml
+    objectiveType: FETCH_ITEM
+  Objective4:
+    amount: '1'
+    itemName: Violet's Boots
+    filename: primis_ice_village_violet_boots.yml
+    objectiveType: FETCH_ITEM
+  Objective1:
+    amount: '2'
+    filename: primis_ice_village_meek_customer.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '2'
+    filename: primis_ice_village_naughty_customer.yml
+    objectiveType: KILL_CUSTOM
+  Objective5:
+    amount: '1'
+    itemName: Violet's Leggings
+    filename: primis_ice_village_violet_leggings.yml
+    objectiveType: FETCH_ITEM
+customRewards:
+- currencyAmount=150:amount=1:chance=1
+- filename=primis_ice_village_make_them_go_ouch_reward_leggings.yml:amount=1:chance=1.0
+- filename=enchanted_book_thorns.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_16.yml
+questLockoutPermission: elitequest.primis_ice_village_make_them_go_ouch.yml
+name: '&2Make them go ouch'
+questLore:
+- I had some naughty &cCustomers&f come visit some days ago.
+- They stole the most valuable of my &ePossessions&f.
+- You need to find them and make sure to teach them a lesson.
+- Make sure they know that &aViolet&f does not forget to collect.
+temporaryPermissions:
+- elitequest.primis_ice_village_violet.yml
+questAcceptDialog:
+- '&a[Domina Violet]&f They went East past the &9Trees&f.'
+- '&7&oI need to make sure that the &c&oCustomers&7&o know not to mess with &a&oViolet&7&o.
+  I also need to retrieve &e&oViolet''s Property&7&o.'
+questCompleteMessage:
+- '&a[Domina Violet]&f I hope you taught them the value of pain.'
+- A small reward is in order for your hard work. I appreciate people that get it done.
+questCompleteCommands: []
+turnInNPC: primis_ice_village_violet.yml

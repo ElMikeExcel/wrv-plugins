@@ -1,0 +1,31 @@
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Scribonia Ingenvinus]&f Yes?'
+    filename: primis_pontis_mille_fields_camp_generic_npc_1.yml
+    npcName: Scribonia Ingenvinus
+    location: at the camp
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=110:amount=1:chance=1
+- filename=enchanted_book_piercing.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_11.yml
+questLockoutPermission: elitequest.primis_pontis_mille_fields_camping_hunters.yml
+name: '&2Camping hunters'
+questLore:
+- I hope I am not bothering you. You look like a person that would listen to a plea.
+- We do not have much to do here in the &dSlums&f, most of us like to wander the &dFields&f to pass the time.
+- Unfortunately that has come to a stop after a bunch of &cMonsters&f started roaming around the &dFields&f.
+- We heard that some hunters have made &dCamp&f near the &dFields&f.
+- If you could go there and talk to them and ask them to deal with these &cMonsters&f...
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Augustina Verrucosis]&f Their &dCamp&f should be somewhere North-West of here.'
+- '&7&oI need to head for the &d&oHunters Camp&7&o.'
+questCompleteMessage:
+- '&a[Scribonia Ingenvinus]&f Help the &dSlums&f with their &cMonster&f issue?'
+- Let's talk more about.
+- '&7&oI should talk to &a&oScribonia&7&o and hear out what she has to say.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_fields_camp_generic_npc_1.yml

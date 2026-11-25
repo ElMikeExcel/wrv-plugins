@@ -1,0 +1,43 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '3'
+    filename: primis_acolyte_forest_summoner.yml
+    objectiveType: KILL_CUSTOM
+  Objective1:
+    amount: '13'
+    filename: primis_acolyte_forest_brute.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '13'
+    filename: primis_acolyte_forest_sharpshooter.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=120:amount=1:chance=1
+- filename=primis_pontis_groves_tree_climbing_elf_bandits_reward_leggings.yml:amount=1
+questAcceptPermission: elitequest.primis_pontis_groves_into_the_next_hole.yml
+questLockoutPermission: elitequest.primis_pontis_groves_tree_climbing_elf_bandits.yml
+name: '&2Tree climbing elf bandits!'
+questLore:
+- I've had it up here with these gosh darn tree climbing &cElf Bandits&f in our &dGrove&f.
+- Not like the &cSpiders&f were enough, now these shadow loving poop nuts have decided to settle in our trees!
+- They love the dark you see, the light hurts them, makes them all foggy in the head.
+- Of course a lot of darkness and shadow in our little &dGrove&f. So they moved right
+  in!
+- Forced their way in with their superior numbers.
+- Well they got something coming alright, one look at you and I can tell you can handle a couple of stone giants!
+- I am sure some elves won't be much of an issue for you.
+- Go send them a message. The message is clear, THEIR NASTY BUTTS AIN'T WELCOME HERE!
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Phygia Gorgonius]&f I am sure you will find plenty of them if you find some
+  place with shade and just look up, hard to miss their tree houses.'
+- '&7&oI should go take care of these &cElves&7&o before &aPhygia&7&o catches on fire
+  from rage.'
+questCompleteMessage:
+- '&a[Phygia Gorgonius]&f My friend! HAHA! So good to see you again!'
+- I was watching from a distance. Seeing those fools fall to their death, nothing
+  better!
+- '&7&oThe elves wont be bothering &aPhygia&7&o ever again.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_groves_hole_phygia.yml

@@ -1,0 +1,37 @@
+questCompleteCommands: []
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '5'
+    filename: primis_gladius_longbowman.yml
+    objectiveType: KILL_CUSTOM
+  Objective4:
+    amount: '5'
+    filename: primis_gladius_villager.yml
+    objectiveType: KILL_CUSTOM
+  Objective1:
+    amount: '10'
+    filename: primis_gladius_swordsman.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '3'
+    filename: primis_gladius_captain.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=90:amount=1:chance=1
+- filename=enchanted_book_damage_arthropods.yml:amount=1:chance=1
+questAcceptPermission: elitequest.primis_main_quest_7.yml
+questLockoutPermission: elitequest.primis_gladius_clear.yml
+name: '&5Taking back the streets'
+questLore:
+- I don't need to tell you that the town is being invaded, do I?
+- We are offering a reward to those willing to put a dent in the amount of &cInvaders&f.
+- Are you up for it?
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Belli] &fJust go out there and thin their numbers!'
+- '&7&oI go out and clear the streets of &dGladius&7&o.'
+questCompleteMessage:
+- '&a[Belli]&f Look at that, the Gods have provided with a true warrior in our time
+  of need! I have a job for a person like you.'
+- '&7&oSeems like &aBelli&7&o has a plan for me. I should talk to her..'

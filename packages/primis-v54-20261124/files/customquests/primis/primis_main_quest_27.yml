@@ -1,0 +1,46 @@
+isEnabled: true
+customObjectives:
+  Objective3:
+    amount: '1'
+    filename: primis_blood_temple_cultist_boss_p1.yml
+    objectiveType: KILL_CUSTOM
+  Objective4:
+    amount: '1'
+    filename: primis_blood_temple_eye_boss_p1.yml
+    objectiveType: KILL_CUSTOM
+  Objective1:
+    amount: '1'
+    filename: primis_blood_temple_giant_boss_p1.yml
+    objectiveType: KILL_CUSTOM
+  Objective2:
+    amount: '1'
+    filename: primis_blood_temple_toxic_boss_p1.yml
+    objectiveType: KILL_CUSTOM
+customRewards:
+- currencyAmount=190:amount=1:chance=1
+- filename=primis_blood_temple_reward_helmet.yml:amount=1:chance=0.25
+- filename=primis_blood_temple_reward_chestplate.yml:amount=1:chance=0.25
+- filename=primis_blood_temple_reward_leggings.yml:amount=1:chance=0.25
+- filename=primis_blood_temple_reward_boots.yml:amount=1:chance=0.25
+- currencyAmount=5:chance=0.3
+- currencyAmount=30:chance=0.2
+- currencyAmount=80:chance=0.1
+- currencyAmount=150:chance=0.05
+- currencyAmount=225:chance=0.01
+questAcceptPermission: elitequest.primis_main_quest_26.yml
+questLockoutPermission: elitequest.primis_main_quest_27.yml
+name: '&2The Four Guardians'
+questLore:
+- We have figured out that the way to the core of the temple is blocked by &9four barriers&f.
+- The &9barriers&f seem to be magically held in place by &cFour Guardians&f.
+- Killing them should dispel the &9barriers&f.
+- Our scouts report that the &cFour Guardians&f are. A &cGiant&f at the bottom of the temple. An &cAlchemist&f at the southern side of the temple. A &cCultist&f mage at the northern side of the temple. And finally some sort of &cObserver&f construct at the north-eastern side of the temple.
+temporaryPermissions: []
+questAcceptDialog:
+- '&a[Officer]&f After you have dealt with them, another one of our officers will wait for you at the other side of the barriers.'
+- '&7&oI should kill the &c&oFour Guardians&7&o.'
+questCompleteMessage:
+- '&a[Officer]&f Our scouts have come back with useful information.'
+- '&a[Officer]&f We should talk.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_outpost_officer_blood_temple_2.yml

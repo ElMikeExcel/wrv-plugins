@@ -1,0 +1,39 @@
+questAcceptPermission: ''
+isEnabled: true
+customObjectives:
+  Objective1:
+    dialog:
+    - '&a[Virgo Dexippus]&f Yes, what is it?'
+    filename: primis_pontis_mille_observatory_arena_turn_in.yml
+    npcName: Virgo Dexippus
+    location: at the observatory
+    objectiveType: DIALOG
+customRewards:
+- currencyAmount=50:amount=1:chance=1
+questAcceptPermissions:
+- elitequest.primis_pontis_groves_tree_climbing_elf_bandits.yml
+- elitequest.primis_pontis_mille_to_lycan_or_not_to_lycan.yml
+- elitequest.primis_pontis_mille_serious_sewage.yml
+questLockoutPermission: elitequest.primis_pontis_mille_star_gazing.yml
+name: '&2Star gazing'
+questLore:
+- You have done so much for this city and its people.
+- Having assisted the three &aGenerals&f and helped the areas around &dPontis Mille&f
+  has freed up a serious amount of our resources.
+- We would be able to send our forces to aid &dGladius&f now.
+- But before we take action there is one last thing I would like you to do.
+- You should go speak with the &aStargazers&f.
+- It is in regards to our lost history and the &cElementals&f.
+- The &aStargazers&f will be able to tell you more once you talk to them.
+- Here take this sealed note and show it to them.
+temporaryPermissions: []
+questAcceptDialog:
+- '&7[Fortes Bellator]&f You can find the &aStargazers&f at the &dObservatory&f.'
+- The &dObservatory&f is located past the &dLighthouse&f. It is a large tower, hard
+  to miss.
+- '&7&oI should talk to the &aStargazers&7&o at the &dObservatory&7&o.'
+questCompleteMessage:
+- '&a[Virgo Dexippus]&f The &aMajor&f sent you? It must be important then.'
+- '&7&oI should talk to &aVirgo&7&o.'
+questCompleteCommands: []
+turnInNPC: primis_pontis_mille_observatory_arena_turn_in.yml
