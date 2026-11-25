@@ -6,4 +6,4 @@ ExcelMenu Travel & Animals menu text placement: Mount Charm + Ghast Charm listin
 - **Provenance:** lane of record = `~/workspace/shop-java-charms-fix-20261124/` (fleet workspace); placed file byte-equal to the lane's staged candidate.
 - **Install of record:** wrv-install-failsafe-20261124-1704, Nov 24, 2026 ~17:15 CT — RCON excelmenu reload clean (104 entries, 0 failed), SEVERE 0. Full record: INSTALLED.txt (copied into this package).
 - **Records note:** published Nov 24, 2026 by the fleet-audit Lane 4 backlog clearance (item A14). This is a text placement (no jar); the placed file is in this package and deposited to Drive Source with this SOURCE.md.
-- Publication claim: PENDING (filled by amend push after the PR number exists)
+- Publication claim: wrv-plugins PR #305 (duplicate checks run Nov 24, 2026, result NO MATCH for 'shop-charms' and 'charms' before assembly and re-run immediately before push, NO MATCH; lane: Homebase git)
