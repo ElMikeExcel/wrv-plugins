@@ -1,0 +1,11 @@
+INSTALLED — ExcelEMFixes 0.6.0 quest-beacon
+Installed: 2026-11-23 07:58-07:59 CST by wrv-install-failsafe run wrv-install-failsafe-20261123-0751 (chained window with ExcelShops 1.3.12)
+Live jar: plugins/ExcelEMFixes-0.6.0.jar = 845d010be47281b142e7309735be14ef6931a809024acfb66ac4de3afcbc20f4 (376,523 B) — verified in place post-swap and post-boot
+Live config: plugins/ExcelEMFixes/config.yml = ee968ff8656ffb8eb4e00b2a6f49599407d8244d40612b7a86e3b5627335dff1 (deploy = live + quest-beacon section only)
+Gates: live 0.5.0 jar 81f26cee… + live config 25c90e1e… EXACT (fresh PC Get-FileHash, in-script re-check before swap)
+Backup: snapshot-11232026.0755 (MuseWRVSnapshot, result 0) + per-file .bak-questbeacon060 for jar and config
+Boot verify (wrv-server-console-20261123-075837.log): Done (29.853s); SEVERE 0; "Quest Beacon ready" present; "module enabled: Quest Beacon (quest-beacon)" present; ExcelEMFixes 0.6.0 ready line lists 16 modules incl. quest-beacon; RCON /emfixes lists quest-beacon among 16.
+End state: server UP, white-list=false, list 0.
+Proof owed (does not gate): Java + Bedrock tracked-quest beam visuals.
+Surfaces owed via canon pipeline: What's New website + in-game (changelog.yml is generated from registry — not hand-edited in this window); tips candidate check owed; Guide HELD (hibernation); menus checked, no change.
+Full record: ~/workspace/wrv-install-queue/runs/20261123-0751-failsafe/RUN-RECORD.md
