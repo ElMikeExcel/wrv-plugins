@@ -1,0 +1,9 @@
+INSTALLED — ExcelBossTrial 0.5.9 (join-armed returns)
+Window: wrv-install-failsafe-20261124-1221 (failsafe, Homebase lane, 2026-11-24)
+Placed: plugins/ExcelBossTrial-0.4.1.jar — 502,634 B — sha256 dae545f1a4770b3d2172d85aa81c89fd5c471eca28c6fffa135ed48b1be18a4f (read back from the live file post-boot, exact)
+Outgoing: ExcelBossTrial-0.4.1.jar.bak-20261124-pre059 — 481,720 B — 119ecbad189376e12f235c6c9c2a381033579ce0dfbc0497c4e3aa91c89f995b (0.5.8, MOVED aside)
+Backup: snapshot-11242026.1224 (pruned snapshot-11242026.0329; 6 snapshots total)
+Boot-verify: [12:27:15] Enabling ExcelBossTrial v0.5.9 / Build: EXC-BOSSTRIAL-0.5.9-WRV-20261124-01-e8be92 / Done (30.447s) 12:27:26 / SEVERE 0 / guild OPEN 5 of 5 / no ARMED-RETURN STORE UNREADABLE
+Smoke: listreturns "No armed returns waiting."; armreturn NobodyHere emloot no_such_loot_file.yml refused "No such EliteMobs loot file: no_such_loot_file.yml" + REFUSED (UNKNOWN_LOOT) audit line; listreturns still empty; armed-returns.dat not created.
+End state: ONLINE pid 23020, 0 players, whitelist untouched.
+Full record: ~/workspace/wrv-install-queue/runs/20261124-1221-failsafe/RUN-RECORD.md
