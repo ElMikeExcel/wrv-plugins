@@ -1,0 +1,9 @@
+INSTALLED — ExcelEMFixes 0.22.0 (quest-xp module; ExcelEMQuestXP fold, D244)
+Installed Nov 25, 2026 ~20:49 CT, wrv-install-failsafe window wrv-install-failsafe-20261125-2042 (Install 1 of 1), Homebase lane.
+Jar placed: ExcelEMFixes-0.22.0.jar 596,100 B / 49eae192df49fe029c7528e76769552d4faacc9bfedb3ce76a716e213aca9b04
+Config placed: deploy-config.yml 84,251 B / e8b670092ca423e0fd0e5ae7d555ea55729de89dfb3efe592b04de96bbe17086
+Migration: plugins/ExcelEMQuestXP/ -> plugins/ExcelEMFixes/quest-xp/, per-file SHA-256 MATCH (quest-xp.yml, backpay.yml, backpay-paid.yml, grants.log); targets.yml absent live (zero pins ever set).
+Standalone retired: ExcelEMQuestXP-1.1.0.jar moved to ExcelEMQuestXP-1.1.0.jar.bak-20261125-pre0220 before the boot.
+Boot: Done (35.897s), 24 modules incl. quest-xp, Quest XP ready line backpay already paid: 46, ledger hash 47cab75d unchanged post-boot, SEVERE 0, emfixes reload clean.
+Snapshot: snapshot-11252026.2045. End state ONLINE pid 5912, 0 players.
+Record: ~/workspace/wrv-install-queue/runs/20261125-2042-failsafe/RUN-RECORD.md
