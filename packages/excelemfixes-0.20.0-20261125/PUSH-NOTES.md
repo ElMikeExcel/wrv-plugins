@@ -1,0 +1,7 @@
+# excelemfixes-0.20.0-20261125 — PUSH NOTES
+
+- Repo: ElMikeExcel/wrv-plugins. Branch: record/excelemfixes-0.20.0-20261125. Package path: packages/excelemfixes-0.20.0-20261125/.
+- Lane: Homebase native git (SSH mike-pc, PC clone C:\Users\MikeExcel\wrv-git\wrv-plugins) — the standing default; no approval cards, no browser route.
+- Package modeled on the canonical ExcelEMFixes records shape (0.16.0 PR #278, 0.17.0 PR #306, 0.18.0 PR #307, 0.19.0 PR #308 packages): source tree of record + BUILD-RECORD + RIG-RESULTS + FINGERPRINTS + PUSH-NOTES + RECEIPTS + SOURCE + FILE-LIST + SHA256SUMS + INSTALL-PACKET + INSTALLED. Jar NOT in git (hash-referenced in FINGERPRINTS.md).
+- Record PRs stay OPEN DRAFTS, never merged (house rule).
+- Duplicate guard: pr-exists.sh wrv-plugins 'excelemfixes-0.20.0' → NO MATCH; '0.20.0' → NO MATCH; 'caster' → NO MATCH (run before assembly; re-run immediately before push — see RECEIPTS.md).
