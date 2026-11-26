@@ -1,0 +1,65 @@
+# ExcelQuestXP backpay table — generated Nov 19, 2026 from
+# ~/workspace/questxp-backpay-20261119/backpay-table.json (BACKPAY-RECORD.md §3).
+# One entry per player: UUID -> name, QuestsCompleted snapshot, quest file -> XP.
+# Armor XP is derived per quest as floor(XP/3) — the same rule as live grants.
+# The /questxp backpay command REFUSES to pay if the player's live
+# QuestsCompleted counter no longer matches the snapshot below — re-pull
+# player_data.db and recompute before paying. Do NOT hand-edit XP values.
+# test_quest / xmas_quest_0 pay 0 and are deliberately absent.
+players:
+  e739fb4d-7cec-48f4-8a2b-7c25e27d8b9e:
+    name: Jester_Turtle
+    questsCompleted: 33
+    quests:
+      ag_adventurer_training.yml: 50
+      ag_primis_introduction.yml: 5
+      ag_story_mode_introduction.yml: 5
+      ag_welcome_quest_1.yml: 50
+      primis_farmstead_lighthouse_keeper.yml: 240
+      primis_gladius_assassins.yml: 480
+      primis_gladius_clear.yml: 480
+      primis_gladius_prayer.yml: 240
+      primis_gladius_supplies_1.yml: 240
+      primis_main_quest_1.yml: 20
+      primis_main_quest_10.yml: 960
+      primis_main_quest_11.yml: 320
+      primis_main_quest_12.yml: 320
+      primis_main_quest_13.yml: 1920
+      primis_main_quest_14.yml: 3000
+      primis_main_quest_2.yml: 20
+      primis_main_quest_3.yml: 480
+      primis_main_quest_4.yml: 80
+      primis_main_quest_5.yml: 240
+      primis_main_quest_6.yml: 80
+      primis_main_quest_7.yml: 480
+      primis_main_quest_8.yml: 735
+      primis_main_quest_9.yml: 735
+      primis_pontis_mille_enchanter.yml: 320
+      primis_pontis_mille_field_check.yml: 320
+      primis_pontis_mille_fields_camping_hunters.yml: 320
+      primis_pontis_mille_fields_do_it_yourself.yml: 1920
+      primis_pontis_mille_fields_feeding_the_hungry.yml: 1920
+      primis_pontis_mille_fields_not_on_my_farm.yml: 960
+      primis_pontis_mille_fields_surprise_me_with_flour.yml: 1920
+      primis_pontis_mille_fields_wellness.yml: 960
+      primis_pontis_mille_lighthouse_1.yml: 320
+      primis_pontis_mille_mines_goblined_up_in_the_maze.yml: 1920
+    # totals: weapon 22060 XP, armor 7344 XP (33 quests)
+  8399c623-786f-448c-8b11-f54504721819:
+    name: GumGumJetPistol
+    questsCompleted: 15
+    quests:
+      ag_adventurer_training.yml: 50
+      ag_welcome_quest_1.yml: 50
+      primis_caeruleaum_fletching.yml: 120
+      primis_farmstead_lighthouse_keeper.yml: 240
+      primis_farmstead_lighthouse_keeper_2.yml: 80
+      primis_main_quest_1.yml: 20
+      primis_main_quest_2.yml: 20
+      primis_main_quest_3.yml: 480
+      primis_main_quest_4.yml: 80
+      primis_main_quest_5.yml: 240
+      primis_main_quest_6.yml: 80
+      primis_ogre_mines_clear.yml: 240
+      primis_ogre_mines_lost_bretheren.yml: 125
+    # totals: weapon 1825 XP, armor 603 XP (13 quests)

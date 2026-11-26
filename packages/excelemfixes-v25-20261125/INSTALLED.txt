@@ -1,0 +1,13 @@
+INSTALLED - ExcelEMFixes v25 (bedrock-abilities module; ExcelEMAbilityBedrockBridge 0.2.0 fold, Wave 4 / D245)
+Installed Nov 25, 2026 23:49-23:50 CT, wrv-install-failsafe window wrv-install-failsafe-20261125-2341 (Install 1 of 1), Homebase lane.
+Live gates passed fresh on PC: ExcelEMFixes-v24.jar 626,284 B / 372c4103..., config.yml 91,671 B / 5a4a9468..., ExcelEMAbilityBedrockBridge-0.2.0.jar 31,990 B / 9c415821..., EliteMobs-10.9.10.jar 14,573,497 B / e38dad00... (internal 10.9.16).
+Candidate placed: ExcelEMFixes-v25.jar 657,130 B / 7641a8ac...; deploy config 94,405 B / a3490370... (byte-equal).
+Outgoing MOVED: ExcelEMFixes-v24.jar.bak-20261125-prev25; ExcelEMAbilityBedrockBridge-0.2.0.jar.bak-20261125-prev25; config backup config.yml.bak-20261125-prev25. PC file backups at D:\muse-servers\tools\failsafe-20261125-2341\backup\.
+Jar census: exactly one active ExcelEMFixes jar (v25); no bridge jar.
+Backup: snapshot-11252026.2344 (pruned snapshot-11252026.1754; store at 6; save-on confirmed).
+Boot: Done (31.795s) 23:49:53; ExcelEMFixes v25 ready with 27 modules incl. bedrock-abilities; standby line then "EliteMobs class system (ACS) is up - Bedrock ability bridge online: /abilities" 23:50:08; /abilities status enabled (v25), EM link UP 10.9.16 ACS READY, Geyser link available, debug OFF; emfixes reload ZERO reload-failed; SEVERE 0; guild OPEN 5 of 5.
+Incident: first panel Shut Down attempt (23:47:24) failed at its RCON leg (connection closed; no /stop in log; server stayed up with STOP.flag set); one panel retry sent cleanly, down verified 23:48:33. No swap began before the completed backup.
+Surfaces: in-game What's New entry 2026-11-25-bedrock-abilities-fold placed same pass (198 entries, placed hash 14b52ccc..., reload verified, warnings unchanged 137). v25 ships PLAIN (no star).
+End state: ONLINE (arrival), pid 37452, 0 players, TPS ~19.7, whitelist untouched.
+Proof owed: live Bedrock ACS cast via G1 harness; then upstream note to MagmaGuy naming v25.
+Record: ~/workspace/wrv-install-queue/runs/20261125-2341-failsafe/RUN-RECORD.md
