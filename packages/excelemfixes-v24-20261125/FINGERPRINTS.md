@@ -1,0 +1,12 @@
+# excelemfixes-v24-20261125 — FINGERPRINTS
+
+| Artifact | Bytes | SHA-256 | MD5 |
+|---|---|---|---|
+| ExcelEMFixes-v24.jar (installed; NOT in git, hash-referenced here) | 626,284 | 372c41031c8336a78d1113a1e9778c0fbcadd3afbb15c1840e16c56b0e042df9 | 467c4de96805d4cecea478f9f60608c2 |
+| deploy-config.yml (placed as plugins/ExcelEMFixes/config.yml) | 91,671 | 5a4a9468808a540409f1fee66ced8aab78c36acebeae5d25abd009ad59b63a01 | bdc79640be2271f7601210feb7a5944b |
+
+Gates verified at install (packet INSTALL-PACKET.md + failsafe RUN-RECORD 20261125-2218, fresh on PC): live ExcelEMFixes-0.23.0.jar 609,952 B / 48d0be0943f5faddd090d9b735867ef7f1283c143abed9587fcb843119a89d4b — PASS; live config 87,117 B / daa7b8bde577447fc417523cfe416f8b7d65074acef3cf40081e0046600cd102 — PASS; standalone ExcelEMPartyDrops-0.1.0.jar 14,543 B / 12f3352341b42a14a19977e0ee43a97eee13b1e79062c8e0e0345e33ed0f8df8 — PASS; standalone ExcelEMPartyDrops config 2,117 B / 7f64d4b4ac8d16594f310bbe8c054c492229808e442d47eae20e30863b30dc31, values enabled true / party-radius 50.0 / step-per-extra 0.5 / multiplier-cap 3.0 / participant-cap 5 / respect-farming-cap false / hint-cooldown-seconds 600 / debug false — PASS, and diffed identical to the staged module config values (shipped defaults = spec values = WRV values).
+
+Outgoing 0.23.0 jar moved to ExcelEMFixes-0.23.0.jar.bak-20261125-prev24; standalone jar moved to ExcelEMPartyDrops-0.1.0.jar.bak-20261125-prev24 (moved out BEFORE the boot — never both jars at a boot); config backup config.yml.bak-20261125-prev24. plugins/ExcelEMPartyDrops/ folder left in place as inert history per packet. Window backup snapshot-11252026.2221. File backups also at D:\muse-servers\tools\failsafe-20261125-2218\backup\.
+
+Tests: 2,075 passed / 0 failed on the clean run (0.23.0 baseline 1,972 + 103 new: the standalone's MultiplierMath / PartyRange / ParticipantCounter / OriginGate / HintGate suites ported verbatim + 9 plugin.yml/config guard checks incl. "no hard depend line" and "no Together dependency"). Deterministic jar: repeated builds byte-identical (both the pre-rename 0.24.0 name and v24). Rig: Phase A (SOLO 30 kills → 32 → 32 exactly vanilla; PARTY 30 kills → 22 → 34 at 1.5, 16 audit lines all "participants=2 multiplier=1.5") + Phase B (module off → 25 modules, 30 kills → 35 → 35), boot SEVERE 0 in both phases (detail in BUILD-RECORD.md + RIG-RESULTS.md). Known flake: SkillNudgeMathTest tie check intermittent (failed in 1 of this build's runs) — pre-existing, documented in the 0.22.0/0.23.0 records, in a module this fold does not touch.

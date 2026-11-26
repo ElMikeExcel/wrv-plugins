@@ -1,0 +1,237 @@
+# ExcelQuestXP quest table — generated Nov 19, 2026 from W3 investigation.
+# Source: ~/workspace/board-r615/live-pull/quests-table.tsv (W3 §2d).
+# Rule (D-W3-2): XP = K x tier^2; K = 5 TRIVIAL / 15 STANDARD / 30 LONG / 50 EPIC.
+# Total across 110 paying quests: 130,355 XP. Zeros are deliberate:
+#   test_quest.yml = 0 (D-W3-3, dev artifact, excluded).
+#   xmas_quest_0.yml = 0 (D-W3-4, repeatable until a lockout is added; then 3000).
+# Keys are the quest file path relative to plugins/EliteMobs/customquests/.
+# Edit XP values here and run /questxp reload — no quest files change.
+quests:
+  'ag_adventurer_training.yml': 50
+  'ag_primis_introduction.yml': 5
+  'ag_story_mode_introduction.yml': 5
+  'ag_welcome_quest_0.yml': 5
+  'ag_welcome_quest_1.yml': 50
+  'primis/primis_caeruleaum_a_can_of_worms.yml': 20
+  'primis/primis_caeruleaum_fishing.yml': 60
+  'primis/primis_caeruleaum_fishing_2.yml': 135
+  'primis/primis_caeruleaum_fletching.yml': 120
+  'primis/primis_caeruleaum_fletching_2.yml': 60
+  'primis/primis_caeruleaum_foraging.yml': 60
+  'primis/primis_farmstead_lighthouse_keeper.yml': 240
+  'primis/primis_farmstead_lighthouse_keeper_2.yml': 80
+  'primis/primis_gladius_assassins.yml': 480
+  'primis/primis_gladius_clear.yml': 480
+  'primis/primis_gladius_prayer.yml': 240
+  'primis/primis_gladius_ships.yml': 480
+  'primis/primis_gladius_sunken_ship.yml': 240
+  'primis/primis_gladius_supplies_1.yml': 240
+  'primis/primis_gladius_supplies_2.yml': 240
+  'primis/primis_ice_village_all_out_of_chains.yml': 1815
+  'primis/primis_ice_village_bell_banger.yml': 1815
+  'primis/primis_ice_village_catch_me_if_you_can.yml': 1815
+  'primis/primis_ice_village_get_them_off_my_back.yml': 3630
+  'primis/primis_ice_village_gotta_keep_warm.yml': 605
+  'primis/primis_ice_village_gotta_see_jeeves.yml': 605
+  'primis/primis_ice_village_living_nightmares.yml': 1815
+  'primis/primis_ice_village_make_them_go_ouch.yml': 3630
+  'primis/primis_ice_village_objection!.yml': 3630
+  'primis/primis_ice_village_run_away_daughter.yml': 605
+  'primis/primis_ice_village_silence.yml': 1815
+  'primis/primis_ice_village_taking_the_bait.yml': 1815
+  'primis/primis_ice_village_treats_for_the_punished.yml': 605
+  'primis/primis_ice_village_wanna_make_a_snowman.yml': 3630
+  'primis/primis_main_quest_.yml': 1920
+  'primis/primis_main_quest_1.yml': 20
+  'primis/primis_main_quest_10.yml': 960
+  'primis/primis_main_quest_11.yml': 320
+  'primis/primis_main_quest_12.yml': 320
+  'primis/primis_main_quest_13.yml': 1920
+  'primis/primis_main_quest_14.yml': 3000
+  'primis/primis_main_quest_15.yml': 1815
+  'primis/primis_main_quest_16.yml': 3630
+  'primis/primis_main_quest_17.yml': 3630
+  'primis/primis_main_quest_18.yml': 1815
+  'primis/primis_main_quest_19.yml': 1815
+  'primis/primis_main_quest_2.yml': 20
+  'primis/primis_main_quest_20.yml': 605
+  'primis/primis_main_quest_21.yml': 1815
+  'primis/primis_main_quest_22.yml': 1815
+  'primis/primis_main_quest_23.yml': 1815
+  'primis/primis_main_quest_24.yml': 605
+  'primis/primis_main_quest_25.yml': 605
+  'primis/primis_main_quest_26.yml': 605
+  'primis/primis_main_quest_27.yml': 3630
+  'primis/primis_main_quest_28.yml': 1815
+  'primis/primis_main_quest_29.yml': 605
+  'primis/primis_main_quest_3.yml': 480
+  'primis/primis_main_quest_30.yml': 605
+  'primis/primis_main_quest_4.yml': 80
+  'primis/primis_main_quest_5.yml': 240
+  'primis/primis_main_quest_6.yml': 80
+  'primis/primis_main_quest_7.yml': 480
+  'primis/primis_main_quest_8.yml': 735
+  'primis/primis_main_quest_9.yml': 735
+  'primis/primis_ogre_mines_clear.yml': 240
+  'primis/primis_ogre_mines_lost_bretheren.yml': 125
+  'primis/primis_ogre_mines_old_miner_quest.yml': 735
+  'primis/primis_pontis_groves_acrobatics.yml': 405
+  'primis/primis_pontis_groves_caught_in_the_web.yml': 3000
+  'primis/primis_pontis_groves_elf_stole_from_my_shelf.yml': 960
+  'primis/primis_pontis_groves_into_the_next_hole.yml': 320
+  'primis/primis_pontis_groves_lighthouse_1.yml': 320
+  'primis/primis_pontis_groves_lighthouse_2.yml': 320
+  'primis/primis_pontis_groves_population_control.yml': 1920
+  'primis/primis_pontis_groves_tree_climbing_elf_bandits.yml': 1920
+  'primis/primis_pontis_mille_enchanter.yml': 320
+  'primis/primis_pontis_mille_field_check.yml': 320
+  'primis/primis_pontis_mille_fields_berry_crazed_wolf.yml': 960
+  'primis/primis_pontis_mille_fields_camp_hunter_three_times_hunter.yml': 1920
+  'primis/primis_pontis_mille_fields_camping_hunters.yml': 320
+  'primis/primis_pontis_mille_fields_do_it_yourself.yml': 1920
+  'primis/primis_pontis_mille_fields_feeding_the_hungry.yml': 1920
+  'primis/primis_pontis_mille_fields_fruity_hound.yml': 960
+  'primis/primis_pontis_mille_fields_not_on_my_farm.yml': 960
+  'primis/primis_pontis_mille_fields_surprise_me_with_flour.yml': 1920
+  'primis/primis_pontis_mille_fields_wellness.yml': 960
+  'primis/primis_pontis_mille_fresh_rats_coming_up.yml': 1920
+  'primis/primis_pontis_mille_hungry_friend.yml': 1920
+  'primis/primis_pontis_mille_late_delivery.yml': 960
+  'primis/primis_pontis_mille_let_them_know.yml': 1920
+  'primis/primis_pontis_mille_lighthouse_1.yml': 320
+  'primis/primis_pontis_mille_lighthouse_2.yml': 320
+  'primis/primis_pontis_mille_mines_goblined_up_in_the_maze.yml': 1920
+  'primis/primis_pontis_mille_serious_sewage.yml': 3200
+  'primis/primis_pontis_mille_star_gazing.yml': 605
+  'primis/primis_pontis_mille_stay_a_while_and_listen.yml': 3630
+  'primis/primis_pontis_mille_the_battle_for_gladius.yml': 3630
+  'primis/primis_pontis_mille_the_groves_call.yml': 320
+  'primis/primis_pontis_mille_to_lycan_or_not_to_lycan.yml': 1920
+  'primis/primis_pontis_mille_where_is_he_now.yml': 320
+  'primis/primis_pontis_redwoods_big_brown_logs.yml': 320
+  'primis/primis_pontis_redwoods_its_reyn_time.yml': 960
+  'primis/primis_pontis_redwoods_nasty_little_bandits.yml': 1920
+  'primis/primis_pontis_redwoods_need_a_smoke.yml': 960
+  'primis/primis_terravilla_bipedal_examination.yml': 1815
+  'primis/primis_terravilla_drowning_terror.yml': 1815
+  'primis/primis_terravilla_hog_on_my_porch.yml': 1815
+  'primis/primis_terravilla_razorbag.yml': 3630
+  'primis/primis_terravilla_terrifying.yml': 1815
+  'test_quest.yml': 0
+  'xmas_quest_0.yml': 0
+
+# Name fallback (color-stripped quest display names). Used ONLY when the
+# config filename does not match a row above. Names mapping to more than
+# one XP value are EXCLUDED here (ambiguous — never guessed):
+#   excluded: Make them go ouch (1815/3630)
+names:
+  'Your First Class': 50
+  'Guide me to the Primis adventure': 5
+  'Guide me to the Story Dungeons': 5
+  'Finding the AG!': 5
+  'Welcome to the AG!': 50
+  'A can of worms': 20
+  'Fish Bait': 60
+  'Monster Bait': 135
+  'Arrow Hunter': 120
+  'Shield Hunter': 60
+  'Wolf Bait': 60
+  'The Lighthouse Keeper': 240
+  'The Mysterious Lights': 80
+  'Who snipes the snipers?': 480
+  'Taking back the streets': 480
+  'Leap of faith': 240
+  'A sinking feeling': 480
+  'Sunken Ship': 240
+  'Supplying problems': 240
+  'Supplying more problems': 240
+  'All out of chains': 1815
+  'Bell banger': 1815
+  'Catch me if you can': 1815
+  'Get them off my back!': 3630
+  'Gotta keep warm': 605
+  'Gotta see Jeeves': 605
+  'Living nightmares': 1815
+  'Objection!': 3630
+  'Run away daughter': 605
+  'Taking the bait': 1815
+  'Treats for the punished': 605
+  'Wanna make a snowman': 3630
+  'Goblins in the mines!': 1920
+  'Shipwrecked!': 20
+  'Bridging the gap': 960
+  'Sending a message!': 320
+  'Mine path': 320
+  'Goblins in the mines!': 1920
+  'Storm''''s end': 3000
+  'Severance payback!': 1815
+  'The ice village awaits': 3630
+  'Helping the north': 3630
+  'The trial of ice': 1815
+  'Chill out': 1815
+  'Strangers in need...': 20
+  'Terravilla': 605
+  'Taking out the trash': 1815
+  'Big trouble in a little pub': 1815
+  'Strike the earth': 1815
+  'There and back again': 605
+  'To the outpost': 605
+  'Blood and Fire': 605
+  'The Four Guardians': 3630
+  'Legacy of the Flame': 1815
+  'There and Back Again': 605
+  'Bandit Camp!': 480
+  'Goodbye Primis!': 605
+  'Blue flower path!': 80
+  'The Crystal Elemental': 240
+  'The Farmstead': 80
+  'The path to Gladius': 480
+  'Recovering Hope': 735
+  'Gladius'''' Champion': 735
+  'Ogre-sized problems': 240
+  'Lost Bretheren': 125
+  'Lucky Pickaxe': 735
+  'Acrobatics': 405
+  'Caught in the web': 3000
+  'Elf stole from my shelf': 960
+  'Into the next hole...': 320
+  'Feeding the sick': 320
+  'Do not ask Jeeves': 320
+  'Population control!': 1920
+  'Tree climbing elf bandits!': 1920
+  'Enchanted!': 320
+  'Field check': 320
+  'Berry crazed wolves': 960
+  'Hunter three times hunter': 1920
+  'Camping hunters': 320
+  'Do it yourself': 1920
+  'Feeding the hungry': 1920
+  'Fruity hound': 960
+  'Not on my farm!': 960
+  'Surprise me with flour': 1920
+  'Wellness': 960
+  'Fresh rats coming up': 1920
+  'Hungry friend': 1920
+  'Late delivery': 960
+  'Let them know!': 1920
+  'A quick delivery': 320
+  'Ask Jeeves': 320
+  'Goblined up in the maze': 1920
+  'Serious sewage': 3200
+  'Star gazing': 605
+  'Stay a while and listen': 3630
+  'The Battle for Gladius': 3630
+  'The groves call!': 320
+  'To lycan or not to lycan': 1920
+  'Where is he now': 320
+  'Big brown logs': 320
+  'It is Reyn time!': 960
+  'Nasty little bandits!': 1920
+  'Need a smoke': 960
+  'Bipedal examination': 1815
+  'Drowning terror': 1815
+  'Hog on my porch': 1815
+  'Razorbag': 3630
+  'Terrifying': 1815
+  'Kill the Test Boss': 0
+  'Find the lost gifts!': 0
