@@ -1,0 +1,12 @@
+INSTALLED — ExcelEMFixes v27 (turn-in destination switch)
+Window: wrv-install-failsafe-20261126-0228, Nov 26, 2026, 02:31-02:40 CT (maintenance window)
+Installed jar: plugins/ExcelEMFixes-v27.jar — 682,311 B — SHA-256 6c7726b450f579ea88db5626f960fe71ef543b120cac8776b49447ff5442f00e (byte-equal to candidate)
+Placed config: 97,355 B — SHA-256 4bf8e4baa3d374237cf5d64109c8c434a4eb09f10b248f8b1141fff46170a75f (live config + derive-fetch/derive-turn-in blocks only; deploy-config.yml NOT placed as-is)
+Outgoing: ExcelEMFixes-v25.jar moved to ExcelEMFixes-v25.jar.bak-20261126-prev27; config backup config.yml.bak-20261126-prev27
+Backup: snapshot-11262026.0234 (ok; pruned snapshot-11252026.2045, snapshot-11252026.1916)
+Boot: Done (29.057s); Enabling ExcelEMFixes vv27; Quest Destinations ready — 11 tracker-blank quests covered; guild OPEN 5 of 5; SEVERE 0; emfixes reload 0 failed
+Cosmetic defect: ready-line literal reads "ExcelEMFixes v25 ready" (stale string; rider for next build)
+End state: OFFLINE (arrival state, maintenance window); whitelist untouched
+In-game What's New: entry 2026-11-26-turn-in-destination placed, 199 entries, reload verified
+Run record: ~/workspace/wrv-install-queue/runs/20261126-0228-failsafe/RUN-RECORD.md
+Proof owed: Iris-first live proof, primis_main_quest_14 completed -> Navita em_primis 596, 72, 772
