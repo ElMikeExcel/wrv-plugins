@@ -1,0 +1,13 @@
+name: ExcelTestMode
+version: v1
+main: exceltestmode.ExcelTestMode
+api-version: '1.13'
+description: Fleet testing tool — NOT a gameplay feature. A damage floor for proof and test sessions. Players on its list take full, real damage (every hit fires and counts exactly as stock, and combat state, aggro and heal mechanics engage untouched) but the portion of a hit that would take them below a configured health floor (shipped 2.0 HP, one heart) is trimmed so the hit lands exactly on the floor; a listed player can be hurt but never killed while a mechanic is being measured. Built after a staged test character died mid-measurement during a boss heal proof (Nov 27, 2026). Plain Bukkit/Paper plugin with no dependencies. Ships off (enabled set to false) with an empty list; toggles per player from the console or an operator command and writes its list through to config so it survives restarts. This code lived for one evening as a module inside ExcelEMFixes v31; it moved out to this standalone plugin in ExcelEMFixes v32 because ExcelEMFixes is the EliteMobs fix pack and test mode fixes nothing.
+commands:
+  testmode:
+    description: Toggle test mode for a player (operator tool for test sessions).
+    usage: /testmode <player> on|off | /testmode status | /testmode <player>
+permissions:
+  exceltestmode.admin:
+    description: Toggle test mode for a player from in game (/testmode <player> on|off); console is always allowed.
+    default: op

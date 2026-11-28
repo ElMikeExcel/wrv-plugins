@@ -1,0 +1,11 @@
+ExcelTestMode v1 (standalone test-mode plugin) — INSTALLED Nov 28, 2026, 00:53 CT
+Window: wrv-install-failsafe-20261128-0042 (chained window, Install 2 of 2; after ExcelEMFixes v32)
+Lane: Homebase via bridge router (chisel serving); panel only for snapshot + Shut Down/Start
+Backup: snapshot-11282026.0049 (window backup, shared with Install 1 of 2)
+Gate: absence premise verified fresh by positive plugins listing — no ExcelTestMode jar, no ExcelTestMode folder on live; chained v32 gates PASS
+Placed: plugins/ExcelTestMode-v1.jar 9,825 B / 8d290a32...; plugins/ExcelTestMode/config.yml 3,557 B / 795a8b7c... (enabled: false, empty list — ships OFF)
+Rollback (pair): remove ExcelTestMode-v1.jar + plugins/ExcelTestMode folder; restore v31 jar + config per the v32 packet
+Boot: Done (32.336s) 00:53:08; "ExcelTestMode present but DISABLED (enabled: false in config.yml)" line present; NO "Test Mode ready" line (correct for shipped state); SEVERE 0; guild OPEN 5 of 5
+End state: server ONLINE, whitelist OFF
+Proof owed: live floor proof on the standalone plugin (D228 drop-1795844876212 already fired by the build lane; gate — this install — now discharged)
+Record: ~/workspace/wrv-install-queue/runs/20261128-0042-failsafe/RUN-RECORD.md
