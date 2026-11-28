@@ -1,0 +1,71 @@
+# ==========================================================
+# ExcelTestMode — fleet testing tool (NOT a gameplay feature)
+# ==========================================================
+# WHY THIS PLUGIN EXISTS (the REASON): on Nov 27, 2026, a
+# live-proof session staged the server owner's own character
+# against a boss to measure the boss's combat-end heal; the
+# character DIED mid-test, the session lane was then cut,
+# and the account had to be restored from backups before it
+# was safe to use again. The owner's proposal the same
+# night: a test mode where the test player still takes
+# damage but cannot die. A proof session's whole value is
+# real numbers — real hits, real combat state, real heal
+# timings — so the mode must not soften the fight; it may
+# only refuse the death.
+#
+# WHAT IT DOES: a player on the list below takes FULL, real
+# damage — every hit fires and counts exactly as stock,
+# combat state, aggro and heal mechanics engage untouched,
+# outgoing damage is unchanged — except that the part of a
+# hit which would take them below floor-hp is trimmed, so
+# the hit lands them exactly ON the floor. They can be
+# hurt, never killed, while listed. A player already at or
+# below the floor takes 0-damage hits (the events still
+# fire; nothing is ever cancelled) until they heal back
+# above it. The shape is the TrainingWheels shield (the
+# per-player mitigation precedent): a player list plus a
+# victim-axis damage handler that writes the event's own
+# damage, never a cancel — except the adjustment is a
+# floor clamp, not a percentage, and it prices the FINAL
+# hit (after armour, resistance and other reductions), so
+# the damage numbers a proof measures stay real.
+#
+# HISTORY: this code shipped for one evening as the
+# test-mode module inside ExcelEMFixes v31. Mike's ruling
+# (Nov 27, 2026): ExcelEMFixes is the EliteMobs fix pack;
+# test mode fixes nothing — it is a fleet testing tool —
+# so it moved out to this standalone plugin (ExcelEMFixes
+# v32 removed the module). No EliteMobs dependency.
+#
+# OWNER-USABILITY: this is an operator tool, not a balance
+# rule. It ships OFF with an EMPTY list — nobody is
+# protected until an operator sets enabled: true, restarts,
+# and lists them with /testmode <player> on (console, or an
+# op in game). Toggles write through to this file (the
+# players list below, stored as UUIDs) so the list survives
+# restarts, and every toggle logs one line (player, on/off,
+# the floor in force, timestamp, who issued it). There is
+# deliberately no world scope: the list is the scope.
+# Remove the last player, or set enabled: false and
+# restart, and everyone is back to stock behavior exactly.
+
+# Master switch. Ships false: the plugin loads, logs one
+# line, and does nothing at all (no handler, no command)
+# until an operator turns this on for a test session.
+enabled: false
+# The health floor, in HP (2.0 = one heart). A hit that
+# would take a listed player below this lands them exactly
+# on it. Valid range (0, 100]; anything outside falls back
+# to 2.0.
+floor-hp: 2.0
+# The protected players. Managed by /testmode (entries are
+# stored as UUIDs; a plain player name also works and is
+# resolved when the plugin loads). Shipped empty on purpose.
+players: []
+# Damage causes the floor never applies to — no floor
+# holds the void, and /kill is an operator's own act.
+# Everything else (boss hits, falls, fire) is floored.
+excluded-causes: [VOID, SUICIDE]
+# Log every clamped hit (player, cause, before / allowed).
+# Leave off in normal operation.
+debug: false

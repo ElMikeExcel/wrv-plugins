@@ -1,0 +1,10 @@
+ExcelEMFixes v32 (test-mode move-out) — INSTALLED Nov 28, 2026, 00:53 CT
+Window: wrv-install-failsafe-20261128-0042 (chained window, Install 1 of 2; ExcelTestMode v1 second)
+Lane: Homebase via bridge router (chisel serving); panel only for snapshot + Shut Down/Start
+Backup: snapshot-11282026.0049 (prunee snapshot-11272026.0121)
+Gate: emptiness list 0/10 twice (00:46 / 00:47 CT, PC rcon.py); live jar v31 716,847 B / db06d7b9... PASS; live config 108,601 B / 30812b3d... PASS
+Placed: plugins/ExcelEMFixes-v32.jar 708,298 B / 0a581519...; plugins/ExcelEMFixes/config.yml 105,312 B / ccf08517...
+Rollback: plugins/ExcelEMFixes-v31.jar.bak-20261128-prev32 + config.yml.bak-20261128-prev32
+Boot: Done (32.336s) 00:53:08; "ExcelEMFixes v32 ready" 28 modules, test-mode NOT among them; SEVERE 0; emfixes reload ZERO reload-failed; guild OPEN 5 of 5
+End state: server ONLINE, whitelist OFF
+Record: ~/workspace/wrv-install-queue/runs/20261128-0042-failsafe/RUN-RECORD.md
